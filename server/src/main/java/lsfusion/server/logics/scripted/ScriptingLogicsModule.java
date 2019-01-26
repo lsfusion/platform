@@ -193,10 +193,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return errLog.toString();
     }
 
-    protected DataSession createSession() throws SQLException {
-        return ThreadLocalContext.getDbManager().createSession();
-    }
-
     private void setModuleName(String moduleName) {
         setName(moduleName);
         errLog.setModuleName(moduleName);

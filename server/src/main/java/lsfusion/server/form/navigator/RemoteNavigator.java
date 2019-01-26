@@ -109,7 +109,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     private String formID = null;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, User currentUser, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
+    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, SecurityPolicy securityPolicy, DataObject user, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
 
         this.logicsInstance = logicsInstance;
@@ -123,11 +123,9 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         setContext(new RemoteNavigatorContext(this));
         this.classCache = new ClassCache();
 
-        this.securityPolicy = currentUser.getSecurityPolicy();
-
-        try(DataSession session = dbManager.createSession()) {
-            this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
-        }
+        this.securityPolicy = securityPolicy;
+        
+        this.user = user;
         this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
         this.currentForm = NullValue.instance;
 
@@ -544,86 +542,79 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         //todo: не нужно, так что позже можно удалить
     }
 
-    public static void updateOpenFormCount(BusinessLogics businessLogics, ExecutionStack stack) {
+    public static void updateOpenFormCount(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
-
-            try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
-                List<Pair<DataObject, String>> openForms;
-                synchronized (recentlyOpenForms) {
-                    openForms = new ArrayList<>(recentlyOpenForms);
-                }
-                recentlyOpenForms.clear();
-
-                for (Pair<DataObject, String> entry : openForms) {
-                    DataObject connection = entry.first;
-                    String canonicalName = entry.second;
-                    if (canonicalName == null) {
-                        continue;
-                    }
-
-                    Long formId = (Long) businessLogics.reflectionLM.formByCanonicalName.read(
-                            session,
-                            new DataObject(canonicalName, businessLogics.reflectionLM.formCanonicalNameClass));
-
-                    if (formId == null) {
-                        continue;
-                    }
-
-                    DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.form);
-
-                    int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
-                    businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
-                }
-                session.applyException(businessLogics, stack);
+            List<Pair<DataObject, String>> openForms;
+            synchronized (recentlyOpenForms) {
+                openForms = new ArrayList<>(recentlyOpenForms);
             }
+            recentlyOpenForms.clear();
+
+            for (Pair<DataObject, String> entry : openForms) {
+                DataObject connection = entry.first;
+                String canonicalName = entry.second;
+                if (canonicalName == null) {
+                    continue;
+                }
+
+                Long formId = (Long) businessLogics.reflectionLM.formByCanonicalName.read(
+                        session,
+                        new DataObject(canonicalName, businessLogics.reflectionLM.formCanonicalNameClass));
+
+                if (formId == null) {
+                    continue;
+                }
+
+                DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.form);
+
+                int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
+                businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
+            }
+            session.applyException(businessLogics, stack);
         } catch (Exception e) {
             logger.error("UpdateOpenFormCount error: ", e);
         }
     }
 
-    public static void updateUserLastActivity(BusinessLogics businessLogics, ExecutionStack stack) {
+    public static void updateUserLastActivity(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
 
             Map<Long, UserActivity> userActivityMap;
             userActivityMap = new HashMap<>(RemoteLoggerAspect.userActivityMap);
             RemoteLoggerAspect.userActivityMap.clear();
 
-            try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
+            for (Map.Entry<Long, UserActivity> userActivity : userActivityMap.entrySet()) {
+                DataObject customUserObject = session.getDataObject(businessLogics.authenticationLM.customUser, userActivity.getKey());
+                businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
+                businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
 
-                for (Map.Entry<Long, UserActivity> userActivity : userActivityMap.entrySet()) {
-                    DataObject customUserObject = session.getDataObject(businessLogics.authenticationLM.customUser, userActivity.getKey());
-                    businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
-                    businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
-
-                }
-                session.applyException(businessLogics, stack);
             }
+            session.applyException(businessLogics, stack);
         } catch (Exception e) {
             logger.error("UpdateUserLastActivity error: ", e);
         }
     }
 
-    public static void updatePingInfo(BusinessLogics businessLogics, ExecutionStack stack) {
+    public static void updatePingInfo(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
             Map<Long, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
             RemoteLoggerAspect.pingInfoMap.clear();
-            try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
-                for (Map.Entry<Long, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
-                    DataObject computerObject = new DataObject(entry.getKey(), businessLogics.authenticationLM.computer);
-                    for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
-                        DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
-                        DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
-                        businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
-                        if(pingEntry.getValue().size() >= 6) {
-                            businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
-                            businessLogics.systemEventsLM.maxTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(3).intValue(), session, computerObject, dateFrom, dateTo);
-                            businessLogics.systemEventsLM.minUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(4).intValue(), session, computerObject, dateFrom, dateTo);
-                            businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
-                        }
+            
+            for (Map.Entry<Long, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
+                DataObject computerObject = new DataObject(entry.getKey(), businessLogics.authenticationLM.computer);
+                for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
+                    DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
+                    DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
+                    businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
+                    if(pingEntry.getValue().size() >= 6) {
+                        businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.maxTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(3).intValue(), session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.minUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(4).intValue(), session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
                     }
                 }
-                session.applyException(businessLogics, stack);
             }
+            session.applyException(businessLogics, stack);
         } catch (Exception e) {
             logger.error("UpdatePingInfo error: ", e);
         }

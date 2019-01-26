@@ -11,7 +11,9 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.Compare;
 import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
+import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.remote.PreAuthentication;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -28,6 +30,7 @@ import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LP;
@@ -251,6 +254,42 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return new User(userId);
     }
 
+    protected Long getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {
+        return (Long) authenticationLM.contactEmail.read(session, new DataObject(email));
+    }
+
+    public void remindPassword(String email, String localeLanguage) throws RemoteException {
+        assert email != null;
+        //todo: в будущем нужно поменять на проставление локали в Context
+//            ServerResourceBundle.load(localeLanguage);
+        try {
+            try (DataSession session = createSession()) {
+                Long userId = getUserByEmail(session, email);
+                if (userId == null) {
+                    throw new RuntimeException(localize("{mail.user.not.found}") + ": " + email);
+                }
+
+                businessLogics.emailLM.emailUserPassUser.execute(session, getStack(), new DataObject(userId, businessLogics.authenticationLM.customUser));
+            }
+        } catch (Exception e) {
+            systemLogger.error("Error reminding password: ", e);
+            throw new RemoteMessageException(localize("{mail.error.sending.password.remind}"), e);
+        }
+    }
+
+    // web spring authentitification
+    public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
+        try(DataSession session = createSession()) {
+            User user = readAndAuthenticateUser(session, userName, password, getStack());
+            DataObject userObject = user.getDataObject(businessLogics.authenticationLM.customUser, session);
+
+            return new PreAuthentication(getUserRolesNames(userObject),
+                    RemoteNavigator.loadLocalePreferences(session, userObject, businessLogics, language, country, getStack()).getLocale());
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public void applySecurityPolicy(User userObject, DataSession session) throws SQLException, SQLHandledException {
         // политика по умолчанию из кода
         userObject.addSecurityPolicy(defaultPolicy);
@@ -344,7 +383,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             throw new LockedException();
         }
 
-        if (!isUniversalPassword(password) && !authenticationLM.checkPassword(userObject, password, stack))
+        if (!isUniversalPassword(password) && !authenticationLM.checkPassword(session, userObject, password, stack))
             throw new LoginException();
         return user;
     }

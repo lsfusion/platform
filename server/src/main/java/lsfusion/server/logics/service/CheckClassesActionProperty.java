@@ -4,6 +4,7 @@ import lsfusion.base.Result;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -25,7 +26,7 @@ public class CheckClassesActionProperty extends ScriptingActionProperty {
         ServiceDBActionProperty.run(context, new RunService() {
             @Override
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                message.set(context.getBL().checkClasses(session));
+                message.set(context.getDbManager().checkClasses(session));
             }
         });
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", 

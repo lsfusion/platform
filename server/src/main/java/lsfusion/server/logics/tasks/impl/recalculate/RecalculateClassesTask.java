@@ -1,6 +1,6 @@
 package lsfusion.server.logics.tasks.impl.recalculate;
 
-import lsfusion.base.ExceptionUtils;
+import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
@@ -41,7 +41,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     protected void runInnerTask(final Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
         SQLSession sql = getDbManager().getThreadLocalSql();
         if (element instanceof Integer) {
-            getBL().recalculateExclusiveness(sql, true);
+            getDbManager().recalculateExclusiveness(sql, true);
         } else if (element instanceof ImplementTable) {
             DBManager.run(sql, true, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
@@ -75,7 +75,12 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         elements.add(1);
         elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet()).toJavaSet());
 
-        List<CalcProperty> storedDataPropertiesList = getBL().getStoredDataProperties().toJavaList();
+        List<CalcProperty> storedDataPropertiesList;
+        try(DataSession session = createSession()) {
+            storedDataPropertiesList = getBL().getStoredDataProperties(session).toJavaList();
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
         if(groupByTables) {
             calcPropertiesMap = new HashMap<>();
             for (CalcProperty property : storedDataPropertiesList) {

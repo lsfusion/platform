@@ -207,7 +207,7 @@ public class EmailSender {
                 } finally {
                     try {
                         if (emailSent != null) {
-                            try (DataSession session = ThreadLocalContext.getDbManager().createSession()){
+                            try (DataSession session = ThreadLocalContext.createSession()){
                                 emailSent.change(send ? true : null, session);
                             }
                         }

@@ -17,7 +17,7 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 public class RecalculateFollowsTask extends GroupGraphTask<ActionProperty> {
 
     @Override
-    protected Graph<ActionProperty> getGraph(BusinessLogics BL) {
+    protected Graph<ActionProperty> getGraph(DataSession session, BusinessLogics BL) {
         return BL.getRecalculateFollowsGraph();
     }
 
@@ -31,7 +31,7 @@ public class RecalculateFollowsTask extends GroupGraphTask<ActionProperty> {
         assert element.hasResolve();
 
         try {
-            try (DataSession session = getDbManager().createSession()) {
+            try (DataSession session = createSession()) {
                 session.resolve(element, stack);
                 session.applyException(getBL(), stack);
             }

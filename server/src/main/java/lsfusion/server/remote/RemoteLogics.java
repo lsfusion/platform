@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.GUIPreferences;
-import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
@@ -21,7 +20,6 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PreAuthentication;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.auth.User;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
@@ -29,7 +27,6 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.SecurityManager;
@@ -164,10 +161,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    protected DataSession createSession() throws SQLException {
-        return dbManager.createSession();
-    }
-
     public Long getComputer(String strHostName) {
         return dbManager.getComputer(strHostName, getStack());
     }
@@ -220,19 +213,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     // web spring authentitification
     @Override
     public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
-        try(DataSession session = dbManager.createSession()) {
-            User user;
-            if(password == null) // temporary
-                user = securityManager.readUser(userName, session);
-            else
-                user = securityManager.readAndAuthenticateUser(session, userName, password, getStack());            
-            DataObject userObject = user.getDataObject(businessLogics.authenticationLM.customUser, session);
-            
-            return new PreAuthentication(securityManager.getUserRolesNames(userObject), 
-                                RemoteNavigator.loadLocalePreferences(session, userObject, businessLogics, language, country, getStack()).getLocale());
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        return securityManager.preAuthenticateUser(userName, password, language, country);
     }
 
     @Override
@@ -245,28 +226,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return dbManager.generateID();
     }
 
-    protected Long getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {
-        return (Long) businessLogics.authenticationLM.contactEmail.read(session, new DataObject(email));
-    }
-
     @Override
     public void remindPassword(String email, String localeLanguage) throws RemoteException {
-        assert email != null;
-        //todo: в будущем нужно поменять на проставление локали в Context
-//            ServerResourceBundle.load(localeLanguage);
-        try {
-            try (DataSession session = createSession()) {
-                Long userId = getUserByEmail(session, email);
-                if (userId == null) {
-                    throw new RuntimeException(localize("{mail.user.not.found}") + ": " + email);
-                }
-
-                businessLogics.emailLM.emailUserPassUser.execute(session, getStack(), new DataObject(userId, businessLogics.authenticationLM.customUser));
-            }
-        } catch (Exception e) {
-            logger.error("Error reminding password: ", e);
-            throw new RemoteMessageException(localize("{mail.error.sending.password.remind}"), e);
-        }
+        securityManager.remindPassword(email, localeLanguage);
     }
 
     public boolean isSingleInstance() throws RemoteException {
@@ -309,7 +271,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
-        try (DataSession session = createSession()) {
+        try (DataSession session = dbManager.createSession()) {
             property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
 
             return readReturnProperties(session, returnCanonicalNames);
@@ -372,10 +334,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return securityManager.addUser(username, email, password, firstName, lastName, localeLanguage, getStack());
     }
 
+    @Deprecated // change to http request with the common mechanism
     @Override
     public Map<String, String> readMemoryLimits() {
         Map<String, String> memoryLimitMap = new HashMap<>();
-        try (DataSession session = createSession()) {
+        try (DataSession session = dbManager.createSession()) {
             KeyExpr memoryLimitExpr = new KeyExpr("memoryLimit");
             ImRevMap<Object, KeyExpr> memoryLimitKeys = MapFact.singletonRev((Object) "memoryLimit", memoryLimitExpr);
             QueryBuilder<Object, Object> query = new QueryBuilder<>(memoryLimitKeys);

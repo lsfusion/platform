@@ -104,7 +104,7 @@ public class ReportDesignGenerator {
     public Map<ReportNode, JasperDesign> generate() throws JRException {
         try {
             BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
-            try(DataSession session = ThreadLocalContext.getDbManager().createSession()) {
+            try(DataSession session = ThreadLocalContext.createSession()) {
                 charWidth = (Integer) baseLM.reportCharWidth.read(session);
                 rowHeight = (Integer) baseLM.reportRowHeight.read(session);
                 toStretch = BaseUtils.nvl((Boolean) baseLM.reportToStretch.read(session), false);

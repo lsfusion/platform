@@ -4,6 +4,7 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -25,7 +26,7 @@ public class RecalculateClassesActionProperty extends ScriptingActionProperty {
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 BusinessLogics BL = context.getBL();
-                String result = BL.recalculateClasses(session, isolatedTransaction);
+                String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
                 if(result != null)
                     context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculating.data.classes}")));
                 context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);

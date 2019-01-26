@@ -14,6 +14,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -179,32 +180,30 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
     }
     
-    public boolean checkPassword(DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public boolean checkPassword(DataSession session, DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
         boolean authenticated = true;
-        try(DataSession session = createSession()) {
-            String hashPassword = (String) sha256PasswordCustomUser.read(session, userObject);
-            String newHashInput = BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt);
-            if (hashPassword == null || !hashPassword.trim().equals(newHashInput)) {
-                //TODO: убрать, когда будем считать, что хэши у всех паролей уже перебиты
-                Integer minHashLengthValue = (Integer) minHashLength.read(session);
-                String oldHashInput = BaseUtils.calculateBase64HashOld("SHA-256", nullTrim(password), UserInfo.salt);
-                if (minHashLengthValue == null)
-                    minHashLengthValue = oldHashInput.length();
-                //если совпали первые n символов, считаем пароль правильным и сохраняем новый хэш в базу
-                if (hashPassword != null &&
-                        hashPassword.trim().substring(0, Math.min(hashPassword.trim().length(), minHashLengthValue)).equals(oldHashInput.substring(0, Math.min(oldHashInput.length(), minHashLengthValue)))) {
-                    sha256PasswordCustomUser.change(newHashInput, session, userObject);
-                    session.applyException(BL, stack);
-                } else {
-                    authenticated = false;
-                }
+        String hashPassword = (String) sha256PasswordCustomUser.read(session, userObject);
+        String newHashInput = BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt);
+        if (hashPassword == null || !hashPassword.trim().equals(newHashInput)) {
+            //TODO: убрать, когда будем считать, что хэши у всех паролей уже перебиты
+            Integer minHashLengthValue = (Integer) minHashLength.read(session);
+            String oldHashInput = BaseUtils.calculateBase64HashOld("SHA-256", nullTrim(password), UserInfo.salt);
+            if (minHashLengthValue == null)
+                minHashLengthValue = oldHashInput.length();
+            //если совпали первые n символов, считаем пароль правильным и сохраняем новый хэш в базу
+            if (hashPassword != null &&
+                    hashPassword.trim().substring(0, Math.min(hashPassword.trim().length(), minHashLengthValue)).equals(oldHashInput.substring(0, Math.min(oldHashInput.length(), minHashLengthValue)))) {
+                sha256PasswordCustomUser.change(newHashInput, session, userObject);
+                session.applyException(BL, stack);
+            } else {
+                authenticated = false;
             }
         }
         return authenticated;
     }
     
     public Set<String> syncUsers(final Set<String> userNames) throws SQLException, SQLHandledException {
-        final DataSession session = createSession();
+        final DataSession session = ThreadLocalContext.createSession();
 
         final String KEY_NAME = "login";
         KeyExpr loginExpr = new KeyExpr(KEY_NAME);
