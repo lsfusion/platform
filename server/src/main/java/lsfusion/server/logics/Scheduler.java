@@ -84,7 +84,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     }
 
     private void changeCurrentDate(ExecutionStack stack) {
-        try (DataSession session = dbManager.createSession()) {
+        try (DataSession session = createSession()) {
             session.setNoCancelInTransaction(true);
 
             java.sql.Date currentDate = (java.sql.Date) BL.timeLM.currentDate.read(session);
@@ -499,7 +499,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
                 String applyResult;
 
-                try (DataSession mainSession = dbManager.createSession()) {
+                try (DataSession mainSession = createSession()) {
                     if (detail.script != null) // if lap is evalScript 
                         BL.schedulerLM.scriptText.change(detail.script, mainSession);
                     ImOrderSet<ClassPropertyInterface> interfaces = detail.lap.listInterfaces;
@@ -560,7 +560,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             else
                 schedulerLogger.info("Task " + message + " " + phase);
             
-            try (DataSession session = dbManager.createSession()) {
+            try (DataSession session = createSession()) {
                 DataObject taskLogObject = session.addObject(BL.schedulerLM.scheduledTaskLog);
 
                 BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) session, taskLogObject);
@@ -581,7 +581,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
         private void logClientTasks(ImList<AbstractContext.LogMessage> logMessages, long taskLogId, String taskCaption, ExecutionStack stack) {
             DataObject taskLog = new DataObject(taskLogId, BL.schedulerLM.scheduledTaskLog);
-            try (DataSession session = dbManager.createSession()) {
+            try (DataSession session = createSession()) {
                 
                 for(AbstractContext.LogMessage logMessage : logMessages)
                     logClientTask(session, taskLog, logMessage);

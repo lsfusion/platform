@@ -1,5 +1,6 @@
 package lsfusion.server.logics.tasks.impl.recalculate;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.context.ExecutionStack;
@@ -50,7 +51,11 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
         List elements = new ArrayList();
         elements.add(1);
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
-        elements.addAll(getBL().getStoredDataProperties().toJavaList());
+        try(DataSession session = createSession()) {
+            elements.addAll(getBL().getStoredDataProperties(session).toJavaList());
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
         return elements;
     }
 

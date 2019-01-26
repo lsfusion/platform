@@ -1,21 +1,20 @@
 package lsfusion.server.logics.tasks.impl;
 
+import com.google.common.base.Throwables;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.tasks.ReflectionTask;
+import lsfusion.server.logics.tasks.SimpleBLTask;
+import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
-public class FirstRecalculateStatsTask extends ReflectionTask {
+import java.sql.SQLException;
 
-    private BusinessLogics BL;
+import static lsfusion.server.context.ThreadLocalContext.createSession;
 
-    public BusinessLogics getBL() {
-        return BL;
-    }
-
-    public void setBL(BusinessLogics BL) {
-        this.BL = BL;
-    }
+public class FirstRecalculateStatsTask extends SimpleBLTask {
 
     public String getCaption() {
         return "Recalculating Stats at first start";
@@ -24,6 +23,10 @@ public class FirstRecalculateStatsTask extends ReflectionTask {
     @Override
     public void run(Logger logger) {
         if(!SystemProperties.lightStart)
-            BL.firstRecalculateStats();
+            try(DataSession session = createSession()) {
+                getDbManager().firstRecalculateStats(session);
+            } catch (SQLException | SQLHandledException e) {
+                throw Throwables.propagate(e);
+            }
     }
 }

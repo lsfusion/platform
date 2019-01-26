@@ -7,6 +7,7 @@ import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
@@ -100,6 +101,10 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         baseLM = businessLogics.LM;
 //        executor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
     }
+    
+    private DataSession createSession() throws SQLException {
+        return dbManager.createSession();
+    }
 
     public RemoteNavigatorInterface createNavigator(ExecutionStack stack, boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
@@ -109,9 +114,12 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //        scheduleRemoveExpired();
 
         try {
-            User user;
-            try (DataSession session = dbManager.createSession()) {
-                user = securityManager.readAndAuthenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
+            SecurityPolicy securityPolicy;
+            DataObject userObject;
+            try (DataSession session = createSession()) {
+                User user = securityManager.readAndAuthenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
+                userObject = user.getDataObject(businessLogics.authenticationLM.customUser, session);
+                securityPolicy = user.getSecurityPolicy();
                 String result = session.applyMessage(businessLogics, stack);
                 if(result != null)
                     throw new RemoteMessageException(result);
@@ -127,8 +135,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //                    }
 //                }
 //            }
-
-            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, user, rmiManager.getExportPort(), stack);
+            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, securityPolicy, userObject, rmiManager.getExportPort(), stack);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -138,7 +145,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         DataObject newConnection = null;
 
         if(!securityManager.isUniversalPassword(navigatorInfo.password)) {
-            try (DataSession session = dbManager.createSession()) {
+            try (DataSession session = createSession()) {
                 newConnection = session.addObject(businessLogics.systemEventsLM.connection);
                 businessLogics.systemEventsLM.userConnection.change(navigator.getUser(), session, newConnection);
                 businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
@@ -179,7 +186,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             }
         }
         try {
-            try (DataSession session = dbManager.createSession()) {
+            try (DataSession session = createSession()) {
                 if (connection != null) {
                     businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, connection);
                 } else

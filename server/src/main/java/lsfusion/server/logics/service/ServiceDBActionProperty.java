@@ -8,7 +8,6 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
 
 import java.sql.SQLException;
@@ -24,7 +23,7 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getBL().recalculateClasses(session, isolatedTransaction);
+                String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
                 if(result != null)
                     context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
             }});
@@ -51,7 +50,7 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
                     context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
             }});
 
-        context.getBL().recalculateStats(context.getSession());
+        context.getDbManager().recalculateStats(context.getSession());
         context.apply();
 
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));

@@ -1,7 +1,13 @@
 package lsfusion.server.logics.tasks.impl.simple;
 
+import com.google.common.base.Throwables;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.tasks.SimpleBLTask;
+import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
 
 public class WriteModulesHashTask extends SimpleBLTask {
 
@@ -12,6 +18,10 @@ public class WriteModulesHashTask extends SimpleBLTask {
 
     @Override
     public void run(Logger logger) {
-        getBL().getDbManager().writeModulesHash();
+        try(DataSession session = createSession()) {
+            getBL().getDbManager().writeModulesHash(session);
+        } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

@@ -25,10 +25,9 @@ public class RecalculateAggregationsTask extends GroupGraphTask<AggregatePropert
 
     @Override
     protected void runInnerTask(final AggregateProperty element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
-        try (final DataSession session = getDbManager().createSession()) {
-            SQLSession sql = getDbManager().getThreadLocalSql();
+        try (final DataSession session = createSession()) {
             serviceLogger.info(String.format("Recalculate Aggregation started: %s", element.getSID()));
-            DBManager.run(sql, true, new DBManager.RunService() {
+            DBManager.run(session.sql, true, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
                     element.recalculateAggregation(getBL(), session, sql, getBL().LM.baseClass);
                 }
@@ -38,8 +37,8 @@ public class RecalculateAggregationsTask extends GroupGraphTask<AggregatePropert
     }
 
     @Override
-    protected Graph<AggregateProperty> getGraph(BusinessLogics BL) {
-        return BL.getRecalculateAggregateStoredGraph();
+    protected Graph<AggregateProperty> getGraph(DataSession session, BusinessLogics BL) throws SQLException, SQLHandledException {
+        return BL.getRecalculateAggregateStoredGraph(session);
     }
 
     @Override

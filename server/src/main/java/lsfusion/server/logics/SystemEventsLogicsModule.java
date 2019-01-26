@@ -11,6 +11,7 @@ import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -195,7 +196,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         String errorType = t.getClass().getName();
         String erTrace = replaceNonUTFCharacters(ExceptionUtils.getStackTraceString(t));
 
-        try (DataSession session = createSession()) {
+        try (DataSession session = ThreadLocalContext.createSession()) {
             DataObject exceptionObject;
             if (client) {
                 if (t instanceof RemoteServerException) {

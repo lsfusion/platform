@@ -156,6 +156,10 @@ public class ThreadLocalContext {
         return getLogicsInstance().getDbManager();
     }
 
+    public static DataSession createSession() throws SQLException {
+        return getDbManager().createSession();
+    }
+
     public static RMIManager getRmiManager() {
         return getLogicsInstance().getRmiManager();
     }

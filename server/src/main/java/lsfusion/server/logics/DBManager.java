@@ -17,6 +17,7 @@ import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -25,10 +26,11 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.FormInstance;
@@ -44,9 +46,9 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.session.ClassChange;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.SingleKeyTableUsage;
 import lsfusion.server.stack.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -106,8 +108,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private String dbNamingPolicy;
     private Integer dbMaxIdLength;
 
-    public boolean needExtraUpdateStats = false;
-
     private BaseLogicsModule LM;
 
     private ReflectionLogicsModule reflectionLM;
@@ -128,6 +128,356 @@ public class DBManager extends LogicsManager implements InitializingBean {
         super(DBMANAGER_ORDER);
 
         threadLocalSql = new ThreadLocal<>();
+    }
+
+    public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
+        try {
+            for (Map.Entry<NamedTable, Map<List<Field>, Boolean>> mapIndex : getIndicesMap().entrySet()) {
+                session.startTransaction(START_TIL, OperationOwner.unknown);
+                NamedTable table = mapIndex.getKey();
+                for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
+                    ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
+                    if (!getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
+                        session.addIndex(table, table.keys, fields, index.getValue(), BusinessLogics.sqlLogger);
+                }
+                session.addConstraint(table);
+                session.checkExtraIndices(getThreadLocalSql(), table, table.keys, BusinessLogics.sqlLogger);
+                session.commitTransaction();
+            }
+        } catch (Exception e) {
+            session.rollbackTransaction();
+            throw e;
+        }
+    }
+
+    public void firstRecalculateStats(DataSession session) throws SQLException, SQLHandledException {
+        if(reflectionLM.hasNotNullQuantity.read(session) == null) {
+            recalculateStats(session);
+            session.applyException(businessLogics, ThreadLocalContext.getStack());
+        }
+    }
+
+    private void recalculateClassStats(DataSession session, boolean log) throws SQLException, SQLHandledException {
+        for (ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
+            recalculateClassStat(LM, tableClasses, session, log);
+        }
+    }
+
+    private ImMap<Long, Integer> recalculateClassStat(BaseLogicsModule LM, ObjectValueClassSet tableClasses, DataSession session, boolean log) throws SQLException, SQLHandledException {
+        long start = System.currentTimeMillis();
+        if(log)
+            BaseUtils.serviceLogger.info(String.format("Recalculate Class Stats: %s", String.valueOf(tableClasses)));
+        QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
+
+        KeyExpr countKeyExpr = new KeyExpr("count");
+        Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
+                ValueExpr.COUNT, countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
+
+        classes.addProperty(0, countExpr);
+        classes.and(countExpr.getWhere());
+
+        ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+        ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
+        MExclMap<Long, Integer> mResult = MapFact.mExclMap(concreteChilds.size());
+        for (int i = 0, size = concreteChilds.size(); i < size; i++) {
+            ConcreteCustomClass customClass = concreteChilds.get(i);
+            ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
+            int statValue = classStat == null ? 1 : (Integer) classStat.singleValue();
+            mResult.exclAdd(customClass.ID, statValue);
+            LM.statCustomObjectClass.change(statValue, session, customClass.getClassObject());
+        }
+        long time = System.currentTimeMillis() - start;
+        if(log)
+            BaseUtils.serviceLogger.info(String.format("Recalculate Class Stats: %s, %sms", String.valueOf(tableClasses), time));
+        return mResult.immutable();
+    }
+
+    private void updateClassStats(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
+        if(useSIDs)
+            updateClassSIDStats(session);
+        else
+            updateClassStats(session);
+    }
+
+    private void updateClassStats(SQLSession session) throws SQLException, SQLHandledException {
+        ImMap<Long, Integer> customObjectClassMap = readClassStatsFromDB(session);
+
+        for(CustomClass customClass : LM.baseClass.getAllClasses()) {
+            if(customClass instanceof ConcreteCustomClass) {
+                ((ConcreteCustomClass) customClass).updateStat(customObjectClassMap);
+            }
+        }
+    }
+
+    private ImMap<Long, Integer> readClassStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
+        KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
+        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"key", customObjectClassExpr);
+
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
+
+        query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
+
+        MExclMap<Long, Integer> mCustomObjectClassMap = MapFact.mExclMap(result.size());
+        for (int i=0,size=result.size();i<size;i++) {
+            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
+            mCustomObjectClassMap.exclAdd((Long) result.getKey(i).get("key"), statCustomObjectClass);
+        }
+        return mCustomObjectClassMap.immutable();
+    }
+
+    private void updateClassSIDStats(SQLSession session) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> customSIDObjectClassMap = readClassSIDStatsFromDB(session);
+
+        for(CustomClass customClass : LM.baseClass.getAllClasses()) {
+            if(customClass instanceof ConcreteCustomClass) {
+                ((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap);
+            }
+        }
+    }
+
+    private ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
+        KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
+        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"key", customObjectClassExpr);
+
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
+        query.addProperty("staticName", LM.staticName.getExpr(customObjectClassExpr));
+
+        query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
+
+        MExclMap<String, Integer> mCustomObjectClassMap = MapFact.mExclMapMax(result.size());
+        for (int i=0,size=result.size();i<size;i++) {
+            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
+            String sID = (String)result.getValue(i).get("staticName");
+            if(sID != null)
+                mCustomObjectClassMap.exclAdd(sID.trim(), statCustomObjectClass);
+        }
+        return mCustomObjectClassMap.immutable();
+    }
+
+    public ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> result = updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
+        updateFullClassStats(sql, useSIDsForClasses);
+        if(SystemProperties.doNotCalculateStats)
+            return result;
+        return updateTableStats(sql, false);
+    }
+
+    private void updateFullClassStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
+        updateClassStats(sql, useSIDsForClasses);
+
+        adjustClassStats(sql);        
+    }
+    
+//    businessLogics.* -> *
+
+    private void adjustClassStats(SQLSession sql) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
+        ImMap<String, Integer> keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null);
+
+        MMap<CustomClass, Integer> mClassFullStats = MapFact.mMap(MapFact.<CustomClass>max());
+        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
+            dataTable.fillFullClassStat(tableStats, keyStats, mClassFullStats);
+        }
+        ImMap<CustomClass, Integer> classFullStats = mClassFullStats.immutable();
+
+        // правим статистику по классам
+        ImOrderMap<CustomClass, Integer> orderedClassFullStats = classFullStats.sort(BaseUtils.<Comparator<CustomClass>>immutableCast(ValueClass.comparator));// для детерминированности
+        for(int i=0,size=orderedClassFullStats.size();i<size;i++) {
+            CustomClass customClass = orderedClassFullStats.getKey(i);
+            int quantity = orderedClassFullStats.getValue(i);
+            ImOrderSet<ConcreteCustomClass> concreteChildren = customClass.getUpSet().getSetConcreteChildren().sortSet(BaseUtils.<Comparator<ConcreteCustomClass>>immutableCast(ValueClass.comparator));// для детерминированности
+            int childrenStat = 0;
+            for(ConcreteCustomClass child : concreteChildren) {
+                childrenStat += child.getCount();
+            }
+            quantity = quantity - childrenStat; // сколько дораспределить
+            for(ConcreteCustomClass child : concreteChildren) {
+                int count = child.getCount();
+                int newCount = (int)((long)quantity * (long)count / (long)childrenStat);
+                child.stat = count + newCount;
+                assert child.stat >= 0;
+                quantity -= newCount;
+                childrenStat -= count;
+            }
+        }
+    }
+
+    private ImMap<String, Integer> updateTableStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> tableStats;
+        ImMap<String, Integer> keyStats;
+        ImMap<String, Pair<Integer, Integer>> propStats;
+        if(statDefault) {
+            tableStats = MapFact.EMPTY();
+            keyStats = MapFact.EMPTY();
+            propStats = MapFact.EMPTY();
+        } else {
+            tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
+            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null);
+            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.overQuantityTableColumn, reflectionLM.notNullQuantityTableColumn);
+        }
+
+        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
+            dataTable.updateStat(tableStats, keyStats, propStats, null, statDefault);
+        }
+        return tableStats;
+    }
+
+    private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
+        QueryBuilder<String, String> query = new QueryBuilder<>(SetFact.toSet("key"));
+        Expr sidToObject = sIDProp.getExpr(query.getMapExprs().singleValue());
+        query.and(sidToObject.getWhere());
+        query.addProperty("property", statsProp.getExpr(sidToObject));
+        if(notNullProp!=null)
+            query.addProperty("notNull", notNullProp.getExpr(sidToObject));
+        return query.execute(sql, OperationOwner.unknown).getMap().mapKeyValues(new GetValue<String, ImMap<String, Object>>() {
+            public String getMapValue(ImMap<String, Object> key) {
+                return ((String) key.singleValue()).trim();
+            }}, new GetValue<V, ImMap<String, Object>>() {
+            public V getMapValue(ImMap<String, Object> value) {
+                if(notNullProp!=null) {
+                    return (V) new Pair<>((Integer) value.get("property"), (Integer) value.get("notNull"));
+                } else
+                    return (V)value.singleValue();
+            }});
+    }
+
+    public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
+        int count = 0;
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getNotRecalculateStatsTableSet(session));
+        for (ImplementTable dataTable : tables) {
+            count++;
+            long start = System.currentTimeMillis();
+            BaseUtils.serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
+            dataTable.recalculateStat(reflectionLM, session);
+            long time = System.currentTimeMillis() - start;
+            BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
+        }
+        recalculateClassStats(session, true);
+    }
+
+    public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
+        int count = 0;
+        MSet<Long> propertiesSet = businessLogics.getOverCalculatePropertiesSet(session, maxQuantityOverCalculate);
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
+        for (ImplementTable dataTable : tables) {
+            count++;
+            long start = System.currentTimeMillis();
+            if(dataTable.overCalculateStat(reflectionLM, session, propertiesSet,
+                    new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())))) {
+                long time = System.currentTimeMillis() - start;
+                BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
+            }
+        }
+    }
+
+    public String checkClasses(SQLSession session) throws SQLException, SQLHandledException {
+        String message = DataSession.checkClasses(session, LM.baseClass);
+        for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+            message += DataSession.checkTableClasses(implementTable, session, LM.baseClass, false); // так как снизу есть проверка классов
+        }
+        ImOrderSet<CalcProperty> storedDataProperties;
+        try(DataSession dataSession = createRecalculateSession(session)) {
+            storedDataProperties = businessLogics.getStoredDataProperties(dataSession);
+        }
+        for (CalcProperty property : storedDataProperties)
+            message += DataSession.checkClasses(property, session, LM.baseClass);
+        return message;
+    }
+
+    public void recalculateExclusiveness(final SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+        run(session, isolatedTransactions, new RunService() {
+            public void run(final SQLSession sql) throws SQLException, SQLHandledException {
+                DataSession.runExclusiveness(new DataSession.RunExclusiveness() {
+                    public void run(Query<String, String> query) throws SQLException, SQLHandledException {
+                        SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>("recexcl", ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
+                            public Type getType(String key) {
+                                return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
+                            }
+                        });
+
+                        table.writeRows(sql, query, LM.baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
+                        
+                        MExclMap<ConcreteCustomClass, MExclSet<String>> mRemoveClasses = MapFact.mExclMap();
+                        for(Object distinct : table.readDistinct("agg", sql, OperationOwner.unknown)) { // разновидности agg читаем
+                            String classes = (String)distinct;
+                            ConcreteCustomClass keepClass = null;
+                            for(String singleClass : classes.split(",")) {
+                                ConcreteCustomClass customClass = LM.baseClass.findConcreteClassID(Long.parseLong(singleClass));
+                                if(customClass != null) {
+                                    if(keepClass == null)
+                                        keepClass = customClass;
+                                    else {
+                                        ConcreteCustomClass removeClass;
+                                        if(keepClass.isChild(customClass)) {
+                                            removeClass = keepClass;
+                                            keepClass = customClass;
+                                        } else
+                                            removeClass = customClass;
+                                        
+                                        MExclSet<String> mRemoveStrings = mRemoveClasses.get(removeClass);
+                                        if(mRemoveStrings == null) {
+                                            mRemoveStrings = SetFact.mExclSet();
+                                            mRemoveClasses.exclAdd(removeClass, mRemoveStrings);
+                                        }
+                                        mRemoveStrings.exclAdd(classes);
+                                    }
+                                }
+                            }
+                        }
+                        ImMap<ConcreteCustomClass, ImSet<String>> removeClasses = MapFact.immutable(mRemoveClasses);
+
+                        for(int i=0,size=removeClasses.size();i<size;i++) {
+                            KeyExpr key = new KeyExpr("key");
+                            Expr aggExpr = table.join(key).getExpr("agg");
+                            Where where = Where.FALSE;
+                            for(String removeString : removeClasses.getValue(i))
+                                where = where.or(aggExpr.compare(new DataObject(removeString, StringClass.text), Compare.EQUALS));
+                            removeClasses.getKey(i).dataProperty.dropInconsistentClasses(session, LM.baseClass, key, where, OperationOwner.unknown);
+                        }                            
+                    }
+                }, sql, LM.baseClass);
+            }});
+    }
+
+    public String recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+        recalculateExclusiveness(session, isolatedTransactions);
+
+        final List<String> messageList = new ArrayList<>();
+        final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
+        for (final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+            run(session, isolatedTransactions, new RunService() {
+                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    long start = System.currentTimeMillis();
+                    DataSession.recalculateTableClasses(implementTable, sql, LM.baseClass);
+                    long time = System.currentTimeMillis() - start;
+                    String message = String.format("Recalculate Table Classes: %s, %sms", implementTable.toString(), time);
+                    BaseUtils.serviceLogger.info(message);
+                    if (time > maxRecalculateTime)
+                        messageList.add(message);
+                }
+            });
+        }
+
+        try(DataSession dataSession = createRecalculateSession(session)) {
+            for (final CalcProperty property : businessLogics.getStoredDataProperties(dataSession))
+                run(session, isolatedTransactions, new RunService() {
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        long start = System.currentTimeMillis();
+                        property.recalculateClasses(sql, LM.baseClass);
+                        long time = System.currentTimeMillis() - start;
+                        String message = String.format("Recalculate Class: %s, %sms", property.getSID(), time);
+                        BaseUtils.serviceLogger.info(message);
+                        if (time > maxRecalculateTime) messageList.add(message);
+                    }
+                });
+            return businessLogics.formatMessageList(messageList);
+        }
     }
 
     public String getDataBaseName() {
@@ -184,7 +534,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
-        businessLogics.updateStats(sql, false);
+        updateStats(sql, false);
     }
 
     public SQLSyntax getSyntax() {
@@ -308,14 +658,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return createSession((OperationOwner)null);
     }
 
+    public DataSession createRecalculateSession(SQLSession sql) throws SQLException { // when called from multi-thread recalculates
+        // I'm not sure that we don't have to use sql parameter, but with threadLocalSql it works just fine
+        return createSession();
+    }
+
+    @Deprecated
+    public DataSession createSession(SQLSession sql) throws SQLException {
+        return createSession(sql, (OperationOwner)null);
+    }
+
     public DataSession createSession(OperationOwner upOwner) throws SQLException {
         return createSession(getThreadLocalSql(), upOwner);
     }
-
-    public DataSession createSession(SQLSession sql) throws SQLException {
-        return createSession(sql, null);
-    }
-
+    
     public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
         return createSession(sql,
                 new UserController() {
@@ -449,16 +805,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public ObjectValue getFormObject(String canonicalName, ExecutionStack stack) {
-        return canonicalName == null ? NullValue.instance : new DataObject(getForm(canonicalName, stack), businessLogics.reflectionLM.form);
+        return canonicalName == null ? NullValue.instance : new DataObject(getForm(canonicalName, stack), reflectionLM.form);
     }
 
     public Long getForm(String canonicalName, ExecutionStack stack) {
         try {
             try (DataSession session = createSession(getSystemSql())) {
-                Long result = (Long) businessLogics.reflectionLM.formByCanonicalName.read(session, new DataObject(canonicalName));
+                Long result = (Long) reflectionLM.formByCanonicalName.read(session, new DataObject(canonicalName));
                 if (result == null) {
-                    DataObject addObject = session.addObject(businessLogics.reflectionLM.form);
-                    businessLogics.reflectionLM.formCanonicalName.change(canonicalName, session, addObject);
+                    DataObject addObject = session.addObject(reflectionLM.form);
+                    reflectionLM.formCanonicalName.change(canonicalName, session, addObject);
                     result = (Long) addObject.object;
                     apply(session, stack);
                 }
@@ -910,39 +1266,45 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger); // если таблица новая нет смысла логировать
                 }
 
-            startLogger.info("Filling static objects ids");
-            fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
+            try(DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
+                startLogger.info("Filling static objects ids");
+                LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, 
+                        getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
+                apply(session);
 
-            if (oldDBStructure.isEmpty()) {
-                startLogger.info("Recalculate class stats");
-                try(DataSession session = createSession(OperationOwner.unknown)) {
-                    businessLogics.recalculateClassStats(session, false);
+                if (oldDBStructure.isEmpty()) {
+                    startLogger.info("Recalculate class stats");
+                    recalculateClassStats(session, false);
                     apply(session);
                 }
+
+                startLogger.info("Updating stats");
+                ImMap<String, Integer> tableStats = updateStats(sql, false);  // пересчитаем статистику
+
+                for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
+                    newClass.ID = newClass.customClass.ID;
+                }
+
+                startLogger.info("Migrating reflection properties and actions");
+                migrateReflectionProperties(session, oldDBStructure);
+                newDBStructure.writeConcreteClasses(outDB);
+
+                try {
+                    sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(new RawFileData(outDBStruct), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
+                } catch (Exception e) {
+                    ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(RawFileData.EMPTY, ByteArrayClass.instance));
+                    sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
+                }
+
+                startLogger.info("Recalculating aggregations");
+                recalculateAggregations(session, getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
+                apply(session);
+                recalculateProperties.addAll(recalculateStatProperties);
+                updateAggregationStats(session, recalculateProperties, tableStats);
+
+                writeDroppedColumns(session, columnsToDrop);
+                apply(session);
             }
-
-            startLogger.info("Updating stats");
-            ImMap<String, Integer> tableStats = businessLogics.updateStats(sql, false);  // пересчитаем статистику
-
-            for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
-                newClass.ID = newClass.customClass.ID;
-            }
-
-            startLogger.info("Migrating reflection properties and actions");
-            migrateReflectionProperties(oldDBStructure);
-            newDBStructure.writeConcreteClasses(outDB);
-
-            try {
-                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(new RawFileData(outDBStruct), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
-            } catch (Exception e) {
-                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(RawFileData.EMPTY, ByteArrayClass.instance));
-                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
-            }
-
-            startLogger.info("Recalculating aggregations");
-            recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
-            recalculateProperties.addAll(recalculateStatProperties);
-            updateAggregationStats(recalculateProperties, tableStats);
 
             if(!noTransSyncDB)
                 sql.commitTransaction();
@@ -958,39 +1320,64 @@ public class DBManager extends LogicsManager implements InitializingBean {
             sql.popNoHandled();
         }
 
-        setDefaultUserLocalePreferences();
-        
+        // with apply outside transaction
         try (DataSession session = createSession()) {
-            for (String sid : columnsToDrop.keySet()) {
-                DataObject object = session.addObject(reflectionLM.dropColumn);
-                reflectionLM.sidDropColumn.change(sid, session, object);
-                reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
-                reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
-                reflectionLM.revisionDropColumn.change(getRevision(), session, object);
-            }
-            apply(session);
-        }
+            setDefaultUserLocalePreferences(session);
 
-        initSystemUser();
+            initSystemUser(session);
 
-        try (DataSession session = createSession()) {
-            String oldHashModules = (String) businessLogics.LM.findProperty("hashModules[]").read(session);
-            hashModules = calculateHashModules();
-            return checkHashModulesChanged(oldHashModules, hashModules);
+            return compareHashModules(session);
         }
     }
 
-    private void setDefaultUserLocalePreferences() throws SQLException, SQLHandledException {
-        try (DataSession session = createSession()) {
-            businessLogics.authenticationLM.defaultLanguage.change(defaultUserLanguage, session);
-            businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
-            businessLogics.authenticationLM.defaultTimeZone.change(defaultUserTimeZone, session);
-            businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultTwoDigitYearStart, session);
-            apply(session);
+    public void writeDroppedColumns(DataSession session, Map<String, String> columnsToDrop) throws SQLException, SQLHandledException {
+        for (String sid : columnsToDrop.keySet()) {
+            DataObject object = session.addObject(reflectionLM.dropColumn);
+            reflectionLM.sidDropColumn.change(sid, session, object);
+            reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
+            reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
+            reflectionLM.revisionDropColumn.change(getRevision(), session, object);
         }
+        apply(session);
     }
-    
-    private void updateAggregationStats(List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
+
+    public boolean compareHashModules(DataSession session) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        String oldHashModules = (String) LM.findProperty("hashModules[]").read(session);
+        hashModules = calculateHashModules();
+        return checkHashModulesChanged(oldHashModules, hashModules);
+    }
+
+    private void setDefaultUserLocalePreferences(DataSession session) throws SQLException, SQLHandledException {
+        businessLogics.authenticationLM.defaultLanguage.change(defaultUserLanguage, session);
+        businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
+        businessLogics.authenticationLM.defaultTimeZone.change(defaultUserTimeZone, session);
+        businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultTwoDigitYearStart, session);
+        apply(session);
+    }
+
+    private void initSystemUser(DataSession session) throws SQLException, SQLHandledException {
+        QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
+        query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
+        ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
+        if (rows.size() == 0) { // если нету добавим
+            systemUserObject = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
+            apply(session);
+        } else
+            systemUserObject = (Long) rows.single().get("key");
+
+        query = new QueryBuilder<>(SetFact.singleton("key"));
+        query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
+        rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
+        if (rows.size() == 0) { // если нету добавим
+            DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
+            systemComputer = (Long) computerObject.object;
+            businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
+            apply(session);
+        } else
+            systemComputer = (Long) rows.single().get("key");
+    }
+
+    private void updateAggregationStats(DataSession session, List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
         Map<ImplementTable, List<CalcProperty>> calcPropertiesMap; // статистика для новых свойств
         if (Settings.get().isGroupByTables()) {
             calcPropertiesMap = new HashMap<>();
@@ -1002,23 +1389,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 calcPropertiesMap.put(property.mapTable.table, entry);
             }
             for(Map.Entry<ImplementTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet())
-                recalculateAndUpdateStat(entry.getKey(), entry.getValue());
+                recalculateAndUpdateStat(session, entry.getKey(), entry.getValue());
         }
     }
 
-    public void recalculateAndUpdateClassStat(CustomClass customClass) throws SQLException, SQLHandledException {
-        for(ObjectValueClassSet set : customClass.getUpObjectClassFields().valueIt())
-            recalculateAndUpdateClassStat(set);        
-    }
-    public void recalculateAndUpdateClassStat(ObjectValueClassSet tableClasses) throws SQLException, SQLHandledException {
-        ImMap<Long, Integer> classStats;
-        try (DataSession session = createSession()) {
-            classStats = businessLogics.recalculateClassStat(tableClasses, session, true);
-        }
-        for(ConcreteCustomClass tableClass : tableClasses.getSetConcreteChildren())
-            tableClass.updateStat(classStats);
-    }
-    private void recalculateAndUpdateStat(ImplementTable table, List<CalcProperty> properties) throws SQLException, SQLHandledException {
+    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<CalcProperty> properties) throws SQLException, SQLHandledException {
         ImMap<PropertyField, String> fields = null;
         if(properties != null) {
             fields = SetFact.fromJavaOrderSet(properties).getSet().mapKeyValues(new GetValue<PropertyField, CalcProperty>() {
@@ -1031,36 +1406,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             });
         }
-        ImplementTable.CalcStat calculateStatResult;
-        try (DataSession session = createSession()) {
-            long start = System.currentTimeMillis();
-            startLogger.info(String.format("Update Aggregation Stats started: %s", table));
-            calculateStatResult = table.recalculateStat(reflectionLM, session, fields, false);
-            calculateStatResult = table.recalculateStat(reflectionLM, session, fields, true);
-            apply(session);
-            long time = System.currentTimeMillis() - start;
-            startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
-        }
+        long start = System.currentTimeMillis();
+        startLogger.info(String.format("Update Aggregation Stats started: %s", table));
+        
+        table.recalculateStat(reflectionLM, session, fields, false);
+        ImplementTable.CalcStat calculateStatResult = table.recalculateStat(reflectionLM, session, fields, true);
+        apply(session);
+        
+        long time = System.currentTimeMillis() - start;
+        startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
+            
         table.updateStat(MapFact.singleton(table.getName(), calculateStatResult.rows), calculateStatResult.keys, calculateStatResult.props, fields != null ? fields.keys() : null, false);
     }
 
-    public void writeModulesHash() {
-        try {
-            startLogger.info("Writing hashModules " + hashModules);
-            DataSession session = createSession();
-            businessLogics.LM.findProperty("hashModules[]").change(hashModules, session);
-            apply(session);
-            startLogger.info("Writing hashModules finished successfully");
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+    public void writeModulesHash(DataSession session) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        startLogger.info("Writing hashModules " + hashModules);
+        LM.findProperty("hashModules[]").change(hashModules, session);
+        apply(session);
+        startLogger.info("Writing hashModules finished successfully");
     }
 
-    private void migrateReflectionProperties(OldDBStructure oldDBStructure) {
-        migrateReflectionProperties(oldDBStructure, false);
-        migrateReflectionProperties(oldDBStructure, true);
+    private void migrateReflectionProperties(DataSession session, OldDBStructure oldDBStructure) {
+        migrateReflectionProperties(session, oldDBStructure, false);
+        migrateReflectionProperties(session, oldDBStructure, true);
     }
-    private void migrateReflectionProperties(OldDBStructure oldDBStructure, boolean actions) {
+    private void migrateReflectionProperties(DataSession session, OldDBStructure oldDBStructure, boolean actions) {
         DBVersion oldDBVersion = oldDBStructure.dbVersion;
         Map<String, String> nameChanges = getChangesAfter(oldDBVersion, actions ? actionCNChanges : propertyCNChanges);
         ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
@@ -1082,25 +1452,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             ImportTable table = new ImportTable(asList(oldCanonicalNameField, newCanonicalNameField), data);
 
-            try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
-                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties);
-                service.synchronize(false, false);
-                apply(session);
-            }
+            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties);
+            service.synchronize(false, false);
+            apply(session);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
-        try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
-            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
-            apply(session);
-        }
-    }
-
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
-        List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
+        List<AggregateProperty> checkProperties;
+        try(DataSession dataSession = createRecalculateSession(session)) {
+            checkProperties = businessLogics.getRecalculateAggregateStoredProperties(dataSession, false);
+        }
         String message = "";
         for (int i = 0; i < checkProperties.size(); i++) {
             CalcProperty property = checkProperties.get(i);
@@ -1165,7 +1529,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public String recalculateAggregations(ExecutionStack stack, SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        return recalculateAggregations(stack, session, businessLogics.getAggregateStoredProperties(false), isolatedTransaction, serviceLogger);
+        try(DataSession dataSession = createRecalculateSession(session)){
+            List<String> messageList = recalculateAggregations(dataSession, stack, session, businessLogics.getRecalculateAggregateStoredProperties(dataSession, false), isolatedTransaction, serviceLogger);
+            apply(dataSession, stack);
+            return businessLogics.formatMessageList(messageList);
+        }
     }
 
     public void ensureLogLevel() {
@@ -1216,21 +1584,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
-    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<? extends CalcProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
+    public List<String> recalculateAggregations(DataSession dataSession, ExecutionStack stack, SQLSession session, final List<? extends CalcProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         if(total > 0) {
-            try (DataSession dataSession = createSession()) {
-                for (int i = 0; i < recalculateProperties.size(); i++) {
-                    CalcProperty property = recalculateProperties.get(i);
-                    if(property instanceof AggregateProperty)
-                        recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(localize("{logics.recalculation.aggregations}"), i, total), messageList, maxRecalculateTime, (AggregateProperty) property, logger);
-                }
-                apply(dataSession, stack);
+            for (int i = 0; i < recalculateProperties.size(); i++) {
+                CalcProperty property = recalculateProperties.get(i);
+                if(property instanceof AggregateProperty)
+                    recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(localize("{logics.recalculation.aggregations}"), i, total), messageList, maxRecalculateTime, (AggregateProperty) property, logger);
             }
         }
-        return businessLogics.formatMessageList(messageList);
+        return messageList;
     }
 
     @StackProgress
@@ -1251,14 +1616,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void recalculateTableClasses(SQLSession session, String tableName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        for (ImplementTable table : businessLogics.LM.tableFactory.getImplementTables())
+        for (ImplementTable table : LM.tableFactory.getImplementTables())
             if (tableName.equals(table.getName())) {
                 runTableClassesRecalculation(session, table, isolatedTransaction);
             }
     }
 
     public String checkTableClasses(SQLSession session, String tableName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        for (ImplementTable table : businessLogics.LM.tableFactory.getImplementTables())
+        for (ImplementTable table : LM.tableFactory.getImplementTables())
             if (tableName.equals(table.getName())) {
                 return DataSession.checkTableClasses(table, session, LM.baseClass, true);
             }
@@ -1287,7 +1652,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
-        try(DataSession dataSession = createSession()) {
+        try(DataSession dataSession = createRecalculateSession(session)) {
             recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<CalcProperty>(), dependents);
             apply(dataSession, stack);
         }
@@ -1308,7 +1673,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         if (dependents) {
-            for (CalcProperty prop : businessLogics.getAggregateStoredProperties(true)) {
+            for (CalcProperty prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
                 if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, property)) {
                     boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
@@ -1318,23 +1683,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public Set<String> getNotRecalculateStatsTableSet() {
+    public Set<String> getNotRecalculateStatsTableSet(DataSession session) throws SQLException, SQLHandledException {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
         ImSet<String> notRecalculateStatsTableSet = SetFact.EMPTY();
-        try (final DataSession dataSession = createSession()) {
-            Expr expr = reflectionLM.notRecalculateStatsSID.getExpr(query.getMapExprs().singleValue());
-            query.and(expr.getWhere());
-            notRecalculateStatsTableSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
-                @Override
-                public String getMapValue(ImMap<String, Object> value) {
-                    return (String) value.singleValue();
-                }
-            });
-
-        } catch (SQLException | SQLHandledException e) {
-            serviceLogger.info(e.getMessage());
-        }
-        return notRecalculateStatsTableSet.toJavaSet();
+        Expr expr = reflectionLM.notRecalculateStatsSID.getExpr(query.getMapExprs().singleValue());
+        query.and(expr.getWhere());
+        return query.execute(session).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
+            @Override
+            public String getMapValue(ImMap<String, Object> value) {
+                return (String) value.singleValue();
+            }
+        }).toJavaSet();
     }
 
     private void checkModules(OldDBStructure dbStructure) {
@@ -1812,37 +2171,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return new HashMap<>();
     }
     
-    private void initSystemUser() {
-        // считаем системного пользователя
-        try {
-            try (DataSession session = createSession()) {
-
-                QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
-                query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
-                ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
-                if (rows.size() == 0) { // если нету добавим
-                    systemUserObject = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
-                    apply(session);
-                } else
-                    systemUserObject = (Long) rows.single().get("key");
-
-                query = new QueryBuilder<>(SetFact.singleton("key"));
-                query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
-                rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
-                if (rows.size() == 0) { // если нету добавим
-                    DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
-                    systemComputer = (Long) computerObject.object;
-                    businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
-                    apply(session);
-                } else
-                    systemComputer = (Long) rows.single().get("key");
-
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private class DBStoredProperty {
         private String dbName;
         private String canonicalName;

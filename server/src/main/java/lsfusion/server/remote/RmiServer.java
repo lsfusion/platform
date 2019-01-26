@@ -4,6 +4,9 @@ import lsfusion.interop.remote.RmiServerInterface;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.EventServer;
+import lsfusion.server.session.DataSession;
+
+import java.sql.SQLException;
 
 public abstract class RmiServer extends EventServer implements RmiServerInterface {
 
@@ -19,4 +22,8 @@ public abstract class RmiServer extends EventServer implements RmiServerInterfac
         super(order);
     }
 
+    protected DataSession createSession() throws SQLException {
+        ThreadLocalContext.assureRmi(this);
+        return super.createSession();
+    }
 }

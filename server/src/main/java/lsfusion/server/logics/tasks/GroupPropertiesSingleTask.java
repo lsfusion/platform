@@ -6,6 +6,7 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DBManager;
+import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
@@ -106,9 +107,5 @@ public abstract class GroupPropertiesSingleTask<T> extends GroupSingleTask<T> {
         for (String m : messages)
             message += '\n' + m;
         return message;
-    }
-
-    public DBManager getDbManager() {
-        return getBL().getDbManager();
     }
 }

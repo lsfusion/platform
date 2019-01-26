@@ -1,5 +1,6 @@
 package lsfusion.server.logics.tasks.impl.recalculate;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -24,6 +25,7 @@ import org.antlr.runtime.RecognitionException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { // ImplementTable, ObjectValueClassSet
 
@@ -34,7 +36,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
 
     @Override
     protected void runInnerTask(Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
-        try (DataSession session = getDbManager().createSession()) {
+        try (DataSession session = createSession()) {
             if (element instanceof ImplementTable) {
                 ((ImplementTable) element).recalculateStat(getBL().reflectionLM, session);
             } else if (element instanceof ObjectValueClassSet) {
@@ -63,7 +65,13 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     protected List<Object> getElements() {
         checkContext();
         List<Object> elements = new ArrayList<>();
-        elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getNotRecalculateStatsTableSet()).toJavaSet());
+        Set<String> notRecalculateStatsTableSet;
+        try(DataSession session = createSession()) {
+            notRecalculateStatsTableSet = getDbManager().getNotRecalculateStatsTableSet(session);
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+        elements.addAll(getBL().LM.tableFactory.getImplementTables(notRecalculateStatsTableSet).toJavaSet());
         elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());
         return elements;
     }
