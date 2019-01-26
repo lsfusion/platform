@@ -1,11 +1,13 @@
 package lsfusion.server.logics.tasks.impl.recalculate;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.session.DataSession;
@@ -36,10 +38,10 @@ public class OverCalculateStatsTask extends GroupPropertiesSingleTask<ImplementT
         try (DataSession session = createSession()) {
             Integer maxQuantity = (Integer) getBL().serviceLM.findProperty("maxQuantityOverCalculate[]").read(session);
             propertiesSet = getBL().getOverCalculatePropertiesSet(session, maxQuantity);
-        } catch (Exception e) {
-            propertiesSet = SetFact.mSet();
+            return getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableStatsTableSet(session)).toOrderSet().toJavaList();
+        } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
         }
-        return getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableStatsTableSet()).toOrderSet().toJavaList();
     }
 
     @Override

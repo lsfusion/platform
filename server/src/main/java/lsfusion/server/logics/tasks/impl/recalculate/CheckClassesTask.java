@@ -50,10 +50,10 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
         checkContext();
         List elements = new ArrayList();
         elements.add(1);
-        elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet()).toJavaSet());
         try(DataSession session = createSession()) {
+            elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet(session)).toJavaSet());
             elements.addAll(getBL().getStoredDataProperties(session).toJavaList());
-        } catch (SQLException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return elements;

@@ -73,12 +73,11 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         checkContext();
         List elements = new ArrayList();
         elements.add(1);
-        elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet()).toJavaSet());
-
         List<CalcProperty> storedDataPropertiesList;
         try(DataSession session = createSession()) {
+            elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet(session)).toJavaSet());
             storedDataPropertiesList = getBL().getStoredDataProperties(session).toJavaList();
-        } catch (SQLException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         if(groupByTables) {

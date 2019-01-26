@@ -351,12 +351,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
         int count = 0;
-        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getNotRecalculateStatsTableSet(session));
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDisableStatsTableSet(session));
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
             BaseUtils.serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
-            dataTable.recalculateStat(reflectionLM, session);
+            dataTable.recalculateStat(reflectionLM, getDisableStatsTableColumnSet(), session);
             long time = System.currentTimeMillis() - start;
             BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
         }
@@ -366,11 +366,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
         int count = 0;
         MSet<Long> propertiesSet = businessLogics.getOverCalculatePropertiesSet(session, maxQuantityOverCalculate);
-        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDisableStatsTableSet(session));
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            if(dataTable.overCalculateStat(reflectionLM, session, propertiesSet,
+            if(dataTable.overCalculateStat(reflectionLM, session, propertiesSet, getDisableStatsTableColumnSet(), 
                     new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())))) {
                 long time = System.currentTimeMillis() - start;
                 BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
@@ -1696,23 +1696,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }).toJavaSet();
     }
 
-    public Set<String> getDisableClassesTableSet() {
+    public Set<String> getDisableClassesTableSet(DataSession session) throws SQLException, SQLHandledException {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
         ImSet<String> disableClassesTableSet = SetFact.EMPTY();
-        try (final DataSession dataSession = createSession()) {
-            Expr expr = reflectionLM.disableClassesTableSID.getExpr(query.getMapExprs().singleValue());
-            query.and(expr.getWhere());
-            disableClassesTableSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
-                @Override
-                public String getMapValue(ImMap<String, Object> value) {
-                    return (String) value.singleValue();
-                }
-            });
-
-        } catch (SQLException | SQLHandledException e) {
-            serviceLogger.info(e.getMessage());
-        }
-        return disableClassesTableSet.toJavaSet();
+        Expr expr = reflectionLM.disableClassesTableSID.getExpr(query.getMapExprs().singleValue());
+        query.and(expr.getWhere());
+        return query.execute(session).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
+            @Override
+            public String getMapValue(ImMap<String, Object> value) {
+                return (String) value.singleValue();
+            }
+        }).toJavaSet();
     }
 
     public Set<String> getDisableStatsTableColumnSet() {
