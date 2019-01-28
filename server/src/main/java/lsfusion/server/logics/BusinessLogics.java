@@ -535,9 +535,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             try {                
                 sql.suppressErrorLogging = true;
 
-                //временное решение
+                // temp hack
                 try {
-                    getDbManager().updateStats(sql, true);
+                    getDbManager().updateReflectionStats(sql);
                 } catch (Exception ignored) {
                     startLogger.info("Error updating stats, while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
                     ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);

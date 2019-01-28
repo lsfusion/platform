@@ -260,7 +260,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    public ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
+    // temp hack
+    public ImMap<String, Integer> updateReflectionStats(SQLSession sql) throws SQLException, SQLHandledException {
+        assert LM == null && reflectionLM == null;
+        LM = businessLogics.LM;
+        reflectionLM = businessLogics.reflectionLM;
+        
+        try {
+            return updateStats(sql, true);
+        } finally {
+            LM = null;
+            reflectionLM = null;                    
+        }
+    }
+    
+    private ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
         ImMap<String, Integer> result = updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
         updateFullClassStats(sql, useSIDsForClasses);
         if(SystemProperties.doNotCalculateStats)
