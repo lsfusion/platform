@@ -45,7 +45,10 @@ import org.springframework.util.Assert;
 import javax.naming.CommunicationException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -277,14 +280,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    // web spring authentitification
-    public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
+    // web spring authentication
+    public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country, ExecutionStack stack) throws RemoteException {
         try(DataSession session = createSession()) {
-            User user = readAndAuthenticateUser(session, userName, password, getStack());
+            User user = readAndAuthenticateUser(session, userName, password, stack);
             DataObject userObject = user.getDataObject(businessLogics.authenticationLM.customUser, session);
 
             return new PreAuthentication(getUserRolesNames(userObject),
-                    RemoteNavigator.loadLocalePreferences(session, userObject, businessLogics, language, country, getStack()).getLocale());
+                    RemoteNavigator.loadLocalePreferences(session, userObject, businessLogics, language, country, stack).getLocale());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
