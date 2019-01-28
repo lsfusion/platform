@@ -12,6 +12,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -27,7 +28,7 @@ public class FileUtils {
         Path destPath = Path.parsePath(destinationPath);
 
         if(srcPath.type.equals("file") && destPath.type.equals("file")) {
-            org.apache.commons.io.FileUtils.moveFile(new File(srcPath.path), new File(destPath.path));
+            moveFile(new File(srcPath.path), new File(destPath.path));
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false, null);
             if (readResult != null) {
@@ -54,6 +55,26 @@ public class FileUtils {
                         deleteSFTPFile(srcPath.path);
                         break;
                 }
+            }
+        }
+    }
+
+    private static void moveFile(File srcFile, File destFile) throws IOException {
+        if (!srcFile.exists()) {
+            throw new FileNotFoundException("Source '" + srcFile + "' does not exist");
+        }
+        if (srcFile.isDirectory()) {
+            throw new IOException("Source '" + srcFile + "' is a directory");
+        }
+        if (destFile.isDirectory()) {
+            throw new IOException("Destination '" + destFile + "' is a directory");
+        }
+        boolean rename = srcFile.renameTo(destFile);
+        if (!rename) {
+            org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
+            if (!srcFile.delete()) {
+                org.apache.commons.io.FileUtils.deleteQuietly(destFile);
+                throw new IOException("Failed to delete original file '" + srcFile + "' after copy to '" + destFile + "'");
             }
         }
     }
