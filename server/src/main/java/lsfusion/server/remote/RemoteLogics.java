@@ -49,8 +49,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
-
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
     protected final static Logger logger = ServerLoggers.remoteLogger;
 
@@ -210,10 +208,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
     }
 
-    // web spring authentitification
+    // web spring authentication
     @Override
     public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
-        return securityManager.preAuthenticateUser(userName, password, language, country);
+        return securityManager.preAuthenticateUser(userName, password, language, country, getStack());
     }
 
     @Override
