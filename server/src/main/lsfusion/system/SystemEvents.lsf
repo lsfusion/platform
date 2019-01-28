@@ -51,9 +51,9 @@ revision '{system.events.revision.launch}'= DATA VARSTRING[10] (Launch);
 
 CLASS Connection '{system.events.connection}';
 
-CLASS ConnectionStatus 'Статус подключения' {
-    connectedConnection 'Подключён',
-    disconnectedConnection 'Отключён'
+CLASS ConnectionStatus '{system.events.connection.status}' {
+    connectedConnection '{system.events.connection.status.connected}',
+    disconnectedConnection '{system.events.connection.status.disconnected}'
 }
 TABLE connectionStatus (ConnectionStatus);
 

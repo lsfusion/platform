@@ -3,9 +3,9 @@ MODULE Scheduler;
 REQUIRE System, Reflection, Service;
 
 
-CLASS SchedulerStartType 'Отсчёт времени' {
-    afterStart 'От запуска предыдущего',
-    afterFinish 'От окончания предыдущего'
+CLASS SchedulerStartType '{scheduler.scheduler.start.type}' {
+    afterStart '{scheduler.scheduler.start.type.after.start}',
+    afterFinish '{scheduler.scheduler.start.type.after.finish}'
 }
 TABLE schedulerStartType(SchedulerStartType);
 

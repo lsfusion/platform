@@ -3,7 +3,7 @@ MODULE Profiler;
 REQUIRE Security, Service, Utils;
 
 CLASS ProfileObject {
-    top 'Базовое действие'
+    top '{profiler.profile.object.top}'
 }
 
 TABLE profileObject(ProfileObject); 
@@ -87,19 +87,19 @@ writeProfilerBatch ()  {
 
 //показатели
 CLASS ProfilerIndex {
-    callCount 'Количество вызовов',
-    totalTime 'Суммарное время выполнения (с ожиданием)',
-    totalTimeNoWait 'Суммарное время выполнения',
-    totalJavaTime 'Суммарное время выполнения Java',
-    totalSQLTime 'Суммарное время выполнения SQL',
-    inherentTimeNoWait 'Внутреннее время выполнения',
-    inherentJavaTime 'Внутреннее время выполнения Java',
-    inherentSQLTime 'Внутреннее время выполнения SQL',
-    totalUserInteractionTime 'Суммарное время ожидания действия пользователя',
-    minTime 'Минимальное время выполнения',
-    maxTime 'Максимальное время выполнения',
-    averageTime 'Среднее время выполнения',
-    averageSquaredTime 'Среднее квадратичное времени выполнения'
+    callCount '{profiler.call.count}',
+    totalTime '{profiler.profiler.index.total.time}',
+    totalTimeNoWait '{profiler.profiler.index.total.time.no.wait}',
+    totalJavaTime '{profiler.profiler.index.total.java.time}',
+    totalSQLTime '{profiler.total.sql.time}',
+    inherentTimeNoWait '{profiler.profiler.index.inherent.time.no.wait}',
+    inherentJavaTime '{profiler.profiler.index.inherent.java.time}',
+    inherentSQLTime '{profiler.profiler.index.inherent.sql.time}',
+    totalUserInteractionTime '{profiler.total.user.interaction.time}',
+    minTime '{profiler.min.time}',
+    maxTime '{profiler.max.time}',
+    averageTime '{profiler.profiler.index.average.time}',
+    averageSquaredTime '{profiler.profiler.index.average.squared.time}'
 }
 
 FORM profilerIndex '{profiler.profiler.index}'

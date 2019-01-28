@@ -35,10 +35,10 @@ value '{word.value.template.entry}' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 
 //Deprecated
 isTable '{word.is.table.template.entry}' = DATA BOOLEAN(TemplateEntry);
 
-CLASS Type 'Тип строки шаблона' {
-   plain 'Плоский',
-   table 'Таблица',
-   list 'Список'
+CLASS Type '{word.type}' {
+   plain '{word.type.plain}',
+   table '{word.type.table}',
+   list '{word.type.list}'
 }
 TABLE type (Type);
 name '{word.name.type}' (Type o) = staticCaption(o) IF o IS Type CHARWIDTH 8;

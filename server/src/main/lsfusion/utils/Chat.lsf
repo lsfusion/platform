@@ -23,9 +23,9 @@ nameOrLogin '{chat.name.or.login.user}' (CustomUser user) = OVERRIDE name(user),
 name '{chat.name}' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN '{chat.name.role}: ' + Security.name(chat) ELSE (GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()))) CHARWIDTH 15;
 
 CLASS MessageStatus {
-    sent 'Отправлено',
-    delivered 'Доставлено',
-    seen 'Прочитано'
+    sent '{chat.message.status.sent}',
+    delivered '{chat.message.status.delivered}',
+    seen '{chat.message.status.seen}'
 }
 
 CLASS Message '{chat.message}';
