@@ -1,6 +1,7 @@
 package lsfusion.http;
 
 import com.google.common.io.ByteStreams;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -30,7 +31,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
             mimeMap = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
         }
         response.setContentType(mimeMap.getContentType(file));
-        response.addHeader("Content-Disposition", "inline; filename=" + (displayName != null ? displayName : fileName));
+        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(displayName != null ? displayName : fileName));
         ByteStreams.copy(fis, response.getOutputStream());
         fis.close();
         file.delete();
