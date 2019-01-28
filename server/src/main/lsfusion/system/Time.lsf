@@ -64,19 +64,19 @@ sumWeekTo (DATE date, INTEGER int) = sum(date, int * 7 + 6) IF date IS DATE AND 
 
 // --------------------------------- Месяца ------------------------ //
 
-CLASS Month 'Месяц' {
-    january 'Январь',
-    february 'Февраль',
-    march 'Март',
-    april 'Апрель',
-    may 'Май',
-    june 'Июнь',
-    july 'Июль',
-    august 'Август',
-    september 'Сентябрь',
-    october 'Октябрь',
-    november 'Ноябрь',
-    december 'Декабрь'
+CLASS Month '{time.month}' {
+    january '{time.month.january}',
+    february '{time.month.february}',
+    march '{time.month.march}',
+    april '{time.month.april}',
+    may '{time.month.may}',
+    june '{time.month.june}',
+    july '{time.month.july}',
+    august '{time.month.august}',
+    september '{time.month.september}',
+    october '{time.month.october}',
+    november '{time.month.november}',
+    december '{time.month.december}'
 }
 
 TABLE month (Month);
@@ -114,14 +114,14 @@ FORM months '{time.form.months}'
 
 // --------------------------------- Дни недели ------------------------ //
 
-CLASS DOW 'День недели' {
-    sunday 'Воскресенье',
-    monday 'Понедельник',
-    tuesday 'Вторник',
-    wednesday 'Среда',
-    thursday 'Четверг',
-    friday 'Пятница',
-    saturday 'Суббота'
+CLASS DOW '{time.dow}' {
+    sunday '{time.dow.sunday}',
+    monday '{time.dow.monday}',
+    tuesday '{time.dow.tuesday}',
+    wednesday '{time.dow.wednesday}',
+    thursday '{time.dow.thursday}',
+    friday '{time.dow.friday}',
+    saturday '{time.dow.saturday}'
 }
 TABLE dow (DOW);
 

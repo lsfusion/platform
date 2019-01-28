@@ -2,11 +2,11 @@ MODULE ProcessMonitor;
 
 REQUIRE Authentication, Utils, Time;
 
-CLASS ProcessType 'Фильтр процессов' {
-    all 'Все',
-    activeAll 'Все активные',
-    activeSQL 'Активные (SQL)',
-    activeJava 'Активные (Java)'
+CLASS ProcessType '{process.monitor.process.type}' {
+    all '{process.monitor.process.type.all}',
+    activeAll '{process.monitor.process.type.active.all}',
+    activeSQL '{process.monitor.process.type.active.sql}',
+    activeJava '{process.monitor.process.type.active.java}'
 }
 
 FORM processTypes '{process.monitor.process.types}'

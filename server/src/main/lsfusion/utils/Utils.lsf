@@ -221,9 +221,9 @@ xmlFile = DATA LOCAL XMLFILE();
 tableFile = DATA LOCAL TABLEFILE();
 
 // --------------------------------------------- Yes/No --------------------------------- //
-CLASS YesNo 'Логическое' {
-    yes 'ДА',
-    no 'НЕТ'
+CLASS YesNo '{utils.yes.no}' {
+    yes '{utils.yes.no.yes}',
+    no '{utils.yes.no.no}'
 }
 TABLE yesNo(YesNo);
 

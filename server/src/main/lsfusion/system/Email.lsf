@@ -4,9 +4,9 @@ REQUIRE System, Reflection;
 
 GROUP email '{email.group.email}' : public;   //rootGroup
 
-CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подключения' {
-    SSL 'SSL',
-    TLS 'TLS'
+CLASS EncryptedConnectionTypeStatus '{email.encrypted.connection.type.status}' {
+    SSL '{email.encrypted.connection.type.status.ssl}',
+    TLS '{email.encrypted.connection.type.status.tls}'
 }
 TABLE encryptedConnectionTypeStatus(EncryptedConnectionTypeStatus);
 
@@ -16,9 +16,9 @@ FORM encryptedConnectionTypeStatuses
     LIST EncryptedConnectionTypeStatus OBJECT s
 ;
 
-CLASS ReceiveAccountType 'Тип учётной записи' {
-    POP3 'POP3',
-    IMAP 'IMAP'
+CLASS ReceiveAccountType '{email.receive.account.type}' {
+    POP3 '{email.receive.account.type.pop3}',
+    IMAP '{email.receive.account.type.imap}'
 }
 TABLE receiveAccountType(ReceiveAccountType);
 
