@@ -30,6 +30,8 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     private final ClientFormController form;
     private final boolean plainTreeMode;
 
+    public boolean synchronize;
+
     public GroupTreeTableModel(ClientFormController form, boolean plainTreeMode) {
         super();
         this.form = form;
@@ -200,9 +202,11 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         }
 
         Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> childTree = BaseUtils.groupList(parentTree);
+        synchronize = true;
         for (TreeGroupNode groupNode : getGroupNodes(group.getUpTreeGroup())) {
             synchronize(groupNode, group, childTree, expandables);
         }
+        synchronize = false;
     }
 
     void synchronize(TreeGroupNode parent,
