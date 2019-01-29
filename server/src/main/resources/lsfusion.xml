@@ -759,8 +759,12 @@
         </property>
     </bean>
 
-    <!-- Список базовых LifecycleListener'ов -->
+    <!-- the real order is defined by method getOrder in LifecycleListener -->
     <util:list id="coreLifecycleListeners">
+        <ref bean="businessLogics"/>
+        <ref bean="securityManager"/>
+        <ref bean="dbManager"/>
+        <ref bean="navigatorsManager"/>
         <ref bean="rmiManager"/>
         <ref bean="remoteLogics"/>
         <ref bean="remoteLogicsLoader"/>
@@ -770,7 +774,6 @@
         <ref bean="externalHttpServer"/>
     </util:list>
 
-    <!-- Список для задания дополнительных LifecycleListener'ов -->
     <util:list id="customLifecycleListeners"/>
 
     <bean id="businessLogics" class="lsfusion.server.logics.scripted.ScriptingBusinessLogics">

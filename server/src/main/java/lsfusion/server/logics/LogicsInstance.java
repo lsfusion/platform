@@ -161,16 +161,6 @@ public class LogicsInstance implements InitializingBean {
         Assert.notNull(securityManager, "securityManager must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
         Assert.notNull(settings, "settings must be specified");
-
-        //rmiManager можно не проставлять, если не нужен ремоутинг, тогда при любом обращении к нему просто упадёт NPE
-//        Assert.notNull(rmiManager, "dbManager must be specified");
-
-        if (lifecycle == null) {
-            lifecycle = new LifecycleManager();
-        }
-
-        //add default lifecycle listeners
-        lifecycle.addLifecycleListeners(businessLogics, securityManager, dbManager, navigatorsManager);
     }
 
     public void start() {
