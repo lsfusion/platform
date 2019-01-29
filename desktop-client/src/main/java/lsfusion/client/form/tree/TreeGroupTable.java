@@ -218,7 +218,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (synchronize) {
+                if (synchronize || model.synchronize) {
                     return;
                 }
 
