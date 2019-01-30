@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.QueryEnvironment;
@@ -48,6 +49,14 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
 
     public Object read(ExecutionEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
         return property.read(env, getMapValues(objects));
+    }
+
+    public ImMap<ImList<Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return property.readAll(env).mapKeys(new GetValue<ImList<Object>, ImMap<T, Object>>() {
+            public ImList<Object> getMapValue(ImMap<T, Object> value) {
+                return listInterfaces.mapList(value);
+            }
+        });
     }
 
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {

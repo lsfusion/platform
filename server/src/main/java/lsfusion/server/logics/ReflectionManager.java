@@ -101,7 +101,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public Long getServerComputer() {
-        return dbManager.getComputer(SystemUtils.getLocalHostName(), getStack());
+        return dbManager.getServerComputer(getStack());
     }
     
     private DataSession createSession() throws SQLException {

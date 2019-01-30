@@ -781,8 +781,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public Long getServerComputer(ExecutionStack stack) {
+        return getComputer(SystemUtils.getLocalHostName(), stack);
+    }
     public DataObject getServerComputerObject(ExecutionStack stack) {
-        return new DataObject(getComputer(SystemUtils.getLocalHostName(), stack), businessLogics.authenticationLM.computer);
+        return new DataObject(getServerComputer(stack), businessLogics.authenticationLM.computer);
     }
 
     public Long getComputer(String strHostName, ExecutionStack stack) {

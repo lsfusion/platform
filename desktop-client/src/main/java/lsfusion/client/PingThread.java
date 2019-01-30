@@ -56,13 +56,6 @@ public class PingThread extends Thread {
 
     public void run() {
 
-        Long computerId;
-        try {
-            computerId = Main.remoteLogics.getComputer(SystemUtils.getLocalHostName());
-        } catch (RemoteException e) {
-            computerId = null;
-        }
-
         while (true) {
             if (abandoned.get() || ConnectionLostManager.isConnectionLost()) {
                 return;
@@ -138,8 +131,8 @@ public class PingThread extends Thread {
                 if(globalCounter == sendInterval) {
                     try {
                         lastTimeFrom = currentTime;
-                        if(Main.remoteLogics != null && computerId != null)
-                            Main.remoteLogics.sendPingInfo(computerId, pingInfoMap);
+                        if(Main.remoteLogics != null && Main.computerId != null)
+                            Main.remoteLogics.sendPingInfo(Main.computerId, pingInfoMap);
                         pingInfoMap.clear();
                         globalCounter = 0;
                     } catch (RemoteException e) {
