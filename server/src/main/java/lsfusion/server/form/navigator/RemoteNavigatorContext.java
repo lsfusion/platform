@@ -5,7 +5,6 @@ import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.logics.DataObject;
@@ -52,8 +51,8 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator;
     }
 
-    public PropertyObjectInterfaceInstance getComputer(ExecutionStack stack) {
-        return navigator.getComputer();
+    public Long getCurrentComputer() {
+        return (Long) navigator.getComputer().object;
     }
 
     public Long getCurrentUser() {

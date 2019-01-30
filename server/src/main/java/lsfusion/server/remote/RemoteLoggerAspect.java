@@ -5,7 +5,11 @@ import lsfusion.base.col.MapFact;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.context.Context;
+import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.navigator.RemoteNavigator;
+import lsfusion.server.logics.DataObject;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -29,17 +33,10 @@ public class RemoteLoggerAspect {
         //final long id = Thread.currentThread().getId();
         //putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         //try {
-            Long user;
-            Long computer = null;
-            if (target instanceof RemoteLogics) {
-                user = ((RemoteLogics) target).getCurrentUser();
-                computer = ((RemoteLogics) target).getCurrentComputer();
-            } else if (target instanceof RemoteForm) {
-                user = ((RemoteForm) target).getCurrentUser();
-            } else {
-                user = (Long) ((RemoteNavigator) target).getUser().object;
-                computer = (Long) ((RemoteNavigator) target).getComputer().object;
-            }
+            ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) target;
+            Context context = remoteObject.getContext();
+            assert context == ThreadLocalContext.get();
+
             long startTime = System.currentTimeMillis();
             Object result = thisJoinPoint.proceed();
             long runTime = System.currentTimeMillis() - startTime;
@@ -47,6 +44,8 @@ public class RemoteLoggerAspect {
             if(result instanceof ServerResponse)
                 ((ServerResponse)result).timeSpent = runTime;
 
+            Long user = context.getCurrentUser();
+            Long computer = context.getCurrentComputer();
             userActivityMap.put(user, new UserActivity(computer, startTime));
 
             boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);

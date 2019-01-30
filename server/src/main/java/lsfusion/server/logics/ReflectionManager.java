@@ -2,8 +2,6 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.SystemUtils;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -100,10 +98,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public Long getServerComputer() {
-        return dbManager.getServerComputer(getStack());
-    }
-    
     private DataSession createSession() throws SQLException {
         return dbManager.createSession();
     }
@@ -808,7 +802,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         try {
             try (DataSession session = createSession()) {
                 DataObject newLaunch = session.addObject(systemEventsLM.launch);
-                systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
+                systemEventsLM.computerLaunch.change(dbManager.getServerComputer(), session, newLaunch);
                 systemEventsLM.timeLaunch.change(timeLM.currentDateTime.readClasses(session), session, newLaunch);
                 systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
                 systemEventsLM.currentLaunch.change(newLaunch, session);

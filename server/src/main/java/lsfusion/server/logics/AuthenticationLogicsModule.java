@@ -61,6 +61,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP currentUserAllowExcessAllocatedBytes;
 
     public LCP hostnameComputer;
+    public LCP computerHostname;
     public LCP scannerComPortComputer;
     public LCP scannerSingleReadComputer;
     public LCP useDiscountCardReaderComputer;
@@ -130,6 +131,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         // Компьютер
         hostnameComputer = findProperty("hostname[Computer]");
+        computerHostname = findProperty("computer[VARISTRING[100]]");
         scannerComPortComputer = findProperty("scannerComPort[Computer]");
         scannerSingleReadComputer = findProperty("scannerSingleRead[Computer]");
         useDiscountCardReaderComputer = findProperty("useDiscountCardReader[Computer]");

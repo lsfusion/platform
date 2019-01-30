@@ -5,7 +5,6 @@ import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
@@ -65,17 +64,17 @@ public class RemoteFormContext<F extends FormInstance> extends AbstractContext {
         return form.form.getClassListener();
     }
 
-    public PropertyObjectInterfaceInstance getComputer(ExecutionStack stack) {
-        return form.form.instanceFactory.computer;
+    public Long getCurrentComputer() {
+        return form.form.session.sql.contextProvider.getCurrentComputer();
     }
 
     public Long getCurrentUser() {
-        return form.getCurrentUser();
+        return form.form.session.sql.contextProvider.getCurrentUser();
     }
 
     @Override
     public Long getCurrentUserRole() {
-        return form.getCurrentUserRole();
+        return form.form.session.user.getCurrentUserRole();
     }
 
     public DataObject getConnection() {

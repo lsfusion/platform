@@ -14,7 +14,7 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.navigator.SQLSessionUserProvider;
+import lsfusion.server.form.navigator.SQLSessionContextProvider;
 import lsfusion.server.session.DataSession;
 
 public class ModifyQuery {
@@ -38,7 +38,7 @@ public class ModifyQuery {
         this.owner = owner;
     }
 
-    public SQLExecute getUpdate(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
+    public SQLExecute getUpdate(final SQLSyntax syntax, SQLSessionContextProvider userProvider) {
 
         assert !change.getProperties().isEmpty();
         
@@ -115,7 +115,7 @@ public class ModifyQuery {
         return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.UPDATE), new SQLDebugInfo<>(change, options));
     }
 
-    public SQLExecute getDelete(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
+    public SQLExecute getDelete(final SQLSyntax syntax, SQLSessionContextProvider userProvider) {
 
         int updateModel = syntax.updateModel();
         // noInline'ом пытаемся предотвратить self join у которого все очень плохо со статистикой
@@ -161,7 +161,7 @@ public class ModifyQuery {
     }
 
 
-    public SQLExecute getInsertLeftKeys(SQLSyntax syntax, SQLSessionUserProvider userProvider, boolean updateProps, boolean insertOnlyNotNull) {
+    public SQLExecute getInsertLeftKeys(SQLSyntax syntax, SQLSessionContextProvider userProvider, boolean updateProps, boolean insertOnlyNotNull) {
         return (new ModifyQuery(table, getInsertLeftQuery(updateProps, insertOnlyNotNull), env, owner)).getInsertSelect(syntax, userProvider);
     }
 
@@ -187,11 +187,11 @@ public class ModifyQuery {
         return leftKeysQuery.getQuery();
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table, RegisterChange change) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, Table table, RegisterChange change) {
         return getInsertSelect(name, query, env, owner, syntax, userProvider, table, change, 0);
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table, RegisterChange change, int selectTop) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, Table table, RegisterChange change, int selectTop) {
         CompileOptions<PropertyField> options = new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, selectTop);
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(options);
 
@@ -199,7 +199,7 @@ public class ModifyQuery {
         return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change, new SQLDebugInfo<>(query, options));
     }
 
-    public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionUserProvider userProvider) {
+    public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionContextProvider userProvider) {
         return getInsertSelect(table.getName(syntax), change, env, owner, syntax, userProvider, table, register(TableChange.INSERT));
     }
 

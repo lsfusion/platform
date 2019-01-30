@@ -1025,18 +1025,6 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return callAndCacheResult(requestIndex, lastReceivedRequestIndex, continueRequest);
     }
 
-    public Long getCurrentUser() {
-        return (Long) form.session.user.getCurrentUser().getValue();
-    }
-
-    public Long getCurrentUserRole() {
-        return form.session.user.getCurrentUserRole();
-    }
-
-    public Long getCurrentComputer() {
-        return (Long) form.session.computer.getCurrentComputer().getValue();
-    }
-
     public LogInfo getLogInfo() {
         return form.getLogInfo();
     }

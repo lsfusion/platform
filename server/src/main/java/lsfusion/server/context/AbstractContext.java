@@ -19,7 +19,6 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.filter.ContextFilter;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.logics.DataObject;
@@ -276,8 +275,8 @@ public abstract class AbstractContext implements Context {
 
     public abstract CustomClassListener getClassListener();
 
-    public abstract PropertyObjectInterfaceInstance getComputer(ExecutionStack stack);
-
+    // used in global context (when there is no sql / data session), otherwise use SQLSession.contextProvider
+    public abstract Long getCurrentComputer();
     public abstract Long getCurrentUser();
 
     public abstract Long getCurrentUserRole();
@@ -297,7 +296,7 @@ public abstract class AbstractContext implements Context {
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
-                getComputer(stack), getConnection(), mapObjects, stack, isModal,
+                getConnection(), mapObjects, stack, isModal,
                 noCancel, manageSession,
                 checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly, getLocale());
     }

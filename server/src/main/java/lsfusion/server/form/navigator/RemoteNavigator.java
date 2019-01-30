@@ -130,7 +130,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         this.currentForm = NullValue.instance;
 
         this.remoteAddress = navigatorInfo.remoteAddress;
-        this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
+        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
 
         try(DataSession session = createSession()) {
             String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
@@ -314,11 +314,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
             return remoteNavigator != null && remoteNavigator.changeCurrentUser(user, stack);
         }
 
-        public ObjectValue getCurrentUser() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? NullValue.instance : remoteNavigator.user;
-        }
-
         public Long getCurrentUserRole() {
             RemoteNavigator remoteNavigator = weakThis.get();
             return remoteNavigator == null ? null : remoteNavigator.userRole;
@@ -346,11 +341,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
         private WeakComputerController(RemoteNavigator navigator) {
             this.weakThis = new WeakReference<>(navigator);
-        }
-
-        public ObjectValue getCurrentComputer() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? NullValue.instance : remoteNavigator.computer;
         }
 
         public boolean isFullClient() {
@@ -406,10 +396,10 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
     }
 
-    private static class WeakSQLSessionUserProvider implements SQLSessionUserProvider { // чтобы помочь сборщику мусора и устранить цикл
+    private static class WeakSQLSessionContextProvider implements SQLSessionContextProvider { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<RemoteNavigator> weakThis;
 
-        private WeakSQLSessionUserProvider(RemoteNavigator dbManager) {
+        private WeakSQLSessionContextProvider(RemoteNavigator dbManager) {
             this.weakThis = new WeakReference<>(dbManager);
         }
 

@@ -40,7 +40,7 @@ import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.CheckWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.form.navigator.SQLSessionUserProvider;
+import lsfusion.server.form.navigator.SQLSessionContextProvider;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.utils.DebugInfoWriter;
 import lsfusion.utils.StringDebugInfoWriter;
@@ -64,7 +64,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     
     public final String debugInfo;
 
-    private TypeExecuteEnvironment getTypeExecEnv(SQLSessionUserProvider userProvider) {
+    private TypeExecuteEnvironment getTypeExecEnv(SQLSessionContextProvider userProvider) {
         if(sql.getLength() <= Settings.get().getQueryLengthTimeout())
             return TypeExecuteEnvironment.NONE;
 
@@ -79,7 +79,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     // тут немного специфичная оптимизация на уменьшения locks, с учетом того что почти у всех пользователей всегда будут одни и те же env'ы
-    public DynamicExecuteEnvironment getQueryExecEnv(SQLSessionUserProvider userProvider) {
+    public DynamicExecuteEnvironment getQueryExecEnv(SQLSessionContextProvider userProvider) {
         TypeExecuteEnvironment typeEnv = getTypeExecEnv(userProvider);
         TypeExecuteEnvironment queryType = queryExecEnv.getType();
         if(queryType == null || queryType.equals(typeEnv))
@@ -1992,15 +1992,15 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public void execute(SQLSession session, QueryEnvironment queryEnv, int limit, ResultHandler<K, V> resultHandler) throws SQLException, SQLHandledException {
-        session.executeSelect(sql, getQueryExecEnv(session.userProvider), queryEnv.getOpOwner(), getQueryParams(queryEnv, limit), queryEnv.getTransactTimeout(), keyNames, propertyNames, resultHandler);
+        session.executeSelect(sql, getQueryExecEnv(session.contextProvider), queryEnv.getOpOwner(), getQueryParams(queryEnv, limit), queryEnv.getTransactTimeout(), keyNames, propertyNames, resultHandler);
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env, boolean uniqueViolation) throws SQLException, SQLHandledException {
-        sql.outSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), uniqueViolation, env.getOpOwner());
+        sql.outSelect(keyNames, propertyNames, session, getQueryExecEnv(session.contextProvider), null, getQueryParams(env), env.getTransactTimeout(), uniqueViolation, env.getOpOwner());
     }
 
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return sql.readSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), false, env.getOpOwner());
+        return sql.readSelect(keyNames, propertyNames, session, getQueryExecEnv(session.contextProvider), null, getQueryParams(env), env.getTransactTimeout(), false, env.getOpOwner());
     }
 }
 

@@ -8,6 +8,7 @@ CLASS Computer '{authentication.computer}';
 TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA VARISTRING[100] (Computer) IN id;
+computer = GROUP LAST Computer computer BY hostname(computer);
 
 // Сканер
 scannerComPort 'Com-port сканнера' = DATA INTEGER (Computer);

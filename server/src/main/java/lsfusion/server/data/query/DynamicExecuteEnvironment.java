@@ -4,7 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.*;
 import lsfusion.server.data.type.ParseInterface;
-import lsfusion.server.form.navigator.SQLSessionUserProvider;
+import lsfusion.server.form.navigator.SQLSessionContextProvider;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -146,7 +146,7 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
             userExecEnvs.put(user, type);
     }
 
-    public static Integer getUserExecEnv(SQLSessionUserProvider userProvider) {
+    public static Integer getUserExecEnv(SQLSessionContextProvider userProvider) {
         Long currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return null;

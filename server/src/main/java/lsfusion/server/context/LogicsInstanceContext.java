@@ -3,7 +3,6 @@ package lsfusion.server.context;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
@@ -43,12 +42,12 @@ public class LogicsInstanceContext extends AbstractContext {
         return null;
     }
 
-    public PropertyObjectInterfaceInstance getComputer(ExecutionStack stack) {
-        return logicsInstance.getDbManager().getServerComputerObject(stack);
+    public Long getCurrentComputer() {
+        return logicsInstance.getDbManager().getServerComputer();
     }
 
     public Long getCurrentUser() {
-        return logicsInstance.getDbManager().getSystemUserObject();
+        return logicsInstance.getDbManager().getSystemUser();
     }
 
     @Override
