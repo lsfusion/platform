@@ -9,11 +9,12 @@
     <!-- - - - - - - - - - - BASIC SETTINGS - - - - - - - - - - - - - - - - -->
     <set-configuration-property name="UiBinder.useSafeHtmlTemplates" value="true" />
 
-    <extend-property name="locale" values="en,ru"/>
-    <set-property-fallback name="locale" value="ru"/>
+    <!-- to be able to get browser locale on the server side (LSFRemoteAuthenticationProvider) -->
+    <set-configuration-property name="locale.useragent" value="Y"/>
 
-    <!-- убираем дефолтную локаль -->
-    <set-property name="locale" value="en,ru"/>
+    <extend-property name="locale" values="ru"/>
+
+    <set-configuration-property name="locale.cookie" value="LSFUSION_LOCALE"/>
 
     <!-- note:
          Раскомментить при разработке для быстрой компиляции.
@@ -22,8 +23,6 @@
     <!--<set-property name="user.agent" value="safari" />-->
     <!--<set-property name="user.agent" value="gecko1_8" />-->
     <!--<set-property name="locale" value="ru" />-->
-
-    <set-configuration-property name="locale.cookie" value="LSFUSION_LOCALE" />
 
     <!-- выключить обфускацию стилей -->
     <!--<set-configuration-property name="CssResource.style" value="pretty" />-->

@@ -1,9 +1,4 @@
-<%@ page import="lsfusion.base.ServerUtils" %>
-<%@ page import="java.util.ResourceBundle" %>
-
-<%
-    ResourceBundle RB = ResourceBundle.getBundle("ServerMessages", ServerUtils.getLocale(request));
-%>
+<%@ page import="lsfusion.base.ServerMessages" %>
 
 <!DOCTYPE html>
 
@@ -63,7 +58,7 @@
                 <div class="loadingIndicator">
                     <img id="loadingGif" src="images/loading.gif" width="16" height="16"/>
                     lsFusion<br/>
-                    <span id="loadingMsg"><%= RB.getString("loading") %></span>
+                    <span id="loadingMsg"><%= ServerMessages.getString(request, "loading") %></span>
                 </div>
             </div>
         </div>
