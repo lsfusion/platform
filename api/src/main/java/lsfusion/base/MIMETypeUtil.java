@@ -44,13 +44,9 @@ public class MIMETypeUtil {
     }
 
     public static String MIMETypeForFileExtension(String extension) {
-        return MIMETypeForFileName(extension, "application/" + extension);
-    }
-
-    public static String MIMETypeForFileName(String extension, String defaultMimeType) {
         loadMappings();
         String mimeType = extensionToMIMETypeMap.get(extension);
-        return mimeType == null ? defaultMimeType : mimeType;
+        return mimeType == null ? "application/" + extension : mimeType;
     }
 
     private static synchronized void loadMappings() {
