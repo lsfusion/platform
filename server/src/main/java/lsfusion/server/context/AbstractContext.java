@@ -281,7 +281,7 @@ public abstract class AbstractContext implements Context {
 
     public abstract Long getCurrentUserRole();
 
-    public abstract DataObject getConnection();
+    public abstract Long getCurrentConnection();
 
     @Override
     public String localize(LocalizedString s) {
@@ -296,7 +296,7 @@ public abstract class AbstractContext implements Context {
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
-                getConnection(), mapObjects, stack, isModal,
+                mapObjects, stack, isModal,
                 noCancel, manageSession,
                 checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly, getLocale());
     }

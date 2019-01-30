@@ -150,18 +150,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
-                        DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack, boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<ContextFilter> contextFilters,
                         ImSet<PullChangeProperty> pullProps, boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, connection, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
     }
 
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
-                        DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
@@ -185,7 +183,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         this.locale = locale;
         
-        instanceFactory = new InstanceFactory(connection);
+        instanceFactory = new InstanceFactory();
 
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
@@ -2312,7 +2310,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new FormInstance(entity, this.logicsInstance,
                                 this.session, this.securityPolicy,
                                 getFocusListener(), getClassListener(),
-                                instanceFactory.connection,
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
                                 true, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, true, true, true,

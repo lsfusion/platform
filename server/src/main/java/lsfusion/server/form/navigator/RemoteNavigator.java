@@ -431,6 +431,14 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
                 return null;
             return (Long) wThis.computer.object;
         }
+
+        @Override
+        public Long getCurrentConnection() {
+            final RemoteNavigator wThis = weakThis.get();
+            if(wThis == null)
+                return null;
+            return (Long) wThis.connection.object;
+        }
     }
 
     private static class WeakChangesUserProvider implements ChangesController { // чтобы помочь сборщику мусора и устранить цикл

@@ -1806,9 +1806,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
         currentSession.change(applyObject, DataSession.this);
-        DataObject cn = ThreadLocalContext.getConnection();
+        Long cn = sql.contextProvider.getCurrentConnection();
         if(cn != null)
-            BL.systemEventsLM.connectionSession.change(cn, (ExecutionEnvironment)DataSession.this, applyObject);
+            BL.systemEventsLM.connectionSession.change(new DataObject(cn, BL.systemEventsLM.connection), (ExecutionEnvironment)DataSession.this, applyObject);
         if (sessionEventFormEnv instanceof FormInstance) { // в будущем имеет смысл из стека тянуть, так как оттуда логи берутся
             FormEntity formEntity = ((FormInstance) sessionEventFormEnv).entity;
             ObjectValue form = !formEntity.isNamed()

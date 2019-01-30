@@ -46,6 +46,7 @@ public class RemoteLoggerAspect {
 
             Long user = context.getCurrentUser();
             Long computer = context.getCurrentComputer();
+//            Long connection = context.getCurrentConnection();
             userActivityMap.put(user, new UserActivity(computer, startTime));
 
             boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
