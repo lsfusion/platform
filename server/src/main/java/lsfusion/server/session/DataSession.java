@@ -2289,11 +2289,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public final QueryEnvironment env = new QueryEnvironment() {
         public ParseInterface getSQLUser() {
-            ObjectValue currentUser = user.getCurrentUser();
-            if (currentUser instanceof DataObject) {
-                return new TypeObject(((DataObject) currentUser).object, ObjectType.instance);
+            Long currentUser = sql.contextProvider.getCurrentUser();
+            if (currentUser != null) {
+                return new TypeObject(currentUser, ObjectType.instance);
             } else {
-                return ((NullValue) currentUser).getParse(ObjectType.instance);
+                return NullValue.instance.getParse(ObjectType.instance);
             }
         }
 
@@ -2310,11 +2310,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         public ParseInterface getSQLComputer() {
-            ObjectValue currentComputer = computer.getCurrentComputer();
-            if (currentComputer instanceof DataObject) {
-                return new TypeObject(((DataObject) currentComputer).object, ObjectType.instance);
+            Long currentComputer = sql.contextProvider.getCurrentComputer();
+            if (currentComputer != null) {
+                return new TypeObject(currentComputer, ObjectType.instance);
             } else {
-                return ((NullValue) currentComputer).getParse(ObjectType.instance);
+                return NullValue.instance.getParse(ObjectType.instance);
             }
         }
 

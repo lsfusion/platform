@@ -29,7 +29,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.form.navigator.SQLSessionUserProvider;
+import lsfusion.server.form.navigator.SQLSessionContextProvider;
 import lsfusion.server.logics.*;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionModifier;
@@ -120,7 +120,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if (connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), new SQLThreadInfo(sqlSession.getActiveThread(),
                         sqlSession.threadDebugInfo, sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
-                        sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
+                        sqlSession.contextProvider.getCurrentUser(), sqlSession.contextProvider.getCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(),
                         debugInfo, sqlSession.statusMessage));
         }
@@ -199,7 +199,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public SQLSyntax syntax;
 
-    public SQLSessionUserProvider userProvider;
+    public SQLSessionContextProvider contextProvider;
 
     public <F extends Field> GetValue<String, F> getDeclare(final TypeEnvironment typeEnv) {
         return getDeclare(syntax, typeEnv);
@@ -293,11 +293,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public final ThreadDebugInfo threadDebugInfo;
 
-    public SQLSession(DataAdapter adapter, SQLSessionUserProvider userProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public SQLSession(DataAdapter adapter, SQLSessionContextProvider contextProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter.syntax;
         connectionPool = adapter;
         typePool = adapter;
-        this.userProvider = userProvider;
+        this.contextProvider = contextProvider;
         sqlSessionMap.put(this, 1);
         Thread currentThread = Thread.currentThread();
         threadDebugInfo = new ThreadDebugInfo(currentThread.getName(),
@@ -1446,11 +1446,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         explainUserMode.put(user, mode != null && mode);
     }
 
-    public void setExplainAnalyzeMode(Boolean mode) {
-        Long user = userProvider.getCurrentUser();
-        setExplainAnalyzeMode(user, mode);
-    }
-
     public static void setExplainNoAnalyze(boolean explainNoAnalyze) {
         SQLSession.explainNoAnalyze = explainNoAnalyze;
     }
@@ -1463,15 +1458,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         userVolatileStats.put(user, enabled != null && enabled);
     }
 
-    public boolean getVolatileStats() {
-        Long currentUser = userProvider.getCurrentUser();
-        if(currentUser == null)
-            return false;
-        return getVolatileStats(currentUser);
-    }
-
     public boolean explainAnalyze() {
-        Long currentUser = userProvider.getCurrentUser();
+        Long currentUser = contextProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         Boolean eam = explainUserMode.get(currentUser);
@@ -1483,7 +1471,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean isLoggerDebugEnabled() {
-        Long currentUser = userProvider.getCurrentUser();
+        Long currentUser = contextProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         Boolean lde = loggerDebugEnabled.get(currentUser);
@@ -2602,17 +2590,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(modify.isEmpty()) // иначе exception кидает
             return 0;
 
-        return executeDML(modify.getDelete(syntax, userProvider));
+        return executeDML(modify.getDelete(syntax, contextProvider));
     }
 
     public int updateRecords(ModifyQuery modify) throws SQLException, SQLHandledException {
         checkTableOwner(modify);
-        return executeDML(modify.getUpdate(syntax, userProvider));
+        return executeDML(modify.getUpdate(syntax, contextProvider));
     }
 
     public int insertSelect(ModifyQuery modify) throws SQLException, SQLHandledException {
         checkTableOwner(modify);
-        return executeDML(modify.getInsertSelect(syntax, userProvider));
+        return executeDML(modify.getInsertSelect(syntax, contextProvider));
     }
     public int insertSessionSelect(SQLExecute execute, final ERunnable out) throws SQLException, SQLHandledException {
         // out.run();
@@ -2646,7 +2634,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner, int selectTop) throws SQLException, SQLHandledException {
         checkTableOwner(name, owner);
-        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, userProvider, null, register(name, owner, TableChange.INSERT), selectTop), new ERunnable() {
+        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, contextProvider, null, register(name, owner, TableChange.INSERT), selectTop), new ERunnable() {
             public void run() throws Exception {
                 query.outSelect(SQLSession.this, env);
             }});
@@ -2655,7 +2643,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public int insertLeftSelect(ModifyQuery modify, boolean updateProps, boolean insertOnlyNotNull) throws SQLException, SQLHandledException {
         checkTableOwner(modify);
 //        modify.getInsertLeftQuery(updateProps, insertOnlyNotNull).outSelect(this, modify.env);
-        return executeDML(modify.getInsertLeftKeys(syntax, userProvider, updateProps, insertOnlyNotNull));
+        return executeDML(modify.getInsertLeftKeys(syntax, contextProvider, updateProps, insertOnlyNotNull));
     }
 
     public int modifyRecords(ModifyQuery modify) throws SQLException, SQLHandledException {
@@ -3149,7 +3137,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         if(description != null) {
             int backend = ((PGConnection)privateConnection.sql).getBackendPID();
-            description.set("Backend : " + backend + ", Info : (" + userProvider.getLogInfo()+ "), SCORE : " + score + "(used temp table rows : " + usedTablesSize + ", time started : " + timeStarted + ", max used temp table rows : " + maxUsedTables + ", last temp tables activity : " + lastTempTablesActivity + ", time score : " + timeScore + ", length score : " + lengthScore + ")");
+            description.set("Backend : " + backend + ", Info : (" + contextProvider.getLogInfo()+ "), SCORE : " + score + "(used temp table rows : " + usedTablesSize + ", time started : " + timeStarted + ", max used temp table rows : " + maxUsedTables + ", last temp tables activity : " + lastTempTablesActivity + ", time score : " + timeScore + ", length score : " + lengthScore + ")");
         }
 
         return score;

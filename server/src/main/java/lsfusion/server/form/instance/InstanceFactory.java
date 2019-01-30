@@ -15,8 +15,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public class InstanceFactory {
 
-    public InstanceFactory(PropertyObjectInterfaceInstance computer, DataObject connection) {
-        this.computer = computer;
+    public InstanceFactory(DataObject connection) {
         this.connection = connection;
     }
 
@@ -156,7 +155,6 @@ public class InstanceFactory {
         return propertyDrawInstances.get(entity);
     }
 
-    public final PropertyObjectInterfaceInstance computer;
     public DataObject connection;
 
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {

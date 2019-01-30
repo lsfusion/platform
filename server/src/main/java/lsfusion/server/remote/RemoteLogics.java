@@ -371,14 +371,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return memoryLimitMap;
     }
 
-    public Long getCurrentUser() {
-        return dbManager.getSystemUserObject();
-    }
-
-    public Long getCurrentComputer() {
-        return dbManager.getServerComputer(getStack());
-    }
-
     @Override
     protected boolean isEnabledUnreferenced() { // иначе когда отключаются все клиенты логика закрывается
         return false;

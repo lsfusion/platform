@@ -14,7 +14,6 @@ import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.filter.ContextFilter;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
@@ -57,7 +56,7 @@ public interface Context {
     SecurityPolicy getSecurityPolicy();
     FocusListener getFocusListener();
     CustomClassListener getClassListener();
-    PropertyObjectInterfaceInstance getComputer(ExecutionStack stack);
+    Long getCurrentComputer();
     Long getCurrentUser();
     Long getCurrentUserRole();
     DataObject getConnection();

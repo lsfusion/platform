@@ -112,8 +112,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private ReflectionLogicsModule reflectionLM;
 
-    private long systemUserObject;
-    private long systemComputer;
+    private long systemUser;
+    public long serverComputer;
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
@@ -605,14 +605,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public long getSystemUserObject() {
-        return systemUserObject;
+    public long getSystemUser() {
+        return systemUser;
     }
 
-    private SQLSessionUserProvider userProvider = new SQLSessionUserProvider() {
+    public long getServerComputer() {
+        return serverComputer;
+    }
+
+    private SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
         @Override
         public Long getCurrentUser() {
-            return systemUserObject;
+            return getSystemUser();
         }
 
         @Override
@@ -622,15 +626,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         @Override
         public Long getCurrentComputer() {
-            return systemComputer;
+            return getServerComputer();
         }
     };
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        return createSQL(userProvider);
+        return createSQL(contextProvider);
     }
 
-    public SQLSession createSQL(SQLSessionUserProvider environment) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public SQLSession createSQL(SQLSessionContextProvider environment) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         return new SQLSession(adapter, environment);
     }
 
@@ -693,20 +697,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         throw new RuntimeException("not supported");
                     }
 
-                    public ObjectValue getCurrentUser() {
-                        return new DataObject(systemUserObject, businessLogics.authenticationLM.systemUser);
-                    }
-
                     @Override
                     public Long getCurrentUserRole() {
                         return null;
                     }
                 },
                 new ComputerController() {
-                    public ObjectValue getCurrentComputer() {
-                        return new DataObject(systemComputer, businessLogics.authenticationLM.computer);
-                    }
-
                     public boolean isFullClient() {
                         return false;
                     }
@@ -781,35 +777,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public Long getServerComputer(ExecutionStack stack) {
-        return getComputer(SystemUtils.getLocalHostName(), stack);
-    }
-    public DataObject getServerComputerObject(ExecutionStack stack) {
-        return new DataObject(getServerComputer(stack), businessLogics.authenticationLM.computer);
-    }
-
+    // gets or adds computer
     public Long getComputer(String strHostName, ExecutionStack stack) {
         try {
-            try (DataSession session = createSession(getSystemSql())) {
-
-                QueryBuilder<String, Object> q = new QueryBuilder<>(SetFact.singleton("key"));
-                q.and(
-                        businessLogics.authenticationLM.hostnameComputer.getExpr(
-                                session.getModifier(), q.getMapExprs().get("key")
-                        ).compare(new DataObject(strHostName), Compare.EQUALS)
-                );
-
-                Long result;
-
-                ImSet<ImMap<String, Object>> keys = q.execute(session).keys();
-                if (keys.size() == 0) {
+            try (DataSession session = createSession()) {
+                Long result = (Long) businessLogics.authenticationLM.computerHostname.read(session, new DataObject(strHostName));
+                if (result != null) {
                     DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
                     businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
                     result = (Long) addObject.object;
                     apply(session, stack);
-                } else {
-                    result = (Long) keys.iterator().next().get("key");
                 }
 
                 logger.debug("Begin user session " + strHostName + " " + result);
@@ -953,7 +931,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
-        final SQLSession sqlFrom = new SQLSession(adapter, userProvider);
+        final SQLSession sqlFrom = new SQLSession(adapter, contextProvider);
 
         sql.pushNoQueryLimit();
         try {
@@ -1377,21 +1355,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
         ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
         if (rows.size() == 0) { // если нету добавим
-            systemUserObject = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
+            systemUser = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
             apply(session);
         } else
-            systemUserObject = (Long) rows.single().get("key");
+            systemUser = (Long) rows.single().get("key");
 
-        query = new QueryBuilder<>(SetFact.singleton("key"));
-        query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
-        rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
-        if (rows.size() == 0) { // если нету добавим
-            DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
-            systemComputer = (Long) computerObject.object;
-            businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
-            apply(session);
-        } else
-            systemComputer = (Long) rows.single().get("key");
+        serverComputer = getComputer(SystemUtils.getLocalHostName(), getStack());
     }
 
     private void updateAggregationStats(DataSession session, List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
