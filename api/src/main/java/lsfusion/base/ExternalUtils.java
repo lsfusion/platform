@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import lsfusion.base.clapper.MIMETypeUtil;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
@@ -102,42 +103,16 @@ public class ExternalUtils {
     }
 
     public static ContentType getContentType(String extension) {
+        String mimeType = MIMETypeUtil.MIMETypeForFileExtension(extension);
         switch (extension) {
-            case "jpg":
-            case "jpeg":
-            case "png":
-            case "bmp":
-                return ContentType.create("image/" + extension);
-            case "":
-                return ContentType.APPLICATION_OCTET_STREAM;
             case "csv":
-                return ContentType.create("text/" + extension, defaultCSVCharset);
+                return ContentType.create(mimeType, defaultCSVCharset);
             case "json":
-                return ContentType.create("application/" + extension, defaultXMLJSONCharset);
             case "xml":
-                return ContentType.create("text/" + extension, defaultXMLJSONCharset);
+                return ContentType.create(mimeType, defaultXMLJSONCharset);
             default:
-                return ContentType.create("application/" + extension);
+                return ContentType.create(mimeType);
         }
-    }
-
-    public static String getExtensionFromContentType(ContentType contentType, Result<Boolean> humanReadable) {
-        Pattern p = Pattern.compile("\\b(application|image)/(\\w*)\\b");
-        String mimeType = contentType.getMimeType();
-        Matcher m = p.matcher(mimeType);
-        if(m.find()) {
-            humanReadable.set(false);
-            return m.group(2);
-        }
-
-        p = Pattern.compile("\\btext/(xml|json|csv|html)\\b");
-        m = p.matcher(mimeType);
-        if(m.find()) {
-            humanReadable.set(true);
-            return m.group(1);
-        }
-
-        return null;
     }
 
     private static String getParameterValue(List<NameValuePair> queryParams, String key) {
@@ -156,12 +131,12 @@ public class ExternalUtils {
 
     private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) throws IOException {
         assert object instanceof byte[] || (object instanceof String && convertedToString);
-        Result<Boolean> humanReadable = new Result<>();
-        String extension = getExtensionFromContentType(contentType, humanReadable);
+        String mimeType = contentType.getMimeType();
+        String extension = MIMETypeUtil.fileExtensionForMIMEType(mimeType);
         Charset charset = getCharsetFromContentType(contentType);
         if(extension != null) { // FILE
             RawFileData file;
-            if(humanReadable.result && convertedToString)
+            if(mimeType.startsWith("text/") && convertedToString) //humanReadable
                 file = new RawFileData(((String)object).getBytes(charset));
             else
                 file = new RawFileData((byte[])object);
