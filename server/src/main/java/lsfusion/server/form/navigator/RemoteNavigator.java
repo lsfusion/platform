@@ -375,11 +375,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         private WeakConnectionController(RemoteNavigator navigator) {
             this.weakThis = new WeakReference<>(navigator);
         }
-
-        public ObjectValue getCurrentConnection() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null  || remoteNavigator.connection == null ? NullValue.instance : remoteNavigator.connection;
-        }
     }
 
 
@@ -431,8 +426,12 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
             final RemoteNavigator wThis = weakThis.get();
             if(wThis == null)
                 return null;
-            return (Long) wThis.connection.object;
+            return wThis.getConnectionId();
         }
+    }
+
+    public Long getConnectionId() {
+        return connection != null ? (Long) connection.object : null;
     }
 
     private static class WeakChangesUserProvider implements ChangesController { // чтобы помочь сборщику мусора и устранить цикл
