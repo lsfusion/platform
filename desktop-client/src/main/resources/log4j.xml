@@ -8,7 +8,7 @@
         </layout>
     </appender>
 
-    <appender name="clientlog" class="org.apache.log4j.rolling.RollingFileAppender">
+    <appender name="clientlog" class="lsfusion.logging.FlushableRollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
@@ -28,7 +28,7 @@
         </filter>
     </appender>
 
-    <appender name="clienterr" class="org.apache.log4j.rolling.RollingFileAppender">
+    <appender name="clienterr" class="lsfusion.logging.FlushableRollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
@@ -63,7 +63,7 @@
         </layout>
     </appender>
 
-    <appender name="jasperlog" class="org.apache.log4j.rolling.RollingFileAppender">
+    <appender name="jasperlog" class="lsfusion.logging.FlushableRollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
