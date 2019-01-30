@@ -77,7 +77,7 @@ public class Main {
     
     public static boolean hideMenu;
 
-    public static long computerId;
+    public static Long computerId;
     public static DateFormat dateFormat;
     public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
@@ -709,7 +709,7 @@ public class Main {
         }
         eventBus.invalidate();
 
-        computerId = -1;
+        computerId = -1L;
         frame = null;
         remoteLoader = null;
         remoteLogics = null;

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.hierarchy;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -12,7 +13,7 @@ public class PropertyGroupParseNode extends GroupParseNode {
         return group.getIntegrationSID();
     }
 
-    public PropertyGroupParseNode(ImSet<ParseNode> children, AbstractGroup group) {
+    public PropertyGroupParseNode(ImOrderSet<ParseNode> children, AbstractGroup group) {
         super(children);
         this.group = group;
     }

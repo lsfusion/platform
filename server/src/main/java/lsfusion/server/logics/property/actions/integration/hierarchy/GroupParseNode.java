@@ -1,13 +1,14 @@
 package lsfusion.server.logics.property.actions.integration.hierarchy;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.form.entity.ObjectEntity;
 
 public abstract class GroupParseNode extends ParseNode {
-    public final ImSet<ParseNode> children;
+    public final ImOrderSet<ParseNode> children;
 
-    public GroupParseNode(ImSet<ParseNode> children) {
+    public GroupParseNode(ImOrderSet<ParseNode> children) {
         this.children = children;
     }
     

@@ -1239,6 +1239,17 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return readQuery.execute(session, env).singleValue().get(readValue);
     }
 
+    public ImMap<ImMap<T, Object>, Object> readAll(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+        String readValue = "readvalue";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(interfaces);
+        readQuery.addProperty(readValue, getExpr(readQuery.getMapExprs(), modifier));
+        return readQuery.execute(session, env).getMap().mapValues(new GetValue<Object, ImMap<Object, Object>>() {
+            public Object getMapValue(ImMap<Object, Object> value) {
+                return value.singleValue();                
+            }
+        });
+    }
+
     public ObjectValue readClasses(ExecutionContext context) throws SQLException, SQLHandledException {
         return readClasses(context.getSession(), MapFact.<T, ObjectValue>EMPTY(), context.getModifier(), context.getQueryEnv());
     }
@@ -1274,6 +1285,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public ObjectValue readClasses(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readClasses(session.sql, ObjectValue.getMapExprs(keys), session.baseClass, modifier, env);
+    }
+
+    public ImMap<ImMap<T, Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return readAll(env.getSession().sql, env.getModifier(), env.getQueryEnv());
     }
 
     // используется для оптимизации - если Stored то попытать использовать это значение

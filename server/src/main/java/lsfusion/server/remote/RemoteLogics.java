@@ -372,7 +372,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public Long getCurrentComputer() {
-        return (Long) dbManager.getServerComputerObject(getStack()).getValue();
+        return dbManager.getServerComputer(getStack());
     }
 
     @Override
