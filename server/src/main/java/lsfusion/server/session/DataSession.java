@@ -2328,11 +2328,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         public ParseInterface getSQLConnection() {
-            ObjectValue currentConnection = connection.getCurrentConnection();
-            if(currentConnection instanceof DataObject) {
-                return new TypeObject(((DataObject)currentConnection).object, ObjectType.instance);
+            Long currentConnection = sql.contextProvider.getCurrentConnection();
+            if(currentConnection != null) {
+                return new TypeObject(currentConnection, ObjectType.instance);
             } else {
-                return ((NullValue)currentConnection).getParse(ObjectType.instance);
+                return NullValue.instance.getParse(ObjectType.instance);
             }
         }
 

@@ -717,11 +717,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     public void changeCurrentConnection(DataObject connection) {
                         throw new RuntimeException("not supported");
                     }
-
-                    @Override
-                    public ObjectValue getCurrentConnection() {
-                        return NullValue.instance;
-                    }
                 },
                 new TimeoutController() {
                     public int getTransactionTimeout() {
