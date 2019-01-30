@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.classes.DataClass;
@@ -20,7 +21,7 @@ public class GroupObjectParseNode extends GroupParseNode {
         return group.getIntegrationSID();
     }
 
-    public GroupObjectParseNode(ImSet<ParseNode> children, GroupObjectEntity group) {
+    public GroupObjectParseNode(ImOrderSet<ParseNode> children, GroupObjectEntity group) {
         super(children);
         this.group = group;
     }
