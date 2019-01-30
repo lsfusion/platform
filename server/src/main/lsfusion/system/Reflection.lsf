@@ -48,7 +48,7 @@ canonicalName '{reflection.canonical.name.form}' = DATA VARSTRING[100] (Form);
 form '{reflection.form}' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // для profiler'а
 is (Form form) = form IS Form;
 
-currentForm = NATIVE Form ();
+currentForm = NATIVE VARSTRING[100] (); // canonical name
 
 CLASS ABSTRACT ActionOrProperty '{reflection.action.or.property}';
 TABLE actionOrProperty(ActionOrProperty);

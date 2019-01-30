@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import lsfusion.base.clapper.MIMETypeUtil;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
@@ -24,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
 
@@ -126,15 +123,21 @@ public class ExternalUtils {
 
     public static ContentType getContentType(String extension) {
         String mimeType = MIMETypeUtil.MIMETypeForFileExtension(extension);
+        String charset = null;
         switch (extension) {
             case "csv":
-                return ContentType.create(mimeType, defaultCSVCharset);
+                charset = defaultCSVCharset;
+                break;
             case "json":
             case "xml":
-                return ContentType.create(mimeType, defaultXMLJSONCharset);
-            default:
-                return ContentType.create(mimeType);
+                charset = defaultXMLJSONCharset;
+                break;
         }
+        return charset != null ? ContentType.create(mimeType, charset) : ContentType.create(mimeType);
+    }
+
+    public static String getExtensionFromContentType(ContentType contentType) {
+        return MIMETypeUtil.fileExtensionForMIMEType(contentType.getMimeType());
     }
 
     private static String getParameterValue(List<NameValuePair> queryParams, String key) {
@@ -154,7 +157,7 @@ public class ExternalUtils {
     private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) throws IOException {
         assert object instanceof byte[] || (object instanceof String && convertedToString);
         String mimeType = contentType.getMimeType();
-        String extension = MIMETypeUtil.fileExtensionForMIMEType(mimeType);
+        String extension = getExtensionFromContentType(contentType);
         Charset charset = getCharsetFromContentType(contentType);
         if(extension != null) { // FILE
             RawFileData file;

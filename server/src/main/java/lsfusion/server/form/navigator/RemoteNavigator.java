@@ -86,7 +86,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     
     private DataObject computer;
 
-    private ObjectValue currentForm;
+    private String currentForm;
 
     private DataObject connection;
 
@@ -127,7 +127,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         
         this.user = user;
         this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
-        this.currentForm = NullValue.instance;
+        this.currentForm = null;
 
         this.remoteAddress = navigatorInfo.remoteAddress;
         this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
@@ -357,15 +357,15 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
 
         @Override
-        public void changeCurrentForm(ObjectValue form) {
+        public void changeCurrentForm(String form) {
             RemoteNavigator remoteNavigator = weakThis.get();
             if(remoteNavigator !=null)
                 remoteNavigator.currentForm = form;
         }
 
-        public ObjectValue getCurrentForm() {
+        public String getCurrentForm() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? NullValue.instance : remoteNavigator.currentForm;
+            return remoteNavigator == null ? null : remoteNavigator.currentForm;
         }
     }
 

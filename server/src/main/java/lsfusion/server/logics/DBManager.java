@@ -590,15 +590,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     @IdentityStrongLazy
-    private SQLSession getSystemSql() {
-        try {
-            return createSQL();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @IdentityStrongLazy
     public SQLSession getStopSql() {
         try {
             return createSQL();
@@ -715,13 +706,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 },
                 new FormController() {
                     @Override
-                    public void changeCurrentForm(ObjectValue form) {
+                    public void changeCurrentForm(String form) {
                         throw new RuntimeException("not supported");
                     }
 
                     @Override
-                    public ObjectValue getCurrentForm() {
-                        return NullValue.instance;
+                    public String getCurrentForm() {
+                        return null;
                     }
                 },
                 new ConnectionController() {
@@ -801,28 +792,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         } catch (Exception e) {
             logger.error("Error reading computer: ", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public ObjectValue getFormObject(String canonicalName, ExecutionStack stack) {
-        return canonicalName == null ? NullValue.instance : new DataObject(getForm(canonicalName, stack), reflectionLM.form);
-    }
-
-    public Long getForm(String canonicalName, ExecutionStack stack) {
-        try {
-            try (DataSession session = createSession(getSystemSql())) {
-                Long result = (Long) reflectionLM.formByCanonicalName.read(session, new DataObject(canonicalName));
-                if (result == null) {
-                    DataObject addObject = session.addObject(reflectionLM.form);
-                    reflectionLM.formCanonicalName.change(canonicalName, session, addObject);
-                    result = (Long) addObject.object;
-                    apply(session, stack);
-                }
-                return result;
-            }
-        } catch (Exception e) {
-            logger.error("Error reading form: ", e);
             throw new RuntimeException(e);
         }
     }
