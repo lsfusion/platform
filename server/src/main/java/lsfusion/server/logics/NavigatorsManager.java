@@ -116,10 +116,15 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         try {
             SecurityPolicy securityPolicy;
             DataObject userObject;
+            DataObject computerObject;
             try (DataSession session = createSession()) {
                 User user = securityManager.readAndAuthenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
                 userObject = user.getDataObject(businessLogics.authenticationLM.customUser, session);
                 securityPolicy = user.getSecurityPolicy();
+
+                Long computer = dbManager.getComputer(navigatorInfo.hostname, session, stack);
+                computerObject = session.getDataObject(businessLogics.authenticationLM.computer, computer);
+
                 String result = session.applyMessage(businessLogics, stack);
                 if(result != null)
                     throw new RemoteMessageException(result);
@@ -135,7 +140,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //                    }
 //                }
 //            }
-            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, securityPolicy, userObject, rmiManager.getExportPort(), stack);
+            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, securityPolicy, userObject, computerObject, rmiManager.getExportPort(), stack);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

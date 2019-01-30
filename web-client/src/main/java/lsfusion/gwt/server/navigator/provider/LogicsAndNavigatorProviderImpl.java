@@ -61,7 +61,7 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
 //        String country = clientLocale.getCountry();
 
         RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
-                remoteLogics.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
+                SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
                 osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
                 javaVersion, null, null, null), true);
 //        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,

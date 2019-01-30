@@ -159,10 +159,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    public Long getComputer(String strHostName) {
-        return dbManager.getComputer(strHostName, getStack());
-    }
-
     @Override
     public ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException {
         return businessLogics.getDaemonTasks(compId);

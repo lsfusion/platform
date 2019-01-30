@@ -115,7 +115,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     private String formID = null;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, SecurityPolicy securityPolicy, DataObject user, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
+    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, SecurityPolicy securityPolicy, DataObject user, DataObject computer, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
 
         this.logicsInstance = logicsInstance;
@@ -132,7 +132,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         this.securityPolicy = securityPolicy;
         
         this.user = user;
-        this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
+        this.computer = computer;
         this.currentForm = null;
 
         this.remoteAddress = navigatorInfo.remoteAddress;
@@ -720,6 +720,11 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public Long getComputerId() throws RemoteException {
+        return (Long) getComputer().object;
     }
 
     public DataObject getComputer() {

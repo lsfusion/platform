@@ -31,6 +31,8 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     boolean isForbidDuplicateForms() throws RemoteException;
 
+    Long getComputerId() throws RemoteException;
+
     //for notifications
     void setCurrentForm(String formID) throws RemoteException;
     String getCurrentForm() throws RemoteException;

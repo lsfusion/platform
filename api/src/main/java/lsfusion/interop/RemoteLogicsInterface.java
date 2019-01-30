@@ -24,8 +24,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     Set<String> syncUsers(Set<String> userNames) throws RemoteException;
 
-    Long getComputer(String hostname) throws RemoteException;
-
     ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException;
 
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;

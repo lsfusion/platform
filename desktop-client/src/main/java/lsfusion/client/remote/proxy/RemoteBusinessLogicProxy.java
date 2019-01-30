@@ -49,13 +49,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;    
     }
 
-    public Long getComputer(String hostname) throws RemoteException {
-        logRemoteMethodStartCall("getComputer");
-        Long result = target.getComputer(hostname);
-        logRemoteMethodEndCall("getComputer", result);
-        return result;
-    }
-
     @Override
     public ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException {
         return target.getDaemonTasks(compId);

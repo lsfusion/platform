@@ -773,21 +773,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     // gets or adds computer
-    public Long getComputer(String strHostName, ExecutionStack stack) {
+    public Long getComputer(String strHostName, DataSession session, ExecutionStack stack) {
         try {
-            try (DataSession session = createSession()) {
-                Long result = (Long) businessLogics.authenticationLM.computerHostname.read(session, new DataObject(strHostName));
-                if (result != null) {
-                    DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
-                    businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
+            Long result = (Long) businessLogics.authenticationLM.computerHostname.read(session, new DataObject(strHostName));
+            if (result != null) {
+                DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
+                businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
-                    result = (Long) addObject.object;
-                    apply(session, stack);
-                }
-
-                logger.debug("Begin user session " + strHostName + " " + result);
-                return result;
+                result = (Long) addObject.object;
             }
+
+            logger.debug("Begin user session " + strHostName + " " + result);
+            return result;
         } catch (Exception e) {
             logger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
@@ -1327,13 +1324,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
         query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
         ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
-        if (rows.size() == 0) { // если нету добавим
+        if (rows.size() == 0)
             systemUser = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
-            apply(session);
-        } else
+        else
             systemUser = (Long) rows.single().get("key");
 
-        serverComputer = getComputer(SystemUtils.getLocalHostName(), getStack());
+        serverComputer = getComputer(SystemUtils.getLocalHostName(), session, getStack());
+        apply(session);
     }
 
     private void updateAggregationStats(DataSession session, List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {

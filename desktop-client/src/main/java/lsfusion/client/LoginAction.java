@@ -255,7 +255,6 @@ public final class LoginAction {
             RemoteLogicsInterface remote = remoteLoader.getLogics();
 
             remoteLogics = new RemoteBusinessLogicProxy(remote);
-            computerId = remoteLogics.getComputer(SystemUtils.getLocalHostName());
 
             Object notClassic = Toolkit.getDefaultToolkit().getDesktopProperty("win.xpstyle.themeActive");
             String osVersion = System.getProperty("os.name") + (UIManager.getLookAndFeel().getID().equals("Windows")
@@ -288,8 +287,10 @@ public final class LoginAction {
             }
 
             remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), new NavigatorInfo(loginInfo.getUserName(),
-                    loginInfo.getPassword(), computerId, SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
+                    loginInfo.getPassword(), SystemUtils.getLocalHostName(), SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
                     cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize, language, country), true);
+            
+            computerId = remoteNavigator.getComputerId();
         } catch (CancellationException ce) {
             return CANCELED;
         } catch (UnknownHostException e) {
