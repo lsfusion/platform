@@ -6,7 +6,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.remote.RemoteForm;
@@ -55,7 +54,7 @@ public class LogicsInstanceContext extends AbstractContext {
         return null;
     }
 
-    public DataObject getConnection() {
+    public Long getCurrentConnection() {
         return null;
     }
 

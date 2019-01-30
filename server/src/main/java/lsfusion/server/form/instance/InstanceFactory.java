@@ -15,8 +15,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public class InstanceFactory {
 
-    public InstanceFactory(DataObject connection) {
-        this.connection = connection;
+    public InstanceFactory() {
     }
 
     private final MAddExclMap<ObjectEntity, ObjectInstance> objectInstances = MapFact.mSmallStrongMap();
@@ -154,8 +153,6 @@ public class InstanceFactory {
 
         return propertyDrawInstances.get(entity);
     }
-
-    public DataObject connection;
 
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {
 

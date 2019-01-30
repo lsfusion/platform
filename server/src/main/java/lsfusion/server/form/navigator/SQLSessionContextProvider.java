@@ -4,4 +4,5 @@ public interface SQLSessionContextProvider {
     Long getCurrentUser();
     LogInfo getLogInfo();
     Long getCurrentComputer();
+    Long getCurrentConnection();
 }

@@ -630,6 +630,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public Long getCurrentComputer() {
             return getServerComputer();
         }
+        
+        public Long getCurrentConnection() {
+            return null;
+        }
     };
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {

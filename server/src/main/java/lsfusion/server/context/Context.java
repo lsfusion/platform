@@ -17,7 +17,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -59,7 +58,7 @@ public interface Context {
     Long getCurrentComputer();
     Long getCurrentUser();
     Long getCurrentUserRole();
-    DataObject getConnection();
+    Long getCurrentConnection();
     
     String localize(LocalizedString s);
     String localize(LocalizedString s, Locale locale);

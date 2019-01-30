@@ -7,7 +7,6 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.remote.RemoteForm;
 
@@ -64,8 +63,8 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.userRole;
     }
 
-    public DataObject getConnection() {
-        return navigator.getConnection();
+    public Long getCurrentConnection() {
+        return (Long) navigator.getConnection().object;
     }
 
     @Override

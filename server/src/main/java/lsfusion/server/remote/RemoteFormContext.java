@@ -8,7 +8,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 
 import java.util.Locale;
@@ -77,8 +76,8 @@ public class RemoteFormContext<F extends FormInstance> extends AbstractContext {
         return form.form.session.user.getCurrentUserRole();
     }
 
-    public DataObject getConnection() {
-        return form.form.instanceFactory.connection;
+    public Long getCurrentConnection() {
+        return form.form.session.sql.contextProvider.getCurrentConnection();
     }
 
     @Override
