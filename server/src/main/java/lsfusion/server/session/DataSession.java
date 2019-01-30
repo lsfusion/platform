@@ -2319,11 +2319,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         public ParseInterface getSQLForm() {
-            ObjectValue currentForm = form.getCurrentForm();
-            if(currentForm instanceof DataObject) {
-                return new TypeObject(((DataObject)currentForm).object, ObjectType.instance);
+            String currentForm = form.getCurrentForm();
+            if(currentForm != null) {
+                return new TypeObject(currentForm, StringClass.text);
             } else {
-                return ((NullValue)currentForm).getParse(ObjectType.instance);
+                return NullValue.instance.getParse(StringClass.text);
             }
         }
 

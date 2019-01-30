@@ -1354,9 +1354,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         FocusListener focusListener = getFocusListener();
         if (focusListener != null)
             focusListener.gainedFocus(this);
-        if (session.prevFormCanonicalName == null || !session.prevFormCanonicalName.equals(entity.getCanonicalName())) {
-            session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName(), stack));
-            session.prevFormCanonicalName = entity.getCanonicalName();
+
+        String formCanonicalName = entity.getCanonicalName();
+        if (session.prevFormCanonicalName == null || !session.prevFormCanonicalName.equals(formCanonicalName)) {
+            session.form.changeCurrentForm(formCanonicalName);
+            session.prevFormCanonicalName = formCanonicalName;
         }
     }
 
