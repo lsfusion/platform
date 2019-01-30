@@ -1,14 +1,13 @@
 package lsfusion.http;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.remote.PreAuthentication;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -25,8 +24,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
-
-import static lsfusion.base.ServerMessages.getString;
 
 public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implements AuthenticationProvider {
 
@@ -45,7 +42,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             PreAuthentication auth = runRequest(request, new Runnable<PreAuthentication> () {
                 public PreAuthentication run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {
-                        Locale locale = Locale.getDefault();
+                        Locale locale = LocaleContextHolder.getLocale();
                         return remoteLogics.preAuthenticateUser(username, password, locale.getLanguage(), locale.getCountry());
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());

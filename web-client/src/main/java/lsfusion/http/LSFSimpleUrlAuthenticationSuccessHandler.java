@@ -20,12 +20,17 @@ public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthentic
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, final Authentication authentication) throws IOException, ServletException {
         // setting cookie before super.onAuthenticationSuccess() to have right cookie-path  
+        Cookie localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, "");
         Locale userLocale = LSFAuthenticationToken.getLocale(authentication);
-        if(userLocale != null) {
-            Cookie localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, userLocale.toString());
+        if (userLocale != null) {
+            localeCookie.setValue(userLocale.toString());
             localeCookie.setMaxAge(60 * 60 * 24 * 365 * 5);
-            response.addCookie(localeCookie);
+        } else {
+            // removes cookie
+            localeCookie.setMaxAge(0);
         }
+        response.addCookie(localeCookie);
+        
         super.onAuthenticationSuccess(request, response, authentication);
     }
     
