@@ -28,17 +28,8 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
         return LM.object(valueClass);
     }
 
-    public ScriptingActionProperty(ScriptingLogicsModule LM) {
-        this(LM, new ValueClass[]{});
-    }
-
     public ScriptingActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(classes);
-        this.LM = LM;
-    }
-
-    public ScriptingActionProperty(ScriptingLogicsModule LM, LocalizedString caption, ValueClass... classes) {
-        super(caption, classes);
         this.LM = LM;
     }
 
