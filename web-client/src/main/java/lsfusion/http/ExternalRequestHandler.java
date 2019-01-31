@@ -17,9 +17,10 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
     protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             String query = request.getQueryString();
-            String contentType = request.getContentType();
+            String contentTypeString = request.getContentType();
+            ContentType contentType = contentTypeString != null ? ContentType.parse(contentTypeString) : null;
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteLogics, request.getRequestURI(),
-                    query == null ? "" : query, request.getInputStream(), contentType != null ? ContentType.create(contentType, request.getCharacterEncoding()) : null);
+                    query == null ? "" : query, request.getInputStream(), contentType);
 
             if (responseHttpEntity.response != null) {
                 response.setContentType(responseHttpEntity.response.getContentType().getValue());
