@@ -139,6 +139,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP<?> imported;
     public LCP importedString;
 
+    public LCP isServer;
+
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
     public LCP defaultForegroundColor;
@@ -402,6 +404,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         imported = findProperty("imported[INTEGER]");
         importedString = findProperty("importedString[VARSTRING[10]]");
+
+        isServer = findProperty("isServer[]");
 
         sleep = findAction("sleep[LONG]");
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc[]");
