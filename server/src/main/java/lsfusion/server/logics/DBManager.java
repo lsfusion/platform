@@ -772,7 +772,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         try {
             try (DataSession session = createSession()) {
                 Long result = (Long) businessLogics.authenticationLM.computerHostname.read(session, new DataObject(strHostName));
-                if (result != null) {
+                if (result == null) {
                     DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
                     businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
