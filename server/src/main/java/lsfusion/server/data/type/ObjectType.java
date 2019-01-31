@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -27,8 +28,12 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.json.JSONException;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -132,6 +137,26 @@ public class ObjectType extends AbstractType<Long> {
 
     public ExtInt getCharLength() {
         return new ExtInt(10);
+    }
+
+    @Override
+    public Long parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException {
+        return idClass.parseDBF(dbfRecord, fieldName, charset);
+    }
+
+    @Override
+    public Long parseJSON(Object value) throws ParseException, JSONException {
+        return idClass.parseJSON(value);
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return idClass.formatDBF(fieldName);
+    }
+
+    @Override
+    public Object formatJSON(Long object) {
+        return idClass.formatJSON(object);
     }
 
     public Long parseString(String s) throws ParseException {
