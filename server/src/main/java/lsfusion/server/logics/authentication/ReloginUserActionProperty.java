@@ -21,7 +21,7 @@ import static lsfusion.server.context.ThreadLocalContext.localize;
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
     public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) {
-        super(LM, LocalizedString.create("reloginUser"), classes);
+        super(LM, classes);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
