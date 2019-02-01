@@ -96,6 +96,14 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
+    public Long getComputerId() throws RemoteException {
+        logRemoteMethodStartCall("getComputerId");
+        Long result = target.getComputerId();
+        logRemoteMethodEndCall("getComputerId", result);
+        return result;
+    }
+
+    @Override
     public void setCurrentForm(String formID) throws RemoteException {
         target.setCurrentForm(formID);
     }
