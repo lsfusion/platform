@@ -86,7 +86,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
-            String fromAddress = (String) fromAddressAccount.read(context, context.getKeys());
+            String fromAddress = fromAddressAccount != null ? (String) fromAddressAccount.read(context, context.getKeys()) : null;
             ObjectValue account = emailLM.inboxAccount.readClasses(context, fromAddress != null ? new DataObject(fromAddress) : NullValue.instance);
 
             if (account instanceof DataObject) {

@@ -75,7 +75,6 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
-import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.form.stat.FormReportManager;
 import lsfusion.server.session.*;
 import org.apache.log4j.Logger;
@@ -548,9 +547,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
                 startLogger.info("Setting user not null constraints for properties");
                 setNotNullProperties(sql);
-
-                startLogger.info("Setting user notifications for property changes");
-                setupPropertyNotifications(sql);
             } finally {
                 sql.suppressErrorLogging = prevSuppressErrorLogging;
             }
@@ -627,53 +623,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             if(prop != null) {
                 prop.property.reflectionNotNull = true;
                 LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
-            }
-        }
-    }
-
-    private void setupPropertyNotifications(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
-
-        KeyExpr notificationExpr = new KeyExpr("notification");
-        KeyExpr propertyExpr = new KeyExpr("property");
-
-        ImRevMap<Object, KeyExpr> keys = MapFact.toRevMap((Object) "notification", notificationExpr, "property", propertyExpr);
-
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-
-        String[] notificationNames = new String[]{"isDerivedChange", "subject", "text", "emailFrom", "emailTo", "emailToCC", "emailToBC"};
-        LCP[] notificationProperties = new LCP[]{emailLM.isEventNotification, emailLM.subjectNotification, emailLM.textNotification,
-                emailLM.emailFromNotification, emailLM.emailToNotification, emailLM.emailToCCNotification, emailLM.emailToBCNotification};
-        for (int i = 0; i < notificationProperties.length; i++) {
-            query.addProperty(notificationNames[i], notificationProperties[i].getExpr(notificationExpr));
-        }
-        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(propertyExpr));
-        query.and(emailLM.textNotification.getExpr(notificationExpr).getWhere());
-        query.and(emailLM.inNotificationProperty.getExpr(notificationExpr, propertyExpr).getWhere());
-
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
-
-        for (ImMap<Object, Object> entry : result.values()) {
-
-            String cnProperty = trim((String) entry.get("CNProperty"));
-            if(cnProperty != null) {
-                LCP prop = findProperty(cnProperty);
-
-                boolean isDerivedChange = entry.get("isDerivedChange") != null;
-                String subject = trim((String) entry.get("subject"));
-                String text = trim((String) entry.get("text"));
-                String emailFrom = trim((String) entry.get("emailFrom"));
-                String emailTo = trim((String) entry.get("emailTo"));
-                String emailToCC = trim((String) entry.get("emailToCC"));
-                String emailToBC = trim((String) entry.get("emailToBC"));
-                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(LocalizedString.create("emailNotificationProperty"), prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
-
-                Integer[] params = new Integer[prop.listInterfaces.size()];
-                for (int j = 0; j < prop.listInterfaces.size(); j++)
-                    params[j] = j + 1;
-                if (isDerivedChange)
-                    emailNotificationProperty.setEventAction(LM, prop, params);
-                else
-                    emailNotificationProperty.setEventSetAction(LM, prop, params);
             }
         }
     }

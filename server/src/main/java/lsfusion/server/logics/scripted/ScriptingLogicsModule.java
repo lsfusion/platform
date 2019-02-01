@@ -19,7 +19,6 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -74,7 +73,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
@@ -1659,19 +1657,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
         ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
-        LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses, null, null);
+        LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses);
         SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;
 
         ImList<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
 
         int i = 0;
+        
         if (fromProp != null) {
             eaProp.setFromAddressAccount(allImplements.get(i++));
-        } else {
-            // по умолчанию используем стандартный fromAddressAccount
-            eaProp.setFromAddressAccount(new CalcPropertyMapImplement(BL.emailLM.findProperty("fromAddressDefaultNotificationAccount[]").property));
         }
-        eaProp.setSubject(subjProp != null ? allImplements.get(i++) : null);
+
+        if(subjProp != null) {
+            eaProp.setSubject(allImplements.get(i++));
+        }
 
         if(bodyProp != null) {
             eaProp.addInlineFile(allImplements.get(i++));

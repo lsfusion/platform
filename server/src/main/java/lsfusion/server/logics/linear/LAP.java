@@ -50,22 +50,6 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         return property.execute(BaseUtils.<ExecutionContext<T>>immutableCast(context.override(MapFact.<X, ObjectValue>EMPTY())));
     }
 
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, Event.APPLY, lp, mapping);
-    }
-
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, Event event, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, false, event, lp, mapping);
-    }
-
-    public <P extends PropertyInterface> void setEventSetAction(LogicsModule lm, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, true, Event.APPLY, lp, mapping);
-    }
-
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean changedSet, Event event, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, changedSet ? IncrementType.SET : IncrementType.SETCHANGED, event, lp, mapping);
-    }
-
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LCP<P> lp, Integer... mapping) {
         lm.addEventAction(property, new CalcPropertyMapImplement<>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false, null);
     }

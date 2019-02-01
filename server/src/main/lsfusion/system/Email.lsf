@@ -28,19 +28,6 @@ FORM receiveAccountTypes
     LIST ReceiveAccountType OBJECT r
 ;
 
-CLASS Notification '{email.notification}';
-TABLE notification (Notification);
-TABLE notificationProperty (Notification, Property);
-
-isEvent '{email.is.event.notification}' = DATA BOOLEAN (Notification);
-emailFrom '{email.email.from.notification}' = DATA VARSTRING[50] (Notification);
-emailTo '{email.email.to.notification}' = DATA VARSTRING[50] (Notification);
-emailToCC '{email.email.to.cc.notification}' = DATA VARSTRING[50] (Notification);
-emailToBC '{email.email.to.bc.notification}' = DATA VARSTRING[50] (Notification);
-text '{email.text.notification}' = DATA TEXT (Notification);
-subject '{email.subject.notification}'= DATA VARSTRING[100] (Notification);
-in '{email.in.notification.property}' = DATA BOOLEAN (Notification, Property);
-
 CLASS Account '{email.account}';
 TABLE account (Account);
 
@@ -48,10 +35,6 @@ name '{email.name.account}' = DATA VARSTRING[50](Account);
 password '{email.password.account}' = DATA VARSTRING[50](Account) ECHO;
 fromAddress '{email.from.address.account}' = DATA VARSTRING[50] (Account);
 accountFromAddress = GROUP AGGR Account account WHERE account IS Account BY fromAddress (account); 
-
-isDefaultNotification '{email.is.default.account}' = DATA BOOLEAN (Account);
-defaultNotificationAccount '{email.default.notification.account}' = GROUP MAX Account account IF isDefaultNotification(account);
-fromAddressDefaultNotificationAccount '{email.from.address.default.notification.account}' () = fromAddress(defaultNotificationAccount());
 
 isDefaultInbox '{email.is.default.inbox.account}' = DATA BOOLEAN (Account);
 defaultInboxAccount '{email.default.inbox.account}' = GROUP MAX Account account IF isDefaultInbox(account);
@@ -104,7 +87,7 @@ FORM account '{email.form.account}'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
-                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack, ignoreExceptions
+                  maxMessages, isDefaultInbox, disable, unpack, ignoreExceptions
     EDIT Account OBJECT a
 ;
 
@@ -113,7 +96,7 @@ FORM accounts '{email.form.accounts}'
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
-                  maxMessages, isDefaultNotification, disable, unpack, ignoreExceptions
+                  maxMessages, isDefaultInbox, disable, unpack, ignoreExceptions
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Account OBJECT a
@@ -171,7 +154,7 @@ FORM mail '{email.form.mail}'
 
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
                   fromAddress, password, blindCarbonCopy, NEW, DELETE               
-    PROPERTIES(a) PANEL  deleteMessages, lastDays, maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack, ignoreExceptions 
+    PROPERTIES(a) PANEL  deleteMessages, lastDays, maxMessages, isDefaultInbox, disable, unpack, ignoreExceptions 
     
     OBJECTS e=Email LAST
   
@@ -187,16 +170,10 @@ FORM mail '{email.form.mail}'
     PROPERTIES(ae) GRID openFile, saveFile, markImported
     FILTERS email(ae)==e
     
-    OBJECTS n=Notification
     OBJECTS p=Property
         
-    PROPERTIES(n, p) in
-    PROPERTIES(n) subject, text PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, NEW
     PROPERTIES(p) READONLY caption, canonicalName
     ORDER canonicalName(p)
-        
-    FILTERGROUP emailFilter
-        FILTER '{email.form.mail.filter.in}' in(n, p) 'F9'
 ;
 
 DESIGN mail {
@@ -234,25 +211,11 @@ DESIGN mail {
                         }
                     }
                 }
-                NEW notificationContainer {
-                    caption = '{email.form.mail.caption.notifications}';
-                    MOVE BOX(n);
-                    NEW pane {
-                        fill = 1;
-                        type = CONTAINERH;
-                        MOVE BOX(p);
-                        MOVE PROPERTY(text(n)) {
-                            fill = 1;
-                            panelCaptionAbove = TRUE;
-                        }
-                    }
-                }
                 NEW settingsContainer {
                     caption = '{email.form.mail.caption.settings}';
                     MOVE PROPERTY(deleteMessages(a));
                     MOVE PROPERTY(lastDays(a));
                     MOVE PROPERTY(maxMessages(a));
-                    MOVE PROPERTY(isDefaultNotification(a));
                     MOVE PROPERTY(isDefaultInbox(a));
                     MOVE PROPERTY(disable(a));
                     MOVE PROPERTY(unpack(a)); 
