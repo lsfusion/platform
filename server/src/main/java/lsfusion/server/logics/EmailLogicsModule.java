@@ -19,9 +19,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass notification;
     
-    public LCP defaultInboxAccount;
     public LCP inboxAccount;
-    public LCP defaultNotificationAccount;
     public LCP nameEncryptedConnectionTypeAccount;
     public LCP smtpHostAccount;
     public LCP smtpPortAccount;
@@ -41,15 +39,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public LAP emailUserPassUser;
 
-    public LCP isEventNotification;
-    public LCP emailFromNotification;
-    public LCP emailToNotification;
-    public LCP emailToCCNotification;
-    public LCP emailToBCNotification;
-    public LCP textNotification;
-    public LCP subjectNotification;
-    public LCP inNotificationProperty;
-
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(EmailLogicsModule.class.getResourceAsStream("/system/Email.lsf"), "/system/Email.lsf", baseLM, BL);
     }
@@ -57,7 +46,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initMetaAndClasses() throws RecognitionException {
         super.initMetaAndClasses();
-        notification = (ConcreteCustomClass) findClass("Notification");
     }
 
     @Override
@@ -67,9 +55,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // ------- Управление почтой ------ //
 
         // Настройки почтового сервера
-        defaultInboxAccount = findProperty("defaultInboxAccount[]");
         inboxAccount = findProperty("inboxAccount[VARSTRING[100]]");
-        defaultNotificationAccount = findProperty("defaultNotificationAccount[]");
 
         nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionType[Account]");
 
@@ -92,32 +78,11 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
         emailUserPassUser = findAction("emailUserPass[Contact]");
         
-        // Уведомления
-        isEventNotification = findProperty("isEvent[Notification]");
-        emailFromNotification = findProperty("emailFrom[Notification]");
-        emailToNotification = findProperty("emailTo[Notification]");
-        emailToCCNotification = findProperty("emailToCC[Notification]");
-        emailToBCNotification = findProperty("emailToBC[Notification]");
-        textNotification = findProperty("text[Notification]");
-        subjectNotification = findProperty("subject[Notification]");
-        inNotificationProperty = findProperty("in[Notification,Property]");
-
         fromAddressAccount = findProperty("fromAddress[Account]");
     }
 
-    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
-        SendEmailActionProperty eaProp = new SendEmailActionProperty(caption, params);
-        LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<>(eaProp));
-
-        if (fromAddressAccount != null) {
-            eaProp.setFromAddressAccount(readCalcImplements(eaPropLP.listInterfaces, fromAddressAccount).single());
-        }
-
-        if (subject != null) {
-            eaProp.setSubject(readCalcImplements(eaPropLP.listInterfaces, subject).single());
-        }
-
-        return eaPropLP;
+    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params) {
+        return addProperty(group, new LAP<>(new SendEmailActionProperty(caption, params)));
     }
 
 }

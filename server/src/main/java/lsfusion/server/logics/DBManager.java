@@ -717,11 +717,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     public void changeCurrentConnection(DataObject connection) {
                         throw new RuntimeException("not supported");
                     }
-
-                    @Override
-                    public ObjectValue getCurrentConnection() {
-                        return NullValue.instance;
-                    }
                 },
                 new TimeoutController() {
                     public int getTransactionTimeout() {
@@ -776,7 +771,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public Long getComputer(String strHostName, DataSession session, ExecutionStack stack) {
         try {
             Long result = (Long) businessLogics.authenticationLM.computerHostname.read(session, new DataObject(strHostName));
-            if (result != null) {
+            if (result == null) {
                 DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
                 businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 

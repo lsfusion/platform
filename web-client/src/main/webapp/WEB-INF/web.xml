@@ -212,4 +212,16 @@
         <filter-name>springRequestContextFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <filter>
+        <filter-name>CORS</filter-name>
+        <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CORS</filter-name>
+        <url-pattern>/exec</url-pattern>
+        <url-pattern>/eval</url-pattern>
+        <url-pattern>/eval/action</url-pattern>
+        <url-pattern>/read</url-pattern>
+    </filter-mapping>
 </web-app>

@@ -64,7 +64,7 @@ public class RemoteNavigatorContext extends AbstractContext {
     }
 
     public Long getCurrentConnection() {
-        return (Long) navigator.getConnection().object;
+        return navigator.getConnectionId();
     }
 
     @Override

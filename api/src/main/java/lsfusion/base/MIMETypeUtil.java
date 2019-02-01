@@ -1,7 +1,8 @@
 package lsfusion.base;
 
-import java.net.URLConnection;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
 Copyright © 2004-2016, Brian M. Clapper. All rights reserved.
@@ -31,34 +32,21 @@ public class MIMETypeUtil {
 
     public static String fileExtensionForMIMEType(String mimeType) {
         loadMappings();
-        return mimeTypeToExtensionMap.get(mimeType);
+        String extension = mimeTypeToExtensionMap.get(mimeType);
+        if(extension == null) {
+            Pattern p = Pattern.compile("\\b(application)/(\\w*)\\b");
+            Matcher m = p.matcher(mimeType);
+            if(m.find()) {
+                extension = m.group(2);
+            }
+        }
+        return extension;
     }
 
     public static String MIMETypeForFileExtension(String extension) {
-        return MIMETypeForFileName("test." + extension, "application/" + extension);
-    }
-
-    public static String MIMETypeForFileName(String fileName, String defaultMimeType) {
-        String mimeType;
         loadMappings();
-
-        String extension = getFileNameExtension(fileName);
-        mimeType = extensionToMIMETypeMap.get(extension);
-
-        if (mimeType == null) { // Check the system one.
-            mimeType = URLConnection.getFileNameMap().getContentTypeFor(fileName);
-        }
-
-        return mimeType == null ? defaultMimeType : mimeType;
-    }
-
-    private static String getFileNameExtension(String path) {
-        String ext = null;
-        int i = path.lastIndexOf('.');
-        if ((i != -1) && (i != (path.length() - 1))) {
-            ext = path.substring(i + 1);
-        }
-        return ext;
+        String mimeType = extensionToMIMETypeMap.get(extension);
+        return mimeType == null ? "application/" + extension : mimeType;
     }
 
     private static synchronized void loadMappings() {
