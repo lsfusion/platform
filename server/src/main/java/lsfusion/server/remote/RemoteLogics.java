@@ -47,7 +47,10 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
     protected final static Logger logger = ServerLoggers.remoteLogger;
@@ -148,15 +151,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
 
         return navigatorsManager.createNavigator(getStack(), isFullClient, navigatorInfo, reuseSession);
-    }
-
-    @Override
-    public Set<String> syncUsers(Set<String> userNames) throws RemoteException {
-        try {
-            return businessLogics.authenticationLM.syncUsers(userNames);
-        } catch (Exception e) {
-            throw new RuntimeException("Error synchronizing user names", e);
-        }
     }
 
     @Override

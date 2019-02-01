@@ -163,6 +163,21 @@ fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser);
 
 // -------------------------- Forms ---------------------------- //
 
+// sync user logins saved on client 
+syncComputer = DATA LOCAL VARISTRING[100](); 
+syncSavedUser = DATA LOCAL STRING[100](INTEGER); 
+unlockedUsers = DATA LOCAL JSONFILE();
+FORM syncUsers
+    PROPERTIES () computer = syncComputer
+    OBJECTS users = INTEGER
+    PROPERTIES (users) value = syncSavedUser
+;
+
+syncUsers (JSONFILE file) {
+    IMPORT syncUsers JSON FROM file;
+    EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i)) TO unlockedUsers;
+}
+
 FORM customUser '{authentication.custom.user}'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) login, sha256Password ON CHANGE changeSHA256Password(u), isLocked ,

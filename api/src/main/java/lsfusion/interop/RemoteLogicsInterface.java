@@ -10,7 +10,9 @@ import lsfusion.interop.remote.PendingRemoteInterface;
 import lsfusion.interop.remote.PreAuthentication;
 
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
@@ -22,8 +24,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
     
-    Set<String> syncUsers(Set<String> userNames) throws RemoteException;
-
     ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException;
 
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;

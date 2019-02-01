@@ -1,6 +1,8 @@
 package lsfusion.client;
 
+import lsfusion.base.FileData;
 import lsfusion.base.NavigatorInfo;
+import lsfusion.base.RawFileData;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -9,6 +11,8 @@ import lsfusion.interop.exceptions.*;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,11 +21,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -67,32 +74,44 @@ public final class LoginAction {
         
         loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, null));
     }
-
-    public void initLoginDialog(RemoteLogicsInterface remoteLogics) {
-        String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
-        String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-
+    
+    private void syncUsers(RemoteLogicsInterface remoteLogics) {
         if (remoteLogics != null) {
-            Set<String> savedUsers = new HashSet<>();
+            JSONObject syncJson = new JSONObject();
+            syncJson.put("computer", SystemUtils.getLocalHostName());
+            JSONArray users = new JSONArray();
             for (UserInfo userInfo : userInfos) {
-                savedUsers.add(userInfo.name);
+                users.put(userInfo.name);
             }
+            syncJson.put("users", users);
+            FileData fileData = new FileData(new RawFileData(syncJson.toString().getBytes(StandardCharsets.UTF_8)), "json");
+
             try {
-                Set<String> currentUsers = remoteLogics.syncUsers(savedUsers);
+                List<Object> result = remoteLogics.exec("Authentication.syncUsers[JSONFILE]", new String[]{"Authentication.unlockedUsers[]"}, new Object[]{fileData}, "utf-8");
+                JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.get(0)).getRawFile().getBytes()));
+                List<Object> currentUsers = unlockedUsers.toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
                 for (UserInfo userInfo : userInfos) {
                     if (currentUsers.remove(userInfo.name)) {
                         newUserInfos.add(userInfo);
                     }
                 }
-                for (String user : currentUsers) {
-                    newUserInfos.add(new UserInfo(user, false, null));
+                for (Object user : currentUsers) {
+                    newUserInfos.add(new UserInfo(user.toString(), false, null));
                 }
                 userInfos = newUserInfos;
             } catch (RemoteException e) {
                 logger.error("Error synchronizing users", e);
             }
         }
+    } 
+
+    public void initLoginDialog(RemoteLogicsInterface remoteLogics) {
+        String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
+        String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
+
+        syncUsers(remoteLogics);
+            
         UserInfo userInfo = !userInfos.isEmpty() ? userInfos.get(0).copy() : new UserInfo();
         if (userName != null){
             userInfo.name = userName;
