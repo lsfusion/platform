@@ -365,6 +365,10 @@ public class ReportDesignGenerator {
         design.setPageHeight(defaultPageHeight);
 
         design.setOrientation(OrientationEnum.LANDSCAPE);
+        
+        // properties for export to xls
+//        design.setProperty("net.sf.jasperreports.export.xls.print.page.width", String.valueOf(defaultPageWidth));
+//        design.setProperty("net.sf.jasperreports.export.xls.print.page.height", String.valueOf(defaultPageHeight));
 
         design.addStyle(DesignStyles.getDefaultStyle());
         designs.put(node, design);
