@@ -96,6 +96,11 @@ public class JSONNode implements Node<JSONNode> {
         return new JSONNode(new JSONObject());
     }
 
+    @Override
+    public boolean isUpDown() {
+        return false;
+    }
+
     public void addValue(JSONNode node, String key, boolean attr, Object value, Type type) {
         try {
             node.element.put(key, type.formatJSON(value));

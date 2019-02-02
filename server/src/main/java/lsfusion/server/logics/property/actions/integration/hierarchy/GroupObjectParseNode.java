@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.integration.hierarchy;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -61,12 +62,15 @@ public class GroupObjectParseNode extends GroupParseNode {
     @Override
     public <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         boolean isIndex = isIndex();
+        boolean upDown = node.isUpDown();
 
         MList<Pair<Object, T>> mMap = ListFact.mList();
         int i=0;
-        for (ImMap<ObjectEntity, Object> data : exportData.getObjects(group, upValues)) {
+        ImList<ImMap<ObjectEntity, Object>> objects = exportData.getObjects(group, upValues);
+        for (ImMap<ObjectEntity, Object> data : objects) {
             T newNode = node.createNode();
-            exportChildrenNodes(newNode, data, exportData);
+            if(!upDown)
+                exportChildrenNodes(newNode, data, exportData);
 
             // getting object value
             Object objectValue;
@@ -77,8 +81,16 @@ public class GroupObjectParseNode extends GroupParseNode {
                 objectValue = ((DataClass) object.baseClass).formatString(data.get(object));
             }
 
-            mMap.add(new Pair<Object, T>(objectValue, newNode));
+            mMap.add(new Pair<>(objectValue, newNode));
         }
-        node.addMap(node, getKey(), isIndex, mMap.immutableList());
+        ImList<Pair<Object, T>> map = mMap.immutableList();
+        node.addMap(node, getKey(), isIndex, map);
+        
+        if(upDown) {
+            for(int j=0,size=map.size();j<size;j++) {
+                ImMap<ObjectEntity, Object> data = objects.get(j);
+                exportChildrenNodes(map.get(j).second, data, exportData);
+            }
+        }
     }
 }
