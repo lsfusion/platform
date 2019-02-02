@@ -32,10 +32,28 @@ public class XMLNode implements Node<XMLNode> {
             return null;
         return new XMLNode(childElement);
     }
-    
-    private Namespace getXMLNamespace(String fullName, Result<String> shortName, boolean inheritNamespace) {
-        int nsIndex = fullName.indexOf(":");
+
+    private static String parseXMLNamespace(String fullName, Result<String> uri, Result<String> shortName) {
+        int nsIndex = fullName.lastIndexOf(":");
         if(nsIndex < 0) {
+            shortName.set(fullName);
+            return null;
+        }
+
+        shortName.set(fullName.substring(nsIndex + 1));
+        int uriIndex = fullName.indexOf("=");
+        if(uriIndex < 0)
+            return fullName.substring(0, nsIndex);
+        
+        uri.set(fullName.substring(uriIndex + 1, nsIndex));
+        return fullName.substring(0, uriIndex);
+    }
+    
+    private static Namespace getXMLNamespace(Element element, String fullName, Result<String> shortName, boolean inheritNamespace) {
+        Result<String> uri = new Result<>();
+        String nsName = parseXMLNamespace(fullName, uri, shortName);
+        
+        if(nsName == null) {
             shortName.set(fullName);
             
             Namespace defaultNamespace;
@@ -44,9 +62,27 @@ public class XMLNode implements Node<XMLNode> {
             
             return Namespace.NO_NAMESPACE;
         }
+
+        if(uri.result != null)
+            return Namespace.getNamespace(nsName, uri.result);
         
-        shortName.set(fullName.substring(nsIndex + 1));            
-        return element.getNamespace(fullName.substring(0, nsIndex));
+        Namespace namespace = element.getNamespace(nsName);
+        if(namespace == null)
+            return Namespace.getNamespace(nsName,"http://www.w3.org/"+nsName);
+        return namespace;
+    }
+
+    @Override
+    public boolean isUpDown() {
+        return true; // we need this to resolve namespaces in element.getNamespace
+    }
+
+    private Namespace getXMLNamespace(String fullName, Result<String> shortName, boolean inheritNamespace) {
+        return getXMLNamespace(element, fullName, shortName, inheritNamespace);
+    }
+
+    private static Namespace addXMLNamespace(Element element, String fullName, Result<String> shortName, boolean inheritNamespace) {
+        return getXMLNamespace(element, fullName, shortName, inheritNamespace);
     }
 
     public String getXMLAttributeValue(String key) {
@@ -93,37 +129,64 @@ public class XMLNode implements Node<XMLNode> {
         return new XMLNode(new Element("dumb"));
     }
 
+    public void addXMLAttributeValue(Element element, String key, String stringValue) {
+        if(key.toLowerCase().startsWith("xmlns")) {
+            String nsName = "";
+            int nsIndex = key.indexOf(":");
+            if(nsIndex >= 0)
+                nsName = key.substring(nsIndex + 1);
+
+            Namespace namespace = Namespace.getNamespace(nsName, stringValue);
+            element.addNamespaceDeclaration(namespace);
+        } else {
+            Result<String> shortKey = new Result<>();
+            Namespace namespace = addXMLNamespace(element, key, shortKey, false);
+            element.setAttribute(shortKey.result, stringValue, namespace);
+        }
+    }
+
+    private static void addXMLChild(Element element, String key, String stringValue) {
+        Result<String> shortKey = new Result<>();
+        Namespace namespace = addXMLNamespace(element, key, shortKey, true); 
+        Element addElement = new Element(shortKey.result, namespace);
+        addElement.setText(stringValue);
+        element.addContent(addElement);
+    }
+
     // because of the difference between edge and node-based approaches we have to set name while adding edges 
+    private static void addXMLChild(Element element, String key, Element childElement) {
+        Result<String> shortKey = new Result<>();
+        Namespace namespace = addXMLNamespace(element, key, shortKey, true);
+        childElement.setName(shortKey.result);
+        childElement.setNamespace(namespace);
+        element.addContent(childElement);
+    }
+
     public void addNode(XMLNode node, String key, XMLNode childNode) {
-        childNode.element.setName(key);            
-        node.element.addContent(childNode.element);
+        addXMLChild(node.element, key, childNode.element);
     }
 
     public void addValue(XMLNode node, String key, boolean attr, Object value, Type type) {
         String stringValue = type.formatXML(value);
         if(attr) {
-            node.element.setAttribute(key, stringValue);
+            addXMLAttributeValue(node.element, key, stringValue);
         } else {
-            Element addElement = new Element(key);
-            addElement.setText(stringValue);
-
-            node.element.addContent(addElement);
+            addXMLChild(node.element, key, stringValue);
         }
     }
 
     public void addMap(XMLNode node, String key, boolean isIndex, Iterable<Pair<Object, XMLNode>> map) {
         if(isIndex) {
             for(Pair<Object, XMLNode> value : map) {
-                value.second.element.setName(tag != null ? tag : key);
-                node.element.addContent(value.second.element);
+                addXMLChild(node.element, tag != null ? tag : key, value.second.element);
             }
         } else {
             Element addElement = new Element(tag != null ? tag : key);
-            for(Pair<Object, XMLNode> value : map) {
+            for(Pair<Object, XMLNode> value : map) { // we don't support namespaces in getMap, so won't support it here
                 value.second.element.setName((String) value.first);                    
                 addElement.addContent(value.second.element);
             }
-            node.element.addContent(addElement);
+            node.element.addContent(addElement); // need to support namespaces, but it is not used for now
         }
     }
 }
