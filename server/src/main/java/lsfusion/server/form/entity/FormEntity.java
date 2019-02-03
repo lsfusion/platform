@@ -496,6 +496,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         });
         ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
 
+        // here can be more precise heuristics than implemented in FormDataManager.getPrintTable (calculating expr and putting expr itself (not its values)  in a set)
+
         ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
         for (PropertyClassImplement implement : group.getProperties(valueClasses, version)) {
             ImSet<ValueClassWrapper> wrappers = implement.mapping.valuesSet();

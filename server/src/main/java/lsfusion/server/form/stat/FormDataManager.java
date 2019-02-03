@@ -3,9 +3,14 @@ package lsfusion.server.form.stat;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.SFunctionSet;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.mutable.MAddExclSet;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.interop.form.PrintMessageData;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
@@ -13,6 +18,7 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormDataInterface;
 import lsfusion.server.form.instance.StaticKeyData;
 import lsfusion.server.form.instance.StaticPropertyData;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,7 +37,7 @@ public abstract class FormDataManager {
         return dataInterface.getFormEntity();
     }
 
-    public PrintMessageData getPrintMessageData(int selectTop, boolean removeNulls) throws SQLException, SQLHandledException {
+    public PrintMessageData getPrintMessageData(int selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
 
         FormEntity formEntity = getFormEntity();
 
@@ -39,7 +45,7 @@ public abstract class FormDataManager {
 
         // filling message (root group)
         GroupObjectEntity root = sources.hierarchy.getRoot();
-        Pair<List<String>, List<List<String>>> rootTable = getPrintTable(root, sources, removeNulls);
+        Pair<List<String>, List<List<String>>> rootTable = getPrintTable(root, sources, removeNullsAndDuplicates);
         List<String> rootTitles = rootTable.first;
         List<String> rootRows = BaseUtils.single(rootTable.second);
 
@@ -60,7 +66,7 @@ public abstract class FormDataManager {
         List<List<String>> rows;
         ImOrderSet<GroupObjectEntity> dependencies = sources.hierarchy.getDependencies(root);
         if(!dependencies.isEmpty()) {
-            Pair<List<String>, List<List<String>>> table = getPrintTable(dependencies.get(0), sources, removeNulls);
+            Pair<List<String>, List<List<String>>> table = getPrintTable(dependencies.get(0), sources, removeNullsAndDuplicates);
             titles = table.first;
             rows = table.second;
         } else { // empty table
@@ -78,25 +84,15 @@ public abstract class FormDataManager {
         return new ExportResult(data.first, data.second, hierarchy);
     }
 
-    private Pair<List<String>, List<List<String>>> getPrintTable(GroupObjectEntity group, final ExportResult sources, boolean removeNulls) {
+    private Pair<List<String>, List<List<String>>> getPrintTable(GroupObjectEntity group, final ExportResult sources, boolean removeNullsAndDuplicates) {
         final StaticKeyData tableData = sources.keys.get(group);
 
         ImOrderSet<PropertyDrawEntity> tableProperties = sources.hierarchy.getProperties(group);
         if(tableProperties == null)
             tableProperties = SetFact.EMPTYORDER();
 
-        // remov'ing nulls 
-        if(removeNulls)
-            tableProperties = tableProperties.filterOrder(new SFunctionSet<PropertyDrawEntity>() {
-                public boolean contains(PropertyDrawEntity property) {
-                    for(ImMap<ObjectEntity, Object> row : tableData.data) {
-                        Object value = StaticPropertyData.getProperty(sources.properties, property, row);
-                        if(value != null)
-                            return true;
-                    }
-                    return false;
-                }
-            });
+        if(removeNullsAndDuplicates) // actually the more precise heuristics can be implemented in addPropertyDraw for group (calculating expr and putting expr itself (not its values)  in a set) 
+            tableProperties = removeNullsAndDuplicates(sources, tableProperties);
 
         // filling titles
         List<String> titles = new ArrayList<>();
@@ -113,6 +109,18 @@ public abstract class FormDataManager {
         }
 
         return new Pair<>(titles, rows);
+    }
+
+    private ImOrderSet<PropertyDrawEntity> removeNullsAndDuplicates(ExportResult sources, ImOrderSet<PropertyDrawEntity> tableProperties) {
+        MAddSet<Pair<LocalizedString, ImMap<ImMap<ObjectEntity, Object>, Object>>> existingColumns = SetFact.mAddSet();
+        MOrderExclSet<PropertyDrawEntity> mFilteredProps = SetFact.mOrderExclSetMax(tableProperties.size());
+        for(PropertyDrawEntity tableProperty : tableProperties) {
+            ImMap<ImMap<ObjectEntity, Object>, Object> values = sources.properties.data.get(tableProperty);
+            if(!SetFact.onlyNulls(values.valueIt()) && //  remove columns with nulls
+                !existingColumns.add(new Pair<>(tableProperty.getCaption(), values))) // remove columns with the same name and data
+                    mFilteredProps.exclAdd(tableProperty);
+        }
+        return mFilteredProps.immutableOrder();
     }
 
     public ExportResult getExportData() throws SQLException, SQLHandledException {
