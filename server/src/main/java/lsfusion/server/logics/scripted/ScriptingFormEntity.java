@@ -240,6 +240,10 @@ public class ScriptingFormEntity {
             setReportPath(property);
     }
 
+    public void setIntegrationSID(String sID) {
+        form.setIntegrationSID(sID);
+    }
+
     public void setReportPath(CalcPropertyObjectEntity property) {
         form.reportPathProp = property;
     }

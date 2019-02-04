@@ -405,6 +405,7 @@ scope {
 		|	editFormDeclaration
 		|	reportFilesDeclaration
 		|	reportDeclaration
+		|   formExtIDDeclaration
 		)*
 		';'
 	;
@@ -457,6 +458,18 @@ reportDeclaration
 	}
 }
 	:	'REPORT' prop = formCalcPropertyObject { property = $prop.property; }
+	;
+
+formExtIDDeclaration
+@init {
+	String formExtID = null;
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.setIntegrationSID(formExtID);
+	}
+}
+	:	'FORMEXTID' id=stringLiteral { formExtID = $id.val; }
 	;
 
 formDeclaration returns [ScriptingFormEntity form]

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.exporting.hierarchy.xml;
 
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectSelector;
@@ -11,6 +12,7 @@ import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.E
 import lsfusion.server.logics.property.actions.integration.hierarchy.xml.XMLNode;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
@@ -25,7 +27,10 @@ public class ExportXMLActionProperty<O extends ObjectSelector> extends ExportHie
     }
 
     protected XMLNode createRootNode(String root, String tag) {
-        return new XMLNode(new Element(root != null ? root : form.getStaticForm().getName()), tag);
+        String elementName = root != null ? root : form.getStaticForm().getIntegrationSID();
+        Result<String> shortKey = new Result<>();
+        Namespace namespace = XMLNode.addXMLNamespace(null, elementName, shortKey, false);
+        return new XMLNode(new Element(shortKey.result, namespace), tag);
     }
 
     @Override
