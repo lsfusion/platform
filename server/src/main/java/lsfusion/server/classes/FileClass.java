@@ -87,11 +87,8 @@ public abstract class FileClass<T> extends DataClass<T> {
 
     @Override
     public T parseHTTP(Object o, Charset charset) throws ParseException {
-        if(o instanceof String) {
-            if(isParseNullValue((String)o))
-                return null;
-            o = new FileData(new RawFileData(((String) o).getBytes(charset)), "unknown");
-        }
+        if(o instanceof String)
+            return super.parseHTTP(o, charset);
 
         if (((FileData) o).getExtension().equals("null"))
             return null;
@@ -100,11 +97,8 @@ public abstract class FileClass<T> extends DataClass<T> {
 
     @Override
     public Object formatHTTP(T value, Charset charset) {
-        if(charset != null) {
-            if (value == null)
-                return getParseNullValue();
-            return new String(formatHTTPNotNull(value).getRawFile().getBytes(), charset);
-        }
+        if(charset != null)
+            return super.formatHTTP(value, charset);
 
         if(value == null) 
             return new FileData(RawFileData.EMPTY, "null");
