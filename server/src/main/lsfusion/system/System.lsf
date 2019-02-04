@@ -121,6 +121,9 @@ reportToStretch '{system.report.to.stretch}' = NOT reportNotToStretch();
 
 hashModules '{system.hash.modules}' = DATA VARSTRING[200] ();
 
+checkIsServer INTERNAL 'lsfusion.server.logics.security.CheckIsServerActionProperty' ();
+isServer = DATA LOCAL BOOLEAN ();
+
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name

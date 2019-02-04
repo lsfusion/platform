@@ -2,10 +2,7 @@ package lsfusion.base.col;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
-import lsfusion.base.col.implementations.ArIndexedMap;
-import lsfusion.base.col.implementations.ArIndexedSet;
-import lsfusion.base.col.implementations.ArSet;
-import lsfusion.base.col.implementations.HSet;
+import lsfusion.base.col.implementations.*;
 import lsfusion.base.col.implementations.order.ArOrderSet;
 import lsfusion.base.col.implementations.order.HOrderSet;
 import lsfusion.base.col.implementations.simple.EmptyOrderSet;
@@ -13,6 +10,7 @@ import lsfusion.base.col.implementations.simple.EmptySet;
 import lsfusion.base.col.implementations.simple.SingletonSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 
@@ -431,6 +429,13 @@ public class SetFact {
             if(set.contains(element))
                 return true;
         return false;
+    }
+    
+    public static <T> boolean onlyNulls(Iterable<T> elements) {
+        for(T element : elements)
+            if(element != null)
+                return false;
+        return true;
     }
     
 }

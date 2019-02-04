@@ -129,11 +129,8 @@ public class ByteArrayClass extends DataClass<RawFileData> {
 
     @Override
     public RawFileData parseHTTP(Object o, Charset charset) throws ParseException {
-        if(o instanceof String) {
-            if (isParseNullValue((String) o))
-                return null;
-            return new RawFileData(((String) o).getBytes(charset));
-        }
+        if(o instanceof String)
+            return super.parseHTTP(o, charset);
         
         if (((FileData) o).getLength() == 0)
             return null;
@@ -142,11 +139,8 @@ public class ByteArrayClass extends DataClass<RawFileData> {
     
     @Override
     public Object formatHTTP(RawFileData value, Charset charset) {
-        if(charset != null) {
-            if (value == null)
-                return getParseNullValue();
-            return new String(value.getBytes(), charset);
-        } 
+        if(charset != null)
+            return super.formatHTTP(value, charset);
 
         if (value == null)
             return FileData.EMPTY;
