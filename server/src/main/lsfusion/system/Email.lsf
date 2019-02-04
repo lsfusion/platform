@@ -169,11 +169,6 @@ FORM mail '{email.form.mail}'
     PROPERTIES(ae) READONLY imported, importError, name, lastError PANEL
     PROPERTIES(ae) GRID openFile, saveFile, markImported
     FILTERS email(ae)==e
-    
-    OBJECTS p=Property
-        
-    PROPERTIES(p) READONLY caption, canonicalName
-    ORDER canonicalName(p)
 ;
 
 DESIGN mail {
