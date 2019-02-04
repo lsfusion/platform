@@ -271,7 +271,7 @@ public class Settings implements Cloneable {
 
     private boolean useShowIfInReports = true;
 
-    private int minSizeForExcelStreamingReader = -1; //-1 disabled, to enable use for example 50000000 (50 MB)
+    private int minSizeForExcelStreamingReader = 15000000; //-1 disabled, to enable use for example 50000000 (50 MB)
 
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
