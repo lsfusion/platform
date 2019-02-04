@@ -1,9 +1,6 @@
 package lsfusion.client;
 
-import lsfusion.base.FileData;
-import lsfusion.base.NavigatorInfo;
-import lsfusion.base.RawFileData;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
@@ -77,17 +74,13 @@ public final class LoginAction {
     
     private void syncUsers(RemoteLogicsInterface remoteLogics) {
         if (remoteLogics != null) {
-            JSONObject syncJson = new JSONObject();
-            syncJson.put("computer", SystemUtils.getLocalHostName());
             JSONArray users = new JSONArray();
             for (UserInfo userInfo : userInfos) {
                 users.put(userInfo.name);
             }
-            syncJson.put("users", users);
-            FileData fileData = new FileData(new RawFileData(syncJson.toString().getBytes(StandardCharsets.UTF_8)), "json");
-
+            FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
             try {
-                List<Object> result = remoteLogics.exec("Authentication.syncUsers[JSONFILE]", new String[]{"Authentication.unlockedUsers[]"}, new Object[]{fileData}, "utf-8");
+                List<Object> result = remoteLogics.exec("Authentication.syncUsers[VARISTRING[100], JSONFILE]", new String[0], new Object[]{SystemUtils.getLocalHostName(), fileData}, "utf-8");
                 JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.get(0)).getRawFile().getBytes()));
                 List<Object> currentUsers = unlockedUsers.toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
