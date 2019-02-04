@@ -66,7 +66,7 @@ public class XMLNode implements Node<XMLNode> {
         if(uri.result != null)
             return Namespace.getNamespace(nsName, uri.result);
         
-        Namespace namespace = element.getNamespace(nsName);
+        Namespace namespace = element != null ? element.getNamespace(nsName) : null;
         if(namespace == null)
             return Namespace.getNamespace(nsName,"http://www.w3.org/"+nsName);
         return namespace;
@@ -81,7 +81,7 @@ public class XMLNode implements Node<XMLNode> {
         return getXMLNamespace(element, fullName, shortName, inheritNamespace);
     }
 
-    private static Namespace addXMLNamespace(Element element, String fullName, Result<String> shortName, boolean inheritNamespace) {
+    public static Namespace addXMLNamespace(Element element, String fullName, Result<String> shortName, boolean inheritNamespace) {
         return getXMLNamespace(element, fullName, shortName, inheritNamespace);
     }
 

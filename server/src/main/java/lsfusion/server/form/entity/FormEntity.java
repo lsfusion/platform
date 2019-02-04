@@ -880,8 +880,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public String getName() {
         return CanonicalNameUtils.getName(canonicalName);
-    } 
+    }
+
+    private String integrationSID;
     
+    public String getIntegrationSID() {
+        return integrationSID != null ? integrationSID : getSID();
+    }
+
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
     public LocalizedString getCaption() {
         return caption;
     }
