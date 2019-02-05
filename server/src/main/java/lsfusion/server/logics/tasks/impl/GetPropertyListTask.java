@@ -1,5 +1,6 @@
 package lsfusion.server.logics.tasks.impl;
 
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.tasks.SimpleBLTask;
 import org.apache.log4j.Logger;
 

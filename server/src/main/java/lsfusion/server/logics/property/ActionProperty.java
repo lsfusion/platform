@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.ServerResponse;
-import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
@@ -101,16 +100,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         this.paramInfo = paramInfo;
     }
 
-    public static int compareChangeExtProps(Property p1, Property p2, boolean strictCompare) {
+    public static int compareChangeExtProps(Property p1, Property p2) {
         // если p1 не DataProperty
         String c1 = p1.getChangeExtSID();
         String c2 = p2.getChangeExtSID();
 
-        if(c1 == null && c2 == null) {
-            if(strictCompare)
-                return Integer.compare(p1.hashCode(), p2.hashCode());
-            return 0;
-        }
+        if(c1 == null && c2 == null)
+            return compareDeepProps(p1, p2);
 
         if(c1 == null)
             return 1;
@@ -119,10 +115,67 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             return -1;
 
         int result = c1.compareTo(c2);
-        if(strictCompare && result == 0)
-            return Integer.compare(p1.hashCode(), p2.hashCode());
+        if(result != 0)
+            return result;
 
-        return result;
+        return compareDeepProps(p1, p2);
+    }
+    
+    public static int compareDeepProps(Property p1, Property p2) {
+//           return Integer.compare(p1.hashCode(), p2.hashCode());
+
+        String className1 = p1.getClass().getName(); 
+        String className2 = p2.getClass().getName(); 
+
+        int result = className1.compareTo(className2);
+        if(result != 0)
+            return result;
+
+        DebugInfo debugInfo1 = p1.getDebugInfo();
+        DebugInfo debugInfo2 = p2.getDebugInfo();
+        
+        if((debugInfo1 == null) != (debugInfo2 == null))
+            return Boolean.compare(debugInfo1 == null, debugInfo2 == null);
+        
+        if(debugInfo1 != null) {
+            DebugInfo.DebugPoint point1 = debugInfo1.getPoint();
+            DebugInfo.DebugPoint point2 = debugInfo2.getPoint();
+            
+            result = point1.moduleName.compareTo(point2.moduleName);
+            if(result != 0)
+                return result;
+            
+            result = Integer.compare(point1.line, point2.line);
+            if(result != 0)
+                return result;
+
+            result = Integer.compare(point1.offset, point2.offset);
+            if(result != 0)
+                return result;
+        }
+
+        String caption1 = p1.caption != null ? p1.caption.getSourceString() : "";
+        String caption2 = p2.caption != null ? p2.caption.getSourceString() : "";
+        result = caption1.compareTo(caption2);
+        if(result != 0)
+            return result;
+
+        ImList<CalcProperty> depends1 = p1 instanceof ActionProperty ? ((ActionProperty<?>) p1).getSortedUsedProps() : ((CalcProperty<?>)p1).getSortedDepends(); 
+        ImList<CalcProperty> depends2 = p2 instanceof ActionProperty ? ((ActionProperty<?>) p2).getSortedUsedProps() : ((CalcProperty<?>)p2).getSortedDepends();
+        result = Integer.compare(depends1.size(), depends2.size());
+        if(result != 0)
+            return result;
+
+        for(int i=0,size=depends1.size();i<size;i++) {
+            CalcProperty dp1 = depends1.get(i);
+            CalcProperty dp2 = depends2.get(i);
+
+            result = BusinessLogics.propComparator().compare(dp1, dp2); 
+            if(result != 0)
+                return result;
+        }
+
+        return Integer.compare(p1.hashCode(), p2.hashCode());
     }
 
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
@@ -593,6 +646,11 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @Override
     public boolean isNotNull() {
         return false;
+    }
+
+    @IdentityStartLazy
+    public ImList<CalcProperty> getSortedUsedProps() {
+        return getUsedProps().sort(BusinessLogics.propComparator());
     }
 
     public boolean ignoreReadOnlyPolicy() {
