@@ -63,7 +63,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 innerObject = interfaceObjects.get(byInterface);
             } 
             if(innerObject == null || usedObjects.add(innerObject)) {
-                innerObject = new ObjectEntity(genID(), innerIntClass, LocalizedString.NONAME);
+                innerObject = new ObjectEntity(genID(), innerIntClass, LocalizedString.NONAME, innerIntClass == null);
                 detailsGroup.add(innerObject);
 
                 addPropertyDraw(LM.baseLM.getObjValueProp(this, innerObject), version, innerObject);

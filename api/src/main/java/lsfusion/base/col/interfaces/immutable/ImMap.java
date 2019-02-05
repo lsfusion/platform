@@ -59,6 +59,7 @@ public interface ImMap<K, V> {
     // filters
     
     <M> ImFilterValueMap<K, M> mapFilterValues();
+    <M> ImFilterRevValueMap<K, M> mapFilterRevValues();
 
     ImMap<K, V> filterFn(FunctionSet<K> filter);
     ImMap<K, V> filterFnValues(FunctionSet<V> filter);

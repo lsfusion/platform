@@ -5,6 +5,7 @@ import lsfusion.base.FunctionSet;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.simple.FilterRevValueMap;
 import lsfusion.base.col.implementations.simple.FilterValueMap;
 import lsfusion.base.NotFunctionSet;
 import lsfusion.base.SFunctionSet;
@@ -372,6 +373,9 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
         return new FilterValueMap<>(this.<M>mapItValues());
+    }
+    public <M> ImFilterRevValueMap<K, M> mapFilterRevValues() {
+        return new FilterRevValueMap<>(this.<M>mapItRevValues());
     }
 
     @Override

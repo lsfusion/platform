@@ -59,6 +59,18 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
         public ImRevMap<K, V> immutableValueRev() {
             return result.immutableValueRev();
         }
+
+        public V getMapValue(int i) {
+            return result.getMapValue(order[i]);
+        }
+
+        public K getMapKey(int i) {
+            return result.getMapKey(order[i]);
+        }
+
+        public int mapSize() {
+            return result.mapSize();
+        }
     }
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() {
         return new RevMap<>();

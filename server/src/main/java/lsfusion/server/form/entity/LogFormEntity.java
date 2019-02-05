@@ -55,7 +55,7 @@ public class LogFormEntity extends FormEntity {
             GroupObjectEntity paramGroup = new GroupObjectEntity(genID(), sID + "Group");
             paramGroup.setPanelClassView();
 
-            ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass.getCaption());
+            ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass != null ? valueClass.getCaption() : LocalizedString.NONAME, valueClass == null);
             mParams.exclAdd(obj);
             paramGroup.add(obj);
             index++;
