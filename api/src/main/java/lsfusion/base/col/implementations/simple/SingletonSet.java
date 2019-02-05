@@ -496,6 +496,9 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
         return new FilterValueMap<>(this.<M>mapItValues());
     }
+    public <M> ImFilterRevValueMap<K, M> mapFilterRevValues() {
+        return new FilterRevValueMap<>(this.<M>mapItRevValues());
+    }
 
     public ImSet<K> filterFn(FunctionSet<K> filter) {
         if(filter.contains(key))
