@@ -31,6 +31,7 @@ stringToFile(TEXT str) { stringToFile(str, 'UTF-8', ''); }
 resultString = DATA LOCAL TEXT ();
 //file, charset
 fileToString '{utils.file.to.string}'  INTERNAL  'lsfusion.utils.utils.FileToStringActionProperty' (FILE, VARSTRING[10]);
+fileToString(FILE file) { fileToString(file, 'UTF-8'); }
 //cast link to string
 linkToString '{utils.link.to.string}' INTERNAL 'lsfusion.utils.utils.LinkToStringActionProperty' (LINK);
 //cast richtext to string
