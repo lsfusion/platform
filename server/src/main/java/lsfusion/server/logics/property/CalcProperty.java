@@ -2006,6 +2006,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public ImSet<CalcProperty> getImplements() {
         return SetFact.EMPTY();
     }
+    
+    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<CalcProperty> path) {
+        if(path != null)
+            path = path.addExcl(this);
+        for(CalcProperty depend : getDepends())
+            if(depend.checkRecursions(abstractPath, path))
+                return true;
+        return false;
+    }
 
     @Override
     public ApplyCalcEvent getApplyEvent() {
