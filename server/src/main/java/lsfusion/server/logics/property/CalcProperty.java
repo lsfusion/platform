@@ -1954,6 +1954,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
+    @IdentityStartLazy
+    public ImList<CalcProperty> getSortedDepends() {
+        return getDepends().sort(BusinessLogics.propComparator());
+    }
+
     // странная конечно эвристика, нужна чтобы f(a) IF g(a) наследовал draw options f(a), возможно в будущем надо убрать
     public ImList<CalcProperty> getAndProperties() {
         return ListFact.singleton((CalcProperty) this);
