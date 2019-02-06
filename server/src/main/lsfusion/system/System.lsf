@@ -38,7 +38,8 @@ onStarted  ABSTRACT LIST ( );
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 
-headers = DATA LOCAL STRING[100](STRING[100], INTEGER);  
+headers = DATA LOCAL TEXT(TEXT, INTEGER);  
+headers(TEXT name) = GROUP LAST headers(name, INTEGER i) ORDER i;  
 
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();

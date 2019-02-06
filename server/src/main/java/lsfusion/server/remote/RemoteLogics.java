@@ -284,10 +284,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         CalcProperty<P> headersProp = headers.property;
         P name = headers.listInterfaces.get(0);
         P index = headers.listInterfaces.get(1);
-        
-        ImOrderSet<P> keySet = SetFact.toOrderExclSet(name, index);
-                
-        SinglePropertyTableUsage<P> table = new SinglePropertyTableUsage<>("writeRequestHeaders", keySet,
+
+        SinglePropertyTableUsage<P> table = new SinglePropertyTableUsage<>("writeRequestHeaders", SetFact.toOrderExclSet(name, index),
                 headersProp.interfaceTypeGetter, headersProp.getType());
 
         MExclMap<ImMap<P, DataObject>, ObjectValue> mRows = MapFact.mExclMap();
