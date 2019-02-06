@@ -291,7 +291,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
 
         try {
-            table.writeRows(session.sql, session.getOwner(), mRows.immutable());
+            table.writeRows(mRows.immutable(), session.sql, session.getOwner());
             session.change(headersProp, SinglePropertyTableUsage.getChange(table));
         } finally {
             table.drop(session.sql, session.getOwner());
