@@ -265,6 +265,14 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     @IdentityLazy
+    public boolean uses(CalcProperty property) {
+        for(CalcProperty usedProp : getUsedProps())
+            if(CalcProperty.depends(usedProp, property))
+                return true;
+        return false;
+    }
+
+    @IdentityLazy
     private ImSet<Pair<String, Integer>> getChangePropsLocations() {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
         for (CalcProperty property : getChangeProps()) {

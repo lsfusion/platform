@@ -5,9 +5,12 @@ import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
@@ -32,9 +35,12 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SinglePropertyTableUsage;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -218,12 +224,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charsetName) {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charsetName, String[] headerNames, String[][] headerValues) {
         List<Object> returnList;
         try {
             LAP property = businessLogics.findActionByCompoundName(action);
             if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params, Charset.forName(charsetName));
+                returnList = executeExternal(property, returnCanonicalNames, params, Charset.forName(charsetName), headerNames, headerValues);
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
@@ -234,7 +240,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charsetName) {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charsetName, String[] headerNames, String[][] headerValues) {
         List<Object> returnList = new ArrayList<>();
         if (paramScript != null) {
             try {
@@ -246,7 +252,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 }
                 LAP<?> runAction = businessLogics.evaluateRun(script);
                 if (runAction != null)
-                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
+                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset, headerNames, headerValues);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -256,13 +262,41 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
+    private List<Object> executeExternal(LAP<?> property, String[] returnCanonicalNames, Object[] params, Charset charset, String[] headerNames, String[][] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {
         try (DataSession session = dbManager.createSession()) {
+            if(property.property.uses(baseLM.headers.property)) // optimization
+                writeRequestHeaders(session, headerNames, headerValues);
+            
             property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
 
             return readReturnProperties(session, returnCanonicalNames);
         }
     }
+    
+    private <P extends PropertyInterface> void writeRequestHeaders(DataSession session, String[] headerNames, String[][] headerValues) throws SQLException, SQLHandledException {
+        LCP<P> headers = (LCP<P>) baseLM.headers;
+        CalcProperty<P> headersProp = headers.property;
+        P name = headers.listInterfaces.get(0);
+        P index = headers.listInterfaces.get(1);
+
+        SinglePropertyTableUsage<P> table = new SinglePropertyTableUsage<>("writeRequestHeaders", SetFact.toOrderExclSet(name, index),
+                headersProp.interfaceTypeGetter, headersProp.getType());
+
+        MExclMap<ImMap<P, DataObject>, ObjectValue> mRows = MapFact.mExclMap();
+        for (int i = 0; i < headerNames.length; i++) {
+            DataObject nameObject = new DataObject(headerNames[i]);
+            for (int j = 0; j < headerValues[i].length; j++) {
+                mRows.exclAdd(MapFact.toMap(name, nameObject, index, new DataObject(j)), new DataObject(headerValues[i][j]));
+            }
+        }
+
+        try {
+            table.writeRows(session.sql, session.getOwner(), mRows.immutable());
+            session.change(headersProp, SinglePropertyTableUsage.getChange(table));
+        } finally {
+            table.drop(session.sql, session.getOwner());
+        }
+    } 
 
     private List<Object> readReturnProperties(DataSession session, String[] returnCanonicalNames) throws SQLException, SQLHandledException, IOException {
         LCP[] returnProps; 

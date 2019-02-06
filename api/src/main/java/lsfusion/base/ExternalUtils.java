@@ -44,7 +44,8 @@ public class ExternalUtils {
     private static final String RETURNMULTITYPE_PARAM = "returnmultitype";
     private static final String PROPERTY_PARAM = "property";
 
-    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, 
+                                                  ContentType requestContentType, String[] headerNames, String[][] headerValues) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -58,7 +59,7 @@ public class ExternalUtils {
 
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString());
+            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
         } else {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
@@ -69,7 +70,7 @@ public class ExternalUtils {
                     paramsList = paramsList.subList(1, paramsList.size());
                 }
                 paramList = remoteLogics.eval(isEvalAction, script, returns.toArray(new String[returns.size()]),
-                        paramsList.toArray(), charset == null ? null : charset.toString());
+                        paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
             }
         }
 

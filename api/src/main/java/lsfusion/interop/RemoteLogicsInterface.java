@@ -33,8 +33,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     void remindPassword(String email, String localeLanguage) throws RemoteException;
 
     //external requests
-    List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
-    List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
+    List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[][] headerValues) throws RemoteException;
+    List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[][] headerValues) throws RemoteException;
 
     boolean isSingleInstance() throws RemoteException;
 
