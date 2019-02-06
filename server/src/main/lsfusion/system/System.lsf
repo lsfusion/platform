@@ -38,6 +38,8 @@ onStarted  ABSTRACT LIST ( );
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 
+requestHeader = DATA LOCAL STRING[100](STRING[100], INTEGER);  
+
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();
 lsfStackTraceCaughtException = DATA LOCAL TEXT();

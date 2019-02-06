@@ -5,8 +5,10 @@ import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -20,7 +22,11 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PreAuthentication;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.data.KeyField;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -33,9 +39,12 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.SessionTableUsage;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -224,12 +233,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charsetName) {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charsetName, String[] headerNames, String[][] headerValues) {
         List<Object> returnList;
         try {
             LAP property = businessLogics.findActionByCompoundName(action);
             if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params, Charset.forName(charsetName));
+                returnList = executeExternal(property, returnCanonicalNames, params, Charset.forName(charsetName), headerNames, headerValues);
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
@@ -240,7 +249,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charsetName) {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charsetName, String[] headerNames, String[][] headerValues) {
         List<Object> returnList = new ArrayList<>();
         if (paramScript != null) {
             try {
@@ -252,7 +261,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 }
                 LAP<?> runAction = businessLogics.evaluateRun(script);
                 if (runAction != null)
-                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
+                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset, headerNames, headerValues);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -262,13 +271,57 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
+    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset, String[] headerNames, String[][] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {
         try (DataSession session = dbManager.createSession()) {
+            writeRequestHeaders(session, headerNames, headerValues);
             property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
 
             return readReturnProperties(session, returnCanonicalNames);
         }
     }
+    
+    private void writeRequestHeaders(DataSession session, String[] headerNames, String[][] headerValues) throws SQLException, SQLHandledException {
+        LCP requestHeaderLCP = baseLM.requestHeader;
+        CalcProperty requestHeaderProperty = (CalcProperty) requestHeaderLCP.property;
+
+        KeyField nameKeyField = new KeyField("headerName", StringClass.get(100));
+        KeyField indexKeyField = new KeyField("headerValueIndex", IntegerClass.instance);
+        ImOrderSet<KeyField> keySet = SetFact.toOrderExclSet(nameKeyField, indexKeyField);
+        ImOrderSet<LCP> prop = SetFact.singletonOrder(requestHeaderLCP);
+                
+        SessionTableUsage<KeyField, LCP> table = new SessionTableUsage<>("writeRequestHeaders", keySet, prop, new Type.Getter<KeyField>() {
+            public Type getType(KeyField key) {
+                return key.type;
+            }
+        }, new Type.Getter<LCP>() {
+            @Override
+            public Type getType(LCP key) {
+                return ((LCP<?>)key).property.getType();
+            }
+        });
+
+        ImMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> rows = MapFact.EMPTY();
+        for (int i = 0; i < headerNames.length; i++) {
+            ImMap<KeyField, DataObject> keys = MapFact.EMPTY();
+            ImMap<LCP, ObjectValue> values = MapFact.EMPTY();
+            String headerName = headerNames[i];
+            DataObject nameObject = new DataObject(headerName, (ConcreteClass) nameKeyField.type);
+            for (int j = 0; j < headerValues[i].length; j++) {
+                keys = keys.addExcl(nameKeyField, nameObject);
+                keys = keys.addExcl(indexKeyField, new DataObject(j, (ConcreteClass) indexKeyField.type));
+                values = values.addExcl(requestHeaderLCP, new DataObject(headerValues[i][j], (DataClass) requestHeaderProperty.getType()));
+            }
+            rows = rows.addExcl(keys, values);
+        }
+
+        try {
+            table.writeRows(session.sql, rows, session.getOwner());
+            PropertyChange change = SessionTableUsage.getChange(table, requestHeaderLCP.listInterfaces.mapSet(keySet), requestHeaderLCP);
+            session.change(requestHeaderProperty, change);
+        } finally {
+            table.drop(session.sql, session.getOwner());
+        }
+    } 
 
     private List<Object> readReturnProperties(DataSession session, String[] returnCanonicalNames) throws SQLException, SQLHandledException, IOException {
         LCP[] returnProps; 

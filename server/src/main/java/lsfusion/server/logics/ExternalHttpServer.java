@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -74,8 +75,11 @@ public class ExternalHttpServer extends MonitorServer {
             // поток создается HttpServer'ом, поэтому ExecutorService'ом как остальные не делается
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
+                String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
+                String[][] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
+                
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
-                        request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request));
+                        request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request), headerNames, headerValues);
 
                 if (response.response != null)
                     sendResponse(request, response.response, response.response.getContentType().getValue(), response.contentDisposition);
@@ -102,6 +106,15 @@ public class ExternalHttpServer extends MonitorServer {
                 }
             }
             return null;
+        }
+        
+        private String[][] getRequestHeaderValues(Headers headers, String[] headerNames) {
+            String[][] headerValuesArray = new String[headerNames.length][];
+            for (int i = 0; i < headerNames.length; i++) {
+                List<String> heaverValues = headers.get(headerNames[i]);
+                headerValuesArray[i] = heaverValues.toArray(new String[0]);
+            }
+            return headerValuesArray;
         }
 
         private void sendOKResponse(HttpExchange request) throws IOException {
