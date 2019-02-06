@@ -2,7 +2,6 @@ package lsfusion.interop;
 
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -10,7 +9,6 @@ import lsfusion.interop.remote.PendingRemoteInterface;
 import lsfusion.interop.remote.PreAuthentication;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +21,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     GUIPreferences getGUIPreferences() throws RemoteException;
     
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
-    
-    ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException;
 
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;
 

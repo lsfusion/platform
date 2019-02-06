@@ -2,7 +2,6 @@ package lsfusion.utils.com;
 
 import lsfusion.base.FileData;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.action.WriteToComPortClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -17,7 +16,6 @@ public class WriteToComPortActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface baudRateInterface;
     private final ClassPropertyInterface comPortInterface;
-    private final ClassPropertyInterface daemonInterface;
 
     public WriteToComPortActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -26,17 +24,15 @@ public class WriteToComPortActionProperty extends ScriptingActionProperty {
         fileInterface = i.next();
         baudRateInterface = i.next();
         comPortInterface = i.next();
-        daemonInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FileData file = (FileData) context.getKeyValue(fileInterface).getValue();
         Integer baudRate = (Integer) context.getKeyValue(baudRateInterface).getValue();
         Integer comPort = (Integer) context.getKeyValue(comPortInterface).getValue();
-        boolean daemon = context.getKeyValue(daemonInterface).getValue() != null;
 
         if(file != null && baudRate != null && comPort != null) {
-            String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(file.getRawFile(), baudRate, comPort, daemon));
+            String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(file.getRawFile(), baudRate, comPort));
             if (result != null) {
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
             }

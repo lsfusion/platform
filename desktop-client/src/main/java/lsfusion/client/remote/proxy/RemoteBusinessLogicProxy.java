@@ -5,14 +5,12 @@ import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PreAuthentication;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,11 +39,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         GUIPreferences result = target.getGUIPreferences();
         logRemoteMethodEndCall("getGUIPreferences", result);
         return result;    
-    }
-
-    @Override
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException {
-        return target.getDaemonTasks(compId);
     }
 
     public ExternalScreen getExternalScreen(int screenID) throws RemoteException {

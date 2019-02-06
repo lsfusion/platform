@@ -15,7 +15,7 @@ import lsfusion.client.rmi.RMITimeoutSocketFactory;
 import lsfusion.interop.*;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.IDaemonTask;
+import lsfusion.interop.event.ICleanListener;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
@@ -94,7 +94,7 @@ public class Main {
     public static int asyncTimeOut;
 
     public static EventBus eventBus = new EventBus();
-    private static ArrayList<IDaemonTask> daemonTasks;
+    public static List<ICleanListener> cleanListeners = new ArrayList<>();
 
     static SingleInstance singleInstance;
     public static boolean busyDialog;
@@ -294,17 +294,6 @@ public class Main {
                     frame.setVisible(true);
 
                     ((DockableMainFrame) frame).clearForms();
-
-                    daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
-                    for (IDaemonTask task : daemonTasks) {
-                        try {
-                            task.setEventBus(eventBus);
-                            task.start();
-                        } catch (Exception e) {
-                            logger.error(getString("client.error.application.initialization"), e);
-                            Log.error(getString("client.error.application.initialization"), e);
-                        }
-                    }
 
                     ClientSettings clientSettings = remoteNavigator.getClientSettings();
 
@@ -700,11 +689,10 @@ public class Main {
         RemoteFormProxy.dropCaches();
         ClientExternalScreen.dropCaches();
 
-        if (daemonTasks != null) {
-            for (IDaemonTask task : daemonTasks) {
-                task.stop();
-            }
+        for (ICleanListener task : cleanListeners) {
+            task.clean();
         }
+        cleanListeners.clear();
         eventBus.invalidate();
 
         computerId = -1L;
@@ -714,17 +702,6 @@ public class Main {
         remoteNavigator = null;
 
         System.gc();
-    }
-
-    public static String writeToComPort(byte[] file, int comPort) {
-        for (IDaemonTask daemonTask : daemonTasks) {
-            try {
-                daemonTask.writeToComPort(file, comPort);
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-        }
-        return null;
     }
 
     public static long generateID() throws RemoteException {

@@ -47,11 +47,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LCP hostnameComputer;
     public LCP computerHostname;
-    public LCP scannerComPortComputer;
-    public LCP scannerSingleReadComputer;
-    public LCP useDiscountCardReaderComputer;
-    public LCP scalesComPortComputer;
-
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
 
@@ -117,11 +112,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         // Компьютер
         hostnameComputer = findProperty("hostname[Computer]");
         computerHostname = findProperty("computer[VARISTRING[100]]");
-        scannerComPortComputer = findProperty("scannerComPort[Computer]");
-        scannerSingleReadComputer = findProperty("scannerSingleRead[Computer]");
-        useDiscountCardReaderComputer = findProperty("useDiscountCardReader[Computer]");
-        scalesComPortComputer = findProperty("scalesComPort[Computer]");
-
         hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 
         isLockedCustomUser = findProperty("isLocked[CustomUser]");

@@ -5,8 +5,6 @@ import jasperapi.ReportGenerator;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import jssc.SerialPort;
-import jssc.SerialPortException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FileDialogUtils;
 import lsfusion.base.RawFileData;
@@ -27,6 +25,8 @@ import lsfusion.client.report.ClientReportUtils;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
+import lsfusion.interop.event.EventBus;
+import lsfusion.interop.event.ICleanListener;
 import lsfusion.interop.form.ServerResponse;
 import org.apache.commons.io.FileUtils;
 
@@ -617,24 +617,13 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public String execute(WriteToComPortClientAction action) {
-        if(action.daemon) {
-            return Main.writeToComPort(action.file.getBytes(), action.comPort);
-        } else {
-            try {
-                SerialPort serialPort = new SerialPort("COM" + action.comPort);
-                try {
-                    serialPort.openPort();
-                    serialPort.setParams(action.baudRate, 8, 1, 0);
-                    serialPort.writeBytes(action.file.getBytes());
-                } finally {
-                    serialPort.closePort();
-                }
-            } catch (SerialPortException e) {
-                return e.getMessage();
-            }
-            return null;
-        }
+    public EventBus getEventBus() {
+        return Main.eventBus;
+    }
+
+    @Override
+    public void addCleanListener(ICleanListener daemonTask) {
+        Main.cleanListeners.add(daemonTask);
     }
 
     //to prevent java.lang.IllegalStateException: Toolkit not initialized

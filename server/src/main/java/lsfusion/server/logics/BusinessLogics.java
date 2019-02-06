@@ -17,7 +17,6 @@ import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
-import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.ApplyCanceledException;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -36,10 +35,9 @@ import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.EExecutionStackRunnable;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.daemons.DiscountCardDaemonTask;
-import lsfusion.server.daemons.ScannerDaemonTask;
-import lsfusion.server.daemons.WeightDaemonTask;
-import lsfusion.server.data.*;
+import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.MapCacheAspect;
@@ -50,6 +48,7 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.RemoteNavigator;
+import lsfusion.server.form.stat.FormReportManager;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -75,8 +74,10 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
-import lsfusion.server.form.stat.FormReportManager;
-import lsfusion.server.session.*;
+import lsfusion.server.session.ApplyFilter;
+import lsfusion.server.session.Correlation;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -208,38 +209,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public LogicsModule getSysModule(String name) {
         return modules.get(name);
-    }
-
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) {
-        ArrayList<IDaemonTask> daemons = new ArrayList<>();
-
-        Integer scannerComPort;
-        Boolean scannerSingleRead;
-        boolean useDiscountCardReader;
-        Integer scalesComPort;
-
-        try {
-            try(DataSession session = getDbManager().createSession()) {
-                DataObject computerObject = new DataObject(compId, authenticationLM.computer);
-                scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, computerObject);
-                scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, computerObject);
-                useDiscountCardReader = authenticationLM.useDiscountCardReaderComputer.read(session, computerObject) != null;
-                scalesComPort = (Integer) authenticationLM.scalesComPortComputer.read(session, computerObject);
-            }
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
-        if(useDiscountCardReader)
-            daemons.add(new DiscountCardDaemonTask());
-        if (scannerComPort != null) {
-            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
-            daemons.add(task);
-        }
-        if (scalesComPort != null) {
-            IDaemonTask task = new WeightDaemonTask(scalesComPort);
-            daemons.add(task);
-        }
-        return daemons;
     }
 
     protected void addExternalScreen(ExternalScreen screen) {

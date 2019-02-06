@@ -10,33 +10,23 @@ TABLE computer (Computer);
 hostname '{authentication.host.name.computer}' = DATA VARISTRING[100] (Computer) IN id;
 computer = GROUP LAST Computer computer BY hostname(computer);
 
-// Сканер
-scannerComPort 'Com-port сканнера' = DATA INTEGER (Computer);
-scannerSingleRead 'Одно событие на весь штрих-код' = DATA BOOLEAN (Computer);
-
-//Считыватель дисконтных карт
-useDiscountCardReader 'Включить считыватель дисконтных карт' = DATA BOOLEAN (Computer);
-
-//Весы
-scalesComPort 'Com-port весов' = DATA INTEGER (Computer);
-
 FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL
-    PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) hostname
     
     EDIT Computer OBJECT c
 ;
 
 FORM computers '{authentication.computers}'
     OBJECTS c = Computer
-    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) READONLY hostname
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE GRID
 ;
 
 FORM computersDialog '{authentication.computers}'
     OBJECTS c = Computer
     
-    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) READONLY hostname
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Computer OBJECT c     

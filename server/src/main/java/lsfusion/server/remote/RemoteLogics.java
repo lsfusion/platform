@@ -12,7 +12,6 @@ import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -151,11 +150,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
 
         return navigatorsManager.createNavigator(getStack(), isFullClient, navigatorInfo, reuseSession);
-    }
-
-    @Override
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException {
-        return businessLogics.getDaemonTasks(compId);
     }
 
     public ExternalScreen getExternalScreen(int screenID) {
