@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
@@ -22,11 +23,7 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PreAuthentication;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.data.KeyField;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -40,11 +37,11 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SessionTableUsage;
+import lsfusion.server.session.SinglePropertyTableUsage;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -271,53 +268,39 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset, String[] headerNames, String[][] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {
+    private List<Object> executeExternal(LAP<?> property, String[] returnCanonicalNames, Object[] params, Charset charset, String[] headerNames, String[][] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {
         try (DataSession session = dbManager.createSession()) {
-            writeRequestHeaders(session, headerNames, headerValues);
+            if(property.property.uses(baseLM.headers.property)) // optimization
+                writeRequestHeaders(session, headerNames, headerValues);
+            
             property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
 
             return readReturnProperties(session, returnCanonicalNames);
         }
     }
     
-    private void writeRequestHeaders(DataSession session, String[] headerNames, String[][] headerValues) throws SQLException, SQLHandledException {
-        LCP requestHeaderLCP = baseLM.requestHeader;
-        CalcProperty requestHeaderProperty = (CalcProperty) requestHeaderLCP.property;
-
-        KeyField nameKeyField = new KeyField("headerName", StringClass.get(100));
-        KeyField indexKeyField = new KeyField("headerValueIndex", IntegerClass.instance);
-        ImOrderSet<KeyField> keySet = SetFact.toOrderExclSet(nameKeyField, indexKeyField);
-        ImOrderSet<LCP> prop = SetFact.singletonOrder(requestHeaderLCP);
+    private <P extends PropertyInterface> void writeRequestHeaders(DataSession session, String[] headerNames, String[][] headerValues) throws SQLException, SQLHandledException {
+        LCP<P> headers = (LCP<P>) baseLM.headers;
+        CalcProperty<P> headersProp = headers.property;
+        P name = headers.listInterfaces.get(0);
+        P index = headers.listInterfaces.get(1);
+        
+        ImOrderSet<P> keySet = SetFact.toOrderExclSet(name, index);
                 
-        SessionTableUsage<KeyField, LCP> table = new SessionTableUsage<>("writeRequestHeaders", keySet, prop, new Type.Getter<KeyField>() {
-            public Type getType(KeyField key) {
-                return key.type;
-            }
-        }, new Type.Getter<LCP>() {
-            @Override
-            public Type getType(LCP key) {
-                return ((LCP<?>)key).property.getType();
-            }
-        });
+        SinglePropertyTableUsage<P> table = new SinglePropertyTableUsage<>("writeRequestHeaders", keySet,
+                headersProp.interfaceTypeGetter, headersProp.getType());
 
-        ImMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> rows = MapFact.EMPTY();
+        MExclMap<ImMap<P, DataObject>, ObjectValue> mRows = MapFact.mExclMap();
         for (int i = 0; i < headerNames.length; i++) {
-            ImMap<KeyField, DataObject> keys = MapFact.EMPTY();
-            ImMap<LCP, ObjectValue> values = MapFact.EMPTY();
-            String headerName = headerNames[i];
-            DataObject nameObject = new DataObject(headerName, (ConcreteClass) nameKeyField.type);
+            DataObject nameObject = new DataObject(headerNames[i]);
             for (int j = 0; j < headerValues[i].length; j++) {
-                keys = keys.addExcl(nameKeyField, nameObject);
-                keys = keys.addExcl(indexKeyField, new DataObject(j, (ConcreteClass) indexKeyField.type));
-                values = values.addExcl(requestHeaderLCP, new DataObject(headerValues[i][j], (DataClass) requestHeaderProperty.getType()));
+                mRows.exclAdd(MapFact.toMap(name, nameObject, index, new DataObject(j)), new DataObject(headerValues[i][j]));
             }
-            rows = rows.addExcl(keys, values);
         }
 
         try {
-            table.writeRows(session.sql, rows, session.getOwner());
-            PropertyChange change = SessionTableUsage.getChange(table, requestHeaderLCP.listInterfaces.mapSet(keySet), requestHeaderLCP);
-            session.change(requestHeaderProperty, change);
+            table.writeRows(session.sql, session.getOwner(), mRows.immutable());
+            session.change(headersProp, SinglePropertyTableUsage.getChange(table));
         } finally {
             table.drop(session.sql, session.getOwner());
         }
