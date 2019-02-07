@@ -133,23 +133,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
-    public boolean isConfigurationAccessAllowed() throws RemoteException {
-        return target.isConfigurationAccessAllowed();
-    }
-
-    @Override
     public ClientSettings getClientSettings() throws RemoteException {
         return target.getClientSettings();
-    }
-
-    @Override
-    public LocalePreferences getLocalePreferences() throws RemoteException {
-        return target.getLocalePreferences();
-    }
-
-    @Override
-    public Integer getFontSize() throws RemoteException {
-        return target.getFontSize();
     }
 
     @Override

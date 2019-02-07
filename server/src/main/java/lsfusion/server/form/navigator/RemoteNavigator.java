@@ -483,22 +483,20 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     }
 
     @Override
-    public boolean isConfigurationAccessAllowed() throws RemoteException {
-        return securityPolicy.configurator != null && securityPolicy.configurator;
-    }
-
-    @Override
     public ClientSettings getClientSettings() {
-        boolean useBusyDialog = false;
-        boolean useRequestTimeout = false;
+        Integer fontSize;
+        boolean useBusyDialog;
+        boolean useRequestTimeout;
 
         try (DataSession session = createSession()) {
+            fontSize = (Integer) businessLogics.authenticationLM.userFontSize.read(createSession(), user);
             useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
             useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-        return new ClientSettings(useBusyDialog, Settings.get().getBusyDialogTimeout(), useRequestTimeout);
+        boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
+        return new ClientSettings(userLocalePreferences, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(), useRequestTimeout, configurationAccessAllowed);
     }
 
     public static LocalePreferences loadLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -522,24 +520,11 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
     }
 
-    public LocalePreferences getLocalePreferences() {
-        return userLocalePreferences;
-    }
-
     public Locale getLocale() {
-        Locale locale = getLocalePreferences().getLocale();
+        Locale locale = userLocalePreferences.getLocale();
         if(locale != null)
             return locale;
         return Locale.getDefault();
-    }
-
-    @Override
-    public Integer getFontSize() {
-        try {
-            return (Integer) businessLogics.authenticationLM.userFontSize.read(createSession(), user);
-        } catch (SQLException | SQLHandledException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void gainedFocus(FormInstance form) {

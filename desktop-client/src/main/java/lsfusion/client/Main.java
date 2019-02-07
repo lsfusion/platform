@@ -250,7 +250,14 @@ public class Main {
 
                     remoteNavigator = loginAction.getRemoteNavigator();
 
-                    LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
+                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
+
+                    LocalePreferences userPreferences = clientSettings.localePreferences;
+                    fontSize = clientSettings.fontSize;
+                    busyDialog = clientSettings.busyDialog;
+                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
+                    useRequestTimeout = clientSettings.useRequestTimeout;
+                    configurationAccessAllowed = clientSettings.configurationAccessAllowed;
 
                     Locale userLocale = userPreferences.getLocale();
                     if (userLocale != null) {
@@ -265,10 +272,7 @@ public class Main {
 
                     setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
 
-                    fontSize = remoteNavigator.getFontSize();
                     setUIFontSize();
-
-                    configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
                     startSplashScreen();
 
@@ -292,12 +296,6 @@ public class Main {
                     frame.setVisible(true);
 
                     ((DockableMainFrame) frame).clearForms();
-
-                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
-
-                    busyDialog = clientSettings.busyDialog;
-                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
-                    useRequestTimeout = clientSettings.useRequestTimeout;
 
                     ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
 

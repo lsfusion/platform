@@ -70,7 +70,6 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         registry.addHandler(new ForbidDuplicateFormsHandler(this));
         registry.addHandler(new GetNavigatorInfoHandler(this));
         registry.addHandler(new GetClientSettingsHandler(this));
-        registry.addHandler(new IsConfigurationAccessAllowedHandler(this));
         registry.addHandler(new LogClientExceptionActionHandler(this));
         registry.addHandler(new SetCurrentFormHandler(this));
         registry.addHandler(new ThrowInNavigatorActionHandler(this));

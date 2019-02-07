@@ -233,13 +233,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         };
 
-        logicsAndNavigatorDispatchAsync.execute(new IsConfigurationAccessAllowedAction(), new ErrorHandlingCallback<BooleanResult>() {
-            @Override
-            public void success(BooleanResult result) {
-                configurationAccessAllowed = result.value;
-            }
-        });
-
         logicsAndNavigatorDispatchAsync.execute(new ForbidDuplicateFormsAction(), new ErrorHandlingCallback<BooleanResult>() {
             @Override
             public void success(BooleanResult result) {
@@ -253,6 +246,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 busyDialog = result.busyDialog;
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
                 loadingManager = busyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
+                configurationAccessAllowed = result.configurationAccessAllowed;
             }
         });
 
