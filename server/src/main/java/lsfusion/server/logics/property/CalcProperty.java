@@ -1954,6 +1954,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
+    @IdentityStartLazy
+    public ImList<CalcProperty> getSortedDepends() {
+        return getDepends().sort(BusinessLogics.propComparator());
+    }
+
     // странная конечно эвристика, нужна чтобы f(a) IF g(a) наследовал draw options f(a), возможно в будущем надо убрать
     public ImList<CalcProperty> getAndProperties() {
         return ListFact.singleton((CalcProperty) this);
@@ -2000,6 +2005,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     
     public ImSet<CalcProperty> getImplements() {
         return SetFact.EMPTY();
+    }
+    
+    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<CalcProperty> path) {
+        if(path != null)
+            path = path.addExcl(this);
+        for(CalcProperty depend : getDepends())
+            if(depend.checkRecursions(abstractPath, path))
+                return true;
+        return false;
     }
 
     @Override

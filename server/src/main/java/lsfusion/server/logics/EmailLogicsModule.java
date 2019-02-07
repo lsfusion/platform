@@ -37,6 +37,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP enableAccount;
     public LCP unpackAccount;
 
+    public LCP emailSent;
     public LAP emailUserPassUser;
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -77,6 +78,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         unpackAccount = findProperty("unpack[Account]");
 
         emailUserPassUser = findAction("emailUserPass[Contact]");
+        emailSent = findProperty("emailSent[]");
         
         fromAddressAccount = findProperty("fromAddress[Account]");
     }

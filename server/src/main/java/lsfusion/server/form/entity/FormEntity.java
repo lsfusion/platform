@@ -10,8 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.interop.FormEventType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.PropertyEditType;
@@ -434,7 +433,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public ObjectEntity addSingleGroupObject(ValueClass baseClass, Version version, Object... groups) {
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null);
-        ObjectEntity object = new ObjectEntity(genID(), baseClass, baseClass.getCaption());
+        ObjectEntity object = new ObjectEntity(genID(), baseClass, baseClass != null ? baseClass.getCaption() : LocalizedString.NONAME, baseClass == null);
         groupObject.add(object);
         addGroupObject(groupObject, version);
 
@@ -489,12 +488,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
-        ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = objects.getSet().mapRevValues(new GetValue<ValueClassWrapper, ObjectEntity>() {
-            public ValueClassWrapper getMapValue(ObjectEntity value) {
-                return new ValueClassWrapper(value.baseClass);
-            }
-        });
+        ImSet<ObjectEntity> objectsSet = objects.getSet();
+        ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
+        for(int i=0,size=objectsSet.size();i<size;i++) {
+            ObjectEntity object = objectsSet.get(i);
+            if (object.baseClass != null) 
+                mObjectToClass.mapValue(i, new ValueClassWrapper(object.baseClass));
+        }
+        ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = mObjectToClass.immutableRevValue();
         ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
+
+        // here can be more precise heuristics than implemented in FormDataManager.getPrintTable (calculating expr and putting expr itself (not its values)  in a set)
 
         ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
         for (PropertyClassImplement implement : group.getProperties(valueClasses, version)) {
@@ -881,8 +885,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public String getName() {
         return CanonicalNameUtils.getName(canonicalName);
-    } 
+    }
+
+    private String integrationSID;
     
+    public String getIntegrationSID() {
+        return integrationSID != null ? integrationSID : getName();
+    }
+
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
     public LocalizedString getCaption() {
         return caption;
     }

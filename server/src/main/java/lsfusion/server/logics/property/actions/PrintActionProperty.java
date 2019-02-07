@@ -36,7 +36,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
 
     private final boolean syncType; // static interactive
     
-    private final boolean removeNulls; // print message
+    private final boolean removeNullsAndDuplicates; // print message
 
     private final LCP sheetNameProperty;
 
@@ -53,14 +53,14 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                LCP sheetNameProperty,
                                LCP exportFile,
                                CalcProperty printer,
-                               LCP formPageCount, boolean removeNulls) {
+                               LCP formPageCount, boolean removeNullsAndDuplicates) {
         super(caption, form, objectsToSet, nulls, staticType, top, password, printer);
 
         this.formPageCount = formPageCount;
 
         this.syncType = syncType;
         
-        this.removeNulls = removeNulls;
+        this.removeNullsAndDuplicates = removeNullsAndDuplicates;
         
         this.exportFile = exportFile;
 
@@ -82,7 +82,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     protected void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
         if (staticType == FormPrintType.MESSAGE) {
             // getting data
-            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context).getPrintMessageData(selectTop, removeNulls);
+            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context).getPrintMessageData(selectTop, removeNullsAndDuplicates);
 
             // proceeding data
             LogMessageClientAction action = new LogMessageClientAction(reportData.message, reportData.titles, reportData.rows, !context.getSession().isNoCancelInTransaction());

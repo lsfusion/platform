@@ -24,11 +24,13 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.ScriptParsingException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.impl.NFListImpl;
 import lsfusion.server.logics.mutables.interfaces.NFList;
+import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.cases.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -135,6 +137,23 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     
     public Type getAbstractType() {
         return abs.type;
+    }
+
+    public void checkRecursions() {
+        assert isAbstract();
+        checkRecursions(SetFact.<CaseUnionProperty>EMPTY(), null);
+    }
+
+    @Override
+    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<CalcProperty> path) {
+        if(abstractPath.contains(this)) { // found recursion
+            if(path != null)
+                throw new ScriptParsingException("Property " + this + " is recursive. One of the pathes : " + path);
+            path = SetFact.EMPTY();
+            abstractPath = SetFact.EMPTY();
+        }        
+        abstractPath = abstractPath.addExcl(this);
+        return super.checkRecursions(abstractPath, path);
     }
 
     @Override

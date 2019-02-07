@@ -27,6 +27,7 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     // фильтрация
 
     <M> ImFilterValueMap<T, M> mapFilterValues();
+    <M> ImFilterRevValueMap<T, M> mapFilterRevValues();
 
     ImSet<T> filterFn(FunctionSet<T> filter);
     ImSet<T> split(FunctionSet<T> filter, Result<ImSet<T>> rest);

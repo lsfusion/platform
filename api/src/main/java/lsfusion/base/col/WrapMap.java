@@ -1,6 +1,7 @@
 package lsfusion.base.col;
 
 import lsfusion.base.col.implementations.abs.AMap;
+import lsfusion.base.col.implementations.simple.FilterRevValueMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
@@ -36,6 +37,10 @@ public class WrapMap<K, V> extends AMap<K, V> implements ImMap<K, V> {
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
         return map.mapFilterValues();
     }
+    public <M> ImFilterRevValueMap<K, M> mapFilterRevValues() {
+        return map.mapFilterRevValues();
+    }
+
 
     public <M> ImValueMap<K, M> mapItValues() {
         return map.mapItValues();

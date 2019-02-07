@@ -140,7 +140,7 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 
@@ -154,15 +154,7 @@ public class EmailSender {
             attachFile(mp, attachment);
 
         message.setContent(mp);
-        sendMail(context, message, subject);
-    }
-
-    public void sendPlainMail(ExecutionContext context, String subject, String inlineText) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
-        sendMail(context, subject, Collections.singletonList(inlineText), Collections.<AttachmentFile>emptyList());
-    }
-
-    private void sendMail(ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
-        final LCP emailSent = context == null ? null : context.getBL().emailLM.findProperty("emailSent[]");
+        final LCP emailSent = context.getBL().emailLM.emailSent;
 
         ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
         executor.submit(new Runnable() {
@@ -206,10 +198,8 @@ public class EmailSender {
                     }
                 } finally {
                     try {
-                        if (emailSent != null) {
-                            try (DataSession session = ThreadLocalContext.createSession()){
-                                emailSent.change(send ? true : null, session);
-                            }
+                        try (DataSession session = ThreadLocalContext.createSession()){
+                            emailSent.change(send ? true : null, session);
                         }
                     } catch (Exception e) {
                         logger.error("emailSent writing error", e);

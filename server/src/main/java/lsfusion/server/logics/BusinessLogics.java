@@ -76,12 +76,13 @@ import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.Correlation;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
+import lsfusion.utils.DebugInfoWriter;
+import lsfusion.utils.StringDebugInfoWriter;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -818,7 +819,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             linksIn = new HSet<>();
             linksMap.add(property, linksIn);
 
-            ImSet<Link> links = property.getLinks(events);
+            ImOrderSet<Link> links = property.getSortedLinks(events);
             for (int i = 0,size = links.size(); i < size; i++) {
                 Link link = links.get(i);
                 if (!removedLinks.contains(link) && component.contains(link.to) == include)
@@ -830,20 +831,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return linksIn;
     }
 
-    private static class PropComparator implements Comparator<Property> {
-
-        private final boolean strictCompare;
-
-        public PropComparator(boolean strictCompare) {
-            this.strictCompare = strictCompare;
-        }
-
+    public final static Comparator<Property> actionOrPropComparator = new Comparator<Property>() {
         public int compare(Property o1, Property o2) {
+            if(o1 == o2)
+                return 0;
 
             String c1 = o1.getCanonicalName();
             String c2 = o2.getCanonicalName();
             if(c1 == null && c2 == null) {
-                return ActionProperty.compareChangeExtProps(o1, o2, strictCompare);
+                return ActionProperty.compareChangeExtProps(o1, o2);
             }
 
             if(c1 == null)
@@ -855,10 +851,23 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2) && !(o1 instanceof SessionDataProperty) && !(o2 instanceof SessionDataProperty));
             return c1.compareTo(c2);
         }
+    };
+    public static Comparator<CalcProperty> propComparator() {
+        return BaseUtils.immutableCast(actionOrPropComparator);
     }
+    public final static Comparator<Link> linkComparator = new Comparator<Link>() {
+        public int compare(Link o1, Link o2) {
+            int result = actionOrPropComparator.compare(o1.from, o2.from);
+            if(result != 0)
+                return result;
 
-    private final static Comparator<Property> strictComparator = new PropComparator(true);
-    private final static Comparator<Property> comparator = new PropComparator(false);
+            result = Integer.compare(o1.type.getNum(), o2.type.getNum());
+            if(result != 0)
+                return result;
+
+            return actionOrPropComparator.compare(o1.to, o2.to);
+        }
+    };
 
 
     private static int compare(LinkType aType, Property aProp, LinkType bType, Property bProp) {
@@ -866,7 +875,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         if(compare != 0) // меньше тот у кого связь слабее (num больше)
             return -compare;
         
-        return strictComparator.compare(aProp, bProp);        
+        return actionOrPropComparator.compare(aProp, bProp);
     }
     // ищем вершину в компоненту (нужно для детерминированности, иначе можно было бы с findMinCycle совместить) - вершину с самыми слабыми исходящими связями (эвристика, потом возможно надо все же объединить все с findMinCycle и искать минимальный цикл с минимальным вырезаемым типом ребра)
     private static Property<?> findMinProperty(HMap<Property, LinkType> component) {
@@ -908,12 +917,17 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             int cmp = Integer.compare(link1.type.getNum(), link2.type.getNum());
             if(cmp != 0)
                 return cmp;
-            cmp = comparator.compare(link1.from, link2.from);
+        }
+
+        for(int i=0,size=cycle1.size();i<size;i++) {
+            Link link1 = cycle1.get(i);
+            Link link2 = cycle2.get(i);
+
+            int cmp = actionOrPropComparator.compare(link1.from, link2.from);
             if(cmp != 0)
                 return cmp;
         }
-
-        return strictComparator.compare(cycle1.get(0).from, cycle2.get(0).from);
+        return 0;
     }
 
     private static List<Link> findMinCycle(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, ImSet<Property> component) {
@@ -995,7 +1009,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<Property> buildList(ImSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean events) {
+    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean events, DebugInfoWriter debugInfoWriter) {
         HSet<Property> proceeded;
 
         List<Property> order = new ArrayList<>();
@@ -1014,12 +1028,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
 
                 Property minProperty = findMinProperty(innerComponentOutTypes);
-                ImSet<Property> innerComponent = innerComponentOutTypes.keys();
+                HSet<Property> innerComponent = innerComponentOutTypes.keys();
                         
                 assert innerComponent.size() > 0;
-                if (innerComponent.size() == 1) // если цикла нет все ОК
+                if (innerComponent.size() == 1) { // если цикла нет все ОК
+                    if(debugInfoWriter != null)
+                        debugInfoWriter.addLines(minProperty.toString());
                     mResult.exclAdd(innerComponent.single());
-                else { // нашли цикл
+                } else { // нашли цикл
                     // assert что minProperty один из ActionProperty.getChangeExtProps
                     List<Link> minCycle = findMinCycle(minProperty, linksMap, innerComponent);
                     assert BaseUtils.hashEquals(minCycle.get(0).from, minProperty) && BaseUtils.hashEquals(minCycle.get(minCycle.size()-1).to, minProperty);
@@ -1027,10 +1043,21 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     Link minLink = getMinLink(minCycle);
                     removedLinks.exclAdd(minLink);
 
+                    DebugInfoWriter pushDebugInfoWriter = null;
+                    if(debugInfoWriter != null) {
+                        pushDebugInfoWriter = debugInfoWriter.pushPrefix(minProperty.toString());
+
+                        String result = "";
+                        for(Link link : minCycle) {
+                            result += " " + link.to;
+                        }
+                        pushDebugInfoWriter.addLines("REMOVE LINK : " + minLink + " FROM CYCLE : " + result);
+                    }
+
 //                    printCycle("Features", minLink, innerComponent, minCycle);
                     if (minLink.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
                         MOrderExclSet<Property> mCycle = SetFact.mOrderExclSet();
-                        buildList(innerComponent, null, removedLinks, mCycle, events);
+                        buildList(innerComponent, null, removedLinks, mCycle, events, pushDebugInfoWriter);
                         ImOrderSet<Property> cycle = mCycle.immutableOrder();
 
                         String print = "";
@@ -1038,7 +1065,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
                         throw new RuntimeException(ThreadLocalContext.localize("{message.cycle.detected}") + " : " + print + " -> " + minLink.to);
                     }
-                    buildList(innerComponent, null, removedLinks, mResult, events);
+                    buildList(innerComponent, null, removedLinks, mResult, events, pushDebugInfoWriter);
                 }
                 proceeded.exclAddAll(innerComponent);
             }
@@ -1077,7 +1104,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         if (proceeded.add(property))
             return false;
 
-        for (Link link : property.getLinks(true)) {
+        for (Link link : property.getSortedLinks(true)) {
             path.push(link);
             if (link.type.getNum() <= desiredType.getNum() && findDependency(link.to, with, proceeded, path, desiredType))
                 return true;
@@ -1238,6 +1265,16 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityStrongLazy // глобальное очень сложное вычисление
     public Pair<ImOrderSet<Property>, Graph<Property>> getPropertyListWithGraph(ApplyFilter filter) {
+        return calcPropertyListWithGraph(filter, null);
+    }
+    public void printPropertyList(String path) throws IOException {
+        StringDebugInfoWriter debugInfo = new StringDebugInfoWriter();
+        calcPropertyListWithGraph(ApplyFilter.NO, debugInfo);
+        try (PrintWriter out = new PrintWriter(path)) {
+            out.println(debugInfo.getString());
+        }
+    }
+    public Pair<ImOrderSet<Property>, Graph<Property>> calcPropertyListWithGraph(ApplyFilter filter, DebugInfoWriter debugInfoWriter) {
         // жестковато тут конечно написано, но пока не сильно времени жрет
 
         fillActionChangeProps();
@@ -1256,7 +1293,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         MOrderExclSet<Property> mCancelResult = SetFact.mOrderExclSet();
         HSet<Link> firstRemoved = new HSet<>();
-        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), firstRemoved, mCancelResult, events);
+        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), firstRemoved, mCancelResult, events, DebugInfoWriter.pushPrefix(debugInfoWriter, "CANCELABLE"));
         ImOrderSet<Property> cancelResult = mCancelResult.immutableOrder();
 
         // потом бежим по всем остальным, за исключением proceeded
@@ -1264,7 +1301,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         HSet<Property> removed = new HSet<>();
         removed.addAll(rest.remove(proceeded));
         HSet<Link> secondRemoved = new HSet<>();
-        buildList(removed, proceeded, secondRemoved, mRestResult, events); // потом этот cast уберем
+        buildList(removed, proceeded, secondRemoved, mRestResult, events, DebugInfoWriter.pushPrefix(debugInfoWriter, "REST")); // потом этот cast уберем
         ImOrderSet<Property> restResult = mRestResult.immutableOrder();
 
         // затем по всем кроме proceeded на прошлом шаге

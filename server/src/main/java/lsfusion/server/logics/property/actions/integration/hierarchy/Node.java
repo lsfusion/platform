@@ -15,6 +15,8 @@ public interface Node<T extends Node<T>> {
     
     // export
     T createNode(); 
+    
+    boolean isUpDown(); // if we need to first add element to structure and then fill it or vice versa
         
     void addNode(T node, String key, T childNode); // group 
     

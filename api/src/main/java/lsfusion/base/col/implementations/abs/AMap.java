@@ -4,6 +4,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.simple.FilterRevValueMap;
 import lsfusion.base.col.implementations.simple.FilterValueMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
@@ -649,6 +650,9 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
         return new FilterValueMap<>(this.<M>mapItValues());
+    }
+    public <M> ImFilterRevValueMap<K, M> mapFilterRevValues() {
+        return new FilterRevValueMap<>(this.<M>mapItRevValues());
     }
 
     private static final AddValue<Object, ImMap<Object, ImSet<Object>>> addMergeMapSets = new SymmAddValue<Object, ImMap<Object, ImSet<Object>>>() {

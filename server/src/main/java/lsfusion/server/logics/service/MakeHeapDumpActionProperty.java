@@ -1,10 +1,8 @@
 package lsfusion.server.logics.service;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.IOUtils;
 import lsfusion.base.RawFileData;
-import lsfusion.interop.action.ExportFileClientAction;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.base.file.WriteClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -32,7 +30,7 @@ public class MakeHeapDumpActionProperty extends ScriptingActionProperty {
             Runtime.getRuntime().exec(String.format("jmap -dump:file=%s %s", heapFile.getAbsolutePath(), pid));
             while(!heapFile.exists())
                 Thread.sleep(1000);
-            context.delayUserInteraction(new ExportFileClientAction(heapFile.getName(), new RawFileData(heapFile)));
+            context.delayUserInteraction(new WriteClientAction(new RawFileData(heapFile), heapFile.getName(), null, false, true));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

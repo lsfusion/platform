@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static lsfusion.interop.form.ServerResponse.*;
+import static lsfusion.server.logics.BusinessLogics.linkComparator;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractPropertyNode {
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
@@ -449,14 +450,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events);
 
-    private ImSet<Link> links;
+    private ImOrderSet<Link> links;
     @ManualLazy
-    public ImSet<Link> getLinks(boolean events) { // чисто для лексикографики
+    public ImOrderSet<Link> getSortedLinks(boolean events) { // чисто для лексикографики
         if(links==null) {
             links = calculateLinks(events).mapMergeSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
                 public Link getMapValue(Pair<Property<?>, LinkType> value) {
                     return new Link(Property.this, value.first, value.second);
-                }});
+                }}).sortSet(linkComparator); // sorting for determenism, no need to cache because it's called once for each property
         }
         return links;
     }

@@ -38,6 +38,6 @@ public abstract class AbstractNode extends ImmutableObject {
     }
     
     public ImList<PropertyClassImplement> getProperties(ValueClass valueClass, Version version) {
-        return getProperties(SetFact.singleton(new ValueClassWrapper(valueClass)), version);
+        return getProperties(valueClass != null ? SetFact.singleton(new ValueClassWrapper(valueClass)) : SetFact.<ValueClassWrapper>EMPTY(), version);
     }
 }
