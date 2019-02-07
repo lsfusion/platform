@@ -96,8 +96,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     private DataObject connection;
 
-    private int updateTime;
-
     private String remoteAddress;
 
     private final WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<>();
@@ -603,20 +601,23 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     public static void updatePingInfo(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
-            Map<Long, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
+            Map<String, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
             RemoteLoggerAspect.pingInfoMap.clear();
             
-            for (Map.Entry<Long, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
-                DataObject computerObject = new DataObject(entry.getKey(), businessLogics.authenticationLM.computer);
-                for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
-                    DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
-                    DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
-                    businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
-                    if(pingEntry.getValue().size() >= 6) {
-                        businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
-                        businessLogics.systemEventsLM.maxTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(3).intValue(), session, computerObject, dateFrom, dateTo);
-                        businessLogics.systemEventsLM.minUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(4).intValue(), session, computerObject, dateFrom, dateTo);
-                        businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
+            for (Map.Entry<String, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
+                ObjectValue computerValue = businessLogics.authenticationLM.computerHostname.readClasses(session, new DataObject(entry.getKey()));
+                if(computerValue instanceof DataObject) {
+                    DataObject computerObject = (DataObject)computerValue;
+                    for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
+                        DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
+                        DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
+                        businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
+                        if (pingEntry.getValue().size() >= 6) {
+                            businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
+                            businessLogics.systemEventsLM.maxTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(3).intValue(), session, computerObject, dateFrom, dateTo);
+                            businessLogics.systemEventsLM.minUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(4).intValue(), session, computerObject, dateFrom, dateTo);
+                            businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
+                        }
                     }
                 }
             }
@@ -721,11 +722,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
     }
 
-    @Override
-    public Long getComputerId() throws RemoteException {
-        return (Long) getComputer().object;
-    }
-
     public DataObject getComputer() {
         return computer;
     }
@@ -736,14 +732,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     public void setConnection(DataObject connection) {
         this.connection = connection;
-    }
-
-    public void setUpdateTime(int updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public int getUpdateTime() {
-        return updateTime;
     }
 
     public String getRemoteAddress(){

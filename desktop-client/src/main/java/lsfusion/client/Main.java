@@ -76,7 +76,7 @@ public class Main {
     
     public static boolean hideMenu;
 
-    public static Long computerId;
+    public static String computerName;
     public static DateFormat dateFormat;
     public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
@@ -108,6 +108,8 @@ public class Main {
     public static void start(final String[] args, ModuleFactory startModule) {
 
         registerSingleInstanceListener();
+
+        computerName = SystemUtils.getLocalHostName();
 
         module = startModule;
 
@@ -266,7 +268,6 @@ public class Main {
                     fontSize = remoteNavigator.getFontSize();
                     setUIFontSize();
 
-                    computerId = loginAction.getComputerId();
                     configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
                     startSplashScreen();
@@ -274,8 +275,6 @@ public class Main {
                     logger.info("Before init frame");
                     frame = module.initFrame(remoteNavigator);
                     logger.info("After init frame");
-
-                    remoteNavigator.setUpdateTime(pullMessagesPeriod);
 
                     frame.addWindowListener(
                             new WindowAdapter() {
@@ -465,7 +464,7 @@ public class Main {
 
     public static boolean clientExceptionLog(String title, Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.logClientException(title, SystemUtils.getLocalHostName(), t);
+            remoteNavigator.logClientException(title, Main.computerName, t);
             return true;
         }
         return false;
@@ -693,7 +692,6 @@ public class Main {
         cleanListeners.clear();
         eventBus.invalidate();
 
-        computerId = -1L;
         frame = null;
         remoteLoader = null;
         remoteLogics = null;

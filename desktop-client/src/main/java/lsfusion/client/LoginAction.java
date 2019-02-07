@@ -62,7 +62,6 @@ public final class LoginAction {
     private List<UserInfo> userInfos = new ArrayList<>();
 
     private RemoteLogicsInterface remoteLogics;
-    private long computerId;
     private RemoteNavigatorInterface remoteNavigator;
 
     private LoginAction() {
@@ -82,7 +81,7 @@ public final class LoginAction {
             }
             FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
             try {
-                List<Object> result = remoteLogics.exec("Authentication.syncUsers[VARISTRING[100], JSONFILE]", new String[0], new Object[]{SystemUtils.getLocalHostName(), fileData}, "utf-8", new String[0], new String[0][]);
+                List<Object> result = remoteLogics.exec("Authentication.syncUsers[VARISTRING[100], JSONFILE]", new String[0], new Object[]{Main.computerName, fileData}, "utf-8", new String[0], new String[0][]);
                 JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.get(0)).getRawFile().getBytes()));
                 List<Object> currentUsers = unlockedUsers.toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
@@ -257,7 +256,6 @@ public final class LoginAction {
     private Object connect() {
         RemoteLogicsLoaderInterface remoteLoader;
         RemoteLogicsInterface remoteLogics;
-        long computerId;
         RemoteNavigatorInterface remoteNavigator;
 
         try {
@@ -301,10 +299,8 @@ public final class LoginAction {
             }
 
             remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), new NavigatorInfo(loginInfo.getUserName(),
-                    loginInfo.getPassword(), SystemUtils.getLocalHostName(), SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
+                    loginInfo.getPassword(), Main.computerName, SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
                     cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize, language, country), true);
-            
-            computerId = remoteNavigator.getComputerId();
         } catch (CancellationException ce) {
             return CANCELED;
         } catch (UnknownHostException e) {
@@ -333,17 +329,12 @@ public final class LoginAction {
 
         this.remoteLogics = remoteLogics;
         this.remoteNavigator = remoteNavigator;
-        this.computerId = computerId;
 
         return OK;
     }
 
     public RemoteLogicsInterface getRemoteLogics() {
         return remoteLogics;
-    }
-
-    public long getComputerId() {
-        return computerId;
     }
 
     public RemoteNavigatorInterface getRemoteNavigator() {

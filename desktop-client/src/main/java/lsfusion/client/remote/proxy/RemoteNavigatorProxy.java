@@ -83,23 +83,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         return target.getClientCallBack();
     }
 
-    public void setUpdateTime(int updateTime) throws RemoteException {
-        target.setUpdateTime(updateTime);
-    }
-
     @Override
     public boolean isForbidDuplicateForms() throws RemoteException {
         logRemoteMethodStartCall("isForbidDuplicateForms");
         boolean result = target.isForbidDuplicateForms();
         logRemoteMethodEndCall("isForbidDuplicateForms", result);
-        return result;
-    }
-
-    @Override
-    public Long getComputerId() throws RemoteException {
-        logRemoteMethodStartCall("getComputerId");
-        Long result = target.getComputerId();
-        logRemoteMethodEndCall("getComputerId", result);
         return result;
     }
 

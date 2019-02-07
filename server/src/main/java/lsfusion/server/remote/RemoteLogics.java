@@ -181,11 +181,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu));
     }
 
-    public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) {
-        Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerId);
+    public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {
+        Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerName);
         pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : MapFact.<Long, List<Long>>getGlobalConcurrentHashMap();
         pingInfoEntry.putAll(pingInfoMap);
-        RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
+        RemoteLoggerAspect.pingInfoMap.put(computerName, pingInfoEntry);
     }
 
     // web spring authentication

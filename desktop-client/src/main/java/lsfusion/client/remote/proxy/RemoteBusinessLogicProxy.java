@@ -39,8 +39,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;    
     }
 
-    public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
-        target.sendPingInfo(computerId, pingInfoMap);
+    public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
+        target.sendPingInfo(computerName, pingInfoMap);
     }
 
     public void ping() throws RemoteException {
