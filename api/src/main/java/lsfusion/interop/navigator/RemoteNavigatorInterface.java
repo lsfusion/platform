@@ -28,8 +28,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     void close() throws RemoteException;
 
-    boolean isForbidDuplicateForms() throws RemoteException;
-
     //for notifications
     void setCurrentForm(String formID) throws RemoteException;
     String getCurrentForm() throws RemoteException;

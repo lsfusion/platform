@@ -18,6 +18,7 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
     @Override
     public GetClientSettingsResult executeEx(GetClientSettings action, ExecutionContext context) throws DispatchException, IOException {
         ClientSettings clientSettings = getRemoteNavigator(action).getClientSettings();
-        return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout, clientSettings.configurationAccessAllowed);
+        return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
+                clientSettings.configurationAccessAllowed, clientSettings.forbidDuplicateForms);
     }
 }

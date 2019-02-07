@@ -233,13 +233,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         };
 
-        logicsAndNavigatorDispatchAsync.execute(new ForbidDuplicateFormsAction(), new ErrorHandlingCallback<BooleanResult>() {
-            @Override
-            public void success(BooleanResult result) {
-                forbidDuplicateForms = result.value;
-            }
-        });
-
         logicsAndNavigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
             public void success(GetClientSettingsResult result) {
@@ -247,6 +240,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
                 loadingManager = busyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
                 configurationAccessAllowed = result.configurationAccessAllowed;
+                forbidDuplicateForms = result.forbidDuplicateForms;
             }
         });
 

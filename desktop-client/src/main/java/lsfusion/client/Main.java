@@ -61,8 +61,6 @@ public class Main {
 
     public static final RMITimeoutSocketFactory rmiSocketFactory = RMITimeoutSocketFactory.getInstance();
 
-    public static boolean configurationAccessAllowed;
-
     public static ModuleFactory module;
 
     public static RemoteLogicsLoaderInterface remoteLoader;
@@ -99,6 +97,8 @@ public class Main {
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
+    public static boolean configurationAccessAllowed;
+    public static boolean forbidDuplicateForms;
     
     public static long timeDiffServerClientLog = 1000;
 
@@ -258,6 +258,7 @@ public class Main {
                     busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
                     useRequestTimeout = clientSettings.useRequestTimeout;
                     configurationAccessAllowed = clientSettings.configurationAccessAllowed;
+                    forbidDuplicateForms = clientSettings.forbidDuplicateForms;
 
                     Locale userLocale = userPreferences.getLocale();
                     if (userLocale != null) {

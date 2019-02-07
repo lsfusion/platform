@@ -84,14 +84,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
-    public boolean isForbidDuplicateForms() throws RemoteException {
-        logRemoteMethodStartCall("isForbidDuplicateForms");
-        boolean result = target.isForbidDuplicateForms();
-        logRemoteMethodEndCall("isForbidDuplicateForms", result);
-        return result;
-    }
-
-    @Override
     public void setCurrentForm(String formID) throws RemoteException {
         target.setCurrentForm(formID);
     }

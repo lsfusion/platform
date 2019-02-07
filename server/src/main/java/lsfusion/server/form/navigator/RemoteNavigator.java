@@ -244,20 +244,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
     }
 
-    public boolean isForbidDuplicateForms() {
-        try {
-            boolean forbidDuplicateForms;
-            try (DataSession session = createSession()) {
-                QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
-                query.addProperty("forbidDuplicateForms", businessLogics.securityLM.forbidDuplicateFormsCurrentUser.getExpr());
-                forbidDuplicateForms = query.execute(session).singleValue().get("forbidDuplicateForms") != null;
-            }
-            return forbidDuplicateForms;
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     @Override
     public void setCurrentForm(String formID) throws RemoteException {
         this.formID = formID;
@@ -487,16 +473,19 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         Integer fontSize;
         boolean useBusyDialog;
         boolean useRequestTimeout;
+        boolean forbidDuplicateForms;
 
         try (DataSession session = createSession()) {
-            fontSize = (Integer) businessLogics.authenticationLM.userFontSize.read(createSession(), user);
+            fontSize = (Integer) businessLogics.authenticationLM.userFontSize.read(session, user);
             useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
             useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
+            forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCurrentUser.read(session) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
-        return new ClientSettings(userLocalePreferences, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(), useRequestTimeout, configurationAccessAllowed);
+        return new ClientSettings(userLocalePreferences, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
+                useRequestTimeout, configurationAccessAllowed, forbidDuplicateForms);
     }
 
     public static LocalePreferences loadLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {

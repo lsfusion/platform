@@ -35,8 +35,6 @@ public abstract class MainFrame extends JFrame {
     public JLabel statusComponent;
     public JComponent status;
 
-    public static boolean forbidDuplicateForms;
-
     private LockableUI lockableUI;
 
     public MainFrame(final RemoteNavigatorInterface remoteNavigator) throws IOException {
@@ -144,7 +142,6 @@ public abstract class MainFrame extends JFrame {
         LoginAction loginAction = LoginAction.getInstance();
         DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
         setTitle(Main.getMainTitle() + " - " + inputStream.readUTF() + " (" + loginAction.loginInfo.getServerHost() + ":" + loginAction.loginInfo.getServerPort() + ")");
-        forbidDuplicateForms = remoteNavigator.isForbidDuplicateForms();
     }
 
     public abstract Integer runReport(List<ReportPath> customReportPathList, String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException;
