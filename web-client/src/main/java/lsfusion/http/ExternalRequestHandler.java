@@ -9,7 +9,6 @@ import org.apache.http.entity.ContentType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 
 import static java.util.Collections.list;
@@ -23,7 +22,8 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             String query = request.getQueryString();
             String contentTypeString = request.getContentType();
             ContentType contentType = contentTypeString != null ? ContentType.parse(contentTypeString) : null;
-            String[] headerNames = enumerationToStringArray(request.getHeaderNames());
+
+            String[] headerNames = list((Enumeration<String>)request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
             
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteLogics, request.getRequestURI(),
@@ -50,14 +50,5 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             headerValuesArray[i] = StringUtils.join(list(request.getHeaders(headerNames[i])), ",");
         }
         return headerValuesArray;
-    }
-
-    private String[] enumerationToStringArray(Enumeration enumeration) {
-        ArrayList list = list(enumeration);
-        String[] array = new String[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = (String) list.get(i);
-        }
-        return array;
     }
 }
