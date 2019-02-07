@@ -254,7 +254,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     // system actions that are needed for native clients     
     public boolean isClientNativeRESTAction(ActionProperty action) {
-        return false;
+        return businessLogics.authenticationLM.syncUsers.property == action;
     }
     
     private List<Object> executeExternal(LAP<?> property, String[] returnCanonicalNames, Object[] params, Charset charset, String[] headerNames, String[][] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {

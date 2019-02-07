@@ -76,6 +76,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP userFontSize;
     
     public LAP deliveredNotificationAction;
+    
+    public LAP<?> syncUsers;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(AuthenticationLogicsModule.class.getResourceAsStream("/system/Authentication.lsf"), "/system/Authentication.lsf", baseLM, BL);
@@ -155,6 +157,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         userFontSize = findProperty("fontSize[CustomUser]");
         
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
+        
+        syncUsers = findAction("syncUsers[VARISTRING[100], JSONFILE]");
     }
     
     public boolean checkPassword(DataSession session, DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
