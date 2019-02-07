@@ -3,6 +3,7 @@ package lsfusion.http;
 import lsfusion.base.ExternalUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.entity.ContentType;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +24,7 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             String contentTypeString = request.getContentType();
             ContentType contentType = contentTypeString != null ? ContentType.parse(contentTypeString) : null;
             String[] headerNames = enumerationToStringArray(request.getHeaderNames());
-            String[][] headerValues = getRequestHeaderValues(request, headerNames);
+            String[] headerValues = getRequestHeaderValues(request, headerNames);
             
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteLogics, request.getRequestURI(),
                     query == null ? "" : query, request.getInputStream(), contentType, headerNames, headerValues);
@@ -43,10 +44,10 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
         }
     }
     
-    private String[][] getRequestHeaderValues(HttpServletRequest request, String[] headerNames) {
-        String[][] headerValuesArray = new String[headerNames.length][];
+    private String[] getRequestHeaderValues(HttpServletRequest request, String[] headerNames) {
+        String[] headerValuesArray = new String[headerNames.length];
         for (int i = 0; i < headerNames.length; i++) {
-            headerValuesArray[i] = enumerationToStringArray(request.getHeaders(headerNames[i]));
+            headerValuesArray[i] = StringUtils.join(list(request.getHeaders(headerNames[i])), ",");
         }
         return headerValuesArray;
     }

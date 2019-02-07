@@ -390,7 +390,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         statusHttp = findProperty("statusHttp[]");
         
-        headers = findProperty("headers[STRING[100],INTEGER]");
+        headers = findProperty("headers[TEXT]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");

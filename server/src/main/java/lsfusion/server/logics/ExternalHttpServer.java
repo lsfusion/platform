@@ -11,6 +11,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.remote.RemoteLogics;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 
@@ -76,7 +77,7 @@ public class ExternalHttpServer extends MonitorServer {
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
                 String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
-                String[][] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
+                String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
                 
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
                         request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request), headerNames, headerValues);
@@ -108,11 +109,10 @@ public class ExternalHttpServer extends MonitorServer {
             return null;
         }
         
-        private String[][] getRequestHeaderValues(Headers headers, String[] headerNames) {
-            String[][] headerValuesArray = new String[headerNames.length][];
+        private String[] getRequestHeaderValues(Headers headers, String[] headerNames) {
+            String[] headerValuesArray = new String[headerNames.length];
             for (int i = 0; i < headerNames.length; i++) {
-                List<String> heaverValues = headers.get(headerNames[i]);
-                headerValuesArray[i] = heaverValues.toArray(new String[0]);
+                headerValuesArray[i] = StringUtils.join(headers.get(headerNames[i]).iterator(), ",");
             }
             return headerValuesArray;
         }

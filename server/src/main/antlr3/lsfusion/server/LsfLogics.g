@@ -3109,7 +3109,8 @@ externalFormat [List<TypedParameter> context, boolean dynamic] returns [External
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; }
 	            (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	            ('BODYURL' bodyUrlVal = propertyExpression[context, dynamic] { $bodyUrl = $bodyUrlVal.property; })?
-	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; } ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?)?
+	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
+	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?
 	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | 'EVAL' { $eval = true; } ) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }

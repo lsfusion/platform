@@ -45,7 +45,7 @@ public class ExternalUtils {
     private static final String PROPERTY_PARAM = "property";
 
     public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, 
-                                                  ContentType requestContentType, String[] headerNames, String[][] headerValues) throws IOException, MessagingException {
+                                                  ContentType requestContentType, String[] headerNames, String[] headerValues) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 

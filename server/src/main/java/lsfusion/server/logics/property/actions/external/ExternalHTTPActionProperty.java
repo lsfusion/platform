@@ -4,7 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -17,12 +19,11 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.ExternalHttpMethod;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SinglePropertyTableUsage;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -34,7 +35,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static lsfusion.server.logics.property.ExternalHttpMethod.PUT;
 
@@ -73,17 +77,25 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
                 fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
                 if(headersToProperty != null) {
-                    Set<String> keys = new HashSet<>();
+                    List<String> headerNames = new ArrayList<>();
                     for(Header header : response.getAllHeaders()) {
-                        keys.add(header.getName());
+                        String headerName = header.getName();
+                        if(!headerNames.contains(headerName))
+                            headerNames.add(headerName);
                     }
-                    for(String key : keys) {
-                        String value = "";
-                        for(Header header : response.getHeaders(key)) {
-                            value += (value.isEmpty() ? "" : ";") + header.getValue();
+
+                    String[] headerValues = new String[headerNames.size()];
+                    for(int i = 0; i < headerNames.size(); i++) {
+                        String headerName = headerNames.get(i);
+                        List<String> headerValue = new ArrayList<>();
+                        for (Header headerObject : response.getHeaders(headerName)) {
+                            headerValue.add(headerObject.getValue());
                         }
-                        headersToProperty.change(value, context, new DataObject(key));
+                        headerValues[i] = StringUtils.join(headerValue.iterator(), ",");
                     }
+
+                    writeHeaders(context.getSession(), headersToProperty, headerNames.toArray(new String[0]), headerValues);
+
                 }
                 context.getBL().LM.statusHttp.change(response.getStatusLine().getStatusCode(), context);
                 if (response.getStatusLine().getStatusCode() < 200 || response.getStatusLine().getStatusCode() >= 300) {
@@ -180,6 +192,27 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             }
         }
         return headers;
+    }
+
+    public static <P extends PropertyInterface> void writeHeaders(DataSession session, LCP<P> headersProperty, String[] headerNames, String[] headerValues) throws SQLException, SQLHandledException {
+        CalcProperty<P> headersProp = headersProperty.property;
+        P name = headersProperty.listInterfaces.get(0);
+
+        SinglePropertyTableUsage<P> table = new SinglePropertyTableUsage<>("writeHeaders", SetFact.singletonOrder(name),
+                headersProp.interfaceTypeGetter, headersProp.getType());
+
+        MExclMap<ImMap<P, DataObject>, ObjectValue> mRows = MapFact.mExclMap();
+        for (int i = 0; i < headerNames.length; i++) {
+            DataObject nameObject = new DataObject(headerNames[i]);
+                mRows.exclAdd(MapFact.singleton(name, nameObject), new DataObject(headerValues[i]));
+        }
+
+        try {
+            table.writeRows(mRows.immutable(), session.sql, session.getOwner());
+            session.change(headersProp, SinglePropertyTableUsage.getChange(table));
+        } finally {
+            table.drop(session.sql, session.getOwner());
+        }
     }
 
 }

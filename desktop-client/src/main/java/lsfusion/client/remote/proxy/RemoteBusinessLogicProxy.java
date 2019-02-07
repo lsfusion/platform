@@ -77,7 +77,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[][] headerValues) throws RemoteException {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
         logRemoteMethodStartCall("exec");
         List<Object> result = target.exec(action, returnCanonicalNames, params, charset, headerNames, headerValues);
         logRemoteMethodEndVoidCall("exec");
@@ -85,7 +85,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[][] headerValues) throws RemoteException {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
         logRemoteMethodStartCall("eval");
         List<Object> result = target.eval(action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
         logRemoteMethodEndVoidCall("eval");
