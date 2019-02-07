@@ -686,7 +686,6 @@ public class ClientFormController implements AsyncListener {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 formLayout.revalidate();
-                ClientExternalScreen.repaintAll(getID());
             }
         });
     }
@@ -1028,10 +1027,6 @@ public class ClientFormController implements AsyncListener {
                     remoteForm.gainedFocus(requestIndex, lastReceivedRequestIndex);
                 }
             });
-
-            // если вдруг изменились данные в сессии
-            ClientExternalScreen.invalidate(getID());
-            ClientExternalScreen.repaintAll(getID());
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.form.activation"), e);
         }

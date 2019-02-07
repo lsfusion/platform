@@ -18,8 +18,6 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.exceptions.ApplyCanceledException;
-import lsfusion.interop.form.screen.ExternalScreen;
-import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
@@ -92,7 +90,6 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,8 +113,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private ModuleList modules = new ModuleList();
     
     private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<>();
-
-    private final List<ExternalScreen> externalScreens = new ArrayList<>();
 
     private final Map<Long, Integer> excessAllocatedBytesMap = new HashMap<>();
 
@@ -209,23 +204,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public LogicsModule getSysModule(String name) {
         return modules.get(name);
-    }
-
-    protected void addExternalScreen(ExternalScreen screen) {
-        externalScreens.add(screen);
-    }
-
-    public ExternalScreen getExternalScreen(int screenID) {
-        for (ExternalScreen screen : externalScreens) {
-            if (screen.getID() == screenID) {
-                return screen;
-            }
-        }
-        return null;
-    }
-
-    public ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException {
-        return null;
     }
 
     protected <M extends LogicsModule> M addModule(M module) {

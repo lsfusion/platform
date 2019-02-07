@@ -9,7 +9,6 @@ import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexConstraints;
-import lsfusion.interop.form.screen.ExternalScreenComponent;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -34,8 +33,6 @@ public class PropertyController {
 
     private JComponentPanel viewsPanel;
 
-    private final ExternalScreenComponent extView;
-
     public PropertyController(final ClientFormController form, final PanelController panelController, ClientPropertyDraw property) {
 
         this.form = form;
@@ -50,8 +47,6 @@ public class PropertyController {
                 }
             });
         }
-
-        extView = property.externalScreen == null ? null : new ExternalScreenComponent();
 
         viewsPanel = new JComponentPanel(false, Alignment.START);
     }
@@ -73,16 +68,10 @@ public class PropertyController {
 
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(property, viewsPanel);
-        if (property.externalScreen != null) {
-            property.externalScreen.add(form.getID(), extView, property.externalScreenConstraints);
-        }
     }
 
     public void removeView(ClientFormLayout formLayout) {
         formLayout.remove(property, viewsPanel);
-        if (property.externalScreen != null) {
-            property.externalScreen.remove(form.getID(), extView);
-        }
     }
 
     public void setVisible(boolean visible) {
@@ -177,15 +166,6 @@ public class PropertyController {
             Object value = values.get(columnKey);
 
             view.setValue(value);
-            if (extView != null) {
-                String oldValue = (extView.getValue() == null) ? "" : extView.getValue();
-                String newValue = (value == null) ? "" : value.toString();
-                if (oldValue.equals(newValue)) {
-                    return;
-                }
-                extView.setValue((value == null) ? "" : value.toString());
-                property.externalScreen.invalidate();
-            }
         }
 
         if (readOnly != null) {

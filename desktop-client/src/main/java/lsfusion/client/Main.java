@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
-import lsfusion.client.form.ClientExternalScreen;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.SavingThread;
 import lsfusion.client.form.editor.rich.RichEditorPane;
@@ -687,7 +686,6 @@ public class Main {
         }
 
         RemoteFormProxy.dropCaches();
-        ClientExternalScreen.dropCaches();
 
         for (ICleanListener task : cleanListeners) {
             task.clean();

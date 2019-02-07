@@ -2,8 +2,6 @@ package lsfusion.interop;
 
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.form.screen.ExternalScreen;
-import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
 import lsfusion.interop.remote.PreAuthentication;
@@ -21,10 +19,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     GUIPreferences getGUIPreferences() throws RemoteException;
     
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
-
-    ExternalScreen getExternalScreen(int screenID) throws RemoteException;
-
-    ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException;
 
     PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException;
     

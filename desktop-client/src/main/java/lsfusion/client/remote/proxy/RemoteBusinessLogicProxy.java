@@ -5,8 +5,6 @@ import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.form.screen.ExternalScreen;
-import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PreAuthentication;
 
@@ -39,20 +37,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         GUIPreferences result = target.getGUIPreferences();
         logRemoteMethodEndCall("getGUIPreferences", result);
         return result;    
-    }
-
-    public ExternalScreen getExternalScreen(int screenID) throws RemoteException {
-        logRemoteMethodStartCall("getExternalScreen");
-        ExternalScreen result = target.getExternalScreen(screenID);
-        logRemoteMethodEndCall("getExternalScreen", result);
-        return result;        
-    }
-
-    public ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException {
-        logRemoteMethodStartCall("getExternalScreenParameters");
-        ExternalScreenParameters result = target.getExternalScreenParameters(screenID, computerId);
-        logRemoteMethodEndCall("getExternalScreenParameters", result);
-        return result;
     }
 
     public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
