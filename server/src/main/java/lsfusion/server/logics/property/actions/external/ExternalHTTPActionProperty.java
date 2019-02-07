@@ -12,6 +12,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
@@ -22,6 +23,7 @@ import lsfusion.server.logics.property.ExternalHttpMethod;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.session.DataSession;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -32,10 +34,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.server.logics.property.ExternalHttpMethod.PUT;
 
@@ -44,14 +43,16 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
     private LCP headersProperty;
+    private LCP headersToProperty;
 
-    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty, boolean hasBodyUrl) {
+    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty, LCP headersToProperty, boolean hasBodyUrl) {
         super(hasBodyUrl ? 2 : 1, params, targetPropList);
 
         this.method = method;
         this.queryInterface = getOrderInterfaces().get(0);
         this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
         this.headersProperty = headersProperty;
+        this.headersToProperty = headersToProperty;
     }
 
     @Override
@@ -71,6 +72,19 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 ContentType contentType = ContentType.get(responseEntity);
                 List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
                 fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
+                if(headersToProperty != null) {
+                    Set<String> keys = new HashSet<>();
+                    for(Header header : response.getAllHeaders()) {
+                        keys.add(header.getName());
+                    }
+                    for(String key : keys) {
+                        String value = "";
+                        for(Header header : response.getHeaders(key)) {
+                            value += (value.isEmpty() ? "" : ";") + header.getValue();
+                        }
+                        headersToProperty.change(value, context, new DataObject(key));
+                    }
+                }
                 context.getBL().LM.statusHttp.change(response.getStatusLine().getStatusCode(), context);
                 if (response.getStatusLine().getStatusCode() < 200 || response.getStatusLine().getStatusCode() >= 300) {
                     throw new RuntimeException(response.getStatusLine().toString());
