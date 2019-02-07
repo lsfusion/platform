@@ -33,6 +33,7 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
@@ -268,7 +269,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
+    // system actions that are needed for native clients     
+    public boolean isClientNativeRESTAction(ActionProperty action) {
+        return false;
+    }
+    
+    private List<Object> executeExternal(LAP<?> property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
+        if(!isClientNativeRESTAction(property.property) && !Settings.get().isEnableRESTApi())
+            throw new RuntimeException("REST Api is disabled. It can be enabled using setting enableRESTApi.");
         try (DataSession session = dbManager.createSession()) {
             property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
 

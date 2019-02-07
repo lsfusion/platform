@@ -1055,6 +1055,16 @@ public class Settings implements Cloneable {
         this.disableReadClasses = disableReadClasses;
     }
 
+    private boolean enableRESTApi = true;
+
+    public boolean isEnableRESTApi() {
+        return enableRESTApi;
+    }
+
+    public void setEnableRESTApi(boolean enableRESTApi) {
+        this.enableRESTApi = enableRESTApi;
+    }
+
     public int getReserveIDStep() {
         return reserveIDStep;
     }

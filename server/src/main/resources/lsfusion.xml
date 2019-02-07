@@ -112,6 +112,7 @@
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
                 <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>
+                <entry key="enableRESTApi" value="${settings.enableRESTApi:}"/>
             </map>
         </property>
         </bean>
