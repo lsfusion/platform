@@ -112,7 +112,7 @@ DESIGN account {
 FORM accounts '{email.form.accounts}'
    
     OBJECTS a = Account
-    PROPERTIES(a) READONLY name, password, disable
+    PROPERTIES(a) READONLY name, disable
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Account OBJECT a
@@ -184,7 +184,7 @@ receiveMail '{email.receive.mail}' (Account account) {
 
 FORM mail '{email.form.mail}' 
     OBJECTS a=Account
-    PROPERTIES(a) READONLY name, password, disable
+    PROPERTIES(a) READONLY name, disable
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
     
     OBJECTS e=Email LAST
