@@ -1,6 +1,5 @@
 package lsfusion.client;
 
-import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
@@ -15,7 +14,6 @@ import lsfusion.interop.*;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.ICleanListener;
-import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
 import sun.awt.OSInfo;
@@ -61,8 +59,6 @@ public class Main {
 
     public static final RMITimeoutSocketFactory rmiSocketFactory = RMITimeoutSocketFactory.getInstance();
 
-    public static ModuleFactory module;
-
     public static RemoteLogicsLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
     public static RemoteNavigatorInterface remoteNavigator;
@@ -105,13 +101,11 @@ public class Main {
     public static Integer fontSize;
     private static Map<Object, FontUIResource> fontUIDefaults = new HashMap<>();
 
-    public static void start(final String[] args, ModuleFactory startModule) {
+    public static void start(final String[] args) {
 
         registerSingleInstanceListener();
 
         computerName = SystemUtils.getLocalHostName();
-
-        module = startModule;
 
         System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
 
@@ -278,7 +272,7 @@ public class Main {
                     startSplashScreen();
 
                     logger.info("Before init frame");
-                    frame = module.initFrame(remoteNavigator);
+                    frame = new DockableMainFrame(remoteNavigator);
                     logger.info("After init frame");
 
                     frame.addWindowListener(
@@ -703,30 +697,10 @@ public class Main {
         return remoteLogics.generateID();
     }
 
-    public interface ModuleFactory {
-        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException;
-
-        void openInExcel(ReportGenerationData generationData);
-
-        boolean isFull();
-    }
-
     public static void main(final String[] args) {
 
 //        SpanningTreeWithBlackjack.test();
 //        SpanningTreeWithBlackjack.test1();
-        start(args, new ModuleFactory() {
-            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
-                return new DockableMainFrame(remoteNavigator);
-            }
-
-            public void openInExcel(ReportGenerationData generationData) {
-                ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true);
-            }
-
-            public boolean isFull() {
-                return true;
-            }
-        });
+        start(args);
     }
 }
