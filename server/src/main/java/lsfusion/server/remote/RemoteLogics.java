@@ -285,12 +285,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             returnProps = new LCP[] {businessLogics.LM.exportFile};
         }
 
-        Object[] returns = new Object[returnProps.length];
-        for (int i = 0; i < returnProps.length; i++)
-            returns[i] = readReturnProperty(session, returnProps[i]);
+        List<Object> returns = new ArrayList<>();
+        for (LCP returnProp : returnProps) 
+            returns.addAll(readReturnProperty(session, returnProp));
 
         ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readHeaders(session, baseLM.headersTo).toOrderMap();
-        return new ExecResult(returns, headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));
+        return new ExecResult(returns.toArray(), headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));
     }
 
     private List<Object> readReturnProperty(DataSession session, LCP<?> returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
