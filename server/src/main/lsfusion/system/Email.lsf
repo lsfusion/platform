@@ -20,7 +20,7 @@ CLASS EncryptedConnectionTypeStatus '{email.encrypted.connection.type.status}' {
 }
 TABLE encryptedConnectionTypeStatus(EncryptedConnectionTypeStatus);
 
-name '{email.encrypted.connection.type.status}' (EncryptedConnectionTypeStatus s) = name(s) IF s IS EncryptedConnectionTypeStatus;
+name '{email.encrypted.connection.type.status}' (EncryptedConnectionTypeStatus s) = staticCaption(s) IF s IS EncryptedConnectionTypeStatus;
 FORM encryptedConnectionTypeStatuses '{email.encrypted.connection.type.status}'
     OBJECTS s = EncryptedConnectionTypeStatus
     PROPERTIES(s) READONLY name
@@ -28,7 +28,7 @@ FORM encryptedConnectionTypeStatuses '{email.encrypted.connection.type.status}'
 ;
 
 encryptedConnectionType = DATA EncryptedConnectionTypeStatus(Account);
-nameEncryptedConnectionType '{email.encrypted.connection.type.account}' (Account account) = staticCaption(encryptedConnectionType(account)) CHARWIDTH 3;
+nameEncryptedConnectionType '{email.encrypted.connection.type.account}' (Account account) = name(encryptedConnectionType(account)) CHARWIDTH 3;
 
 fromAddress '{email.from.address.account}' = DATA VARSTRING[50] (Account);
 accountFromAddress = GROUP AGGR Account account WHERE account IS Account BY fromAddress (account); 
