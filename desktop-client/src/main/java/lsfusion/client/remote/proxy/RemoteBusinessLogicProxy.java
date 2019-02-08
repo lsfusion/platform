@@ -19,8 +19,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         super(target);
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException {
-        return new RemoteNavigatorProxy(target.createNavigator(isFullClient, navigatorInfo, forceCreateNew));
+    public RemoteNavigatorInterface createNavigator(NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException {
+        return new RemoteNavigatorProxy(target.createNavigator(navigatorInfo, forceCreateNew));
     }
 
     @Override

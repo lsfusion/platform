@@ -2249,10 +2249,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return empty;
             }
             
-            public ParseInterface getIsFullClient() {
-                return empty;
-            }
-
             public ParseInterface getSQLComputer() {
                 return empty;
             }
@@ -2299,14 +2295,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         public OperationOwner getOpOwner() {
             return DataSession.this.getOwner();
-        }
-
-        public ParseInterface getIsFullClient() {
-            return new LogicalParseInterface() {
-                public boolean isTrue() {
-                    return computer.isFullClient();
-                }
-            };
         }
 
         public ParseInterface getSQLComputer() {

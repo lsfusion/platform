@@ -295,7 +295,7 @@ public final class LoginAction {
                 screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
             }
 
-            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), new NavigatorInfo(loginInfo.getUserName(),
+            remoteNavigator = remoteLogics.createNavigator(new NavigatorInfo(loginInfo.getUserName(),
                     loginInfo.getPassword(), Main.computerName, SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
                     cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize, language, country), true);
         } catch (CancellationException ce) {

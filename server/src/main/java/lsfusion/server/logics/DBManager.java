@@ -698,9 +698,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     }
                 },
                 new ComputerController() {
-                    public boolean isFullClient() {
-                        return false;
-                    }
                 },
                 new FormController() {
                     @Override

@@ -314,7 +314,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             
             @Override
             public void invokeAddReport() throws RemoteException {
-                assert Main.module.isFull();
                 try {
                     Main.addReportPathList(customReportPathList, formSID);
                 } catch (Exception e) {
@@ -324,7 +323,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
             @Override
             public void invokeRecreateReport() throws RemoteException {
-                assert Main.module.isFull();
                 try {
                     Main.recreateReportPathList(customReportPathList, formSID);
                 } catch (Exception e) {
@@ -334,7 +332,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
             @Override
             public void invokeEditReport() throws RemoteException {
-                assert Main.module.isFull();
                 try {
                     Main.editReportPathList(customReportPathList);
                 } catch (Exception e) {

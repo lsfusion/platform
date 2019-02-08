@@ -1367,8 +1367,6 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void runEditReport(List<ReportPath> customReportPathList) {
-        assert Main.module.isFull();
-
         try {
             Main.editReportPathList(customReportPathList);
         } catch (Exception e) {

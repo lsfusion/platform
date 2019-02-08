@@ -106,7 +106,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         return dbManager.createSession();
     }
 
-    public RemoteNavigatorInterface createNavigator(ExecutionStack stack, boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
+    public RemoteNavigatorInterface createNavigator(ExecutionStack stack, NavigatorInfo navigatorInfo, boolean reuseSession) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
         reuseSession = false;
 
@@ -140,7 +140,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //                    }
 //                }
 //            }
-            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, securityPolicy, userObject, computerObject, rmiManager.getExportPort(), stack);
+            return new RemoteNavigator(logicsInstance, navigatorInfo, securityPolicy, userObject, computerObject, rmiManager.getExportPort(), stack);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

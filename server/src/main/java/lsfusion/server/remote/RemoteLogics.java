@@ -145,11 +145,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
+    public RemoteNavigatorInterface createNavigator(NavigatorInfo navigatorInfo, boolean reuseSession) {
         if (restartManager.isPendingRestart() && (navigatorInfo.login == null || !navigatorInfo.login.equals("admin")))
             throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
 
-        return navigatorsManager.createNavigator(getStack(), isFullClient, navigatorInfo, reuseSession);
+        return navigatorsManager.createNavigator(getStack(), navigatorInfo, reuseSession);
     }
 
     public void ping() throws RemoteException {

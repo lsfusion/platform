@@ -1934,7 +1934,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         mMapValues.exclAdd(SQLSession.formParam, env.getSQLForm());
         mMapValues.exclAdd(SQLSession.connectionParam, env.getSQLConnection());
         mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
-        mMapValues.exclAdd(SQLSession.isFullClientParam, env.getIsFullClient());
         mMapValues.exclAdd(SQLSession.isDebugParam, new LogicalParseInterface() {
             public boolean isTrue() {
                 return SystemProperties.inDevMode;

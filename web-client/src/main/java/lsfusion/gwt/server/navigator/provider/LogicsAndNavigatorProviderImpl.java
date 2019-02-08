@@ -6,7 +6,6 @@ import lsfusion.base.ServerMessages;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.http.LSFAuthenticationToken;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.springframework.beans.factory.DisposableBean;
@@ -15,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import java.rmi.RemoteException;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,7 +58,7 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
-        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
+        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(new NavigatorInfo(username, password,
                 SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
                 osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
                 javaVersion, null, null, null), true);

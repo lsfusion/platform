@@ -100,8 +100,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     private final WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<>();
 
-    private final boolean isFullClient;
-
     private ClientCallBackController client;
 
     private RemotePausableInvocation currentInvocation = null;
@@ -113,7 +111,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     private String formID = null;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, SecurityPolicy securityPolicy, DataObject user, DataObject computer, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
+    public RemoteNavigator(LogicsInstance logicsInstance, NavigatorInfo navigatorInfo, SecurityPolicy securityPolicy, DataObject user, DataObject computer, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
 
         this.logicsInstance = logicsInstance;
@@ -121,8 +119,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         this.businessLogics = logicsInstance.getBusinessLogics();
         this.securityManager = logicsInstance.getSecurityManager();
         this.dbManager = logicsInstance.getDbManager();
-
-        this.isFullClient = isFullClient;
 
         setContext(new RemoteNavigatorContext(this));
         this.classCache = new ClassCache();
@@ -163,10 +159,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         finalizeInit(stack, SyncType.NOSYNC);
 
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
-    }
-
-    public boolean isFullClient() {
-        return isFullClient;
     }
 
     public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -331,11 +323,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
         private WeakComputerController(RemoteNavigator navigator) {
             this.weakThis = new WeakReference<>(navigator);
-        }
-
-        public boolean isFullClient() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator != null && remoteNavigator.isFullClient();
         }
     }
 

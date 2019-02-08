@@ -19,7 +19,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     GUIPreferences getGUIPreferences() throws RemoteException;
     
-    RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
+    RemoteNavigatorInterface createNavigator(NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
 
     PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException;
     

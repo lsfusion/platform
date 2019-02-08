@@ -283,7 +283,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public final static String formParam = "yfifybdfnenfykfqyth";
     public final static String connectionParam = "ntreottgjlrkxtybt";
     public final static String isDebugParam = "dsiljdsiowee";
-    public final static String isFullClientParam = "fdfdijir";
 
     public final static String limitParam = "sdsnjklirens";
 

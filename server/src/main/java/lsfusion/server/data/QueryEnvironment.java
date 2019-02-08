@@ -12,7 +12,6 @@ public interface QueryEnvironment {
     
     int getTransactTimeout();
 
-    ParseInterface getIsFullClient();
     ParseInterface getSQLComputer();
     ParseInterface getSQLForm();
     ParseInterface getSQLConnection();
