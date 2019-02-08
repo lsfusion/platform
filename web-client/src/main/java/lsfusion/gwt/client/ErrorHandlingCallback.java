@@ -75,8 +75,11 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
 
     private String getJavaStackTrace(Throwable caught) {
         StringBuilder result = new StringBuilder(caught.getMessage());
-        for (StackTraceElement element : getStackTrace(caught)) {
-            result.append("\n\tat ").append(element);
+        StackTraceElement[] stackTrace = getStackTrace(caught);
+        if(stackTrace != null) {
+            for (StackTraceElement element : stackTrace) {
+                result.append("\n\tat ").append(element);
+            }
         }
         return result.toString();
     }
