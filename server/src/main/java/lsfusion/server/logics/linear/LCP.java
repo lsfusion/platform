@@ -51,6 +51,9 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         return property.read(env, getMapValues(objects));
     }
 
+    public ImMap<ImList<Object>, Object> readAll(ExecutionContext context) throws SQLException, SQLHandledException {
+        return readAll(context.getEnv());
+    }
     public ImMap<ImList<Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return property.readAll(env).mapKeys(new GetValue<ImList<Object>, ImMap<T, Object>>() {
             public ImList<Object> getMapValue(ImMap<T, Object> value) {

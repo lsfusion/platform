@@ -1,17 +1,15 @@
 package lsfusion.server.logics.property.actions.external;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
@@ -22,8 +20,8 @@ import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.SingleKeyPropertyUsage;
-import lsfusion.server.session.SinglePropertyTableUsage;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -33,7 +31,6 @@ import org.apache.http.client.methods.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -42,14 +39,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.list;
 import static lsfusion.server.logics.property.ExternalHttpMethod.PUT;
 
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
-    private LCP headersProperty;
+    private LCP<?> headersProperty;
     private LCP headersToProperty;
 
     public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty, LCP headersToProperty, boolean hasBodyUrl) {
@@ -72,7 +68,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             if(connectionString != null) {
                 connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
                 bodyUrl = bodyUrl != null ? replaceParams(context, bodyUrl, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN)) : null;
-                Map<String, String> headers = getHeaders(context);
+                ImMap<String, String> headers = headersProperty != null ? readHeaders(context.getEnv(), headersProperty) : MapFact.<String, String>EMPTY();
                 HttpResponse response = readHTTP(context, connectionString, bodyUrl, rNotUsedParams.result, headers);
                 HttpEntity responseEntity = response.getEntity();
 
@@ -123,13 +119,12 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         return headerValuesArray;
     }
 
-    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, Map<String, String> headers) throws IOException {
+    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, ImMap<String, String> headers) throws IOException {
         HttpClient httpClient = HttpClientBuilder.create().build();
 
-        List<Object> paramList = new ArrayList<>();
-        for (PropertyInterface i : bodyParams) {
-            paramList.add(format(context, i, null)); // пока в body ничего не кодируем (так как content-type'ы другие)
-        }
+        Object[] paramList = new Object[bodyParams.size()];
+        for (int i=0,size=bodyParams.size();i<size;i++)
+            paramList[i] = format(context, bodyParams.get(i), null); // пока в body ничего не кодируем (так как content-type'ы другие)
 
         HttpUriRequest httpRequest;
         switch (method) {
@@ -155,9 +150,8 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 break;
             }
         }
-        for(Map.Entry<String, String> header : headers.entrySet()) {
-            httpRequest.addHeader(header.getKey(), header.getValue());
-        }
+        for(int i=0,size=headers.size();i<size;i++)
+            httpRequest.addHeader(headers.getKey(i), headers.getValue(i));
         return httpClient.execute(httpRequest);
     }
 
@@ -189,21 +183,12 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         }
     }
 
-    private Map<String, String> getHeaders(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        Map<String, String> headers = new HashMap<>();
-        if(headersProperty != null) {
-            KeyExpr stringExpr = new KeyExpr("string");
-            ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "string", stringExpr);
-            QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-            Expr headersExpr = headersProperty.getExpr(context.getModifier(), stringExpr);
-            query.addProperty("header", headersExpr);
-            query.and(headersExpr.getWhere());
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context);
-            for (int i = 0; i < result.size(); i++) {
-                headers.put(((String) result.getKey(i).get("string")).trim(), ((String) result.getValue(i).get("header")).trim());
+    public static ImMap<String, String> readHeaders(ExecutionEnvironment env, LCP<?> headersProperty) throws SQLException, SQLHandledException {
+        return BaseUtils.immutableCast(headersProperty.readAll(env).mapKeys(new GetValue<String, ImList<Object>>() {
+            public String getMapValue(ImList<Object> value) {
+                return (String) value.single();
             }
-        }
-        return headers;
+        }));
     }
 
     public static <P extends PropertyInterface> void writeHeaders(DataSession session, LCP<P> headersProperty, String[] headerNames, String[] headerValues) throws SQLException, SQLHandledException {

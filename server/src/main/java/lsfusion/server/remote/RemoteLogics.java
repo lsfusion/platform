@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExecResult;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -209,24 +210,24 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues) {
-        List<Object> returnList;
+    public ExecResult exec(String action, String[] returnNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues) {
+        ExecResult result;
         try {
             LAP property = businessLogics.findActionByCompoundName(action);
             if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params, Charset.forName(charsetName), headerNames, headerValues);
+                result = executeExternal(property, returnNames, params, Charset.forName(charsetName), headerNames, headerValues);
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
         } catch (ParseException | SQLHandledException | SQLException | IOException e) {
             throw new RuntimeException(e);
         }
-        return returnList;
+        return result;
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues) {
-        List<Object> returnList = new ArrayList<>();
+    public ExecResult eval(boolean action, Object paramScript, String[] returnNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues) {
+        ExecResult result;
         if (paramScript != null) {
             try {
                 Charset charset = Charset.forName(charsetName);
@@ -236,15 +237,19 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     script = "run() = {" + script + ";\n};";
                 }
                 LAP<?> runAction = businessLogics.evaluateRun(script);
-                if (runAction != null)
-                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset, headerNames, headerValues);
+                if(runAction != null) {
+                    result = executeExternal(runAction, returnNames, params, charset, headerNames, headerValues);
+                } else {
+                    throw new RuntimeException("Action run[] was not found");
+                    
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
             throw new RuntimeException("Eval script was not found");
         }
-        return returnList;
+        return result;
     }
 
     // system actions that are needed for native clients
@@ -252,7 +257,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return businessLogics.authenticationLM.syncUsers.property == action;
     }
 
-    private List<Object> executeExternal(LAP<?> property, String[] returnCanonicalNames, Object[] params, Charset charset, String[] headerNames, String[] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {
+    private ExecResult executeExternal(LAP<?> property, String[] returnNames, Object[] params, Charset charset, String[] headerNames, String[] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {
         if(!isClientNativeRESTAction(property.property) && !Settings.get().isEnableRESTApi())
             throw new RuntimeException("REST Api is disabled. It can be enabled using setting enableRESTApi.");
         try (DataSession session = dbManager.createSession()) {
@@ -261,29 +266,31 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             
             property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
 
-            return readReturnProperties(session, returnCanonicalNames);
+            return readResult(session, returnNames);
         }
     }
 
-    private List<Object> readReturnProperties(DataSession session, String[] returnCanonicalNames) throws SQLException, SQLHandledException, IOException {
+    private ExecResult readResult(DataSession session, String[] returnNames) throws SQLException, SQLHandledException, IOException {
         LCP[] returnProps; 
-        if (returnCanonicalNames.length > 0) {
-            returnProps = new LCP[returnCanonicalNames.length];
-            for (int i = 0; i < returnCanonicalNames.length; i++) {
-                String returnCanonicalName = returnCanonicalNames[i];
-                LCP returnProperty = businessLogics.findProperty(returnCanonicalName);
+        if (returnNames.length > 0) {
+            returnProps = new LCP[returnNames.length];
+            for (int i = 0; i < returnNames.length; i++) {
+                String returnName = returnNames[i];
+                LCP returnProperty = businessLogics.findPropertyByCompoundName(returnName);
                 if (returnProperty == null)
-                    throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
+                    throw new RuntimeException(String.format("Return property %s was not found", returnName));
                 returnProps[i] = returnProperty;
             }
         } else {
             returnProps = new LCP[] {businessLogics.LM.exportFile};
         }
 
-        List<Object> returnList = new ArrayList<>();
-        for (LCP returnProperty : returnProps)
-            returnList.addAll(readReturnProperty(session, returnProperty));
-        return returnList;
+        Object[] returns = new Object[returnProps.length];
+        for (int i = 0; i < returnProps.length; i++)
+            returns[i] = readReturnProperty(session, returnProps[i]);
+
+        ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readHeaders(session, baseLM.headersTo).toOrderMap();
+        return new ExecResult(returns, headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));
     }
 
     private List<Object> readReturnProperty(DataSession session, LCP<?> returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {

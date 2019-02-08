@@ -4,6 +4,8 @@ import lsfusion.base.ExternalUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,12 +32,10 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
                     query == null ? "" : query, request.getInputStream(), contentType, headerNames, headerValues);
 
             if (responseHttpEntity.response != null) {
-                response.setContentType(responseHttpEntity.response.getContentType().getValue());
-                if(responseHttpEntity.contentDisposition != null)
-                    response.addHeader("Content-Disposition", responseHttpEntity.contentDisposition);
-                responseHttpEntity.response.writeTo(response.getOutputStream());
-            } else
-                response.getWriter().print(getString(request, "executed.successfully"));
+                sendResponse(response, responseHttpEntity);
+            } else {
+                sendOKResponse(request, response);
+            }
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -43,7 +43,38 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             response.getWriter().print(getString(request, "internal.server.error.with.message", e.getMessage()));
         }
     }
-    
+
+    private void sendOKResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.getWriter().print(getString(request, "executed.successfully"));
+    }
+
+    // copy of ExternalHTTPServer.sendResponse
+    private void sendResponse(HttpServletResponse response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
+        HttpEntity responseEntity = responseHttpEntity.response;
+        Header contentType = responseEntity.getContentType();
+        String contentDisposition = responseHttpEntity.contentDisposition;
+        String[] headerNames = responseHttpEntity.headerNames;
+        String[] headerValues = responseHttpEntity.headerNames;
+
+        boolean hasContentType = false; 
+        boolean hasContentDisposition = false; 
+        for(int i=0;i<headerNames.length;i++) {
+            String headerName = headerNames[i];
+            if(headerName.equals("Content-Type")) {
+                hasContentType = true;
+                response.setContentType(headerValues[i]);
+            } else                
+                response.addHeader(headerName, headerValues[i]);
+            hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");            
+        }
+        if(contentType != null && !hasContentType)
+            response.setContentType(contentType.getValue());
+        if(contentDisposition != null && !hasContentDisposition)
+            response.addHeader("Content-Disposition", contentDisposition);        
+        response.setStatus(HttpServletResponse.SC_OK);
+        responseEntity.writeTo(response.getOutputStream());
+    }
+
     private String[] getRequestHeaderValues(HttpServletRequest request, String[] headerNames) {
         String[] headerValuesArray = new String[headerNames.length];
         for (int i = 0; i < headerNames.length; i++) {

@@ -83,7 +83,7 @@ public class ExternalHttpServer extends MonitorServer {
                         request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request), headerNames, headerValues);
 
                 if (response.response != null)
-                    sendResponse(request, response.response, response.response.getContentType().getValue(), response.contentDisposition);
+                    sendResponse(request, response);
                 else
                     sendOKResponse(request);
 
@@ -133,15 +133,31 @@ public class ExternalHttpServer extends MonitorServer {
             os.close();
         }
 
-        private void sendResponse(HttpExchange request, HttpEntity response, String contentType, String contentDisposition) throws IOException {
-            if (contentType != null)
-                request.getResponseHeaders().add("Content-Type", contentType);
-            if(contentDisposition != null)
-                request.getResponseHeaders().add("Content-Disposition", contentDisposition);
-            request.sendResponseHeaders(HttpServletResponse.SC_OK, response.getContentLength());
-            OutputStream os = request.getResponseBody();
-            response.writeTo(os);
-            os.close();
+        // copy of ExternalHTTPServer.sendResponse
+        private void sendResponse(HttpExchange response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
+            HttpEntity responseEntity = responseHttpEntity.response;
+            String contentType = responseEntity.getContentType().getValue();
+            String contentDisposition = responseHttpEntity.contentDisposition;
+            String[] headerNames = responseHttpEntity.headerNames;
+            String[] headerValues = responseHttpEntity.headerNames;
+
+            boolean hasContentType = false;
+            boolean hasContentDisposition = false;
+            for(int i=0;i<headerNames.length;i++) {
+                String headerName = headerNames[i];
+                if(headerName.equals("Content-Type")) {
+                    hasContentType = true;
+                    response.getResponseHeaders().add("Content-Type", headerValues[i]);
+                } else
+                    response.getResponseHeaders().add(headerName, headerValues[i]);
+                hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+            }
+            if (contentType != null && !hasContentType)
+                response.getResponseHeaders().add("Content-Type", contentType);
+            if(contentDisposition != null && !hasContentDisposition)
+                response.getResponseHeaders().add("Content-Disposition", contentDisposition);
+            response.sendResponseHeaders(HttpServletResponse.SC_OK, responseEntity.getContentLength());
+            responseEntity.writeTo(response.getResponseBody());
         }
     }
 }

@@ -1,5 +1,6 @@
 package lsfusion.client.remote.proxy;
 
+import lsfusion.base.ExecResult;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -77,17 +78,17 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+    public ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
         logRemoteMethodStartCall("exec");
-        List<Object> result = target.exec(action, returnCanonicalNames, params, charset, headerNames, headerValues);
+        ExecResult result = target.exec(action, returnCanonicalNames, params, charset, headerNames, headerValues);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+    public ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
         logRemoteMethodStartCall("eval");
-        List<Object> result = target.eval(action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
+        ExecResult result = target.eval(action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }

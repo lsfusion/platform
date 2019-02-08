@@ -53,13 +53,13 @@ public class ExternalUtils {
         List<String> returns = getParameterValues(queryParams, RETURN_PARAM);
         String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
         boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        List<Object> paramList = new ArrayList<>();
+        ExecResult execResult = null;
         
         String filename = "export";
 
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+            execResult = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
         } else {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
@@ -69,7 +69,7 @@ public class ExternalUtils {
                     script = paramsList.get(0);
                     paramsList = paramsList.subList(1, paramsList.size());
                 }
-                paramList = remoteLogics.eval(isEvalAction, script, returns.toArray(new String[returns.size()]),
+                execResult = remoteLogics.eval(isEvalAction, script, returns.toArray(new String[returns.size()]),
                         paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
             }
         }
@@ -77,22 +77,23 @@ public class ExternalUtils {
         HttpEntity entity = null;
         String contentDisposition = null;
 
-        if (!paramList.isEmpty()) {
+        if (execResult != null) {
             Result<String> singleFileExtension = new Result<>();
-            entity = getInputStreamFromList(paramList, getBodyUrl(paramList, returnBodyUrl), singleFileExtension);
+            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), singleFileExtension);
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
+            return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues);
         }
-        return new ExternalResponse(entity, contentDisposition);
+        return new ExternalResponse(null, null, null, null);
     }
 
-    public static String getBodyUrl(List<Object> paramList, boolean returnBodyUrl) {
+    public static String getBodyUrl(Object[] results, boolean returnBodyUrl) {
         String bodyUrl = null;
-        if (paramList.size() > 1 && returnBodyUrl) {
+        if (results.length > 1 && returnBodyUrl) {
             StringBuilder result = new StringBuilder();
-            for (int i = 0; i < paramList.size(); i++) {
-                Object value = paramList.get(i);
+            for (int i = 0; i < results.length; i++) {
+                Object value = results[i];
                 result.append(String.format("%s=%s", ((result.length() == 0) ? "" : "&") + "param" + i, value));
             }
             bodyUrl = result.toString();
@@ -192,10 +193,10 @@ public class ExternalUtils {
         return paramsList;
     }
 
-    // paramList byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
-    public static HttpEntity getInputStreamFromList(List<Object> paramList, String bodyUrl, Result<String> singleFileExtension) {
+    // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
+    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, Result<String> singleFileExtension) {
         HttpEntity entity;
-        int paramCount = paramList.size();
+        int paramCount = results.length;
         if (paramCount > 1) {
             if(bodyUrl != null) {
                 entity = new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED);
@@ -203,7 +204,7 @@ public class ExternalUtils {
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                 builder.setContentType(ExternalUtils.MULTIPART_MIXED);
                 for (int i = 0; i < paramCount; i++) {
-                    Object value = paramList.get(i);
+                    Object value = results[i];
                     if (value instanceof FileData) {
                         String extension = ((FileData) value).getExtension();
                         builder.addPart("param" + i, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
@@ -214,7 +215,7 @@ public class ExternalUtils {
                 entity = builder.build();
             }
         } else if(paramCount == 1) {
-            Object value = BaseUtils.single(paramList);
+            Object value = BaseUtils.single(results);
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
                 entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), getContentType(extension));
@@ -230,12 +231,16 @@ public class ExternalUtils {
     }
 
     public static class ExternalResponse {
-        public HttpEntity response;
-        public String contentDisposition;
+        public final HttpEntity response;
+        public final String contentDisposition;
+        public final String[] headerNames;
+        public final String[] headerValues;
 
-        public ExternalResponse(HttpEntity response, String contentDisposition) {
+        public ExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues) {
             this.response = response;
             this.contentDisposition = contentDisposition;
+            this.headerNames = headerNames;
+            this.headerValues = headerValues;
         }
     }
 }

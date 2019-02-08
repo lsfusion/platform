@@ -106,6 +106,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP statusHttp;
     
     public LCP<?> headers;
+    public LCP<?> headersTo;
 
     public LCP messageCaughtException;
     public LCP javaStackTraceCaughtException;
@@ -391,6 +392,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         statusHttp = findProperty("statusHttp[]");
         
         headers = findProperty("headers[TEXT]");
+        headersTo = findProperty("headersTo[TEXT]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");
