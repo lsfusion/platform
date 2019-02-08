@@ -1009,8 +1009,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void openReportWindow(String fileName) {
-        String reportUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + fileName;
-        Window.open(reportUrl, fileName, "");
+        GwtClientUtils.downloadFile(fileName, null);
     }
 
     public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final ErrorHandlingCallback<ServerResponseResult> callback) {
