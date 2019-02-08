@@ -7,13 +7,11 @@ import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
@@ -30,14 +28,7 @@ import lsfusion.server.context.SyncType;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ManageSessionType;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.GroupObjectInstance;
-import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
@@ -579,70 +570,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     public void objectChanged(ConcreteCustomClass cls, long objectID) {
         addCacheObject(cls, objectID);
-    }
-
-    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) {
-        RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), isModal, interactive);
-        if(initialObjects != null) {
-            for (String objectSID : initialObjects.keySet()) {
-                GroupObjectInstance groupObject = null;
-                ObjectInstance object = null;
-                for (GroupObjectInstance group : (ImOrderSet<GroupObjectInstance>) form.form.getOrderGroups()) {
-                    for (ObjectInstance obj : group.objects) {
-                        if (obj.getSID().equals(objectSID)) {
-                            object = obj;
-                            groupObject = group;
-                            break;
-                        }
-                    }
-                }
-                if (object != null) {
-                    groupObject.addSeek(object, new DataObject(Long.decode(initialObjects.get(objectSID)), (ConcreteCustomClass)object.getCurrentClass()), true);
-                }
-            }
-        }
-        return form;
-    }
-
-    private FormEntity getFormEntity(String formSID) {
-        FormEntity formEntity = businessLogics.getFormEntityBySID(formSID);
-
-        if (formEntity == null) {
-            throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.form.with.id.not.found}") + " : " + formSID);
-        }
-//      todo [dale]: Должна ли быть FormSecurityPolicy?
-//        if (!securityPolicy.form.checkPermission(formEntity)) {
-//            return null;
-//        }
-
-        return formEntity;
-    }
-
-    private RemoteFormInterface createForm(FormEntity formEntity, boolean isModal, boolean interactive) {
-        //todo: вернуть, когда/если починиться механизм восстановления сессии
-//        try {
-//            RemoteForm remoteForm = invalidatedForms.remove(formEntity);
-//            if (remoteForm == null) {
-//                remoteForm = context.createRemoteForm(
-//                        context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isSync, FormSessionScope.NEWSESSION, false, false, interactive)
-//                );
-//            }
-//            return remoteForm;
-//        } catch (Exception e) {
-//            throw Throwables.propagate(e);
-//        }
-        try {
-            ExecutionStack stack = getStack();
-            try(DataSession session = createSession()) {
-                return context.createRemoteForm(
-                        context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), session,
-                                isModal, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, stack, false, false, interactive, null,
-                                null, false),
-                        stack);
-            }
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     private ClassCache classCache;

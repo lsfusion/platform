@@ -16,7 +16,6 @@ import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 
-import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,21 +88,6 @@ public class DockableManager {
 
         page.onOpened();
         openedForms.add(page);
-    }
-
-    public ClientDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, int modifiers) throws IOException, ClassNotFoundException, JRException {
-        ClientDockable page;
-        if (Main.forbidDuplicateForms && forms.getFormsList().contains(formSID) && (modifiers & InputEvent.CTRL_MASK) == 0) { //only when ctrl not pressed
-            page = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-            if(page != null) {
-                page.toFront();
-                page.requestFocusInWindow();
-            }
-        } else {
-            page = new ClientFormDockable(navigator, canonicalName, formSID, this);
-            openForm(page);
-        }
-        return page;
     }
 
     public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
