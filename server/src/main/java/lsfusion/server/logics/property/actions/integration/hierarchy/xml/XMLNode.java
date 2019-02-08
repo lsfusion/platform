@@ -97,6 +97,12 @@ public class XMLNode implements Node<XMLNode> {
         return element.getChild(shortKey.result, namespace);
     }
 
+    public List getXMLChildren(String key) {
+        Result<String> shortKey = new Result<>();
+        Namespace namespace = getXMLNamespace(key, shortKey, true);
+        return element.getChildren(shortKey.result, namespace);
+    }
+
     @Override
     public Object getValue(String key, boolean attr, Type type) throws ParseException {
         String stringValue;;
@@ -113,7 +119,7 @@ public class XMLNode implements Node<XMLNode> {
     public Iterable<Pair<Object, XMLNode>> getMap(String key, boolean isIndex) {
         MList<Pair<Object, XMLNode>> mResult = ListFact.mList();
         if(isIndex) {
-            List children = key.equals("value") ? element.getChildren() : element.getChildren(key);
+            List children = key.equals("value") ? element.getChildren() : getXMLChildren(key);
             for (int i = 0; i < children.size(); i++)
                 mResult.add(new Pair<Object, XMLNode>(i, new XMLNode((Element)children.get(i))));
         } else {
