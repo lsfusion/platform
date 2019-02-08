@@ -1,6 +1,8 @@
 package lsfusion.base;
 
-public class ExecResult {
+import java.io.Serializable;
+
+public class ExecResult implements Serializable {
     public final Object[] results;
     public final String[] headerNames;
     public final String[] headerValues;
