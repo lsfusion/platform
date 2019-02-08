@@ -25,8 +25,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     VMOptions getClientVMOptions() throws RemoteException;
 
-    void remindPassword(String email, String localeLanguage) throws RemoteException;
-
     //external requests
     ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;
     ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;

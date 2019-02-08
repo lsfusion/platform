@@ -71,12 +71,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    public void remindPassword(String email, String localeLanguage) throws RemoteException {
-        logRemoteMethodStartCall("remindPassword");
-        target.remindPassword(email, localeLanguage);
-        logRemoteMethodEndVoidCall("remindPassword");
-    }
-
     @Override
     public ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
         logRemoteMethodStartCall("exec");
