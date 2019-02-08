@@ -54,6 +54,13 @@ public class GwtClientUtils {
         Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
     }
 
+    public static void downloadFile(String name, String displayName) {
+        if(name != null) {
+            String fileUrl = getWebAppBaseURL() + "downloadFile?name=" + name + (displayName != null ? "&displayName=" + displayName : "");
+            Window.open(fileUrl, displayName != null ? displayName : name, "");
+        }
+    }
+
     public static Map<String, String> getPageParameters() {
         Map<String, String> params = new HashMap<>();
         try {
