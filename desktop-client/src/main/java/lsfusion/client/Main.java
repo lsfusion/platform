@@ -272,7 +272,7 @@ public class Main {
                     startSplashScreen();
 
                     logger.info("Before init frame");
-                    frame = new DockableMainFrame(remoteNavigator);
+                    frame = new DockableMainFrame(remoteNavigator, clientSettings.currentUserName);
                     logger.info("After init frame");
 
                     frame.addWindowListener(

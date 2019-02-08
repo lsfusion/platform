@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class ClientSettings implements Serializable {
     public LocalePreferences localePreferences;
+    public String currentUserName;
     public Integer fontSize;
     public boolean busyDialog;
     public long busyDialogTimeout;
@@ -11,9 +12,10 @@ public class ClientSettings implements Serializable {
     public boolean configurationAccessAllowed;
     public boolean forbidDuplicateForms;
 
-    public ClientSettings(LocalePreferences localePreferences, Integer fontSize, boolean busyDialog, long busyDialogTimeout, boolean useRequestTimeout,
+    public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout, boolean useRequestTimeout,
                           boolean configurationAccessAllowed, boolean forbidDuplicateForms) {
         this.localePreferences = localePreferences;
+        this.currentUserName = currentUserName;
         this.fontSize = fontSize;
         this.busyDialog = busyDialog;
         this.busyDialogTimeout = busyDialogTimeout;

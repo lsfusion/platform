@@ -368,7 +368,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     public void execute(UserChangedClientAction action) {
         try {
-            Main.frame.updateUser();
+            Main.frame.updateUser(Main.remoteNavigator.getClientSettings().currentUserName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

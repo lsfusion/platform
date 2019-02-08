@@ -245,24 +245,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         return formID;
     }
 
-    public byte[] getCurrentUserInfoByteArray() {
-        try {
-            String userName;
-            try (DataSession session = createSession()) {
-                QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
-                query.addProperty("name", businessLogics.authenticationLM.currentUserName.getExpr());
-                userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
-            }
-
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-            dataStream.writeUTF(userName);
-            return outStream.toByteArray();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     @Aspect
     public static class RemoteNavigatorUsageAspect {
         @Around(RemoteContextAspect.allRemoteCalls)
@@ -457,21 +439,23 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     @Override
     public ClientSettings getClientSettings() {
+        String currentUserName;
         Integer fontSize;
         boolean useBusyDialog;
         boolean useRequestTimeout;
         boolean forbidDuplicateForms;
 
         try (DataSession session = createSession()) {
+            currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
             fontSize = (Integer) businessLogics.authenticationLM.userFontSize.read(session, user);
             useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
             useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
-            forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCurrentUser.read(session) != null;
+            forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
-        return new ClientSettings(userLocalePreferences, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
+        return new ClientSettings(userLocalePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, configurationAccessAllowed, forbidDuplicateForms);
     }
 

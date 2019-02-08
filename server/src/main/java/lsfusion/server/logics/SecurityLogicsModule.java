@@ -20,7 +20,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP descriptionPolicy;
     public LCP orderUserPolicy;
 
-    public LCP forbidDuplicateFormsCurrentUser;
+    public LCP forbidDuplicateFormsCustomUser;
     public LCP permitViewAllPropertyUser;
     public LCP forbidChangeAllPropertyRole;
     public LCP forbidViewAllPropertyUser;
@@ -89,7 +89,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // ---- Политики для доменной логики
 
         // Разрешения для всех свойств
-        forbidDuplicateFormsCurrentUser = findProperty("forbidDuplicateFormsCurrentUser[]");
+        forbidDuplicateFormsCustomUser = findProperty("forbidDuplicateForms[CustomUser]");
         permitViewAllPropertyUser = findProperty("permitViewAllProperty[User]");
         forbidViewAllPropertyUser = findProperty("forbidViewAllProperty[User]");
         permitChangeAllPropertyUser = findProperty("permitChangeAllProperty[User]");

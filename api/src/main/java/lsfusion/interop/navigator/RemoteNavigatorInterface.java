@@ -35,8 +35,5 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     // пингование сервера
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 
-    // аутентификация
-    byte[] getCurrentUserInfoByteArray() throws RemoteException;
-
     ClientSettings getClientSettings() throws RemoteException;
 }

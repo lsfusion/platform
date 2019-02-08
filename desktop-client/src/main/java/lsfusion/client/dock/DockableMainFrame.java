@@ -105,8 +105,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
     private final RmiQueue rmiQueue;
 
-    public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
-        super(remoteNavigator);
+    public DockableMainFrame(RemoteNavigatorInterface remoteNavigator, String userName) throws IOException {
+        super(remoteNavigator, userName);
 
         DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
 

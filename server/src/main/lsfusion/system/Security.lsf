@@ -302,7 +302,6 @@ copy (UserRole from, UserRole to) +{
 forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), forbidDuplicateForms(mainRole(u));
-forbidDuplicateFormsCurrentUser () = forbidDuplicateForms(currentUser());
 
 // Default forms
 CLASS DefaultForms '{security.default.forms}' {
