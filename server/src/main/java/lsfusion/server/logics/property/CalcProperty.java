@@ -1242,7 +1242,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public ImMap<ImMap<T, Object>, Object> readAll(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(interfaces);
-        readQuery.addProperty(readValue, getExpr(readQuery.getMapExprs(), modifier));
+        Expr expr = getExpr(readQuery.getMapExprs(), modifier);
+        readQuery.addProperty(readValue, expr);
+        readQuery.and(expr.getWhere());
         return readQuery.execute(session, env).getMap().mapValues(new GetValue<Object, ImMap<Object, Object>>() {
             public Object getMapValue(ImMap<Object, Object> value) {
                 return value.singleValue();                
