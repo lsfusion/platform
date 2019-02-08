@@ -261,25 +261,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return (Long) authenticationLM.contactEmail.read(session, new DataObject(email));
     }
 
-    public void remindPassword(String email, String localeLanguage) throws RemoteException {
-        assert email != null;
-        //todo: в будущем нужно поменять на проставление локали в Context
-//            ServerResourceBundle.load(localeLanguage);
-        try {
-            try (DataSession session = createSession()) {
-                Long userId = getUserByEmail(session, email);
-                if (userId == null) {
-                    throw new RuntimeException(localize("{mail.user.not.found}") + ": " + email);
-                }
-
-                businessLogics.emailLM.emailUserPassUser.execute(session, getStack(), new DataObject(userId, businessLogics.authenticationLM.customUser));
-            }
-        } catch (Exception e) {
-            systemLogger.error("Error reminding password: ", e);
-            throw new RemoteMessageException(localize("{mail.error.sending.password.remind}"), e);
-        }
-    }
-
     // web spring authentication
     public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country, ExecutionStack stack) throws RemoteException {
         try(DataSession session = createSession()) {

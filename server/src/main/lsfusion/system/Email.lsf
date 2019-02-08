@@ -2,7 +2,17 @@ MODULE Email;
 
 REQUIRE System, Reflection;
 
-GROUP email '{email.group.email}' : public;   //rootGroup
+// -------------- Account ----------------- //
+CLASS Account '{email.account}';
+TABLE account (Account);
+
+name '{email.name.account}' = DATA VARSTRING[50](Account);
+password '{email.password.account}' = DATA VARSTRING[50](Account) ECHO;
+disable '{email.disable.account}' = DATA BOOLEAN(Account);
+
+// Sending
+smtpHost '{email.smtp.host.account}' = DATA VARSTRING[50](Account);
+smtpPort '{email.smtp.port.account}' = DATA VARSTRING[10](Account);
 
 CLASS EncryptedConnectionTypeStatus '{email.encrypted.connection.type.status}' {
     SSL '{email.encrypted.connection.type.status.ssl}',
@@ -10,11 +20,28 @@ CLASS EncryptedConnectionTypeStatus '{email.encrypted.connection.type.status}' {
 }
 TABLE encryptedConnectionTypeStatus(EncryptedConnectionTypeStatus);
 
-FORM encryptedConnectionTypeStatuses
+name '{email.encrypted.connection.type.status}' (EncryptedConnectionTypeStatus s) = name(s) IF s IS EncryptedConnectionTypeStatus;
+FORM encryptedConnectionTypeStatuses '{email.encrypted.connection.type.status}'
     OBJECTS s = EncryptedConnectionTypeStatus
-    PROPERTIES(s) READONLY staticCaption
+    PROPERTIES(s) READONLY name
     LIST EncryptedConnectionTypeStatus OBJECT s
 ;
+
+encryptedConnectionType = DATA EncryptedConnectionTypeStatus(Account);
+nameEncryptedConnectionType '{email.encrypted.connection.type.account}' (Account account) = staticCaption(encryptedConnectionType(account)) CHARWIDTH 3;
+
+fromAddress '{email.from.address.account}' = DATA VARSTRING[50] (Account);
+accountFromAddress = GROUP AGGR Account account WHERE account IS Account BY fromAddress (account); 
+
+isDefaultInbox '{email.is.default.inbox.account}' = DATA BOOLEAN (Account);
+defaultInboxAccount = GROUP MAX Account account IF isDefaultInbox(account);
+inboxAccount (VARSTRING[100] fromAddress) = OVERRIDE accountFromAddress(fromAddress), defaultInboxAccount();
+
+emailSent '{email.email.sent}' = DATA LOCAL BOOLEAN ();
+
+// Receiving
+receiveHost '{email.receive.host.account}' = DATA VARSTRING[50](Account);
+receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
 
 CLASS ReceiveAccountType '{email.receive.account.type}' {
     POP3 '{email.receive.account.type.pop3}',
@@ -22,48 +49,85 @@ CLASS ReceiveAccountType '{email.receive.account.type}' {
 }
 TABLE receiveAccountType(ReceiveAccountType);
 
-FORM receiveAccountTypes
+name '{email.receive.account.type}' (ReceiveAccountType s) = staticCaption(s) IF s IS ReceiveAccountType;
+FORM receiveAccountTypes '{email.receive.account.type}'
     OBJECTS r = ReceiveAccountType
-    PROPERTIES(r) READONLY staticCaption
+    PROPERTIES(r) READONLY name
     LIST ReceiveAccountType OBJECT r
 ;
 
-CLASS Account '{email.account}';
-TABLE account (Account);
+receiveAccountType = DATA ReceiveAccountType(Account);
+nameReceiveAccountType '{email.receive.account.type.account}' (Account account) = name(receiveAccountType(account));
 
-name '{email.name.account}' = DATA VARSTRING[50](Account);
-password '{email.password.account}' = DATA VARSTRING[50](Account) ECHO;
-fromAddress '{email.from.address.account}' = DATA VARSTRING[50] (Account);
-accountFromAddress = GROUP AGGR Account account WHERE account IS Account BY fromAddress (account); 
-
-isDefaultInbox '{email.is.default.inbox.account}' = DATA BOOLEAN (Account);
-defaultInboxAccount '{email.default.inbox.account}' = GROUP MAX Account account IF isDefaultInbox(account);
-inboxAccount (VARSTRING[100] fromAddress) = OVERRIDE accountFromAddress(fromAddress), defaultInboxAccount();
-
-smtpHost '{email.smtp.host.account}' = DATA VARSTRING[50](Account);
-smtpPort '{email.smtp.port.account}' = DATA VARSTRING[10](Account);
-receiveHost '{email.receive.host.account}' = DATA VARSTRING[50](Account);
-receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
-receiveAccountType '{email.receive.account.type.account}' = DATA ReceiveAccountType(Account);
-nameReceiveAccountType '{email.receive.account.type.account}' (Account account) = staticCaption(receiveAccountType(account));
-blindCarbonCopy '{email.blind.carbon.copy.account}'= DATA VARSTRING[50](Account);
 deleteMessages '{email.delete.messages.account}' = DATA BOOLEAN(Account);
 lastDays '{email.last.days.account}' = DATA INTEGER(Account) CHARWIDTH 10 FIXED;
 maxMessages '{email.max.messages.account}' = DATA INTEGER(Account) CHARWIDTH 10 FIXED;
-disable '{email.disable.account}' = DATA BOOLEAN(Account);
-enable '{email.enable.account}' (Account account) = NOT disable(account) AND account IS Account;
 unpack '{email.unpack.account}' = DATA BOOLEAN (Account);
 ignoreExceptions '{email.ignore.exceptions.account}' = DATA BOOLEAN (Account);
 
-encryptedConnectionType '{email.encrypted.connection.type.account}' = DATA EncryptedConnectionTypeStatus(Account);
-nameEncryptedConnectionType '{email.encrypted.connection.type.account}' (Account account) = staticCaption(encryptedConnectionType(account)) CHARWIDTH 3;
+FORM account '{email.form.account}'
+    OBJECTS a = Account PANEL
+    PROPERTIES(a) name, password, disable
+    PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, isDefaultInbox 
+    PROPERTIES(a) receiveHost, receivePort, nameReceiveAccountType, 
+                  deleteMessages, lastDays, maxMessages, unpack, ignoreExceptions
+                   
+    EDIT Account OBJECT a
+;
 
+DESIGN account {
+    OBJECTS {
+        NEW header {
+            caption = '{email.form.account}';
+            type = CONTAINERH;
+            MOVE PROPERTY(name(a));
+            MOVE PROPERTY(password(a));
+            MOVE PROPERTY(disable(a));
+        }
+        NEW email {
+            type = CONTAINERH;
+            NEW sending {
+                caption = '{email.form.account.sending}';
+                MOVE PROPERTY(smtpHost(a));
+                MOVE PROPERTY(smtpPort(a));
+                MOVE PROPERTY(nameEncryptedConnectionType(a));
+                MOVE PROPERTY(fromAddress(a));
+                MOVE PROPERTY(isDefaultInbox(a));
+            }
+            NEW receiving {
+                caption = '{email.form.account.receiving}';
+                MOVE PROPERTY(receiveHost(a));
+                MOVE PROPERTY(receivePort(a));
+                MOVE PROPERTY(nameReceiveAccountType(a));
+                MOVE PROPERTY(deleteMessages(a));
+                MOVE PROPERTY(lastDays(a));
+                MOVE PROPERTY(maxMessages(a));
+                MOVE PROPERTY(unpack(a));
+                MOVE PROPERTY(ignoreExceptions(a));
+            } 
+        }        
+    }
+}
+
+FORM accounts '{email.form.accounts}'
+   
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY name, password, disable
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
+
+    LIST Account OBJECT a
+;
+
+// -------------- Email ----------------- //
+
+// Email
 CLASS Email '{email.email}';
 TABLE email(Email);
 
 id = DATA VARSTRING[100] (Email);  
-emailId = GROUP AGGR Email email WHERE email IS Email BY id (email); 
-account = DATA Account (Email);
+emailId = GROUP AGGR Email email WHERE email IS Email BY id (email);
+ 
+account = DATA Account (Email) NONULL DELETE;
 
 uid = DATA LONG (Email);  
 emailAccountUID = GROUP AGGR Email email BY account(email), uid (email); 
@@ -78,30 +142,7 @@ message '{email.message.email}' = DATA RICHTEXT (Email);
 emlFile '{email.eml.file.email}' = DATA FILE (Email);
 openEMLFile '{email.open.eml.file.email}' (Email email)  { open(emlFile(email)); }
 
-receiveEmailAction '{email.receive.email.action}'  INTERNAL  'lsfusion.server.mail.ReceiveEmailActionProperty' ();
-receiveEmailAction '{email.receive.email.action.account}'  INTERNAL  'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
-
-emailSent '{email.email.sent}' = DATA LOCAL BOOLEAN ();
-
-FORM account '{email.form.account}'
-    OBJECTS a = Account PANEL
-    PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
-                  receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
-                  maxMessages, isDefaultInbox, disable, unpack, ignoreExceptions
-    EDIT Account OBJECT a
-;
-
-FORM accounts '{email.form.accounts}'
-   
-    OBJECTS a = Account
-    PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
-                  receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
-                  maxMessages, isDefaultInbox, disable, unpack, ignoreExceptions
-    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
-
-    LIST Account OBJECT a
-;
-
+// Attachment
 CLASS AttachmentEmail '{email.attachment.email}';
 TABLE attachmentEmail(AttachmentEmail);
 
@@ -116,13 +157,18 @@ showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR 
 notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
                                                             AND attachmentEmail IS AttachmentEmail;
 email = DATA Email (AttachmentEmail) NONULL DELETE;
-attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment)); 
+attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment));
+ 
 name '{email.name.attachment.email}' = DATA VARSTRING[255] (AttachmentEmail);
 file '{email.file.attachment.email}' = DATA FILE (AttachmentEmail);
 openFile '{email.open.file.attachment.email}' (AttachmentEmail attachmentEmail)  { open(file(attachmentEmail)); }
 saveFile '{email.save.file.attachment.email}' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG file(attachmentEmail) TO name(attachmentEmail);}
 lastError '{email.last.error.attachment.email}' = DATA TEXT (AttachmentEmail);
 importErrors '{email.import.errors}' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
+
+// Receive actions
+receiveEmailAction '{email.receive.email.action}'  INTERNAL  'lsfusion.server.mail.ReceiveEmailActionProperty' ();
+receiveEmailAction '{email.receive.email.action.account}'  INTERNAL  'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
 
 receiveEML '{email.receive.eml}'  INTERNAL  'lsfusion.server.mail.ReceiveEMLActionProperty' (Account);
 importEML '{email.import.eml}'  INTERNAL  'lsfusion.server.mail.ImportEMLActionProperty' (Account, LONG, FILE);
@@ -136,86 +182,57 @@ receiveMail '{email.receive.mail}' (Account account) {
     }
 }
 
-FORM remindUserPass '{email.form.remind.user.pass}'
-
-    OBJECTS u=CustomUser PANEL
-    PROPERTIES(u) READONLY login, name[Contact]
-;
-
-emailUserPass '{email.form.remind.user.pass}' (Contact user)  { 
-    LOCAL bodyFile = FILE (); 
-    PRINT remindUserPass OBJECTS u = user HTML TO bodyFile;
-    EMAIL SUBJECT '{email.form.remind.user.pass}' IF user IS CustomUser TO email(user) BODY bodyFile(); 
-}                         
-
 FORM mail '{email.form.mail}' 
-
     OBJECTS a=Account
-
-    PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
-                  fromAddress, password, blindCarbonCopy, NEW, DELETE               
-    PROPERTIES(a) PANEL  deleteMessages, lastDays, maxMessages, isDefaultInbox, disable, unpack, ignoreExceptions 
+    PROPERTIES(a) READONLY name, password, disable
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
     
     OBJECTS e=Email LAST
-  
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
-                   dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, message PANEL
-    PROPERTIES(e) NEWSESSION DELETE GRID
-    PROPERTIES(a)  receiveEmailAction DRAW e 
-    FILTERS account(e)==a
+                           dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, message PANEL
+    PROPERTIES(e) NEWSESSION DELETE
+    PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
+    FILTERS account(e) = a
                     
-    OBJECTS ae=AttachmentEmail
-    
+    OBJECTS ae = AttachmentEmail
     PROPERTIES(ae) READONLY imported, importError, name, lastError PANEL
     PROPERTIES(ae) GRID openFile, saveFile, markImported
-    FILTERS email(ae)==e
+    FILTERS email(ae) = e
 ;
 
 DESIGN mail {
     BOX {
         NEW specContainer {
             fill = 1;
+            type = SPLITV;
             MOVE BOX(a);
-            NEW mailContainer {
+            NEW emailContainer {
                 fill = 3;
-                type = TABBED;    
-                NEW emailContainer {
-                    caption = '{email.form.mail.caption.incoming}';
-                    MOVE BOX(e);
-                    NEW tabbedContainer {
-                        fill = 1;
-                        type=TABBED;
-                        NEW textContainer {
-                            caption = '{email.form.mail.caption.message}';
-                            type = CONTAINERV;        
-                            MOVE PROPERTY(message(e)) {
-                                fill = 1;
-                                valueSize = ( -1, 200);
-                                panelCaptionAbove = TRUE;
-                            }
-                        }
-                        NEW attachment {
+                type = SPLITV;
+                MOVE BOX(e);
+                NEW tabbedContainer {
+                    fill = 1;
+                    type = TABBED;
+                    NEW textContainer {
+                        caption = '{email.form.mail.caption.message}';
+                        type = CONTAINERV;        
+                        MOVE PROPERTY(message(e)) {
                             fill = 1;
-                            caption = '{email.form.mail.caption.attachments}';
-                            type = CONTAINERH;
-                            MOVE BOX(ae);
-                            MOVE PROPERTY (lastError(ae)){ 
-                                panelCaptionAbove = TRUE;
-                                fill = 0.3;
-                            };
+                            valueSize = ( -1, 200);
+                            panelCaptionAbove = TRUE;
                         }
                     }
+                    NEW attachment {
+                        fill = 1;
+                        caption = '{email.form.mail.caption.attachments}';
+                        type = CONTAINERH;
+                        MOVE BOX(ae);
+                        MOVE PROPERTY (lastError(ae)){ 
+                            panelCaptionAbove = TRUE;
+                            fill = 0.3;
+                        };
+                    }
                 }
-                NEW settingsContainer {
-                    caption = '{email.form.mail.caption.settings}';
-                    MOVE PROPERTY(deleteMessages(a));
-                    MOVE PROPERTY(lastDays(a));
-                    MOVE PROPERTY(maxMessages(a));
-                    MOVE PROPERTY(isDefaultInbox(a));
-                    MOVE PROPERTY(disable(a));
-                    MOVE PROPERTY(unpack(a)); 
-                    MOVE PROPERTY(ignoreExceptions(a));
-                }             
             }
             MOVE TOOLBARBOX;
         }
@@ -223,8 +240,7 @@ DESIGN mail {
 }
 
 NAVIGATOR {
-    //NEW remindUserPass;
     scheduler {
-        NEW Email.mail;
+        NEW mail;
     }
 }

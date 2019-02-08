@@ -202,7 +202,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public void remindPassword(String email, String localeLanguage) throws RemoteException {
-        securityManager.remindPassword(email, localeLanguage);
+//        securityManager.remindPassword(email, localeLanguage);
     }
 
     public boolean isSingleInstance() throws RemoteException {

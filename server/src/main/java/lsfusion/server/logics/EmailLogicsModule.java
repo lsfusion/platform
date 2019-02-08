@@ -18,27 +18,30 @@ import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass notification;
-    
-    public LCP inboxAccount;
-    public LCP nameEncryptedConnectionTypeAccount;
-    public LCP smtpHostAccount;
-    public LCP smtpPortAccount;
-    public LCP receiveHostAccount;
-    public LCP receivePortAccount;
+
     public LCP nameAccount;
     public LCP passwordAccount;
+    public LCP disableAccount;
+
+    public LCP smtpHostAccount;
+    public LCP smtpPortAccount;
+
+    public LCP nameEncryptedConnectionTypeAccount;
+
+    public LCP fromAddressAccount;
+    public LCP inboxAccount;
+
+    public LCP emailSent;
+
+    public LCP receiveHostAccount;
+    public LCP receivePortAccount;
+
     public LCP nameReceiveAccountTypeAccount;
+
     public LCP deleteMessagesAccount;
     public LCP lastDaysAccount;
     public LCP maxMessagesAccount;
-    public LCP blindCarbonCopyAccount;
-    public LCP fromAddressAccount;
-    public LCP disableAccount;
-    public LCP enableAccount;
     public LCP unpackAccount;
-
-    public LCP emailSent;
-    public LAP emailUserPassUser;
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(EmailLogicsModule.class.getResourceAsStream("/system/Email.lsf"), "/system/Email.lsf", baseLM, BL);
@@ -53,34 +56,31 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public void initMainLogic() throws RecognitionException {
         super.initMainLogic();
 
-        // ------- Управление почтой ------ //
+        nameAccount = findProperty("name[Account]");
+        passwordAccount = findProperty("password[Account]");
+        disableAccount = findProperty("disable[Account]");
 
-        // Настройки почтового сервера
-        inboxAccount = findProperty("inboxAccount[VARSTRING[100]]");
+        // Sending
+        smtpHostAccount = findProperty("smtpHost[Account]");
+        smtpPortAccount = findProperty("smtpPort[Account]");
 
         nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionType[Account]");
 
-        smtpHostAccount = findProperty("smtpHost[Account]");
-        smtpPortAccount = findProperty("smtpPort[Account]");
+        fromAddressAccount = findProperty("fromAddress[Account]");
+        inboxAccount = findProperty("inboxAccount[VARSTRING[100]]");
+
+        emailSent = findProperty("emailSent[]");
+
+        // Receiving
         receiveHostAccount = findProperty("receiveHost[Account]");
         receivePortAccount = findProperty("receivePort[Account]");
 
-        nameAccount = findProperty("name[Account]");
-        passwordAccount = findProperty("password[Account]");
         nameReceiveAccountTypeAccount = findProperty("nameReceiveAccountType[Account]");
+        
         deleteMessagesAccount = findProperty("deleteMessages[Account]");
         lastDaysAccount = findProperty("lastDays[Account]");
         maxMessagesAccount = findProperty("maxMessages[Account]");
-        blindCarbonCopyAccount = findProperty("blindCarbonCopy[Account]");
-
-        disableAccount = findProperty("disable[Account]");
-        enableAccount = findProperty("enable[Account]");
         unpackAccount = findProperty("unpack[Account]");
-
-        emailUserPassUser = findAction("emailUserPass[Contact]");
-        emailSent = findProperty("emailSent[]");
-        
-        fromAddressAccount = findProperty("fromAddress[Account]");
     }
 
     public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params) {

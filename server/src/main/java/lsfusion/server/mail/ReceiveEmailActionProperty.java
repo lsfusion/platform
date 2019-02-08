@@ -55,7 +55,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
             accountQuery.addProperty("deleteMessagesAccount", emailLM.deleteMessagesAccount.getExpr(accountExpr));
             accountQuery.addProperty("lastDaysAccount", emailLM.lastDaysAccount.getExpr(accountExpr));
             accountQuery.addProperty("maxMessagesAccount", emailLM.maxMessagesAccount.getExpr(accountExpr));
-            accountQuery.and(emailLM.enableAccount.getExpr(accountExpr).getWhere());
+            accountQuery.and(emailLM.receiveHostAccount.getExpr(accountExpr).getWhere());
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> accountResult = accountQuery.executeClasses(context);
 
