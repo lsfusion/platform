@@ -56,20 +56,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         }
     }
 
-    @ImmutableMethod
-    public byte[] getCommonWindows() throws RemoteException {
-        try {
-            return callImmutableMethod("getCommonWindows", new Callable<byte[]>() {
-                @Override
-                public byte[] call() throws Exception {
-                    return target.getCommonWindows();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     @Override
     public ClientSettings getClientSettings() throws RemoteException {
         return target.getClientSettings();

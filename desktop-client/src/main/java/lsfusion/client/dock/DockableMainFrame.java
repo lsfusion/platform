@@ -129,7 +129,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         dockableManager = new DockableManager(mainControl, mainNavigator);
 
-        initDockStations();
+        initDockStations(navigatorData);
         
         if (!Main.hideMenu) {
             setupMenu();
@@ -231,13 +231,13 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
-    private void initDockStations() {
+    private void initDockStations(DeSerializer.NavigatorData navigatorData) {
         mainControl.setTheme(ThemeMap.KEY_FLAT_THEME);
 
         loadLayout();
 
         // создаем все окна и их виды
-        initWindows();
+        initWindows(navigatorData);
 
         CGrid mainGrid = createGrid();
         CContentArea mainContentArea = mainControl.getContentArea();
@@ -372,17 +372,15 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         return null;
     }
 
-    private void initWindows() {
+    private void initWindows(DeSerializer.NavigatorData navigatorData) {
         ClientAbstractWindow formsWindow;
         LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<>();
 
         try {
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCommonWindows()));
+            windows.put(navigatorData.logs, Log.recreateLogPanel());
+            windows.put(navigatorData.status, status);
 
-            windows.put(new ClientAbstractWindow(inStream), Log.recreateLogPanel());
-            windows.put(new ClientAbstractWindow(inStream), status);
-
-            formsWindow = new ClientAbstractWindow(inStream);
+            formsWindow = navigatorData.forms;
         } catch (Exception e) {
             throw new RuntimeException("Error getting common windows:", e);
         }

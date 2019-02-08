@@ -622,7 +622,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     }
 
     @Override
-    public byte[] getNavigatorTree() throws RemoteException {
+    public byte[] getNavigatorTree() {
 
         ImOrderMap<NavigatorElement, List<String>> elements = businessLogics.LM.root.getChildrenMap(securityPolicy);
 
@@ -643,22 +643,11 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
                     dataStream.writeUTF(child);
                 }
             }
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
 
-        return outStream.toByteArray();
-    }
-
-    @Override
-    public byte[] getCommonWindows() throws RemoteException {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        DataOutputStream dataStream = new DataOutputStream(outStream);
-
-        try {
             businessLogics.LM.baseWindows.log.serialize(dataStream);
             businessLogics.LM.baseWindows.status.serialize(dataStream);
             businessLogics.LM.baseWindows.forms.serialize(dataStream);
+
         } catch (IOException e) {
             Throwables.propagate(e);
         }

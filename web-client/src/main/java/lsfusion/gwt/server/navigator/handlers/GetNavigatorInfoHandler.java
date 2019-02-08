@@ -41,11 +41,10 @@ public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigator
         }
 
         //getting common windows
-        List<ClientAbstractWindow> clientWindows = DeSerializer.deserializeListClientNavigatorWindow(remoteNavigator.getCommonWindows());
         List<GAbstractWindow> windows = new ArrayList<>();
-        for (ClientAbstractWindow clientWindow : clientWindows) {
-            windows.add((GAbstractWindow) converter.convertOrCast(clientWindow));
-        }
+        windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.logs));
+        windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.status));
+        windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.forms));
 
         return new GetNavigatorInfoResult(root, navigatorWindows, windows);
     }
