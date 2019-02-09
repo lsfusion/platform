@@ -211,35 +211,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return (Long) securityLM.policyName.read(session, new DataObject(name, StringClass.get(50)));
     }
 
-    public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage, ExecutionStack stack) throws RemoteException {
-        try {
-            //todo: в будущем нужно поменять на проставление локали в Context
-//            ServerResourceBundle.load(localeLanguage);
-            try(DataSession session = createSession()) {
-                Object userId = authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(100)));
-                if (userId != null) return localize("{logics.error.user.duplicate}");
-
-                Object emailId = businessLogics.authenticationLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
-                if (emailId != null) {
-                    return localize("{logics.error.emailContact.duplicate}");
-                }
-
-                DataObject userObject = session.addObject(authenticationLM.customUser);
-                authenticationLM.loginCustomUser.change(username, session, userObject);
-                businessLogics.authenticationLM.emailContact.change(email, session, userObject);
-                authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
-                businessLogics.authenticationLM.firstNameContact.change(firstName, session, userObject);
-                businessLogics.authenticationLM.lastNameContact.change(lastName, session, userObject);
-                apply(session);
-            }
-        } catch (SQLException e) {
-            return localize("{logics.error.registration}");
-        } catch (SQLHandledException e) {
-            return localize("{logics.error.registration}");
-        }
-        return null;
-    }
-
     protected User addUser(String login, String defaultPassword, DataSession session) throws SQLException, SQLHandledException {
         DataObject userObject = session.addObject(authenticationLM.customUser);
         authenticationLM.loginCustomUser.change(login, session, userObject);

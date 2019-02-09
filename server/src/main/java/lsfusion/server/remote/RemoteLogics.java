@@ -318,11 +318,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    @Override
-    public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
-        return securityManager.addUser(username, email, password, firstName, lastName, localeLanguage, getStack());
-    }
-
     @Deprecated // change to http request with the common mechanism
     @Override
     public Map<String, String> readMemoryLimits() {

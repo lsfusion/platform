@@ -33,13 +33,12 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     long generateID() throws RemoteException;
 
-    String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
-
     void ping() throws RemoteException;
 
     void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
 
     Map<String, String> readMemoryLimits() throws RemoteException;
 
+    // development feature
     List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 }
