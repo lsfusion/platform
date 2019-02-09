@@ -121,11 +121,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        GwtClientUtils.downloadFile(action.reportFileName, null);
-    }
-
-    @Override
-    public void execute(GRunOpenReportAction action) {
+        GwtClientUtils.downloadFile(action.reportFileName, "lsfReport", action.reportExtension);
     }
 
     @Override
@@ -196,14 +192,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GOpenFileAction action) {
-        GwtClientUtils.downloadFile(action.filePath, action.fileName);
+        GwtClientUtils.downloadFile(action.fileName, action.displayName, action.extension);
     }
 
     @Override
     public void execute(GExportFileAction action) {
         if (action.filePaths != null) {
             for (String filePath : action.filePaths) {
-                GwtClientUtils.downloadFile(filePath, null);
+                GwtClientUtils.downloadFile(filePath, null, null);
             }
         }
     }
@@ -216,7 +212,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(final GBeepAction action) {
-        String fileUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + action.filePath;
+        String fileUrl = GwtClientUtils.getDownloadURL(action.filePath, null, "wav");
         Audio beep = Audio.createIfSupported();
         if (beep != null) {
             beep.setSrc(fileUrl);

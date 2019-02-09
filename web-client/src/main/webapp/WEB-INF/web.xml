@@ -105,15 +105,6 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>propertyImageHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>propertyImageHandler</servlet-name>
-        <url-pattern>/propertyImage</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
         <servlet-name>fileUploadHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>

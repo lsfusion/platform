@@ -54,11 +54,15 @@ public class GwtClientUtils {
         Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
     }
 
-    public static void downloadFile(String name, String displayName) {
+    public static void downloadFile(String name, String displayName, String extension) {
         if(name != null) {
-            String fileUrl = getWebAppBaseURL() + "downloadFile?name=" + name + (displayName != null ? "&displayName=" + displayName : "");
-            Window.open(fileUrl, displayName != null ? displayName : name, "");
+            String fileUrl = getDownloadURL(name, displayName, extension);
+            Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
         }
+    }
+
+    public static String getDownloadURL(String name, String displayName, String extension) {
+        return getWebAppBaseURL() + "downloadFile?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "");
     }
 
     public static Map<String, String> getPageParameters() {

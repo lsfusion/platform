@@ -36,11 +36,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GReportAction action) {
-        form.openReportWindow(action.reportFileName);
-    }
-
-    @Override
     public void execute(final GFormAction action) {
         if (form.isModal() && action.modalityType == GModalityType.DOCKED_MODAL) {
             action.modalityType = GModalityType.MODAL;
@@ -57,11 +52,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
                 }
             }
         });
-    }
-
-    @Override
-    public void execute(GRunOpenReportAction action) {
-        form.runGroupReport(null, action.openInExcel);
     }
 
     @Override

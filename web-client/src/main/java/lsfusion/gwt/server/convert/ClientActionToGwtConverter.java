@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import lsfusion.base.Pair;
 import lsfusion.base.ProgressBar;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.logics.ClientFormChanges;
@@ -113,7 +114,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, FormSessionObject form) throws IOException {
-        return new GReportAction(FileUtils.exportReport(action.printType, action.generationData));
+        Pair<String, String> report = FileUtils.exportReport(action.printType, action.generationData);
+        return new GReportAction(report.first, report.second);
     }
 
     @Converter(from = RequestUserInputClientAction.class)
@@ -158,16 +160,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = OpenFileClientAction.class)
     public GOpenFileAction convertAction(OpenFileClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file, action.name, action.extension), action.name != null ? appendExtension(action.name, action.extension) : null);
+        return new GOpenFileAction(FileUtils.saveFile(action.file), action.name, action.extension);
     }
 
     @Converter(from = WriteClientAction.class)
     public GOpenFileAction convertAction(WriteClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file, action.path, action.extension), appendExtension(action.path, action.extension));
-    }
-
-    private String appendExtension(String path, String extension) {
-        return path + (extension != null ? ("." + extension) : "");
+        return new GOpenFileAction(FileUtils.saveFile(action.file), action.path, action.extension);
     }
 
     @Converter(from = ExportFileClientAction.class)
@@ -196,7 +194,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = BeepClientAction.class)
     public GBeepAction convertAction(BeepClientAction action) {
-        return new GBeepAction(FileUtils.saveFile(action.file, "wav"));
+        return new GBeepAction(FileUtils.saveFile(action.file));
     }
 
     @Converter(from = ActivateFormClientAction.class)

@@ -84,8 +84,6 @@
 
     <b:bean id="readMemoryLimitsHandler" class="lsfusion.http.ReadMemoryLimitsRequestHandler"/>
 
-    <b:bean id="propertyImageHandler" class="lsfusion.http.GetPropertyImageRequestHandler" />
-
     <b:bean id="fileUploadHandler" class="lsfusion.http.UploadFileRequestHandler" />
 
     <b:bean id="fileDownloadHandler" class="lsfusion.http.DownloadFileRequestHandler" />

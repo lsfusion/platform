@@ -99,7 +99,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientImageClass.class)
     public GImageType convertImageClass(ClientImageClass imageClass) {
-        return initializeFileClass(imageClass, new GImageType());
+        return initializeFileClass(imageClass, new GImageType(imageClass.getExtensions()[0]));
     }
 
     @Converter(from = ClientWordClass.class)

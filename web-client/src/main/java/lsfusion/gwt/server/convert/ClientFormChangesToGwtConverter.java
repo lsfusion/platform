@@ -4,6 +4,7 @@ import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientImageClass;
+import lsfusion.client.logics.classes.ClientType;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.view.GClassViewType;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
@@ -145,7 +146,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     private Object convertFileValue(ClientPropertyReader reader, Object value) {
         if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass) {
-            return FileUtils.createPropertyImage(value != null ? ((RawFileData) value).getBytes() : null, ((ClientPropertyDraw) reader).getPropertyFormName());
+            return FileUtils.saveFile((RawFileData) value);
         } else {
             return value == null ? null : true;
         }

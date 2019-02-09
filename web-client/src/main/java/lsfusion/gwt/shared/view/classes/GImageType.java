@@ -10,6 +10,15 @@ public class GImageType extends GFileType {
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ImageGridCellRenderer(property);
     }
+    
+    public String extension;
+
+    public GImageType() {
+    }
+
+    public GImageType(String extension) {
+        this.extension = extension;
+    }
 
     @Override
     public String toString() {

@@ -5,8 +5,6 @@ public interface GActionDispatcher {
 
     void execute(GReportAction action);
 
-    void execute(GRunOpenReportAction action);
-
     Object execute(GChooseClassAction action);
 
     void execute(GMessageAction action);
