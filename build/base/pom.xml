@@ -99,7 +99,6 @@
         <aspectj.version>1.8.5</aspectj.version>
 
         <servlet.api.version>2.5</servlet.api.version>
-        <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
         <json.version>20180813</json.version>
         <junrar.version>0.7</junrar.version>
@@ -668,11 +667,6 @@
                 <artifactId>servlet-api</artifactId>
                 <version>${servlet.api.version}</version>
                 <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.octo.captcha</groupId>
-                <artifactId>jcaptcha</artifactId>
-                <version>${jcaptcha.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.validation</groupId>

@@ -78,8 +78,6 @@
     <b:bean id="lsfusionDispatch" class="lsfusion.gwt.server.LSFusionDispatchServlet"/>
 
     <!-- Custom request handlers -->
-    <b:bean id="captchaHandler" class="lsfusion.http.captcha.ImageCaptchaRequestHandler"/>
-
     <b:bean id="readLogoHandler" class="lsfusion.http.ReadLogoRequestHandler"/>
 
     <b:bean id="readMemoryLimitsHandler" class="lsfusion.http.ReadMemoryLimitsRequestHandler"/>

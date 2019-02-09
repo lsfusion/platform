@@ -122,16 +122,6 @@
         <url-pattern>/downloadFile</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>captchaHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>captchaHandler</servlet-name>
-        <url-pattern>/jcaptcha</url-pattern>
-    </servlet-mapping>
-
-
     <listener>
         <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
     </listener>
