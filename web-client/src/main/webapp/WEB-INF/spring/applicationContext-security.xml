@@ -60,12 +60,14 @@
 
     <b:bean id="authenticationProvider" class="lsfusion.http.LSFRemoteAuthenticationProvider"/>
 
-    <!-- Custom beans -->
+    <!-- lsFusion beans -->
 
-    <!-- Custom request beans-->
+    <!-- GWT request handler -->
+    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.server.LSFusionDispatchServlet"/>
+
+    <!-- Beans need for GWT request handler-->
     <b:bean id="logicsHandlerProvider" class="lsfusion.gwt.server.logics.provider.LogicsHandlerProviderImpl" />
 
-    <!-- GWT beans -->
     <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
@@ -73,9 +75,6 @@
     <b:bean id="formProvider" scope="session" class="lsfusion.gwt.server.form.provider.FormProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
-
-    <!-- GWT request handler -->
-    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.server.LSFusionDispatchServlet"/>
 
     <!-- Custom request handlers -->
     <b:bean id="readLogoHandler" class="lsfusion.http.ReadLogoRequestHandler"/>

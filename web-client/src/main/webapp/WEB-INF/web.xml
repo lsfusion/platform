@@ -23,25 +23,12 @@
         <param-name>port</param-name>
         <param-value>7652</param-value>
     </context-param>
-    <context-param>
-        <param-name>serviceUserLogin</param-name>
-        <param-value>serviceUser</param-value>
-    </context-param>
-    <context-param>
-        <param-name>serviceUserPassword</param-name>
-        <param-value>servicePass</param-value>
-    </context-param>
 
-    <listener>
-        <listener-class>lsfusion.gwt.server.AppContextListener</listener-class>
-    </listener>
-
+    <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
     <servlet>
         <servlet-name>lsfusionDispatch</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
-
-    <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
     <servlet-mapping>
         <servlet-name>lsfusionDispatch</servlet-name>
         <url-pattern>/lsfusion/dispatch</url-pattern>
@@ -57,30 +44,12 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>readFileHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>readFileHandler</servlet-name>
-        <url-pattern>/readFile</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
         <servlet-name>readLogoHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>readLogoHandler</servlet-name>
         <url-pattern>/readLogo</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>readFormHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>readFormHandler</servlet-name>
-        <url-pattern>/readForm</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -92,7 +61,6 @@
         <url-pattern>/exec</url-pattern>
         <url-pattern>/eval</url-pattern>
         <url-pattern>/eval/action</url-pattern>
-        <url-pattern>/read</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -113,40 +81,7 @@
         <url-pattern>/downloadFile</url-pattern>
     </servlet-mapping>
 
-    <listener>
-        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-    </listener>
-
-    <!-- Init RMI Listener -->
-    <listener>
-        <listener-class>lsfusion.http.InitRMIContextListener</listener-class>
-    </listener>
-
-    <!-- UrlRewrite configuration -->
-    <filter>
-        <filter-name>UrlRewriteFilter</filter-name>
-        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
-
-        <!-- you can change status path (defaults to /rewrite-status), must start with / -->
-        <init-param>
-            <param-name>statusPath</param-name>
-            <param-value>/rewrite-status</param-value>
-        </init-param>
-
-        <!-- you can disable status page if desired can be: true, false (default true) -->
-        <init-param>
-            <param-name>statusEnabled</param-name>
-            <param-value>false</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>UrlRewriteFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <!--<dispatcher>FORWARD</dispatcher>-->
-    </filter-mapping>
-
-    <!-- Spring configuration -->
+    <!-- LOG4J configuration -->
     <context-param>
         <param-name>log4jConfigLocation</param-name>
         <param-value>/WEB-INF/classes/log4j.xml</param-value>
@@ -159,6 +94,7 @@
         <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
     </listener>
 
+    <!-- initializing spring configuration -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>/WEB-INF/spring/applicationContext-security.xml</param-value>
@@ -167,6 +103,7 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
+    <!-- initializing spring security -->
     <filter>
         <filter-name>springSecurityFilterChain</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -176,6 +113,11 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- exposes request params and locale to the thread, used in LSFRemoteAuthenticationProvider (where there is no explicit request) -->
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+    <!-- overrides locale for thread with LSFUSION_LOCALE-->
     <filter>
         <filter-name>springRequestContextFilter</filter-name>
         <filter-class>lsfusion.http.RequestContextFilter</filter-class>
@@ -185,6 +127,7 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- CORS -->
     <filter>
         <filter-name>CORS</filter-name>
         <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>

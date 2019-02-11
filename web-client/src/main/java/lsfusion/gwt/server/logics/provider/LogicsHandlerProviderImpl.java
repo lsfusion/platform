@@ -2,6 +2,7 @@ package lsfusion.gwt.server.logics.provider;
 
 import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;
+import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -52,6 +53,14 @@ public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implemen
             throw new IllegalStateException(hostKey + " or " + portKey + " parameters aren't set in web.xml");
         }
 
+        String appPath = servletContext.getRealPath("");
+        FileUtils.APP_FOLDER_URL = appPath;
+        FileUtils.APP_IMAGES_FOLDER_URL = appPath + "/images/";
+        FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
+
+        RMIUtils.initRMI();
+        RMIUtils.overrideRMIHostName(host);
+        
         setHost(host);
         setPort(Integer.parseInt(port));
         setExportName(exportName);
