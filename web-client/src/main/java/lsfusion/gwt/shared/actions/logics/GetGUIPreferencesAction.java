@@ -2,13 +2,13 @@ package lsfusion.gwt.shared.actions.logics;
 
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
-public class CheckApiVersionAction extends LogicsAction<StringResult> {
+public class GetGUIPreferencesAction extends LogicsAction<StringResult> {
     public String message;
 
-    public CheckApiVersionAction() {
+    public GetGUIPreferencesAction() {
     }
 
-    public CheckApiVersionAction(String message) {
+    public GetGUIPreferencesAction(String message) {
         this.message = message;
     }
 

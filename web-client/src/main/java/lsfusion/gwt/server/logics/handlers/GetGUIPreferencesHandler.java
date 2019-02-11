@@ -2,8 +2,9 @@ package lsfusion.gwt.server.logics.handlers;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.logics.LogicsActionHandler;
-import lsfusion.gwt.shared.actions.logics.CheckApiVersionAction;
+import lsfusion.gwt.shared.actions.logics.GetGUIPreferencesAction;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -11,31 +12,30 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
 
-public class CheckApiVersionHandler extends LogicsActionHandler<CheckApiVersionAction, StringResult> {
+public class GetGUIPreferencesHandler extends LogicsActionHandler<GetGUIPreferencesAction, StringResult> {
 
-    public CheckApiVersionHandler(LSFusionDispatchServlet servlet) {
+    public GetGUIPreferencesHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 
     @Override
-    public StringResult executeEx(CheckApiVersionAction action, ExecutionContext context) throws DispatchException, IOException {
+    public StringResult executeEx(GetGUIPreferencesAction action, ExecutionContext context) throws DispatchException, IOException {
 
         String error = null;
 
         RemoteLogicsInterface remoteLogics = getRemoteLogics(action);
+        GUIPreferences preferences = remoteLogics.getGUIPreferences();
 
         String serverVersion = null;
         String clientVersion = null;
         String oldPlatformVersion = BaseUtils.getPlatformVersion();
-        String newPlatformVersion = remoteLogics.getPlatformVersion();
-        if(oldPlatformVersion != null && !oldPlatformVersion.equals(newPlatformVersion)) {
-            serverVersion = newPlatformVersion;
+        if(oldPlatformVersion != null && !oldPlatformVersion.equals(preferences.platformVersion)) {
+            serverVersion = preferences.platformVersion;
             clientVersion = oldPlatformVersion;
         } else {
             Integer oldApiVersion = BaseUtils.getApiVersion();
-            Integer newApiVersion = remoteLogics.getApiVersion();
-            if(!oldApiVersion.equals(newApiVersion)) {
-                serverVersion = newPlatformVersion + " [" + newApiVersion + "]";
+            if(!oldApiVersion.equals(preferences.apiVersion)) {
+                serverVersion = preferences.platformVersion + " [" + preferences.apiVersion + "]";
                 clientVersion = oldPlatformVersion + " [" + oldApiVersion + "]";
             }
         }

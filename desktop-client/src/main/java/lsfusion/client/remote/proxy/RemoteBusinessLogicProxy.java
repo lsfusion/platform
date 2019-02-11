@@ -23,16 +23,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return new RemoteNavigatorProxy(target.createNavigator(navigatorInfo, forceCreateNew));
     }
 
-    @Override
-    public Integer getApiVersion() throws RemoteException {
-        return target.getApiVersion();
-    }
-
-    @Override
-    public String getPlatformVersion() throws RemoteException {
-        return target.getPlatformVersion();
-    }
-
     public GUIPreferences getGUIPreferences() throws RemoteException {
         logRemoteMethodStartCall("getGUIPreferences");
         GUIPreferences result = target.getGUIPreferences();

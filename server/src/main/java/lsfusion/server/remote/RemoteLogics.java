@@ -148,17 +148,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         //for filterIncl-alive
     }
 
-    @Override
-    public Integer getApiVersion() {
-        return BaseUtils.getApiVersion();
-    }
-
-    @Override
-    public String getPlatformVersion() {
-        return BaseUtils.getPlatformVersion();
-    }
-
-    public GUIPreferences getGUIPreferences() throws RemoteException {
+    public GUIPreferences getGUIPreferences() {
         byte[] logicsLogoBytes = null;
         try {
             if (logicsLogo != null && !logicsLogo.isEmpty())
@@ -166,7 +156,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         } catch (IOException e) {
             logger.error("Error reading logics logo: ", e);
         }
-        return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu));
+        return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu),
+                BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {

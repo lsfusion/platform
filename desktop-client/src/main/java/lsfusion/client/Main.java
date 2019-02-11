@@ -213,19 +213,18 @@ public class Main {
                     }
 
                     remoteLogics = loginAction.getRemoteLogics();
+                    GUIPreferences prefs = remoteLogics.getGUIPreferences();
 
                     String serverVersion = null;
                     String clientVersion = null;
                     String oldPlatformVersion = BaseUtils.getPlatformVersion();
-                    String newPlatformVersion = remoteLogics.getPlatformVersion();
-                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(newPlatformVersion)) {
-                        serverVersion = newPlatformVersion;
+                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(prefs.platformVersion)) {
+                        serverVersion = prefs.platformVersion;
                         clientVersion = oldPlatformVersion;
                     } else {
                         Integer oldApiVersion = BaseUtils.getApiVersion();
-                        Integer newApiVersion = remoteLogics.getApiVersion();
-                        if(!oldApiVersion.equals(newApiVersion)) {
-                            serverVersion = newPlatformVersion + " [" + newApiVersion + "]";
+                        if(!oldApiVersion.equals(prefs.apiVersion)) {
+                            serverVersion = prefs.platformVersion + " [" + prefs.apiVersion + "]";
                             clientVersion = oldPlatformVersion + " [" + oldApiVersion + "]";
                         }
                     }
@@ -235,7 +234,6 @@ public class Main {
                         return;
                     }
 
-                    GUIPreferences prefs = remoteLogics.getGUIPreferences();
                     logicsName = prefs.logicsName;
                     logicsDisplayName = prefs.logicsDisplayName;
                     logicsMainIcon = prefs.logicsMainIcon;
