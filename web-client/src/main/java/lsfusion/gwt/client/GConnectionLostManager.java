@@ -59,8 +59,8 @@ public class GConnectionLostManager {
         };
     }
 
-    public static void connectionLost(boolean auth) {
-        connectionLost.set(true);
+    public static void connectionLost(boolean lost, boolean auth) {
+        connectionLost.set(lost);
         authException.set(auth);
     }
 
@@ -93,6 +93,7 @@ public class GConnectionLostManager {
 
     public static void unregisterFailedRmiRequest() {
         failedRequests.decrementAndGet();
+        connectionLost(false, false);
     }
 
     private static boolean hasFailedRequest() {
@@ -104,7 +105,7 @@ public class GConnectionLostManager {
     }
 
     public static void invalidate() {
-        connectionLost(false);
+        connectionLost(true, false);
 
         failedRequests.set(0);
 

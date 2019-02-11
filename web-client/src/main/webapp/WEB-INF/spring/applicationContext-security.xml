@@ -17,7 +17,7 @@
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <access-denied-handler ref="accessDeniedHandler" />
-        <logout logout-url="/logout" success-handler-ref="successLogoutHandler"/>
+        <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/>
 
         <anonymous enabled="false" />
 
