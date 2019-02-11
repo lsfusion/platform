@@ -6,9 +6,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ExecResult;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
@@ -20,8 +18,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
@@ -33,7 +29,6 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -41,13 +36,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -316,41 +308,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 //        if (!jdbcSingleRow)
             returnList.add(returnType.formatHTTP(returnValue, null));
         return returnList;
-    }
-
-    @Deprecated // change to http request with the common mechanism
-    @Override
-    public Map<String, String> readMemoryLimits() {
-        Map<String, String> memoryLimitMap = new HashMap<>();
-        try (DataSession session = dbManager.createSession()) {
-            KeyExpr memoryLimitExpr = new KeyExpr("memoryLimit");
-            ImRevMap<Object, KeyExpr> memoryLimitKeys = MapFact.singletonRev((Object) "memoryLimit", memoryLimitExpr);
-            QueryBuilder<Object, Object> query = new QueryBuilder<>(memoryLimitKeys);
-
-            String[] names = new String[]{"name", "maxHeapSize", "vmargs"};
-            LCP[] properties = businessLogics.securityLM.findProperties("name[MemoryLimit]", "maxHeapSize[MemoryLimit]",
-                    "vmargs[MemoryLimit]");
-            for (int j = 0; j < properties.length; j++) {
-                query.addProperty(names[j], properties[j].getExpr(memoryLimitExpr));
-            }
-            query.and(businessLogics.securityLM.findProperty("name[MemoryLimit]").getExpr(memoryLimitExpr).getWhere());
-
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
-            for (ImMap<Object, Object> entry : result.values()) {
-                String name = (String) entry.get("name");
-                String line = "";
-                String maxHeapSize = (String) entry.get("maxHeapSize");
-                if(maxHeapSize != null)
-                    line += "maxHeapSize=" + maxHeapSize;
-                String vmargs = (String) entry.get("vmargs");
-                if(vmargs != null)
-                    line += (line.isEmpty() ? "" : "&") + "vmargs=" + URLEncoder.encode(vmargs, "utf-8");
-                memoryLimitMap.put(name, line);
-            }
-        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException | UnsupportedEncodingException e) {
-            logger.error("Error reading MemoryLimit: ", e);
-        }
-        return memoryLimitMap;
     }
 
     @Override

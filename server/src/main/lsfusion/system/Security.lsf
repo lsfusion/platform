@@ -624,3 +624,16 @@ TABLE memoryLimit (MemoryLimit);
 name '{security.name.memory.limit}' = DATA VARSTRING[100] (MemoryLimit);
 maxHeapSize '{security.max.heap.size.memory.limit}' = DATA VARSTRING[10] (MemoryLimit);
 vmargs '{security.vm.args.memory.limit}' = DATA VARSTRING[1000] (MemoryLimit);
+
+jnlpUrls() = DATA LOCAL TEXT();
+generateJnlpUrls () {
+    FOR MemoryLimit ml IS MemoryLimit DO {
+        jnlpUrls() <- CONCAT '', jnlpUrls(), '<a href="\{contextPath\}/client.jnlp';
+        IF maxHeapSize(ml) THEN jnlpUrls() <- CONCAT '', jnlpUrls(), '?maxHeapSize=', maxHeapSize(ml);
+        IF vmargs(ml) THEN {
+            urlEncode(vmargs(ml), 'UTF-8');
+            jnlpUrls() <- CONCAT '', jnlpUrls(), IF maxHeapSize(ml) THEN '&' ELSE '?', 'vmargs=', urlEncoded();
+        }
+        jnlpUrls() <- CONCAT '', jnlpUrls(), '">{security.run.desktop.client}', ' ', name(ml), '</a><br/>';   
+    }
+}

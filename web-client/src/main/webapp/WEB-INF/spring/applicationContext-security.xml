@@ -80,8 +80,6 @@
     <!-- Custom request handlers -->
     <b:bean id="readLogoHandler" class="lsfusion.http.ReadLogoRequestHandler"/>
 
-    <b:bean id="readMemoryLimitsHandler" class="lsfusion.http.ReadMemoryLimitsRequestHandler"/>
-
     <b:bean id="fileUploadHandler" class="lsfusion.http.UploadFileRequestHandler" />
 
     <b:bean id="fileDownloadHandler" class="lsfusion.http.DownloadFileRequestHandler" />

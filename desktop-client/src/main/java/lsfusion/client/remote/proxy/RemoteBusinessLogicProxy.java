@@ -96,14 +96,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public Map<String, String> readMemoryLimits() throws RemoteException {
-        logRemoteMethodStartCall("readMemoryLimits");
-        Map<String, String> result = target.readMemoryLimits();
-        logRemoteMethodEndVoidCall("readMemoryLimits");
-        return result;
-    }
-
-    @Override
     public List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
         logRemoteMethodStartVoidCall("saveCustomReportPathList");
         List<ReportPath> result = target.saveAndGetCustomReportPathList(formSID, recreate);

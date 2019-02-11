@@ -153,6 +153,9 @@ encodeBase64  INTERNAL  'lsfusion.utils.utils.EncodeBase64ActionProperty' (TEXT)
 decodedBase64 = DATA LOCAL TEXT();
 decodeBase64  INTERNAL  'lsfusion.utils.utils.DecodeBase64ActionProperty' (TEXT);
 
+urlEncoded = DATA LOCAL TEXT();
+urlEncode  INTERNAL 'lsfusion.utils.utils.UrlEncodeActionProperty' (TEXT, STRING[20]);
+
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';

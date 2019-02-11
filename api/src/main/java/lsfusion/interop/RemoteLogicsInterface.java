@@ -37,8 +37,5 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
 
-    Map<String, String> readMemoryLimits() throws RemoteException;
-
-    // development feature
     List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 }
