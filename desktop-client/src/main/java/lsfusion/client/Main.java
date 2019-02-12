@@ -67,8 +67,6 @@ public class Main {
     public static String logicsDisplayName;
     public static byte[] logicsMainIcon;
     public static byte[] logicsLogo;
-    
-    public static boolean hideMenu;
 
     public static String computerName;
     public static DateFormat dateFormat;
@@ -238,7 +236,6 @@ public class Main {
                     logicsDisplayName = prefs.logicsDisplayName;
                     logicsMainIcon = prefs.logicsMainIcon;
                     logicsLogo = prefs.logicsLogo;
-                    hideMenu = prefs.hideMenu;
 
                     remoteNavigator = loginAction.getRemoteNavigator();
 

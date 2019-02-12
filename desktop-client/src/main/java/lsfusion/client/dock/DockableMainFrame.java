@@ -130,10 +130,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         dockableManager = new DockableManager(mainControl, mainNavigator);
 
         initDockStations(navigatorData);
-        
-        if (!Main.hideMenu) {
-            setupMenu();
-        }
+
+        setupMenu();
 
         navigatorController.update();
 

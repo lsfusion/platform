@@ -57,10 +57,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     private VMOptions clientVMOptions;
 
     private String displayName;
-    private String logicsLogo;
     private String name;
-    
-    private String clientHideMenu;
 
     public void setBusinessLogics(T businessLogics) {
         this.businessLogics = businessLogics;
@@ -94,16 +91,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         this.displayName = displayName;
     }
 
-    public void setLogicsLogo(String logicsLogo) {
-        this.logicsLogo = logicsLogo;
-    }
-
     public void setName(String name) {
         this.name = name;
-    }
-    
-    public void setClientHideMenu(String clientHideMenu) {
-        this.clientHideMenu = clientHideMenu;
     }
 
     @Override
@@ -156,8 +145,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         } catch (SQLException | SQLHandledException e) {
             logger.error("Error reading logics logo: ", e);
         }
-        return new GUIPreferences(name, displayName, null, logicsLogo != null ? logicsLogo.getBytes() : null, Boolean.parseBoolean(clientHideMenu),
-                platformVersion, apiVersion);
+        return new GUIPreferences(name, displayName, null, logicsLogo != null ? logicsLogo.getBytes() : null, platformVersion, apiVersion);
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {
