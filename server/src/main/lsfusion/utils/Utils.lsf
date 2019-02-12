@@ -312,20 +312,3 @@ FORM printBlankPageLandscape;
 META defineFileLink (caption, fileType, property, class1)
     fileLink caption (class1 param1) = fileType (webServerUrl() + '/readFile?sid=' + [ REFLECTION CANONICALNAME property[class1]]() + '&p=' + param1) IF property(param1); 
 END
-
-// --------------------------- Групповая корректировка на форме --------------------------------- //
-
-isEditable '{utils.is.editable}' = DATA LOCAL NESTED BOOLEAN();
-
-isReadonly = NOT isEditable();
-
-META extendFormEditable (form)
-    EXTEND FORM form
-        PROPERTIES() isEditable
-    ;
-    DESIGN form {
-        TOOLBARBOX {
-            MOVE PROPERTY(isEditable()) BEFORE TOOLBARRIGHT;
-        }
-    }
-END
