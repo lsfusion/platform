@@ -11,7 +11,7 @@ import java.io.IOException;
 
 
 public class SecurityLogicsModule extends ScriptingLogicsModule{
-    
+
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
     

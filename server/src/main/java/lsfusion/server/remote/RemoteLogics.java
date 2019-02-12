@@ -149,15 +149,19 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public GUIPreferences getGUIPreferences() {
+        String platformVersion = null;
+        Integer apiVersion = null;
         byte[] logicsLogoBytes = null;
-        try {
+        try(DataSession session = dbManager.createSession()) {
+            platformVersion = (String) businessLogics.securityLM.platformVersion.read(session);
+            apiVersion = (Integer) businessLogics.securityLM.apiVersion.read(session);
             if (logicsLogo != null && !logicsLogo.isEmpty())
                 logicsLogoBytes = IOUtils.toByteArray(getClass().getResourceAsStream("/" + logicsLogo));
-        } catch (IOException e) {
+        } catch (IOException | SQLException | SQLHandledException e) {
             logger.error("Error reading logics logo: ", e);
         }
         return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu),
-                BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+                platformVersion, apiVersion);
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {
