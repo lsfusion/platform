@@ -325,3 +325,20 @@ META defineOption(property, caption, type, container)
     EXTEND FORM options PROPERTIES() property;
     DESIGN options { container { MOVE PROPERTY(property()); } }
 END
+
+// --------------------------- Form editable --------------------------------- //
+
+isEditable '{system.is.editable}' = DATA LOCAL NESTED BOOLEAN();
+
+isReadonly = NOT isEditable();
+
+META extendFormEditable (form)
+    EXTEND FORM form
+        PROPERTIES() isEditable
+    ;
+    DESIGN form {
+        TOOLBARBOX {
+            MOVE PROPERTY(isEditable()) BEFORE TOOLBARRIGHT;
+        }
+    }
+END
