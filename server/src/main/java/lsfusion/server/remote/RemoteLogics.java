@@ -1,10 +1,7 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ApiResourceBundle;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ExecResult;
-import lsfusion.base.NavigatorInfo;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.interop.GUIPreferences;
@@ -151,16 +148,15 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public GUIPreferences getGUIPreferences() {
         String platformVersion = null;
         Integer apiVersion = null;
-        byte[] logicsLogoBytes = null;
+        RawFileData logicsLogo = null;
         try(DataSession session = dbManager.createSession()) {
+            logicsLogo = (RawFileData) businessLogics.serviceLM.logicsLogo.read(session);
             platformVersion = (String) businessLogics.securityLM.platformVersion.read(session);
             apiVersion = (Integer) businessLogics.securityLM.apiVersion.read(session);
-            if (logicsLogo != null && !logicsLogo.isEmpty())
-                logicsLogoBytes = IOUtils.toByteArray(getClass().getResourceAsStream("/" + logicsLogo));
-        } catch (IOException | SQLException | SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             logger.error("Error reading logics logo: ", e);
         }
-        return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu),
+        return new GUIPreferences(name, displayName, null, logicsLogo != null ? logicsLogo.getBytes() : null, Boolean.parseBoolean(clientHideMenu),
                 platformVersion, apiVersion);
     }
 

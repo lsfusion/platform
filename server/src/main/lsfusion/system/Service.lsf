@@ -339,10 +339,15 @@ overrideFocusedCellBackgroundColor '{service.focused.cell.background.color}' = O
 focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User);
 overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
 
+logicsLogo = DATA IMAGEFILE ();
+loadLogicsLogo '{service.logics.logo.load}'()  { INPUT=logicsLogo() CHANGE; }
+openLogicsLogo '{service.logics.logo.open}'()  { open(logicsLogo()); }
+resetLogicsLogo '{service.logics.logo.reset}'()  { logicsLogo() <- NULL; }
+
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
-                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer
+                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, loadLogicsLogo, openLogicsLogo, resetLogicsLogo
     OBJECTS u=User
     PROPERTIES(u) READONLY name, login, nameMainRole
     PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
@@ -382,7 +387,13 @@ DESIGN settings {
                     MOVE PROPERTY(reportCharWidth());
                     MOVE PROPERTY(reportRowHeight());
                     MOVE PROPERTY(reportNotToStretch());
-                }                                               
+                }        
+                NEW logoContainer {
+                    caption = '{service.logics.logo}';
+                    MOVE PROPERTY(loadLogicsLogo());
+                    MOVE PROPERTY(openLogicsLogo());
+                    MOVE PROPERTY(resetLogicsLogo());
+                }                                       
             }
             NEW rightColumn {                 
                 NEW virtualMachine {
