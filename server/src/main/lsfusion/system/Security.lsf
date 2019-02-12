@@ -637,10 +637,3 @@ generateJnlpUrls () {
         jnlpUrls() <- CONCAT '', jnlpUrls(), '">{security.run.desktop.client}', ' ', name(ml), '</a><br/>';   
     }
 }
-
-// ------------------ Synchronize versions ---------------- //
-platformVersion = DATA TEXT();
-apiVersion = DATA INTEGER();
-synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.security.SynchronizeVersionsActionProperty' ();    
-
-onStarted() + { synchronizeVersions(); }

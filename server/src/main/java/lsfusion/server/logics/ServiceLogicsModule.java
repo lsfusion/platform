@@ -42,8 +42,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LCP nameSetting;
     public LCP overBaseValueSettingUserRole;
 
-    public LCP logicsLogo;
-
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/system/Service.lsf"), "/system/Service.lsf", baseLM, BL);
     }
@@ -77,7 +75,5 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
         nameSetting = findProperty("name[Setting]");
         overBaseValueSettingUserRole = findProperty("overBaseValue[Setting, UserRole]");
-
-        logicsLogo = findProperty("logicsLogo[]");
     }
 }

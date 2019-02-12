@@ -55,9 +55,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public FormEntity propertyPolicyForm;
     public FormEntity actionPolicyForm;
 
-    public LCP platformVersion;
-    public LCP apiVersion;
-
     public SecurityLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SecurityLogicsModule.class.getResourceAsStream("/system/Security.lsf"), "/system/Security.lsf", baseLM, BL);
     }
@@ -125,8 +122,5 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
         propertyPolicyForm = findForm("propertyPolicy");
         actionPolicyForm = findForm("actionPolicy");
-
-        platformVersion = findProperty("platformVersion[]");
-        apiVersion = findProperty("apiVersion[]");
     }
 }

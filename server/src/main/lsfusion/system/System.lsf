@@ -231,6 +231,30 @@ formDelete(Object o)  {
         }
 }
 
+// ------------------ GUI Preferences ---------------- //
+logicsName '{system.logics.name}' = DATA VARSTRING[100]();
+displayName '{system.logics.display.name}' = DATA VARSTRING[100]();
+
+logicsLogo = DATA IMAGEFILE ();
+loadLogicsLogo '{system.logics.logo.load}'()  { INPUT=logicsLogo() CHANGE; }
+openLogicsLogo '{system.logics.logo.open}'()  { open(logicsLogo()); }
+resetLogicsLogo '{system.logics.logo.reset}'()  { logicsLogo() <- NULL; }
+
+logicsIcon = DATA IMAGEFILE ();
+loadLogicsIcon '{system.logics.icon.load}'()  { INPUT=logicsIcon() CHANGE; }
+openLogicsIcon '{system.logics.icon.open}'()  { open(logicsIcon()); }
+resetLogicsIcon '{system.logics.icon.reset}'()  { logicsIcon() <- NULL; }
+
+platformVersion = DATA TEXT();
+apiVersion = DATA INTEGER();
+synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.SynchronizeVersionsActionProperty' ();    
+onStarted() + { synchronizeVersions(); }
+
+GUIPreferences = DATA LOCAL RAWFILE();
+getGUIPreferences() {
+    EXPORT JSON FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion() TO GUIPreferences;
+}
+
 META applicationForm(sid, name)
     FORM sid name;
     

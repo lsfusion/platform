@@ -26,9 +26,11 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.hierarchy.json.JSONReader;
 import lsfusion.server.session.DataSession;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
+import org.olap4j.impl.Base64;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -39,6 +41,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static lsfusion.base.BaseUtils.trimToNull;
 
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
     protected final static Logger logger = ServerLoggers.remoteLogger;
@@ -55,9 +59,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     protected DBManager dbManager;
 
     private VMOptions clientVMOptions;
-
-    private String displayName;
-    private String name;
 
     public void setBusinessLogics(T businessLogics) {
         this.businessLogics = businessLogics;
@@ -87,14 +88,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         this.clientVMOptions = clientVMOptions;
     }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(businessLogics, "businessLogics must be specified");
@@ -105,10 +98,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         Assert.notNull(clientVMOptions, "clientVMOptions must be specified");
         //assert logicsInstance by checking the context
         Assert.notNull(getContext(), "logicsInstance must be specified");
-
-        if (name == null) {
-            name = businessLogics.getClass().getSimpleName();
-        }
     }
 
     @Override
@@ -135,17 +124,30 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public GUIPreferences getGUIPreferences() {
+        String logicsName = null;
+        String displayName = null;
+        String logicsLogo = null;
+        String logicsIcon = null;
         String platformVersion = null;
         Integer apiVersion = null;
-        RawFileData logicsLogo = null;
         try(DataSession session = dbManager.createSession()) {
-            logicsLogo = (RawFileData) businessLogics.serviceLM.logicsLogo.read(session);
-            platformVersion = (String) businessLogics.securityLM.platformVersion.read(session);
-            apiVersion = (Integer) businessLogics.securityLM.apiVersion.read(session);
-        } catch (SQLException | SQLHandledException e) {
-            logger.error("Error reading logics logo: ", e);
+
+            businessLogics.LM.getGUIPreferences.execute(session, getStack());
+
+            RawFileData guiPreferences = (RawFileData) businessLogics.LM.GUIPreferences.read(session);
+
+            JSONObject jsonObject = (JSONObject) JSONReader.readObject(guiPreferences, "utf-8");
+
+            logicsName = trimToNull(jsonObject.optString("logicsName"));
+            displayName = trimToNull(jsonObject.optString("displayName"));
+            logicsLogo = trimToNull(jsonObject.optString("logicsLogo"));
+            logicsIcon = trimToNull(jsonObject.optString("logicsIcon"));
+            platformVersion = trimToNull(jsonObject.optString("platformVersion"));
+            apiVersion = jsonObject.optInt("apiVersion");
+        } catch (SQLException | SQLHandledException | IOException e) {
+            logger.error("Error reading GUI Preferences: ", e);
         }
-        return new GUIPreferences(name, displayName, null, logicsLogo != null ? logicsLogo.getBytes() : null, platformVersion, apiVersion);
+        return new GUIPreferences(logicsName != null ? logicsName : businessLogics.getClass().getSimpleName(), displayName, logicsIcon != null ? Base64.decode(logicsIcon) : null, logicsLogo != null ? Base64.decode(logicsLogo) : null, platformVersion, apiVersion);
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {

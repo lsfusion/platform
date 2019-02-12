@@ -1,8 +1,7 @@
-package lsfusion.server.logics.security;
+package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.SecurityLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -12,7 +11,7 @@ import java.sql.SQLException;
 
 public class SynchronizeVersionsActionProperty extends ScriptingActionProperty {
 
-    public SynchronizeVersionsActionProperty(SecurityLogicsModule LM) {
+    public SynchronizeVersionsActionProperty(BaseLogicsModule LM) {
         super(LM);
     }
 
