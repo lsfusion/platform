@@ -57,7 +57,7 @@ public class ExternalUtils {
         
         String filename = "export";
 
-        if (uri.endsWith("/exec")) {
+        if (uri.endsWith("/exec") || uri.endsWith("/exec/system")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
             execResult = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
         } else {

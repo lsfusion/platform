@@ -52,7 +52,7 @@
                                                     xhttp.onload = function() {
                                                         document.getElementById('spoiler').innerHTML = this.responseText.split("{contextPath}").join("${pageContext.request.contextPath}");
                                                     };
-                                                    xhttp.open("GET", "exec?action=Security.generateJnlpUrls%5B%5D&return=Security.jnlpUrls%5B%5D", true);                                                    
+                                                    xhttp.open("GET", "exec/system?action=Security.generateJnlpUrls%5B%5D&return=Security.jnlpUrls%5B%5D", true);                                                    
                                                     xhttp.send();
                                                     document.getElementById('spoiler') .style.display='';
                                                     document.getElementById('triangle').innerHTML = '&#9660;'
