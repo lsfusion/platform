@@ -30,14 +30,14 @@ public class ScriptingErrorLog {
     }
 
     private final StringWriter errWriter = new StringWriter();
-    private String moduleName;
+    private String moduleId;
 
-    public ScriptingErrorLog(String moduleName) {
-        this.moduleName = moduleName;
+    public ScriptingErrorLog(String moduleId) {
+        this.moduleId = moduleId;
     }
 
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
+    public void setModuleId(String moduleId) {
+        this.moduleId = moduleId;
     }
 
     public void write(String s) {
@@ -53,7 +53,7 @@ public class ScriptingErrorLog {
     }
 
     private String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
-        String path = parser.getCurrentScriptPath(moduleName, e.line, "\n\t\t\t");
+        String path = parser.getCurrentScriptPath(moduleId, e.line, "\n\t\t\t");
         String hdr = path + ":" + (e.charPositionInLine + 1);
         return "[" + errorType + "]:\t" + hdr + " " + msg;
     }
