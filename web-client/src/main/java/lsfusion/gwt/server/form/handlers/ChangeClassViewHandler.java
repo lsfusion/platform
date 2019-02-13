@@ -3,7 +3,7 @@ package lsfusion.gwt.server.form.handlers;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ChangeClassView;
@@ -14,7 +14,7 @@ import lsfusion.interop.ClassViewType;
 import java.io.IOException;
 
 public class ChangeClassViewHandler extends FormServerResponseActionHandler<ChangeClassView> {
-    public ChangeClassViewHandler(LSFusionDispatchServlet servlet) {
+    public ChangeClassViewHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

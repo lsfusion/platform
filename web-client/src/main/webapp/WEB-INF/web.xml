@@ -10,7 +10,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>lsfusion.jsp</welcome-file>
+        <welcome-file>main.jsp</welcome-file>
     </welcome-file-list>
 
     <context-param>
@@ -24,14 +24,16 @@
         <param-value>7652</param-value>
     </context-param>
 
-    <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
+
     <servlet>
-        <servlet-name>lsfusionDispatch</servlet-name>
+        <servlet-name>mainDispatch</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>lsfusionDispatch</servlet-name>
-        <url-pattern>/lsfusion/dispatch</url-pattern>
+        <servlet-name>mainDispatch</servlet-name>
+        <!-- gwt dispatch endpoint is <moduleName>/dispatch -->
+        <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
+        <url-pattern>/main/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -49,7 +51,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>readLogoHandler</servlet-name>
-        <url-pattern>/readLogo</url-pattern>
+        <url-pattern>/readlogo</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -94,7 +96,7 @@
         <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
     </listener>
 
-    <!-- initializing spring configuration -->
+    <!-- Spring configuration -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>/WEB-INF/spring/applicationContext-security.xml</param-value>
@@ -102,6 +104,16 @@
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
+    
+    <!-- exposes request params and locale to the thread, used in LSFRemoteAuthenticationProvider and ServerMessages.getString (where there is no explicit request) -->
+    <filter>
+        <filter-name>springRequestContextFilter</filter-name>
+        <filter-class>org.springframework.web.filter.RequestContextFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springRequestContextFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <!-- initializing spring security -->
     <filter>
@@ -113,17 +125,13 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- exposes request params and locale to the thread, used in LSFRemoteAuthenticationProvider (where there is no explicit request) -->
-    <listener>
-        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-    </listener>
-    <!-- overrides locale for thread with LSFUSION_LOCALE-->
+    <!-- sets lsf user locale for request -->
     <filter>
-        <filter-name>springRequestContextFilter</filter-name>
-        <filter-class>lsfusion.http.RequestContextFilter</filter-class>
+        <filter-name>LSFLocaleFilter</filter-name>
+        <filter-class>lsfusion.http.LSFLocaleFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>springRequestContextFilter</filter-name>
+        <filter-name>LSFLocaleFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
@@ -137,6 +145,15 @@
         <url-pattern>/exec</url-pattern>
         <url-pattern>/eval</url-pattern>
         <url-pattern>/eval/action</url-pattern>
-        <url-pattern>/read</url-pattern>
+    </filter-mapping>
+
+    <!-- need to cache and nocache gwt resources (see urlrewrite.xml) -->
+    <filter>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
 </web-app>

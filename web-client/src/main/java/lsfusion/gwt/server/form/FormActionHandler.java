@@ -2,7 +2,7 @@ package lsfusion.gwt.server.form;
 
 import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormProvider;
 import lsfusion.gwt.shared.actions.form.FormAction;
 import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
@@ -10,7 +10,7 @@ import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Result;
 
 public abstract class FormActionHandler<A extends FormAction<R>, R extends Result> extends SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
-    public FormActionHandler(LSFusionDispatchServlet servlet) {
+    public FormActionHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

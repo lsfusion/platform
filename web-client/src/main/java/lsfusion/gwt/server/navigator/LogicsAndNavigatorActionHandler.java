@@ -3,7 +3,7 @@ package lsfusion.gwt.server.navigator;
 import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProvider;
 import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorSessionObject;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.LogicsAndNavigatorAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Result;
@@ -12,7 +12,7 @@ import java.rmi.RemoteException;
 
 public abstract class LogicsAndNavigatorActionHandler<A extends LogicsAndNavigatorAction<R>, R extends Result> extends SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
 
-    public LogicsAndNavigatorActionHandler(LSFusionDispatchServlet servlet) {
+    public LogicsAndNavigatorActionHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

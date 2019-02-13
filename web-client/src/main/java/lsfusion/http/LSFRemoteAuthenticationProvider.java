@@ -12,7 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.GrantedAuthorityImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -54,7 +54,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
 
             Collection<GrantedAuthority> authorities = new ArrayList<>();
             for (String role : auth.roles) {
-                authorities.add(new GrantedAuthorityImpl(role));
+                authorities.add(new SimpleGrantedAuthority(role));
             }
             return new LSFAuthenticationToken(username, password, authorities, auth.locale);
         } catch (IOException e) {

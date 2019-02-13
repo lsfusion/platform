@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.handlers;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -14,7 +14,7 @@ import java.io.IOException;
 public class ContinueInvocationHandler extends FormServerResponseActionHandler<ContinueInvocation> {
     private final GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public ContinueInvocationHandler(LSFusionDispatchServlet servlet) {
+    public ContinueInvocationHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

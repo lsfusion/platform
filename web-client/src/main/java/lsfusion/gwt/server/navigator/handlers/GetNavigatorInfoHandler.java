@@ -1,10 +1,9 @@
 package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.client.logics.DeSerializer;
-import lsfusion.client.navigator.ClientAbstractWindow;
 import lsfusion.client.navigator.ClientNavigatorWindow;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.shared.actions.navigator.GetNavigatorInfo;
 import lsfusion.gwt.shared.actions.navigator.GetNavigatorInfoResult;
@@ -21,7 +20,7 @@ import java.util.List;
 
 public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigatorInfo, GetNavigatorInfoResult> {
 
-    public GetNavigatorInfoHandler(LSFusionDispatchServlet servlet) {
+    public GetNavigatorInfoHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

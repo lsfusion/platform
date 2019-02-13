@@ -27,26 +27,9 @@ public class ServerUtils {
         return auth == null ? "Not authorized" : auth.getName();
     }
 
-    public static Locale getLocale() {
-        return LocaleContextHolder.getLocale();
-    }
-
-    public static String getLocaleLanguage() {
-        String language = getLocale().getLanguage();
-        if (!"ru".equals(language) && !"en".equals(language)) {
-            return DEFAULT_LOCALE_LANGUAGE;
-        }
-        return language;
-    }
-
     public static Locale getLocale(HttpServletRequest request) {
-        Cookie localeCookie = WebUtils.getCookie(request, LOCALE_COOKIE_NAME);
-        if (localeCookie != null) {
-            String cookieLocaleString = localeCookie.getValue();
-            if (cookieLocaleString != null) {
-                return LocaleUtils.toLocale(cookieLocaleString);
-            }
-        }
-        return new Locale(getLocaleLanguage());
+        if(request != null)
+            return request.getLocale();
+        return LocaleContextHolder.getLocale(); // just in case
     }
 }

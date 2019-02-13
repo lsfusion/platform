@@ -4,9 +4,9 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="
-           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
-           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
        default-lazy-init="true">
 
     <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" system-properties-mode="OVERRIDE"/>
@@ -112,7 +112,7 @@
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
                 <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>
-                <entry key="enableRESTApi" value="${settings.enableRESTApi:}"/>
+                <entry key="enableApi" value="${settings.enableApi:}"/>
             </map>
         </property>
         </bean>

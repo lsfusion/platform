@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.form;
 
 import lsfusion.gwt.server.form.provider.FormSessionObject;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.shared.actions.form.FormAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
@@ -14,7 +14,7 @@ import java.io.IOException;
 public abstract class FormServerResponseActionHandler<A extends FormAction<ServerResponseResult>> extends FormActionHandler<A, ServerResponseResult> {
     private static ClientActionToGwtConverter clientActionConverter = ClientActionToGwtConverter.getInstance();
 
-    protected FormServerResponseActionHandler(LSFusionDispatchServlet servlet) {
+    protected FormServerResponseActionHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 
@@ -22,7 +22,7 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
         return getServerResponseResult(form, serverResponse, servlet);
     }
 
-    public static ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse, LSFusionDispatchServlet servlet) throws IOException {
+    public static ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse, MainDispatchServlet servlet) throws IOException {
         GAction[] resultActions;
         if (serverResponse.actions == null) {
             resultActions = null;

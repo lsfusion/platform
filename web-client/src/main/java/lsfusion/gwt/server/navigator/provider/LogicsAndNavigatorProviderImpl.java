@@ -4,8 +4,9 @@ import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.SystemUtils;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.http.LSFAuthenticationToken;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.springframework.beans.factory.DisposableBean;
@@ -23,15 +24,16 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
 
     public String servSID = GwtSharedUtils.randomString(25);
 
-    public String createNavigator(RemoteLogicsInterface remoteLogics, LSFusionDispatchServlet servlet) throws RemoteException {
+    public String createNavigator(RemoteLogicsInterface remoteLogics, MainDispatchServlet servlet) throws RemoteException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
+        String password;
+        if (auth == null || (password = LSFAuthenticationToken.getPassword(auth)) == null) {
 //            auth = new TestingAuthenticationToken("admin", "fusion");
             throw new IllegalStateException(ServerMessages.getString(servlet.getRequest(), "error.user.must.be.authenticated"));
         }
 
         String username = auth.getName();
-        String password = (String) auth.getCredentials();
+//        String password = (String) auth.getCredentials();
         String osVersion = System.getProperty("os.name");
         String processor = System.getenv("PROCESSOR_IDENTIFIER");
 

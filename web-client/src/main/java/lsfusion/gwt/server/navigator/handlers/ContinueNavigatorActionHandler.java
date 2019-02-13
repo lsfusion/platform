@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.navigator.handlers;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.navigator.NavigatorServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
@@ -13,7 +13,7 @@ import java.io.IOException;
 public class ContinueNavigatorActionHandler extends NavigatorServerResponseActionHandler<ContinueNavigatorAction> {
     private final GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public ContinueNavigatorActionHandler(LSFusionDispatchServlet servlet) {
+    public ContinueNavigatorActionHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

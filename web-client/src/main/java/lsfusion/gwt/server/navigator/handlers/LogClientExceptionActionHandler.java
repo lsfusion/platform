@@ -6,7 +6,7 @@ import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -30,7 +30,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
     
     private GStackTraceDeobfuscator deobfuscator = new GStackTraceDeobfuscator();
     
-    public LogClientExceptionActionHandler(LSFusionDispatchServlet servlet) {
+    public LogClientExceptionActionHandler(MainDispatchServlet servlet) {
         super(servlet);
 
         new Timer().schedule(new TimerTask() {

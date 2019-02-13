@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.navigator;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.CloseNavigator;
 import lsfusion.gwt.shared.actions.navigator.NavigatorAction;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -19,7 +19,7 @@ public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R ext
         return getLogicsAndNavigatorSessionObject(action).getRemoteCallback();
     }
 
-    public NavigatorActionHandler(LSFusionDispatchServlet servlet) {
+    public NavigatorActionHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

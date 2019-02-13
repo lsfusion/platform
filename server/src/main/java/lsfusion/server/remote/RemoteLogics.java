@@ -221,12 +221,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     // system actions that are needed for native clients
-    public boolean isClientNativeRESTAction(ActionProperty action) {
+    public boolean isSystemApiAction(ActionProperty action) {
         return businessLogics.authenticationLM.syncUsers.property == action;
     }
 
     private ExecResult executeExternal(LAP<?> property, String[] returnNames, Object[] params, Charset charset, String[] headerNames, String[] headerValues) throws SQLException, ParseException, SQLHandledException, IOException {
-        if(!isClientNativeRESTAction(property.property) && !Settings.get().isEnableRESTApi())
+        if(!isSystemApiAction(property.property) && !Settings.get().isEnableApi())
             throw new RuntimeException("REST Api is disabled. It can be enabled using setting enableRESTApi.");
         try (DataSession session = dbManager.createSession()) {
             if(property.property.uses(baseLM.headers.property)) // optimization

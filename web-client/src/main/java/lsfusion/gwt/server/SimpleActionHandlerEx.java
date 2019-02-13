@@ -20,9 +20,9 @@ import java.rmi.RemoteException;
 import static lsfusion.gwt.server.GLoggers.invocationLogger;
 
 public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Result, L extends RemoteLogicsInterface> extends SimpleActionHandler<A, R> {
-    protected final LSFusionDispatchServlet servlet;
+    protected final MainDispatchServlet servlet;
 
-    public SimpleActionHandlerEx(LSFusionDispatchServlet servlet) {
+    public SimpleActionHandlerEx(MainDispatchServlet servlet) {
         this.servlet = servlet;
     }
 

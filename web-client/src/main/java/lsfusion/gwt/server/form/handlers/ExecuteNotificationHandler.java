@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.handlers;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.ExecuteNotification;
@@ -11,7 +11,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import java.io.IOException;
 
 public class ExecuteNotificationHandler extends FormServerResponseActionHandler<ExecuteNotification> {
-    public ExecuteNotificationHandler(LSFusionDispatchServlet servlet) {
+    public ExecuteNotificationHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

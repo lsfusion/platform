@@ -30,15 +30,15 @@
                               action="login_check<%=queryString%>" >
                             <fieldset>
 
-                                <div class="image-center"><img src="readLogo<%=queryString%>" alt="LSFusion"></div>
+                                <div class="image-center"><img src="readlogo<%=queryString%>" alt="LSFusion"></div>
                                 <p>
                                     <br/>
-                                    <label for="j_username"><%= ServerMessages.getString(request, "login") %></label>
-                                    <input type="text" id="j_username" name="j_username" class="round full-width-input"/>
+                                    <label for="username"><%= ServerMessages.getString(request, "login") %></label>
+                                    <input type="text" id="username" name="username" class="round full-width-input"/>
                                 </p>
                                 <p>
-                                    <label for="j_password"><%= ServerMessages.getString(request, "password") %></label>
-                                    <input type="password" id="j_password" name="j_password" class="round full-width-input"/>
+                                    <label for="password"><%= ServerMessages.getString(request, "password") %></label>
+                                    <input type="password" id="password" name="password" class="round full-width-input"/>
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="<%= ServerMessages.getString(request, "log.in") %>"/>
                                 <div class="desktop-link">

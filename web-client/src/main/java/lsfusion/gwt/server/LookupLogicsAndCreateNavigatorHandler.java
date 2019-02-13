@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class LookupLogicsAndCreateNavigatorHandler extends SimpleActionHandlerEx<LookupLogicsAndCreateNavigator, StringResult, RemoteLogicsInterface> {
 
-    public LookupLogicsAndCreateNavigatorHandler(LSFusionDispatchServlet servlet) {
+    public LookupLogicsAndCreateNavigatorHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

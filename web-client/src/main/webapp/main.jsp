@@ -62,7 +62,8 @@
                 </div>
             </div>
         </div>
+        <%-- gwt js src is <module name>/<module name>.nocache.js --%>
         <script type="text/javascript" language="javascript"
-                src="lsfusion/lsfusion.nocache.js"></script>
+                src="main/main.nocache.js"></script>
     </body>
 </html>

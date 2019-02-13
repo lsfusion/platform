@@ -2,7 +2,7 @@ package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.base.ProgressBar;
 import lsfusion.gwt.shared.result.ListResult;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
@@ -17,7 +17,7 @@ import java.util.List;
 public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemoteActionMessageList, ListResult> {
     private static ClientActionToGwtConverter clientActionConverter = ClientActionToGwtConverter.getInstance();
 
-    public GetRemoteActionMessageListHandler(LSFusionDispatchServlet servlet) {
+    public GetRemoteActionMessageListHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

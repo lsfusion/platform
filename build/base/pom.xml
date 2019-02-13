@@ -95,7 +95,8 @@
         <org.jdbf.version>1.1</org.jdbf.version>
         <org.jfree.version>1.0.23</org.jfree.version>
 
-        <spring.version>3.0.5.RELEASE</spring.version>
+        <spring.version>4.3.22.RELEASE</spring.version>
+        <spring.security.version>4.2.11.RELEASE</spring.security.version>
         <aspectj.version>1.8.5</aspectj.version>
 
         <servlet.api.version>2.5</servlet.api.version>
@@ -611,17 +612,17 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-core</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>

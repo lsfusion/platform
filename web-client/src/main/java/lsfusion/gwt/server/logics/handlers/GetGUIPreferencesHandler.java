@@ -3,7 +3,7 @@ package lsfusion.gwt.server.logics.handlers;
 import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.logics.LogicsActionHandler;
 import lsfusion.gwt.shared.actions.logics.GetGUIPreferencesAction;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class GetGUIPreferencesHandler extends LogicsActionHandler<GetGUIPreferencesAction, StringResult> {
 
-    public GetGUIPreferencesHandler(LSFusionDispatchServlet servlet) {
+    public GetGUIPreferencesHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

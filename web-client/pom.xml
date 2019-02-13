@@ -28,7 +28,8 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
                 <configuration>
-                    <module>lsfusion.gwt.lsfusion</module>
+                    <!--it seems because it needs full path, rename-to is not applied here-->
+                    <module>lsfusion.gwt.main</module>
 
                     <webappDirectory>${war.explodedDir}</webappDirectory>
                     <force>true</force>

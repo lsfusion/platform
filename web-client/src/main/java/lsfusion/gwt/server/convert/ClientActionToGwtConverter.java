@@ -8,7 +8,7 @@ import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.gwt.shared.view.GProgressBar;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.shared.view.actions.*;
 import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
@@ -67,7 +67,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = FormClientAction.class)
-    public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, LSFusionDispatchServlet servlet) throws IOException {
+    public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         return new GFormAction(modalityType, servlet.getFormProvider().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.sessionID),
                 action.forbidDuplicate);

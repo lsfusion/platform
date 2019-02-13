@@ -2,7 +2,7 @@ package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.base.ProgressBar;
 import lsfusion.gwt.shared.result.ListResult;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.actions.navigator.GetRemoteNavigatorActionMessageList;
@@ -16,7 +16,7 @@ import java.util.List;
 public class GetRemoteNavigatorActionMessageListHandler extends NavigatorActionHandler<GetRemoteNavigatorActionMessageList, ListResult> {
     private static ClientActionToGwtConverter clientActionConverter = ClientActionToGwtConverter.getInstance();
 
-    public GetRemoteNavigatorActionMessageListHandler(LSFusionDispatchServlet servlet) {
+    public GetRemoteNavigatorActionMessageListHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

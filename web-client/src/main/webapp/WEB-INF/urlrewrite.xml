@@ -13,7 +13,7 @@
     </rule>
 
     <rule>
-        <from>^/lsfusion/(.*)$</from>
+        <from>.*\.cache\..*</from>
         <set type="response-header" name="Cache-Control">public, max-age=2592000</set>
         <set type="expires">30 days</set>
     </rule>

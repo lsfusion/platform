@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.handlers;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -14,7 +14,7 @@ import java.io.IOException;
 public class ExecuteEditActionHandler extends FormServerResponseActionHandler<ExecuteEditAction> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public ExecuteEditActionHandler(LSFusionDispatchServlet servlet) {
+    public ExecuteEditActionHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

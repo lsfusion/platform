@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.handlers;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
@@ -18,7 +18,7 @@ import static lsfusion.base.BaseUtils.serializeObject;
 public class PasteExternalTableHandler extends FormServerResponseActionHandler<PasteExternalTable> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public PasteExternalTableHandler(LSFusionDispatchServlet servlet) {
+    public PasteExternalTableHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

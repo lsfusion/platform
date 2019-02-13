@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.logics.handlers;
 
 import lsfusion.gwt.server.logics.LogicsActionHandler;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.logics.GenerateID;
 import lsfusion.gwt.shared.actions.logics.GenerateIDResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -10,7 +10,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import java.io.IOException;
 
 public class GenerateIDHandler extends LogicsActionHandler<GenerateID, GenerateIDResult> {
-    public GenerateIDHandler(LSFusionDispatchServlet servlet) {
+    public GenerateIDHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

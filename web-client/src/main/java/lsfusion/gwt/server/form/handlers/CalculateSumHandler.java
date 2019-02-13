@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.handlers;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -14,7 +14,7 @@ import java.io.IOException;
 public class CalculateSumHandler extends FormActionHandler<CalculateSum, NumberResult> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public CalculateSumHandler(LSFusionDispatchServlet servlet) {
+    public CalculateSumHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

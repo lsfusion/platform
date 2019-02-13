@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.actions.navigator.InterruptNavigator;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class InterruptNavigatorHandler extends NavigatorActionHandler<InterruptNavigator, VoidResult> {
 
-    public InterruptNavigatorHandler(LSFusionDispatchServlet servlet) {
+    public InterruptNavigatorHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 

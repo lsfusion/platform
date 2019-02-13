@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.ClientPushMessage;
 import lsfusion.gwt.shared.actions.navigator.ClientMessageResult;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ClientPushMessagesHandler extends NavigatorActionHandler<ClientPushMessage, ClientMessageResult> {
 
-    public ClientPushMessagesHandler(LSFusionDispatchServlet servlet) {
+    public ClientPushMessagesHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 
