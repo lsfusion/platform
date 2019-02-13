@@ -103,7 +103,7 @@ grammar LsfLogics;
 	
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (isFirstFullParse()) { 
+		if (isFirstFullParse() || parseState == ScriptParser.State.PRE) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
@@ -201,7 +201,7 @@ grammar LsfLogics;
 
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (isFirstFullParse()) { 
+		if (isFirstFullParse() || inPreParseState()) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}

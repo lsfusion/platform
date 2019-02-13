@@ -122,6 +122,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         this(baseModule, BL);
         this.code = IOUtils.readStreamToString(stream, charsetName);
         this.path = path;
+        errLog.setModuleId(getIdentifier());
     }
 
     public ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String code) {
@@ -194,7 +195,15 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void setModuleName(String moduleName) {
         setName(moduleName);
-        errLog.setModuleName(moduleName);
+        errLog.setModuleId(getIdentifier());
+    }
+    
+    private String getIdentifier() {
+        String id = getName();
+        if (id == null) {
+            id = path;
+        }
+        return (id == null ? "" : id);
     }
 
     private CharStream createStream() throws IOException {
