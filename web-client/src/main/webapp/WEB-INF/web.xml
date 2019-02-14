@@ -45,15 +45,6 @@
         <url-pattern>/client.jnlp</url-pattern>
     </servlet-mapping>
 
-    <!--<servlet>
-        <servlet-name>readLogoHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>readLogoHandler</servlet-name>
-        <url-pattern>/readlogo</url-pattern>
-    </servlet-mapping>-->
-
     <servlet>
         <servlet-name>externalHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>

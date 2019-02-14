@@ -16,8 +16,6 @@
     </http>
     <http pattern="/images/logo.png" security="none">
     </http>
-    <!--<http pattern="/readlogo**" security="none">
-    </http>-->
 
     <!-- Security configuration -->
     <http auto-config="true" entry-point-ref="entryPoint">
@@ -81,7 +79,6 @@
     </b:bean>
 
     <!-- Custom request handlers -->
-    <!--<b:bean id="readLogoHandler" class="lsfusion.http.ReadLogoRequestHandler"/>-->
 
     <b:bean id="fileUploadHandler" class="lsfusion.http.UploadFileRequestHandler" />
 
