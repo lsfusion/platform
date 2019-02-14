@@ -131,10 +131,6 @@
                     <artifactId>httpmime</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.jfree</groupId>
                     <artifactId>jcommon</artifactId>
                 </exclusion>
