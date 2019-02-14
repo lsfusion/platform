@@ -22,7 +22,7 @@
                 if(json.displayName != null) {
                     document.title = json.displayName;
                 }
-                document.getElementById("logo").src = json.logicsLogo != null ? ('data:image/jpg;base64,' + json.logicsLogo) : "images/logo.png";
+                document.getElementById("logo").src = json.logicsLogo != null ? ('data:image/jpg;base64,' + json.logicsLogo) : "${pageContext.request.contextPath}/images/logo.png";
             };
             xhttp.open("GET", "exec/system?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
             xhttp.send();
