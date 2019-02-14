@@ -9,8 +9,6 @@
         <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate"/>
         <meta http-equiv="Pragma" content="no-store, no-cache"/>
         <meta http-equiv="Expires" content="0"/>
-
-        <link rel="shortcut icon" href="favicon.ico" />
         
         <title>lsFusion</title>
         <style type="text/css">
@@ -46,11 +44,28 @@
             }
         </style>
     </head>
-    <body>
+    <body onload="getGUIPreferences()">
         <script language="JavaScript">
             var pageSetup = {
                 webAppRoot: "<%= request.getContextPath() + "/" %>"
             };
+
+            function getGUIPreferences() {
+
+                var xhttp = new XMLHttpRequest();
+                xhttp.onload = function() {
+                    var json = JSON.parse(this.responseText);
+                    if(json.displayName != null) {
+                        document.title = json.displayName;
+                    }
+                    var newLink = document.createElement('link');
+                    newLink.rel = 'shortcut icon';
+                    newLink.href = json.logicsIcon != null ? ('data:image/png;base64,'+json.logicsIcon) : 'favicon.ico'
+                    document.head.appendChild(newLink);
+                };
+                xhttp.open("GET", "exec/system?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
+                xhttp.send();
+            }
         </script>
 
         <div id="loadingWrapper">

@@ -9,7 +9,6 @@
         <title>lsFusion</title>
 
         <link rel="stylesheet" href="login.css">
-        <link rel="shortcut icon" href="favicon.ico" />
     </head>
     <body onload="getGUIPreferences(); document.loginForm.username.focus();">
 
@@ -23,6 +22,10 @@
                     document.title = json.displayName;
                 }
                 document.getElementById("logo").src = json.logicsLogo != null ? ('data:image/jpg;base64,' + json.logicsLogo) : "${pageContext.request.contextPath}/images/logo.png";
+                var newLink = document.createElement('link');
+                newLink.rel = 'shortcut icon';
+                newLink.href = json.logicsIcon != null ? ('data:image/png;base64,'+json.logicsIcon) : 'favicon.ico';
+                document.head.appendChild(newLink);
             };
             xhttp.open("GET", "exec/system?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
             xhttp.send();
