@@ -11,8 +11,25 @@
         <link rel="stylesheet" href="login.css">
         <link rel="shortcut icon" href="favicon.ico" />
     </head>
-    <body onload="document.loginForm.username.focus();">
-        <div style="visibility: hidden;">448b0ce6-206e-11e9-ab14-d663bd873d93</div>
+    <body onload="getGUIPreferences(); document.loginForm.username.focus();">
+
+    <script>
+        function getGUIPreferences() {
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onload = function() {
+                var json = JSON.parse(this.responseText);
+                if(json.displayName != null) {
+                    document.title = json.displayName;
+                }
+                document.getElementById("logo").src = json.logicsLogo != null ? ('data:image/jpg;base64,' + json.logicsLogo) : "images/logo.png";
+            };
+            xhttp.open("GET", "exec/system?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
+            xhttp.send();
+        }
+    </script>
+
+    <div style="visibility: hidden;">448b0ce6-206e-11e9-ab14-d663bd873d93</div>
         <table class="content-table">
             <tr></tr>
             <tr>
@@ -30,7 +47,7 @@
                               action="login_check<%=queryString%>" >
                             <fieldset>
 
-                                <div class="image-center"><img src="readlogo<%=queryString%>" alt="LSFusion"></div>
+                                <div class="image-center"><img id="logo" src="" alt="LSFusion"></div>
                                 <p>
                                     <br/>
                                     <label for="username"><%= ServerMessages.getString(request, "login") %></label>
@@ -44,23 +61,23 @@
                                 <div class="desktop-link">
                                     <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp<%=queryString%>"><%= ServerMessages.getString(request, "run.desktop.client") %></a>
                                     <div id="spoiler" style="display:none"></div>
-                                        <script>
-                                            function showSpoiler() {
-                                                if(document.getElementById('spoiler').style.display==='none') {
+                                    <script>
+                                        function showSpoiler() {
+                                            if(document.getElementById('spoiler').style.display==='none') {
 
-                                                    var xhttp = new XMLHttpRequest();
-                                                    xhttp.onload = function() {
-                                                        document.getElementById('spoiler').innerHTML = this.responseText.split("{contextPath}").join("${pageContext.request.contextPath}");
-                                                    };
-                                                    xhttp.open("GET", "exec/system?action=Security.generateJnlpUrls%5B%5D&return=Security.jnlpUrls%5B%5D", true);                                                    
-                                                    xhttp.send();
-                                                    document.getElementById('spoiler') .style.display='';
-                                                    document.getElementById('triangle').innerHTML = '&#9660;'
-                                                } else {
-                                                    document.getElementById('spoiler') .style.display='none';
-                                                    document.getElementById('triangle').innerHTML = '&#9658;'
-                                                }
+                                                var xhttp = new XMLHttpRequest();
+                                                xhttp.onload = function() {
+                                                    document.getElementById('spoiler').innerHTML = this.responseText.split("{contextPath}").join("${pageContext.request.contextPath}");
+                                                };
+                                                xhttp.open("GET", "exec/system?action=Security.generateJnlpUrls%5B%5D&return=Security.jnlpUrls%5B%5D", true);
+                                                xhttp.send();
+                                                document.getElementById('spoiler') .style.display='';
+                                                document.getElementById('triangle').innerHTML = '&#9660;'
+                                            } else {
+                                                document.getElementById('spoiler') .style.display='none';
+                                                document.getElementById('triangle').innerHTML = '&#9658;'
                                             }
+                                        }
                                     </script>
                                 </div>
                             </fieldset>
