@@ -1,8 +1,10 @@
 package lsfusion.gwt.server.form.provider;
 
+import lsfusion.base.clapper.FileUtil;
 import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProvider;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,17 +47,20 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         gForm.sID = formSID;
         gForm.canonicalName = canonicalName;
 
+        FormSessionObject formSessionObject = new FormSessionObject(clientForm, remoteForm, sessionID);
+
         if (firstChanges != null)
             gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
                     new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(firstChanges)), clientForm),
-                    -1
+                    -1,
+                    formSessionObject                    
             );
 
         if (formUP != null)
             gForm.userPreferences = new GFormUserPreferences(convertUserPreferences(gForm, formUP.getGroupObjectGeneralPreferencesList()),
                                                             convertUserPreferences(gForm, formUP.getGroupObjectUserPreferencesList()));
 
-        gForm.sessionID = addFormSessionObject(new FormSessionObject(clientForm, remoteForm, sessionID));
+        gForm.sessionID = addFormSessionObject(formSessionObject);
         return gForm;
     }
 
@@ -102,7 +108,9 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     }
 
     public void removeFormSessionObject(String formSessionID) {
-        currentForms.remove(formSessionID);
+        FormSessionObject<?> sessionObject = currentForms.remove(formSessionID);
+        for(File file : sessionObject.savedTempFiles)
+            FileUtils.deleteFile(file);        
     }
 
     @Override
@@ -110,7 +118,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         Collection<String> formSessionIDs = new HashSet<>(currentForms.keySet());
         for (String formSessionID : formSessionIDs) {
             if (currentForms.get(formSessionID).sessionID.equals(sessionID)) {
-                currentForms.remove(formSessionID); // по хорошему надо вызывать remoteForm.close (по аналогии с RemoteNavigator), если остались открытые вкладки (так как если их нет, всю работу выполнит RemoteNavigator.close) - но это редкий и нестандартный случай так что пока делать не будем
+                removeFormSessionObject(formSessionID); // maybe it's better to call remoteForm.close (just like navigators are closed in LogicsAndNavigatorProviderImpl), if there are opeened tabs (because if there are not such tabs, RemoteNavigator.close will do all the work) - but it is a rare case, so will do it later 
             }
         }
     }

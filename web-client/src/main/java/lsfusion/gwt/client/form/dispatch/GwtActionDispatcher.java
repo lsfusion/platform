@@ -212,7 +212,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(final GBeepAction action) {
-        String fileUrl = GwtClientUtils.getDownloadURL(action.filePath, null, "wav");
+        String fileUrl = GwtClientUtils.getDownloadURL(action.filePath, null, "wav", true);
         Audio beep = Audio.createIfSupported();
         if (beep != null) {
             beep.setSrc(fileUrl);

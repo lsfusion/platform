@@ -64,7 +64,7 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
 
     protected void setImageSrc(ImageElement img, Object value) {
         if (value instanceof String && !value.equals("null")) {
-            img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension));
+            img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false)); // form file
         } else {
             img.setSrc(GWT.getModuleBaseURL() + "images/" + ICON_EMPTY);
         }

@@ -107,7 +107,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
 
-        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex);
+        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form);
 
         return new GProcessFormChangesAction(changesDTO);
     }
@@ -124,7 +124,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
                 ClientTypeSerializer.deserializeClientType(action.readType)
         ) ;
 
-        Object value = valuesConverter.convertOrCast(deserializeServerValue(action.oldValue));
+        Object value = deserializeServerValue(action.oldValue);
 
         return new GRequestUserInputAction(type, value);
     }
@@ -135,7 +135,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = UpdateEditValueClientAction.class)
     public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action) throws IOException {
-        return new GUpdateEditValueAction(valuesConverter.convertOrCast(deserializeServerValue(action.value)));
+        return new GUpdateEditValueAction(deserializeServerValue(action.value));
     }
 
     @Converter(from = AsyncGetRemoteChangesClientAction.class)
@@ -160,12 +160,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = OpenFileClientAction.class)
     public GOpenFileAction convertAction(OpenFileClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file), action.name, action.extension);
+        return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.name, action.extension);
     }
 
     @Converter(from = WriteClientAction.class)
     public GOpenFileAction convertAction(WriteClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file), action.path, action.extension);
+        return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.path, action.extension);
     }
 
     @Converter(from = ExportFileClientAction.class)
@@ -194,7 +194,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = BeepClientAction.class)
     public GBeepAction convertAction(BeepClientAction action) {
-        return new GBeepAction(FileUtils.saveFile(action.file));
+        return new GBeepAction(FileUtils.saveActionFile(action.file));
     }
 
     @Converter(from = ActivateFormClientAction.class)

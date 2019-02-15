@@ -56,13 +56,13 @@ public class GwtClientUtils {
 
     public static void downloadFile(String name, String displayName, String extension) {
         if(name != null) {
-            String fileUrl = getDownloadURL(name, displayName, extension);
+            String fileUrl = getDownloadURL(name, displayName, extension, true);
             Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
         }
     }
 
-    public static String getDownloadURL(String name, String displayName, String extension) {
-        return getWebAppBaseURL() + "downloadFile?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "");
+    public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
+        return getWebAppBaseURL() + "downloadFile?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "") + (actionFile ? "&filetype=action" : "");
     }
 
     public static Map<String, String> getPageParameters() {

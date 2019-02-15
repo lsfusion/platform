@@ -5,6 +5,7 @@ import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.RawFileData;
+import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.shared.view.ImageDescription;
 import lsfusion.gwt.shared.view.changes.dto.GFilesDTO;
 import lsfusion.interop.FormPrintType;
@@ -105,28 +106,53 @@ public class FileUtils {
         }
     }
 
-    public static String saveFile(RawFileData fileData) {
-        return saveFile(BaseUtils.randomString(15), fileData);
+    public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
+        String fileName = BaseUtils.randomString(15);
+        if(saveFileData(fileName, fileData) != null)
+            return fileName;
+        return null;
+    }
+
+    public static String saveFormFile(RawFileData fileData, FormSessionObject<?> sessionObject) { // multiple usages (form scoped), so should be deleted just right after form is closed
+        String fileName = BaseUtils.randomString(15);
+        File file = saveFileData(fileName, fileData);
+        if(file != null) {
+            sessionObject.savedTempFiles.add(file);
+            return fileName;
+        }
+        return null;
     }
 
     @Deprecated
     public static String saveFile(String fileName, RawFileData fileData) {
+        saveFileData(fileName, fileData);
+        return fileName;
+    }
+    
+    private static File saveFileData(String fileName, RawFileData fileData) {
         try {
             if (fileData != null) {
                 File file = new File(APP_TEMP_FOLDER_URL, fileName);
                 fileData.write(file);
-                return fileName;
+                return file;
             }
         } catch (IOException e) {
             return null;
         }
         return null;
     }
+    
+    public static void deleteFile(File file) {
+        try { // maybe its better to do it with some delay, but now there's no request retry for action files (except maybe beep), and form should be already closed
+            file.delete();
+        } catch (Throwable t) { // this files are in temp dir anyway, so no big deal                
+        }
+    }
 
     public static Pair<String, String> exportReport(FormPrintType type, ReportGenerationData reportData) {
         try {
             RawFileData report = ReportGenerator.exportToFileByteArray(reportData, type);;
-            return new Pair<>(FileUtils.saveFile(report), type.getExtension());
+            return new Pair<>(FileUtils.saveActionFile(report), type.getExtension());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
