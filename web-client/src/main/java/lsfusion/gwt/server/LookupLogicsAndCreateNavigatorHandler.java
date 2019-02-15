@@ -17,10 +17,10 @@ public class LookupLogicsAndCreateNavigatorHandler extends SimpleActionHandlerEx
     }
 
     @Override
-    public StringResult executeEx(LookupLogicsAndCreateNavigator action, ExecutionContext context) throws DispatchException, IOException {
+    public StringResult executeEx(final LookupLogicsAndCreateNavigator action, ExecutionContext context) throws DispatchException, IOException {
          return new StringResult(LogicsRequestHandler.runRequest(servlet.getLogicsHandlerProvider(), action.host, action.port, action.exportName, new LogicsRequestHandler.Runnable<String>() {
             public String run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws IOException {
-                return servlet.getLogicsAndNavigatorProvider().createNavigator(remoteLogics, servlet);
+                return servlet.getLogicsAndNavigatorProvider().createNavigator(remoteLogics, servlet, action.logicsName);
             }
         }));
     }

@@ -54,7 +54,6 @@ public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implemen
         }
 
         String appPath = servletContext.getRealPath("");
-        FileUtils.APP_FOLDER_URL = appPath;
         FileUtils.APP_IMAGES_FOLDER_URL = appPath + "/images/";
         FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
 

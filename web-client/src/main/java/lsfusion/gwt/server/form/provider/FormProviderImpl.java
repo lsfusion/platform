@@ -5,6 +5,7 @@ import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
+import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProvider;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
@@ -12,6 +13,7 @@ import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -25,6 +27,9 @@ import static lsfusion.gwt.server.convert.StaticConverters.convertFont;
 // session scoped - one for one browser (! not tab)
 public class FormProviderImpl implements FormProvider, InitializingBean, DisposableBean {
 
+    @Autowired
+    private LogicsAndNavigatorProvider logicsAndNavigatorProvider;
+    
     public FormProviderImpl() {}
 
     public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
@@ -34,7 +39,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
 
-        GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
+        GForm gForm = new ClientComponentToGwtConverter(logicsAndNavigatorProvider.getLogicsName(sessionID)).convertOrCast(clientForm);
 
         gForm.sID = formSID;
         gForm.canonicalName = canonicalName;

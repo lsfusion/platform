@@ -19,6 +19,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     VMOptions getClientVMOptions() throws RemoteException;
     boolean isSingleInstance() throws RemoteException;
 
+    // main interface
+
     // authentication
     AuthenticationToken authenticateUser(String userName, String password) throws RemoteException;
 
@@ -31,7 +33,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     ExecResult exec(AuthenticationToken token, SessionInfo sessionInfo, String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;
     ExecResult eval(AuthenticationToken token, SessionInfo sessionInfo, boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;
 
-    // because used really often (and don't need authentication)
+    // separate methods, because used really often (and don't need authentication)
     long generateID() throws RemoteException;
     void ping() throws RemoteException;
     void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) throws RemoteException;

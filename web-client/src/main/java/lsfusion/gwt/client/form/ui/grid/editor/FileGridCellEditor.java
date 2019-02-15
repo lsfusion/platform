@@ -28,7 +28,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     private boolean multiple;
     private boolean storeName;
     private String description;
-    private ArrayList<String> extensions;
+    private ArrayList<String> validContentTypes; // null if FILE (with any extension/contenttype)
 
     private FocusPanel focusPanel;
     private Button okButton;
@@ -39,11 +39,11 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
-    public FileGridCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, boolean storeName, ArrayList<String> extensions) {
+    public FileGridCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, boolean storeName, ArrayList<String> validContentTypes) {
         super(editManager, property, messages.fileEditorTitle(), 500, 150);
         this.multiple = multiple;
         this.storeName = storeName;
-        this.extensions = extensions;
+        this.validContentTypes = validContentTypes;
         this.description = description;
     }
 
@@ -223,7 +223,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
                     JsArray validFiles = JsArray.createArray().cast();
                     for (int i = 0; i < droppedFiles.length(); i++) {
                         File file = droppedFiles.get(i).cast();
-                        if ((extensions == null || extensions.contains(file.getType())) && (multiple || validFiles.length() == 0)) {
+                        if ((validContentTypes == null || validContentTypes.contains(file.getType())) && (multiple || validFiles.length() == 0)) {
                             validFiles.push(file);
                         }
                     }
@@ -267,7 +267,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
                 for (String id : filePrefixes.keySet()) {
                     fileSIDS.add(filePrefixes.get(id) + "_" + fileNames.get(id));
                 }
-                commitEditing(new GFilesDTO(fileSIDS, multiple, storeName, extensions == null));
+                commitEditing(new GFilesDTO(fileSIDS, multiple, storeName, validContentTypes == null));
             }
         });
 
@@ -287,13 +287,13 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         panel.setCellVerticalAlignment(buttons, HasVerticalAlignment.ALIGN_BOTTOM);
 
         String validFileTypes = null;
-        if (extensions != null) {
+        if (validContentTypes != null) {
             validFileTypes = "";
             int count = 0;
-            for (String extension : extensions) {
+            for (String extension : validContentTypes) {
                 validFileTypes += extension;
                 count++;
-                if (count < extensions.size()) {
+                if (count < validContentTypes.size()) {
                     validFileTypes += ",";
                 }
             }

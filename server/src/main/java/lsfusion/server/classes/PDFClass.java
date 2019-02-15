@@ -42,7 +42,7 @@ public class PDFClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "pdf";
     }
 

@@ -23,7 +23,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
         super(multiple, storeName);
     }
 
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return null;
     }
 
@@ -54,7 +54,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
     
     protected ImSet<String> getExtensions() {
-        return SetFact.singleton(getDefaultCastExtension());
+        return SetFact.singleton(getExtension());
     } 
 
     @Override

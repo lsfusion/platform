@@ -69,12 +69,12 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null);
     }
 
-    public String createNavigator(RemoteLogicsInterface remoteLogics, MainDispatchServlet servlet) throws RemoteException {
+    public String createNavigator(RemoteLogicsInterface remoteLogics, MainDispatchServlet servlet, String logicsName) throws RemoteException {
         AuthenticationToken lsfToken = LSFAuthenticationToken.getAppServerToken();
 
         RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(lsfToken, getNavigatorInfo(servlet.getRequest()));
 
-        return addLogicsAndNavigatorSessionObject(new LogicsAndNavigatorSessionObject(remoteLogics, remoteNavigator));
+        return addLogicsAndNavigatorSessionObject(new LogicsAndNavigatorSessionObject(remoteLogics, remoteNavigator, logicsName));
     }
 
     @Override
@@ -103,6 +103,11 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
     public void removeLogicsAndNavigatorSessionObject(String sessionID) throws RemoteException {
         LogicsAndNavigatorSessionObject logicsAndNavigatorSessionObject = currentLogicsAndNavigators.remove(sessionID);
         logicsAndNavigatorSessionObject.remoteNavigator.close();
+    }
+
+    @Override
+    public String getLogicsName(String sessionID) {
+        return getLogicsAndNavigatorSessionObject(sessionID).logicsName;
     }
 
     @Override

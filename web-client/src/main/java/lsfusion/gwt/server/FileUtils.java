@@ -23,14 +23,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class FileUtils {
-    public static String APP_FOLDER_URL;
-    public static String APP_IMAGES_FOLDER_URL;
-    public static String APP_TEMP_FOLDER_URL;
+    // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
+    public static String APP_IMAGES_FOLDER_URL; // all files has to be prefixed with logicsName
+    public static String APP_TEMP_FOLDER_URL; // all files hasn't to be prefixed because their names are (or prefixed with) random strings
 
     public static ImageDescription createImage(SerializableImageIconHolder iconHolder, String iconPath, String imagesFolderName, boolean canBeDisabled) {
         if (iconHolder != null) {
             File imagesFolder = new File(APP_IMAGES_FOLDER_URL, imagesFolderName);
-            imagesFolder.mkdir();
+            imagesFolder.mkdirs(); // not mkdir because we have complex path (logics/navigator)
 
             String iconFileName = iconPath.substring(0, iconPath.lastIndexOf("."));
             String iconFileType = iconPath.substring(iconPath.lastIndexOf(".") + 1);

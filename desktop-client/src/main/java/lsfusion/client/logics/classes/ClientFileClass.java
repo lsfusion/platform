@@ -30,8 +30,6 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
         outStream.writeBoolean(storeName);
     }
 
-    public abstract String[] getExtensions();
-
     @Override
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
         return 18;

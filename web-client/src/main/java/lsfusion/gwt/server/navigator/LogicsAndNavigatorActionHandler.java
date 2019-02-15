@@ -26,10 +26,15 @@ public abstract class LogicsAndNavigatorActionHandler<A extends LogicsAndNavigat
         servlet.getFormProvider().removeFormSessionObjects(sessionID);
         getLogicsAndNavigatorProvider().removeLogicsAndNavigatorSessionObject(sessionID);
     }
+    protected String getLogicsName(String sessionID) {
+        return getLogicsAndNavigatorProvider().getLogicsName(sessionID);
+    }
 
     // shortcut's
     protected LogicsAndNavigatorSessionObject getLogicsAndNavigatorSessionObject(A action) {
         return getLogicsAndNavigatorSessionObject(action.sessionID);
     }
-
+    protected String getLogicsName(A action) {
+        return getLogicsAndNavigatorProvider().getLogicsName(action.sessionID);
+    }
 }

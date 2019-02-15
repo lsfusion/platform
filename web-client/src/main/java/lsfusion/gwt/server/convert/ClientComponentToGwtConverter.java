@@ -36,7 +36,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private GForm form;
 
-    public ClientComponentToGwtConverter() {
+    public ClientComponentToGwtConverter(String logicsName) {
+        super(logicsName);
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {
@@ -273,7 +274,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.icon = FileUtils.createImage(clientPropertyDraw.design.getImageHolder(), clientPropertyDraw.design.imagePath, "property", canIconBeDisabled);
+        propertyDraw.icon = createImage(clientPropertyDraw.design.getImageHolder(), clientPropertyDraw.design.imagePath, "property", canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

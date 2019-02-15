@@ -7,6 +7,8 @@ public class LookupLogicsAndCreateNavigator extends RequestAction<StringResult> 
     public String host;
     public Integer port;
     public String exportName;
+    
+    public String logicsName = "default";
 
     public LookupLogicsAndCreateNavigator() {
     }

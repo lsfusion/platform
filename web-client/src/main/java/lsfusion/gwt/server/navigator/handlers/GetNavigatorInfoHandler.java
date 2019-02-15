@@ -26,7 +26,7 @@ public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigator
 
     @Override
     public GetNavigatorInfoResult executeEx(GetNavigatorInfo action, ExecutionContext context) throws DispatchException, IOException {
-        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter();
+        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(getLogicsName(action));
 
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
         DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());

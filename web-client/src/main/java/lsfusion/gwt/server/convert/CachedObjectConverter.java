@@ -1,5 +1,9 @@
 package lsfusion.gwt.server.convert;
 
+import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.shared.view.ImageDescription;
+import lsfusion.interop.SerializableImageIconHolder;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -9,6 +13,15 @@ import java.util.HashMap;
  */
 public class CachedObjectConverter extends ObjectConverter {
     private final HashMap cache = new HashMap();
+
+    private final String logicsName;
+    protected CachedObjectConverter(String logicsName) {
+        this.logicsName = logicsName;
+    }
+
+    protected ImageDescription createImage(SerializableImageIconHolder iconHolder, String iconPath, String imagesFolderName, boolean canBeDisabled) {
+        return FileUtils.createImage(iconHolder, iconPath, logicsName + "/" + imagesFolderName, canBeDisabled);
+    }
 
     @Override
     protected <F, T> T convertInstance(F from, Object... context) {
