@@ -3,7 +3,6 @@ package lsfusion.server.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
-import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
@@ -14,27 +13,18 @@ import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.property.actions.integration.importing.hierarchy.json.JSONReader;
-import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
-import org.olap4j.impl.Base64;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-
-import static lsfusion.base.BaseUtils.trimToNull;
 
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
     protected final static Logger logger = ServerLoggers.remoteLogger;
@@ -188,33 +178,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void ping() throws RemoteException {
         //for filterIncl-alive
-    }
-
-    public GUIPreferences getGUIPreferences() {
-        String logicsName = null;
-        String displayName = null;
-        String logicsLogo = null;
-        String logicsIcon = null;
-        String platformVersion = null;
-        Integer apiVersion = null;
-        try(DataSession session = dbManager.createSession()) {
-
-            businessLogics.LM.getGUIPreferences.execute(session, getStack());
-
-            RawFileData guiPreferences = (RawFileData) businessLogics.LM.GUIPreferences.read(session);
-
-            JSONObject jsonObject = (JSONObject) JSONReader.readObject(guiPreferences, "utf-8");
-
-            logicsName = trimToNull(jsonObject.optString("logicsName"));
-            displayName = trimToNull(jsonObject.optString("displayName"));
-            logicsLogo = trimToNull(jsonObject.optString("logicsLogo"));
-            logicsIcon = trimToNull(jsonObject.optString("logicsIcon"));
-            platformVersion = trimToNull(jsonObject.optString("platformVersion"));
-            apiVersion = jsonObject.optInt("apiVersion");
-        } catch (SQLException | SQLHandledException | IOException e) {
-            logger.error("Error reading GUI Preferences: ", e);
-        }
-        return new GUIPreferences(logicsName != null ? logicsName : businessLogics.getClass().getSimpleName(), displayName, logicsIcon != null ? Base64.decode(logicsIcon) : null, logicsLogo != null ? Base64.decode(logicsLogo) : null, platformVersion, apiVersion);
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {

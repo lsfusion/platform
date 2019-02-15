@@ -153,9 +153,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LCP networkPath;
 
-    public LCP GUIPreferences;
-    public LAP getGUIPreferences;
-
     public AbstractGroup privateGroup;
 
     public TableFactory tableFactory;
@@ -443,9 +440,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         defaultOverrideBackgroundColor = findProperty("defaultOverrideBackgroundColor[]");
         defaultForegroundColor = findProperty("defaultForegroundColor[]");
         defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor[]");
-
-        GUIPreferences = findProperty("GUIPreferences[]");
-        getGUIPreferences = findAction("getGUIPreferences[]");
 
         initNavigators();
     }

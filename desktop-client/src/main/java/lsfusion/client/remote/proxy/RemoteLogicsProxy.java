@@ -3,7 +3,6 @@ package lsfusion.client.remote.proxy;
 import lsfusion.base.ExecResult;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SessionInfo;
-import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
@@ -28,13 +27,6 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends RemoteOb
     @Override
     public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
         return new RemoteSessionProxy<>(target.createSession(token, sessionInfo));
-    }
-
-    public GUIPreferences getGUIPreferences() throws RemoteException {
-        logRemoteMethodStartCall("getGUIPreferences");
-        GUIPreferences result = target.getGUIPreferences();
-        logRemoteMethodEndCall("getGUIPreferences", result);
-        return result;    
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {

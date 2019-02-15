@@ -16,7 +16,6 @@ import java.util.Map;
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     // obsolete
-    GUIPreferences getGUIPreferences() throws RemoteException;
     VMOptions getClientVMOptions() throws RemoteException;
     boolean isSingleInstance() throws RemoteException;
 

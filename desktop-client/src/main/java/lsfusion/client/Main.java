@@ -1,6 +1,8 @@
 package lsfusion.client;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExecResult;
+import lsfusion.base.FileData;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
@@ -15,7 +17,10 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.ICleanListener;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import org.apache.log4j.Logger;
+import org.castor.core.util.Base64Decoder;
+import org.json.JSONObject;
 import sun.awt.OSInfo;
 import sun.awt.SunToolkit;
 import sun.security.action.GetPropertyAction;
@@ -43,6 +48,7 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.trimToNull;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
@@ -211,18 +217,28 @@ public class Main {
                     }
 
                     remoteLogics = loginAction.getRemoteLogics();
-                    GUIPreferences prefs = remoteLogics.getGUIPreferences();
+
+                    JSONObject guiPreferences = getGUIPreferences();
+
+                    logicsName = trimToNull(guiPreferences.optString("logicsName"));
+                    logicsDisplayName = trimToNull(guiPreferences.optString("displayName"));
+                    String iconBase64 = trimToNull(guiPreferences.optString("logicsIcon"));
+                    logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
+                    String logoBase64 = trimToNull(guiPreferences.optString("logicsLogo"));
+                    logicsLogo =  logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
+                    String serverPlatformVersion = trimToNull(guiPreferences.optString("platformVersion"));
+                    Integer serverApiVersion = guiPreferences.optInt("apiVersion");
 
                     String serverVersion = null;
                     String clientVersion = null;
                     String oldPlatformVersion = BaseUtils.getPlatformVersion();
-                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(prefs.platformVersion)) {
-                        serverVersion = prefs.platformVersion;
+                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(serverPlatformVersion)) {
+                        serverVersion = serverPlatformVersion;
                         clientVersion = oldPlatformVersion;
                     } else {
                         Integer oldApiVersion = BaseUtils.getApiVersion();
-                        if(!oldApiVersion.equals(prefs.apiVersion)) {
-                            serverVersion = prefs.platformVersion + " [" + prefs.apiVersion + "]";
+                        if(!oldApiVersion.equals(serverApiVersion)) {
+                            serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
                             clientVersion = oldPlatformVersion + " [" + oldApiVersion + "]";
                         }
                     }
@@ -231,11 +247,6 @@ public class Main {
                         Main.shutdown();
                         return;
                     }
-
-                    logicsName = prefs.logicsName;
-                    logicsDisplayName = prefs.logicsDisplayName;
-                    logicsMainIcon = prefs.logicsMainIcon;
-                    logicsLogo = prefs.logicsLogo;
 
                     remoteNavigator = loginAction.getRemoteNavigator();
 
@@ -302,11 +313,17 @@ public class Main {
     private static void loadLogicsLogo(RemoteLogicsInterface remoteLogics) {
         try {
             if (remoteLogics != null) {
-                logicsLogo = remoteLogics.getGUIPreferences().logicsLogo;
+                String logoBase64 = trimToNull(getGUIPreferences().optString("logicsLogo"));
+                logicsLogo =  logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
             }
         } catch (Throwable e) {
             logger.error("Error loading logics logo", e);
         }
+    }
+
+    private static JSONObject getGUIPreferences() throws RemoteException {
+        ExecResult result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getGUIPreferences[]", new String[] { "System.GUIPreferences[]"}, new Object[0], "utf-8", new String[0], new String[0]);
+        return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 
     private static void setupTimePreferences(String userTimeZone, Integer twoDigitYearStart) throws RemoteException {
