@@ -108,14 +108,14 @@ public class FileUtils {
 
     public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
         String fileName = BaseUtils.randomString(15);
-        if(saveFileData(fileName, fileData) != null)
+        if(saveFile(fileName, fileData) != null)
             return fileName;
         return null;
     }
 
     public static String saveFormFile(RawFileData fileData, FormSessionObject<?> sessionObject) { // multiple usages (form scoped), so should be deleted just right after form is closed
         String fileName = BaseUtils.randomString(15);
-        File file = saveFileData(fileName, fileData);
+        File file = saveFile(fileName, fileData);
         if(file != null) {
             sessionObject.savedTempFiles.add(file);
             return fileName;
@@ -123,13 +123,7 @@ public class FileUtils {
         return null;
     }
 
-    @Deprecated
-    public static String saveFile(String fileName, RawFileData fileData) {
-        saveFileData(fileName, fileData);
-        return fileName;
-    }
-    
-    private static File saveFileData(String fileName, RawFileData fileData) {
+    private static File saveFile(String fileName, RawFileData fileData) {
         try {
             if (fileData != null) {
                 File file = new File(APP_TEMP_FOLDER_URL, fileName);

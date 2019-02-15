@@ -168,15 +168,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.path, action.extension);
     }
 
-    @Converter(from = ExportFileClientAction.class)
-    public GExportFileAction convertAction(ExportFileClientAction action) {
-        ArrayList<String> filePaths = new ArrayList<>();
-        for (String fileName : action.files.keySet()) {
-            filePaths.add(FileUtils.saveFile(fileName, action.files.get(fileName)));
-        }
-        return new GExportFileAction(filePaths);
-    }
-
     @Converter(from = ProgressBar.class)
     public GProgressBar convertProgressBar(ProgressBar progressBar) {
         return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.params);

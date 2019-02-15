@@ -195,15 +195,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         GwtClientUtils.downloadFile(action.fileName, action.displayName, action.extension);
     }
 
-    @Override
-    public void execute(GExportFileAction action) {
-        if (action.filePaths != null) {
-            for (String filePath : action.filePaths) {
-                GwtClientUtils.downloadFile(filePath, null, null);
-            }
-        }
-    }
-
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
     @Override
     public String execute(GLoadLinkAction action) {

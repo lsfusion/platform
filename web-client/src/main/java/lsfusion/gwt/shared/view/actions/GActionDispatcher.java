@@ -31,8 +31,6 @@ public interface GActionDispatcher {
 
     void execute(GOpenFileAction action);
 
-    void execute(GExportFileAction action);
-
     String execute(GLoadLinkAction action);
 
     void execute(GBeepAction action);
