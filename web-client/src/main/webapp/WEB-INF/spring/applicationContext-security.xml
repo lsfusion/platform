@@ -20,9 +20,8 @@
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
-        <access-denied-handler ref="accessDeniedHandler" />
-        <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/>
-
+        <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/> <!-- no invalidate session to give user opportunity to relogin, when another tab is opened-->
+        
         <csrf disabled="true"/>
 
         <custom-filter ref="characterEncodingFilter" before="FORM_LOGIN_FILTER"/>
@@ -42,10 +41,6 @@
 
     <b:bean id="successLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationSuccessHandler"/>
     <b:bean id="failureLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationFailureHandler"/>
-
-    <b:bean id="accessDeniedHandler" class="lsfusion.http.AccessDeniedHandlerImpl" >
-        <b:property name="errorPage" value="/restricted.jsp" />
-    </b:bean>
 
     <b:bean id="successLogoutHandler" class="lsfusion.http.LSFSimpleUrlLogoutSuccessHandler" >
     </b:bean>
