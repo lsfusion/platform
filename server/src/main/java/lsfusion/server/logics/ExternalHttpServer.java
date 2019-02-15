@@ -5,7 +5,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.SessionInfo;
 import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -18,6 +20,7 @@ import org.apache.http.entity.ContentType;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -78,9 +81,12 @@ public class ExternalHttpServer extends MonitorServer {
             try {
                 String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
                 String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
-                
-                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
-                        request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request), headerNames, headerValues);
+
+                InetSocketAddress remoteAddress = request.getRemoteAddress();
+                InetAddress address = remoteAddress.getAddress();
+                SessionInfo sessionInfo = new SessionInfo(remoteAddress.getHostName(), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
+
+                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics, request.getRequestURI().getPath(), request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request), headerNames, headerValues);
 
                 if (response.response != null)
                     sendResponse(request, response);

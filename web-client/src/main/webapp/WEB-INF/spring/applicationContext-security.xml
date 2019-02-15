@@ -10,22 +10,18 @@
                                  http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
     <config:annotation-config />
 
-    <!-- exec system doesn't have to be authenticated, there is inner authorization check in RemoteLogics.isSystemApiAction -->
-    <!-- important : url is lower-cased by default -->
-    <http pattern="/exec/system" security="none">
-    </http>
-    <http pattern="/images/logo.png" security="none">
-    </http>
-
     <!-- Security configuration -->
     <http auto-config="true" entry-point-ref="entryPoint">
+        <!-- exec / eval don't need redirect to login.jsp and real authentication process is on app server-->
+        <intercept-url pattern="/exec" access="permitAll()"/>
+        <intercept-url pattern="/eval/*" access="permitAll()"/>
+        <!-- because we want to have logo even if app server is unavailable, that's why logo.png is on web-server, and it has to be shown before user is authenticated -->
+        <intercept-url pattern="/images/logo.png" access="permitAll()"/>
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <access-denied-handler ref="accessDeniedHandler" />
         <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/>
-
-        <anonymous enabled="false" />
 
         <csrf disabled="true"/>
 

@@ -1,7 +1,9 @@
 package lsfusion.http;
 
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.SessionInfo;
 import lsfusion.gwt.server.logics.LogicsConnection;
+import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProviderImpl;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
@@ -28,8 +30,8 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             String[] headerNames = list((Enumeration<String>)request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
             
-            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteLogics, request.getRequestURI(),
-                    query == null ? "" : query, request.getInputStream(), contentType, headerNames, headerValues);
+            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(LSFAuthenticationToken.getAppServerToken(), 
+                    LogicsAndNavigatorProviderImpl.getSessionInfo(request), remoteLogics, request.getRequestURI(), query == null ? "" : query, request.getInputStream(), contentType, headerNames, headerValues);
 
             if (responseHttpEntity.response != null) {
                 sendResponse(response, responseHttpEntity);

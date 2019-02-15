@@ -7,15 +7,12 @@ import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.auth.SecurityPolicy;
-import lsfusion.server.auth.User;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -23,8 +20,6 @@ import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NavigatorsManager extends LogicsManager implements InitializingBean {
@@ -106,78 +101,44 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         return dbManager.createSession();
     }
 
-    public RemoteNavigatorInterface createNavigator(ExecutionStack stack, NavigatorInfo navigatorInfo, boolean reuseSession) {
-        //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
-        reuseSession = false;
-
-        //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
-//        scheduleRemoveExpired();
-
+    public RemoteNavigatorInterface createNavigator(ExecutionStack stack, String login, NavigatorInfo navigatorInfo) {
         try {
-            SecurityPolicy securityPolicy;
-            DataObject userObject;
-            DataObject computerObject;
-            try (DataSession session = createSession()) {
-                User user = securityManager.readAndAuthenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
-                userObject = user.getDataObject(businessLogics.authenticationLM.customUser, session);
-                securityPolicy = user.getSecurityPolicy();
-
-                Long computer = dbManager.getComputer(navigatorInfo.hostname, session, stack);
-                computerObject = session.getDataObject(businessLogics.authenticationLM.computer, computer);
-
-                String result = session.applyMessage(businessLogics, stack);
-                if(result != null)
-                    throw new RemoteMessageException(result);
-            }
-
-//            if (reuseSession) {
-//                List<RemoteNavigator> navigatorsList = navigators.get(loginKey);
-//                if (navigatorsList != null) {
-//                    for(RemoteNavigator navigator : navigatorsList) {
-//                        navigator.disconnect();
-//                        navigator.unexportAndClean();
-//                        removeNavigator(stack, loginKey);
-//                    }
-//                }
-//            }
-            return new RemoteNavigator(logicsInstance, navigatorInfo, securityPolicy, userObject, computerObject, rmiManager.getExportPort(), stack);
+            return new RemoteNavigator(rmiManager.getExportPort(), logicsInstance, login, navigatorInfo, stack);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
     public void navigatorCreated(ExecutionStack stack, RemoteNavigator navigator, NavigatorInfo navigatorInfo) throws SQLException, SQLHandledException {
-        DataObject newConnection = null;
+        DataObject newConnection;
 
-        if(!securityManager.isUniversalPassword(navigatorInfo.password)) {
-            try (DataSession session = createSession()) {
-                newConnection = session.addObject(businessLogics.systemEventsLM.connection);
-                businessLogics.systemEventsLM.userConnection.change(navigator.getUser(), session, newConnection);
-                businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
-                businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
-                businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
-                businessLogics.systemEventsLM.coresConnection.change(navigatorInfo.cores, session, newConnection);
-                businessLogics.systemEventsLM.physicalMemoryConnection.change(navigatorInfo.physicalMemory, session, newConnection);
-                businessLogics.systemEventsLM.totalMemoryConnection.change(navigatorInfo.totalMemory, session, newConnection);
-                businessLogics.systemEventsLM.maximumMemoryConnection.change(navigatorInfo.maximumMemory, session, newConnection);
-                businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
-                businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
-                businessLogics.systemEventsLM.is64JavaConnection.change(navigatorInfo.javaVersion != null && navigatorInfo.javaVersion.endsWith("64 bit"), session, newConnection);
-                businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
-                businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer(), session, newConnection);
-                businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
-                businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
-                businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
-                businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.readClasses(session), session, newConnection);
-                String result = session.applyMessage(businessLogics, stack);
-                if(result != null)
-                    throw new RemoteMessageException(result);
-            }
+        try (DataSession session = createSession()) {
+            newConnection = session.addObject(businessLogics.systemEventsLM.connection);
+            businessLogics.systemEventsLM.userConnection.change(navigator.getUser(), session, newConnection);
+            businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
+            businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
+            businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
+            businessLogics.systemEventsLM.coresConnection.change(navigatorInfo.cores, session, newConnection);
+            businessLogics.systemEventsLM.physicalMemoryConnection.change(navigatorInfo.physicalMemory, session, newConnection);
+            businessLogics.systemEventsLM.totalMemoryConnection.change(navigatorInfo.totalMemory, session, newConnection);
+            businessLogics.systemEventsLM.maximumMemoryConnection.change(navigatorInfo.maximumMemory, session, newConnection);
+            businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
+            businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
+            businessLogics.systemEventsLM.is64JavaConnection.change(navigatorInfo.javaVersion != null && navigatorInfo.javaVersion.endsWith("64 bit"), session, newConnection);
+            businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
+            businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer(), session, newConnection);
+            businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
+            businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
+            businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getLogInfo().remoteAddress, session, newConnection);
+            businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.readClasses(session), session, newConnection);
+            String result = session.applyMessage(businessLogics, stack);
+            if(result != null)
+                throw new RemoteMessageException(result);
         }
 
         synchronized (navigators) {
             if (newConnection != null) {
-                navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection)); // чтобы переобновить классы после apply
+                navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection)); // to update classes after apply
             }
             navigators.add(navigator);
         }
@@ -201,30 +162,6 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    //    //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
-//    private synchronized void scheduleRemoveExpired() {
-//        if (removeExpiredScheduled.compareAndSet(false, true)) {
-//            executor.schedule(new Runnable() {
-//                @Override
-//                public void run() {
-//                    removeNavigators(getStack(), NavigatorFilter.FALSE);
-//                    removeExpiredScheduled.set(false);
-//                }
-//            }, 5, TimeUnit.SECONDS);
-//        }
-//    }
-
-    public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException, SQLHandledException {
-        Set<RemoteNavigator> copyNavigators = new HashSet<>();
-        synchronized (navigators) { // могут быть закрывающиеся навигаторы, проверка с синхронизацией внутри вызова
-            for(RemoteNavigator navigator : navigators)
-                copyNavigators.add(navigator);
-        }
-        for (RemoteNavigator remoteNavigator : copyNavigators) // вообще в принципе опасное поведение, так как обращается к сессии не threadSafe, надо isServerRestarting на DATA переделать, а этот метод убрать
-            if (remoteNavigator != null)
-                remoteNavigator.updateEnvironmentProperty(property, value);
     }
 
     public void pushNotificationCustomUser(DataObject connectionObject, EnvStackRunnable run) {

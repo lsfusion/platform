@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User extends PolicyAgent {
+public class User {
 
     public final long ID;
 

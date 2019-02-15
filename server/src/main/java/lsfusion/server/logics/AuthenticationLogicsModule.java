@@ -43,7 +43,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP lastComputerCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
+    public LCP nameContact;
     public LCP currentUserAllowExcessAllocatedBytes;
+    public LCP allowExcessAllocatedBytes;
 
     public LCP hostnameComputer;
     public LCP computerHostname;
@@ -108,7 +110,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         emailContact = findProperty("email[Contact]");
         contactEmail = findProperty("contact[VARSTRING[400]]");
 
+        nameContact = findProperty("name[Contact]");
         currentUserName = findProperty("currentUserName[]");
+        allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
         currentUserAllowExcessAllocatedBytes = findProperty("currentUserAllowExcessAllocatedBytes[]");
 
         // Компьютер

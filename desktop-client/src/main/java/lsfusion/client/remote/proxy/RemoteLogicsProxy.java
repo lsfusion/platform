@@ -2,25 +2,32 @@ package lsfusion.client.remote.proxy;
 
 import lsfusion.base.ExecResult;
 import lsfusion.base.NavigatorInfo;
+import lsfusion.base.SessionInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.PreAuthentication;
+import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.session.RemoteSessionInterface;
 
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
-public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
+public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
 
-    public RemoteBusinessLogicProxy(T target) {
+    public RemoteLogicsProxy(T target) {
         super(target);
     }
 
-    public RemoteNavigatorInterface createNavigator(NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException {
-        return new RemoteNavigatorProxy(target.createNavigator(navigatorInfo, forceCreateNew));
+    public RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException {
+        return new RemoteNavigatorProxy(target.createNavigator(token, navigatorInfo));
+    }
+
+    @Override
+    public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
+        return new RemoteSessionProxy<>(target.createSession(token, sessionInfo));
     }
 
     public GUIPreferences getGUIPreferences() throws RemoteException {
@@ -39,9 +46,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
+    public AuthenticationToken authenticateUser(String userName, String password) throws RemoteException {
         logRemoteMethodStartCall("authenticateUser");
-        PreAuthentication result = target.preAuthenticateUser(userName, password, language, country);
+        AuthenticationToken result = target.authenticateUser(userName, password);
         logRemoteMethodEndCall("authenticateUser", result);
         return result;
     }
@@ -62,17 +69,17 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+    public ExecResult exec(AuthenticationToken token, SessionInfo sessionInfo, String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
         logRemoteMethodStartCall("exec");
-        ExecResult result = target.exec(action, returnCanonicalNames, params, charset, headerNames, headerValues);
+        ExecResult result = target.exec(token, sessionInfo, action, returnCanonicalNames, params, charset, headerNames, headerValues);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }
 
     @Override
-    public ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+    public ExecResult eval(AuthenticationToken token, SessionInfo sessionInfo, boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
         logRemoteMethodStartCall("eval");
-        ExecResult result = target.eval(action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
+        ExecResult result = target.eval(token, sessionInfo, action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }

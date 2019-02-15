@@ -8,11 +8,13 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.remote.RemoteConnection;
+import lsfusion.server.remote.RemoteConnectionContext;
 import lsfusion.server.remote.RemoteForm;
 
 import java.util.Locale;
 
-public class RemoteNavigatorContext extends AbstractContext {
+public class RemoteNavigatorContext extends RemoteConnectionContext {
     private final RemoteNavigator navigator;
 
     public RemoteNavigatorContext(RemoteNavigator navigator) {
@@ -20,13 +22,8 @@ public class RemoteNavigatorContext extends AbstractContext {
     }
 
     @Override
-    public LogicsInstance getLogicsInstance() {
-        return navigator.logicsInstance;
-    }
-
-    @Override
-    public LogInfo getLogInfo() {
-        return navigator.getLogInfo();
+    protected RemoteConnection getConnectionObject() {
+        return navigator;
     }
 
     public void aspectDelayUserInteraction(ClientAction action, String message) {
@@ -38,10 +35,6 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.requestUserInteraction(actions);
     }
 
-    public SecurityPolicy getSecurityPolicy() {
-        return navigator.securityPolicy;
-    }
-
     public FocusListener getFocusListener() {
         return navigator;
     }
@@ -50,28 +43,6 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator;
     }
 
-    public Long getCurrentComputer() {
-        return (Long) navigator.getComputer().object;
-    }
-
-    public Long getCurrentUser() {
-        return (Long) navigator.getUser().object;
-    }
-
-    @Override
-    public Long getCurrentUserRole() {
-        return navigator.userRole;
-    }
-
-    public Long getCurrentConnection() {
-        return navigator.getConnectionId();
-    }
-
-    @Override
-    public Locale getLocale() {
-        return navigator.getLocale();
-    }
-    
     @Override
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         try {

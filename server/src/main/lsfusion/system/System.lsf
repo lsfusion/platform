@@ -253,7 +253,7 @@ onStarted() + { synchronizeVersions(); }
 GUIPreferences = DATA LOCAL RAWFILE();
 getGUIPreferences() {
     EXPORT JSON FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion() TO GUIPreferences;
-}
+} @@noauth;
 
 META applicationForm(sid, name)
     FORM sid name;

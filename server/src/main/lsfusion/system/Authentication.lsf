@@ -135,6 +135,12 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
                                                                 THEN clientCountry(user)
                                                                 ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
 
+// "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
+getCurrentUserLocale() {
+    FOR CustomUser user AS CustomUser = currentUser() DO
+        EXPORT JSON FROM language(user), country(user); 
+}
+
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
 twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
 
@@ -158,7 +164,7 @@ syncUsers (VARISTRING[100] computer, JSONFILE users) {
     LOCAL syncSavedUser = STRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;
     EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i));
-}
+} @@noauth;
 
 FORM customUser '{authentication.custom.user}'
     OBJECTS u=CustomUser PANEL

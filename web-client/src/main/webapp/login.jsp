@@ -27,7 +27,7 @@
                 newLink.href = json.logicsIcon != null ? ('data:image/png;base64,'+json.logicsIcon) : 'favicon.ico';
                 document.head.appendChild(newLink);
             };
-            xhttp.open("GET", "exec/system?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
+            xhttp.open("GET", "exec?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
             xhttp.send();
         }
     </script>
@@ -72,7 +72,7 @@
                                                 xhttp.onload = function() {
                                                     document.getElementById('spoiler').innerHTML = this.responseText.split("{contextPath}").join("${pageContext.request.contextPath}");
                                                 };
-                                                xhttp.open("GET", "exec/system?action=Security.generateJnlpUrls%5B%5D&return=Security.jnlpUrls%5B%5D", true);
+                                                xhttp.open("GET", "exec?action=Security.generateJnlpUrls%5B%5D&return=Security.jnlpUrls%5B%5D", true);
                                                 xhttp.send();
                                                 document.getElementById('spoiler') .style.display='';
                                                 document.getElementById('triangle').innerHTML = '&#9660;'

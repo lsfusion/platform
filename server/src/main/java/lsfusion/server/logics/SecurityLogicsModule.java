@@ -48,7 +48,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP hasUserRole;
 
     public LCP currentUserMainRoleName;
+    public LCP nameMainRoleUser;
     public LCP currentUserTransactTimeout;
+    public LCP transactTimeoutUser;
 
     public LAP copyAccess;    
 
@@ -74,7 +76,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         nameUserRole = findProperty("name[UserRole]");
         userRoleSID = findProperty("userRoleSID[VARSTRING[30]]");
         currentUserMainRoleName = findProperty("currentUserMainRoleName[]");
+        nameMainRoleUser = findProperty("nameMainRole[User]");
         currentUserTransactTimeout = findProperty("currentUserTransactTimeout[]");
+        transactTimeoutUser = findProperty("transactTimeout[User]");
 
         // Список ролей для пользователей
         mainRoleCustomUser = findProperty("mainRole[CustomUser]");

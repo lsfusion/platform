@@ -6,9 +6,6 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate"/>
-        <meta http-equiv="Pragma" content="no-store, no-cache"/>
-        <meta http-equiv="Expires" content="0"/>
         
         <title>lsFusion</title>
         <style type="text/css">
@@ -63,7 +60,7 @@
                     newLink.href = json.logicsIcon != null ? ('data:image/png;base64,'+json.logicsIcon) : 'favicon.ico'
                     document.head.appendChild(newLink);
                 };
-                xhttp.open("GET", "exec/system?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
+                xhttp.open("GET", "exec?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
                 xhttp.send();
             }
         </script>

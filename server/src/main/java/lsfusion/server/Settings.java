@@ -1055,13 +1055,13 @@ public class Settings implements Cloneable {
         this.disableReadClasses = disableReadClasses;
     }
 
-    private boolean enableApi = true;
+    private byte enableApi = 2; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled 
 
-    public boolean isEnableApi() {
+    public byte getEnableApi() {
         return enableApi;
     }
 
-    public void setEnableApi(boolean enableApi) {
+    public void setEnableApi(byte enableApi) {
         this.enableApi = enableApi;
     }
 

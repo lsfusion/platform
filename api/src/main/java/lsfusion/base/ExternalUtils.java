@@ -1,6 +1,7 @@
 package lsfusion.base;
 
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -44,8 +45,7 @@ public class ExternalUtils {
     private static final String RETURNMULTITYPE_PARAM = "returnmultitype";
     private static final String PROPERTY_PARAM = "property";
 
-    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, 
-                                                  ContentType requestContentType, String[] headerNames, String[] headerValues) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(AuthenticationToken token, SessionInfo sessionInfo, RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType, String[] headerNames, String[] headerValues) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -57,9 +57,9 @@ public class ExternalUtils {
         
         String filename = "export";
 
-        if (uri.endsWith("/exec") || uri.endsWith("/exec/system")) {
+        if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            execResult = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+            execResult = remoteLogics.exec(token, sessionInfo, action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
         } else {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
@@ -69,8 +69,7 @@ public class ExternalUtils {
                     script = paramsList.get(0);
                     paramsList = paramsList.subList(1, paramsList.size());
                 }
-                execResult = remoteLogics.eval(isEvalAction, script, returns.toArray(new String[returns.size()]),
-                        paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+                execResult = remoteLogics.eval(token, sessionInfo, isEvalAction, script, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
             }
         }
 

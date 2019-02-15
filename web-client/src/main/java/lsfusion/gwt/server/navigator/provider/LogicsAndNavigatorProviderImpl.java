@@ -1,20 +1,26 @@
+
+
 package lsfusion.gwt.server.navigator.provider;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
-import lsfusion.base.ServerMessages;
+import lsfusion.base.SessionInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.http.LSFAuthenticationToken;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+import javax.servlet.http.HttpServletRequest;
 import java.rmi.RemoteException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,17 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvider, DisposableBean {
 
     public String servSID = GwtSharedUtils.randomString(25);
+    
+    public static SessionInfo getSessionInfo(Authentication auth) {
+        Locale clientLocale = LocaleContextHolder.getLocale();
+        return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry());
+    }
 
-    public String createNavigator(RemoteLogicsInterface remoteLogics, MainDispatchServlet servlet) throws RemoteException {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String password;
-        if (auth == null || (password = LSFAuthenticationToken.getPassword(auth)) == null) {
-//            auth = new TestingAuthenticationToken("admin", "fusion");
-            throw new IllegalStateException(ServerMessages.getString(servlet.getRequest(), "error.user.must.be.authenticated"));
-        }
+    public static SessionInfo getSessionInfo(HttpServletRequest request) {
+        return new SessionInfo(request.getRemoteHost(), request.getRemoteHost(), null, null); // we don't need client language and country because they were already provided when authenticating (see method above)
+    }
 
-        String username = auth.getName();
-//        String password = (String) auth.getCredentials();
+    private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {
         String osVersion = System.getProperty("os.name");
         String processor = System.getenv("PROCESSOR_IDENTIFIER");
 
@@ -53,20 +59,20 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
         String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
-//        we don't need client locale here, because it was already updated in preAuthenticateUser
+//        we don't need client locale here, because it was already updated when authenticating
 //        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
 //        if(clientLocale == null)
 //            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here         
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
-        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(new NavigatorInfo(username, password,
-                SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
-                osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
-                javaVersion, null, null, null), true);
-//        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
-//                remoteLogics.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture,
-//                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null, language, country), true);
+        return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null);
+    }
+
+    public String createNavigator(RemoteLogicsInterface remoteLogics, MainDispatchServlet servlet) throws RemoteException {
+        AuthenticationToken lsfToken = LSFAuthenticationToken.getAppServerToken();
+
+        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(lsfToken, getNavigatorInfo(servlet.getRequest()));
 
         return addLogicsAndNavigatorSessionObject(new LogicsAndNavigatorSessionObject(remoteLogics, remoteNavigator));
     }

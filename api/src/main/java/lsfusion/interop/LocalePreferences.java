@@ -17,12 +17,16 @@ public class LocalePreferences implements Serializable {
         this.timeZone = timeZone;
         this.twoDigitYearStart = twoDigitYearStart;
     }
-    
-    public Locale getLocale() {
+
+    public static Locale getLocale(String language, String country) {
         if (language != null) {
             return new Locale(language, country == null ? "" : country);
         }
         return null; // default
+    }
+    
+    public Locale getLocale() {
+        return getLocale(language, country);
     }
     
 //    public static LocalePreferences overrideDefaultWithUser(LocalePreferences defaultPreferences, LocalePreferences userPreferences) {

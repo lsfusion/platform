@@ -65,11 +65,7 @@ public class LogicsInstanceContext extends AbstractContext {
 
     @Override
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
-        try {
-            return new RemoteForm(formInstance, logicsInstance.getRmiManager().getExportPort(), null, stack);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        throw new UnsupportedOperationException("createRemoteForm is not supported in server context");
     }
 
     @Override
