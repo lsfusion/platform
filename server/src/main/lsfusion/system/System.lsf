@@ -232,7 +232,8 @@ formDelete(Object o)  {
 }
 
 // ------------------ GUI Preferences ---------------- //
-logicsName '{system.logics.name}' = DATA VARSTRING[100]();
+dataLogicsName '{system.logics.name}' = DATA VARSTRING[100]();
+logicsName = OVERRIDE dataLogicsName(), 'default';
 displayName '{system.logics.display.name}' = DATA VARSTRING[100]();
 
 logicsLogo = DATA IMAGEFILE ();

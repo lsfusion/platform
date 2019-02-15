@@ -218,7 +218,7 @@ public class Main {
 
                     remoteLogics = loginAction.getRemoteLogics();
 
-                    JSONObject guiPreferences = getGUIPreferences();
+                    JSONObject guiPreferences = getGUIPreferences(remoteLogics);
 
                     logicsName = trimToNull(guiPreferences.optString("logicsName"));
                     logicsDisplayName = trimToNull(guiPreferences.optString("displayName"));
@@ -313,7 +313,7 @@ public class Main {
     private static void loadLogicsLogo(RemoteLogicsInterface remoteLogics) {
         try {
             if (remoteLogics != null) {
-                String logoBase64 = trimToNull(getGUIPreferences().optString("logicsLogo"));
+                String logoBase64 = trimToNull(getGUIPreferences(remoteLogics).optString("logicsLogo"));
                 logicsLogo =  logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
             }
         } catch (Throwable e) {
@@ -321,7 +321,7 @@ public class Main {
         }
     }
 
-    private static JSONObject getGUIPreferences() throws RemoteException {
+    private static JSONObject getGUIPreferences(RemoteLogicsInterface remoteLogics) throws RemoteException {
         ExecResult result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getGUIPreferences[]", new String[] { "System.GUIPreferences[]"}, new Object[0], "utf-8", new String[0], new String[0]);
         return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
