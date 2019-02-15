@@ -1,9 +1,8 @@
 package lsfusion.http;
 
 import lsfusion.base.ExternalUtils;
-import lsfusion.base.SessionInfo;
 import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProviderImpl;
+import lsfusion.http.provider.navigator.LogicsAndNavigatorProviderImpl;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;

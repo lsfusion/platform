@@ -1,13 +1,12 @@
-package lsfusion.gwt.server.form.provider;
+package lsfusion.http.provider.form;
 
-import lsfusion.base.clapper.FileUtil;
 import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
-import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProvider;
+import lsfusion.http.provider.navigator.LogicsAndNavigatorProvider;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;

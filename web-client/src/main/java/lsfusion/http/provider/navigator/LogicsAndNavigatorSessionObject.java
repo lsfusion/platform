@@ -1,4 +1,4 @@
-package lsfusion.gwt.server.navigator.provider;
+package lsfusion.http.provider.navigator;
 
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.interop.RemoteLogicsInterface;

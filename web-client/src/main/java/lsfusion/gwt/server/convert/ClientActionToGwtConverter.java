@@ -9,7 +9,7 @@ import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.gwt.shared.view.GProgressBar;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.view.actions.*;
 import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.shared.view.classes.GObjectClass;

@@ -1,4 +1,4 @@
-package lsfusion.gwt.server.logics.provider;
+package lsfusion.http.provider.logics;
 
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.server.logics.LogicsConnection;

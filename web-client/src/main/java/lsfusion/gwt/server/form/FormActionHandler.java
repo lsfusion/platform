@@ -1,9 +1,9 @@
 package lsfusion.gwt.server.form;
 
 import lsfusion.gwt.server.SimpleActionHandlerEx;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.server.form.provider.FormProvider;
+import lsfusion.http.provider.form.FormProvider;
 import lsfusion.gwt.shared.actions.form.FormAction;
 import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.interop.RemoteLogicsInterface;

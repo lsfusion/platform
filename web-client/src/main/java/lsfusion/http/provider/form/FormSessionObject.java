@@ -1,4 +1,4 @@
-package lsfusion.gwt.server.form.provider;
+package lsfusion.http.provider.form;
 
 import lsfusion.client.logics.ClientForm;
 import lsfusion.interop.form.RemoteFormInterface;

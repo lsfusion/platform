@@ -4,7 +4,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.form.SetTabVisible;
 

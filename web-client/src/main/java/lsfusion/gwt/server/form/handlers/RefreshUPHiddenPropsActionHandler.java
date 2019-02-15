@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.RefreshUPHiddenPropsAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;

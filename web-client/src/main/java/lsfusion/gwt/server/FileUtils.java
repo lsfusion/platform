@@ -5,7 +5,7 @@ import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.RawFileData;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.view.ImageDescription;
 import lsfusion.gwt.shared.view.changes.dto.GFilesDTO;
 import lsfusion.interop.FormPrintType;

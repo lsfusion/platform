@@ -5,7 +5,7 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.actions.form.GetRemoteActionMessage;
 
 import java.io.IOException;

@@ -3,7 +3,7 @@ package lsfusion.http;
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProviderImpl;
+import lsfusion.http.provider.navigator.LogicsAndNavigatorProviderImpl;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.LoginException;

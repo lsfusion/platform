@@ -64,13 +64,13 @@
     <b:bean id="mainDispatch" class="lsfusion.gwt.server.MainDispatchServlet"/>
 
     <!-- Beans need for GWT request handler-->
-    <b:bean id="logicsHandlerProvider" class="lsfusion.gwt.server.logics.provider.LogicsHandlerProviderImpl" />
+    <b:bean id="logicsHandlerProvider" class="lsfusion.http.provider.logics.LogicsHandlerProviderImpl" />
 
-    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProviderImpl">
+    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.http.provider.navigator.LogicsAndNavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 
-    <b:bean id="formProvider" scope="session" class="lsfusion.gwt.server.form.provider.FormProviderImpl">
+    <b:bean id="formProvider" scope="session" class="lsfusion.http.provider.form.FormProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 

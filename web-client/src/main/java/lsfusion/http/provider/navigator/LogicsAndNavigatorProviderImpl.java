@@ -1,6 +1,6 @@
 
 
-package lsfusion.gwt.server.navigator.provider;
+package lsfusion.http.provider.navigator;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;

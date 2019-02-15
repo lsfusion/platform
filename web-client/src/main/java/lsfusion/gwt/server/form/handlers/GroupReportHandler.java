@@ -3,7 +3,7 @@ package lsfusion.gwt.server.form.handlers;
 import lsfusion.base.Pair;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.gwt.shared.actions.form.GroupReport;

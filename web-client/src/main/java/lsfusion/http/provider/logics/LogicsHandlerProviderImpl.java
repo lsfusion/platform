@@ -1,4 +1,4 @@
-package lsfusion.gwt.server.logics.provider;
+package lsfusion.http.provider.logics;
 
 import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;

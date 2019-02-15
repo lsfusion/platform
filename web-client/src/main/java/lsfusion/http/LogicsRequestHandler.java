@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.gwt.server.logics.provider.LogicsHandlerProvider;
+import lsfusion.http.provider.logics.LogicsHandlerProvider;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 
