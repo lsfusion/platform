@@ -240,4 +240,8 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
             ServerLoggers.sqlSuppLog(t);
         }
     }
+
+    public synchronized void close() throws RemoteException {
+        deactivateAndCloseLater(true);
+    }
 }

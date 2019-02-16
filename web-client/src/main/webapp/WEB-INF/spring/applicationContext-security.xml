@@ -12,9 +12,9 @@
 
     <!-- Security configuration -->
     <http auto-config="true" entry-point-ref="entryPoint">
-        <!-- exec / eval don't need redirect to login.jsp and real authentication process is on app server-->
+        <!-- exec / eval don't need redirect to login.jsp and the real authentication process is on app server-->
         <intercept-url pattern="/exec" access="permitAll()"/>
-        <intercept-url pattern="/eval/*" access="permitAll()"/>
+        <intercept-url pattern="/eval/**" access="permitAll()"/>
         <!-- because we want to have logo even if app server is unavailable, that's why logo.png is on web-server, and it has to be shown before user is authenticated -->
         <intercept-url pattern="/images/logo.png" access="permitAll()"/>
         <intercept-url pattern="/**" access="isAuthenticated()"/>
@@ -58,10 +58,16 @@
     <!-- GWT request handler -->
     <b:bean id="mainDispatch" class="lsfusion.gwt.server.MainDispatchServlet"/>
 
-    <!-- Beans need for GWT request handler-->
-    <b:bean id="logicsHandlerProvider" class="lsfusion.http.provider.logics.LogicsHandlerProviderImpl" />
+    <!-- Beans need for GWT request handler, bean names are actually not used (except logicsProvider, autowiring can find name with its interface, there is no intersection of this interfaces) -->
 
-    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.http.provider.navigator.LogicsAndNavigatorProviderImpl">
+    <!-- the name of that bean is used in main.jsp and login.jsp-->
+    <b:bean id="logicsProvider" class="lsfusion.http.provider.logics.LogicsProviderImpl" />
+
+    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.http.provider.navigator.NavigatorProviderImpl">
+        <aop:scoped-proxy proxy-target-class="false" />
+    </b:bean>
+
+    <b:bean id="sessionProvider" scope="session" class="lsfusion.http.provider.session.SessionProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 

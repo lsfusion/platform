@@ -6,7 +6,7 @@ import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
-import lsfusion.http.provider.navigator.LogicsAndNavigatorProvider;
+import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
@@ -30,7 +30,7 @@ import static lsfusion.gwt.server.convert.StaticConverters.convertFont;
 public class FormProviderImpl implements FormProvider, InitializingBean, DisposableBean {
 
     @Autowired
-    private LogicsAndNavigatorProvider logicsAndNavigatorProvider;
+    private NavigatorProvider navigatorProvider;
     
     public FormProviderImpl() {}
 
@@ -41,7 +41,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
 
-        GForm gForm = new ClientComponentToGwtConverter(logicsAndNavigatorProvider.getLogicsName(sessionID)).convertOrCast(clientForm);
+        GForm gForm = new ClientComponentToGwtConverter(navigatorProvider.getLogicsName(sessionID)).convertOrCast(clientForm);
 
         gForm.sID = formSID;
         gForm.canonicalName = canonicalName;

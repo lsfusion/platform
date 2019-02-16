@@ -83,7 +83,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 String script = StringClass.text.parseHTTP(paramScript, charset);
                 if (action) {
                     //оборачиваем в run без параметров
-                    script = "run() = {" + script + ";\n};";
+                    script = "run() {" + script + "\n}";
                 }
                 LAP<?> runAction = businessLogics.evaluateRun(script);
                 if(runAction != null) {
@@ -225,5 +225,9 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
         
         super.onClose();
+    }
+    @Override
+    public synchronized void close() throws RemoteException { // without this RemoteContextAspect will not be weaved
+        super.close();
     }
 }

@@ -19,7 +19,7 @@ import java.rmi.RemoteException;
 
 import static lsfusion.gwt.server.GLoggers.invocationLogger;
 
-public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Result, L extends RemoteLogicsInterface> extends SimpleActionHandler<A, R> {
+public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Result> extends SimpleActionHandler<A, R> {
     protected final MainDispatchServlet servlet;
 
     public SimpleActionHandlerEx(MainDispatchServlet servlet) {

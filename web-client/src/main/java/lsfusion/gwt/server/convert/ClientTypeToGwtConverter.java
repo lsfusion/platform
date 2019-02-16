@@ -75,15 +75,15 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         fileClass.multiple = clientFileClass.multiple;
         fileClass.storeName = clientFileClass.storeName;
         if (clientFileClass instanceof ClientStaticFormatFileClass) { 
-            List<String> validContentTypes = new ArrayList<>();
+            ArrayList<String> validContentTypes = new ArrayList<>();
             for (String extension : ((ClientStaticFormatFileClass) clientFileClass).getExtensions()) {
                 if (extension != null && !extension.isEmpty() && !extension.equals("*.*") && !extension.equals("*")) {
-                    fileClass.validContentTypes.add(MIMETypeUtil.MIMETypeForFileExtension(extension.toLowerCase()));
+                    validContentTypes.add(MIMETypeUtil.MIMETypeForFileExtension(extension.toLowerCase()));
                 } else {
-                    fileClass.validContentTypes.add(extension);
+                    validContentTypes.add(extension);
                 }
             }
-            fileClass.validContentTypes = new ArrayList<>();
+            fileClass.validContentTypes = validContentTypes;
         }
         return fileClass;
     }

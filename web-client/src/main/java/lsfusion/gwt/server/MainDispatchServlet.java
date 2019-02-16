@@ -6,9 +6,9 @@ import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.http.provider.form.FormProvider;
 import lsfusion.gwt.server.logics.handlers.GetGUIPreferencesHandler;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
-import lsfusion.http.provider.logics.LogicsHandlerProvider;
+import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.gwt.server.navigator.handlers.*;
-import lsfusion.http.provider.navigator.LogicsAndNavigatorProvider;
+import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.gwt.shared.actions.RequestAction;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.shared.exceptions.MessageException;
@@ -41,9 +41,9 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     protected Dispatch dispatch;
 
     @Autowired
-    private LogicsHandlerProvider logicsHandlerProvider;
+    private LogicsProvider logicsProvider;
     @Autowired
-    private LogicsAndNavigatorProvider logicsAndNavigatorProvider;
+    private NavigatorProvider navigatorProvider;
     @Autowired
     private FormProvider formProvider;
 
@@ -56,7 +56,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         // global
-        registry.addHandler(new LookupLogicsAndCreateNavigatorHandler(this));
+        registry.addHandler(new CreateNavigatorHandler(this));
 
         // logics
         registry.addHandler(new GetGUIPreferencesHandler(this));
@@ -114,12 +114,12 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         return formProvider;
     }
 
-    public LogicsAndNavigatorProvider getLogicsAndNavigatorProvider() {
-        return logicsAndNavigatorProvider;
+    public NavigatorProvider getNavigatorProvider() {
+        return navigatorProvider;
     }
 
-    public LogicsHandlerProvider getLogicsHandlerProvider() {
-        return logicsHandlerProvider;
+    public LogicsProvider getLogicsProvider() {
+        return logicsProvider;
     }
 
     public void setUseGETForGwtRPC(boolean useGETForGwtRPC) {
@@ -130,8 +130,8 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         this.rpcPolicyLocation = rpcPolicyLocation;
     }
 
-    public void setLogicsHandlerProvider(LogicsHandlerProvider logicsHandlerProvider) {
-        this.logicsHandlerProvider = logicsHandlerProvider;
+    public void setLogicsProvider(LogicsProvider logicsProvider) {
+        this.logicsProvider = logicsProvider;
     }
 
     @Override
@@ -243,7 +243,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     }
 
     public String getSessionInfo() {
-        return logicsAndNavigatorProvider.getSessionInfo();
+        return navigatorProvider.getSessionInfo();
     }
 
     public HttpServletRequest getRequest() {

@@ -28,9 +28,10 @@ public class FileUtils {
     public static String APP_IMAGES_FOLDER_URL; // all files has to be prefixed with logicsName
     public static String APP_TEMP_FOLDER_URL; // all files hasn't to be prefixed because their names are (or prefixed with) random strings
 
-    public static ImageDescription createImage(SerializableImageIconHolder iconHolder, String iconPath, String imagesFolderName, boolean canBeDisabled) {
+    public static ImageDescription createImage(String logicsName, SerializableImageIconHolder iconHolder, String iconPath, String imagesFolderName, boolean canBeDisabled) {
         if (iconHolder != null) {
-            File imagesFolder = new File(APP_IMAGES_FOLDER_URL, imagesFolderName);
+            String fullPath = logicsName + "/" + imagesFolderName;
+            File imagesFolder = new File(APP_IMAGES_FOLDER_URL, fullPath);
             imagesFolder.mkdirs(); // not mkdir because we have complex path (logics/navigator)
 
             String iconFileName = iconPath.substring(0, iconPath.lastIndexOf("."));
@@ -40,7 +41,7 @@ public class FileUtils {
             if (canBeDisabled) {
                 createImageFile(iconHolder.getImage().getImage(), imagesFolder, iconFileName + "_Disabled", iconFileType, canBeDisabled);
             }
-            return new ImageDescription("images/" + imagesFolderName + "/" + iconPath, iconHolder.getImage().getIconWidth(), iconHolder.getImage().getIconHeight());
+            return new ImageDescription("images/" + fullPath + "/" + iconPath, iconHolder.getImage().getIconWidth(), iconHolder.getImage().getIconHeight());
         }
         return null;
     }

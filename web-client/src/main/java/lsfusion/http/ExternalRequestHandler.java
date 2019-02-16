@@ -2,35 +2,67 @@ package lsfusion.http;
 
 import lsfusion.base.ExternalUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.http.provider.navigator.LogicsAndNavigatorProviderImpl;
+import lsfusion.http.provider.logics.LogicsRunnable;
+import lsfusion.http.provider.navigator.NavigatorProviderImpl;
+import lsfusion.http.provider.session.SessionProvider;
+import lsfusion.http.provider.session.SessionSessionObject;
+import lsfusion.interop.ExecInterface;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Enumeration;
 
 import static java.util.Collections.list;
 import static lsfusion.base.ServerMessages.getString;
 
 public class ExternalRequestHandler extends HttpLogicsRequestHandler {
+    
+    @Autowired
+    SessionProvider sessionProvider;
 
     @Override
     protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            String query = request.getQueryString();
+            String queryString = request.getQueryString();
+            String query = queryString != null ? queryString : "";
             String contentTypeString = request.getContentType();
             ContentType contentType = contentTypeString != null ? ContentType.parse(contentTypeString) : null;
 
             String[] headerNames = list((Enumeration<String>)request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
-            
-            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(LSFAuthenticationToken.getAppServerToken(), 
-                    LogicsAndNavigatorProviderImpl.getSessionInfo(request), remoteLogics, request.getRequestURI(), query == null ? "" : query, request.getInputStream(), contentType, headerNames, headerValues);
+
+            String sessionID = request.getParameter("session");
+            boolean closeSession = false;
+            ExecInterface remoteExec;
+            if(sessionID != null) {
+                if(sessionID.endsWith("_close")) {
+                    closeSession = true;
+                    sessionID = sessionID.substring(0, sessionID.length() - "_close".length());
+                }
+
+                SessionSessionObject sessionSessionObject = sessionProvider.getSessionSessionObject(sessionID);
+                if(sessionSessionObject == null)
+                    sessionSessionObject = sessionProvider.createSession(remoteLogics, request, sessionID);
+                remoteExec = sessionSessionObject.remoteSession;
+            } else {
+                remoteExec = ExternalUtils.getExecInterface(LSFAuthenticationToken.getAppServerToken(),
+                        NavigatorProviderImpl.getSessionInfo(request), remoteLogics);
+            }
+
+            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues);
+
+            if(sessionID != null && closeSession) {
+                sessionProvider.removeSessionSessionObject(sessionID);
+            }
 
             if (responseHttpEntity.response != null) {
                 sendResponse(response, responseHttpEntity);
@@ -42,6 +74,17 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setContentType("text/html; charset=utf-8");
             response.getWriter().print(getString(request, "internal.server.error.with.message", e.getMessage()));
+
+            if(e instanceof RemoteException) // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
+                throw (RemoteException)e;
+        }
+    }
+
+    @Override
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            super.handleRequest(request, response);
+        } catch (RemoteException e) { // will suppress that error, because we rethrowed it when handling request (see above)
         }
     }
 

@@ -512,10 +512,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    public synchronized void close() throws RemoteException {
-        deactivateAndCloseLater(true); // после вызова close, предполагается что новых запросов уже идти не может, а старые закроются
-    }
-
     // обмен изменениями между сессиями в рамках одного подключения
     private static class LastChanges {
         private long timeStamp;
@@ -679,5 +675,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     public Object getProfiledObject() {
         return "n";
+    }
+
+    @Override
+    public synchronized void close() throws RemoteException { // without this RemoteContextAspect will not be weaved
+        super.close();
     }
 }

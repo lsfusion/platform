@@ -1,7 +1,8 @@
 package lsfusion.http;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
+import lsfusion.http.provider.logics.LogicsRunnable;
+import lsfusion.http.provider.logics.LogicsSessionObject;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.springframework.web.HttpRequestHandler;
 
@@ -16,10 +17,10 @@ public abstract class HttpLogicsRequestHandler extends LogicsRequestHandler impl
 
     @Override
     public void handleRequest(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        runRequest(request, new Runnable<Object>() {
+        runRequest(request, new LogicsRunnable<Object>() {
             @Override
-            public Object run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws IOException {
-                handleRequest(remoteLogics, logicsConnection, request, response);
+            public Object run(LogicsSessionObject sessionObject) throws IOException {
+                handleRequest(sessionObject.remoteLogics, sessionObject.connection, request, response);
                 return null;
             }
         });

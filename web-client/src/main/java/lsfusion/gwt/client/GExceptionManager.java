@@ -10,7 +10,7 @@ import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.exceptions.MessageException;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.gwt.client.dispatch.LogicsAndNavigatorDispatchAsync;
+import lsfusion.gwt.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import net.customware.gwt.dispatch.shared.Action;
@@ -35,7 +35,7 @@ public class GExceptionManager {
         Log.error(message, throwable);
 
         try {
-            LogicsAndNavigatorDispatchAsync dispatcher = MainFrame.logicsAndNavigatorDispatchAsync;
+            NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
             if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
                 dispatcher.execute(action, new ErrorHandlingCallback<VoidResult>() {
                     @Override
@@ -84,7 +84,7 @@ public class GExceptionManager {
             for (final Throwable t : unreportedThrowables) {
                 Integer tryCount = unreportedThrowablesTryCount.get(t);
                 try {
-                    LogicsAndNavigatorDispatchAsync dispatcher = MainFrame.logicsAndNavigatorDispatchAsync;
+                    NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
                     if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
                         dispatcher.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
                             @Override

@@ -12,6 +12,7 @@ import lsfusion.gwt.shared.view.filter.GCompare;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static lsfusion.gwt.shared.view.filter.GCompare.EQUALS;
 import static lsfusion.gwt.shared.view.filter.GCompare.NOT_EQUALS;

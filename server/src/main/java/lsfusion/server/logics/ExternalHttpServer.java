@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.SessionInfo;
 import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.interop.ExecInterface;
 import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
@@ -86,7 +87,8 @@ public class ExternalHttpServer extends MonitorServer {
                 InetAddress address = remoteAddress.getAddress();
                 SessionInfo sessionInfo = new SessionInfo(remoteAddress.getHostName(), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
 
-                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics, request.getRequestURI().getPath(), request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request), headerNames, headerValues);
+                ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
+                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec, request.getRequestURI().getPath(), request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request), headerNames, headerValues);
 
                 if (response.response != null)
                     sendResponse(request, response);

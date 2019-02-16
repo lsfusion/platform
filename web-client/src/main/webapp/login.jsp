@@ -1,6 +1,14 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
+<%@ page import="org.springframework.web.servlet.support.RequestContextUtils" %>
+<%@ page import="org.json.JSONObject" %>
+<%@ page import="lsfusion.http.provider.logics.LogicsProvider" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+
+<%-- because we don't use Spring MVC (where we should use controllers (@Controller and component-scan and autowire this bean), put this jsps in WEB-INF/view, and put settings in modelmap), we use standard container JSP dispatch servlet, and using application (servlet) context it's the easiest way to get needed bean --%>
+<%
+    JSONObject settings = ((LogicsProvider) RequestContextUtils.findWebApplicationContext(request).getBean("logicsProvider")).getServerSettings(request);
+%>
 
 <!DOCTYPE html>
 <html>

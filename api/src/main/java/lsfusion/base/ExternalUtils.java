@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import lsfusion.interop.ExecInterface;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.remote.AuthenticationToken;
 import org.apache.http.Consts;
@@ -20,6 +21,7 @@ import javax.mail.util.ByteArrayDataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,8 +46,19 @@ public class ExternalUtils {
     private static final String RETURN_PARAM = "return";
     private static final String RETURNMULTITYPE_PARAM = "returnmultitype";
     private static final String PROPERTY_PARAM = "property";
+    
+    public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
+        return new ExecInterface() {
+            public ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+                return remoteLogics.exec(token, sessionInfo, action, returnCanonicalNames, params, charset, headerNames, headerValues);
+            }
+            public ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+                return remoteLogics.eval(token, sessionInfo, action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
+            }
+        };
+    }
 
-    public static ExternalResponse processRequest(AuthenticationToken token, SessionInfo sessionInfo, RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType, String[] headerNames, String[] headerValues) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(ExecInterface remoteExec, String uri, String query, InputStream is, ContentType requestContentType, String[] headerNames, String[] headerValues) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -59,7 +72,7 @@ public class ExternalUtils {
 
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            execResult = remoteLogics.exec(token, sessionInfo, action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+            execResult = remoteExec.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
         } else {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
@@ -69,7 +82,7 @@ public class ExternalUtils {
                     script = paramsList.get(0);
                     paramsList = paramsList.subList(1, paramsList.size());
                 }
-                execResult = remoteLogics.eval(token, sessionInfo, isEvalAction, script, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+                execResult = remoteExec.eval(isEvalAction, script, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
             }
         }
 

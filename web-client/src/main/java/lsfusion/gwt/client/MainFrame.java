@@ -16,8 +16,8 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
-import lsfusion.gwt.client.dispatch.LSFusionDispatchAsync;
-import lsfusion.gwt.client.dispatch.LogicsAndNavigatorDispatchAsync;
+import lsfusion.gwt.client.dispatch.LogicsDispatchAsync;
+import lsfusion.gwt.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.form.DefaultFormsController;
 import lsfusion.gwt.client.form.ServerMessageProvider;
 import lsfusion.gwt.client.form.dispatch.GwtActionDispatcher;
@@ -26,7 +26,7 @@ import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.client.navigator.GNavigatorController;
 import lsfusion.gwt.client.window.WindowsController;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.actions.LookupLogicsAndCreateNavigator;
+import lsfusion.gwt.shared.actions.CreateNavigatorAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.logics.GetGUIPreferencesAction;
 import lsfusion.gwt.shared.actions.navigator.*;
@@ -53,7 +53,8 @@ import java.util.Map;
 public class MainFrame implements EntryPoint, ServerMessageProvider {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    public static LogicsAndNavigatorDispatchAsync logicsAndNavigatorDispatchAsync;
+    public static LogicsDispatchAsync logicsDispatchAsync;
+    public static NavigatorDispatchAsync navigatorDispatchAsync;
 
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
@@ -77,24 +78,24 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
     @Override
     public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
-        logicsAndNavigatorDispatchAsync.execute(new GetRemoteNavigatorActionMessage(), callback);
+        navigatorDispatchAsync.execute(new GetRemoteNavigatorActionMessage(), callback);
     }
 
     @Override
     public void getServerActionMessageList(ErrorHandlingCallback<ListResult> callback) {
-        logicsAndNavigatorDispatchAsync.execute(new GetRemoteNavigatorActionMessageList(), callback);
+        navigatorDispatchAsync.execute(new GetRemoteNavigatorActionMessageList(), callback);
     }
 
     @Override
     public void interrupt(boolean cancelable) {
-        logicsAndNavigatorDispatchAsync.execute(new InterruptNavigator(cancelable), new ErrorHandlingCallback<VoidResult>());
+        navigatorDispatchAsync.execute(new InterruptNavigator(cancelable), new ErrorHandlingCallback<VoidResult>());
     }
 
     public <T extends Result> void syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
         //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
         loadingManager.start();
-        logicsAndNavigatorDispatchAsync.execute(action, new WrapperAsyncCallbackEx<ServerResponseResult>(callback) {
+        navigatorDispatchAsync.execute(action, new WrapperAsyncCallbackEx<ServerResponseResult>(callback) {
             @Override
             public void preProcess() {
                 loadingManager.stop();
@@ -116,10 +117,11 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         String portString = Window.Location.getParameter("port");
         Integer port = portString != null ? Integer.valueOf(portString) : null;
         String exportName = Window.Location.getParameter("exportName");
-        LSFusionDispatchAsync.instance.execute(new LookupLogicsAndCreateNavigator(host, port, exportName), new ErrorHandlingCallback<StringResult>() {
+        logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
+        logicsDispatchAsync.execute(new CreateNavigatorAction(), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
-                logicsAndNavigatorDispatchAsync = new LogicsAndNavigatorDispatchAsync(result.get());
+                navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
                 initializeFrame();
             }
 
@@ -143,7 +145,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void initializeFrame() {
-        logicsAndNavigatorDispatchAsync.execute(new GetGUIPreferencesAction(messages.checkApiVersionMessage()), new ErrorHandlingCallback<StringResult>() {
+        logicsDispatchAsync.execute(new GetGUIPreferencesAction(messages.checkApiVersionMessage()), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 final String error = result.get();
@@ -201,7 +203,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
             @Override
             public void setCurrentForm(String formID) {
-                logicsAndNavigatorDispatchAsync.execute(new SetCurrentForm(formID), new ErrorHandlingCallback<VoidResult>());
+                navigatorDispatchAsync.execute(new SetCurrentForm(formID), new ErrorHandlingCallback<VoidResult>());
             }
         };
 
@@ -232,7 +234,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         };
 
-        logicsAndNavigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
+        navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
             public void success(GetClientSettingsResult result) {
                 busyDialog = result.busyDialog;
@@ -252,7 +254,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             public boolean execute() {
                 if (shouldRepeatPingRequest && !GConnectionLostManager.shouldBeBlocked()) {
                     setShouldRepeatPingRequest(false);
-                    logicsAndNavigatorDispatchAsync.execute(new ClientPushMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
+                    navigatorDispatchAsync.execute(new ClientPushMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
                         @Override
                         public void success(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
@@ -320,7 +322,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     private void initializeWindows() {
-        logicsAndNavigatorDispatchAsync.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
+        navigatorDispatchAsync.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
             @Override
             public void success(GetNavigatorInfoResult result) {
                 GwtClientUtils.removeLoaderFromHostedPage();
@@ -349,7 +351,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void clean() {
-        logicsAndNavigatorDispatchAsync.execute(new CloseNavigator(), new ErrorHandlingCallback<VoidResult>());
+        navigatorDispatchAsync.execute(new CloseNavigator(), new ErrorHandlingCallback<VoidResult>());
         GConnectionLostManager.invalidate();
         System.gc();
     }
@@ -357,12 +359,12 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     private class GNavigatorActionDispatcher extends GwtActionDispatcher {
         @Override
         protected void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback) {
-            logicsAndNavigatorDispatchAsync.execute(new ThrowInNavigatorAction(t), callback);
+            navigatorDispatchAsync.execute(new ThrowInNavigatorAction(t), callback);
         }
 
         @Override
         protected void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-            logicsAndNavigatorDispatchAsync.execute(new ContinueNavigatorAction(actionResults), callback);
+            navigatorDispatchAsync.execute(new ContinueNavigatorAction(actionResults), callback);
         }
 
         @Override

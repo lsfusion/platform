@@ -16,7 +16,7 @@ public class  CloseNavigatorHandler extends NavigatorActionHandler<CloseNavigato
 
     @Override
     public VoidResult executeEx(CloseNavigator action, ExecutionContext context) throws DispatchException, IOException {
-        removeLogicsAndNavigatorSessionObject(action.sessionID);
+        removeNavigatorSessionObject(action.sessionID);
         return new VoidResult();
     }
 }

@@ -2,8 +2,9 @@ package lsfusion.http;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.http.provider.navigator.LogicsAndNavigatorProviderImpl;
+import lsfusion.http.provider.logics.LogicsRunnable;
+import lsfusion.http.provider.logics.LogicsSessionObject;
+import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.LoginException;
@@ -38,11 +39,11 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             if (attribs != null)
                 request = ((ServletRequestAttributes) attribs).getRequest();
 
-            Pair<AuthenticationToken, Locale> authLocale = runRequest(request, new Runnable<Pair<AuthenticationToken, Locale>> () {
-                public Pair<AuthenticationToken, Locale> run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
+            Pair<AuthenticationToken, Locale> authLocale = runRequest(request, new LogicsRunnable<Pair<AuthenticationToken, Locale>>() {
+                public Pair<AuthenticationToken, Locale> run(LogicsSessionObject sessionObject) throws RemoteException {
                     try {
-                        AuthenticationToken authToken = remoteLogics.authenticateUser(username, password);
-                        return new Pair<>(authToken, getUserLocale(remoteLogics, authentication, authToken));
+                        AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(username, password);
+                        return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());
                     } catch (RemoteMessageException le) {
@@ -58,7 +59,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
     }
 
     private static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken) throws RemoteException {
-        SessionInfo sessionInfo = LogicsAndNavigatorProviderImpl.getSessionInfo(auth);
+        SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth);
         ExecResult result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", new String[0], new Object[0],
                 "utf-8", new String[0], new String[0]);
         JSONObject localeObject = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));

@@ -9,7 +9,7 @@ import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Result;
 
-public abstract class FormActionHandler<A extends FormAction<R>, R extends Result> extends SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
+public abstract class FormActionHandler<A extends FormAction<R>, R extends Result> extends SimpleActionHandlerEx<A, R> {
     public FormActionHandler(MainDispatchServlet servlet) {
         super(servlet);
     }

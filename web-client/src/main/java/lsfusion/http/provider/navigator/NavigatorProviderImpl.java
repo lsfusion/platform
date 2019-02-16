@@ -6,10 +6,9 @@ import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SessionInfo;
 import lsfusion.base.SystemUtils;
-import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.http.LSFAuthenticationToken;
-import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.http.provider.logics.LogicsSessionObject;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.AuthenticationToken;
 import org.springframework.beans.factory.DisposableBean;
@@ -26,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // session scoped - one for one browser (! not tab)
-public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvider, DisposableBean {
+public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean {
 
     public String servSID = GwtSharedUtils.randomString(25);
     
@@ -69,12 +68,12 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null);
     }
 
-    public String createNavigator(RemoteLogicsInterface remoteLogics, MainDispatchServlet servlet, String logicsName) throws RemoteException {
+    public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         AuthenticationToken lsfToken = LSFAuthenticationToken.getAppServerToken();
 
-        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(lsfToken, getNavigatorInfo(servlet.getRequest()));
+        RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request));
 
-        return addLogicsAndNavigatorSessionObject(new LogicsAndNavigatorSessionObject(remoteLogics, remoteNavigator, logicsName));
+        return addLogicsAndNavigatorSessionObject(new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName()));
     }
 
     @Override
@@ -82,32 +81,33 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         return "SESSION " + servSID + " CURRENT OPENED TABS " + currentLogicsAndNavigators.keySet();
     }
 
-    private final Map<String, LogicsAndNavigatorSessionObject> currentLogicsAndNavigators = new ConcurrentHashMap<>();
-
     private AtomicInteger nextSessionId = new AtomicInteger(0);
     private String nextSessionID() {
         return "session" + nextSessionId.getAndIncrement();
     }
-    private String addLogicsAndNavigatorSessionObject(LogicsAndNavigatorSessionObject logicsAndNavigatorSessionObject) {
+
+    private final Map<String, NavigatorSessionObject> currentLogicsAndNavigators = new ConcurrentHashMap<>();
+
+    private String addLogicsAndNavigatorSessionObject(NavigatorSessionObject navigatorSessionObject) {
         String sessionID = nextSessionID();
-        currentLogicsAndNavigators.put(sessionID, logicsAndNavigatorSessionObject);
+        currentLogicsAndNavigators.put(sessionID, navigatorSessionObject);
         return sessionID;
     }
 
     @Override
-    public LogicsAndNavigatorSessionObject getLogicsAndNavigatorSessionObject(String sessionID) {
+    public NavigatorSessionObject getNavigatorSessionObject(String sessionID) {
         return currentLogicsAndNavigators.get(sessionID);
     }
 
     @Override
-    public void removeLogicsAndNavigatorSessionObject(String sessionID) throws RemoteException {
-        LogicsAndNavigatorSessionObject logicsAndNavigatorSessionObject = currentLogicsAndNavigators.remove(sessionID);
-        logicsAndNavigatorSessionObject.remoteNavigator.close();
+    public void removeNavigatorSessionObject(String sessionID) throws RemoteException {
+        NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.remove(sessionID);
+        navigatorSessionObject.remoteNavigator.close();
     }
 
     @Override
     public String getLogicsName(String sessionID) {
-        return getLogicsAndNavigatorSessionObject(sessionID).logicsName;
+        return getNavigatorSessionObject(sessionID).logicsName;
     }
 
     @Override
@@ -115,7 +115,7 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         GWT.log("Destroying navigator for user " + (auth == null ? "UNKNOWN" : auth.getName()) + "...", new Exception());
 
-        for(LogicsAndNavigatorSessionObject logicsAndNavigatorSessionObject : currentLogicsAndNavigators.values())
-            logicsAndNavigatorSessionObject.remoteNavigator.close();
+        for(NavigatorSessionObject navigatorSessionObject : currentLogicsAndNavigators.values())
+            navigatorSessionObject.remoteNavigator.close();
     }
 }

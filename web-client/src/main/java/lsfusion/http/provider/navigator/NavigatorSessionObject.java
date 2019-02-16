@@ -1,23 +1,21 @@
 package lsfusion.http.provider.navigator;
 
 import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.http.provider.logics.LogicsSessionObject;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
 
 import java.rmi.RemoteException;
 
-public class LogicsAndNavigatorSessionObject {
+public class NavigatorSessionObject {
 
-    public final RemoteLogicsInterface remoteLogics;
     public final RemoteNavigatorInterface remoteNavigator;
-    
-    public final String logicsName;
 
-    public LogicsAndNavigatorSessionObject(RemoteLogicsInterface remoteLogics, RemoteNavigatorInterface remoteNavigator, String logicsName) {
-        this.remoteLogics = remoteLogics;
+    public final String logicsName; // needed for static resources (images)
+    
+    public NavigatorSessionObject(RemoteNavigatorInterface remoteNavigator, String logicsName) {
         this.remoteNavigator = remoteNavigator;
-        
         this.logicsName = logicsName;
     }
 
@@ -27,7 +25,4 @@ public class LogicsAndNavigatorSessionObject {
             remoteCallback = remoteNavigator.getClientCallBack();
         return remoteCallback;
     }
-
-
-    public String servSID = GwtSharedUtils.randomString(25);
 }

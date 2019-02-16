@@ -29,4 +29,10 @@ public class RemoteSessionProxy<T extends RemoteSessionInterface> extends Remote
         logRemoteMethodEndVoidCall("eval");
         return result;
     }
+
+    public void close() throws RemoteException {
+        logRemoteMethodStartCall("close");
+        target.close();
+        logRemoteMethodEndCall("close", "");
+    }
 }
