@@ -10,17 +10,22 @@
                                  http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
     <config:annotation-config />
 
-    <!-- Security configuration -->
-    <http auto-config="true" entry-point-ref="entryPoint">
-        <!-- exec / eval don't need redirect to login.jsp and the real authentication process is on app server-->
-        <intercept-url pattern="/exec" access="permitAll()"/>
-        <intercept-url pattern="/eval/**" access="permitAll()"/>
-        <!-- because we want to have logo even if app server is unavailable, that's why logo.png is on web-server, and it has to be shown before user is authenticated -->
-        <intercept-url pattern="/images/logo.png" access="permitAll()"/>
+    <!-- API security-->
+    <!-- API doesn't need to redirect to login.jsp and the real authentication process is on app server-->
+    <!-- unlike ant matcher, regex respects ? so we need this odd regex-->
+    <!-- we're trying to avoid creating sessions (it's important for REST requests, otherwise session will be created every time with authenticated request) -->
+    <http request-matcher="regex" pattern="^/(exec|eval|eval/action)($|\?.*)" create-session="never">
+        <http-basic/>
+        <csrf disabled="true"/>
+    </http>
+    <!-- because we want to have logo even if app server is unavailable, that's why logo.png is on web-server, and it has to be shown before user is authenticated -->
+    <http pattern="/images/logo.png" security="none"/>
+    <!-- UI security -->
+    <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
-        <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/> <!-- no invalidate session to give user opportunity to relogin, when another tab is opened-->
+        <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/> <!-- no invalidating session to give user opportunity to relogin, when another tab is opened-->
         
         <csrf disabled="true"/>
 

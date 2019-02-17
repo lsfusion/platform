@@ -41,11 +41,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         super(port, "session", stack);
 
         initLocalContext(logicsInstance);
-        if(login != null) { // we won't need this context, because we'll call not-remomte method (without aspect) abd will work with remoteLogicsContext
+        if(login != null || !isLocal()) { // we won't need this context, because we'll call non-remote method (without aspect) abd will work with remoteLogicsContext
             setContext(new RemoteSessionContext(this));
             initContext(logicsInstance, login, sessionInfo, stack);
-        } else
-            assert isLocal();
+        }
 
         dataSession = createSession();
     }
@@ -103,14 +102,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     private ExecResult executeExternal(boolean anonymous, LAP<?> property, String[] returnNames, Object[] params, Charset charset, String[] headerNames, String[] headerValues, ExecutionStack stack) throws SQLException, ParseException, SQLHandledException, IOException {
         String annotation = property.property.annotation;
-        if(annotation == null || !annotation.equals("noauth")) {
-            byte enableApi = Settings.get().getEnableApi();
-            if(enableApi == 0)
-                throw new RuntimeException("REST Api is disabled. It can be enabled using setting enableRESTApi.");
-            
-            if(anonymous && enableApi == 1)
-                throw new AuthenticationException();
-        }
+        if(annotation == null || !annotation.equals("noauth"))
+            checkEnableApi(anonymous);
 
         if(property.property.uses(businessLogics.LM.headers.property)) // optimization
             ExternalHTTPActionProperty.writeHeaders(dataSession, businessLogics.LM.headers, headerNames, headerValues);
@@ -118,6 +111,15 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         property.execute(dataSession, stack, ExternalHTTPActionProperty.getParams(dataSession, property, params, charset));
 
         return readResult(returnNames);
+    }
+
+    public static void checkEnableApi(boolean anonymous) {
+        byte enableApi = Settings.get().getEnableApi();
+        if(enableApi == 0)
+            throw new RuntimeException("REST Api is disabled. It can be enabled by using setting enableApi.");
+
+        if(anonymous && enableApi == 1)
+            throw new AuthenticationException();
     }
 
     private ExecResult readResult(String[] returnNames) throws SQLException, SQLHandledException, IOException {

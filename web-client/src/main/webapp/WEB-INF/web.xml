@@ -25,6 +25,8 @@
     </context-param>
 
 
+    <!-- UI (gwt) dispatch servlet-->
+    <!-- it's tricky here, we already have a dispatch servlet (MainDispatchServlet), but we want it to be instantiated with spring (to autowire it), that's why we've implemented HttpRequestHandler interface and redirect HttpRequestHandler.handleRequest to Servlet.service (and in that xml we use "proxy" HttpRequestHandlerServlet) -->
     <servlet>
         <servlet-name>mainDispatch</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
@@ -45,6 +47,7 @@
         <url-pattern>/client.jnlp</url-pattern>
     </servlet-mapping>
 
+    <!-- API (external requests) servlet -->
     <servlet>
         <servlet-name>externalHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>

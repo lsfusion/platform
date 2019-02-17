@@ -56,7 +56,7 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
         this.securityManager = logicsInstance.getSecurityManager();
 
         try(DataSession session = createSession()) {
-            user = securityManager.readUser(login, session);
+            user = login != null ? securityManager.readUser(login, session) : new DataObject(dbManager.getSystemUser(), businessLogics.authenticationLM.systemUser); // it's really strange to use system user here (and it's different from REST call, when RemoteLogicsContext is used)
 
             String hostName = connectionInfo.hostName;
             computer = dbManager.getComputer(hostName, session, stack); // can apply session
