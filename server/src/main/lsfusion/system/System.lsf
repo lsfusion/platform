@@ -145,9 +145,45 @@ open '{system.open.link}'  INTERNAL  'lsfusion.utils.system.OpenRawLinkActionPro
   
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
-exportFile() = DATA LOCAL FILE ();
-importFile() = DATA LOCAL FILE ();
 
+exportObject = DATA LOCAL Object ();
+exportString = DATA LOCAL STRING[4000] ();
+exportVarString = DATA LOCAL VARSTRING[4000] ();
+exportText = DATA LOCAL TEXT ();
+exportInteger = DATA LOCAL INTEGER ();
+exportLong = DATA LOCAL LONG ();
+exportDouble = DATA LOCAL DOUBLE ();
+exportNumeric = DATA LOCAL NUMERIC[20,7] ();
+exportYear = DATA LOCAL YEAR ();
+exportDateTime = DATA LOCAL DATETIME ();
+exportBoolean = DATA LOCAL BOOLEAN ();
+exportDate = DATA LOCAL DATE ();
+exportTime = DATA LOCAL TIME ();
+exportColor = DATA LOCAL COLOR ();
+exportWordFile = DATA LOCAL WORDFILE ();
+exportImageFile = DATA LOCAL IMAGEFILE ();
+exportPdfFile = DATA LOCAL PDFFILE ();
+exportRawFile = DATA LOCAL RAWFILE ();
+exportFile = DATA LOCAL FILE ();
+exportExcelFile = DATA LOCAL EXCELFILE ();
+exportCsvFile = DATA LOCAL CSVFILE ();
+exportHtmlFile = DATA LOCAL HTMLFILE ();
+exportJsonFile = DATA LOCAL JSONFILE ();
+exportXmlFile = DATA LOCAL XMLFILE ();
+exportTableFile = DATA LOCAL TABLEFILE ();
+exportWordLink = DATA LOCAL WORDLINK ();
+exportImageLink = DATA LOCAL IMAGELINK ();
+exportPdfLink = DATA LOCAL PDFLINK ();
+exportRawLink = DATA LOCAL RAWLINK ();
+exportLink = DATA LOCAL LINK ();
+exportExcelLink = DATA LOCAL EXCELLINK ();    
+exportCsvLink = DATA LOCAL CSVLINK ();    
+exportHtmlLink = DATA LOCAL HTMLLINK ();    
+exportJsonLink = DATA LOCAL JSONLINK ();    
+exportXmlLink = DATA LOCAL XMLLINK ();    
+exportTableLink = DATA LOCAL TABLELINK ();    
+
+importFile() = DATA LOCAL FILE ();
 imported = DATA LOCAL BOOLEAN (INTEGER);
 importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
@@ -185,7 +221,7 @@ requestedDouble = DATA LOCAL NESTED DOUBLE ();
 requestedNumeric = DATA LOCAL NESTED NUMERIC[20,7] ();
 requestedYear = DATA LOCAL NESTED YEAR ();
 requestedDateTime = DATA LOCAL NESTED DATETIME ();
-requestedLogical = DATA LOCAL NESTED BOOLEAN ();
+requestedBoolean = DATA LOCAL NESTED BOOLEAN ();
 requestedDate = DATA LOCAL NESTED DATE ();
 requestedTime = DATA LOCAL NESTED TIME ();
 requestedColor = DATA LOCAL NESTED COLOR ();

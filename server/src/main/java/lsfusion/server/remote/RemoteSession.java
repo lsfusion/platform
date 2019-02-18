@@ -1,6 +1,5 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.ExecResult;
 import lsfusion.base.SessionInfo;
 import lsfusion.base.col.SetFact;
@@ -123,6 +122,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     private ExecResult readResult(String[] returnNames) throws SQLException, SQLHandledException, IOException {
+        List<Object> returns = new ArrayList<>();
+
         LCP[] returnProps;
         if (returnNames.length > 0) {
             returnProps = new LCP[returnNames.length];
@@ -133,13 +134,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                     throw new RuntimeException(String.format("Return property %s was not found", returnName));
                 returnProps[i] = returnProperty;
             }
-        } else {
-            returnProps = new LCP[] {businessLogics.LM.exportFile};
-        }
-
-        List<Object> returns = new ArrayList<>();
-        for (LCP returnProp : returnProps)
-            returns.addAll(readReturnProperty(returnProp));
+            for (LCP returnProp : returnProps)
+                returns.addAll(readReturnProperty(returnProp));
+        } else
+            returns.add(businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession).getValue());
 
         ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readHeaders(dataSession, businessLogics.LM.headersTo).toOrderMap();
         return new ExecResult(returns.toArray(), headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));

@@ -1253,7 +1253,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public ObjectValue readClasses(ExecutionContext context) throws SQLException, SQLHandledException {
-        return readClasses(context.getSession(), MapFact.<T, ObjectValue>EMPTY(), context.getModifier(), context.getQueryEnv());
+        return readClasses(context.getEnv());
+    }
+    public ObjectValue readClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return readClasses(env.getSession(), MapFact.<T, ObjectValue>EMPTY(), env.getModifier(), env.getQueryEnv());
     }
 
     public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {

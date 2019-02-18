@@ -609,10 +609,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     @NFLazy
     public AnyValuePropertyHolder getRequestedValueProperty() {
-        return addAnyValuePropertyHolder("requested");
+        return getAnyValuePropertyHolder("requested");
     }
 
-    public AnyValuePropertyHolder addAnyValuePropertyHolder(String namePrefix) {
+    @IdentityStrongLazy
+    @NFLazy
+    public AnyValuePropertyHolder getExportValueProperty() {
+        return getAnyValuePropertyHolder("export");
+    }
+
+    public AnyValuePropertyHolder getAnyValuePropertyHolder(String namePrefix) {
         return new AnyValuePropertyHolder(
                 getLCPByUniqueName(namePrefix + "Object"),
                 getLCPByUniqueName(namePrefix + "String"),
@@ -624,7 +630,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "Numeric"),
                 getLCPByUniqueName(namePrefix + "Year"),
                 getLCPByUniqueName(namePrefix + "DateTime"),
-                getLCPByUniqueName(namePrefix + "Logical"),
+                getLCPByUniqueName(namePrefix + "Boolean"),
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),
                 getLCPByUniqueName(namePrefix + "Color"),

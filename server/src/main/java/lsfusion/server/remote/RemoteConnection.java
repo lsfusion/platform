@@ -211,7 +211,7 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
     }
 
     public Locale getLocale() {
-        Locale locale = localePreferences.getLocale();
+        Locale locale = localePreferences != null ? localePreferences.getLocale() : null;
         if(locale != null)
             return locale;
         return Locale.getDefault();
