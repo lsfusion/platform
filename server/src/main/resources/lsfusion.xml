@@ -112,7 +112,8 @@
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
                 <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>
-                <entry key="enableApi" value="${settings.enableApi:}"/>
+                <entry key="enableAPI" value="${settings.enableAPI:}"/>
+                <entry key="enableUI" value="${settings.enableUI:}"/>
             </map>
         </property>
         </bean>

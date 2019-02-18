@@ -105,6 +105,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LCP statusHttp;
     
+    public LCP<?> authToken;
     public LCP<?> headers;
     public LCP<?> headersTo;
 
@@ -391,6 +392,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         statusHttp = findProperty("statusHttp[]");
         
+        authToken = findProperty("authToken[]");
         headers = findProperty("headers[TEXT]");
         headersTo = findProperty("headersTo[TEXT]");
 

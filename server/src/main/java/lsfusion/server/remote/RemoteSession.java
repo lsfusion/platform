@@ -7,6 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.exceptions.AuthenticationException;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -37,29 +38,22 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     
     private DataSession dataSession;
     
-    public RemoteSession(int port, LogicsInstance logicsInstance, String login, SessionInfo sessionInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, SQLHandledException, InstantiationException, IllegalAccessException {
+    public RemoteSession(int port, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, SQLHandledException, InstantiationException, IllegalAccessException {
         super(port, "session", stack);
 
-        initLocalContext(logicsInstance);
-        if(login != null || !isLocal()) { // we won't need this context, because we'll call non-remote method (without aspect) abd will work with remoteLogicsContext
-            setContext(new RemoteSessionContext(this));
-            initContext(logicsInstance, login, sessionInfo, stack);
-        }
+        setContext(new RemoteSessionContext(this));
+        initContext(logicsInstance, token, sessionInfo, stack);
 
         dataSession = createSession();
     }
 
     @Override
     public ExternalResponse exec(String action, ExternalRequest request) {
-        return exec(false, action, request, getStack());
-    }
-
-    public ExternalResponse exec(boolean anonymous, String action, ExternalRequest request, ExecutionStack stack) {
         ExternalResponse result;
         try {
             LAP property = businessLogics.findActionByCompoundName(action);
             if (property != null) {
-                result = executeExternal(anonymous, property, request, stack);
+                result = executeExternal(property, request);
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
@@ -70,11 +64,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest returnNames) {
-        return eval(false, action, paramScript, returnNames, getStack());
-    }
-
-    public ExternalResponse eval(boolean anonymous, boolean action, Object paramScript, ExternalRequest request, ExecutionStack stack) {
+    public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) {
         ExternalResponse result;
         if (paramScript != null) {
             try {
@@ -86,7 +76,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 }
                 LAP<?> runAction = businessLogics.evaluateRun(script);
                 if(runAction != null) {
-                    result = executeExternal(anonymous, runAction, request, stack);
+                    result = executeExternal(runAction, request);
                 } else {
                     throw new RuntimeException("Action run[] was not found");
 
@@ -100,23 +90,30 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return result;
     }
 
-    private ExternalResponse executeExternal(boolean anonymous, LAP<?> property, ExternalRequest request, ExecutionStack stack) throws SQLException, ParseException, SQLHandledException, IOException {
+    private ExternalResponse executeExternal(LAP<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
         String annotation = property.property.annotation;
         if(annotation == null || !annotation.equals("noauth"))
-            checkEnableApi(anonymous);
+            checkEnableApi(userToken.isAnonymous());
 
-        if(property.property.uses(businessLogics.LM.headers.property)) // optimization
-            ExternalHTTPActionProperty.writeHeaders(dataSession, businessLogics.LM.headers, request.headerNames, request.headerValues);
+        LCP<?> headers = businessLogics.LM.headers;
+        if(property.property.uses(headers.property)) // optimization
+            ExternalHTTPActionProperty.writeHeaders(dataSession, headers, request.headerNames, request.headerValues);
 
-        property.execute(dataSession, stack, ExternalHTTPActionProperty.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
+        if(!userToken.isAnonymous()) {
+            LCP<?> authToken = businessLogics.LM.authToken;
+            if (property.property.uses(authToken.property)) // optimization
+                authToken.change(userToken.user, dataSession);
+        }
+
+        property.execute(dataSession, getStack(), ExternalHTTPActionProperty.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
 
         return readResult(request.returnNames);
     }
 
     public static void checkEnableApi(boolean anonymous) {
-        byte enableApi = Settings.get().getEnableApi();
+        byte enableApi = Settings.get().getEnableAPI();
         if(enableApi == 0)
-            throw new RuntimeException("REST Api is disabled. It can be enabled by using setting enableApi.");
+            throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
 
         if(anonymous && enableApi == 1)
             throw new AuthenticationException();

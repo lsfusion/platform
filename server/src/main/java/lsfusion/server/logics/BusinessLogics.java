@@ -623,7 +623,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
-        securityManager.setupDefaultAdminUser();
+        securityManager.initAdminUser();
     }
 
     public ImOrderSet<Property> getOrderProperties() {

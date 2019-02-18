@@ -1,10 +1,13 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ApiResourceBundle;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutionStack;
@@ -101,9 +104,14 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         return dbManager.createSession();
     }
 
-    public RemoteNavigatorInterface createNavigator(ExecutionStack stack, String login, NavigatorInfo navigatorInfo) {
+    public RemoteNavigatorInterface createNavigator(ExecutionStack stack, AuthenticationToken token, NavigatorInfo navigatorInfo) {
         try {
-            return new RemoteNavigator(rmiManager.getExportPort(), logicsInstance, login, navigatorInfo, stack);
+            RemoteNavigator navigator =  new RemoteNavigator(rmiManager.getExportPort(), logicsInstance, token, navigatorInfo, stack);
+
+            if (restartManager.isPendingRestart() && !BaseUtils.hashEquals(navigator.getUser(), securityManager.getAdminUser()))
+                throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
+
+            return navigator;
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

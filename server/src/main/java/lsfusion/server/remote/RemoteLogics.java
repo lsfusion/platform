@@ -14,6 +14,7 @@ import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.SecurityManager;
@@ -104,21 +105,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    public static String getUserLogin(AuthenticationToken token) {
-        assert !token.isAnonymous();
-        return token.user;
-    }
-
     public RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) {
-        if(token.isAnonymous())
-            throw new AuthenticationException();
+        RemoteNavigator.checkEnableUI(token.isAnonymous());
         
-        String userLogin = getUserLogin(token);
-        
-        if (restartManager.isPendingRestart() && (!userLogin.equals("admin")))
-            throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
-        
-        return navigatorsManager.createNavigator(getStack(), userLogin, navigatorInfo);
+        return navigatorsManager.createNavigator(getStack(), token, navigatorInfo);
     }
 
     @Override
@@ -129,13 +119,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public RemoteSession createSession(int port, AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
-        String userLogin;
-        if(token.isAnonymous())
-            userLogin = null;
-        else
-            userLogin = getUserLogin(token);
         try {
-            return new RemoteSession(port, getContext().getLogicsInstance(), userLogin, sessionInfo, getStack());
+            return new RemoteSession(port, getContext().getLogicsInstance(), token, sessionInfo, getStack());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -153,24 +138,18 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, final String action, final ExternalRequest request) throws RemoteException {
-        final boolean anonymous = token.isAnonymous();
         return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
             public ExternalResponse call(RemoteSession session) {
-                if(anonymous) // to avoid aspect
-                    return session.exec(true, action, request, getStack());
-                return session.exec(action, request); // will go through aspect
+                return session.exec(action, request);
             }
         });
     }
 
     @Override
     public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final Object paramScript, final ExternalRequest request) throws RemoteException {
-        final boolean anonymous = token.isAnonymous();
         return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
             public ExternalResponse call(RemoteSession session) {
-                if(anonymous) // to avoid aspect
-                    return session.eval(true, action, paramScript, request, getStack());
-                return session.eval(action, paramScript, request); // will go through aspect
+                return session.eval(action, paramScript, request);
             }
         });
     }

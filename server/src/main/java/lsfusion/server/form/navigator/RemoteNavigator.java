@@ -11,8 +11,10 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -74,12 +76,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private String formID = null;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    public RemoteNavigator(int port, LogicsInstance logicsInstance, String login, NavigatorInfo navigatorInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
+    public RemoteNavigator(int port, LogicsInstance logicsInstance, AuthenticationToken token, NavigatorInfo navigatorInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port, "navigator", stack);
 
         setContext(new RemoteNavigatorContext(this));
-        initLocalContext(logicsInstance);
-        initContext(logicsInstance, login, navigatorInfo.session, stack);
+        initContext(logicsInstance, token, navigatorInfo.session, stack);
         
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
@@ -627,6 +628,15 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     protected String notSafeToString() {
         return "RN[clientAddress: " + logInfo.remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
+    }
+
+    public static void checkEnableUI(boolean anonymous) {
+        byte enableUI = Settings.get().getEnableUI();
+        if(enableUI == 0)
+            throw new RuntimeException("Ui is disabled. It can be enabled by using setting enableUI.");
+
+        if(anonymous && enableUI == 1)
+            throw new AuthenticationException();
     }
 
     @Override

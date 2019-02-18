@@ -15,7 +15,6 @@ import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ExecutionStack;
@@ -168,15 +167,19 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return policies.get(policyID);
     }
 
-    private long adminUserId = -1;
-    public void setupDefaultAdminUser() throws SQLException, SQLHandledException {
+    private DataObject adminUser = null;
+    public void initAdminUser() throws SQLException, SQLHandledException {
         try(DataSession session = createSession()) {
             DataObject adminUser = readUser("admin", session);
             if (adminUser == null)
                 adminUser = addUser("admin", initialAdminPassword, session);
-            adminUserId = (Long) adminUser.object;
             apply(session);
+            this.adminUser = new DataObject((Long) adminUser.object, authenticationLM.customUser); // to update classes after apply
         }
+    }
+
+    public DataObject getAdminUser() {
+        return adminUser;
     }
 
     private DataSession createSession() throws SQLException {
@@ -235,7 +238,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         
         securityPolicies.add(defaultPolicy);
 
-        if(userObject.object.equals(adminUserId)) {
+        if(userObject.equals(adminUser)) {
             securityPolicies.add(permitAllPolicy);
             securityPolicies.add(allowConfiguratorPolicy);
         }

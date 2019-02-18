@@ -2,6 +2,7 @@ package lsfusion.server.remote;
 
 import lsfusion.base.ConnectionInfo;
 import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.ExecutionStack;
@@ -28,11 +29,11 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
 
     public LogicsInstance logicsInstance;
     protected BusinessLogics businessLogics;
-    protected SecurityManager securityManager;
     protected DBManager dbManager;
 
     protected DataObject computer;
 
+    protected AuthenticationToken userToken;
     protected DataObject user;
     protected LogInfo logInfo;
     protected LocalePreferences localePreferences;
@@ -51,12 +52,19 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
         return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), null);
     }
 
-    protected void initContext(LogicsInstance logicsInstance, String login, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
+    private static String getUserLogin(AuthenticationToken token) {
+        if(token.isAnonymous())
+            return null;
+        return token.user;
+    }
+
+    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
+        initLocalContext(logicsInstance);
         this.logicsInstance = logicsInstance;
-        this.securityManager = logicsInstance.getSecurityManager();
 
         try(DataSession session = createSession()) {
-            user = login != null ? securityManager.readUser(login, session) : new DataObject(dbManager.getSystemUser(), businessLogics.authenticationLM.systemUser); // it's really strange to use system user here (and it's different from REST call, when RemoteLogicsContext is used)
+            SecurityManager securityManager = logicsInstance.getSecurityManager();
+            initUser(securityManager, token, session);
 
             String hostName = connectionInfo.hostName;
             computer = dbManager.getComputer(hostName, session, stack); // can apply session
@@ -65,8 +73,14 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
         }
     }
 
+    private void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
+        String login = getUserLogin(token);
+        user = login != null ? securityManager.readUser(login, session) : securityManager.getAdminUser();
+        userToken = token;
+    }
+
     // used when object isLocal
-    protected void initLocalContext(LogicsInstance logicsInstance) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    private void initLocalContext(LogicsInstance logicsInstance) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         this.businessLogics = logicsInstance.getBusinessLogics();
         this.dbManager = logicsInstance.getDbManager();
         this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
@@ -77,7 +91,7 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
     private void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         logInfo = readLogInfo(session, user, businessLogics, hostName, remoteAddress);
         localePreferences = readLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
-        securityPolicy = securityManager.readSecurityPolicy(session, user);
+        securityPolicy = logicsInstance.getSecurityManager().readSecurityPolicy(session, user);
         userRole = (Long) businessLogics.securityLM.mainRoleCustomUser.read(session, user);
         transactionTimeout = (Integer) businessLogics.securityLM.transactTimeoutUser.read(session, user);
     }
