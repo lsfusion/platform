@@ -1,9 +1,7 @@
 package lsfusion.client.remote.proxy;
 
-import lsfusion.base.ExecResult;
-import lsfusion.base.SessionInfo;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.base.ExternalRequest;
+import lsfusion.base.ExternalResponse;
 import lsfusion.interop.session.RemoteSessionInterface;
 
 import java.rmi.RemoteException;
@@ -15,17 +13,17 @@ public class RemoteSessionProxy<T extends RemoteSessionInterface> extends Remote
     }
 
     @Override
-    public ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+    public ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
         logRemoteMethodStartCall("exec");
-        ExecResult result = target.exec(action, returnCanonicalNames, params, charset, headerNames, headerValues);
+        ExternalResponse result = target.exec(action, request);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }
 
     @Override
-    public ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
+    public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException {
         logRemoteMethodStartCall("eval");
-        ExecResult result = target.eval(action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
+        ExternalResponse result = target.eval(action, paramScript, request);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }

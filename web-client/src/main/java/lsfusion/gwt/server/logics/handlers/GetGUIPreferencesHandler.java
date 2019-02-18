@@ -1,7 +1,8 @@
 package lsfusion.gwt.server.logics.handlers;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExecResult;
+import lsfusion.base.ExternalRequest;
+import lsfusion.base.ExternalResponse;
 import lsfusion.base.FileData;
 import lsfusion.client.LoginAction;
 import lsfusion.gwt.server.MainDispatchServlet;
@@ -30,7 +31,7 @@ public class GetGUIPreferencesHandler extends LogicsActionHandler<GetGUIPreferen
             public StringResult run(LogicsSessionObject sessionObject) throws IOException {
                 String error = null;
 
-                ExecResult result = sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getGUIPreferences[]", new String[]{"System.GUIPreferences[]"}, new Object[0], "utf-8", new String[0], new String[0]);
+                ExternalResponse result = sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getGUIPreferences[]", new ExternalRequest(new String[]{"System.GUIPreferences[]"}, new Object[0], "utf-8", new String[0], new String[0]));
                 JSONObject preferences = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
 
                 String serverPlatformVersion = preferences.optString("platformVersion");

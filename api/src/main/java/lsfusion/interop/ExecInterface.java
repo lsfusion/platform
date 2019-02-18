@@ -1,12 +1,13 @@
 package lsfusion.interop;
 
-import lsfusion.base.ExecResult;
+import lsfusion.base.ExternalRequest;
+import lsfusion.base.ExternalResponse;
 
 import java.rmi.RemoteException;
 
 public interface ExecInterface {
 
     // external requests
-    ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;
-    ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;    
+    ExternalResponse exec(String action, ExternalRequest request) throws RemoteException;
+    ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException;    
 }

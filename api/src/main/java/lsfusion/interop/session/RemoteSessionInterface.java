@@ -1,8 +1,8 @@
 package lsfusion.interop.session;
 
-import lsfusion.base.ExecResult;
+import lsfusion.base.ExternalRequest;
+import lsfusion.base.ExternalResponse;
 import lsfusion.interop.ExecInterface;
-import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
@@ -12,8 +12,8 @@ public interface RemoteSessionInterface extends PendingRemoteInterface, ExecInte
     // main interface
 
     // external requests (interface is similar to RemoteLogicsInterface but without token)
-    ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;
-    ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException;
+    ExternalResponse exec(String action, ExternalRequest request) throws RemoteException;
+    ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException;
 
     void close() throws RemoteException;
 

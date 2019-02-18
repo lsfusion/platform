@@ -1,9 +1,6 @@
 package lsfusion.client;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ExecResult;
-import lsfusion.base.FileData;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.ClientFormController;
@@ -322,7 +319,7 @@ public class Main {
     }
 
     private static JSONObject getGUIPreferences(RemoteLogicsInterface remoteLogics) throws RemoteException {
-        ExecResult result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getGUIPreferences[]", new String[] { "System.GUIPreferences[]"}, new Object[0], "utf-8", new String[0], new String[0]);
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getGUIPreferences[]", new ExternalRequest(new String[] { "System.GUIPreferences[]"}, new Object[0], "utf-8", new String[0], new String[0]));
         return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 

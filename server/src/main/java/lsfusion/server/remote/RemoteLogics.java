@@ -141,7 +141,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
     
-    private ExecResult runInNewSession(AuthenticationToken token, SessionInfo sessionInfo, CallableWithParam<RemoteSession, ExecResult> callable) throws RemoteException {
+    private ExternalResponse runInNewSession(AuthenticationToken token, SessionInfo sessionInfo, CallableWithParam<RemoteSession, ExternalResponse> callable) throws RemoteException {
         // in theory it's better to cache sessions for a userlogin in some pool (clearing them after usage) 
         RemoteSession session = createSession(-1, token, sessionInfo);
         try {
@@ -152,25 +152,25 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public ExecResult exec(AuthenticationToken token, SessionInfo sessionInfo, final String action, final String[] returnNames, final Object[] params, final String charsetName, final String[] headerNames, final String[] headerValues) throws RemoteException {
+    public ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, final String action, final ExternalRequest request) throws RemoteException {
         final boolean anonymous = token.isAnonymous();
-        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExecResult>() {
-            public ExecResult call(RemoteSession session) {
+        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
+            public ExternalResponse call(RemoteSession session) {
                 if(anonymous) // to avoid aspect
-                    return session.exec(true, action, returnNames, params, charsetName, headerNames, headerValues, getStack());
-                return session.exec(action, returnNames, params, charsetName, headerNames, headerValues); // will go through aspect
+                    return session.exec(true, action, request, getStack());
+                return session.exec(action, request); // will go through aspect
             }
         });
     }
 
     @Override
-    public ExecResult eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final Object paramScript, final String[] returnCanonicalNames, final Object[] params, final String charset, final String[] headerNames, final String[] headerValues) throws RemoteException {
+    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final Object paramScript, final ExternalRequest request) throws RemoteException {
         final boolean anonymous = token.isAnonymous();
-        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExecResult>() {
-            public ExecResult call(RemoteSession session) {
+        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
+            public ExternalResponse call(RemoteSession session) {
                 if(anonymous) // to avoid aspect
-                    return session.eval(true, action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues, getStack());
-                return session.eval(action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues); // will go through aspect
+                    return session.eval(true, action, paramScript, request, getStack());
+                return session.eval(action, paramScript, request); // will go through aspect
             }
         });
     }

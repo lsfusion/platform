@@ -49,11 +49,11 @@ public class ExternalUtils {
     
     public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
         return new ExecInterface() {
-            public ExecResult exec(String action, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
-                return remoteLogics.exec(token, sessionInfo, action, returnCanonicalNames, params, charset, headerNames, headerValues);
+            public lsfusion.base.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
+                return remoteLogics.exec(token, sessionInfo, action, request);
             }
-            public ExecResult eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset, String[] headerNames, String[] headerValues) throws RemoteException {
-                return remoteLogics.eval(token, sessionInfo, action, paramScript, returnCanonicalNames, params, charset, headerNames, headerValues);
+            public lsfusion.base.ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException {
+                return remoteLogics.eval(token, sessionInfo, action, paramScript, request);
             }
         };
     }
@@ -66,13 +66,15 @@ public class ExternalUtils {
         List<String> returns = getParameterValues(queryParams, RETURN_PARAM);
         String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
         boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        ExecResult execResult = null;
+        lsfusion.base.ExternalResponse execResult = null;
         
         String filename = "export";
 
+        ExternalRequest request = new ExternalRequest(returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+                
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            execResult = remoteExec.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+            execResult = remoteExec.exec(action, request);
         } else {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
@@ -82,7 +84,7 @@ public class ExternalUtils {
                     script = paramsList.get(0);
                     paramsList = paramsList.subList(1, paramsList.size());
                 }
-                execResult = remoteExec.eval(isEvalAction, script, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
+                execResult = remoteExec.eval(isEvalAction, script, request);
             }
         }
 

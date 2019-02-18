@@ -1,6 +1,7 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.ExecResult;
+import lsfusion.base.ExternalRequest;
+import lsfusion.base.ExternalResponse;
 import lsfusion.base.SessionInfo;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -49,16 +50,16 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    public ExecResult exec(String action, String[] returnNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues) {
-        return exec(false, action, returnNames, params, charsetName, headerNames, headerValues, getStack());
+    public ExternalResponse exec(String action, ExternalRequest request) {
+        return exec(false, action, request, getStack());
     }
 
-    public ExecResult exec(boolean anonymous, String action, String[] returnNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues, ExecutionStack stack) {
-        ExecResult result;
+    public ExternalResponse exec(boolean anonymous, String action, ExternalRequest request, ExecutionStack stack) {
+        ExternalResponse result;
         try {
             LAP property = businessLogics.findActionByCompoundName(action);
             if (property != null) {
-                result = executeExternal(anonymous, property, returnNames, params, Charset.forName(charsetName), headerNames, headerValues, stack);
+                result = executeExternal(anonymous, property, request, stack);
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
@@ -69,15 +70,15 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    public ExecResult eval(boolean action, Object paramScript, String[] returnNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues) {
-        return eval(false, action, paramScript, returnNames, params, charsetName, headerNames, headerValues, getStack());
+    public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest returnNames) {
+        return eval(false, action, paramScript, returnNames, getStack());
     }
 
-    public ExecResult eval(boolean anonymous, boolean action, Object paramScript, String[] returnNames, Object[] params, String charsetName, String[] headerNames, String[] headerValues, ExecutionStack stack) {
-        ExecResult result;
+    public ExternalResponse eval(boolean anonymous, boolean action, Object paramScript, ExternalRequest request, ExecutionStack stack) {
+        ExternalResponse result;
         if (paramScript != null) {
             try {
-                Charset charset = Charset.forName(charsetName);
+                Charset charset = Charset.forName(request.charsetName);
                 String script = StringClass.text.parseHTTP(paramScript, charset);
                 if (action) {
                     //оборачиваем в run без параметров
@@ -85,7 +86,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 }
                 LAP<?> runAction = businessLogics.evaluateRun(script);
                 if(runAction != null) {
-                    result = executeExternal(anonymous, runAction, returnNames, params, charset, headerNames, headerValues, stack);
+                    result = executeExternal(anonymous, runAction, request, stack);
                 } else {
                     throw new RuntimeException("Action run[] was not found");
 
@@ -99,17 +100,17 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return result;
     }
 
-    private ExecResult executeExternal(boolean anonymous, LAP<?> property, String[] returnNames, Object[] params, Charset charset, String[] headerNames, String[] headerValues, ExecutionStack stack) throws SQLException, ParseException, SQLHandledException, IOException {
+    private ExternalResponse executeExternal(boolean anonymous, LAP<?> property, ExternalRequest request, ExecutionStack stack) throws SQLException, ParseException, SQLHandledException, IOException {
         String annotation = property.property.annotation;
         if(annotation == null || !annotation.equals("noauth"))
             checkEnableApi(anonymous);
 
         if(property.property.uses(businessLogics.LM.headers.property)) // optimization
-            ExternalHTTPActionProperty.writeHeaders(dataSession, businessLogics.LM.headers, headerNames, headerValues);
+            ExternalHTTPActionProperty.writeHeaders(dataSession, businessLogics.LM.headers, request.headerNames, request.headerValues);
 
-        property.execute(dataSession, stack, ExternalHTTPActionProperty.getParams(dataSession, property, params, charset));
+        property.execute(dataSession, stack, ExternalHTTPActionProperty.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
 
-        return readResult(returnNames);
+        return readResult(request.returnNames);
     }
 
     public static void checkEnableApi(boolean anonymous) {
@@ -121,7 +122,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             throw new AuthenticationException();
     }
 
-    private ExecResult readResult(String[] returnNames) throws SQLException, SQLHandledException, IOException {
+    private ExternalResponse readResult(String[] returnNames) throws SQLException, SQLHandledException, IOException {
         List<Object> returns = new ArrayList<>();
 
         LCP[] returnProps;
@@ -140,7 +141,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             returns.add(businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession).getValue());
 
         ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readHeaders(dataSession, businessLogics.LM.headersTo).toOrderMap();
-        return new ExecResult(returns.toArray(), headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));
+        return new ExternalResponse(returns.toArray(), headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));
     }
 
     private List<Object> readReturnProperty(LCP<?> returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
