@@ -1,7 +1,7 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page isELIgnored="false" %> <%--важная опция, без неё не работает--%>
+<%@ page isELIgnored="false" %>
 
 <!DOCTYPE html>
 <html>

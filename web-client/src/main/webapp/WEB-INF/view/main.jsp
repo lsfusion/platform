@@ -9,7 +9,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         
         <title>${title}</title>
-        <link rel="shortcut icon" href="{$logicsIcon}" />
+        <link rel="shortcut icon" href="${logicsIcon}" />
         <style type="text/css">
             #loading {
                 border: 1px solid #ccc;

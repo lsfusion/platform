@@ -37,7 +37,7 @@ public class LoginDialog extends JDialog {
     private List<UserInfo> userInfos;
 
     public LoginDialog(LoginInfo defaultLoginInfo, List<UserInfo> userInfos) {
-        super(null, "lsFusion", java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
+        super(null, Main.getMainTitle(), java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
         this.userInfos = userInfos;
         imageLabel.setIcon(Main.getLogo());
 

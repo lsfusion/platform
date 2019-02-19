@@ -240,7 +240,7 @@ public class Main {
                         }
                     }
                     if(serverVersion != null) {
-                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), "lsFusion", JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), getMainTitle(), JOptionPane.WARNING_MESSAGE);
                         Main.shutdown();
                         return;
                     }
@@ -311,6 +311,7 @@ public class Main {
         try {
             if (remoteLogics != null) {
                 JSONObject serverSettings = getServerSettings(remoteLogics);
+                logicsDisplayName = trimToNull(serverSettings.optString("displayName"));
                 String iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
                 logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
                 String logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
@@ -322,7 +323,7 @@ public class Main {
     }
 
     private static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
-        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getServerSettings[]", new ExternalRequest(new String[] { "System.serverSettings[]"}, new Object[0], "utf-8", new String[0], new String[0]));
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getServerSettings[]", new ExternalRequest(new String[0], new Object[0], "utf-8", new String[0], new String[0]));
         return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 

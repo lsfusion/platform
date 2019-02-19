@@ -343,7 +343,7 @@ FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
-                 logicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
+                 dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
     OBJECTS u=User
     PROPERTIES(u) READONLY name, login, nameMainRole
     PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
@@ -386,7 +386,7 @@ DESIGN settings {
                 }        
                 NEW logoContainer {
                     caption = '{system.logics.gui.preferences}';
-                    MOVE PROPERTY(logicsName());
+                    MOVE PROPERTY(dataLogicsName());
                     MOVE PROPERTY(displayName());
                     MOVE PROPERTY(loadLogicsLogo());
                     MOVE PROPERTY(openLogicsLogo());
