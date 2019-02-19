@@ -10,7 +10,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>main.jsp</welcome-file>
+        <welcome-file>main</welcome-file>
     </welcome-file-list>
 
     <context-param>
@@ -75,6 +75,21 @@
         <servlet-name>fileDownloadHandler</servlet-name>
         <url-pattern>/downloadFile</url-pattern>
     </servlet-mapping>
+
+    <!--spring MVC-->
+    <servlet>
+        <servlet-name>LSFWeb</servlet-name>
+        <servlet-class>
+            org.springframework.web.servlet.DispatcherServlet
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LSFWeb</servlet-name>
+        <url-pattern>/login</url-pattern>
+        <url-pattern>/main</url-pattern>
+    </servlet-mapping>
+
 
     <!-- LOG4J configuration -->
     <context-param>

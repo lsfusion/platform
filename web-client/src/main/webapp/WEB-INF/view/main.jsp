@@ -1,12 +1,5 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
-<%@ page import="org.springframework.web.servlet.support.RequestContextUtils" %>
-<%@ page import="lsfusion.http.provider.logics.LogicsProvider" %>
-<%@ page import="org.json.JSONObject" %>
-
-<%-- because we don't use Spring MVC (where we should use controllers (@Controller and component-scan and autowire this bean), put this jsps in WEB-INF/view, and put settings in modelmap), we use standard container JSP dispatch servlet, and using application (servlet) context it's the easiest way to get needed bean --%>
-<%
-    JSONObject settings = ((LogicsProvider) RequestContextUtils.findWebApplicationContext(request).getBean("logicsProvider")).getServerSettings(request);
-%>
+<%@ page isELIgnored="false" %>
 
 <!DOCTYPE html>
 
@@ -15,7 +8,8 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         
-        <title>lsFusion</title>
+        <title>${title}</title>
+        <link rel="shortcut icon" href="{$logicsIcon}" />
         <style type="text/css">
             #loading {
                 border: 1px solid #ccc;
@@ -49,28 +43,11 @@
             }
         </style>
     </head>
-    <body onload="getGUIPreferences()">
+    <body>
         <script language="JavaScript">
             var pageSetup = {
                 webAppRoot: "<%= request.getContextPath() + "/" %>"
             };
-
-            function getGUIPreferences() {
-
-                var xhttp = new XMLHttpRequest();
-                xhttp.onload = function() {
-                    var json = JSON.parse(this.responseText);
-                    if(json.displayName != null) {
-                        document.title = json.displayName;
-                    }
-                    var newLink = document.createElement('link');
-                    newLink.rel = 'shortcut icon';
-                    newLink.href = json.logicsIcon != null ? ('data:image/png;base64,'+json.logicsIcon) : 'favicon.ico'
-                    document.head.appendChild(newLink);
-                };
-                xhttp.open("GET", "exec?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
-                xhttp.send();
-            }
         </script>
 
         <div id="loadingWrapper">

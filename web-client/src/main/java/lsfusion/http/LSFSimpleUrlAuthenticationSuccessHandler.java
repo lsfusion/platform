@@ -60,6 +60,6 @@ public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthentic
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
         String newQueryString = removeQueryParams(request, Collections.singleton("error"));
-        return "/main.jsp" + newQueryString;
+        return "/main" + newQueryString;
     }
 }

@@ -1,44 +1,17 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
-<%@ page import="org.springframework.web.servlet.support.RequestContextUtils" %>
-<%@ page import="org.json.JSONObject" %>
-<%@ page import="lsfusion.http.provider.logics.LogicsProvider" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-
-<%-- because we don't use Spring MVC (where we should use controllers (@Controller and component-scan and autowire this bean), put this jsps in WEB-INF/view, and put settings in modelmap), we use standard container JSP dispatch servlet, and using application (servlet) context it's the easiest way to get needed bean --%>
-<%
-    JSONObject settings = ((LogicsProvider) RequestContextUtils.findWebApplicationContext(request).getBean("logicsProvider")).getServerSettings(request);
-%>
+<%@ page isELIgnored="false" %>
 
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>lsFusion</title>
-
+        <title>${title}</title>
+        <link rel="shortcut icon" href="${logicsIcon}" />
         <link rel="stylesheet" href="login.css">
     </head>
-    <body onload="getGUIPreferences(); document.loginForm.username.focus();">
-
-    <script>
-        function getGUIPreferences() {
-
-            var xhttp = new XMLHttpRequest();
-            xhttp.onload = function() {
-                var json = JSON.parse(this.responseText);
-                if(json.displayName != null) {
-                    document.title = json.displayName;
-                }
-                document.getElementById("logo").src = json.logicsLogo != null ? ('data:image/jpg;base64,' + json.logicsLogo) : "${pageContext.request.contextPath}/images/logo.png";
-                var newLink = document.createElement('link');
-                newLink.rel = 'shortcut icon';
-                newLink.href = json.logicsIcon != null ? ('data:image/png;base64,'+json.logicsIcon) : 'favicon.ico';
-                document.head.appendChild(newLink);
-            };
-            xhttp.open("GET", "exec?action=System.getGUIPreferences%5B%5D&return=System.GUIPreferences%5B%5D", true);
-            xhttp.send();
-        }
-    </script>
+    <body onload="document.loginForm.username.focus();">
 
     <div style="visibility: hidden;">448b0ce6-206e-11e9-ab14-d663bd873d93</div>
         <table class="content-table">
@@ -58,7 +31,7 @@
                               action="login_check<%=queryString%>" >
                             <fieldset>
 
-                                <div class="image-center"><img id="logo" src="" alt="LSFusion"></div>
+                                <div class="image-center"><img id="logo" src="${logicsLogo}" alt="LSFusion"></div>
                                 <p>
                                     <br/>
                                     <label for="username"><%= ServerMessages.getString(request, "login") %></label>

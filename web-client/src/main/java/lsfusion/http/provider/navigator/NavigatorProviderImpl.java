@@ -73,7 +73,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
         RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request));
 
-        return addLogicsAndNavigatorSessionObject(new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName()));
+        return addLogicsAndNavigatorSessionObject(new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName(request)));
     }
 
     @Override

@@ -10,6 +10,6 @@ public class LSFSimpleUrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHand
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
         String queryString = request.getQueryString();
-        return  "/login.jsp" + (queryString == null || queryString.isEmpty() ? "" : ("?" + queryString));
+        return  "/login" + (queryString == null || queryString.isEmpty() ? "" : ("?" + queryString));
     }
 }

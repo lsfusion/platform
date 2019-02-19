@@ -20,11 +20,13 @@
     </http>
     <!-- because we want to have logo even if app server is unavailable, that's why logo.png is on web-server, and it has to be shown before user is authenticated -->
     <http pattern="/images/logo.png" security="none"/>
+    <!-- we need to download logo and icon -->
+    <http pattern="/downloadFile" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
-        <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
+        <form-login login-page="/login" login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/> <!-- no invalidating session to give user opportunity to relogin, when another tab is opened-->
         
         <csrf disabled="true"/>
@@ -40,7 +42,7 @@
     </b:bean>
 
     <b:bean id="entryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
-        <b:constructor-arg value="/login.jsp"/>
+        <b:constructor-arg value="/login"/>
         <b:property name="useForward" value="true"/>
     </b:bean>
 

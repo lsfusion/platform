@@ -43,7 +43,7 @@ public class GwtClientUtils {
     }
 
     public static String getLoginUrl() {
-        return getPageUrlPreservingParameters("login.jsp");
+        return getPageUrlPreservingParameters("login");
     }
 
     public static void relogin() {
@@ -62,7 +62,7 @@ public class GwtClientUtils {
     }
 
     public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
-        return getWebAppBaseURL() + "downloadFile?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "") + (actionFile ? "&filetype=action" : "");
+        return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension, actionFile);
     }
 
     public static Map<String, String> getPageParameters() {

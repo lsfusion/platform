@@ -189,11 +189,11 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
     }
 
     @Override
-    public JSONObject getServerSettings(HttpServletRequest request) {
+    public ServerSettings getServerSettings(final HttpServletRequest request) {
         try {
-            return runRequest(this, request, new LogicsRunnable<JSONObject>() {
-                public JSONObject run(LogicsSessionObject sessionObject) throws IOException {
-                    return sessionObject.getServerSettings();
+            return runRequest(this, request, new LogicsRunnable<ServerSettings>() {
+                public ServerSettings run(LogicsSessionObject sessionObject) throws IOException {
+                    return sessionObject.getServerSettings(request);
                 }
             });
         } catch (IOException e) {

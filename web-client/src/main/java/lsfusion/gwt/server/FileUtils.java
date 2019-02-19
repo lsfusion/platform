@@ -107,6 +107,13 @@ public class FileUtils {
         }
     }
 
+    public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images
+        String fileName = BaseUtils.randomString(15);
+        if(saveFile(fileName, fileData) != null)
+            return fileName;
+        return null;
+    }
+
     public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
         String fileName = BaseUtils.randomString(15);
         if(saveFile(fileName, fileData) != null)

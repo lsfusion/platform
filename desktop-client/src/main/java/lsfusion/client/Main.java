@@ -215,16 +215,16 @@ public class Main {
 
                     remoteLogics = loginAction.getRemoteLogics();
 
-                    JSONObject guiPreferences = getGUIPreferences(remoteLogics);
+                    JSONObject serverSettings = getServerSettings(remoteLogics);
 
-                    logicsName = trimToNull(guiPreferences.optString("logicsName"));
-                    logicsDisplayName = trimToNull(guiPreferences.optString("displayName"));
-                    String iconBase64 = trimToNull(guiPreferences.optString("logicsIcon"));
+                    logicsName = trimToNull(serverSettings.optString("logicsName"));
+                    logicsDisplayName = trimToNull(serverSettings.optString("displayName"));
+                    String iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
                     logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
-                    String logoBase64 = trimToNull(guiPreferences.optString("logicsLogo"));
-                    logicsLogo =  logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
-                    String serverPlatformVersion = trimToNull(guiPreferences.optString("platformVersion"));
-                    Integer serverApiVersion = guiPreferences.optInt("apiVersion");
+                    String logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
+                    logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
+                    String serverPlatformVersion = trimToNull(serverSettings.optString("platformVersion"));
+                    Integer serverApiVersion = serverSettings.optInt("apiVersion");
 
                     String serverVersion = null;
                     String clientVersion = null;
@@ -310,16 +310,19 @@ public class Main {
     private static void loadLogicsLogo(RemoteLogicsInterface remoteLogics) {
         try {
             if (remoteLogics != null) {
-                String logoBase64 = trimToNull(getGUIPreferences(remoteLogics).optString("logicsLogo"));
-                logicsLogo =  logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
+                JSONObject serverSettings = getServerSettings(remoteLogics);
+                String iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
+                logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
+                String logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
+                logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
             }
         } catch (Throwable e) {
             logger.error("Error loading logics logo", e);
         }
     }
 
-    private static JSONObject getGUIPreferences(RemoteLogicsInterface remoteLogics) throws RemoteException {
-        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getGUIPreferences[]", new ExternalRequest(new String[] { "System.GUIPreferences[]"}, new Object[0], "utf-8", new String[0], new String[0]));
+    private static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getServerSettings[]", new ExternalRequest(new String[] { "System.serverSettings[]"}, new Object[0], "utf-8", new String[0], new String[0]));
         return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 

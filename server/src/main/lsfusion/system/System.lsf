@@ -288,9 +288,9 @@ apiVersion = DATA INTEGER();
 synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.SynchronizeVersionsActionProperty' ();    
 onStarted() + { synchronizeVersions(); }
 
-GUIPreferences = DATA LOCAL RAWFILE();
-getGUIPreferences() {
-    EXPORT JSON FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion() TO GUIPreferences;
+serverSettings = DATA LOCAL RAWFILE();
+getServerSettings() {
+    EXPORT JSON FROM dataLogicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion() TO serverSettings;
 } @@noauth;
 
 META applicationForm(sid, name)

@@ -4,7 +4,6 @@ import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.http.provider.form.FormProvider;
-import lsfusion.gwt.server.logics.handlers.GetGUIPreferencesHandler;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.gwt.server.navigator.handlers.*;
@@ -59,7 +58,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new CreateNavigatorHandler(this));
 
         // logics
-        registry.addHandler(new GetGUIPreferencesHandler(this));
         registry.addHandler(new GenerateIDHandler(this));
 
         // navigator
