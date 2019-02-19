@@ -18,6 +18,8 @@
         <http-basic/>
         <csrf disabled="true"/>
     </http>
+    <!-- we need to show login.jsp -->
+    <http pattern="/login.css" security="none"/>
     <!-- because we want to have logo even if app server is unavailable, that's why logo.png is on web-server, and it has to be shown before user is authenticated -->
     <http pattern="/images/logo.png" security="none"/>
     <!-- we need to download logo and icon -->
