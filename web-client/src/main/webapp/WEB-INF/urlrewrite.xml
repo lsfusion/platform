@@ -15,11 +15,13 @@
         <set type="expires">30 days</set>
     </rule>
 
+    <!-- webapp -->
     <rule match-type="wildcard">
         <from>/images/**</from>
         <set type="response-header" name="Cache-Control">public, max-age=86400</set>
         <set type="expires">1 day</set>
     </rule>
+    <!-- gwt/public, main - is module name-->
     <rule match-type="wildcard">
         <from>/main/images/**</from>
         <set type="response-header" name="Cache-Control">public, max-age=86400</set>

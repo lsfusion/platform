@@ -16,6 +16,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.logics.DataObject;

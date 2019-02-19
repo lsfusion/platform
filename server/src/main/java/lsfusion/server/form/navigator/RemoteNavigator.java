@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClientSettings;
+import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.form.ServerResponse;
@@ -19,6 +20,7 @@ import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DateTimeClass;
@@ -65,6 +67,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private DataObject connection;
 
+    public SecurityPolicy securityPolicy;
+
     private ClientCallBackController client;
 
     private RemotePausableInvocation currentInvocation = null;
@@ -97,6 +101,20 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.navigatorManager = logicsInstance.getNavigatorsManager();
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
+    }
+
+    @Override
+    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, stack, session);
+        
+        localePreferences = readLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
+        securityPolicy = logicsInstance.getSecurityManager().readSecurityPolicy(session, user);
+    }
+
+    private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
+        return new LocalePreferences(locale,
+                (String) businessLogics.authenticationLM.timeZone.read(session, user),
+                (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user));
     }
 
     public void delayUserInteraction(ClientAction action) {

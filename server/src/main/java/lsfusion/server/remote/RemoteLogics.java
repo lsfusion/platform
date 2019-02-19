@@ -127,7 +127,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
     
     private ExternalResponse runInNewSession(AuthenticationToken token, SessionInfo sessionInfo, CallableWithParam<RemoteSession, ExternalResponse> callable) throws RemoteException {
-        // in theory it's better to cache sessions for a userlogin in some pool (clearing them after usage) 
+        // in theory it's better to cache sessions for a token in some pool (clearing them after usage) 
         RemoteSession session = createSession(-1, token, sessionInfo);
         try {
             return callable.call(session);

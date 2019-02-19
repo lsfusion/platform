@@ -29,6 +29,9 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
+        if(authentication instanceof LSFAuthenticationToken) // already authenticated with LSFAuthTokenFilter
+            return authentication;
+
         final String username = authentication.getPrincipal().toString();
         final String password = authentication.getCredentials().toString();
 

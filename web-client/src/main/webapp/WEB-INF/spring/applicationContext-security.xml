@@ -17,6 +17,8 @@
     <http request-matcher="regex" pattern="^/(exec|eval|eval/action)($|\?.*)" create-session="never">
         <http-basic/>
         <csrf disabled="true"/>
+
+        <custom-filter before="FORM_LOGIN_FILTER" ref="tokenFilter"/>
     </http>
     <!-- we need to show login.jsp -->
     <http pattern="/login.css" security="none"/>
@@ -35,6 +37,7 @@
         <csrf disabled="true"/>
 
         <custom-filter ref="characterEncodingFilter" before="FORM_LOGIN_FILTER"/>
+        <custom-filter after="ANONYMOUS_FILTER" ref="anonymousFilter"/>
     </http>
 
     <!-- Security beans -->
@@ -43,6 +46,11 @@
         <b:property name="encoding" value="UTF-8"/>
         <b:property name="forceEncoding" value="true"/>
     </b:bean>
+
+    <!-- read app token from authentication:bearer -->
+    <b:bean id="tokenFilter" class="lsfusion.http.LSFAuthTokenFilter"/>
+    <!-- authenticate user when anonymousUI is enabled, and no auth provided -->
+    <b:bean id="anonymousFilter" class="lsfusion.http.LSFAuthAnonymousFilter"/>
 
     <b:bean id="entryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
         <b:constructor-arg value="/login"/>
@@ -57,7 +65,7 @@
 
     <!-- Authentication configuration -->
     
-    <authentication-manager>
+    <authentication-manager alias="authenticationManager"> <!-- we need alias to refer it from auth token filter -->
         <authentication-provider ref="authenticationProvider"/>
     </authentication-manager>
 

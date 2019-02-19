@@ -1055,7 +1055,7 @@ public class Settings implements Cloneable {
         this.disableReadClasses = disableReadClasses;
     }
 
-    private byte enableUI = 2; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled
+    private byte enableUI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled
 
     public byte getEnableUI() {
         return enableUI;

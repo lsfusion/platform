@@ -257,7 +257,7 @@ public class Main {
                     configurationAccessAllowed = clientSettings.configurationAccessAllowed;
                     forbidDuplicateForms = clientSettings.forbidDuplicateForms;
 
-                    Locale userLocale = userPreferences.getLocale();
+                    Locale userLocale = userPreferences.locale;
                     if (userLocale != null) {
                         Locale.setDefault(userLocale);
                         
@@ -323,7 +323,7 @@ public class Main {
     }
 
     private static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
-        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "System.getServerSettings[]", new ExternalRequest(new String[0], new Object[0], "utf-8", new String[0], new String[0]));
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Service.getServerSettings[]", new ExternalRequest(new String[0], new Object[0], "utf-8", new String[0], new String[0]));
         return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 

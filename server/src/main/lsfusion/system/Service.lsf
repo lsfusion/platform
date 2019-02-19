@@ -299,6 +299,8 @@ baseValue '{service.base.value.setting.user.role}' = DATA VARSTRING[100] (Settin
 overBaseValue '{service.over.base.value.setting.user}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
 defaultValue '{service.default.value.setting}' = DATA VARSTRING[100] (Setting);
 value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
+value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
+valueSetting (VARISTRING[100] name) = value(setting(name)); 
 
 pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.logics.service.reflection.PushSettingActionProperty' (VARSTRING[100], VARSTRING[100]);
 popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.logics.service.reflection.PopSettingActionProperty' (VARSTRING[100]);
@@ -327,6 +329,10 @@ WHEN CHANGED (baseValue(Setting r)) DO
     
 WHEN CHANGED (baseValue(Setting r, UserRole ur)) 
     DO updateSetting(r, ur, TRUE);
+
+getServerSettings() {
+    EXPORT FROM dataLogicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), anonymousUI=(valueSetting('enableUI')='2');
+} @@noauth;
 
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
 overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);

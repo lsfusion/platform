@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.security.sasl.AuthenticationException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -182,6 +183,11 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         LogicsSessionObject logicsSessionObject = createOrGetLogicsSessionObject(host, port, exportName);
         try {
             return runnable.run(logicsSessionObject);
+        } catch (lsfusion.interop.exceptions.AuthenticationException e) {
+            // if there is an AuthenticationException and server has anonymousUI, that means that the mode has changed, so we we'll drop serverSettings cache
+            if(logicsSessionObject.serverSettings != null && logicsSessionObject.serverSettings.anonymousUI)
+                logicsSessionObject.serverSettings = null;
+            throw e;
         } catch (RemoteException e) { // it's important that this exception should not be suppressed (for example in ExternalRequestHandler)
             invalidateLogicsSessionObject(logicsSessionObject);
             throw e;

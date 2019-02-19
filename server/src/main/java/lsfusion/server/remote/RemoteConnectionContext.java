@@ -27,11 +27,6 @@ public abstract class RemoteConnectionContext extends AbstractContext {
     }
 
     @Override
-    public SecurityPolicy getSecurityPolicy() {
-        return getConnectionObject().securityPolicy;
-    }
-
-    @Override
     public Long getCurrentComputer() {
         return getConnectionObject().getCurrentComputer();
     }
@@ -44,10 +39,5 @@ public abstract class RemoteConnectionContext extends AbstractContext {
     @Override
     public Long getCurrentUserRole() {
         return getConnectionObject().userRole;
-    }
-
-    @Override
-    public Long getCurrentConnection() {
-        return getConnectionObject().getConnectionId();
     }
 }

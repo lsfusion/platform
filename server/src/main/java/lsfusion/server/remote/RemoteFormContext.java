@@ -76,10 +76,6 @@ public class RemoteFormContext<F extends FormInstance> extends AbstractContext {
         return form.form.session.user.getCurrentUserRole();
     }
 
-    public Long getCurrentConnection() {
-        return form.form.session.sql.contextProvider.getCurrentConnection();
-    }
-
     @Override
     public Locale getLocale() {
         return form.form.getLocale();

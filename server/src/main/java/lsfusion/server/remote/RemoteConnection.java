@@ -4,7 +4,6 @@ import lsfusion.base.ConnectionInfo;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.SyncType;
 import lsfusion.server.context.ThreadLocalContext;
@@ -36,8 +35,8 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
     protected AuthenticationToken userToken;
     protected DataObject user;
     protected LogInfo logInfo;
+    protected Locale locale;
     protected LocalePreferences localePreferences;
-    public SecurityPolicy securityPolicy;
     public Long userRole;
     protected Integer transactionTimeout;
 
@@ -59,7 +58,10 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
     }
 
     protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
-        initLocalContext(logicsInstance);
+        this.businessLogics = logicsInstance.getBusinessLogics();
+        this.dbManager = logicsInstance.getDbManager();
+        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
+        
         this.logicsInstance = logicsInstance;
 
         try(DataSession session = createSession()) {
@@ -79,19 +81,11 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
         userToken = token;
     }
 
-    // used when object isLocal
-    private void initLocalContext(LogicsInstance logicsInstance) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        this.businessLogics = logicsInstance.getBusinessLogics();
-        this.dbManager = logicsInstance.getDbManager();
-        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
-    }
-
     // in theory its possible to cache all this
-    // security + locale + log info
-    private void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+    // locale + log info
+    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         logInfo = readLogInfo(session, user, businessLogics, hostName, remoteAddress);
-        localePreferences = readLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
-        securityPolicy = logicsInstance.getSecurityManager().readSecurityPolicy(session, user);
+        locale = readLocale(session, user, businessLogics, clientLanguage, clientCountry, stack);
         userRole = (Long) businessLogics.securityLM.mainRoleCustomUser.read(session, user);
         transactionTimeout = (Integer) businessLogics.securityLM.transactTimeoutUser.read(session, user);
     }
@@ -200,13 +194,12 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
         return transactionTimeout != null ? transactionTimeout : 0;
     }
 
-    public static LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public static Locale readLocale(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
         saveClientLanguage(session, user, businessLogics, clientLanguage, clientCountry, stack);
 
-        return new LocalePreferences((String) businessLogics.authenticationLM.language.read(session, user),
-                (String) businessLogics.authenticationLM.country.read(session, user),
-                (String) businessLogics.authenticationLM.timeZone.read(session, user),
-                (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user));
+        String language = (String) businessLogics.authenticationLM.language.read(session, user);
+        String country = (String) businessLogics.authenticationLM.country.read(session, user);
+        return LocalePreferences.getLocale(language, country);
     }
 
     public static void saveClientLanguage(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -225,7 +218,7 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
     }
 
     public Locale getLocale() {
-        Locale locale = localePreferences != null ? localePreferences.getLocale() : null;
+        Locale locale = this.locale;
         if(locale != null)
             return locale;
         return Locale.getDefault();

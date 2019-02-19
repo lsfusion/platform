@@ -54,10 +54,6 @@ public class LogicsInstanceContext extends AbstractContext {
         return null;
     }
 
-    public Long getCurrentConnection() {
-        return null;
-    }
-
     @Override
     public Locale getLocale() {
         return Locale.getDefault();
