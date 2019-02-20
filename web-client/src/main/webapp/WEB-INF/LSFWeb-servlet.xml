@@ -24,7 +24,7 @@
     <bean id="logicsProvider" class="lsfusion.http.provider.logics.LogicsProviderImpl" />
 
     <bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.http.provider.navigator.NavigatorProviderImpl">
-        <aop:scoped-proxy proxy-target-class="false" />
+        <aop:scoped-proxy proxy-target-class="false" /><!-- this thing is needed because we autowire session scope objects in singletons-->
     </bean>
 
     <bean id="sessionProvider" scope="session" class="lsfusion.http.provider.session.SessionProviderImpl">
