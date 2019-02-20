@@ -109,7 +109,7 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            /WEB-INF/spring/applicationContext-security.xml
+            /WEB-INF/applicationContext-security.xml
             /WEB-INF/LSFWeb-servlet.xml
         </param-value>
     </context-param>
