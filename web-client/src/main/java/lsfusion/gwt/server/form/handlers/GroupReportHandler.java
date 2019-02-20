@@ -11,9 +11,8 @@ import lsfusion.gwt.shared.actions.form.GroupReportResult;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportGenerationData;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class GroupReportHandler extends FormActionHandler<GroupReport, GroupReportResult> {
     public GroupReportHandler(MainDispatchServlet servlet) {
@@ -21,7 +20,7 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, GroupRepo
     }
 
     @Override
-    public GroupReportResult executeEx(GroupReport action, ExecutionContext context) throws DispatchException, IOException {
+    public GroupReportResult executeEx(GroupReport action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
         GwtToClientConverter converter = GwtToClientConverter.getInstance();

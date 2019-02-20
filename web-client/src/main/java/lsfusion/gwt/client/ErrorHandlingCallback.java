@@ -8,8 +8,7 @@ import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper.OptionType;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.shared.exceptions.MessageException;
+import lsfusion.gwt.shared.exceptions.RemoteInternalDispatchException;
 import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 
 public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
@@ -30,11 +29,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         if(getMaxTries(caught) > -1) // if there is a trouble in connection, then we just setting connectionLost in DispatchAsyncWrapper, and showing no message (because there will be connection lost dialog anyway)
             return;
 
-        String message = getServerMessage(caught);
-        if (message != null) {
-            ErrorDialog.show(messages.error(), message, getJavaStackTrace(caught), getLSFStackTrace(caught));
-            return;
-        } else if (caught instanceof RequestTimeoutException) {
+        if (caught instanceof RequestTimeoutException) {
             DialogBoxHelper.showMessageBox(true, messages.error(), messages.actionTimeoutError(), false, null);
             return;
         } else if (caught instanceof StatusCodeException) {
@@ -49,48 +44,34 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
                 return;
             }
         }
-        ErrorDialog.show(messages.error(), messages.internalServerError(), getJavaStackTrace(caught));
+        // messages.internalServerError();
+        ErrorDialog.show(messages.error(), caught.getMessage(), getJavaStackTrace(caught), getLSFStackTrace(caught));
     }
-
+    
     public static boolean isAuthException(Throwable caught) {
         return caught instanceof InvocationException && caught.getMessage() != null && caught.getMessage().contains("<div style=\"visibility: hidden;\">448b0ce6-206e-11e9-ab14-d663bd873d93</div>");//from login.jsp
     }
 
+    // client - web-server and web-server - app-server connection problems 
     public static int getMaxTries(Throwable caught) {
-        if (caught instanceof StatusCodeException || isAuthException(caught))
+        if (caught instanceof StatusCodeException || isAuthException(caught)) // client - web-server
             return MAX_REQUEST_TRIES;
-        else if (caught instanceof RemoteRetryException)
+        else if (caught instanceof RemoteRetryException) // web-server - app-server
             return ((RemoteRetryException) caught).maxTries;
-        if (caught instanceof IncompatibleRemoteServiceException)
+        if (caught instanceof IncompatibleRemoteServiceException) // client - web-server
             return 2;
-        else return -1;
-    }
-
-    protected String getServerMessage(Throwable caught) {
-        if (caught instanceof MessageException || caught instanceof AppServerNotAvailableException) {
-            return caught.getMessage();
-        }
-        return null;
+        return -1; // not connection problem
     }
 
     private String getJavaStackTrace(Throwable caught) {
-        StringBuilder result = new StringBuilder(caught.getMessage());
-        StackTraceElement[] stackTrace = getStackTrace(caught);
-        if(stackTrace != null) {
-            for (StackTraceElement element : stackTrace) {
-                result.append("\n\tat ").append(element);
-            }
-        }
-        return result.toString();
-    }
-    
-    private StackTraceElement[] getStackTrace(Throwable caught) {
-        return caught instanceof MessageException ? ((MessageException) caught).myTrace : caught.getStackTrace();
+        if (caught instanceof RemoteInternalDispatchException)
+            return ((RemoteInternalDispatchException) caught).javaStack;
+        return GExceptionManager.getStackTrace(caught);
     }
 
     private String getLSFStackTrace(Throwable caught) {
-        if (caught instanceof MessageException) {
-            return ((MessageException) caught).lsfStack;
+        if (caught instanceof RemoteInternalDispatchException) {
+            return ((RemoteInternalDispatchException) caught).lsfStack;
         }
         return null;
     }

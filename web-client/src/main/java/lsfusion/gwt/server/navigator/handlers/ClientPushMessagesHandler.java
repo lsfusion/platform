@@ -8,9 +8,8 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.LifecycleMessage;
 import lsfusion.interop.remote.PushMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class ClientPushMessagesHandler extends NavigatorActionHandler<ClientPush
     }
 
     @Override
-    public ClientMessageResult executeEx(ClientPushMessage action, ExecutionContext context) throws DispatchException, IOException {
+    public ClientMessageResult executeEx(ClientPushMessage action, ExecutionContext context) throws RemoteException {
         List<LifecycleMessage> messages = getClientCallback(action).pullMessages();
         return getClientMessageResult(getRemoteNavigator(action), messages);
     }
@@ -31,7 +30,7 @@ public class ClientPushMessagesHandler extends NavigatorActionHandler<ClientPush
         return null; // too many logs
     }
 
-    private ClientMessageResult getClientMessageResult(RemoteNavigatorInterface remoteNavigator, List<LifecycleMessage> messages) throws IOException {
+    private ClientMessageResult getClientMessageResult(RemoteNavigatorInterface remoteNavigator, List<LifecycleMessage> messages) throws RemoteException {
         String currentForm = null;
         List<Integer> notificationList = new ArrayList<>();
         if(messages != null) {

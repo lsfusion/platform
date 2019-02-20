@@ -5,9 +5,8 @@ import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.CloseNavigator;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class  CloseNavigatorHandler extends NavigatorActionHandler<CloseNavigator, VoidResult> {
     public CloseNavigatorHandler(MainDispatchServlet servlet) {
@@ -15,7 +14,7 @@ public class  CloseNavigatorHandler extends NavigatorActionHandler<CloseNavigato
     }
 
     @Override
-    public VoidResult executeEx(CloseNavigator action, ExecutionContext context) throws DispatchException, IOException {
+    public VoidResult executeEx(CloseNavigator action, ExecutionContext context) throws RemoteException {
         removeNavigatorSessionObject(action.sessionID);
         return new VoidResult();
     }

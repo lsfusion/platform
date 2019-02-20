@@ -5,9 +5,8 @@ import lsfusion.gwt.server.navigator.NavigatorServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.navigator.ThrowInNavigatorAction;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class ThrowInNavigatorActionHandler extends NavigatorServerResponseActionHandler<ThrowInNavigatorAction> {
     public ThrowInNavigatorActionHandler(MainDispatchServlet servlet) {
@@ -15,7 +14,7 @@ public class ThrowInNavigatorActionHandler extends NavigatorServerResponseAction
     }
 
     @Override
-    public ServerResponseResult executeEx(ThrowInNavigatorAction action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(ThrowInNavigatorAction action, ExecutionContext context) throws RemoteException {
         return getServerResponseResult(action, getRemoteNavigator(action).throwInNavigatorAction(action.throwable));
     }
 }

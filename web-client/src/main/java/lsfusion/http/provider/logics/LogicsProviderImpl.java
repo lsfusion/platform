@@ -95,58 +95,6 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         this.exportName = exportName;
     }
 
-    private static class LogicsCache {
-        private final ReadWriteLock logicsLock = new ReentrantReadWriteLock();
-        private final Lock readLogicsLock = logicsLock.readLock();
-        private final Lock writeLogicsLock = logicsLock.writeLock();
-
-        private volatile RemoteLogicsInterface logics;
-
-        public RemoteLogicsInterface getLogics(LogicsConnection connection) throws AppServerNotAvailableException {
-            readLogicsLock.lock();
-
-            //double-check locking
-            if (logics == null) {
-                readLogicsLock.unlock();
-
-                writeLogicsLock.lock();
-                try {
-                    if (logics == null) {
-                        try {
-                            RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(connection.host, connection.port, connection.exportName, "RemoteLogicsLoader");
-                            this.logics = loader.getLogics();
-                        } catch (MalformedURLException e) {
-                            throw Throwables.propagate(e);
-                        } catch (NotBoundException | RemoteException e) {
-                            throw new AppServerNotAvailableException();
-                        }
-                    }
-                    return logics;
-                } finally {
-                    writeLogicsLock.unlock();
-                }
-            }
-            try {
-                return logics;
-            } finally {
-                readLogicsLock.unlock();
-            }
-        }
-
-        public void invalidate() {
-            try {
-                GWT.log("Invalidating logics...", new Exception());
-            } catch (Throwable ignored) {} // валится при попытке подключиться после перестарта сервера
-
-            writeLogicsLock.lock();
-            try {
-                logics = null;
-            } finally {
-                writeLogicsLock.unlock();
-            }
-        }
-    }
-
     private final Map<LogicsConnection, LogicsSessionObject> currentLogics = new ConcurrentHashMap<>();
 
     // not like in other providers, getter shouldn't be called directly to ensure invalidating reference if we get RemoteException
@@ -178,8 +126,8 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
     private void invalidateLogicsSessionObject(LogicsSessionObject sessionObject) { // should be called if logics remote method call fails with remoteException
         currentLogics.remove(sessionObject.connection);
     }
-
-    public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws IOException, AppServerNotAvailableException {
+    
+    public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
         LogicsSessionObject logicsSessionObject = createOrGetLogicsSessionObject(host, port, exportName);
         try {
             return runnable.run(logicsSessionObject);
@@ -198,18 +146,18 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
     public ServerSettings getServerSettings(final HttpServletRequest request) {
         try {
             return runRequest(this, request, new LogicsRunnable<ServerSettings>() {
-                public ServerSettings run(LogicsSessionObject sessionObject) throws IOException {
+                public ServerSettings run(LogicsSessionObject sessionObject) throws RemoteException {
                     return sessionObject.getServerSettings(request);
                 }
             });
-        } catch (IOException e) {
+        } catch (RemoteException e) {
             throw Throwables.propagate(e);
         } catch (AppServerNotAvailableException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public static <R> R runRequest(LogicsProvider logicsProvider, HttpServletRequest request, LogicsRunnable<R> runnable) throws IOException, AppServerNotAvailableException {
+    public static <R> R runRequest(LogicsProvider logicsProvider, HttpServletRequest request, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
         return logicsProvider.runRequest(
                 request != null ? request.getParameter("host") : null,
                 request != null ? BaseUtils.parseInt(request.getParameter("port")) : null,

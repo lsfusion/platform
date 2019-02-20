@@ -3,13 +3,12 @@ package lsfusion.gwt.server.form.handlers;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ExecuteEditAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class ExecuteEditActionHandler extends FormServerResponseActionHandler<ExecuteEditAction> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
@@ -19,7 +18,7 @@ public class ExecuteEditActionHandler extends FormServerResponseActionHandler<Ex
     }
 
     @Override
-    public ServerResponseResult executeEx(ExecuteEditAction action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(ExecuteEditAction action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
         byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);

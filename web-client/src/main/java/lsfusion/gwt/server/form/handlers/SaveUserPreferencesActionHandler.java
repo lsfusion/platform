@@ -11,9 +11,8 @@ import lsfusion.gwt.shared.view.GGroupObjectUserPreferences;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +24,7 @@ public class SaveUserPreferencesActionHandler extends FormServerResponseActionHa
     }
 
     @Override
-    public ServerResponseResult executeEx(SaveUserPreferencesAction action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(SaveUserPreferencesAction action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         GGroupObjectUserPreferences gGroupObjectUP = action.groupObjectUserPreferences;
         

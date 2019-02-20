@@ -82,7 +82,7 @@ public class ClientExceptionManager {
         
         logger.error("Reporting throwable : " + e, e);
         
-        if (!(e instanceof ConcurrentModificationException && ExceptionUtils.getStackTraceString(e).contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
+        if (!(e instanceof ConcurrentModificationException && ExceptionUtils.getStackTrace(e).contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             synchronized (unreportedThrowables) {
                 boolean reported = false;
                 try {

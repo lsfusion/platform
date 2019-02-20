@@ -6,9 +6,8 @@ import lsfusion.gwt.shared.actions.navigator.GetClientSettings;
 import lsfusion.gwt.shared.actions.navigator.GetClientSettingsResult;
 import lsfusion.interop.ClientSettings;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSettings, GetClientSettingsResult> {
     public GetClientSettingsHandler(MainDispatchServlet servlet) {
@@ -16,7 +15,7 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
     }
 
     @Override
-    public GetClientSettingsResult executeEx(GetClientSettings action, ExecutionContext context) throws DispatchException, IOException {
+    public GetClientSettingsResult executeEx(GetClientSettings action, ExecutionContext context) throws RemoteException {
         ClientSettings clientSettings = getRemoteNavigator(action).getClientSettings();
         return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
                 clientSettings.configurationAccessAllowed, clientSettings.forbidDuplicateForms);

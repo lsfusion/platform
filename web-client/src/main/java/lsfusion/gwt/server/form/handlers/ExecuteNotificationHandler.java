@@ -6,9 +6,8 @@ import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.ExecuteNotification;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class ExecuteNotificationHandler extends FormServerResponseActionHandler<ExecuteNotification> {
     public ExecuteNotificationHandler(MainDispatchServlet servlet) {
@@ -16,7 +15,7 @@ public class ExecuteNotificationHandler extends FormServerResponseActionHandler<
     }
 
     @Override
-    public ServerResponseResult executeEx(ExecuteNotification action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(ExecuteNotification action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         return getServerResponseResult(form, form.remoteForm.executeNotificationAction(action.requestIndex, defaultLastReceivedRequestIndex, action.idNotification));
     }

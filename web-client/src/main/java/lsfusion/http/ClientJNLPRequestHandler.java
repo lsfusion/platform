@@ -1,5 +1,6 @@
 package lsfusion.http;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.IOUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -28,7 +29,7 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
     private static final String DEFAULT_MAX_HEAP_FREE_RATIO = "70";
 
     @Override
-    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) {
         logger.debug("Handling jnlp request");
 
         try {
@@ -46,7 +47,11 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
                     clientVMOptions.getMaxHeapFreeRatio(), clientVMOptions.getVmargs());
         } catch (Exception e) {
             logger.debug("Error handling jnlp request: ", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, getString(request, "error.generating.jnlp"));
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, getString(request, "error.generating.jnlp"));
+            } catch (IOException ee) {
+                throw Throwables.propagate(e);
+            }
         }
     }
 

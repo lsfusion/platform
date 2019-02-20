@@ -1,5 +1,6 @@
 package lsfusion.http;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ExternalUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.http.provider.logics.LogicsRunnable;
@@ -8,6 +9,7 @@ import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
 import lsfusion.interop.ExecInterface;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.exceptions.RemoteInternalException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -30,7 +32,7 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
     SessionProvider sessionProvider;
 
     @Override
-    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
         try {
             String queryString = request.getQueryString();
             String query = queryString != null ? queryString : "";
@@ -73,7 +75,11 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setContentType("text/html; charset=utf-8");
-            response.getWriter().print(getString(request, "internal.server.error.with.message", e.getMessage()));
+            try {
+                response.getWriter().print(getString(request, "internal.server.error.with.message", e.getMessage()));
+            } catch (IOException e1) {
+                throw Throwables.propagate(e);
+            }
 
             if(e instanceof RemoteException) // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
                 throw (RemoteException)e;

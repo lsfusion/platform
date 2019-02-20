@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.remote.PendingRemoteObject;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -12,7 +13,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.stack.ExecutionStackAspect;
-import lsfusion.server.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
@@ -241,9 +241,9 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return closed;
     }
 
-    public void logServerException(ThrowableWithStack t) throws SQLException, SQLHandledException {
+    public void logServerException(RemoteInternalException t) throws SQLException, SQLHandledException {
         BusinessLogics businessLogics = getContext().getLogicsInstance().getBusinessLogics();
-        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t.getThrowable(), t.getStack(), null, null, false, false);
+        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, null, false, false);
     }
 
     public void interrupt(boolean cancelable) throws RemoteException {

@@ -18,11 +18,11 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
         super(servlet);
     }
 
-    protected ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse) throws IOException {
+    protected ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse) {
         return getServerResponseResult(form, serverResponse, servlet);
     }
 
-    public static ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse, MainDispatchServlet servlet) throws IOException {
+    public static ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse, MainDispatchServlet servlet) {
         GAction[] resultActions;
         if (serverResponse.actions == null) {
             resultActions = null;

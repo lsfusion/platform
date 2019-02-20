@@ -534,7 +534,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener) throws SQLException, SQLHandledException {
         DataObject dataObject = addObject(customClass, object);
-        BL.resolveAutoSet(this, customClass, dataObject, classListener);
+        if(classListener != null)
+            BL.resolveAutoSet(this, customClass, dataObject, classListener);
         return dataObject;
     }
 

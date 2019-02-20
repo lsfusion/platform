@@ -2,16 +2,16 @@ package lsfusion.gwt.server;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
 import lsfusion.gwt.server.form.handlers.*;
+import lsfusion.gwt.shared.exceptions.*;
 import lsfusion.http.provider.form.FormProvider;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.gwt.server.navigator.handlers.*;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.gwt.shared.actions.RequestAction;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.shared.exceptions.MessageException;
-import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.rmi.RemoteException;
 import java.text.ParseException;
 
 import static lsfusion.base.ServerMessages.getString;
@@ -201,27 +202,45 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     @Override
     public Result execute(Action<?> action) throws DispatchException {
         try {
-            return dispatch.execute(action);
-        } catch (AppServerNotAvailableException e) {
-            throw e; // just rethrow
-        } catch (RemoteRetryException e) {
-            if (!(action instanceof RequestAction) || ((RequestAction) action).logRemoteException()) {
-                String actionTry = "";
-                if(action instanceof RequestAction) {
-                    actionTry = "\n" + action + " try: " + ((RequestAction) action).requestTry + ", maxTries: " + e.maxTries;
-                }
-                logger.error("Error in LogicsAwareDispatchServlet.execute: " + actionTry, e);
+            try {
+                return dispatch.execute(action);
+            } catch (WrappedRemoteDispatchException e) {
+                throw e.remoteException;
             }
-            throw e;
-        } catch (MessageException e) {
-            logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
-            throw new MessageException(getString(getRequest(), "internal.server.error.with.message", e.getMessage()));
-        } catch (RemoteInternalException e) {
-            logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
-            throw new MessageException(getString(getRequest(), "internal.server.error"), e, e.lsfStack);
-        } catch (Throwable e) {
-            logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
-            throw new MessageException(getString(getRequest(), "internal.server.error"), e);
+        } catch (DispatchException e) { // mainly AppServerNotAvailableException, but in theory can be some InvalidSessionException 
+            throw e; // just rethrow
+        } catch (RemoteException e) {
+            if(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
+                throw handleNotDispatch(e);
+            
+            // connection problem, need to retry request
+            RemoteRetryException et = new RemoteRetryException(e.getMessage(), e, ExceptionUtils.getFatalRemoteExceptionCount(e));
+            logRemoteRetryException(action, et);
+            throw et;
+        } catch (Throwable e) { // all other exceptions 
+            throw handleNotDispatch(e);
+        }
+    }
+    
+    // wrapping RemoteServerException (app) + web server exception -> RemoteInternalDispatchException
+    private RemoteInternalDispatchException handleNotDispatch(Throwable e) {
+        logNotDispatchException(e);
+
+        Pair<String, String> allStacks = RemoteInternalException.getActualStacks(e);
+        return new RemoteInternalDispatchException(e, allStacks.first, allStacks.second); 
+    }
+
+    private void logNotDispatchException(Throwable e) {
+        logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
+    }
+
+    public void logRemoteRetryException(Action<?> action, RemoteRetryException et) {
+        if (!(action instanceof RequestAction) || ((RequestAction) action).logRemoteException()) {
+            String actionTry = "";
+            if(action instanceof RequestAction) {
+                actionTry = "\n" + action + " try: " + ((RequestAction) action).requestTry + ", maxTries: " + et.maxTries;
+            }
+            logger.error("Error in LogicsAwareDispatchServlet.execute: " + actionTry, et);
         }
     }
 

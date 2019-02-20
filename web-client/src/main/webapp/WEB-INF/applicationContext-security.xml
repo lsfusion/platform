@@ -30,7 +30,8 @@
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <form-login login-page="/login" login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
-        <logout logout-url="/logout" invalidate-session="false" success-handler-ref="successLogoutHandler"/> <!-- no invalidating session to give user opportunity to relogin, when another tab is opened-->
+        <!-- invalidate-session="false" no invalidating session to give user opportunity to relogin, when another tab is opened, but it's not that secure because user can login with another access, and the tab with different access will be available -->
+        <logout logout-url="/logout" success-handler-ref="successLogoutHandler"/>
         
         <csrf disabled="true"/>
 

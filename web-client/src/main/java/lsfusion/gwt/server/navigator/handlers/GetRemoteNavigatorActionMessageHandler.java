@@ -4,10 +4,9 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.actions.navigator.GetRemoteNavigatorActionMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class GetRemoteNavigatorActionMessageHandler extends NavigatorActionHandler<GetRemoteNavigatorActionMessage, StringResult> {
 
@@ -21,7 +20,7 @@ public class GetRemoteNavigatorActionMessageHandler extends NavigatorActionHandl
     }
 
     @Override
-    public StringResult executeEx(GetRemoteNavigatorActionMessage action, ExecutionContext context) throws DispatchException, IOException {
+    public StringResult executeEx(GetRemoteNavigatorActionMessage action, ExecutionContext context) throws RemoteException {
         return new StringResult(getRemoteNavigator(action).getRemoteActionMessage());
     }
 }

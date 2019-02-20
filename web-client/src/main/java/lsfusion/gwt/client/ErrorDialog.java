@@ -93,10 +93,6 @@ public class ErrorDialog extends GResizableModalWindow {
         closeButton.setFocus(true);
     }
 
-    public static void show(String caption, String message, String javaStack) {
-        show(caption, message, javaStack, null);
-    }
-    
     public static void show(String caption, String message, String javaStack, String lsfStack) {
         new ErrorDialog(caption, message, javaStack, lsfStack).showCenter();
     }

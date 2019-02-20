@@ -6,9 +6,8 @@ import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.RefreshUPHiddenPropsAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class RefreshUPHiddenPropsActionHandler extends FormServerResponseActionHandler<RefreshUPHiddenPropsAction> {
 
@@ -17,7 +16,7 @@ public class RefreshUPHiddenPropsActionHandler extends FormServerResponseActionH
     }
 
     @Override
-    public ServerResponseResult executeEx(RefreshUPHiddenPropsAction action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(RefreshUPHiddenPropsAction action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         return getServerResponseResult(form, form.remoteForm.refreshUPHiddenProperties(action.requestIndex, defaultLastReceivedRequestIndex, action.groupObjectSID, action.propSids));
     }

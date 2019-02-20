@@ -5,9 +5,8 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.actions.navigator.InterruptNavigator;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class InterruptNavigatorHandler extends NavigatorActionHandler<InterruptNavigator, VoidResult> {
 
@@ -16,7 +15,7 @@ public class InterruptNavigatorHandler extends NavigatorActionHandler<InterruptN
     }
 
     @Override
-    public VoidResult executeEx(InterruptNavigator action, ExecutionContext context) throws DispatchException, IOException {
+    public VoidResult executeEx(InterruptNavigator action, ExecutionContext context) throws RemoteException {
         getRemoteNavigator(action).interrupt(action.cancelable);
         return new VoidResult();
     }

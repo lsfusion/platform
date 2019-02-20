@@ -136,7 +136,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
-            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, this.user, hostname, true, web);
+            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true, web);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

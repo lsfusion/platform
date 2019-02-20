@@ -8,9 +8,8 @@ import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.gwt.shared.actions.form.GetRemoteActionMessageList;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemo
     }
 
     @Override
-    public ListResult executeEx(GetRemoteActionMessageList action, ExecutionContext context) throws DispatchException, IOException {
+    public ListResult executeEx(GetRemoteActionMessageList action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         List<Object> result = new ArrayList<>();
         if (form != null) {

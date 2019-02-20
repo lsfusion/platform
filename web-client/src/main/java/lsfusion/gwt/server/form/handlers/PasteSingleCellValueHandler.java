@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.form.handlers;
 
+import com.google.common.base.Throwables;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
@@ -7,9 +8,9 @@ import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.PasteSingleCellValue;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -23,12 +24,17 @@ public class PasteSingleCellValueHandler extends FormServerResponseActionHandler
     }
 
     @Override
-    public ServerResponseResult executeEx(PasteSingleCellValue action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(PasteSingleCellValue action, ExecutionContext context) throws RemoteException {
         byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
 
-        byte[] value = serializeObject(
-                gwtConverter.convertOrCast(action.value)
-        );
+        byte[] value;
+        try {
+            value = serializeObject(
+                    gwtConverter.convertOrCast(action.value)
+            );
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
 
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 

@@ -3,11 +3,8 @@ package lsfusion.gwt.server.form.handlers;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.shared.actions.form.FormHidden;
-
-import java.io.IOException;
 
 public class FormHiddenHandler extends FormActionHandler<FormHidden, VoidResult> {
     public FormHiddenHandler(MainDispatchServlet servlet) {
@@ -15,7 +12,7 @@ public class FormHiddenHandler extends FormActionHandler<FormHidden, VoidResult>
     }
 
     @Override
-    public VoidResult executeEx(FormHidden action, ExecutionContext context) throws DispatchException, IOException {
+    public VoidResult executeEx(FormHidden action, ExecutionContext context) {
         removeFormSessionObject(action.formSessionID);
         return new VoidResult();
     }

@@ -2,6 +2,7 @@ package lsfusion.server.stack;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
+import lsfusion.server.logics.ScriptParsingException;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
@@ -25,8 +26,15 @@ public class ThrowableWithStack {
         return stack; 
     }
 
+    public boolean isNoStackRequired() {
+        return throwable instanceof ScriptParsingException;
+    }
+    
     public void log(String prefix, Logger logger) {
-        logger.error(prefix + ": " + (stack.isEmpty() ? "" : '\n' + stack), throwable);
+        if(isNoStackRequired()) // don't need ScriptParsingException stack (it is always the same  / doesn't matter)
+            logger.error(prefix + ": " + throwable.getMessage());
+        else
+            logger.error(prefix + ": " + (stack.isEmpty() ? "" : '\n' + stack), throwable);
     }
 
     public RemoteException propagateRemote() throws RemoteException {

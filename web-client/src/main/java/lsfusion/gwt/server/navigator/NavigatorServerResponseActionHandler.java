@@ -8,6 +8,7 @@ import lsfusion.gwt.shared.actions.navigator.NavigatorRequestAction;
 import lsfusion.interop.form.ServerResponse;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 
 public abstract class NavigatorServerResponseActionHandler<A extends NavigatorRequestAction> extends NavigatorActionHandler<A, ServerResponseResult> {
 
@@ -15,7 +16,7 @@ public abstract class NavigatorServerResponseActionHandler<A extends NavigatorRe
         super(servlet);
     }
 
-    protected ServerResponseResult getServerResponseResult(A action, ServerResponse serverResponse) throws IOException {
+    protected ServerResponseResult getServerResponseResult(A action, ServerResponse serverResponse) {
         return FormServerResponseActionHandler.getServerResponseResult(new FormSessionObject(null, null, action.sessionID), serverResponse, servlet);
     }
 }
