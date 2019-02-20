@@ -41,7 +41,7 @@ public class FileUtils {
             if (canBeDisabled) {
                 createImageFile(iconHolder.getImage().getImage(), imagesFolder, iconFileName + "_Disabled", iconFileType, canBeDisabled);
             }
-            return new ImageDescription("images/" + fullPath + "/" + iconPath, iconHolder.getImage().getIconWidth(), iconHolder.getImage().getIconHeight());
+            return new ImageDescription("static/images/" + fullPath + "/" + iconPath, iconHolder.getImage().getIconWidth(), iconHolder.getImage().getIconHeight());
         }
         return null;
     }

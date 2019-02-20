@@ -61,8 +61,8 @@ public class GBusyDialog extends WindowBox {
         topPanel.setWidth("100%");
 
         topPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        topProgressBarDynamic = new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif");
-        topProgressBarStatic = new Image(GWT.getModuleBaseURL() + "images/loading_bar.png");
+        topProgressBarDynamic = new Image(GWT.getModuleBaseURL() + "static/images/loading_bar.gif");
+        topProgressBarStatic = new Image(GWT.getModuleBaseURL() + "static/images/loading_bar.png");
         topProgressBarStatic.setVisible(false);
         topProgressBarDynamic.addClickHandler(new ClickHandler() {
             @Override

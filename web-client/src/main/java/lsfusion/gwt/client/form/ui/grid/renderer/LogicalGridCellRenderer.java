@@ -44,6 +44,6 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 
     private String getCBImagePath(Object value) {
         boolean checked = value != null && (Boolean) value;
-        return GWT.getModuleBaseURL() + "images/checkbox_" + (checked ? "checked" : "unchecked") + ".png";
+        return GWT.getModuleBaseURL() + "static/images/checkbox_" + (checked ? "checked" : "unchecked") + ".png";
     }
 }

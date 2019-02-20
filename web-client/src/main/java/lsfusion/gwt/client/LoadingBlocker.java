@@ -104,7 +104,7 @@ public class LoadingBlocker extends LoadingManager {
             setGlassEnabled(true);
 
             VerticalPanel vp = new VerticalPanel();
-            vp.add(new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif"));
+            vp.add(new Image(GWT.getModuleBaseURL() + "static/images/loading_bar.gif"));
 
             messageLabel = new HTML();
             messageLabel.addStyleName("messageLabel");

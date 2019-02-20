@@ -60,7 +60,7 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         }
 
         String appPath = servletContext.getRealPath("");
-        FileUtils.APP_IMAGES_FOLDER_URL = appPath + "/images/";
+        FileUtils.APP_IMAGES_FOLDER_URL = appPath + "/static/images/";
         FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
 
         RMIUtils.initRMI();

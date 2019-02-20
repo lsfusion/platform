@@ -133,7 +133,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         asyncTimer = new Timer() {
             @Override
             public void run() {
-                asyncView.setIcon("loading.gif");
+                asyncView.setIcon("static/images/loading.gif");
             }
         };
 

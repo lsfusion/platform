@@ -362,7 +362,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     private class FileUploadStatusPanel extends HorizontalPanel {
         private Label fileNameLabel;
         private ProgressBar progressBar;
-        private Image cancelButton = new Image(GWT.getModuleBaseURL() + "images/delete.png");
+        private Image cancelButton = new Image(GWT.getModuleBaseURL() + "static/images/delete.png");
 
         public FileUploadStatusPanel(String fileName) {
             fileNameLabel = new Label(fileName);

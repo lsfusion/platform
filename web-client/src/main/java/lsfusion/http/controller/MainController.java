@@ -61,7 +61,7 @@ public class MainController {
     }
 
     private String getLogicsLogo(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "images/logo.png";
+        return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "static/images/logo.png";
     }
 
     private String getLogicsIcon(ServerSettings serverSettings) {
