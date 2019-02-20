@@ -108,7 +108,10 @@
     <!-- Spring configuration -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/spring/applicationContext-security.xml</param-value>
+        <param-value>
+            /WEB-INF/spring/applicationContext-security.xml
+            /WEB-INF/LSFWeb-servlet.xml
+        </param-value>
     </context-param>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

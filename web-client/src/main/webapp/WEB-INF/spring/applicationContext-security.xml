@@ -3,11 +3,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:b="http://www.springframework.org/schema/beans"
          xmlns:config="http://www.springframework.org/schema/context"
-         xmlns:aop="http://www.springframework.org/schema/aop"
          xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                                  http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
-                                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-                                 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+                                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
     <config:annotation-config />
 
     <!-- API security-->
@@ -70,37 +68,5 @@
     </authentication-manager>
 
     <b:bean id="authenticationProvider" class="lsfusion.http.LSFRemoteAuthenticationProvider"/>
-
-    <!-- lsFusion beans -->
-
-    <!-- GWT request handler -->
-    <b:bean id="mainDispatch" class="lsfusion.gwt.server.MainDispatchServlet"/>
-
-    <!-- Beans need for GWT request handler, bean names are actually not used (except logicsProvider, autowiring can find name with its interface, there is no intersection of this interfaces) -->
-
-    <!-- the name of that bean is used in main.jsp and login.jsp-->
-    <b:bean id="logicsProvider" class="lsfusion.http.provider.logics.LogicsProviderImpl" />
-
-    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.http.provider.navigator.NavigatorProviderImpl">
-        <aop:scoped-proxy proxy-target-class="false" />
-    </b:bean>
-
-    <b:bean id="sessionProvider" scope="session" class="lsfusion.http.provider.session.SessionProviderImpl">
-        <aop:scoped-proxy proxy-target-class="false" />
-    </b:bean>
-
-    <b:bean id="formProvider" scope="session" class="lsfusion.http.provider.form.FormProviderImpl">
-        <aop:scoped-proxy proxy-target-class="false" />
-    </b:bean>
-
-    <!-- Custom request handlers -->
-
-    <b:bean id="fileUploadHandler" class="lsfusion.http.UploadFileRequestHandler" />
-
-    <b:bean id="fileDownloadHandler" class="lsfusion.http.DownloadFileRequestHandler" />
-
-    <b:bean id="jnlpHandler" class="lsfusion.http.ClientJNLPRequestHandler" />
-
-    <b:bean id="externalHandler" class="lsfusion.http.ExternalRequestHandler"/>
 
 </b:beans>
