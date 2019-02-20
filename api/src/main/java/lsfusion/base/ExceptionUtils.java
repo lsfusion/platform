@@ -111,4 +111,8 @@ public class ExceptionUtils {
         
         return 10; // неизвестно что
     }
+
+    public static String getExStackTrace(String javaStack, String lsfStack) {
+        return lsfStack + '\n' + javaStack;
+    }
 }

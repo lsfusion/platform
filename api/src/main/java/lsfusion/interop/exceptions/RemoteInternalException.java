@@ -13,7 +13,6 @@ public class RemoteInternalException extends RemoteServerException {
     public RemoteInternalException(String message, Throwable cause, boolean isNoStackRequired, String lsfStack) {
         this(message + ": " + cause.getMessage(), isNoStackRequired ? null : ExceptionUtils.getStackTrace(cause), isNoStackRequired ? null : lsfStack);
     }
-
     public RemoteInternalException(Throwable cause, String javaStack, String lsfStack) {
         this(cause.getMessage(), javaStack, lsfStack);
     }
@@ -23,7 +22,8 @@ public class RemoteInternalException extends RemoteServerException {
         this.javaStack = javaStack;
         this.lsfStack = lsfStack;
     }
-    
+
+    // the same as in RemoteInternalDispatchException
     // returns server stacks if present     
     public static Pair<String, String> getActualStacks(Throwable e) {
         String javaStack;

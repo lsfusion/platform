@@ -37,7 +37,7 @@ public class RemoteExceptionsAspect {
         ThrowableWithStack throwableWithStack = new ThrowableWithStack(e);
         throwableWithStack.log("Internal server error", logger);
 
-        RemoteInternalException internalException = new RemoteInternalException(ThreadLocalContext.localize("{exceptions.internal.server.error}"), throwableWithStack.getThrowable(), throwableWithStack.isNoStackRequired(), throwableWithStack.getStack());
+        RemoteInternalException internalException = new RemoteInternalException(ThreadLocalContext.localize("{exceptions.internal.server.error}"), throwableWithStack.getThrowable(), throwableWithStack.isNoStackRequired(), throwableWithStack.getLsfStack());
         try {
             target.logServerException(internalException);
         } catch (Exception ex) {

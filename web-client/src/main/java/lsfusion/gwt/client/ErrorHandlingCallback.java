@@ -45,7 +45,8 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
             }
         }
         // messages.internalServerError();
-        ErrorDialog.show(messages.error(), caught.getMessage(), getJavaStackTrace(caught), getLSFStackTrace(caught));
+        String[] actualStacks = RemoteInternalDispatchException.getActualStacks(caught);
+        ErrorDialog.show(messages.error(), caught.getMessage(), actualStacks[0], actualStacks[1]);
     }
     
     public static boolean isAuthException(Throwable caught) {
@@ -61,19 +62,6 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         if (caught instanceof IncompatibleRemoteServiceException) // client - web-server
             return 2;
         return -1; // not connection problem
-    }
-
-    private String getJavaStackTrace(Throwable caught) {
-        if (caught instanceof RemoteInternalDispatchException)
-            return ((RemoteInternalDispatchException) caught).javaStack;
-        return GExceptionManager.getStackTrace(caught);
-    }
-
-    private String getLSFStackTrace(Throwable caught) {
-        if (caught instanceof RemoteInternalDispatchException) {
-            return ((RemoteInternalDispatchException) caught).lsfStack;
-        }
-        return null;
     }
 
     protected void relogin() {

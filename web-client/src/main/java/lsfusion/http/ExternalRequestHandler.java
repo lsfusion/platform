@@ -1,7 +1,9 @@
 package lsfusion.http;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.Pair;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.http.provider.logics.LogicsRunnable;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
@@ -9,6 +11,7 @@ import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
 import lsfusion.interop.ExecInterface;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
@@ -73,16 +76,21 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             }
 
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("text/html; charset=utf-8");
-            try {
-                response.getWriter().print(getString(request, "internal.server.error.with.message", e.getMessage()));
-            } catch (IOException e1) {
-                throw Throwables.propagate(e);
-            }
+            if(e instanceof AuthenticationException) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("text/html; charset=utf-8");
+                try {
+                    Pair<String, String> actualStacks = RemoteInternalException.getActualStacks(e);
+                    response.getWriter().print(e.getMessage()+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.first, actualStacks.second));
+                } catch (IOException e1) {
+                    throw Throwables.propagate(e1);
+                }
 
-            if(e instanceof RemoteException) // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
-                throw (RemoteException)e;
+                if (e instanceof RemoteException) // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
+                    throw (RemoteException) e;
+            }
         }
     }
 
