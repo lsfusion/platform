@@ -551,6 +551,11 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|   formSubReport { $groupObject.setSubReport($formSubReport.pathProperty);  }
 		)*
 	;
+	
+formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean isRightNeighbour]
+	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $isRightNeighbour = $relative.isRightNeighbour; }
+		)*
+	;
 
 formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean isRightNeighbour]
 	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $isRightNeighbour = $relative.isRightNeighbour; }
