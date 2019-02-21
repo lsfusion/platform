@@ -1,8 +1,6 @@
 package lsfusion.interop.navigator;
 
 import lsfusion.interop.ClientSettings;
-import lsfusion.interop.LocalePreferences;
-import lsfusion.interop.SecuritySettings;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
@@ -11,10 +9,13 @@ import java.rmi.RemoteException;
 
 public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
+    // separate methods, because has complex response serialization (and it will be an overhead using virtual navigator actions anyway)
+
     byte[] getNavigatorTree() throws RemoteException;
 
-    // окна лог, релевантные классы, статус и т.п.
-    byte[] getCommonWindows() throws RemoteException;
+    ClientSettings getClientSettings() throws RemoteException;
+
+    // main interface
 
     ServerResponse executeNavigatorAction(String actionSID, int type) throws RemoteException;
 
@@ -26,25 +27,10 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     void close() throws RemoteException;
 
-    boolean isForbidDuplicateForms() throws RemoteException;
+    // separate methods, because used really often (and it will be an overhead using virtual navigator actions anyway)
 
-    //for notifications
     void setCurrentForm(String formID) throws RemoteException;
     String getCurrentForm() throws RemoteException;
-
-    // пингование сервера
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 
-    void setUpdateTime(int updateTime) throws RemoteException;
-
-    // аутентификация
-    byte[] getCurrentUserInfoByteArray() throws RemoteException;
-
-    SecuritySettings getSecuritySettings() throws RemoteException;
-
-    ClientSettings getClientSettings() throws RemoteException;
-
-    LocalePreferences getLocalePreferences() throws RemoteException;
-
-    Integer getFontSize() throws RemoteException;
 }

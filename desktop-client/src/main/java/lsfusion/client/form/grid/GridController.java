@@ -16,13 +16,11 @@ import lsfusion.client.logics.classes.ClientIntegralClass;
 import lsfusion.interop.FormGrouping;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.ServerResponse;
-import lsfusion.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -233,26 +231,10 @@ public class GridController {
 
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(clientGrid, view);
-        for (Map.Entry<ClientPropertyDraw, ExternalScreenComponent> entry : extViews.entrySet()) {
-            entry.getKey().externalScreen.add(form.getID(), entry.getValue(), entry.getKey().externalScreenConstraints);
-        }
-    }
-
-    private Map<ClientPropertyDraw, ExternalScreenComponent> extViews = new HashMap<>();
-
-    private void addExternalScreenComponent(ClientPropertyDraw key) {
-        if (!extViews.containsKey(key)) {
-            ExternalScreenComponent extView = new ExternalScreenComponent();
-            extViews.put(key, extView);
-        }
     }
 
     public void addProperty(ClientPropertyDraw property) {
         table.addProperty(property);
-
-        if (property.externalScreen != null) {
-            addExternalScreenComponent(property);
-        }
     }
 
     public void removeProperty(ClientPropertyDraw property) {
@@ -305,11 +287,6 @@ public class GridController {
 
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
         table.setColumnValues(property, values, update);
-        if (extViews.containsKey(property)) {
-            Object value = getSelectedValue(property, null);
-            extViews.get(property).setValue((value == null) ? "" : value.toString());
-            property.externalScreen.invalidate();
-        }
     }
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {

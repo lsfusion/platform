@@ -16,6 +16,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.logics.DataObject;
@@ -51,6 +52,9 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         return property.read(env, getMapValues(objects));
     }
 
+    public ImMap<ImList<Object>, Object> readAll(ExecutionContext context) throws SQLException, SQLHandledException {
+        return readAll(context.getEnv());
+    }
     public ImMap<ImList<Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return property.readAll(env).mapKeys(new GetValue<ImList<Object>, ImMap<T, Object>>() {
             public ImList<Object> getMapValue(ImMap<T, Object> value) {

@@ -102,10 +102,6 @@ public interface ClientMessages extends Messages {
     String rmiConnectionLostRelogin();
     String rmiConnectionLostReconnect();
 
-    String checkApiVersionLogout();
-    String checkApiVersionTitle();
-    String checkApiVersionMessage();
-
     String propertyTooltipCanonicalName();
     String propertyTooltipTable();
     String propertyTooltipObjects();

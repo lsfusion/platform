@@ -5,6 +5,7 @@ import lsfusion.base.RawFileData;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.view.GClassViewType;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValueBuilder;
@@ -31,7 +32,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientFormChanges.class)
-    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex) {
+    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex, FormSessionObject sessionObject) {
         GFormChangesDTO dto = new GFormChangesDTO();
 
         dto.requestIndex = requestIndex;
@@ -107,7 +108,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
                 Object propValue = convertOrCast(clientValues.getValue());
                 if (propValue instanceof FileData || propValue instanceof RawFileData) {
-                    propValue = convertFileValue(reader, propValue);
+                    propValue = convertFileValue(reader, propValue, sessionObject);
                 }
                 propValues.put(groupObjectValue, propValue);
             }
@@ -143,9 +144,9 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return dto;
     }
 
-    private Object convertFileValue(ClientPropertyReader reader, Object value) {
+    private Object convertFileValue(ClientPropertyReader reader, Object value, FormSessionObject sessionObject) {
         if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass) {
-            return FileUtils.createPropertyImage(value != null ? ((RawFileData) value).getBytes() : null, ((ClientPropertyDraw) reader).getPropertyFormName());
+            return FileUtils.saveFormFile((RawFileData) value, sessionObject);
         } else {
             return value == null ? null : true;
         }

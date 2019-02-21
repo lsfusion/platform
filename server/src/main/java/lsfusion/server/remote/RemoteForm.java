@@ -77,7 +77,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     private Map<Long, SyncExecution> syncProcessRMIRequestMap = MapFact.mAddRemoveMap();
 
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener, ExecutionStack upStack) throws RemoteException {
-        super(port);
+        super(port, upStack, form.entity.getSID(), form.isSync() ? SyncType.SYNC : SyncType.NOSYNC);
 
         setContext(new RemoteFormContext<>(this));
         this.form = form;
@@ -85,11 +85,9 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         this.requestLock = new SequentialRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);
-        finalizeInit(upStack, form.isSync() ? SyncType.SYNC : SyncType.NOSYNC);
+        createPausablesExecutor();
 
-        if (remoteFormListener != null) {
-            remoteFormListener.formCreated(this);
-        }
+        remoteFormListener.formCreated(this);
     }
 
     public RemoteFormListener getRemoteFormListener() {
@@ -613,10 +611,6 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         });
     }
 
-    public String getSID() {
-        return form.entity.getSID();
-    }
-    
     public String getCanonicalName() {
         return form.entity.getCanonicalName();
     }

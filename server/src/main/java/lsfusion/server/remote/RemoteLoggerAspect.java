@@ -24,7 +24,7 @@ public class RemoteLoggerAspect {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
     public static final Map<Long, UserActivity> userActivityMap = MapFact.getGlobalConcurrentHashMap();
-    public static final Map<Long, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
+    public static final Map<String, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
     private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
     private static Map<Long, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
 

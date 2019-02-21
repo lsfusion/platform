@@ -20,9 +20,17 @@ public class DeSerializer {
         public final ClientNavigatorElement root;
         public final Map<String, ClientNavigatorWindow> windows;
 
-        public NavigatorData(ClientNavigatorElement root,Map<String, ClientNavigatorWindow> windows) {
+        public final ClientAbstractWindow logs;
+        public final ClientAbstractWindow status;
+        public final ClientAbstractWindow forms;
+
+        public NavigatorData(ClientNavigatorElement root,Map<String, ClientNavigatorWindow> windows,
+                             ClientAbstractWindow logs, ClientAbstractWindow status, ClientAbstractWindow forms) {
             this.root = root;
             this.windows = windows;
+            this.logs = logs;
+            this.status = status;
+            this.forms = forms;
         }
     }
 
@@ -50,7 +58,11 @@ public class DeSerializer {
             }
         }
 
-        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows);
+        ClientAbstractWindow logs =new ClientAbstractWindow(inStream);
+        ClientAbstractWindow status = new ClientAbstractWindow(inStream);
+        ClientAbstractWindow forms = new ClientAbstractWindow(inStream);
+
+        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, logs, status, forms);
     }
 
     public static List<ClientNavigatorElement> deserializeListClientNavigatorElement(byte[] state, Map<String, ClientNavigatorWindow> windows) throws IOException {

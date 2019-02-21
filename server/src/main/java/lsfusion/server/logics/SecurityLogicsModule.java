@@ -11,7 +11,7 @@ import java.io.IOException;
 
 
 public class SecurityLogicsModule extends ScriptingLogicsModule{
-    
+
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
     
@@ -20,7 +20,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP descriptionPolicy;
     public LCP orderUserPolicy;
 
-    public LCP forbidDuplicateFormsCurrentUser;
+    public LCP forbidDuplicateFormsCustomUser;
     public LCP permitViewAllPropertyUser;
     public LCP forbidChangeAllPropertyRole;
     public LCP forbidViewAllPropertyUser;
@@ -48,7 +48,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP hasUserRole;
 
     public LCP currentUserMainRoleName;
+    public LCP nameMainRoleUser;
     public LCP currentUserTransactTimeout;
+    public LCP transactTimeoutUser;
 
     public LAP copyAccess;    
 
@@ -74,7 +76,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         nameUserRole = findProperty("name[UserRole]");
         userRoleSID = findProperty("userRoleSID[VARSTRING[30]]");
         currentUserMainRoleName = findProperty("currentUserMainRoleName[]");
+        nameMainRoleUser = findProperty("nameMainRole[User]");
         currentUserTransactTimeout = findProperty("currentUserTransactTimeout[]");
+        transactTimeoutUser = findProperty("transactTimeout[User]");
 
         // Список ролей для пользователей
         mainRoleCustomUser = findProperty("mainRole[CustomUser]");
@@ -89,7 +93,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // ---- Политики для доменной логики
 
         // Разрешения для всех свойств
-        forbidDuplicateFormsCurrentUser = findProperty("forbidDuplicateFormsCurrentUser[]");
+        forbidDuplicateFormsCustomUser = findProperty("forbidDuplicateForms[CustomUser]");
         permitViewAllPropertyUser = findProperty("permitViewAllProperty[User]");
         forbidViewAllPropertyUser = findProperty("forbidViewAllProperty[User]");
         permitChangeAllPropertyUser = findProperty("permitChangeAllProperty[User]");

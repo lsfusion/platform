@@ -1,6 +1,8 @@
 package lsfusion.base;
 
+import lsfusion.interop.ExecInterface;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -19,6 +21,7 @@ import javax.mail.util.ByteArrayDataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,8 +48,21 @@ public class ExternalUtils {
     private static final String RETURN_PARAM = "return";
     private static final String RETURNMULTITYPE_PARAM = "returnmultitype";
     private static final String PROPERTY_PARAM = "property";
+    
+    public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
+        return new ExecInterface() {
+            public lsfusion.base.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
+                return remoteLogics.exec(token, sessionInfo, action, request);
+            }
+            public lsfusion.base.ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException {
+                return remoteLogics.eval(token, sessionInfo, action, paramScript, request);
+            }
+        };
+    }
 
-    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, Map<String, String[]> requestParams, ContentType requestContentType) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(ExecInterface remoteExec, String url, String uri, String query, InputStream is, 
+                                                  Map<String, String[]> requestParams, ContentType requestContentType, String[] headerNames, String[] headerValues, 
+                                                  String logicsHost, Integer logicsPort, String logicsExportName) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -54,13 +70,16 @@ public class ExternalUtils {
         List<String> returns = getParameterValues(queryParams, RETURN_PARAM);
         String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
         boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        List<Object> paramList = new ArrayList<>();
+        lsfusion.base.ExternalResponse execResult = null;
         
         String filename = "export";
 
+        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(), 
+                charset == null ? null : charset.toString(), url, query, headerNames, headerValues, logicsHost, logicsPort, logicsExportName);
+        
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString());
+            execResult = remoteExec.exec(action, request);
         } else {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
@@ -71,24 +90,24 @@ public class ExternalUtils {
                 } else if (script == null && !paramsList.isEmpty()) {
                     //Первый параметр считаем скриптом
                     script = paramsList.get(0);
-                    paramsList = paramsList.subList(1, paramsList.size());
+                    request.params = paramsList.subList(1, paramsList.size()).toArray();
                 }
-                paramList = remoteLogics.eval(isEvalAction, script, returns.toArray(new String[returns.size()]),
-                        paramsList.toArray(), charset == null ? null : charset.toString());
+                execResult = remoteExec.eval(isEvalAction, script, request);
             }
         }
 
         HttpEntity entity = null;
         String contentDisposition = null;
 
-        if (!paramList.isEmpty()) {
+        if (execResult != null) {
             Result<String> singleFileExtension = new Result<>();
-            entity = getInputStreamFromList(paramList, getBodyUrl(paramList, returnBodyUrl), singleFileExtension);
+            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), singleFileExtension);
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
+            return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues);
         }
-        return new ExternalResponse(entity, contentDisposition);
+        return new ExternalResponse(null, null, null, null);
     }
 
     private static String getScriptRequestParam(Map requestParams) {
@@ -108,12 +127,12 @@ public class ExternalUtils {
         return params;
     }
 
-    public static String getBodyUrl(List<Object> paramList, boolean returnBodyUrl) {
+    public static String getBodyUrl(Object[] results, boolean returnBodyUrl) {
         String bodyUrl = null;
-        if (paramList.size() > 1 && returnBodyUrl) {
+        if (results.length > 1 && returnBodyUrl) {
             StringBuilder result = new StringBuilder();
-            for (int i = 0; i < paramList.size(); i++) {
-                Object value = paramList.get(i);
+            for (int i = 0; i < results.length; i++) {
+                Object value = results[i];
                 result.append(String.format("%s=%s", ((result.length() == 0) ? "" : "&") + "param" + i, value));
             }
             bodyUrl = result.toString();
@@ -213,10 +232,10 @@ public class ExternalUtils {
         return paramsList;
     }
 
-    // paramList byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
-    public static HttpEntity getInputStreamFromList(List<Object> paramList, String bodyUrl, Result<String> singleFileExtension) {
+    // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
+    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, Result<String> singleFileExtension) {
         HttpEntity entity;
-        int paramCount = paramList.size();
+        int paramCount = results.length;
         if (paramCount > 1) {
             if(bodyUrl != null) {
                 entity = new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED);
@@ -224,7 +243,7 @@ public class ExternalUtils {
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                 builder.setContentType(ExternalUtils.MULTIPART_MIXED);
                 for (int i = 0; i < paramCount; i++) {
-                    Object value = paramList.get(i);
+                    Object value = results[i];
                     if (value instanceof FileData) {
                         String extension = ((FileData) value).getExtension();
                         builder.addPart("param" + i, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
@@ -235,7 +254,7 @@ public class ExternalUtils {
                 entity = builder.build();
             }
         } else if(paramCount == 1) {
-            Object value = BaseUtils.single(paramList);
+            Object value = BaseUtils.single(results);
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
                 entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), getContentType(extension));
@@ -251,12 +270,16 @@ public class ExternalUtils {
     }
 
     public static class ExternalResponse {
-        public HttpEntity response;
-        public String contentDisposition;
+        public final HttpEntity response;
+        public final String contentDisposition;
+        public final String[] headerNames;
+        public final String[] headerValues;
 
-        public ExternalResponse(HttpEntity response, String contentDisposition) {
+        public ExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues) {
             this.response = response;
             this.contentDisposition = contentDisposition;
+            this.headerNames = headerNames;
+            this.headerValues = headerValues;
         }
     }
 }

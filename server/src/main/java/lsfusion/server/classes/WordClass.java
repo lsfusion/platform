@@ -50,7 +50,7 @@ public class WordClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "doc";
     }
 

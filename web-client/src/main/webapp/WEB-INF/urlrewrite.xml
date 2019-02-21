@@ -5,16 +5,26 @@
         "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
 
 <urlrewrite>
-    <rule>
-        <from>.*nocache.*</from>
-        <set type="response-header" name="Cache-Control">public, max-age=0, must-revalidate</set>
-        <set type="expires">1 second</set>
-        <to last="true">-</to>
-    </rule>
+    <!--no need to set no-cache for nocache gwt resources (and others) because spring security 4 does this for us -->
 
-    <rule>
-        <from>^/lsfusion/(.*)$</from>
+    <rule match-type="regex">
+        <!-- gwt .cache.js caching -->
+        <!-- this filter is not applied in dev mode (port is 9876 instead of 8888)-->
+        <from>\.cache\.</from> <!-- from matcher uses find and not match-->
         <set type="response-header" name="Cache-Control">public, max-age=2592000</set>
         <set type="expires">30 days</set>
+    </rule>
+
+    <!-- webapp, gwt/public -->
+    <rule match-type="wildcard">
+        <from>**/static/**</from>
+        <set type="response-header" name="Cache-Control">public, max-age=86400</set>
+        <set type="expires">1 day</set>
+    </rule>
+    <!-- files are with random ids and are immutable-->
+    <rule match-type="wildcard">
+        <from>/downloadFile</from>
+        <set type="response-header" name="Cache-Control">public, max-age=86400</set>
+        <set type="expires">1 day</set>
     </rule>
 </urlrewrite>

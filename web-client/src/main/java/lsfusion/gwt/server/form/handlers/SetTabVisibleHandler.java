@@ -1,22 +1,21 @@
 package lsfusion.gwt.server.form.handlers;
 
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.form.SetTabVisible;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class SetTabVisibleHandler extends FormServerResponseActionHandler<SetTabVisible> {
-    public SetTabVisibleHandler(LSFusionDispatchServlet servlet) {
+    public SetTabVisibleHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 
     @Override
-    public ServerResponseResult executeEx(SetTabVisible action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(SetTabVisible action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         return getServerResponseResult(form, form.remoteForm.setTabVisible(action.requestIndex, defaultLastReceivedRequestIndex, action.tabbedPaneID, action.tabIndex));
     }

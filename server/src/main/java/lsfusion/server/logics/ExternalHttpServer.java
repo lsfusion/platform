@@ -1,21 +1,27 @@
 package lsfusion.server.logics;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.SessionInfo;
 import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.interop.ExecInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.remote.RemoteLogics;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
@@ -75,11 +81,21 @@ public class ExternalHttpServer extends MonitorServer {
             // поток создается HttpServer'ом, поэтому ExecutorService'ом как остальные не делается
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
-                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
-                        request.getRequestURI().getRawQuery(), request.getRequestBody(), new HashMap<String, String[]>(), getContentType(request));
+                String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
+                String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
+
+                InetSocketAddress remoteAddress = request.getRemoteAddress();
+                InetAddress address = remoteAddress.getAddress();
+                SessionInfo sessionInfo = new SessionInfo(remoteAddress.getHostName(), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
+
+                String uriPath = request.getRequestURI().getPath();
+                String url = "http://" + request.getRequestHeaders().getFirst("Host") + uriPath;
+                ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
+                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec, url, uriPath, request.getRequestURI().getRawQuery(), 
+                        request.getRequestBody(), new HashMap<String, String[]>(), getContentType(request), headerNames, headerValues, null, null, null);
 
                 if (response.response != null)
-                    sendResponse(request, response.response, response.response.getContentType().getValue(), response.contentDisposition);
+                    sendResponse(request, response);
                 else
                     sendOKResponse(request);
 
@@ -104,6 +120,14 @@ public class ExternalHttpServer extends MonitorServer {
             }
             return null;
         }
+        
+        private String[] getRequestHeaderValues(Headers headers, String[] headerNames) {
+            String[] headerValuesArray = new String[headerNames.length];
+            for (int i = 0; i < headerNames.length; i++) {
+                headerValuesArray[i] = StringUtils.join(headers.get(headerNames[i]).iterator(), ",");
+            }
+            return headerValuesArray;
+        }
 
         private void sendOKResponse(HttpExchange request) throws IOException {
             sendResponse(request, "Executed successfully".getBytes(), false);
@@ -121,15 +145,31 @@ public class ExternalHttpServer extends MonitorServer {
             os.close();
         }
 
-        private void sendResponse(HttpExchange request, HttpEntity response, String contentType, String contentDisposition) throws IOException {
-            if (contentType != null)
-                request.getResponseHeaders().add("Content-Type", contentType);
-            if(contentDisposition != null)
-                request.getResponseHeaders().add("Content-Disposition", contentDisposition);
-            request.sendResponseHeaders(HttpServletResponse.SC_OK, response.getContentLength());
-            OutputStream os = request.getResponseBody();
-            response.writeTo(os);
-            os.close();
+        // copy of ExternalHTTPServer.sendResponse
+        private void sendResponse(HttpExchange response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
+            HttpEntity responseEntity = responseHttpEntity.response;
+            String contentType = responseEntity.getContentType().getValue();
+            String contentDisposition = responseHttpEntity.contentDisposition;
+            String[] headerNames = responseHttpEntity.headerNames;
+            String[] headerValues = responseHttpEntity.headerValues;
+
+            boolean hasContentType = false;
+            boolean hasContentDisposition = false;
+            for(int i=0;i<headerNames.length;i++) {
+                String headerName = headerNames[i];
+                if(headerName.equals("Content-Type")) {
+                    hasContentType = true;
+                    response.getResponseHeaders().add("Content-Type", headerValues[i]);
+                } else
+                    response.getResponseHeaders().add(headerName, headerValues[i]);
+                hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+            }
+            if (contentType != null && !hasContentType)
+                response.getResponseHeaders().add("Content-Type", contentType);
+            if(contentDisposition != null && !hasContentDisposition)
+                response.getResponseHeaders().add("Content-Disposition", contentDisposition);
+            response.sendResponseHeaders(HttpServletResponse.SC_OK, responseEntity.getContentLength());
+            responseEntity.writeTo(response.getResponseBody());
         }
     }
 }

@@ -1,7 +1,6 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.exceptions.RemoteInterruptedException;
 import lsfusion.interop.exceptions.RemoteServerException;
 import lsfusion.server.ServerLoggers;
 import org.apache.log4j.Logger;
@@ -30,7 +29,7 @@ public class SequentialRequestLock {
             sequentialRequestLock.offer(0L, LOCK_OBJECT);
             requestLock.put(LOCK_OBJECT);
         } catch (InterruptedException e) {
-            throw new RemoteInterruptedException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -44,7 +43,7 @@ public class SequentialRequestLock {
             ServerLoggers.pausableLog("Acquired request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             ServerLoggers.pausableLog("Interrupted request lock for " + ownerSID + " for request #" + requestIndex);
-            throw new RemoteInterruptedException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -57,7 +56,7 @@ public class SequentialRequestLock {
             }
             ServerLoggers.pausableLog("Released request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
-            throw new RemoteInterruptedException(e);
+            throw Throwables.propagate(e);
         }
     }
 }

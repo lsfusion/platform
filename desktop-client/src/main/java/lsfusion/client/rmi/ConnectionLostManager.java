@@ -157,7 +157,7 @@ public class ConnectionLostManager {
                     Map<Pair<String, Long>, Collection<NonFatalHandledRemoteException>> group;
                         group = BaseUtils.group(new BaseUtils.Group<Pair<String, Long>, NonFatalHandledRemoteException>() {
                             public Pair<String, Long> group(NonFatalHandledRemoteException key) {
-                                return new Pair<>(key.getMessage() + ExceptionUtils.getStackTraceString(key), key.reqId);
+                                return new Pair<>(key.getMessage() + ExceptionUtils.getStackTrace(key), key.reqId);
                             }
                         }, flushExceptions);
 

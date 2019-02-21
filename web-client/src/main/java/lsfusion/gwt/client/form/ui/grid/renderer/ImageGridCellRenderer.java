@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.ui.cellview.DataGrid;
 import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.classes.GImageType;
 
 import static lsfusion.gwt.client.form.ui.grid.renderer.FileGridCellRenderer.ICON_EMPTY;
 
@@ -62,14 +63,11 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     protected void setImageSrc(ImageElement img, Object value) {
-        if (value instanceof String) {
-            img.setSrc(imageSrc(value));
+        if (value instanceof String && !value.equals("null")) {
+            img.setSrc(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)property.baseType).extension, false)); // form file
         } else {
-            img.setSrc(GWT.getModuleBaseURL() + "images/" + ICON_EMPTY);
+            img.setSrc(GWT.getModuleBaseURL() + ICON_EMPTY);
         }
     }
 
-    private String imageSrc(Object value) {
-        return GwtClientUtils.getWebAppBaseURL() + "propertyImage?sid=" + value;
-    }
 }

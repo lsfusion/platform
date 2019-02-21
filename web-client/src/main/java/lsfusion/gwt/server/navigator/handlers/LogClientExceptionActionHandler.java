@@ -1,14 +1,17 @@
 package lsfusion.gwt.server.navigator.handlers;
 
 import com.google.gwt.core.server.StackTraceDeobfuscator;
+import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
+import lsfusion.gwt.shared.exceptions.RemoteInternalDispatchException;
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
+import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -30,7 +33,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
     
     private GStackTraceDeobfuscator deobfuscator = new GStackTraceDeobfuscator();
     
-    public LogClientExceptionActionHandler(LSFusionDispatchServlet servlet) {
+    public LogClientExceptionActionHandler(MainDispatchServlet servlet) {
         super(servlet);
 
         new Timer().schedule(new TimerTask() {
@@ -42,32 +45,46 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
     }
 
     @Override
-    public VoidResult executeEx(LogClientExceptionAction action, ExecutionContext context) throws DispatchException, IOException {
+    public VoidResult executeEx(LogClientExceptionAction action, ExecutionContext context) throws RemoteException {
         RemoteNavigatorInterface navigator = getRemoteNavigator(action);
 
-        // чтобы не засорять Журнал ошибок, ограничиваем количество отчётов об ошибках от одного пользователя.
         Integer count = exceptionCounter.get(navigator);
         invocationLogger.info("Before logging exception, count : " + count + ", navigator " + navigator);
         
         if (count == null || count < 20) {
-            Throwable throwable = new Throwable(action.throwable.toString());
+            Throwable throwable;
+            Throwable actionThrowable = action.throwable;
+            if(actionThrowable instanceof SerializableThrowable) {
+                throwable = new Throwable(actionThrowable.getMessage());
 
-            if (action.nonFatal) {
-                RemoteException remoteException = new RemoteException(action.throwable.toString());
-                remoteException.setStackTrace(new StackTraceElement[]{});
-                throwable = new NonFatalHandledRemoteException(remoteException, action.reqId);
-                ((NonFatalHandledRemoteException) throwable).count = action.count;
+                if (action.nonFatal) { // created from NonFatalHandledException (was wrapped because there could be problems with causes)
+                    RemoteException remoteException = new RemoteException(actionThrowable.toString());
+                    remoteException.setStackTrace(new StackTraceElement[]{});
+                    throwable = new NonFatalHandledRemoteException(remoteException, action.reqId);
+                    ((NonFatalHandledRemoteException) throwable).count = action.count;
+                }
+
+                throwable.setStackTrace(actionThrowable.getStackTrace());
+                deobfuscator.deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
+            } else {
+                assert !action.nonFatal;
+                assert actionThrowable instanceof DispatchException;
+                if(actionThrowable instanceof RemoteInternalDispatchException) {
+                    throwable = new RemoteInternalException(actionThrowable, ((RemoteInternalDispatchException) actionThrowable).javaStack, ((RemoteInternalDispatchException) actionThrowable).lsfStack);
+                } else {
+                    throwable = new Throwable(actionThrowable);
+                    throwable.setStackTrace(actionThrowable.getStackTrace());
+                    // we don't need to obfuscate since it is a round trip exception
+                }
             }
-            
-            throwable.setStackTrace(action.throwable.getStackTrace());
-            
-            deobfuscator.deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
-            navigator.logClientException(action.title, null, throwable);
 
-            int newCount = count == null ? 1 : count + 1;
-            exceptionCounter.put(navigator, newCount);
-
-            invocationLogger.info("After logging exception, count : " + newCount + ", navigator " + navigator);
+            try {
+                navigator.logClientException(action.title, null, throwable);
+            } finally {
+                int newCount = count == null ? 1 : count + 1;
+                exceptionCounter.put(navigator, newCount);
+                invocationLogger.info("After logging exception, count : " + newCount + ", navigator " + navigator);
+            }
         }
         
         return new VoidResult();

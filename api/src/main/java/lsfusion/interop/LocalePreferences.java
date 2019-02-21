@@ -6,26 +6,24 @@ import java.util.Locale;
 import static lsfusion.base.BaseUtils.nvl;
 
 public class LocalePreferences implements Serializable {
-    public String language;
-    public String country;
+    public Locale locale;
     public String timeZone;
     public Integer twoDigitYearStart;
     
-    public LocalePreferences(String language, String country, String timeZone, Integer twoDigitYearStart) {
-        this.language = language;
-        this.country = country;
+    public LocalePreferences(Locale locale, String timeZone, Integer twoDigitYearStart) {
+        this.locale = locale;
         this.timeZone = timeZone;
         this.twoDigitYearStart = twoDigitYearStart;
     }
-    
-    public Locale getLocale() {
+
+    public static Locale getLocale(String language, String country) {
         if (language != null) {
             return new Locale(language, country == null ? "" : country);
         }
         return null; // default
     }
-    
-//    public static LocalePreferences overrideDefaultWithUser(LocalePreferences defaultPreferences, LocalePreferences userPreferences) {
+
+    //    public static LocalePreferences overrideDefaultWithUser(LocalePreferences defaultPreferences, LocalePreferences userPreferences) {
 //        assert defaultPreferences != null;
 //        if (userPreferences == null) {
 //            return defaultPreferences;

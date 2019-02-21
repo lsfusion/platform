@@ -35,11 +35,9 @@ public abstract class MainFrame extends JFrame {
     public JLabel statusComponent;
     public JComponent status;
 
-    public static boolean forbidDuplicateForms;
-
     private LockableUI lockableUI;
 
-    public MainFrame(final RemoteNavigatorInterface remoteNavigator) throws IOException {
+    public MainFrame(final RemoteNavigatorInterface remoteNavigator, String userName) throws IOException {
         super();
 
         this.remoteNavigator = remoteNavigator;
@@ -47,7 +45,7 @@ public abstract class MainFrame extends JFrame {
         setIconImages(Main.getMainIcons());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        updateUser();
+        updateUser(userName);
 
         statusComponent = new JLabel();
         status = new JPanel(new BorderLayout());
@@ -140,11 +138,9 @@ public abstract class MainFrame extends JFrame {
         }
     }
 
-    public void updateUser() throws IOException {
+    public void updateUser(String userName) {
         LoginAction loginAction = LoginAction.getInstance();
-        DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
-        setTitle(Main.getMainTitle() + " - " + inputStream.readUTF() + " (" + loginAction.loginInfo.getServerHost() + ":" + loginAction.loginInfo.getServerPort() + ")");
-        forbidDuplicateForms = remoteNavigator.isForbidDuplicateForms();
+        setTitle(Main.getMainTitle() + " - " + userName + " (" + loginAction.loginInfo.getServerHost() + ":" + loginAction.loginInfo.getServerPort() + ")");
     }
 
     public abstract Integer runReport(List<ReportPath> customReportPathList, String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException;

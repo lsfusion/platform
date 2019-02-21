@@ -54,7 +54,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     
     public static Boolean DEFAULT_NOCANCEL = null;
 
-    public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
     public static final SessionDataProperty isFloat = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
     public static final SessionDataProperty isSync = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);

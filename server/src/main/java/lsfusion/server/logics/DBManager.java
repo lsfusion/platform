@@ -699,11 +699,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         return null;
                     }
                 },
-                new ComputerController() {
-                    public boolean isFullClient() {
-                        return false;
-                    }
-                },
                 new FormController() {
                     @Override
                     public void changeCurrentForm(String form) {
@@ -713,11 +708,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     @Override
                     public String getCurrentForm() {
                         return null;
-                    }
-                },
-                new ConnectionController() {
-                    public void changeCurrentConnection(DataObject connection) {
-                        throw new RuntimeException("not supported");
                     }
                 },
                 new TimeoutController() {
@@ -746,11 +736,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         );
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, FormController formController,
-                                     ConnectionController connectionController, TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, OperationOwner owner) throws SQLException {
+    public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
+                                     TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, OperationOwner owner) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
-        return new DataSession(sql, userController, computerController, formController, connectionController,
-                timeoutController, changesController, localeController, new IsServerRestartingController() {
+        return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, new IsServerRestartingController() {
                                    public boolean isServerRestarting() {
                                        return restartManager.isPendingRestart();
                                    }
@@ -770,21 +759,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     // gets or adds computer
-    public Long getComputer(String strHostName, ExecutionStack stack) {
+    public DataObject getComputer(String strHostName, DataSession session, ExecutionStack stack) {
         try {
-            try (DataSession session = createSession()) {
-                Long result = (Long) businessLogics.authenticationLM.computerHostname.read(session, new DataObject(strHostName));
-                if (result == null) {
-                    DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
-                    businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
-
-                    result = (Long) addObject.object;
-                    apply(session, stack);
-                }
-
-                logger.debug("Begin user session " + strHostName + " " + result);
-                return result;
+            ObjectValue result = businessLogics.authenticationLM.computerHostname.readClasses(session, new DataObject(strHostName));
+            if (!(result instanceof DataObject)) {
+                DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
+                businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
+                apply(session, stack);
+                return new DataObject(addObject.object, businessLogics.authenticationLM.computer); // to update classes after apply
             }
+
+            logger.debug("Begin user session " + strHostName + " " + result);
+            return (DataObject) result;
         } catch (Exception e) {
             logger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
@@ -1322,13 +1308,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
         query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
         ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
-        if (rows.size() == 0) { // если нету добавим
+        if (rows.size() == 0) {
             systemUser = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
             apply(session);
         } else
             systemUser = (Long) rows.single().get("key");
 
-        serverComputer = getComputer(SystemUtils.getLocalHostName(), getStack());
+        serverComputer = (long) getComputer(SystemUtils.getLocalHostName(), session, getStack()).object;
     }
 
     private void updateAggregationStats(DataSession session, List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {

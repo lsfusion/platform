@@ -1242,7 +1242,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public ImMap<ImMap<T, Object>, Object> readAll(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(interfaces);
-        readQuery.addProperty(readValue, getExpr(readQuery.getMapExprs(), modifier));
+        Expr expr = getExpr(readQuery.getMapExprs(), modifier);
+        readQuery.addProperty(readValue, expr);
+        readQuery.and(expr.getWhere());
         return readQuery.execute(session, env).getMap().mapValues(new GetValue<Object, ImMap<Object, Object>>() {
             public Object getMapValue(ImMap<Object, Object> value) {
                 return value.singleValue();                
@@ -1251,7 +1253,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public ObjectValue readClasses(ExecutionContext context) throws SQLException, SQLHandledException {
-        return readClasses(context.getSession(), MapFact.<T, ObjectValue>EMPTY(), context.getModifier(), context.getQueryEnv());
+        return readClasses(context.getEnv());
+    }
+    public ObjectValue readClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return readClasses(env.getSession(), MapFact.<T, ObjectValue>EMPTY(), env.getModifier(), env.getQueryEnv());
     }
 
     public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {

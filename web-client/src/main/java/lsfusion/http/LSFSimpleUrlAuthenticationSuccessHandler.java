@@ -21,7 +21,7 @@ public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthentic
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, final Authentication authentication) throws IOException, ServletException {
         // setting cookie before super.onAuthenticationSuccess() to have right cookie-path  
         Cookie localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, "");
-        Locale userLocale = LSFAuthenticationToken.getLocale(authentication);
+        Locale userLocale = LSFAuthenticationToken.getUserLocale(authentication);
         if (userLocale != null) {
             localeCookie.setValue(userLocale.toString());
             localeCookie.setMaxAge(60 * 60 * 24 * 365 * 5);
@@ -60,6 +60,6 @@ public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthentic
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
         String newQueryString = removeQueryParams(request, Collections.singleton("error"));
-        return "/lsfusion.jsp" + newQueryString;
+        return "/main" + newQueryString;
     }
 }

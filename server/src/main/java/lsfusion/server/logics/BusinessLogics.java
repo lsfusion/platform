@@ -17,10 +17,7 @@ import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
-import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.ApplyCanceledException;
-import lsfusion.interop.form.screen.ExternalScreen;
-import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
@@ -36,10 +33,9 @@ import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.EExecutionStackRunnable;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.daemons.DiscountCardDaemonTask;
-import lsfusion.server.daemons.ScannerDaemonTask;
-import lsfusion.server.daemons.WeightDaemonTask;
-import lsfusion.server.data.*;
+import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.MapCacheAspect;
@@ -50,6 +46,7 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.RemoteNavigator;
+import lsfusion.server.form.stat.FormReportManager;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -75,8 +72,10 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
-import lsfusion.server.form.stat.FormReportManager;
-import lsfusion.server.session.*;
+import lsfusion.server.session.ApplyFilter;
+import lsfusion.server.session.Correlation;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
 import lsfusion.utils.DebugInfoWriter;
 import lsfusion.utils.StringDebugInfoWriter;
 import org.apache.log4j.Logger;
@@ -92,7 +91,6 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,8 +114,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private ModuleList modules = new ModuleList();
     
     private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<>();
-
-    private final List<ExternalScreen> externalScreens = new ArrayList<>();
 
     private final Map<Long, Integer> excessAllocatedBytesMap = new HashMap<>();
 
@@ -209,55 +205,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public LogicsModule getSysModule(String name) {
         return modules.get(name);
-    }
-
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) {
-        ArrayList<IDaemonTask> daemons = new ArrayList<>();
-
-        Integer scannerComPort;
-        Boolean scannerSingleRead;
-        boolean useDiscountCardReader;
-        Integer scalesComPort;
-
-        try {
-            try(DataSession session = getDbManager().createSession()) {
-                DataObject computerObject = new DataObject(compId, authenticationLM.computer);
-                scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, computerObject);
-                scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, computerObject);
-                useDiscountCardReader = authenticationLM.useDiscountCardReaderComputer.read(session, computerObject) != null;
-                scalesComPort = (Integer) authenticationLM.scalesComPortComputer.read(session, computerObject);
-            }
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
-        if(useDiscountCardReader)
-            daemons.add(new DiscountCardDaemonTask());
-        if (scannerComPort != null) {
-            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
-            daemons.add(task);
-        }
-        if (scalesComPort != null) {
-            IDaemonTask task = new WeightDaemonTask(scalesComPort);
-            daemons.add(task);
-        }
-        return daemons;
-    }
-
-    protected void addExternalScreen(ExternalScreen screen) {
-        externalScreens.add(screen);
-    }
-
-    public ExternalScreen getExternalScreen(int screenID) {
-        for (ExternalScreen screen : externalScreens) {
-            if (screen.getID() == screenID) {
-                return screen;
-            }
-        }
-        return null;
-    }
-
-    public ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException {
-        return null;
     }
 
     protected <M extends LogicsModule> M addModule(M module) {
@@ -676,7 +623,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
-        securityManager.setupDefaultAdminUser();
+        securityManager.initAdminUser();
     }
 
     public ImOrderSet<Property> getOrderProperties() {
@@ -917,7 +864,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result = Integer.compare(o1.type.getNum(), o2.type.getNum());
             if(result != 0)
                 return result;
-            
+
             return actionOrPropComparator.compare(o1.to, o2.to);
         }
     };
@@ -928,7 +875,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         if(compare != 0) // меньше тот у кого связь слабее (num больше)
             return -compare;
         
-        return actionOrPropComparator.compare(aProp, bProp);        
+        return actionOrPropComparator.compare(aProp, bProp);
     }
     // ищем вершину в компоненту (нужно для детерминированности, иначе можно было бы с findMinCycle совместить) - вершину с самыми слабыми исходящими связями (эвристика, потом возможно надо все же объединить все с findMinCycle и искать минимальный цикл с минимальным вырезаемым типом ребра)
     private static Property<?> findMinProperty(HMap<Property, LinkType> component) {
@@ -1095,16 +1042,16 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
                     Link minLink = getMinLink(minCycle);
                     removedLinks.exclAdd(minLink);
-                    
+
                     DebugInfoWriter pushDebugInfoWriter = null;
                     if(debugInfoWriter != null) {
                         pushDebugInfoWriter = debugInfoWriter.pushPrefix(minProperty.toString());
-                        
+
                         String result = "";
                         for(Link link : minCycle) {
                             result += " " + link.to;
                         }
-                        pushDebugInfoWriter.addLines("REMOVE LINK : " + minLink + " FROM CYCLE : " + result);                        
+                        pushDebugInfoWriter.addLines("REMOVE LINK : " + minLink + " FROM CYCLE : " + result);
                     }
 
 //                    printCycle("Features", minLink, innerComponent, minCycle);

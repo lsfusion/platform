@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import lsfusion.base.MIMETypeUtil;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.logics.classes.link.*;
 import lsfusion.gwt.server.FileUtils;
@@ -10,6 +11,7 @@ import lsfusion.gwt.shared.view.classes.link.*;
 import javax.activation.MimetypesFileTypeMap;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientTypeToGwtConverter extends ObjectConverter {
@@ -72,22 +74,16 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     private <T extends GFileType> T initializeFileClass(ClientFileClass clientFileClass, T fileClass) {
         fileClass.multiple = clientFileClass.multiple;
         fileClass.storeName = clientFileClass.storeName;
-        if (clientFileClass.getExtensions() != null) {
-            fileClass.extensions = new ArrayList<>();
-            MimetypesFileTypeMap mimeMap;
-            try {
-                mimeMap = new MimetypesFileTypeMap(FileUtils.APP_FOLDER_URL + "/WEB-INF/mimetypes");
-            } catch (IOException e) {
-                mimeMap = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
-            }
-            for (int i = 0; i < clientFileClass.getExtensions().length; i++) {
-                String ext = clientFileClass.getExtensions()[i];
-                if (ext != null && !ext.isEmpty() && !ext.equals("*.*") && !ext.equals("*")) {
-                    fileClass.extensions.add(mimeMap.getContentType("idleName." + ext.toLowerCase()));
+        if (clientFileClass instanceof ClientStaticFormatFileClass) { 
+            ArrayList<String> validContentTypes = new ArrayList<>();
+            for (String extension : ((ClientStaticFormatFileClass) clientFileClass).getExtensions()) {
+                if (extension != null && !extension.isEmpty() && !extension.equals("*.*") && !extension.equals("*")) {
+                    validContentTypes.add(MIMETypeUtil.MIMETypeForFileExtension(extension.toLowerCase()));
                 } else {
-                    fileClass.extensions.add(ext);
+                    validContentTypes.add(extension);
                 }
             }
+            fileClass.validContentTypes = validContentTypes;
         }
         return fileClass;
     }
@@ -99,7 +95,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientImageClass.class)
     public GImageType convertImageClass(ClientImageClass imageClass) {
-        return initializeFileClass(imageClass, new GImageType());
+        return initializeFileClass(imageClass, new GImageType(imageClass.getExtension()));
     }
 
     @Converter(from = ClientWordClass.class)

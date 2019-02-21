@@ -351,9 +351,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private final IsServerRestartingController isServerRestarting;
     public final TimeoutController timeout;
-    public final ComputerController computer;
     public final FormController form;
-    public final ConnectionController connection;
     public final UserController user;
     public final ChangesController changes;
     public final LocaleController locale;
@@ -387,10 +385,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return sessionEventOldDepends;
     }
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, final FormController form, final ConnectionController connection,
-                       TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass,
-                       ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents,
-                       OperationOwner upOwner) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -399,9 +394,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.currentSession = currentSession;
 
         this.user = user;
-        this.computer = computer;
         this.form = form;
-        this.connection = connection;
         this.timeout = timeout;
         this.changes = changes;
         this.locale = locale;
@@ -462,7 +455,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql);
     }
     public DataSession createSession(SQLSession sql) throws SQLException {
-        return new DataSession(sql, user, computer, form, connection, timeout, changes, locale, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
+        return new DataSession(sql, user, form, timeout, changes, locale, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
     // по хорошему надо было в класс оформить чтоб избежать ошибок, но абстракция получится слишком дырявой
@@ -541,7 +534,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener) throws SQLException, SQLHandledException {
         DataObject dataObject = addObject(customClass, object);
-        BL.resolveAutoSet(this, customClass, dataObject, classListener);
+        if(classListener != null)
+            BL.resolveAutoSet(this, customClass, dataObject, classListener);
         return dataObject;
     }
 
@@ -2249,10 +2243,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return empty;
             }
             
-            public ParseInterface getIsFullClient() {
-                return empty;
-            }
-
             public ParseInterface getSQLComputer() {
                 return empty;
             }
@@ -2299,14 +2289,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         public OperationOwner getOpOwner() {
             return DataSession.this.getOwner();
-        }
-
-        public ParseInterface getIsFullClient() {
-            return new LogicalParseInterface() {
-                public boolean isTrue() {
-                    return computer.isFullClient();
-                }
-            };
         }
 
         public ParseInterface getSQLComputer() {

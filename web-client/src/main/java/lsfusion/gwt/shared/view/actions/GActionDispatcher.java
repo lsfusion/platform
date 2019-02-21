@@ -5,8 +5,6 @@ public interface GActionDispatcher {
 
     void execute(GReportAction action);
 
-    void execute(GRunOpenReportAction action);
-
     Object execute(GChooseClassAction action);
 
     void execute(GMessageAction action);
@@ -32,8 +30,6 @@ public interface GActionDispatcher {
     void execute(GAsyncGetRemoteChangesAction action);
 
     void execute(GOpenFileAction action);
-
-    void execute(GExportFileAction action);
 
     String execute(GLoadLinkAction action);
 

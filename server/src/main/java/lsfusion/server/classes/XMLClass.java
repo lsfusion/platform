@@ -46,7 +46,7 @@ public class XMLClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "xml";
     }
 

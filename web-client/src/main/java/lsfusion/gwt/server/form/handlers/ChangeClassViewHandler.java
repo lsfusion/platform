@@ -2,24 +2,23 @@ package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ChangeClassView;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.view.GClassViewType;
 import lsfusion.interop.ClassViewType;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class ChangeClassViewHandler extends FormServerResponseActionHandler<ChangeClassView> {
-    public ChangeClassViewHandler(LSFusionDispatchServlet servlet) {
+    public ChangeClassViewHandler(MainDispatchServlet servlet) {
         super(servlet);
     }
 
     @Override
-    public ServerResponseResult executeEx(ChangeClassView action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(ChangeClassView action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         return getServerResponseResult(
                 form,

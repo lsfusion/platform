@@ -2,17 +2,16 @@ package lsfusion.server.remote;
 
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.auth.SecurityPolicy;
-import lsfusion.server.context.AbstractContext;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
+import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;
 
 import java.util.Locale;
 
-public class RemoteFormContext<F extends FormInstance> extends AbstractContext {
+public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     private final RemoteForm<F> form;
 
     public RemoteFormContext(RemoteForm<F> form) {
@@ -43,12 +42,13 @@ public class RemoteFormContext<F extends FormInstance> extends AbstractContext {
     }
 
     @Override
-    public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
-        try {
-            return new RemoteForm<>(formInstance, form.getExportPort(), form.getRemoteFormListener(), stack);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    protected int getExportPort() {
+        return form.getExportPort();
+    }
+
+    @Override
+    protected RemoteFormListener getFormListener() {
+        return form.getRemoteFormListener();
     }
 
     public SecurityPolicy getSecurityPolicy() {
@@ -74,10 +74,6 @@ public class RemoteFormContext<F extends FormInstance> extends AbstractContext {
     @Override
     public Long getCurrentUserRole() {
         return form.form.session.user.getCurrentUserRole();
-    }
-
-    public Long getCurrentConnection() {
-        return form.form.session.sql.contextProvider.getCurrentConnection();
     }
 
     @Override

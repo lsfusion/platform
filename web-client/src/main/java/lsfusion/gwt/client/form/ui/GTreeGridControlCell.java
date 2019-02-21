@@ -175,6 +175,6 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
     }
 
     private String getImageURL(String imageName) {
-        return GWT.getModuleBaseURL() + "images/" + imageName;
+        return GWT.getModuleBaseURL() + "static/images/" + imageName;
     }
 }

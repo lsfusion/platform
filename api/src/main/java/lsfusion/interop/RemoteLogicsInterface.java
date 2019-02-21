@@ -1,58 +1,41 @@
 package lsfusion.interop;
 
+import lsfusion.base.ExternalRequest;
+import lsfusion.base.ExternalResponse;
 import lsfusion.base.NavigatorInfo;
+import lsfusion.base.SessionInfo;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.event.IDaemonTask;
-import lsfusion.interop.form.screen.ExternalScreen;
-import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.remote.PendingRemoteInterface;
-import lsfusion.interop.remote.PreAuthentication;
+import lsfusion.interop.session.RemoteSessionInterface;
 
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
-    Integer getApiVersion() throws RemoteException;
+    // obsolete
 
-    String getPlatformVersion() throws RemoteException;
+    // main interface
 
-    GUIPreferences getGUIPreferences() throws RemoteException;
-    
-    RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
-    
-    Set<String> syncUsers(Set<String> userNames) throws RemoteException;
+    // authentication
+    AuthenticationToken authenticateUser(String userName, String password) throws RemoteException;
 
-    Long getComputer(String hostname) throws RemoteException;
+    // stateful interfaces
+    RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;
+    RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException;
 
-    ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException;
+    // RESTful interfaces
+    // external requests (interface is similar to RemoteSessionInterface but with token)
+    ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, String action, ExternalRequest request) throws RemoteException;
+    ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, boolean action, Object paramScript, ExternalRequest request) throws RemoteException;
 
-    ExternalScreen getExternalScreen(int screenID) throws RemoteException;
-
-    ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException;
-
-    PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException;
-    
-    VMOptions getClientVMOptions() throws RemoteException;
-
-    void remindPassword(String email, String localeLanguage) throws RemoteException;
-
-    //external requests
-    List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
-    List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
-
-    boolean isSingleInstance() throws RemoteException;
-
+    // separate methods, because used really often (and don't need authentication)
     long generateID() throws RemoteException;
-
-    String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
-
     void ping() throws RemoteException;
-
-    void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
-
-    Map<String, String> readMemoryLimits() throws RemoteException;
+    void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
 
     List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 }

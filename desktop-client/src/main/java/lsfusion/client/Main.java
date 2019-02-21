@@ -1,24 +1,26 @@
 package lsfusion.client;
 
-import jasperapi.ReportGenerator;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
-import lsfusion.client.form.ClientExternalScreen;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.SavingThread;
 import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
-import lsfusion.interop.*;
+import lsfusion.interop.ClientSettings;
+import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.IDaemonTask;
-import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.event.ICleanListener;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import org.apache.log4j.Logger;
+import org.castor.core.util.Base64Decoder;
+import org.json.JSONObject;
 import sun.awt.OSInfo;
 import sun.awt.SunToolkit;
 import sun.security.action.GetPropertyAction;
@@ -46,6 +48,7 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.trimToNull;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
@@ -62,10 +65,6 @@ public class Main {
 
     public static final RMITimeoutSocketFactory rmiSocketFactory = RMITimeoutSocketFactory.getInstance();
 
-    public static boolean configurationAccessAllowed;
-
-    public static ModuleFactory module;
-
     public static RemoteLogicsLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
     public static RemoteNavigatorInterface remoteNavigator;
@@ -74,10 +73,8 @@ public class Main {
     public static String logicsDisplayName;
     public static byte[] logicsMainIcon;
     public static byte[] logicsLogo;
-    
-    public static boolean hideMenu;
 
-    public static Long computerId;
+    public static String computerName;
     public static DateFormat dateFormat;
     public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
@@ -94,23 +91,25 @@ public class Main {
     public static int asyncTimeOut;
 
     public static EventBus eventBus = new EventBus();
-    private static ArrayList<IDaemonTask> daemonTasks;
+    public static List<ICleanListener> cleanListeners = new ArrayList<>();
 
     static SingleInstance singleInstance;
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
+    public static boolean configurationAccessAllowed;
+    public static boolean forbidDuplicateForms;
     
     public static long timeDiffServerClientLog = 1000;
 
     public static Integer fontSize;
     private static Map<Object, FontUIResource> fontUIDefaults = new HashMap<>();
 
-    public static void start(final String[] args, ModuleFactory startModule) {
+    public static void start(final String[] args) {
 
         registerSingleInstanceListener();
 
-        module = startModule;
+        computerName = SystemUtils.getLocalHostName();
 
         System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
 
@@ -219,39 +218,49 @@ public class Main {
 
                     remoteLogics = loginAction.getRemoteLogics();
 
+                    JSONObject serverSettings = getServerSettings(remoteLogics);
+
+                    logicsName = trimToNull(serverSettings.optString("logicsName"));
+                    logicsDisplayName = trimToNull(serverSettings.optString("displayName"));
+                    String iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
+                    logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
+                    String logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
+                    logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
+                    String serverPlatformVersion = trimToNull(serverSettings.optString("platformVersion"));
+                    Integer serverApiVersion = serverSettings.optInt("apiVersion");
+
                     String serverVersion = null;
                     String clientVersion = null;
                     String oldPlatformVersion = BaseUtils.getPlatformVersion();
-                    String newPlatformVersion = remoteLogics.getPlatformVersion();
-                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(newPlatformVersion)) {
-                        serverVersion = newPlatformVersion;
+                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(serverPlatformVersion)) {
+                        serverVersion = serverPlatformVersion;
                         clientVersion = oldPlatformVersion;
                     } else {
                         Integer oldApiVersion = BaseUtils.getApiVersion();
-                        Integer newApiVersion = remoteLogics.getApiVersion();
-                        if(!oldApiVersion.equals(newApiVersion)) {
-                            serverVersion = newPlatformVersion + " [" + newApiVersion + "]";
+                        if(!oldApiVersion.equals(serverApiVersion)) {
+                            serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
                             clientVersion = oldPlatformVersion + " [" + oldApiVersion + "]";
                         }
                     }
                     if(serverVersion != null) {
-                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), "lsFusion", JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), getMainTitle(), JOptionPane.WARNING_MESSAGE);
                         Main.shutdown();
                         return;
                     }
 
-                    GUIPreferences prefs = remoteLogics.getGUIPreferences();
-                    logicsName = prefs.logicsName;
-                    logicsDisplayName = prefs.logicsDisplayName;
-                    logicsMainIcon = prefs.logicsMainIcon;
-                    logicsLogo = prefs.logicsLogo;
-                    hideMenu = prefs.hideMenu;
-
                     remoteNavigator = loginAction.getRemoteNavigator();
 
-                    LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
+                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
 
-                    Locale userLocale = userPreferences.getLocale();
+                    LocalePreferences userPreferences = clientSettings.localePreferences;
+                    fontSize = clientSettings.fontSize;
+                    busyDialog = clientSettings.busyDialog;
+                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
+                    useRequestTimeout = clientSettings.useRequestTimeout;
+                    configurationAccessAllowed = clientSettings.configurationAccessAllowed;
+                    forbidDuplicateForms = clientSettings.forbidDuplicateForms;
+
+                    Locale userLocale = userPreferences.locale;
                     if (userLocale != null) {
                         Locale.setDefault(userLocale);
                         
@@ -264,21 +273,13 @@ public class Main {
 
                     setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
 
-                    fontSize = remoteNavigator.getFontSize();
                     setUIFontSize();
-
-                    computerId = loginAction.getComputerId();
-
-                    SecuritySettings securitySettings = remoteNavigator.getSecuritySettings();
-                    configurationAccessAllowed = securitySettings.configurationAccessAllowed;
 
                     startSplashScreen();
 
                     logger.info("Before init frame");
-                    frame = module.initFrame(remoteNavigator);
+                    frame = new DockableMainFrame(remoteNavigator, clientSettings.currentUserName);
                     logger.info("After init frame");
-
-                    remoteNavigator.setUpdateTime(pullMessagesPeriod);
 
                     frame.addWindowListener(
                             new WindowAdapter() {
@@ -291,28 +292,11 @@ public class Main {
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     logger.info("After setExtendedState");
 
-                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), securitySettings.devMode);
+                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode);
 
                     frame.setVisible(true);
 
                     ((DockableMainFrame) frame).clearForms();
-
-                    daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
-                    for (IDaemonTask task : daemonTasks) {
-                        try {
-                            task.setEventBus(eventBus);
-                            task.start();
-                        } catch (Exception e) {
-                            logger.error(getString("client.error.application.initialization"), e);
-                            Log.error(getString("client.error.application.initialization"), e);
-                        }
-                    }
-
-                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
-
-                    busyDialog = clientSettings.busyDialog;
-                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
-                    useRequestTimeout = clientSettings.useRequestTimeout;
 
                     ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
 
@@ -329,11 +313,21 @@ public class Main {
     private static void loadLogicsLogo(RemoteLogicsInterface remoteLogics) {
         try {
             if (remoteLogics != null) {
-                logicsLogo = remoteLogics.getGUIPreferences().logicsLogo;
+                JSONObject serverSettings = getServerSettings(remoteLogics);
+                logicsDisplayName = trimToNull(serverSettings.optString("displayName"));
+                String iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
+                logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
+                String logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
+                logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
             }
         } catch (Throwable e) {
             logger.error("Error loading logics logo", e);
         }
+    }
+
+    private static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Service.getServerSettings[]", new ExternalRequest());
+        return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 
     private static void setupTimePreferences(String userTimeZone, Integer twoDigitYearStart) throws RemoteException {
@@ -479,7 +473,7 @@ public class Main {
 
     public static boolean clientExceptionLog(String title, Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.logClientException(title, SystemUtils.getLocalHostName(), t);
+            remoteNavigator.logClientException(title, Main.computerName, t);
             return true;
         }
         return false;
@@ -700,16 +694,13 @@ public class Main {
         }
 
         RemoteFormProxy.dropCaches();
-        ClientExternalScreen.dropCaches();
 
-        if (daemonTasks != null) {
-            for (IDaemonTask task : daemonTasks) {
-                task.stop();
-            }
+        for (ICleanListener task : cleanListeners) {
+            task.clean();
         }
+        cleanListeners.clear();
         eventBus.invalidate();
 
-        computerId = -1L;
         frame = null;
         remoteLoader = null;
         remoteLogics = null;
@@ -718,45 +709,14 @@ public class Main {
         System.gc();
     }
 
-    public static String writeToComPort(byte[] file, int comPort) {
-        for (IDaemonTask daemonTask : daemonTasks) {
-            try {
-                daemonTask.writeToComPort(file, comPort);
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-        }
-        return null;
-    }
-
     public static long generateID() throws RemoteException {
         return remoteLogics.generateID();
-    }
-
-    public interface ModuleFactory {
-        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException;
-
-        void openInExcel(ReportGenerationData generationData);
-
-        boolean isFull();
     }
 
     public static void main(final String[] args) {
 
 //        SpanningTreeWithBlackjack.test();
 //        SpanningTreeWithBlackjack.test1();
-        start(args, new ModuleFactory() {
-            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
-                return new DockableMainFrame(remoteNavigator);
-            }
-
-            public void openInExcel(ReportGenerationData generationData) {
-                ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true);
-            }
-
-            public boolean isFull() {
-                return true;
-            }
-        });
+        start(args);
     }
 }

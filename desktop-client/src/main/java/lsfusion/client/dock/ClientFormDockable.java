@@ -6,7 +6,6 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
-import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 

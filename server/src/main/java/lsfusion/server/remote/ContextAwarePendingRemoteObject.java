@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.remote.PendingRemoteObject;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -12,7 +13,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.stack.ExecutionStackAspect;
-import lsfusion.server.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObject implements Unreferenced, ProfiledObject {
+public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObject implements Unreferenced, ProfiledObject { // AutoCloseable in offline mode (with port = -1)
 
     protected final static Logger logger = ServerLoggers.systemLogger;
 
@@ -42,28 +42,22 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     protected Context context;
 
     protected ExecutorService pausablesExecutor;
+    private final String sID;
 
-    protected ContextAwarePendingRemoteObject() {
+    protected ContextAwarePendingRemoteObject(String sID) {
         super();
-        pausablesExecutor = null;
+        this.sID = sID;
         rmiStack = new TopExecutionStack(getSID());
     }
 
-    protected void finalizeInit(ExecutionStack upStack, SyncType type) {
+    protected void createPausablesExecutor() {
         pausablesExecutor = ExecutorFactory.createRmiMirrorSyncService(this);
+    }
+
+    protected ContextAwarePendingRemoteObject(int port, ExecutionStack upStack, String sID, SyncType type) throws RemoteException {
+        super(port, port >= 0);
+        this.sID = sID;
         rmiStack = SyncExecutionStack.newThread(upStack, getSID(), type);
-    }
-
-    protected ContextAwarePendingRemoteObject(int port) throws RemoteException {
-        super(port);
-    }
-
-    // not used
-    protected ContextAwarePendingRemoteObject(int port, boolean autoExport) throws RemoteException {
-        super(port, autoExport);
-        assert false;
-        pausablesExecutor = null;
-        rmiStack = new TopExecutionStack(getSID());
     }
 
     public Context getContext() {
@@ -73,8 +67,13 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     public void setContext(Context context) {
         this.context = context;
     }
+    
+    public boolean isLocal() { // means that object is not exported and used only at server
+        return exportPort < 0;
+    }
 
     private Set<Thread> getContextThreads() {
+        assert !isLocal();
         synchronized (threads) {
             return threads.copy();
         }
@@ -89,18 +88,22 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     public void addContextThread(Thread thread) {
+        assert !isLocal();
         synchronized (threads) {
             threads.add(thread);
         }
     }
 
     public void removeContextThread(Thread thread) {
+        assert !isLocal();
         synchronized (threads) {
             threads.remove(thread);
         }
     }
 
-    public abstract String getSID();
+    public String getSID() {
+        return sID;
+    }
     protected boolean isEnabledUnreferenced() {
         return true;
     }
@@ -141,6 +144,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     // умертвляет объект - отключает его от новых потоков + закрывает все старые потоки
     // ВАЖНО что должно выполняться в потоке, который сам не попадает в cleanThreads
     public synchronized void deactivate() {
+        assert !isLocal();
         if(deactivated)
             return;
 
@@ -160,7 +164,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
         synchronized (threads) {
             for (Thread thread : threads) {
-                ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
+                ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread));
                 try {
                     ThreadUtils.interruptThread(context, thread);
                 } catch (SQLException | SQLHandledException ignored) {
@@ -200,6 +204,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     private boolean closed;
     public synchronized void explicitClose() {
+        assert !isLocal();
         ServerLoggers.assertLog(deactivated, "REMOTE OBJECT MUST BE DEACTIVATED " + this);
         if(closed)
             return;
@@ -209,6 +214,13 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         onClose();
 
         closed = true;
+    }
+    
+    public void localClose() {
+        assert isLocal();
+        
+        // it makes no sense to call deactivate since all remote semantics is not used
+        onClose();
     }
 
     public String toString() { // чтобы избегать ситуации когда включается log, toString падает по ошибке, а в месте log'а exception'ы не предполагаются (например dgc log, где поток checkLeases просто останавливается) 
@@ -229,9 +241,9 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return closed;
     }
 
-    public void logServerException(ThrowableWithStack t) throws SQLException, SQLHandledException {
+    public void logServerException(RemoteInternalException t) throws SQLException, SQLHandledException {
         BusinessLogics businessLogics = getContext().getLogicsInstance().getBusinessLogics();
-        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t.getThrowable(), t.getStack(), null, null, false, false);
+        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, null, false, false);
     }
 
     public void interrupt(boolean cancelable) throws RemoteException {

@@ -1,14 +1,15 @@
 package lsfusion.client;
 
-import lsfusion.base.NavigatorInfo;
-import lsfusion.base.SystemUtils;
-import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
+import lsfusion.base.*;
+import lsfusion.client.remote.proxy.RemoteLogicsProxy;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.exceptions.*;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,11 +18,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -56,7 +60,6 @@ public final class LoginAction {
     private List<UserInfo> userInfos = new ArrayList<>();
 
     private RemoteLogicsInterface remoteLogics;
-    private long computerId;
     private RemoteNavigatorInterface remoteNavigator;
 
     private LoginAction() {
@@ -67,32 +70,40 @@ public final class LoginAction {
         
         loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, null));
     }
-
-    public void initLoginDialog(RemoteLogicsInterface remoteLogics) {
-        String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
-        String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-
+    
+    private void syncUsers(RemoteLogicsInterface remoteLogics) {
         if (remoteLogics != null) {
-            Set<String> savedUsers = new HashSet<>();
+            JSONArray users = new JSONArray();
             for (UserInfo userInfo : userInfos) {
-                savedUsers.add(userInfo.name);
+                users.put(userInfo.name);
             }
+            FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
             try {
-                Set<String> currentUsers = remoteLogics.syncUsers(savedUsers);
+                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Authentication.syncUsers[VARISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{Main.computerName, fileData}));
+                JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes()));
+                List<Object> currentUsers = unlockedUsers.toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
                 for (UserInfo userInfo : userInfos) {
                     if (currentUsers.remove(userInfo.name)) {
                         newUserInfos.add(userInfo);
                     }
                 }
-                for (String user : currentUsers) {
-                    newUserInfos.add(new UserInfo(user, false, null));
+                for (Object user : currentUsers) {
+                    newUserInfos.add(new UserInfo(user.toString(), false, null));
                 }
                 userInfos = newUserInfos;
             } catch (RemoteException e) {
                 logger.error("Error synchronizing users", e);
             }
         }
+    } 
+
+    public void initLoginDialog(RemoteLogicsInterface remoteLogics) {
+        String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
+        String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
+
+        syncUsers(remoteLogics);
+            
         UserInfo userInfo = !userInfos.isEmpty() ? userInfos.get(0).copy() : new UserInfo();
         if (userName != null){
             userInfo.name = userName;
@@ -239,11 +250,45 @@ public final class LoginAction {
 
         return true;
     }
+    
+    public static SessionInfo getSessionInfo() {
+        return new SessionInfo(Main.computerName, SystemUtils.getLocalHostIP(), Locale.getDefault().getLanguage(), Locale.getDefault().getCountry());
+    }
+
+    private static NavigatorInfo getNavigatorInfo() {
+        Object notClassic = Toolkit.getDefaultToolkit().getDesktopProperty("win.xpstyle.themeActive");
+        String osVersion = System.getProperty("os.name") + (UIManager.getLookAndFeel().getID().equals("Windows")
+                && (notClassic instanceof Boolean && !(Boolean) notClassic) ? " Classic" : "");
+        String processor = System.getenv("PROCESSOR_IDENTIFIER");
+
+        String architecture = System.getProperty("os.arch");
+        if (osVersion.startsWith("Windows")) {
+            String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+            String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+            architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
+        }
+
+        Integer cores = Runtime.getRuntime().availableProcessors();
+        com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean)
+                java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+        Integer physicalMemory = (int) (os.getTotalPhysicalMemorySize() / 1048576);
+        Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
+        Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
+        Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
+        String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
+
+        String screenSize = null;
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        if(dimension != null) {
+            screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
+        }
+
+        return new NavigatorInfo(getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize);
+    }
 
     private Object connect() {
         RemoteLogicsLoaderInterface remoteLoader;
         RemoteLogicsInterface remoteLogics;
-        long computerId;
         RemoteNavigatorInterface remoteNavigator;
 
         try {
@@ -252,44 +297,11 @@ public final class LoginAction {
             if (remoteLoader == null) {
                 return CANCELED;
             }
-            RemoteLogicsInterface remote = remoteLoader.getLogics();
+            remoteLogics = new RemoteLogicsProxy(remoteLoader.getLogics());
 
-            remoteLogics = new RemoteBusinessLogicProxy(remote);
-            computerId = remoteLogics.getComputer(SystemUtils.getLocalHostName());
+            AuthenticationToken authToken = remoteLogics.authenticateUser(loginInfo.getUserName(), loginInfo.getPassword());
 
-            Object notClassic = Toolkit.getDefaultToolkit().getDesktopProperty("win.xpstyle.themeActive");
-            String osVersion = System.getProperty("os.name") + (UIManager.getLookAndFeel().getID().equals("Windows")
-                    && (notClassic instanceof Boolean && !(Boolean) notClassic) ? " Classic" : "");
-            String processor = System.getenv("PROCESSOR_IDENTIFIER");
-
-            String architecture = System.getProperty("os.arch");
-            if (osVersion.startsWith("Windows")) {
-                String arch = System.getenv("PROCESSOR_ARCHITECTURE");
-                String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
-                architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
-            }
-
-            Integer cores = Runtime.getRuntime().availableProcessors();
-            com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean)
-                    java.lang.management.ManagementFactory.getOperatingSystemMXBean();
-            Integer physicalMemory = (int) (os.getTotalPhysicalMemorySize() / 1048576);
-            Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
-            Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
-            Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
-            String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
-            
-            String language = Locale.getDefault().getLanguage();
-            String country = Locale.getDefault().getCountry();
-            
-            String screenSize = null;
-            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-            if(dimension != null) {
-                screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
-            }
-
-            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), new NavigatorInfo(loginInfo.getUserName(),
-                    loginInfo.getPassword(), computerId, SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
-                    cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize, language, country), true);
+            remoteNavigator = remoteLogics.createNavigator(authToken, getNavigatorInfo());
         } catch (CancellationException ce) {
             return CANCELED;
         } catch (UnknownHostException e) {
@@ -318,17 +330,12 @@ public final class LoginAction {
 
         this.remoteLogics = remoteLogics;
         this.remoteNavigator = remoteNavigator;
-        this.computerId = computerId;
 
         return OK;
     }
 
     public RemoteLogicsInterface getRemoteLogics() {
         return remoteLogics;
-    }
-
-    public long getComputerId() {
-        return computerId;
     }
 
     public RemoteNavigatorInterface getRemoteNavigator() {

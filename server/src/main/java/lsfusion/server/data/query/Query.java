@@ -13,6 +13,7 @@ import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.OrderClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
@@ -549,8 +550,12 @@ public class Query<K,V> extends IQuery<K,V> {
     @Pack
     public Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(final BaseClass baseClass) {
         MSet<Expr> mReadExprs = SetFact.mSet();
-        for(KeyExpr expr : mapKeys.valueIt())
-            expr.getReader(where).prepareClassesQuery(expr, where, mReadExprs, baseClass);
+        for(KeyExpr expr : mapKeys.valueIt()) {
+            ClassReader reader = expr.getReader(where);
+            if(reader == null)
+                throw new RuntimeException(ThreadLocalContext.localize("{exceptions.mix.of.types.or.incorrect.set.operation}"));
+            reader.prepareClassesQuery(expr, where, mReadExprs, baseClass);
+        }
         for(Expr expr : properties.valueIt())
             expr.getReader(where).prepareClassesQuery(expr, where, mReadExprs, baseClass);
         ImSet<Expr> readExprs = mReadExprs.immutable();

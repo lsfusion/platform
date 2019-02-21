@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import jasperapi.ReportGenerator;
 import lsfusion.base.*;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -686,7 +687,6 @@ public class ClientFormController implements AsyncListener {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 formLayout.revalidate();
-                ClientExternalScreen.repaintAll(getID());
             }
         });
     }
@@ -1028,10 +1028,6 @@ public class ClientFormController implements AsyncListener {
                     remoteForm.gainedFocus(requestIndex, lastReceivedRequestIndex);
                 }
             });
-
-            // если вдруг изменились данные в сессии
-            ClientExternalScreen.invalidate(getID());
-            ClientExternalScreen.repaintAll(getID());
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.form.activation"), e);
         }
@@ -1372,8 +1368,6 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void runEditReport(List<ReportPath> customReportPathList) {
-        assert Main.module.isFull();
-
         try {
             Main.editReportPathList(customReportPathList);
         } catch (Exception e) {
@@ -1413,7 +1407,7 @@ public class ClientFormController implements AsyncListener {
             @Override
             public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
                 if (generationData != null) {
-                    Main.module.openInExcel(generationData);
+                    ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true);
                 }
             }
         });

@@ -50,7 +50,7 @@ public class ExcelClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "xls";
     }
 

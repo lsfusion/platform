@@ -2,7 +2,6 @@ package lsfusion.server.stack;
 
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import lsfusion.server.form.entity.FormEntity;
@@ -12,14 +11,10 @@ import lsfusion.server.profiler.ProfileObject;
 import lsfusion.server.profiler.Profiler;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteContextAspect;
-import lsfusion.server.remote.RemoteForm;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
@@ -289,7 +284,7 @@ public class ExecutionStackAspect {
         threadLocalExceptionStack.set(exceptionStackString);
     }
     
-    public static String getExceptionStackString() {
+    public static String getExceptionStackTrace() {
         String result = threadLocalExceptionStack.get();
         threadLocalExceptionStack.set(null);
         return result != null ? result : getStackString();
@@ -299,9 +294,8 @@ public class ExecutionStackAspect {
         return getStackString(Thread.currentThread(), false, false); // не concurrent по определению
     }
 
-
     public static String getExStackTrace() {
-        return getStackString() + '\n' + ExceptionUtils.getStackTrace();
+        return ExceptionUtils.getExStackTrace(ExceptionUtils.getStackTrace(), getStackString());
     }
 
     public static String getStackString(Thread thread, boolean checkConcurrent, boolean cut) {

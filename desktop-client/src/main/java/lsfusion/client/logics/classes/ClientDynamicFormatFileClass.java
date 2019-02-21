@@ -16,11 +16,6 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
         super(multiple, storeName);
     }
 
-    @Override
-    public String[] getExtensions() {
-        return null;
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new DynamicFormatFileRenderer(property);
     }

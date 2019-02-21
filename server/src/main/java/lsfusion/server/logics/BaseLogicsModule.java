@@ -104,6 +104,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LAP<?> onStarted;
 
     public LCP statusHttp;
+    
+    public LCP<?> authToken;
+    public LCP<?> headers;
+    public LCP<?> headersTo;
+    public LCP<?> url;
+    public LCP<?> query;
+    public LCP<?> host;
+    public LCP<?> port;
+    public LCP<?> exportName;
 
     public LCP messageCaughtException;
     public LCP javaStackTraceCaughtException;
@@ -149,7 +158,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP reportRowHeight, reportCharWidth, reportToStretch;
 
     public LCP networkPath;
-    
+
     public AbstractGroup privateGroup;
 
     public TableFactory tableFactory;
@@ -387,6 +396,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         onStarted = findAction("onStarted[]");
 
         statusHttp = findProperty("statusHttp[]");
+        
+        authToken = findProperty("authToken[]");
+        headers = findProperty("headers[TEXT]");
+        headersTo = findProperty("headersTo[TEXT]");
+        url = findProperty("url[]");
+        query = findProperty("query[]");
+        host = findProperty("host[]");
+        port = findProperty("port[]");
+        exportName = findProperty("exportName[]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");
@@ -603,10 +621,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     @NFLazy
     public AnyValuePropertyHolder getRequestedValueProperty() {
-        return addAnyValuePropertyHolder("requested");
+        return getAnyValuePropertyHolder("requested");
     }
 
-    public AnyValuePropertyHolder addAnyValuePropertyHolder(String namePrefix) {
+    @IdentityStrongLazy
+    @NFLazy
+    public AnyValuePropertyHolder getExportValueProperty() {
+        return getAnyValuePropertyHolder("export");
+    }
+
+    public AnyValuePropertyHolder getAnyValuePropertyHolder(String namePrefix) {
         return new AnyValuePropertyHolder(
                 getLCPByUniqueName(namePrefix + "Object"),
                 getLCPByUniqueName(namePrefix + "String"),
@@ -618,7 +642,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "Numeric"),
                 getLCPByUniqueName(namePrefix + "Year"),
                 getLCPByUniqueName(namePrefix + "DateTime"),
-                getLCPByUniqueName(namePrefix + "Logical"),
+                getLCPByUniqueName(namePrefix + "Boolean"),
                 getLCPByUniqueName(namePrefix + "Date"),
                 getLCPByUniqueName(namePrefix + "Time"),
                 getLCPByUniqueName(namePrefix + "Color"),

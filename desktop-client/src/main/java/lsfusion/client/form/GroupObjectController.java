@@ -139,11 +139,11 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         addToToolbar(Box.createHorizontalStrut(5));
 
-        if (groupObject.toolbar.showPrint && Main.module.isFull()) {
+        if (groupObject.toolbar.showPrint) {
             addToToolbar(grid.createPrintGroupButton());
         }
 
-        if (groupObject.toolbar.showXls && Main.module.isFull()) {
+        if (groupObject.toolbar.showXls) {
             addToToolbar(grid.createPrintGroupXlsButton());
             addToToolbar(Box.createHorizontalStrut(5));
         }

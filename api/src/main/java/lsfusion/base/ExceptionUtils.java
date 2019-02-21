@@ -27,7 +27,7 @@ public class ExceptionUtils {
     }
 
     public static String getStackTrace(Throwable e) {
-        return org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+        return getStackTrace(e.getStackTrace());
     }
     
     public static String getStackTrace(Thread thread) {
@@ -110,5 +110,9 @@ public class ExceptionUtils {
             return 20;
         
         return 10; // неизвестно что
+    }
+
+    public static String getExStackTrace(String javaStack, String lsfStack) {
+        return lsfStack + '\n' + javaStack;
     }
 }

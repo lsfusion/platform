@@ -13,19 +13,19 @@ import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.SecuritySettings;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.SecurityPolicy;
-import lsfusion.server.auth.User;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.SyncType;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -35,7 +35,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
-import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.CalcProperty;
@@ -61,42 +60,18 @@ import static lsfusion.base.BaseUtils.nvl;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator extends ContextAwarePendingRemoteObject implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
+public class RemoteNavigator extends RemoteConnection implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
     protected final static Logger logger = ServerLoggers.systemLogger;
 
     private static NotificationsMap notificationsMap = new NotificationsMap();
 
-    private final SQLSession sql;
-
-    final LogicsInstance logicsInstance;
     private final NavigatorsManager navigatorManager;
-    private final BusinessLogics businessLogics;
-    private final SecurityManager securityManager;
-    private final DBManager dbManager;
-
-    // просто закэшируем, чтобы быстрее было
-    SecurityPolicy securityPolicy;
-    Long userRole;
-
-    private DataObject user;
-    
-    private LogInfo logInfo; // очень опасно читать его в самом getLogInfo, так как например unreferenced может вызываться асинхронно и заблокироваться на чтении logInfo, после чего непонятно кто deactivate'ит объект   
-
-    private LocalePreferences userLocalePreferences;
-    
-    private DataObject computer;
 
     private String currentForm;
 
     private DataObject connection;
 
-    private int updateTime;
-
-    private String remoteAddress;
-
-    private final WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<>();
-
-    private final boolean isFullClient;
+    public SecurityPolicy securityPolicy;
 
     private ClientCallBackController client;
 
@@ -109,45 +84,15 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     private String formID = null;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, SecurityPolicy securityPolicy, DataObject user, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
-        super(port);
-
-        this.logicsInstance = logicsInstance;
-        this.navigatorManager = logicsInstance.getNavigatorsManager();
-        this.businessLogics = logicsInstance.getBusinessLogics();
-        this.securityManager = logicsInstance.getSecurityManager();
-        this.dbManager = logicsInstance.getDbManager();
-
-        this.isFullClient = isFullClient;
+    public RemoteNavigator(int port, LogicsInstance logicsInstance, AuthenticationToken token, NavigatorInfo navigatorInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
+        super(port, "navigator", stack);
 
         setContext(new RemoteNavigatorContext(this));
-        this.classCache = new ClassCache();
-
-        this.securityPolicy = securityPolicy;
+        initContext(logicsInstance, token, navigatorInfo.session, stack);
         
-        this.user = user;
-        this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
-        this.currentForm = null;
-
-        this.remoteAddress = navigatorInfo.remoteAddress;
-        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
-
-        try(DataSession session = createSession()) {
-            String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
-            boolean allowExcessAllocatedBytes = businessLogics.authenticationLM.currentUserAllowExcessAllocatedBytes.read(session) != null;
-            String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
-            String userRole = (String) businessLogics.securityLM.currentUserMainRoleName.read(session);
-            logInfo = new LogInfo(allowExcessAllocatedBytes, userName, userRole, computerName, remoteAddress);
-
-            Integer timeout = (Integer) businessLogics.securityLM.currentUserTransactTimeout.read(session);
-            if(timeout != null)
-                this.transactionTimeout = timeout;
-
-            userLocalePreferences = loadLocalePreferences(session, user, businessLogics, navigatorInfo.language, navigatorInfo.country, stack);
-        }
-        this.userRole = getRole();
-
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
+
+        this.classCache = new ClassCache();
 
         this.client = new ClientCallBackController(port, toString(), new ClientCallBackController.UsageTracker() {
             @Override
@@ -156,70 +101,31 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
             }
         });
 
-        finalizeInit(stack, SyncType.NOSYNC);
+        createPausablesExecutor();
 
+        this.navigatorManager = logicsInstance.getNavigatorsManager();
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
     }
 
-    public boolean isFullClient() {
-        return isFullClient;
+    @Override
+    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, stack, session);
+        
+        localePreferences = readLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
+        securityPolicy = logicsInstance.getSecurityManager().readSecurityPolicy(session, user);
     }
 
-    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
-        Object newRole = securityManager.getUserMainRole(user);
-        Object currentRole = securityManager.getUserMainRole(this.user);
-        if (BaseUtils.nullEquals(newRole, currentRole)) {
-            this.user = user;
-            
-            try(DataSession session = createSession()) {
-                userLocalePreferences = loadLocalePreferences(session, user, businessLogics);
-
-                User secUser = new User((Long) user.object);
-                securityManager.applySecurityPolicy(secUser, session);
-                this.securityPolicy = secUser.getSecurityPolicy();
-            }
-            this.userRole = getRole();
-            updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
-            return true;
-        }
-        return false;
+    private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
+        return new LocalePreferences(locale,
+                (String) businessLogics.authenticationLM.timeZone.read(session, user),
+                (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user));
     }
 
-    public synchronized void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException, SQLHandledException {
-        if(isClosed())
-            return;
-
-        for (DataSession session : sessions) {
-            ImSet<CalcProperty> updateChanges = SetFact.singleton(property);
-            session.updateSessionEvents(updateChanges);
-            
-            session.updateProperties(property, updateChanges); // редко используется поэтому все равно
-        }
-    }
-
-    public String getUserLogin() {
-        try {
-            try (DataSession session = createSession()) {
-                return (String) businessLogics.authenticationLM.loginCustomUser.read(session, user);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public LogInfo getLogInfo() {
-        try {
-            return logInfo;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    void delayUserInteraction(ClientAction action) {
+    public void delayUserInteraction(ClientAction action) {
         currentInvocation.delayUserInteraction(action);
     }
 
-    Object[] requestUserInteraction(final ClientAction... actions) {
+    public Object[] requestUserInteraction(final ClientAction... actions) {
         return currentInvocation.pauseForUserInteraction(actions);
     }
 
@@ -234,22 +140,8 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
-            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, this.user, hostname, true, web);
+            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true, web);
         } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public boolean isForbidDuplicateForms() {
-        try {
-            boolean forbidDuplicateForms;
-            try (DataSession session = createSession()) {
-                QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
-                query.addProperty("forbidDuplicateForms", businessLogics.securityLM.forbidDuplicateFormsCurrentUser.getExpr());
-                forbidDuplicateForms = query.execute(session).singleValue().get("forbidDuplicateForms") != null;
-            }
-            return forbidDuplicateForms;
-        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -261,24 +153,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     public String getCurrentForm() {
         return formID;
-    }
-
-    public byte[] getCurrentUserInfoByteArray() {
-        try {
-            String userName;
-            try (DataSession session = createSession()) {
-                QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
-                query.addProperty("name", businessLogics.authenticationLM.currentUserName.getExpr());
-                userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
-            }
-
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-            dataStream.writeUTF(userName);
-            return outStream.toByteArray();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     @Aspect
@@ -302,51 +176,8 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         return lastUsedTime;
     }
 
-    private static class WeakUserController implements UserController { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteNavigator> weakThis;
-
-        private WeakUserController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<>(navigator);
-        }
-
-        public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator != null && remoteNavigator.changeCurrentUser(user, stack);
-        }
-
-        public Long getCurrentUserRole() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? null : remoteNavigator.userRole;
-        }
-    }
-
-    private static class WeakLocaleController implements LocaleController { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteNavigator> weakThis;
-
-        private WeakLocaleController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<>(navigator);
-        }
-
-        @Override
-        public Locale getLocale() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            if(remoteNavigator != null)
-                return remoteNavigator.getLocale();
-            return Locale.getDefault();
-        }
-    }
-
-    private static class WeakComputerController implements ComputerController { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteNavigator> weakThis;
-
-        private WeakComputerController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<>(navigator);
-        }
-
-        public boolean isFullClient() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator != null && remoteNavigator.isFullClient();
-        }
+    public Long getConnectionId() {
+        return connection != null ? (Long) connection.object : null;
     }
 
     private static class WeakFormController implements FormController { // чтобы помочь сборщику мусора и устранить цикл
@@ -367,71 +198,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
             RemoteNavigator remoteNavigator = weakThis.get();
             return remoteNavigator == null ? null : remoteNavigator.currentForm;
         }
-    }
-
-    private static class WeakConnectionController implements ConnectionController { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteNavigator> weakThis;
-
-        private WeakConnectionController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<>(navigator);
-        }
-    }
-
-
-    private static class WeakTimeoutController implements TimeoutController { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteNavigator> weakThis;
-
-        private WeakTimeoutController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<>(navigator);
-        }
-
-        public int getTransactionTimeout() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? 0 : remoteNavigator.getTransactionTimeout();
-        }
-    }
-
-    private static class WeakSQLSessionContextProvider implements SQLSessionContextProvider { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteNavigator> weakThis;
-
-        private WeakSQLSessionContextProvider(RemoteNavigator dbManager) {
-            this.weakThis = new WeakReference<>(dbManager);
-        }
-
-        @Override
-        public Long getCurrentUser() {
-            final RemoteNavigator wThis = weakThis.get();
-            if(wThis == null) // используется в мониторе процессов
-                return null;
-            return (Long) wThis.user.object;
-        }
-
-        public LogInfo getLogInfo() {
-            final RemoteNavigator wThis = weakThis.get();
-            if(wThis == null) // используется в мониторе процессов
-                return null;
-            return wThis.getLogInfo();
-        }
-
-        @Override
-        public Long getCurrentComputer() {
-            final RemoteNavigator wThis = weakThis.get();
-            if(wThis == null)
-                return null;
-            return (Long) wThis.computer.object;
-        }
-
-        @Override
-        public Long getCurrentConnection() {
-            final RemoteNavigator wThis = weakThis.get();
-            if(wThis == null)
-                return null;
-            return wThis.getConnectionId();
-        }
-    }
-
-    public Long getConnectionId() {
-        return connection != null ? (Long) connection.object : null;
     }
 
     private static class WeakChangesUserProvider implements ChangesController { // чтобы помочь сборщику мусора и устранить цикл
@@ -467,72 +233,36 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
     }
 
-    private int transactionTimeout;
-    public int getTransactionTimeout() {
-        return transactionTimeout;
-    }
-    
-    private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakConnectionController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), new WeakLocaleController(this), null);
-        sessions.add(session);
-        return session;
+    @Override
+    protected FormController createFormController() {
+        return new WeakFormController(this);
     }
 
     @Override
-    public SecuritySettings getSecuritySettings() {
-        return new SecuritySettings(SystemProperties.inDevMode, securityPolicy.configurator != null && securityPolicy.configurator);
+    protected ChangesController createChangesController() {
+        return new WeakChangesUserProvider(changesSync);
     }
 
     @Override
     public ClientSettings getClientSettings() {
+        String currentUserName;
+        Integer fontSize;
+        boolean useBusyDialog;
+        boolean useRequestTimeout;
+        boolean forbidDuplicateForms;
+
         try (DataSession session = createSession()) {
-            boolean useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
-            boolean useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
-            return new ClientSettings(useBusyDialog, Settings.get().getBusyDialogTimeout(), useRequestTimeout);
+            currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
+            fontSize = (Integer) businessLogics.authenticationLM.userFontSize.read(session, user);
+            useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
+            useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
+            forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    public static LocalePreferences loadLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
-        saveClientLanguage(session, user, businessLogics, clientLanguage, clientCountry, stack);
-
-        return loadLocalePreferences(session, user, businessLogics);
-    }
-
-    public static LocalePreferences loadLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics) throws SQLException, SQLHandledException {
-        return new LocalePreferences((String) businessLogics.authenticationLM.language.read(session, user), 
-                                     (String) businessLogics.authenticationLM.country.read(session, user), 
-                                     (String) businessLogics.authenticationLM.timeZone.read(session, user), 
-                                     (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user));
-    }
-
-    public static void saveClientLanguage(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if (clientLanguage != null) {
-            businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
-            businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
-            session.applyException(businessLogics, stack);
-        }
-    }
-
-    public LocalePreferences getLocalePreferences() {
-        return userLocalePreferences;
-    }
-
-    public Locale getLocale() {
-        Locale locale = getLocalePreferences().getLocale();
-        if(locale != null)
-            return locale;
-        return Locale.getDefault();
-    }
-
-    @Override
-    public Integer getFontSize() {
-        try {
-            return (Integer) businessLogics.authenticationLM.userFontSize.read(createSession(), user);
-        } catch (SQLException | SQLHandledException e) {
-            throw new RuntimeException(e);
-        }
+        boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
+        return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
+                useRequestTimeout, SystemProperties.inDevMode, configurationAccessAllowed, forbidDuplicateForms);
     }
 
     public void gainedFocus(FormInstance form) {
@@ -594,20 +324,23 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     public static void updatePingInfo(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
-            Map<Long, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
+            Map<String, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
             RemoteLoggerAspect.pingInfoMap.clear();
             
-            for (Map.Entry<Long, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
-                DataObject computerObject = new DataObject(entry.getKey(), businessLogics.authenticationLM.computer);
-                for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
-                    DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
-                    DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
-                    businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
-                    if(pingEntry.getValue().size() >= 6) {
-                        businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
-                        businessLogics.systemEventsLM.maxTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(3).intValue(), session, computerObject, dateFrom, dateTo);
-                        businessLogics.systemEventsLM.minUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(4).intValue(), session, computerObject, dateFrom, dateTo);
-                        businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
+            for (Map.Entry<String, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
+                ObjectValue computerValue = businessLogics.authenticationLM.computerHostname.readClasses(session, new DataObject(entry.getKey()));
+                if(computerValue instanceof DataObject) {
+                    DataObject computerObject = (DataObject)computerValue;
+                    for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
+                        DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
+                        DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
+                        businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
+                        if (pingEntry.getValue().size() >= 6) {
+                            businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
+                            businessLogics.systemEventsLM.maxTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(3).intValue(), session, computerObject, dateFrom, dateTo);
+                            businessLogics.systemEventsLM.minUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(4).intValue(), session, computerObject, dateFrom, dateTo);
+                            businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
+                        }
                     }
                 }
             }
@@ -628,7 +361,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     private ClassCache classCache;
 
-    Long getCacheObject(CustomClass cls) {
+    private Long getCacheObject(CustomClass cls) {
         return classCache.getObject(cls);
     }
 
@@ -638,14 +371,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     public DataObject getUser() {
         return user;
-    }
-
-    public Long getRole() {
-        try {
-            return (Long) securityManager.getUserMainRole(user);
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     public DataObject getComputer() {
@@ -660,18 +385,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         this.connection = connection;
     }
 
-    public void setUpdateTime(int updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public int getUpdateTime() {
-        return updateTime;
-    }
-
-    public String getRemoteAddress(){
-        return remoteAddress;
-    }
-
     public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
         return client;
     }
@@ -684,7 +397,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     }
 
     @Override
-    public byte[] getNavigatorTree() throws RemoteException {
+    public byte[] getNavigatorTree() {
 
         ImOrderMap<NavigatorElement, List<String>> elements = businessLogics.LM.root.getChildrenMap(securityPolicy);
 
@@ -705,22 +418,11 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
                     dataStream.writeUTF(child);
                 }
             }
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
 
-        return outStream.toByteArray();
-    }
-
-    @Override
-    public byte[] getCommonWindows() throws RemoteException {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        DataOutputStream dataStream = new DataOutputStream(outStream);
-
-        try {
             businessLogics.LM.baseWindows.log.serialize(dataStream);
             businessLogics.LM.baseWindows.status.serialize(dataStream);
             businessLogics.LM.baseWindows.forms.serialize(dataStream);
+
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -831,10 +533,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public synchronized void close() throws RemoteException {
-        deactivateAndCloseLater(true); // после вызова close, предполагается что новых запросов уже идти не может, а старые закроются
     }
 
     // обмен изменениями между сессиями в рамках одного подключения
@@ -951,12 +649,16 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     @Override
     protected String notSafeToString() {
-        return "RN[clientAddress: " + remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
+        return "RN[clientAddress: " + logInfo.remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
     }
 
-    @Override
-    public String getSID() {
-        return "navigator";
+    public static void checkEnableUI(boolean anonymous) {
+        byte enableUI = Settings.get().getEnableUI();
+        if(enableUI == 0)
+            throw new RuntimeException("Ui is disabled. It can be enabled by using setting enableUI.");
+
+        if(anonymous && enableUI == 1)
+            throw new AuthenticationException();
     }
 
     @Override
@@ -992,16 +694,9 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
                     form.explicitClose();
         }
 
-        super.onClose();
-
         navigatorManager.navigatorClosed(this, getStack(), getConnection());
 
-        try {
-            ThreadLocalContext.assureRmi(RemoteNavigator.this);
-            sql.close();
-        } catch (Throwable t) {
-            ServerLoggers.sqlSuppLog(t);
-        }
+        super.onClose();
     }
 
     @Override
@@ -1012,5 +707,10 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
     @Override
     public Object getProfiledObject() {
         return "n";
+    }
+
+    @Override
+    public synchronized void close() throws RemoteException { // without this RemoteContextAspect will not be weaved
+        super.close();
     }
 }

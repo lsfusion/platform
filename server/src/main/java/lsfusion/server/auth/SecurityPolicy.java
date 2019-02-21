@@ -15,7 +15,6 @@ public class SecurityPolicy {
     public ClassSecurityPolicy cls = new ClassSecurityPolicy();
     public PropertySecurityPolicy property = new PropertySecurityPolicy();
     public NavigatorSecurityPolicy navigator = new NavigatorSecurityPolicy();
-    // todo [dale]: Нужна ли FormSecurityPolicy?
     public FormSecurityPolicy form = new FormSecurityPolicy();
 
     public void override(SecurityPolicy policy) {

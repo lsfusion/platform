@@ -7,10 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.Compare;
 import lsfusion.interop.Data;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.interop.form.screen.ExternalScreen;
-import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.Settings;
-
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
@@ -70,9 +67,6 @@ public class PropertyDrawView extends ComponentView {
     public Boolean focusable;
 
     public boolean panelCaptionAbove = false;
-
-    public ExternalScreen externalScreen;
-    public ExternalScreenConstraints externalScreenConstraints = new ExternalScreenConstraints();
 
     public LocalizedString caption;
     public boolean clearText;
@@ -250,12 +244,6 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(panelCaptionAbove);
 
-        outStream.writeBoolean(externalScreen != null);
-        if (externalScreen != null) {
-            outStream.writeInt(externalScreen.getID());
-        }
-        pool.writeObject(outStream, externalScreenConstraints);
-
         outStream.writeBoolean(panelCaptionAfter);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
@@ -421,12 +409,6 @@ public class PropertyDrawView extends ComponentView {
         focusable = pool.readObject(inStream);
 
         panelCaptionAbove = inStream.readBoolean();
-
-        if (inStream.readBoolean()) {
-            externalScreen = pool.context.BL.getExternalScreen(inStream.readInt());
-        }
-
-        externalScreenConstraints = pool.readObject(inStream);
 
         panelCaptionAfter = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();

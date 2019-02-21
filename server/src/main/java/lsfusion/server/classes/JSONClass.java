@@ -46,7 +46,7 @@ public class JSONClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "json";
     }
 

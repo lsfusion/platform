@@ -302,7 +302,6 @@ copy (UserRole from, UserRole to) +{
 forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), forbidDuplicateForms(mainRole(u));
-forbidDuplicateFormsCurrentUser () = forbidDuplicateForms(currentUser());
 
 // Default forms
 CLASS DefaultForms '{security.default.forms}' {
@@ -618,6 +617,14 @@ DESIGN actionPolicy {
     }
 }
 
+initHeapSize '{security.client.init.heap.size}' = DATA VARSTRING[100]();
+maxHeapSize '{security.client.max.heap.size}' = DATA VARSTRING[100]();
+minHeapFreeRatio '{security.client.min.heap.free.ratio}' = DATA VARSTRING[100]();
+maxHeapFreeRatio '{security.client.max.heap.free.ratio}' = DATA VARSTRING[100]();
+vmargs '{security.client.vm.args}' = DATA VARSTRING[100]();
+
+generateJnlp INTERNAL 'lsfusion.server.logics.property.actions.GenerateJNLPActionProperty' (VARSTRING[10], VARSTRING[1000]) NULL @@noauth;
+
 // ------------------ Memory limits ---------------- //
 CLASS MemoryLimit '{security.memory.limit}';
 TABLE memoryLimit (MemoryLimit);
@@ -625,3 +632,14 @@ TABLE memoryLimit (MemoryLimit);
 name '{security.name.memory.limit}' = DATA VARSTRING[100] (MemoryLimit);
 maxHeapSize '{security.max.heap.size.memory.limit}' = DATA VARSTRING[10] (MemoryLimit);
 vmargs '{security.vm.args.memory.limit}' = DATA VARSTRING[1000] (MemoryLimit);
+
+generateJnlpUrls () {
+    FOR MemoryLimit ml IS MemoryLimit DO {
+        exportText() <- CONCAT '', exportText(), '<a href="\{contextPath\}/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D&p=', IF maxHeapSize(ml) THEN maxHeapSize(ml) ELSE '';
+        IF vmargs(ml) THEN {
+            urlEncode(vmargs(ml), 'UTF-8');
+            exportText() <- CONCAT '', exportText(), '&p=', urlEncoded();
+        }
+        exportText() <- CONCAT '', exportText(), '">{security.run.desktop.client} ', name(ml), '</a><br/>';   
+    }
+} @@noauth;

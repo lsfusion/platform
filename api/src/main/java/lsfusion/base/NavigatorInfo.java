@@ -2,32 +2,26 @@ package lsfusion.base;
 
 import java.io.Serializable;
 
-public class NavigatorInfo implements Serializable{
-
-    public String login;
-    public String password;
-    public long computer;
-    public String remoteAddress;
-    public String osVersion;
-    public String processor;
-    public String architecture;
-    public Integer cores;
-    public Integer physicalMemory;
-    public Integer totalMemory;
-    public Integer maximumMemory;
-    public Integer freeMemory;
-    public String javaVersion;
-    public String screenSize;
-    public String language;
-    public String country;
+public class NavigatorInfo implements Serializable {
     
-    public NavigatorInfo(String login, String password, long computer, String remoteAddress, String osVersion, String processor,
+    public final SessionInfo session;
+
+    public final String osVersion;
+    public final String processor;
+    public final String architecture;
+    public final Integer cores;
+    public final Integer physicalMemory;
+    public final Integer totalMemory;
+    public final Integer maximumMemory;
+    public final Integer freeMemory;
+    public final String javaVersion;
+    public final String screenSize;
+    
+    public NavigatorInfo(SessionInfo session, String osVersion, String processor,
                          String architecture, Integer cores, Integer physicalMemory, Integer totalMemory, Integer maximumMemory,
-                         Integer freeMemory, String javaVersion, String screenSize, String language, String country) {
-        this.login = login;
-        this.password = password;
-        this.computer = computer;
-        this.remoteAddress = remoteAddress;
+                         Integer freeMemory, String javaVersion, String screenSize) {
+        this.session = session;
+        
         this.osVersion = osVersion;
         this.processor = processor;
         this.architecture = architecture;
@@ -38,7 +32,5 @@ public class NavigatorInfo implements Serializable{
         this.freeMemory = freeMemory;
         this.javaVersion = javaVersion;
         this.screenSize = screenSize;
-        this.language = language;
-        this.country = country;
     }
 }

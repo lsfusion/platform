@@ -70,7 +70,7 @@ public class NestedThreadException extends RuntimeException {
         for(ThrowableWithStack cause : causes) {
             Throwable throwable = cause.getThrowable();
             s.println("Exception : " + throwable);
-            String stack = cause.getStack();
+            String stack = cause.getLsfStack();
             if(!stack.isEmpty())
                 s.println("LSF stack : " + stack);
             s.printStackTrace(throwable);

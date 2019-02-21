@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.5+" codebase="${jnlp.codebase}" href="${jnlp.url}" version="1">
+    <information>
+        <title>${jnlp.appName}</title>
+        <vendor>Luxsoft Ltd.</vendor>
+        <description>lsFusion</description>
+        <icon href="static/images/default.png" kind="default"/>
+        <icon href="static/images/splash.jpg" kind="splash"/>
+        <shortcut online="true">
+            <desktop/>
+        </shortcut>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <property name="jnlp.packEnabled" value="true"/>
+        <j2se version="1.6+" initial-heap-size="${jnlp.initHeapSize}" max-heap-size="${jnlp.maxHeapSize}" java-vm-args="-XX:MinHeapFreeRatio=${jnlp.minHeapFreeRatio} -XX:MaxHeapFreeRatio=${jnlp.maxHeapFreeRatio} ${jnlp.vmargs}"/>
+        <property name="jnlp.lsfusion.client.hostname" value="${jnlp.host}"/>
+        <property name="jnlp.lsfusion.client.hostport" value="${jnlp.port}"/>
+        <property name="jnlp.lsfusion.client.exportname" value="${jnlp.exportName}"/>
+        <property name="jnlp.lsfusion.client.singleinstance" value="${jnlp.singleInstance}"/>
+        <jar href="lsfusion-client.jar"/>
+    </resources>
+    <application-desc/>
+</jnlp>
