@@ -12,6 +12,7 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.gwt.server.navigator.handlers.*;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.gwt.shared.actions.RequestAction;
+import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
@@ -209,6 +210,8 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
             }
         } catch (DispatchException e) { // mainly AppServerNotAvailableException, but in theory can be some InvalidSessionException 
             throw e; // just rethrow
+        } catch (AuthenticationException e) { // we need to wrap this exception, otherwise it will be treated like RemoteInternalDispatchException (unknown server exception)
+            throw new AuthenticationDispatchException(e.getMessage());
         } catch (RemoteException e) {
             if(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
                 throw handleNotDispatch(e);

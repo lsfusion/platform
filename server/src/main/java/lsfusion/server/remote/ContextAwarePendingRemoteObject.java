@@ -164,7 +164,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
         synchronized (threads) {
             for (Thread thread : threads) {
-                ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
+                ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread));
                 try {
                     ThreadUtils.interruptThread(context, thread);
                 } catch (SQLException | SQLHandledException ignored) {

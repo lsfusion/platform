@@ -383,7 +383,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             if(pending.contains(key)) {
                 if(stackUsedPendingKeys.empty())
-                    throw new RuntimeException(ThreadLocalContext.localize("{exceptions.incorrect.set.operation}"));
+                    throw getIncorrectOperationException();
                 else
                     stackUsedPendingKeys.peek().add(key);
             }
@@ -1628,6 +1628,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             usedJoin(select);
             return select;
         }
+    }
+
+    public static RuntimeException getIncorrectOperationException() {
+        return new RuntimeException(ThreadLocalContext.localize("{exceptions.incorrect.set.operation}"));
     }
 
     private static <V> ImMap<V, String> castProperties(ImMap<V, String> propertySelect, final ImMap<V, Type> castTypes, final SQLSyntax syntax, final TypeEnvironment typeEnv) { // проставим Cast'ы для null'ов

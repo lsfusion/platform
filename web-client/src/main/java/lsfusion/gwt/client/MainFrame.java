@@ -30,6 +30,7 @@ import lsfusion.gwt.shared.actions.CreateNavigatorAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.navigator.*;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.exceptions.AuthenticationDispatchException;
 import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.shared.view.GNavigatorAction;
@@ -126,7 +127,9 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
             @Override
             public void failure(Throwable caught) {
-                if(caught instanceof AppServerNotAvailableException) {
+                if(caught instanceof AuthenticationDispatchException) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
+                    GwtClientUtils.logout();
+                } else if(caught instanceof AppServerNotAvailableException) {
                     new Timer()
                     {
                         @Override

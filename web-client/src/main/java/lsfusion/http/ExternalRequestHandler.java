@@ -35,6 +35,8 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
 
     @Override
     protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
+        String sessionID = null;
+        boolean closeSession = false;
         try {
             String queryString = request.getQueryString();
             String query = queryString != null ? queryString : "";
@@ -44,8 +46,7 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
             String[] headerNames = list((Enumeration<String>)request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
 
-            String sessionID = request.getParameter("session");
-            boolean closeSession = false;
+            sessionID = request.getParameter("session");
             ExecInterface remoteExec;
             if(sessionID != null) {
                 if(sessionID.endsWith("_close")) {
@@ -66,10 +67,6 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
                     request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues, 
                     logicsConnection.host, logicsConnection.port, logicsConnection.exportName);
 
-            if(sessionID != null && closeSession) {
-                sessionProvider.removeSessionSessionObject(sessionID);
-            }
-
             if (responseHttpEntity.response != null) {
                 sendResponse(response, responseHttpEntity);
             } else {
@@ -89,8 +86,14 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
                     throw Throwables.propagate(e1);
                 }
 
-                if (e instanceof RemoteException) // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
+                if (e instanceof RemoteException) { // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
+                    closeSession = true; // closing session if there is a RemoteException
                     throw (RemoteException) e;
+                }
+            }
+        } finally {
+            if(sessionID != null && closeSession) {
+                sessionProvider.removeSessionSessionObject(sessionID);
             }
         }
     }
