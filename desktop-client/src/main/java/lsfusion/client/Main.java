@@ -9,7 +9,10 @@ import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
-import lsfusion.interop.*;
+import lsfusion.interop.ClientSettings;
+import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.ICleanListener;
@@ -323,7 +326,7 @@ public class Main {
     }
 
     private static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
-        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Service.getServerSettings[]", new ExternalRequest(new String[0], new Object[0], "utf-8", new String[0], new String[0]));
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Service.getServerSettings[]", new ExternalRequest());
         return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 

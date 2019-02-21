@@ -4,15 +4,11 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.exceptions.AuthenticationException;
-import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -43,8 +39,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     protected DBManager dbManager;
 
-    private VMOptions clientVMOptions;
-
     public void setBusinessLogics(T businessLogics) {
         this.businessLogics = businessLogics;
     }
@@ -73,10 +67,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         this.dbManager = dbManager;
     }
 
-    public void setClientVMOptions(VMOptions clientVMOptions) {
-        this.clientVMOptions = clientVMOptions;
-    }
-
     public RemoteLogics() {
         super("logics");
     }
@@ -88,7 +78,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         Assert.notNull(restartManager, "restartManager must be specified");
         Assert.notNull(securityManager, "securityManager must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
-        Assert.notNull(clientVMOptions, "clientVMOptions must be specified");
         //assert logicsInstance by checking the context
         Assert.notNull(getContext(), "logicsInstance must be specified");
     }
@@ -171,17 +160,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public VMOptions getClientVMOptions() throws RemoteException {
-        return clientVMOptions;
-    }
-
-    @Override
     public long generateID() throws RemoteException {
         return dbManager.generateID();
-    }
-
-    public boolean isSingleInstance() throws RemoteException {
-        return Settings.get().isSingleInstance();
     }
 
     @Override

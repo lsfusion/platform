@@ -717,15 +717,6 @@
         <property name="restartManager" ref="restartManager"/>
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
-        <property name="clientVMOptions" ref="clientVMOptions"/>
-    </bean>
-
-    <bean id="clientVMOptions" class="lsfusion.interop.VMOptions">
-        <constructor-arg name="initHeapSize" value="${client.initHeapSize:}"/>
-        <constructor-arg name="maxHeapSize" value="${client.maxHeapSize:}"/>
-        <constructor-arg name="minHeapFreeRatio" value="${client.minHeapFreeRatio:}"/>
-        <constructor-arg name="maxHeapFreeRatio" value="${client.maxHeapFreeRatio:}"/>
-        <constructor-arg name="vmargs" value="${client.vmargs:}"/>
     </bean>
 
     <bean id="remoteLogicsLoader" class="lsfusion.server.remote.RemoteLogicsLoader">

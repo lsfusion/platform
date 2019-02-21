@@ -79,7 +79,7 @@ public final class LoginAction {
             }
             FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
             try {
-                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Authentication.syncUsers[VARISTRING[100], JSONFILE]", new ExternalRequest(new String[0], new Object[]{Main.computerName, fileData}, "utf-8", new String[0], new String[0]));
+                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Authentication.syncUsers[VARISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{Main.computerName, fileData}));
                 JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes()));
                 List<Object> currentUsers = unlockedUsers.toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();

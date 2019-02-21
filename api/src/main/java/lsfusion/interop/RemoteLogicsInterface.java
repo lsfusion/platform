@@ -6,8 +6,8 @@ import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SessionInfo;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.PendingRemoteInterface;
 import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.remote.PendingRemoteInterface;
 import lsfusion.interop.session.RemoteSessionInterface;
 
 import java.rmi.RemoteException;
@@ -17,8 +17,6 @@ import java.util.Map;
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     // obsolete
-    VMOptions getClientVMOptions() throws RemoteException;
-    boolean isSingleInstance() throws RemoteException;
 
     // main interface
 

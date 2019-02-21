@@ -41,7 +41,5 @@
 
     <bean id="fileDownloadHandler" class="lsfusion.http.DownloadFileRequestHandler" />
 
-    <bean id="jnlpHandler" class="lsfusion.http.ClientJNLPRequestHandler" />
-
     <bean id="externalHandler" class="lsfusion.http.ExternalRequestHandler"/>
 </beans>

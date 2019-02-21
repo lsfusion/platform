@@ -29,6 +29,8 @@ public class MainController {
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
 
+        model.addAttribute("jnlpUrls", logicsProvider.getJnlpUrls(request));
+
         String error = checkApiVersion(request, serverSettings);
         if (error != null) {
             model.addAttribute("error", error);

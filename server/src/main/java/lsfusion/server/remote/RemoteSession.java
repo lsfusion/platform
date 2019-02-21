@@ -23,6 +23,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.session.DataSession;
@@ -95,10 +96,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         if(annotation == null || !annotation.equals("noauth"))
             checkEnableApi(userToken.isAnonymous());
 
-        LCP<?> headers = businessLogics.LM.headers;
-        if(property.property.uses(headers.property)) // optimization
-            ExternalHTTPActionProperty.writeHeaders(dataSession, headers, request.headerNames, request.headerValues);
-
+        writeRequestInfo(dataSession, property.property, request);
+        
         if(!userToken.isAnonymous()) {
             LCP<?> authToken = businessLogics.LM.authToken;
             if (property.property.uses(authToken.property)) // optimization
@@ -117,6 +116,27 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
         if(anonymous && enableApi == 1)
             throw new AuthenticationException();
+    }
+
+    public void writeRequestInfo(DataSession session, ActionProperty<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {
+        if (actionProperty.uses(businessLogics.LM.headers.property)) {
+            ExternalHTTPActionProperty.writeHeaders(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
+        }
+        if (request.url != null) {
+            businessLogics.LM.url.change(request.url, session);
+        }
+        if (request.query != null) {
+            businessLogics.LM.query.change(request.query, session);
+        }
+        if (request.host != null) {
+            businessLogics.LM.host.change(request.host, session);
+        }
+        if (request.port != null) {
+            businessLogics.LM.port.change(request.port, session);
+        }
+        if (request.exportName != null) {
+            businessLogics.LM.exportName.change(request.exportName, session);
+        }
     }
 
     private ExternalResponse readResult(String[] returnNames) throws SQLException, SQLHandledException, IOException {

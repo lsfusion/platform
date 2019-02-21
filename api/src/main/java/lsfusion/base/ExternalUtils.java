@@ -58,7 +58,9 @@ public class ExternalUtils {
         };
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, String uri, String query, InputStream is, ContentType requestContentType, String[] headerNames, String[] headerValues) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(ExecInterface remoteExec, String url, String uri, String query, InputStream is, 
+                                                  ContentType requestContentType, String[] headerNames, String[] headerValues, 
+                                                  String logicsHost, Integer logicsPort, String logicsExportName) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -70,8 +72,9 @@ public class ExternalUtils {
         
         String filename = "export";
 
-        ExternalRequest request = new ExternalRequest(returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString(), headerNames, headerValues);
-                
+        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(), 
+                charset == null ? null : charset.toString(), url, query, headerNames, headerValues, logicsHost, logicsPort, logicsExportName);
+        
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
             execResult = remoteExec.exec(action, request);
@@ -82,7 +85,7 @@ public class ExternalUtils {
                 if (script == null && !paramsList.isEmpty()) {
                     //Первый параметр считаем скриптом
                     script = paramsList.get(0);
-                    paramsList = paramsList.subList(1, paramsList.size());
+                    request.params = paramsList.subList(1, paramsList.size()).toArray();
                 }
                 execResult = remoteExec.eval(isEvalAction, script, request);
             }

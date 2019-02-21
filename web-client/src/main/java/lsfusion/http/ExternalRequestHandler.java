@@ -5,7 +5,6 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.Pair;
 import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.http.provider.logics.LogicsRunnable;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
@@ -63,7 +62,9 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
                         NavigatorProviderImpl.getSessionInfo(request), remoteLogics);
             }
 
-            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues);
+            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, request.getRequestURL().toString(), 
+                    request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues, 
+                    logicsConnection.host, logicsConnection.port, logicsConnection.exportName);
 
             if(sessionID != null && closeSession) {
                 sessionProvider.removeSessionSessionObject(sessionID);
@@ -112,7 +113,7 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
         Header contentType = responseEntity.getContentType();
         String contentDisposition = responseHttpEntity.contentDisposition;
         String[] headerNames = responseHttpEntity.headerNames;
-        String[] headerValues = responseHttpEntity.headerNames;
+        String[] headerValues = responseHttpEntity.headerValues;
 
         boolean hasContentType = false; 
         boolean hasContentDisposition = false; 

@@ -349,7 +349,8 @@ FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
-                 dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
+                 dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon,
+                 initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
     OBJECTS u=User
     PROPERTIES(u) READONLY name, login, nameMainRole
     PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
@@ -436,6 +437,15 @@ DESIGN settings {
             caption = '{service.form.settings.caption.parameters}';
             MOVE BOX(r);
             MOVE BOX(ur);
+        }
+        NEW clientVMOptions {
+            caption = '{service.form.settings.caption.client.vm.options}';
+            MOVE PROPERTY(initHeapSize());
+            MOVE PROPERTY(maxHeapSize());
+            MOVE PROPERTY(minHeapFreeRatio());
+            MOVE PROPERTY(maxHeapFreeRatio());
+            MOVE PROPERTY(vmargs());
+            
             MOVE BOX(m);
         }
     }

@@ -5,7 +5,6 @@ import lsfusion.base.ExternalResponse;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SessionInfo;
 import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.AuthenticationToken;
@@ -46,14 +45,6 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends RemoteOb
         return result;
     }
 
-    @Override
-    public VMOptions getClientVMOptions() throws RemoteException {
-        logRemoteMethodStartCall("getClientVMOptions");
-        VMOptions result = target.getClientVMOptions();
-        logRemoteMethodEndCall("getClientVMOptions", result);
-        return result;
-    }
-
     public long generateID() throws RemoteException {
         logRemoteMethodStartCall("getUserInfo");
         long result = target.generateID();
@@ -74,14 +65,6 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends RemoteOb
         logRemoteMethodStartCall("eval");
         ExternalResponse result = target.eval(token, sessionInfo, action, paramScript, request);
         logRemoteMethodEndVoidCall("eval");
-        return result;
-    }
-
-    @Override
-    public boolean isSingleInstance() throws RemoteException {
-        logRemoteMethodStartCall("isSingleInstance");
-        boolean result = target.isSingleInstance();
-        logRemoteMethodEndVoidCall("isSingleInstance");
         return result;
     }
 

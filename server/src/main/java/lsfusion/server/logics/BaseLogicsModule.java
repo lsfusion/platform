@@ -108,6 +108,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP<?> authToken;
     public LCP<?> headers;
     public LCP<?> headersTo;
+    public LCP<?> url;
+    public LCP<?> query;
+    public LCP<?> host;
+    public LCP<?> port;
+    public LCP<?> exportName;
 
     public LCP messageCaughtException;
     public LCP javaStackTraceCaughtException;
@@ -395,6 +400,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         authToken = findProperty("authToken[]");
         headers = findProperty("headers[TEXT]");
         headersTo = findProperty("headersTo[TEXT]");
+        url = findProperty("url[]");
+        query = findProperty("query[]");
+        host = findProperty("host[]");
+        port = findProperty("port[]");
+        exportName = findProperty("exportName[]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");

@@ -1,0 +1,85 @@
+package lsfusion.server.logics.property.actions;
+
+import com.google.common.base.Throwables;
+import lsfusion.base.FileData;
+import lsfusion.base.IOUtils;
+import lsfusion.base.RawFileData;
+import lsfusion.server.Settings;
+import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.SecurityLogicsModule;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
+
+import java.net.URLDecoder;
+import java.sql.SQLException;
+import java.util.Iterator;
+
+import static lsfusion.base.BaseUtils.isRedundantString;
+
+public class GenerateJNLPActionProperty extends ScriptingActionProperty {
+    private static final String DEFAULT_INIT_HEAP_SIZE = "32m";
+    private static final String DEFAULT_MAX_HEAP_SIZE = "800m";
+    private static final String DEFAULT_MIN_HEAP_FREE_RATIO = "30";
+    private static final String DEFAULT_MAX_HEAP_FREE_RATIO = "70";
+    private static final String DEFAULT_CODEBASE_URL = "localhost";
+    private static final String DEFAULT_JNLP_URL = "localhost";
+    private static final String DEFAULT_HOST = "localhost";
+    private static final int DEFAULT_PORT = 7652;
+    private static final String DEFAULT_EXPORT_NAME = "default";
+  
+    private final ClassPropertyInterface maxHeapSizeInterface;
+    private final ClassPropertyInterface vmargsInterface;
+    
+    public GenerateJNLPActionProperty(SecurityLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
+
+        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        maxHeapSizeInterface = i.next();
+        vmargsInterface = i.next();
+    }
+
+    @Override
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        String memoryLimitMaxHeapSize = (String) context.getKeyValue(maxHeapSizeInterface).getValue();
+        String memoryLimitVMArgs = (String) context.getKeyValue(vmargsInterface).getValue();
+
+        try {
+            String initHeapSize = (String) LM.findProperty("initHeapSize[]").read(context);
+            String maxHeapSize = (String) LM.findProperty("maxHeapSize[]").read(context);
+            String minHeapFreeRatio = (String) LM.findProperty("minHeapFreeRatio[]").read(context);
+            String maxHeapFreeRatio = (String) LM.findProperty("maxHeapFreeRatio[]").read(context);
+            String vmargs = (String) LM.findProperty("vmargs[]").read(context);
+
+            String url = (String) LM.findProperty("url[]").read(context);
+            int execSlashIndex = url.lastIndexOf("/");
+            String codebaseUrl = url.substring(0, execSlashIndex);
+            String jnlpUrl = url.substring(execSlashIndex + 1) + "?" + LM.findProperty("query[]").read(context);
+            String host = (String) LM.findProperty("host[]").read(context);
+            Integer port = (Integer) LM.findProperty("port[]").read(context);
+            String exportName = (String) LM.findProperty("exportName[]").read(context);
+            
+            String jnlpString = IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp"));
+            jnlpString = jnlpString.replace("${jnlp.codebase}", !isRedundantString(codebaseUrl) ? codebaseUrl : DEFAULT_CODEBASE_URL) 
+                    .replace("${jnlp.url}", !isRedundantString(jnlpUrl) ? jnlpUrl : DEFAULT_JNLP_URL)
+                    .replace("${jnlp.appName}", "lsFusion")
+                    .replace("${jnlp.host}", !isRedundantString(host) ? host : DEFAULT_HOST)
+                    .replace("${jnlp.port}", String.valueOf(port != null ? port : DEFAULT_PORT))
+                    .replace("${jnlp.exportName}", !isRedundantString(exportName) ? exportName : DEFAULT_EXPORT_NAME)
+                    .replace("${jnlp.singleInstance}", String.valueOf(Settings.get().isSingleInstance()))
+                    .replace("${jnlp.initHeapSize}", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE)
+                    .replace("${jnlp.maxHeapSize}", memoryLimitMaxHeapSize != null ? memoryLimitMaxHeapSize : (!isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE))
+                    .replace("${jnlp.minHeapFreeRatio}", !isRedundantString(minHeapFreeRatio) ? minHeapFreeRatio : DEFAULT_MIN_HEAP_FREE_RATIO)
+                    .replace("${jnlp.maxHeapFreeRatio}", !isRedundantString(maxHeapFreeRatio) ? maxHeapFreeRatio : DEFAULT_MAX_HEAP_FREE_RATIO)
+                    .replace("${jnlp.vmargs}", memoryLimitVMArgs != null ? URLDecoder.decode(memoryLimitVMArgs, "utf-8") : (!isRedundantString(vmargs) ? vmargs : ""));
+
+            findProperty("headersTo[TEXT]").change("attachment; filename=\"client.jnlp\"", context, new DataObject("Content-Disposition", StringClass.text));
+            findProperty("exportFile[]").change(new FileData(new RawFileData(jnlpString.getBytes()), "jnlp"), context);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+}

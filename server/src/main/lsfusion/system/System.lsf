@@ -40,7 +40,12 @@ failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 
 authToken = DATA LOCAL TEXT();    
 headers = DATA LOCAL TEXT(TEXT);    
-headersTo = DATA LOCAL TEXT(TEXT);    
+headersTo = DATA LOCAL TEXT(TEXT);
+url = DATA LOCAL TEXT();
+query = DATA LOCAL TEXT();
+host = DATA LOCAL TEXT();
+port = DATA LOCAL INTEGER();
+exportName = DATA LOCAL TEXT();
 
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();

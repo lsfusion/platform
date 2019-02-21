@@ -1,32 +1,24 @@
 package lsfusion.http.provider.logics;
 
 import com.google.common.base.Throwables;
-import com.google.gwt.core.client.GWT;
 import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.http.provider.navigator.NavigatorSessionObject;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.security.sasl.AuthenticationException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static lsfusion.base.BaseUtils.nvl;
 
@@ -150,9 +142,20 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
                     return sessionObject.getServerSettings(request);
                 }
             });
-        } catch (RemoteException e) {
+        } catch (RemoteException | AppServerNotAvailableException e) {
             throw Throwables.propagate(e);
-        } catch (AppServerNotAvailableException e) {
+        }
+    }
+
+    @Override
+    public String getJnlpUrls(final HttpServletRequest request) {
+        try {
+            return runRequest(this, request, new LogicsRunnable<String>() {
+                public String run(LogicsSessionObject sessionObject) throws RemoteException {
+                    return sessionObject.getJnlpUrls(request);
+                }
+            });
+        } catch (RemoteException | AppServerNotAvailableException e) {
             throw Throwables.propagate(e);
         }
     }

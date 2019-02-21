@@ -30,7 +30,7 @@ public class LogicsSessionObject {
     public ServerSettings serverSettings; // caching
     public ServerSettings getServerSettings(HttpServletRequest request) throws RemoteException {
         if(serverSettings == null) {
-            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Service.getServerSettings[]", new ExternalRequest(new String[0], new Object[0], "utf-8", new String[0], new String[0]));
+            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Service.getServerSettings[]", new ExternalRequest());
 
             JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
             String displayName = trimToNull(json.optString("displayName"));
@@ -44,6 +44,17 @@ public class LogicsSessionObject {
             serverSettings = new ServerSettings(displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI);
         }
         return serverSettings;
+    }
+    
+    public String jnlpUrls;
+    public String getJnlpUrls(HttpServletRequest request) throws RemoteException {
+        if (jnlpUrls == null) {
+            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Security.generateJnlpUrls[]", new ExternalRequest());
+            
+            jnlpUrls = (String) result.results[0];
+            jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", request.getContextPath());
+        }
+        return jnlpUrls;
     }
 
     private RawFileData getRawFileData(String base64) {
