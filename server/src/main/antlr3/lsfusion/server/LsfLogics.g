@@ -557,11 +557,6 @@ formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean i
 		)*
 	;
 
-formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean isRightNeighbour]
-	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $isRightNeighbour = $relative.isRightNeighbour; }
-		)*
-	;
-
 formTreeGroupObjectDeclaration returns [ScriptingGroupObject groupObject, List<PropertyUsage> properties]
 	:	(object=formCommonGroupObject { $groupObject = $object.groupObject; })
 		(parent=treeGroupParentDeclaration { $properties = $parent.properties; })?
