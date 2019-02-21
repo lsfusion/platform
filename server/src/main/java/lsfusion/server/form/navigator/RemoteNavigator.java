@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
-import lsfusion.interop.SecuritySettings;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.form.ServerResponse;
