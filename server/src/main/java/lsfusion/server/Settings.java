@@ -1058,6 +1058,8 @@ public class Settings implements Cloneable {
     private byte enableUI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled
 
     public byte getEnableUI() {
+        if(SystemProperties.inDevMode)
+            return 2;
         return enableUI;
     }
 
@@ -1065,9 +1067,11 @@ public class Settings implements Cloneable {
         this.enableUI = enableUI;
     }
 
-    private byte enableAPI = 2; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled 
+    private byte enableAPI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled 
 
     public byte getEnableAPI() {
+        if(SystemProperties.inDevMode)
+            return 2;
         return enableAPI;
     }
 
