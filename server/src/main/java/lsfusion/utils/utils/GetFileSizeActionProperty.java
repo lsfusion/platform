@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.FileData;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -16,7 +17,7 @@ import java.util.Iterator;
 public class GetFileSizeActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface fileInterface;
 
-    public GetFileSizeActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public GetFileSizeActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

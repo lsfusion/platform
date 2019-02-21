@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.IOUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -21,7 +22,7 @@ public class AppendToFileActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface textInterface;
     private final ClassPropertyInterface charsetInterface;
 
-    public AppendToFileActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public AppendToFileActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

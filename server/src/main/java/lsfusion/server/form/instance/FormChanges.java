@@ -22,15 +22,15 @@ public class FormChanges {
 
     private final ImMap<GroupObjectInstance, ClassViewType> classViews;
 
-    // current objects
+    // current (panel) objects
     private final ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects;
 
     // list (grid) objects
     private final ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects;
 
-    // Tree objects
+    // tree objects
     private final ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects;
-    // Tree object has + 
+    // tree object has + 
     private final ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables;
 
     // properties

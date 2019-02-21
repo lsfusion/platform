@@ -1,6 +1,6 @@
 MODULE Security;
 
-REQUIRE System, Reflection, Email;
+REQUIRE System, Reflection, Email, Utils;
 
 CLASS UserRole '{security.user.role}';
 TABLE userRole (UserRole);

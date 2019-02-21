@@ -126,6 +126,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public EmailLogicsModule emailLM;
     public SchedulerLogicsModule schedulerLM;
     public TimeLogicsModule timeLM;
+    public UtilsLogicsModule utilsLM;
 
     private String topModule;
 
@@ -222,6 +223,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         emailLM = addModule(new EmailLogicsModule(this, LM));
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
+        utilsLM = addModule(new UtilsLogicsModule(this, LM));        
     }
 
     private DBNamingPolicy getDBNamingPolicy() {

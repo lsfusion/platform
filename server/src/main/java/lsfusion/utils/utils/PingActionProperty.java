@@ -3,6 +3,7 @@ package lsfusion.utils.utils;
 import com.google.common.base.Throwables;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -16,7 +17,7 @@ public class PingActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface hostInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public PingActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public PingActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
