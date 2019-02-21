@@ -5,6 +5,8 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.Pair;
 import lsfusion.gwt.server.logics.LogicsConnection;
+import lsfusion.http.provider.logics.LogicsRunnable;
+import lsfusion.http.provider.logics.LogicsSessionObject;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
@@ -17,6 +19,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,13 +31,12 @@ import java.util.Enumeration;
 import static java.util.Collections.list;
 import static lsfusion.base.ServerMessages.getString;
 
-public class ExternalRequestHandler extends HttpLogicsRequestHandler {
+public class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
     
     @Autowired
     SessionProvider sessionProvider;
 
-    @Override
-    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
+    private void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
         String sessionID = null;
         boolean closeSession = false;
         try {
@@ -99,9 +101,15 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
     }
 
     @Override
-    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void handleRequest(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         try {
-            super.handleRequest(request, response);
+            runRequest(request, new LogicsRunnable<Object>() {
+                @Override
+                public Object run(LogicsSessionObject sessionObject) throws RemoteException {
+                    handleRequest(sessionObject.remoteLogics, sessionObject.connection, request, response);
+                    return null;
+                }
+            });
         } catch (RemoteException e) { // will suppress that error, because we rethrowed it when handling request (see above)
         }
     }
