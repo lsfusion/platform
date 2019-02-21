@@ -52,7 +52,9 @@ public class LogicsSessionObject {
             ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Security.generateJnlpUrls[]", new ExternalRequest());
             
             jnlpUrls = (String) result.results[0];
-            jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", request.getContextPath());
+            if (jnlpUrls != null) {
+                jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", request.getContextPath());
+            }
         }
         return jnlpUrls;
     }
