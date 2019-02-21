@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -17,7 +18,7 @@ public class RunCommandActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface commandInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public RunCommandActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public RunCommandActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

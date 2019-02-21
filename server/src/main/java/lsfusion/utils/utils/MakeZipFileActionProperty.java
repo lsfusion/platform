@@ -12,6 +12,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -25,7 +26,7 @@ import java.util.zip.ZipOutputStream;
 
 public class MakeZipFileActionProperty extends ScriptingActionProperty {
 
-    public MakeZipFileActionProperty(ScriptingLogicsModule LM) {
+    public MakeZipFileActionProperty(UtilsLogicsModule LM) {
         super(LM);
     }
 

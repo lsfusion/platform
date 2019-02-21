@@ -22,15 +22,15 @@ public class FormChanges {
 
     private final ImMap<GroupObjectInstance, ClassViewType> classViews;
 
-    // value.keySet() из key.getUpTreeGroups
+    // current (panel) objects
     private final ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects;
 
     // value.keySet() из key.getUpTreeGroups
     private final ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects;
 
-    // value.keySet() из key, или пустой если root
+    // tree objects
     private final ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects;
-
+    // tree object has + 
     private final ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables;
 
     private final ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties;
