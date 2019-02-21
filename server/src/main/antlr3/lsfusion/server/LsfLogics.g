@@ -103,7 +103,7 @@ grammar LsfLogics;
 	
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (isFirstFullParse()) { 
+		if (isFirstFullParse() || parseState == ScriptParser.State.PRE) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
@@ -201,7 +201,7 @@ grammar LsfLogics;
 
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (isFirstFullParse()) { 
+		if (isFirstFullParse() || inPreParseState()) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
@@ -524,17 +524,19 @@ formTreeGroupObjectList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, groups, properties, self.getVersion());
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.neighbourObject, $opts.isRightNeighbour, groups, properties, self.getVersion());
 	}
 }
 	:	'TREE'
 		(id = ID { treeSID = $id.text; })?
 		groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); }
 		(',' groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); })*
+	    opts = formTreeGroupObjectOptions		
 	;
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } formGroupObjectOptions[$groupObject]
+	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } 
+	    formGroupObjectOptions[$groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
@@ -547,6 +549,11 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
 		|   formSubReport { $groupObject.setSubReport($formSubReport.pathProperty);  }
+		)*
+	;
+	
+formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean isRightNeighbour]
+	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $isRightNeighbour = $relative.isRightNeighbour; }
 		)*
 	;
 

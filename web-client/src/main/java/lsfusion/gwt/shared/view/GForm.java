@@ -6,10 +6,7 @@ import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GForm implements Serializable, GWidthStringProcessor {
     public String sessionID;
@@ -24,7 +21,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public int autoRefresh;
 
     public GContainer mainContainer;
-    public ArrayList<GTreeGroup> treeGroups = new ArrayList<>();
+    public HashSet<GTreeGroup> treeGroups = new HashSet<>();
     public ArrayList<GGroupObject> groupObjects = new ArrayList<>();
     public ArrayList<GPropertyDraw> propertyDraws = new ArrayList<>();
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<>();

@@ -1,6 +1,6 @@
 MODULE Authentication;
 
-REQUIRE System, Utils;
+REQUIRE System;
 
 // ------------------------- Computers ---------------------- //
 

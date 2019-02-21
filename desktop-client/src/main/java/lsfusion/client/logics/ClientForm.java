@@ -15,10 +15,7 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -42,7 +39,7 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
     public ClientContainer mainContainer;
 
-    public List<ClientTreeGroup> treeGroups = new ArrayList<>();
+    public Set<ClientTreeGroup> treeGroups = new HashSet<>();
     public List<ClientGroupObject> groupObjects = new ArrayList<>();
     public List<ClientPropertyDraw> propertyDraws = new ArrayList<>();
 
@@ -201,7 +198,7 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         mainContainer = pool.deserializeObject(inStream);
-        treeGroups = pool.deserializeList(inStream);
+        treeGroups = pool.deserializeSet(inStream);
         groupObjects = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
@@ -231,11 +228,6 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
         //drop caches
         idProps = null;
 
-        return true;
-    }
-
-    public boolean removeTreeGroup(ClientTreeGroup treeGroup) {
-        treeGroups.remove(treeGroup);
         return true;
     }
 

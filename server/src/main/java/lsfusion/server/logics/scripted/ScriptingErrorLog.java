@@ -30,14 +30,14 @@ public class ScriptingErrorLog {
     }
 
     private final StringWriter errWriter = new StringWriter();
-    private String moduleName;
+    private String moduleId;
 
-    public ScriptingErrorLog(String moduleName) {
-        this.moduleName = moduleName;
+    public ScriptingErrorLog(String moduleId) {
+        this.moduleId = moduleId;
     }
 
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
+    public void setModuleId(String moduleId) {
+        this.moduleId = moduleId;
     }
 
     public void write(String s) {
@@ -53,7 +53,7 @@ public class ScriptingErrorLog {
     }
 
     public String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
-        String path = parser.getCurrentScriptPath(moduleName, e.line, "\n\t\t\t");
+        String path = parser.getCurrentScriptPath(moduleId, e.line, "\n\t\t\t");
         String hdr = path + ":" + (e.charPositionInLine + 1);
         return "[" + errorType + "]:\t" + hdr + " " + msg;
     }
@@ -156,8 +156,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("element '%s' can't be a parent element because it's not a navigator folder", parentElement));
     }
     
-    public void emitGroupObjectInTreeAfterBeforeError(ScriptParser parser, String groupObject) throws SemanticErrorException {
-        emitSimpleError(parser, "'" + groupObject + "' is in tree group - can't use it in AFTER/BEFORE");
+    public void emitGroupObjectInTreeAfterNotLastError(ScriptParser parser, String groupObject) throws SemanticErrorException {
+        emitSimpleError(parser, "'" + groupObject + "' is not last in tree group - can't use it in AFTER");
+    }
+
+    public void emitGroupObjectInTreeBeforeNotFirstError(ScriptParser parser, String groupObject) throws SemanticErrorException {
+        emitSimpleError(parser, "'" + groupObject + "' is not first in tree group - can't use it in BEFORE");
     }
 
     public void emitComponentParentError(ScriptParser parser, String compName) throws SemanticErrorException {
