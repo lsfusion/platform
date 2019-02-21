@@ -18,7 +18,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.shared.actions.logics.CheckApiVersionAction;
 import lsfusion.gwt.shared.result.BooleanResult;
 import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.shared.result.VoidResult;
@@ -62,7 +61,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static LogicsDispatchAsync logicsDispatchAsync;
     public static NavigatorDispatchAsync navigatorDispatchAsync;
 
-    public static boolean devMode;
     public static boolean devMode;
 
     public static boolean configurationAccessAllowed;
