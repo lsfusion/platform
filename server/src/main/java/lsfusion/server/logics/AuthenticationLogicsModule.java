@@ -9,6 +9,7 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CurrentAuthTokenFormulaProperty;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.CurrentUserFormulaProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
@@ -46,6 +47,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP nameContact;
     public LCP currentUserAllowExcessAllocatedBytes;
     public LCP allowExcessAllocatedBytes;
+
+    public LCP currentAuthToken;
+    public LCP secret;
 
     public LCP hostnameComputer;
     public LCP computerHostname;
@@ -102,6 +106,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         makePropertyPublic(currentUser, "currentUser", new ArrayList<ResolveClassSet>());
         currentComputer = addProperty(null, new LCP<>(new CurrentComputerFormulaProperty(computer)));
         makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
+        currentAuthToken = addProperty(null, new LCP<>(new CurrentAuthTokenFormulaProperty()));
+        makePropertyPublic(currentAuthToken, "currentAuthToken", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();
 
@@ -134,6 +140,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         lastActivityCustomUser = findProperty("lastActivity[CustomUser]");
         lastComputerCustomUser = findProperty("lastComputer[CustomUser]");
+
+        secret = findProperty("secret[]");
 
         minHashLength = findProperty("minHashLength[]");
         useLDAP = findProperty("useLDAP[]");

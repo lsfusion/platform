@@ -85,6 +85,13 @@ changeSHA256Password(CustomUser customUser)  {
     }
 }
 
+// tokens
+currentAuthToken = NATIVE TEXT();    
+secret = DATA TEXT();
+getAuthToken() {
+    exportText() <- currentAuthToken();
+}
+
 forbidChangePassword = ABSTRACT BOOLEAN (CustomUser);
 
 minHashLength = DATA INTEGER ();

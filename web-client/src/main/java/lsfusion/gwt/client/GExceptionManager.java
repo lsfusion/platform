@@ -3,6 +3,7 @@ package lsfusion.gwt.client;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.logging.impl.StackTracePrintStream;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
@@ -24,7 +25,7 @@ public class GExceptionManager {
     }
     
     public static void logClientError(NonFatalHandledException ex, String message) {
-        logClientError(new LogClientExceptionAction(message, ex, ex.count, ex.reqId), message, ex);
+        logClientError(new LogClientExceptionAction(message, ex), message, ex);
     }
 
     public static void logClientError(LogClientExceptionAction action, String message, final Throwable throwable) {
@@ -143,5 +144,17 @@ public class GExceptionManager {
         StringBuilder sb = new StringBuilder();
         t.printStackTrace(new PrintStream(new StackTracePrintStream(sb)));
         return sb.toString();
+    }
+
+    // the same as in GExceptionManager
+    // when class of throwable changes
+    public static SerializableThrowable copyMessage(Throwable throwable) {
+        return new SerializableThrowable(throwable.getClass().getName(), throwable.getMessage());
+    }
+
+    // the same as in ExceptionUtils
+    // assuming that there should be primitive copy (Strings and other very primitive Java classes)  
+    public static void copyStackTraces(Throwable from, Throwable to) {
+        to.setStackTrace(from.getStackTrace());
     }
 }

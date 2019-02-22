@@ -626,6 +626,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
         securityManager.initAdminUser();
+        securityManager.initSecret();
     }
 
     public ImOrderSet<Property> getOrderProperties() {

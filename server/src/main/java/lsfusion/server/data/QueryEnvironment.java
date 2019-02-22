@@ -6,16 +6,17 @@ import java.util.Locale;
 
 public interface QueryEnvironment {
 
-    ParseInterface getSQLUser();
-    
     OperationOwner getOpOwner();
     
     int getTransactTimeout();
 
+    ParseInterface getSQLUser();
     ParseInterface getSQLComputer();
     ParseInterface getSQLForm();
     ParseInterface getSQLConnection();
     ParseInterface getIsServerRestarting();
+
+    ParseInterface getSQLAuthToken();
 
     Locale getLocale();
 }

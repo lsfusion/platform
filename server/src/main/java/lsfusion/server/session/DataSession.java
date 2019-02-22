@@ -2242,7 +2242,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             public ParseInterface getSQLUser() {
                 return empty;
             }
-            
+
+            @Override
+            public ParseInterface getSQLAuthToken() {
+                return empty;
+            }
+
             public ParseInterface getSQLComputer() {
                 return empty;
             }
@@ -2284,6 +2289,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return new TypeObject(currentUser, ObjectType.instance);
             } else {
                 return NullValue.instance.getParse(ObjectType.instance);
+            }
+        }
+
+        @Override
+        public ParseInterface getSQLAuthToken() {
+            String currentAuthToken = sql.contextProvider.getCurrentAuthToken();
+            if (currentAuthToken != null) {
+                return new TypeObject(currentAuthToken, StringClass.text);
+            } else {
+                return NullValue.instance.getParse(StringClass.text);
             }
         }
 

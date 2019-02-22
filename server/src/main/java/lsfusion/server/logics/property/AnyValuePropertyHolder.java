@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -264,22 +265,30 @@ public class AnyValuePropertyHolder {
         return getLCP(valueType).readClasses(env, keys);
     }
 
-    public ObjectValue readFirstNotNull(ExecutionEnvironment env) throws SQLException, SQLHandledException { // return, not drop first value
+    public ObjectValue readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty) throws SQLException, SQLHandledException { // return, not drop first value
         DataSession session = env.getSession();
 
         ImOrderSet<SessionDataProperty> props = getProps();
         ImSet<SessionDataProperty> changedProps = SetFact.fromJavaSet(session.getSessionChanges(props.getSet()));
 
-        if(changedProps.isEmpty()) // optimization
+        if(changedProps.isEmpty()) { // optimization
+            readedProperty.set(props.get(0));
             return NullValue.instance;
-        if(changedProps.size() == 1)  // optimization
-            return changedProps.single().readClasses(env);
+        }
+        if(changedProps.size() == 1) { // optimization
+            SessionDataProperty prop = changedProps.single();
+            readedProperty.set(prop);
+            return prop.readClasses(env);
+        }
 
         for(SessionDataProperty prop : props.filterOrder(changedProps)) {
             ObjectValue changedValue = prop.readClasses(env);
-            if (changedValue instanceof DataObject)
+            if (changedValue instanceof DataObject) {
+                readedProperty.set(prop);
                 return changedValue;
+            }
         }
+        readedProperty.set(props.get(0));
         return NullValue.instance;
     }
 }

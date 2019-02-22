@@ -3,7 +3,6 @@ package lsfusion.gwt.server;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.Pair;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
 import lsfusion.gwt.server.navigator.handlers.*;
@@ -209,36 +208,37 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
             } catch (WrappedRemoteDispatchException e) {
                 throw e.remoteException;
             }
-        } catch (DispatchException e) { // mainly AppServerNotAvailableException, but in theory can be some InvalidSessionException 
-            throw e; // just rethrow
-        } catch (AuthenticationException e) { // we need to wrap this exception, otherwise it will be treated like RemoteInternalDispatchException (unknown server exception)
-            throw new AuthenticationDispatchException(e.getMessage());
-        } catch (RemoteException e) {
-            if(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
-                throw handleNotDispatch(e);
+        } catch (Throwable e) { // mainly AppServerNotAvailableException, but in theory can be some InvalidSessionException
+            DispatchException ed = fromWebServerToWebClient(e);
             
-            // connection problem, need to retry request
-            RemoteRetryException et = new RemoteRetryException(e.getMessage(), e, ExceptionUtils.getFatalRemoteExceptionCount(e));
-            logRemoteRetryException(action, et);
-            throw et;
-        } catch (Throwable e) { // all other exceptions 
-            throw handleNotDispatch(e);
+            logException(action, ed);
+            
+            throw ed;
         }
     }
-    
-    // wrapping RemoteServerException (app) + web server exception -> RemoteInternalDispatchException
-    private RemoteInternalDispatchException handleNotDispatch(Throwable e) {
-        logNotDispatchException(e);
 
-        Pair<String, String> allStacks = RemoteInternalException.getActualStacks(e);
-        return new RemoteInternalDispatchException(e, allStacks.first, allStacks.second); 
+    // result throwable class should exist on client
+    public static DispatchException fromWebServerToWebClient(Throwable e) {
+        if(e instanceof DispatchException) // mainly AppServerNotAvailableException, but in theory can be some InvalidSessionException
+            return (DispatchException) e;
+        if(e instanceof AuthenticationException) // we need to wrap this exception, otherwise it will be treated like RemoteInternalDispatchException (unknown server exception)
+            return new AuthenticationDispatchException(e.getMessage());
+        if(e instanceof RemoteException && !(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException)) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
+            return new RemoteRetryException(e.getMessage(), e, ExceptionUtils.getFatalRemoteExceptionCount(e));
+
+        RemoteInternalDispatchException clientException = new RemoteInternalDispatchException(e, RemoteInternalException.getLsfStack(e));
+        ExceptionUtils.copyStackTraces(e, clientException);        
+        return clientException;
     }
 
-    private void logNotDispatchException(Throwable e) {
-        logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
+    private void logException(Action<?> action, DispatchException e) {
+        if(e instanceof RemoteRetryException)
+            logRemoteRetryException(action, (RemoteRetryException) e);
+        else
+            logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
     }
 
-    public void logRemoteRetryException(Action<?> action, RemoteRetryException et) {
+    private void logRemoteRetryException(Action<?> action, RemoteRetryException et) {
         if (!(action instanceof RequestAction) || ((RequestAction) action).logRemoteException()) {
             String actionTry = "";
             if(action instanceof RequestAction) {

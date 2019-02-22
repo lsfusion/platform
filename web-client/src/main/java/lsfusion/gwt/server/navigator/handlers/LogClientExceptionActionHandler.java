@@ -4,10 +4,12 @@ import com.google.gwt.core.server.StackTraceDeobfuscator;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import lsfusion.base.ConcurrentIdentityWeakHashMap;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
+import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.shared.exceptions.RemoteInternalDispatchException;
 import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
@@ -48,31 +50,12 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         invocationLogger.info("Before logging exception, count : " + count + ", navigator " + navigator);
         
         if (count == null || count < 20) {
-            Throwable throwable;
-            Throwable actionThrowable = action.throwable;
-            if(actionThrowable instanceof SerializableThrowable) {
-                throwable = new Throwable(actionThrowable.getMessage());
-
-                if (action.nonFatal) { // created from NonFatalHandledException (was wrapped because there could be problems with causes)
-                    RemoteException remoteException = new RemoteException(actionThrowable.toString());
-                    remoteException.setStackTrace(new StackTraceElement[]{});
-                    throwable = new NonFatalHandledRemoteException(remoteException, action.reqId);
-                    ((NonFatalHandledRemoteException) throwable).count = action.count;
-                }
-
-                throwable.setStackTrace(actionThrowable.getStackTrace());
+            Throwable throwable = action.throwable;
+            
+            if(!(throwable instanceof DispatchException)) // we don't need to deobfuscate server exception (it is a round trip exception, so in theory there is no client stack trace)
                 getDeobfuscator().deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
-            } else {
-                assert !action.nonFatal;
-                assert actionThrowable instanceof DispatchException;
-                if(actionThrowable instanceof RemoteInternalDispatchException) {
-                    throwable = new RemoteInternalException(actionThrowable, ((RemoteInternalDispatchException) actionThrowable).javaStack, ((RemoteInternalDispatchException) actionThrowable).lsfStack);
-                } else {
-                    throwable = new Throwable(actionThrowable);
-                    throwable.setStackTrace(actionThrowable.getStackTrace());
-                    // we don't need to obfuscate since it is a round trip exception
-                }
-            }
+
+            throwable = fromWebServerToAppServer(throwable);
 
             try {
                 navigator.logClientException(action.title, null, throwable);
@@ -85,7 +68,24 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         
         return new VoidResult();
     }
-    
+
+    // result throwable class should exist on app-server
+    public static Throwable fromWebServerToAppServer(Throwable throwable) {
+        Throwable appThrowable;
+        if (throwable instanceof RemoteInternalDispatchException)
+            appThrowable = new RemoteInternalException(throwable.getMessage(), ((RemoteInternalDispatchException) throwable).lsfStack);
+        else if(throwable instanceof NonFatalHandledException)
+            appThrowable = new NonFatalHandledRemoteException(throwable.getMessage(), ((NonFatalHandledException) throwable).count, ((NonFatalHandledException) throwable).reqId);
+        else if(throwable instanceof SerializableThrowable)
+            appThrowable = new Throwable(ExceptionUtils.copyMessage(((SerializableThrowable)throwable).getDesignatedType(), throwable.getMessage()));
+        else {
+            assert throwable instanceof DispatchException;
+            appThrowable = new Throwable(ExceptionUtils.copyMessage(throwable));
+        }
+        ExceptionUtils.copyStackTraces(throwable, appThrowable);
+        return appThrowable;
+    }
+
     private StackTraceDeobfuscator getDeobfuscator() {
         if (deobfuscator == null) {
             deobfuscator = StackTraceDeobfuscator.fromFileSystem(servlet.getServletContext().getRealPath("WEB-INF/deploy" + servlet.getRequestModuleBasePath() + "symbolMaps"));

@@ -3,33 +3,27 @@ package lsfusion.gwt.shared.exceptions;
 import lsfusion.gwt.client.GExceptionManager;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
+// wrapper for RemoteInternalException to make it serializable to browser (gwt-client) and of specific class
 public class RemoteInternalDispatchException extends DispatchException {
     public RemoteInternalDispatchException() {
     }
     
-    public String javaStack;
     public String lsfStack;
 
-    public RemoteInternalDispatchException(Throwable cause, String javaStack, String lsfStack) {
+    public RemoteInternalDispatchException(Throwable cause, String lsfStack) {
         super(cause);
 
-        this.javaStack = javaStack; 
         this.lsfStack = lsfStack;
     }
 
     // the same as in RemoteInternalException
     // returns server stacks if present     
     public static String[] getActualStacks(Throwable e) {
-        String javaStack;
-        String lsfStack;
-        if(e instanceof RemoteInternalDispatchException) {
-            javaStack = ((RemoteInternalDispatchException) e).javaStack;
-            lsfStack = ((RemoteInternalDispatchException) e).lsfStack;
-        } else {
-            javaStack = GExceptionManager.getStackTrace(e);
-            lsfStack = null;
-        }
-        return new String[] {javaStack, lsfStack};
+        return new String[] {GExceptionManager.getStackTrace(e), getActualLsfStack(e)};
+    }
+
+    public static String getActualLsfStack(Throwable e) {
+        return e instanceof RemoteInternalDispatchException ? ((RemoteInternalDispatchException) e).lsfStack : null;
     }
 
 }

@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UserInputResult;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;

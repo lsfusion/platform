@@ -2,6 +2,7 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.interop.exceptions.*;
 import lsfusion.server.classes.AbstractCustomClass;
@@ -21,6 +22,7 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -192,10 +194,13 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         String message = replaceNonUTFCharacters(Throwables.getRootCause(t).getLocalizedMessage());
         String errorType = t.getClass().getName();
 
-        Pair<String, String> exStacks = RemoteInternalException.getActualStacks(t);
+        Pair<String, String> exStacks = RemoteInternalException.getExStacks(t);
         String javaStack = replaceNonUTFCharacters(exStacks.first);
         String lsfStack = exStacks.second;
-        
+
+        String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
+        logger.error( message + " at '" + time + "' from '" + clientName + "': " + '\n' + ExceptionUtils.getExStackTrace(javaStack, lsfStack));
+
         try (DataSession session = ThreadLocalContext.createSession()) {
             DataObject exceptionObject;
             if (client) {

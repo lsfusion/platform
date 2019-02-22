@@ -115,4 +115,19 @@ public class ExceptionUtils {
     public static String getExStackTrace(String javaStack, String lsfStack) {
         return lsfStack + '\n' + javaStack;
     }
+
+    // the same as in GExceptionManager
+    // when class of throwable changes
+    public static String copyMessage(String designatedType, String message) {
+        return designatedType + " " + message;
+    }
+    public static String copyMessage(Throwable throwable) {
+        return copyMessage(throwable.getClass().getName(), throwable.getMessage());
+    }
+
+    // the same as in GExceptionManager
+    // assuming that here should be primitive copy (Strings and other very primitive Java classes) to be deserialized everywhere  
+    public static void copyStackTraces(Throwable from, Throwable to) {
+        to.setStackTrace(from.getStackTrace());
+    }
 }

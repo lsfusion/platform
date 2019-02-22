@@ -2426,6 +2426,16 @@ public class Settings implements Cloneable {
         this.minSizeForExcelStreamingReader = minSizeForExcelStreamingReader;
     }
 
+    private int authTokenExpiration = 60 * 24; // in minutes
+
+    public int getAuthTokenExpiration() {
+        return authTokenExpiration;
+    }
+
+    public void setAuthTokenExpiration(int authTokenExpiration) {
+        this.authTokenExpiration = authTokenExpiration;
+    }
+
     //for PostgreDataAdapter, seconds
     private int connectTimeout = 0;
 
