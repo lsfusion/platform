@@ -17,9 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
 import java.util.ArrayList;
@@ -193,7 +191,7 @@ public final class LoginAction {
         return value != null ? value : System.getProperty("jnlp." + propertyName);
     }
 
-    public boolean login() throws MalformedURLException, NotBoundException, RemoteException {
+    public boolean login() {
         boolean needData = loginInfo.getServerHost() == null || loginInfo.getServerPort() == null || loginInfo.getServerDB() == null || loginInfo.getUserName() == null || loginInfo.getPassword() == null;
         if (!autoLogin || needData) {
             loginDialog.setAutoLogin(autoLogin);

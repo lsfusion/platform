@@ -73,7 +73,6 @@
         <jxlayer.version>3.0.4</jxlayer.version>
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
-        <formsrt.version>7.0.3</formsrt.version>
         <jssc.version>0.8</jssc.version>
         <!--<jtds.version>1.2.4</jtds.version>-->
         <mssql.version>4.0</mssql.version>
@@ -496,11 +495,6 @@
                 <groupId>com.toedter</groupId>
                 <artifactId>jcalendar</artifactId>
                 <version>${jcalendar.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intellij</groupId>
-                <artifactId>forms_rt</artifactId>
-                <version>${formsrt.version}</version>
             </dependency>
             <dependency>
                 <groupId>jssc</groupId>
