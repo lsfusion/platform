@@ -5,12 +5,14 @@ public class LoginInfo {
     private String serverPort;
     private String serverDB;
     private UserInfo userInfo;
+    private boolean useAnonymousUI;
 
-    public LoginInfo(String serverHost, String serverPort, String serverDB, UserInfo userInfo) {
+    public LoginInfo(String serverHost, String serverPort, String serverDB, UserInfo userInfo, boolean useAnonymousUI) {
         this.serverHost = serverHost;
         this.serverPort = serverPort;
         this.serverDB = serverDB;
         this.userInfo = userInfo;
+        this.useAnonymousUI = useAnonymousUI;
     }
 
     public String getServerHost() {
@@ -55,5 +57,9 @@ public class LoginInfo {
 
     public boolean getSavePwd() {
         return userInfo != null && userInfo.savePassword;
+    }
+
+    public boolean isUseAnonymousUI() {
+        return useAnonymousUI;
     }
 }

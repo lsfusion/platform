@@ -37,8 +37,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.security.AccessController;
@@ -59,7 +57,6 @@ public class Main {
 
     public static final String LSFUSION_TITLE = "lsFusion";
     public static final String DEFAULT_ICON_PATH = "/images/logo/";
-    public static final String DEFAULT_LOGO_PATH = DEFAULT_ICON_PATH + "logo.png";
 
     public static final File fusionDir = new File(System.getProperty("user.home"), ".fusion");
 
@@ -200,53 +197,13 @@ public class Main {
                 try {
                     LoginAction loginAction = LoginAction.getInstance();
 
-                    RemoteLogicsInterface tmpRemoteLogics = null;
-                    try {
-                        RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(loginAction.loginInfo.getServerHost(), loginAction.loginInfo.getServerPort(), loginAction.loginInfo.getServerDB()).connect(false);
-                        tmpRemoteLogics = remoteLoader.getLogics();
-                    } catch (Throwable e) {
-                        logger.error("Error creating RemoteLogics", e);
-                    }
-                    //пытаемся подгрузить лого
-                    loadLogicsLogo(tmpRemoteLogics);
-
-                    loginAction.initLoginDialog(tmpRemoteLogics);
+                    loginAction.initLoginDialog();
 
                     if (!loginAction.login()) {
                         return;
                     }
 
                     remoteLogics = loginAction.getRemoteLogics();
-
-                    JSONObject serverSettings = getServerSettings(remoteLogics);
-
-                    logicsName = trimToNull(serverSettings.optString("logicsName"));
-                    logicsDisplayName = trimToNull(serverSettings.optString("displayName"));
-                    String iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
-                    logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
-                    String logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
-                    logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
-                    String serverPlatformVersion = trimToNull(serverSettings.optString("platformVersion"));
-                    Integer serverApiVersion = serverSettings.optInt("apiVersion");
-
-                    String serverVersion = null;
-                    String clientVersion = null;
-                    String oldPlatformVersion = BaseUtils.getPlatformVersion();
-                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(serverPlatformVersion)) {
-                        serverVersion = serverPlatformVersion;
-                        clientVersion = oldPlatformVersion;
-                    } else {
-                        Integer oldApiVersion = BaseUtils.getApiVersion();
-                        if(!oldApiVersion.equals(serverApiVersion)) {
-                            serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
-                            clientVersion = oldPlatformVersion + " [" + oldApiVersion + "]";
-                        }
-                    }
-                    if(serverVersion != null) {
-                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), getMainTitle(), JOptionPane.WARNING_MESSAGE);
-                        Main.shutdown();
-                        return;
-                    }
 
                     remoteNavigator = loginAction.getRemoteNavigator();
 
@@ -310,22 +267,7 @@ public class Main {
         });
     }
 
-    private static void loadLogicsLogo(RemoteLogicsInterface remoteLogics) {
-        try {
-            if (remoteLogics != null) {
-                JSONObject serverSettings = getServerSettings(remoteLogics);
-                logicsDisplayName = trimToNull(serverSettings.optString("displayName"));
-                String iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
-                logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
-                String logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
-                logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
-            }
-        } catch (Throwable e) {
-            logger.error("Error loading logics logo", e);
-        }
-    }
-
-    private static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
+    public static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
         ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Service.getServerSettings[]", new ExternalRequest());
         return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
@@ -515,39 +457,31 @@ public class Main {
 
     public static List<Image> getMainIcons() {
         Set<Image> images = new LinkedHashSet<>();
-        // для обратной совместимости пока оставил, как было. но похоже, надо вырезать свойство lsfusion.client.logo
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_256.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_64.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_48.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_32.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_16.png").getImage());
+        if(logicsMainIcon != null) {
+            ImageIcon resource = new ImageIcon(logicsMainIcon);
+            if(resource.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                images.add(resource.getImage());
+            }
+        } else {
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_256.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_64.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_48.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_32.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_16.png"));
+        }
         return new ArrayList<>(images);
     }
 
     public static ImageIcon getLogo() {
-        return loadResource(logicsLogo, LSFUSION_CLIENT_LOGO, DEFAULT_LOGO_PATH);
+        return logicsLogo != null ? new ImageIcon(logicsLogo) : getImageIcon(DEFAULT_ICON_PATH + "logo.png");
     }
 
-    private static ImageIcon loadResource(byte[] resourceData, String defaultUrlSystemPropName, String defaultResourcePath) {
-        ImageIcon resource = resourceData != null ? new ImageIcon(resourceData) : null;
-        if (resource == null || resource.getImageLoadStatus() != MediaTracker.COMPLETE) {
-            String splashUrlString = System.getProperty(defaultUrlSystemPropName);
-            URL splashUrl = null;
-            if (splashUrlString != null) {
-                try {
-                    splashUrl = new URL(splashUrlString);
-                } catch (MalformedURLException ignored) {
-                }
-            }
-            if (splashUrl != null) {
-                resource = new ImageIcon(splashUrl);
-            }
+    private static Image getImage(String resourcePath) {
+        return getImageIcon(resourcePath).getImage();
+    }
 
-            if (resource == null || resource.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                resource = new ImageIcon(SplashScreen.class.getResource(defaultResourcePath));
-            }
-        }
-        return resource;
+    private static ImageIcon getImageIcon(String resourcePath) {
+        return new ImageIcon(SplashScreen.class.getResource(resourcePath));
     }
 
     public static String getMainTitle() {

@@ -68,7 +68,7 @@ public final class LoginAction {
         String serverPort = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT);
         String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
         
-        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, null));
+        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, null, false));
     }
     
     private void syncUsers(RemoteLogicsInterface remoteLogics) {
@@ -98,11 +98,9 @@ public final class LoginAction {
         }
     } 
 
-    public void initLoginDialog(RemoteLogicsInterface remoteLogics) {
+    public void initLoginDialog() {
         String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
         String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-
-        syncUsers(remoteLogics);
             
         UserInfo userInfo = !userInfos.isEmpty() ? userInfos.get(0).copy() : new UserInfo();
         if (userName != null){
@@ -245,7 +243,9 @@ public final class LoginAction {
             }
             status = connect();
         }
-        
+
+        syncUsers(remoteLogics);
+
         storeServerData();
 
         return true;
@@ -299,7 +299,7 @@ public final class LoginAction {
             }
             remoteLogics = new RemoteLogicsProxy(remoteLoader.getLogics());
 
-            AuthenticationToken authToken = remoteLogics.authenticateUser(loginInfo.getUserName(), loginInfo.getPassword());
+            AuthenticationToken authToken = loginInfo.isUseAnonymousUI() ? AuthenticationToken.ANONYMOUS : remoteLogics.authenticateUser(loginInfo.getUserName(), loginInfo.getPassword());
 
             remoteNavigator = remoteLogics.createNavigator(authToken, getNavigatorInfo());
         } catch (CancellationException ce) {
