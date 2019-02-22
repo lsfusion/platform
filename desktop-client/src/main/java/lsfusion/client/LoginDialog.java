@@ -24,6 +24,7 @@ public class LoginDialog extends JDialog {
 
     private JPanel contentPane;
     private JButton buttonOK;
+    private boolean disableOK = false;
     private JButton buttonCancel;
     private JComboBox loginBox;
     private JPasswordField passwordField;
@@ -229,7 +230,21 @@ public class LoginDialog extends JDialog {
                 hasAnonymousUI = serverSettings.optBoolean("anonymousUI");
                 String serverPlatformVersion = trimToNull(serverSettings.optString("platformVersion"));
                 Integer serverApiVersion = serverSettings.optInt("apiVersion");
-                error = checkApiVersion(serverPlatformVersion, serverApiVersion);
+
+                String serverVersion = null;
+                String clientVersion = null;
+                String clientPlatformVersion = BaseUtils.getPlatformVersion();
+                if(clientPlatformVersion != null && !clientPlatformVersion.equals(serverPlatformVersion)) {
+                    serverVersion = serverPlatformVersion;
+                    clientVersion = clientPlatformVersion;
+                } else {
+                    Integer clientApiVersion = BaseUtils.getApiVersion();
+                    if(!clientApiVersion.equals(serverApiVersion)) {
+                        serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
+                        clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
+                    }
+                }
+                error = serverVersion != null ? getString("client.error.need.restart", serverVersion, clientVersion) : null;
 
             } catch (Throwable e) {
                 logger.error("Failed to load server settings", e);
@@ -250,25 +265,9 @@ public class LoginDialog extends JDialog {
             updateAnonymousUIVisibility();
 
             setWarningMsg(error);
+            disableOK = error != null;
             pack();
         }
-    }
-
-    private String checkApiVersion(String serverPlatformVersion, Integer serverApiVersion) {
-        String serverVersion = null;
-        String clientVersion = null;
-        String clientPlatformVersion = BaseUtils.getPlatformVersion();
-        if(clientPlatformVersion != null && !clientPlatformVersion.equals(serverPlatformVersion)) {
-            serverVersion = serverPlatformVersion;
-            clientVersion = clientPlatformVersion;
-        } else {
-            Integer clientApiVersion = BaseUtils.getApiVersion();
-            if(!clientApiVersion.equals(serverApiVersion)) {
-                serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
-                clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
-            }
-        }
-        return serverVersion != null ? getString("client.error.need.restart", serverVersion, clientVersion) : null;
     }
 
     private void updateAnonymousUIVisibility() {
@@ -308,7 +307,7 @@ public class LoginDialog extends JDialog {
 
     private boolean isOkEnabled() {
         Object item = serverHostComboBox.getEditor().getItem();
-        return !((String) loginBox.getEditor().getItem()).isEmpty()
+        return !disableOK && !((String) loginBox.getEditor().getItem()).isEmpty()
                 && (item instanceof ServerInfo || isValid(item.toString()));
     }
 
@@ -369,16 +368,10 @@ public class LoginDialog extends JDialog {
                 loginInfo.getUserName() == null || loginInfo.getPassword() == null;
         if (!autoLogin || needData) {
             setLocationRelativeTo(null);
-
             loginBox.requestFocusInWindow();
-
             getRootPane().setDefaultButton(buttonOK);
-
             setVisible(true);
-
-            return loginInfo;
         }
-
         return loginInfo;
     }
 
