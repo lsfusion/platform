@@ -1,6 +1,7 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
@@ -43,17 +44,7 @@ public class GeneratePasswordActionProperty extends ScriptingActionProperty {
             if(length < 3) {
                 throw new RuntimeException("Minimum required password length is 3");
             } else {
-                String password = null;
-                while (password == null || (useAtLeastOneDigit && !password.matches(".*\\d.*")) || (useBothRegisters && (!password.matches(".*[A-Z].*") || !password.matches(".*[a-z].*")))) {
-                    StringBuilder passwordBuilder = new StringBuilder(length);
-                    Random random = new Random(System.nanoTime());
-
-                    for (int i = 0; i < length; i++) {
-                        passwordBuilder.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
-                    }
-                    password = passwordBuilder.toString();
-                }
-                findProperty("generatedPassword[]").change(password, context);
+                findProperty("generatedPassword[]").change(BaseUtils.generatePassword(length, useAtLeastOneDigit, useBothRegisters), context);
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
