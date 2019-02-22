@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
+import java.util.Map;
 
 public class ExternalUtils {
 
@@ -60,8 +61,7 @@ public class ExternalUtils {
         };
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, String url, String uri, String query, InputStream is, 
-                                                  Map<String, String[]> requestParams, ContentType requestContentType, String[] headerNames, String[] headerValues, 
+    public static ExternalResponse processRequest(ExecInterface remoteExec, String url, String uri, String query, InputStream is, Map<String, String[]> requestParams, ContentType requestContentType, String[] headerNames, String[] headerValues, 
                                                   String logicsHost, Integer logicsPort, String logicsExportName) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);

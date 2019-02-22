@@ -102,7 +102,7 @@ public class ExternalHttpServer extends MonitorServer {
             } catch (Exception e) {
                 ServerLoggers.importLogger.error("ExternalHttpServer error: ", e);
                 try {
-                    sendErrorResponse(request, "Internal Server Error: " + e.getMessage());
+                    sendErrorResponse(request, e.getMessage());
                 } catch (Exception ignored) {
                 }
             } finally {
