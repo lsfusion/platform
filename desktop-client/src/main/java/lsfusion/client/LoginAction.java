@@ -17,9 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
 import java.util.ArrayList;
@@ -68,7 +66,7 @@ public final class LoginAction {
         String serverPort = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT);
         String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
         
-        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, null));
+        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, null, false));
     }
     
     private void syncUsers(RemoteLogicsInterface remoteLogics) {
@@ -98,11 +96,9 @@ public final class LoginAction {
         }
     } 
 
-    public void initLoginDialog(RemoteLogicsInterface remoteLogics) {
+    public void initLoginDialog() {
         String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
         String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-
-        syncUsers(remoteLogics);
             
         UserInfo userInfo = !userInfos.isEmpty() ? userInfos.get(0).copy() : new UserInfo();
         if (userName != null){
@@ -195,7 +191,7 @@ public final class LoginAction {
         return value != null ? value : System.getProperty("jnlp." + propertyName);
     }
 
-    public boolean login() throws MalformedURLException, NotBoundException, RemoteException {
+    public boolean login() {
         boolean needData = loginInfo.getServerHost() == null || loginInfo.getServerPort() == null || loginInfo.getServerDB() == null || loginInfo.getUserName() == null || loginInfo.getPassword() == null;
         if (!autoLogin || needData) {
             loginDialog.setAutoLogin(autoLogin);
@@ -245,7 +241,9 @@ public final class LoginAction {
             }
             status = connect();
         }
-        
+
+        syncUsers(remoteLogics);
+
         storeServerData();
 
         return true;
@@ -299,7 +297,7 @@ public final class LoginAction {
             }
             remoteLogics = new RemoteLogicsProxy(remoteLoader.getLogics());
 
-            AuthenticationToken authToken = remoteLogics.authenticateUser(loginInfo.getUserName(), loginInfo.getPassword());
+            AuthenticationToken authToken = loginInfo.isUseAnonymousUI() ? AuthenticationToken.ANONYMOUS : remoteLogics.authenticateUser(loginInfo.getUserName(), loginInfo.getPassword());
 
             remoteNavigator = remoteLogics.createNavigator(authToken, getNavigatorInfo());
         } catch (CancellationException ce) {

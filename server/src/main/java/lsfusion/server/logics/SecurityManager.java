@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import io.jsonwebtoken.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -9,12 +10,14 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.Compare;
+import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ExecutionStack;
@@ -27,6 +30,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
@@ -39,10 +43,7 @@ import org.springframework.util.Assert;
 import javax.naming.CommunicationException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -171,9 +172,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public void initAdminUser() throws SQLException, SQLHandledException {
         try(DataSession session = createSession()) {
             DataObject adminUser = readUser("admin", session);
-            if (adminUser == null)
+            if (adminUser == null) {
                 adminUser = addUser("admin", initialAdminPassword, session);
-            apply(session);
+                apply(session);
+            }
             this.adminUser = new DataObject((Long) adminUser.object, authenticationLM.customUser); // to update classes after apply
         }
     }
@@ -222,11 +224,54 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return userObject.isNull() ? null : (DataObject) userObject;
     }
 
+    private String secret = null;
+    public void initSecret() throws SQLException, SQLHandledException {
+        try(DataSession session = createSession()) {
+            LCP secretLCP = authenticationLM.secret;
+            String secretKey = (String) secretLCP.read(session);
+            if(secretKey == null) {
+                secretKey = BaseUtils.generatePassword(32, false, false);
+                secretLCP.change(secretKey, session);
+                apply(session);
+            }
+            this.secret = secretKey;
+        }
+    }
+
+    public String parseToken(AuthenticationToken token) {
+        if(token.isAnonymous())
+            return null;
+
+        Claims body;
+        try {
+            body = Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(token.string)
+                    .getBody();
+        } catch (Exception e) {
+            throw new AuthenticationException(e.getMessage());
+        }
+
+        return body.getSubject();
+//        u.setId(Long.parseLong((String) body.get("userId")));
+    }
+
+    public AuthenticationToken generateToken(String userLogin) {
+        Claims claims = Jwts.claims().setSubject(userLogin);
+        claims.setExpiration(new Date(System.currentTimeMillis() + Settings.get().getAuthTokenExpiration() * 1000 * 60)); // expiration * 1000*60*60
+//        claims.put("userId", u.getId() + "");
+
+        return new AuthenticationToken(Jwts.builder()
+                .setClaims(claims)
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact());
+    }
+    
     public AuthenticationToken authenticateUser(String userName, String password, ExecutionStack stack) throws RemoteException {
         try(DataSession session = createSession()) {
             DataObject userObject = readUser(userName, session);
             authenticateUser(session, userObject, userName, password, stack);
-            return new AuthenticationToken(userName);
+            return generateToken(userName);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -304,6 +349,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         userObject = addUser(login, password, session);
                     }
                     setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
+                    apply(session);
                     return;
                 } else {
                     throw new LoginException();

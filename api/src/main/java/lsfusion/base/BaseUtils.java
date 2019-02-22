@@ -2725,4 +2725,20 @@ public class BaseUtils {
         }
         return result;
     }
+
+    private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    public static String generatePassword(int length, boolean useAtLeastOneDigit, boolean useBothRegisters) {
+        String password = null;
+        while (password == null || (useAtLeastOneDigit && !password.matches(".*\\d.*")) || (useBothRegisters && (!password.matches(".*[A-Z].*") || !password.matches(".*[a-z].*")))) {
+            StringBuilder passwordBuilder = new StringBuilder(length);
+            Random random = new Random(System.nanoTime());
+
+            for (int i = 0; i < length; i++) {
+                passwordBuilder.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+            }
+            password = passwordBuilder.toString();
+        }
+        return password;
+    }
 }

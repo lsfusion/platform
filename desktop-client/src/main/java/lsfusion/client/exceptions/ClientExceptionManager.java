@@ -24,6 +24,10 @@ import static lsfusion.client.ClientResourceBundle.getString;
 public class ClientExceptionManager {
     private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
     private final static List<Throwable> unreportedThrowables = new ArrayList<>();
+    
+    public static Throwable fromDesktopClientToAppServer(Throwable e) {
+        return e; // assuming that here should be only swing exceptions, so server has all this exceptions and will be able do deserialize them 
+    }
 
     public static void handle(final Throwable e) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -34,7 +38,7 @@ public class ClientExceptionManager {
                 Throwable remote = getRemoteExceptionCause(e);
                 if(remote == null) {
                     Log.error(getString("errors.internal.client.error"), e);
-                    reportClientThrowable(e); // обычный throwable
+                    reportClientThrowable(fromDesktopClientToAppServer(e));
                 }
                 if (remote instanceof RemoteServerException) {
                     Log.error((RemoteServerException) remote);

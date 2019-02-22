@@ -1,6 +1,6 @@
 package lsfusion.server.remote;
 
-import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.context.AbstractContext;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;

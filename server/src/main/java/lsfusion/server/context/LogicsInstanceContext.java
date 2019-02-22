@@ -1,6 +1,7 @@
 package lsfusion.server.context;
 
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;

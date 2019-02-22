@@ -28,8 +28,6 @@ public class StartupProperties {
 
     public static final String LSFUSION_CLIENT_PING_TIME = "lsfusion.client.pingTime";
 
-    public static final String LSFUSION_CLIENT_LOGO = "lsfusion.client.logo";
-
     public static final String LSFUSION_CLIENT_BLOCKER_ACTIVATION_OFF = "lsfusion.client.blocker.activation.off";
 
     public static final String LSFUSION_CLIENT_DECIMAL_SEPARATOR = "lsfusion.client.decimal.separator";

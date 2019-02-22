@@ -38,7 +38,6 @@ onStarted  ABSTRACT LIST ( );
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 
-authToken = DATA LOCAL TEXT();    
 headers = DATA LOCAL TEXT(TEXT);    
 headersTo = DATA LOCAL TEXT(TEXT);
 url = DATA LOCAL TEXT();

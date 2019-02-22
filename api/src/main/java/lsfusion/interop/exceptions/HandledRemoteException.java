@@ -11,4 +11,10 @@ public abstract class HandledRemoteException extends RemoteClientException {
         
         this.reqId = reqId;
     }
+
+    public HandledRemoteException(String message, long reqId) {
+        super(message);
+
+        this.reqId = reqId;
+    }
 }

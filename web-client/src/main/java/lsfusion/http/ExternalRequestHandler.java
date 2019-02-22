@@ -83,7 +83,7 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.setContentType("text/html; charset=utf-8");
                 try {
-                    Pair<String, String> actualStacks = RemoteInternalException.getActualStacks(e);
+                    Pair<String, String> actualStacks = RemoteInternalException.getExStacks(e);
                     response.getWriter().print(e.getMessage()+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.first, actualStacks.second));
                 } catch (IOException e1) {
                     throw Throwables.propagate(e1);

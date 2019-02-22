@@ -10,4 +10,9 @@ public class NonFatalHandledRemoteException extends HandledRemoteException {
     public NonFatalHandledRemoteException(RemoteException cause, long reqId) {
         super(cause, reqId);
     }
+
+    public NonFatalHandledRemoteException(String message, int count, long reqId) {
+        super(message, reqId);
+        this.count = count;
+    }
 }

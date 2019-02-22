@@ -2,6 +2,7 @@ package lsfusion.server.remote;
 
 import lsfusion.base.ExternalRequest;
 import lsfusion.base.ExternalResponse;
+import lsfusion.base.Result;
 import lsfusion.base.SessionInfo;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -25,6 +26,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.session.DataSession;
 
@@ -90,15 +92,9 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     private ExternalResponse executeExternal(LAP<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
         String annotation = property.property.annotation;
         if(annotation == null || !annotation.equals("noauth"))
-            checkEnableApi(userToken.isAnonymous());
+            checkEnableApi(authToken.isAnonymous());
 
         writeRequestInfo(dataSession, property.property, request);
-        
-        if(!userToken.isAnonymous()) {
-            LCP<?> authToken = businessLogics.LM.authToken;
-            if (property.property.uses(authToken.property)) // optimization
-                authToken.change(userToken.user, dataSession);
-        }
 
         property.execute(dataSession, getStack(), ExternalHTTPActionProperty.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
 
@@ -148,45 +144,23 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                     throw new RuntimeException(String.format("Return property %s was not found", returnName));
                 returnProps[i] = returnProperty;
             }
-            for (LCP returnProp : returnProps)
-                returns.addAll(readReturnProperty(returnProp));
-        } else
-            returns.add(businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession).getValue());
+            for (LCP<?> returnProp : returnProps)
+                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property));
+        } else {
+            Result<SessionDataProperty> resultProp = new Result<>(); 
+            ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp);
+            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result));
+        }
 
         ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readHeaders(dataSession, businessLogics.LM.headersTo).toOrderMap();
         return new ExternalResponse(returns.toArray(), headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));
     }
 
-    private List<Object> readReturnProperty(LCP<?> returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
-        Object returnValue = returnProperty.read(dataSession, params);
-        Type returnType = returnProperty.property.getType();
-        return readReturnProperty(returnValue, returnType);
+    private Object formatReturnValue(Object returnValue, CalcProperty returnProperty) {
+        Type returnType = returnProperty.getType();
+        return returnType.formatHTTP(returnValue, null);
     }
 
-    private List<Object> readReturnProperty(Object returnValue, Type returnType) throws IOException {
-        List<Object> returnList = new ArrayList<>();
-//        boolean jdbcSingleRow = false;
-//        if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
-//            if (((FileData) returnValue).getExtension().equals("jdbc")) {
-//                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(((FileData) returnValue).getRawFile());
-//                if (jdbcTable.singleRow) {
-//                    ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
-//                    for (String field : jdbcTable.fields) {
-//                        Type fieldType = jdbcTable.fieldTypes.get(field);
-//                        if(row == null)
-//                            returnList.add(null);
-//                        else
-//                            returnList.addAll(readReturnProperty(row.get(field), fieldType));
-//                    }
-//                    jdbcSingleRow = true;
-//                }
-//            }
-//        }
-//        if (!jdbcSingleRow)
-        returnList.add(returnType.formatHTTP(returnValue, null));
-        return returnList;
-    }
-    
     @Override
     protected FormController createFormController() {
         return new FormController() {

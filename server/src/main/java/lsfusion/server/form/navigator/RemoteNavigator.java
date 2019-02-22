@@ -129,15 +129,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     public void logClientException(String title, String hostname, Throwable t) {
-        String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
-        
         boolean web = false;
         if (hostname == null) { // считается, что Web
             web = true;
             hostname = ThreadLocalContext.get().getLogInfo().hostnameComputer + " - web";
         }
         
-        logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
             businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true, web);
         } catch (SQLException | SQLHandledException e) {

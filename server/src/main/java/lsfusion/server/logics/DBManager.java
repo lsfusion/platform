@@ -613,6 +613,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         @Override
+        public String getCurrentAuthToken() {
+            return null;
+        }
+
+        @Override
         public LogInfo getLogInfo() {
             return LogInfo.system;
         }

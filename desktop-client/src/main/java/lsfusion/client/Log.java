@@ -111,7 +111,7 @@ public final class Log {
         if(t instanceof RemoteInternalException)
             message += "\n" + getString("errors.contact.administrator");
 
-        Pair<String, String> exStacks = RemoteInternalException.getActualStacks(t);
+        Pair<String, String> exStacks = RemoteInternalException.getExStacks(t);
         error(message, null, null, exStacks.first, exStacks.second, false);
     }
 

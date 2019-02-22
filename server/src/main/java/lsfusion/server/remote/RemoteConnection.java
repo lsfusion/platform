@@ -32,7 +32,7 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
 
     protected DataObject computer;
 
-    protected AuthenticationToken userToken;
+    protected AuthenticationToken authToken;
     protected DataObject user;
     protected LogInfo logInfo;
     protected Locale locale;
@@ -49,12 +49,6 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
 
     protected DataSession createSession() throws SQLException {
         return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), null);
-    }
-
-    private static String getUserLogin(AuthenticationToken token) {
-        if(token.isAnonymous())
-            return null;
-        return token.user;
     }
 
     protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
@@ -76,9 +70,9 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
     }
 
     private void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
-        String login = getUserLogin(token);
+        authToken = token;
+        String login = securityManager.parseToken(token);
         user = login != null ? securityManager.readUser(login, session) : securityManager.getAdminUser();
-        userToken = token;
     }
 
     // in theory its possible to cache all this
@@ -162,6 +156,14 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
             return wThis.getCurrentUser();
         }
 
+        @Override
+        public String getCurrentAuthToken() {
+            final RemoteConnection wThis = weakThis.get();
+            if(wThis == null)
+                return null;
+            return wThis.getCurrentAuthToken();
+        }
+
         public LogInfo getLogInfo() {
             final RemoteConnection wThis = weakThis.get();
             if(wThis == null) // используется в мониторе процессов
@@ -226,6 +228,10 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
 
     public Long getCurrentUser() {
         return user != null ? (Long)user.object : null;
+    }
+
+    public String getCurrentAuthToken() {
+        return authToken != null ? authToken.string : null;
     }
 
     public Long getCurrentComputer() {

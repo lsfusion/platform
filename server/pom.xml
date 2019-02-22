@@ -289,7 +289,12 @@
             <artifactId>opencsv</artifactId>
             <version>4.4</version>
         </dependency>
-
+        <!--jwt token generation-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
         <!--text recognition-->
         <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
