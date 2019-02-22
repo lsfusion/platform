@@ -2313,12 +2313,12 @@ public class Settings implements Cloneable {
         this.usePessQueryHeurWhenReducedMore = usePessQueryHeurWhenReducedMore;
     }
 
-    // выключен так как обычно выталкиваемы предикаты в GroupLast не делают и они как правило приходят извне, во всяком случае пока подтвержденных случаев (кроме одного когда только 3 помогает не видели)
-    private int useGroupLastOpt = 1; // 0 (no) - не используем, 1 (pushedIn) - используем только полный pushedInWhere, 2 (mixed) - используем полный pushedInWhere если есть иначе pushedOutWhere, 3 (pushedOut) - всегда pushedOut
+    // pushedIn is default because pushed out predicates in GroupLast are really rare (usually context goes upside down), at least there were only on confirmed case, when out was better then in (however there were no cases when out was worse than no, and there were pretty a lot of cases when in was better than out) 
+    private int useGroupLastOpt = 1; // 0 (no) - no group last optimization, 1 - pushedIn, 2 - mixed: pushedIn else pushedOut, 3 - pushedOut
 
     public int getUseGroupLastOpt() {
         if(SystemProperties.inTestMode)
-            return 3;
+            return 2;
         return useGroupLastOpt;
     }
 
