@@ -84,10 +84,7 @@ public class ExternalUtils {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
                 Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-                if (!requestParams.isEmpty()) {
-                    script = script != null ? script : getScriptRequestParam(requestParams);
-                    paramsList = getRequestParams(requestParams);
-                } else if (script == null && !paramsList.isEmpty()) {
+                if (script == null && !paramsList.isEmpty()) {
                     //Первый параметр считаем скриптом
                     script = paramsList.get(0);
                     request.params = paramsList.subList(1, paramsList.size()).toArray();
@@ -108,23 +105,6 @@ public class ExternalUtils {
             return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues);
         }
         return new ExternalResponse(null, null, null, null);
-    }
-
-    private static String getScriptRequestParam(Map requestParams) {
-        Object params = requestParams.get(SCRIPT_PARAM);
-        if (params instanceof List && !((List) params).isEmpty()) {
-            return String.valueOf(((List) params).get(0));
-        } else return null;
-    }
-
-    private static List<Object> getRequestParams(Map<String, String[]> requestParams) {
-        List<Object> params = new ArrayList<>();
-        for (Map.Entry<String, String[]> entry : requestParams.entrySet()) {
-            if (!entry.getKey().equals(SCRIPT_PARAM)) {
-                params.addAll(Arrays.asList(entry.getValue()));
-            }
-        }
-        return params;
     }
 
     public static String getBodyUrl(Object[] results, boolean returnBodyUrl) {
