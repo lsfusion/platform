@@ -5,13 +5,16 @@ import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.gwt.server.form.handlers.*;
-import lsfusion.gwt.shared.exceptions.*;
-import lsfusion.http.provider.form.FormProvider;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
-import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.gwt.server.navigator.handlers.*;
-import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.gwt.shared.actions.RequestAction;
+import lsfusion.gwt.shared.exceptions.AuthenticationDispatchException;
+import lsfusion.gwt.shared.exceptions.RemoteInternalDispatchException;
+import lsfusion.gwt.shared.exceptions.RemoteRetryException;
+import lsfusion.gwt.shared.exceptions.WrappedRemoteDispatchException;
+import lsfusion.http.provider.form.FormProvider;
+import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.interop.exceptions.AuthenticationException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
@@ -32,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.text.ParseException;
-
-import static lsfusion.base.ServerMessages.getString;
 
 // singleton, one for whole application
 public class MainDispatchServlet extends net.customware.gwt.dispatch.server.standard.AbstractStandardDispatchServlet implements org.springframework.web.HttpRequestHandler, org.springframework.beans.factory.InitializingBean, org.springframework.beans.factory.BeanNameAware {
@@ -268,5 +269,10 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
     public HttpServletRequest getRequest() {
         return getThreadLocalRequest();
+    }
+
+    @Override
+    public String getRequestModuleBasePath() {
+        return super.getRequestModuleBasePath();
     }
 }

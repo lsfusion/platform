@@ -5,21 +5,17 @@ import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
+import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import lsfusion.gwt.shared.exceptions.RemoteInternalDispatchException;
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,7 +27,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
     
     private ConcurrentIdentityWeakHashMap<RemoteNavigatorInterface, Integer> exceptionCounter = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     
-    private GStackTraceDeobfuscator deobfuscator = new GStackTraceDeobfuscator();
+    private StackTraceDeobfuscator deobfuscator;
     
     public LogClientExceptionActionHandler(MainDispatchServlet servlet) {
         super(servlet);
@@ -65,7 +61,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
                 }
 
                 throwable.setStackTrace(actionThrowable.getStackTrace());
-                deobfuscator.deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
+                getDeobfuscator().deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
             } else {
                 assert !action.nonFatal;
                 assert actionThrowable instanceof DispatchException;
@@ -90,10 +86,10 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         return new VoidResult();
     }
     
-    class GStackTraceDeobfuscator extends StackTraceDeobfuscator {
-        @Override
-        protected InputStream openInputStream(String fileName) throws IOException {
-            return new FileInputStream(new File(servlet.getServletContext().getRealPath("WEB-INF/deploy/form/symbolMaps"), fileName));
+    private StackTraceDeobfuscator getDeobfuscator() {
+        if (deobfuscator == null) {
+            deobfuscator = StackTraceDeobfuscator.fromFileSystem(servlet.getServletContext().getRealPath("WEB-INF/deploy" + servlet.getRequestModuleBasePath() + "symbolMaps"));
         }
+        return deobfuscator;
     }
 }
