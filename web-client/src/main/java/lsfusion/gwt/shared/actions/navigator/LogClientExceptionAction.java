@@ -29,7 +29,7 @@ public class LogClientExceptionAction extends NavigatorAction<VoidResult> {
             return t;
 
         Throwable originalT = extractCause(t);
-        Throwable webServerException = GExceptionManager.copyMessage(originalT);
+        Throwable webServerException = new SerializableThrowable("", GExceptionManager.copyMessage(originalT));
         GExceptionManager.copyStackTraces(originalT, webServerException);
         return webServerException;
     }

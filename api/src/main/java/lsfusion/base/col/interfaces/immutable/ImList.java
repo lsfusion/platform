@@ -28,6 +28,7 @@ public interface ImList<K> extends Iterable<K> {
 
     ImList<K> reverseList();
     ImList<K> subList(int i, int to);
+    ImList<K> remove(int i);
 
     <V> ImList<V> mapList(ImMap<? extends K, ? extends V> imMap);
 

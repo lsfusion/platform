@@ -1880,7 +1880,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             try {
                 rollbackApply();
             } catch (Throwable rs) {
-                ServerLoggers.sqlHandLogger.info("ROLLBACK EXCEPTION " + rs.toString() + '\n' + ExceptionUtils.getStackTrace(rs));
+                ServerLoggers.sqlHandLogger.info("ROLLBACK EXCEPTION " + ExceptionUtils.toString(rs) + '\n' + ExecutionStackAspect.getExceptionStackTrace());
             }
                 
             if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql, getOwner(), SQLSession.getAttemptCountSum(attemptCountMap))) { // update conflict или deadlock или timeout - пробуем еще раз

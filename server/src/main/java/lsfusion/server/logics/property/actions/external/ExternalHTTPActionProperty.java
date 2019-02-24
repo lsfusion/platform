@@ -73,7 +73,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 HttpEntity responseEntity = response.getEntity();
 
                 ContentType contentType = ContentType.get(responseEntity);
-                List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
+                ImList<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
                 fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
                 
                 if(headersToProperty != null) {
@@ -163,7 +163,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
 
             Object value = null;
-            if (i < params.length) // для лишних записываем null
+            if (i < params.length && valueClass != null) // all incorrect params will consider to be nulls
                 value = valueClass.getType().parseHTTP(params[i], charset);
 
             objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
@@ -171,7 +171,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         return objectValues;
     }
 
-    public static void fillResults(ExecutionContext context, ImList<LCP> targetPropList, List<Object> results, Charset charset) throws ParseException, SQLException, SQLHandledException {
+    public static void fillResults(ExecutionContext context, ImList<LCP> targetPropList, ImList<Object> results, Charset charset) throws ParseException, SQLException, SQLHandledException {
         for(int i = 0, size = targetPropList.size(); i < size; i++) {
             LCP<?> targetProp = targetPropList.get(i);
 

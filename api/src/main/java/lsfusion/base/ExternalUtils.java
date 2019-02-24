@@ -1,5 +1,8 @@
 package lsfusion.base;
 
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.ExecInterface;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.remote.AuthenticationToken;
@@ -66,15 +69,18 @@ public class ExternalUtils {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
-        List<Object> paramsList = BaseUtils.mergeList(getParameterValues(queryParams, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
-        List<String> returns = getParameterValues(queryParams, RETURN_PARAM);
+        ImList<String> queryActionParams = getParameterValues(queryParams, PARAMS_PARAM);
+        ImList<Object> bodyActionParams = getListFromInputStream(is, requestContentType);
+        ImList<Object> paramsList = ListFact.add(queryActionParams, bodyActionParams);
+        
+        ImList<String> returns = getParameterValues(queryParams, RETURN_PARAM);
         String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
         boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
         lsfusion.base.ExternalResponse execResult = null;
         
         String filename = "export";
 
-        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(), 
+        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]), 
                 charset == null ? null : charset.toString(), url, query, headerNames, headerValues, logicsHost, logicsPort, logicsExportName);
         
         if (uri.endsWith("/exec")) {
@@ -84,10 +90,11 @@ public class ExternalUtils {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
                 Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-                if (script == null && !paramsList.isEmpty()) {
-                    //Первый параметр считаем скриптом
-                    script = paramsList.get(0);
-                    request.params = paramsList.subList(1, paramsList.size()).toArray();
+                if (script == null) {
+                    int scriptParam = queryActionParams.size();
+                    script = paramsList.get(scriptParam);
+                    paramsList = paramsList.remove(scriptParam);
+                    request.params = paramsList.toArray(new Object[paramsList.size()]);
                 }
                 execResult = remoteExec.eval(isEvalAction, script, request);
             }
@@ -140,17 +147,17 @@ public class ExternalUtils {
     }
 
     private static String getParameterValue(List<NameValuePair> queryParams, String key) {
-        List<String> params = getParameterValues(queryParams, key);
+        ImList<String> params = getParameterValues(queryParams, key);
         return params.isEmpty() ? null : params.get(0);
     }
 
-    private static List<String> getParameterValues(List<NameValuePair> queryParams, String key) {
-        List<String> values = new ArrayList<>();
+    private static ImList<String> getParameterValues(List<NameValuePair> queryParams, String key) {
+        MList<String> mValues = ListFact.mListMax(queryParams.size());
         for(NameValuePair queryParam : queryParams) {
             if(queryParam.getName().equalsIgnoreCase(key))
-                values.add(queryParam.getValue());
+                mValues.add(queryParam.getValue());
         }
-        return values;
+        return mValues.immutableList();
     }
 
     private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) throws IOException {
@@ -182,12 +189,12 @@ public class ExternalUtils {
     }
 
     // returns String or FileData
-    public static List<Object> getListFromInputStream(InputStream is, ContentType contentType) throws IOException, MessagingException {
+    public static ImList<Object> getListFromInputStream(InputStream is, ContentType contentType) throws IOException, MessagingException {
         return getListFromInputStream(IOUtils.readBytesFromStream(is), contentType);
     }
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters
-    public static List<Object> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException {
-        List<Object> paramsList = new ArrayList<>();
+    public static ImList<Object> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException {
+        MList<Object> mParamsList = ListFact.mList();
         if (contentType != null) { // если есть параметры, теоретически можно было бы пытаться по другому угадать
             String mimeType = contentType.getMimeType();
             if (mimeType.startsWith("multipart/")) {
@@ -197,19 +204,19 @@ public class ExternalUtils {
                     Object param = bodyPart.getContent();
                     ContentType partContentType = ContentType.parse(bodyPart.getContentType());
                     if(param instanceof InputStream)
-                        paramsList.addAll(getListFromInputStream((InputStream)param, partContentType));
+                        mParamsList.addAll(getListFromInputStream((InputStream)param, partContentType));
                     else
-                        paramsList.add(getRequestParam(param, partContentType, true)); // multipart автоматически text/* возвращает как String
+                        mParamsList.add(getRequestParam(param, partContentType, true)); // multipart автоматически text/* возвращает как String
                 }
             } else if(mimeType.equalsIgnoreCase(APPLICATION_FORM_URLENCODED.getMimeType())) {
                 Charset charset = getCharsetFromContentType(contentType);
                 List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
                 for(NameValuePair param : params)
-                    paramsList.add(getRequestParam(param.getValue(), ContentType.create(TEXT_PLAIN.getMimeType(), charset), true));                    
+                    mParamsList.add(getRequestParam(param.getValue(), ContentType.create(TEXT_PLAIN.getMimeType(), charset), true));                    
             } else
-                paramsList.add(getRequestParam(bytes, contentType, false));
+                mParamsList.add(getRequestParam(bytes, contentType, false));
         }
-        return paramsList;
+        return mParamsList.immutableList();
     }
 
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит

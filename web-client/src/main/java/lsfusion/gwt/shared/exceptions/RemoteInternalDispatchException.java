@@ -10,8 +10,8 @@ public class RemoteInternalDispatchException extends DispatchException {
     
     public String lsfStack;
 
-    public RemoteInternalDispatchException(Throwable cause, String lsfStack) {
-        super(cause);
+    public RemoteInternalDispatchException(String message, String lsfStack) {
+        super(message);
 
         this.lsfStack = lsfStack;
     }

@@ -76,10 +76,8 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
             appThrowable = new RemoteInternalException(throwable.getMessage(), ((RemoteInternalDispatchException) throwable).lsfStack);
         else if(throwable instanceof NonFatalHandledException)
             appThrowable = new NonFatalHandledRemoteException(throwable.getMessage(), ((NonFatalHandledException) throwable).count, ((NonFatalHandledException) throwable).reqId);
-        else if(throwable instanceof SerializableThrowable)
-            appThrowable = new Throwable(ExceptionUtils.copyMessage(((SerializableThrowable)throwable).getDesignatedType(), throwable.getMessage()));
         else {
-            assert throwable instanceof DispatchException;
+            assert throwable instanceof SerializableThrowable || throwable instanceof DispatchException;
             appThrowable = new Throwable(ExceptionUtils.copyMessage(throwable));
         }
         ExceptionUtils.copyStackTraces(throwable, appThrowable);

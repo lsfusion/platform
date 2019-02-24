@@ -229,7 +229,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         if(e instanceof RemoteException && !(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException)) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
             return new RemoteRetryException(e.getMessage(), e, ExceptionUtils.getFatalRemoteExceptionCount(e));
 
-        RemoteInternalDispatchException clientException = new RemoteInternalDispatchException(e, RemoteInternalException.getLsfStack(e));
+        RemoteInternalDispatchException clientException = new RemoteInternalDispatchException(ExceptionUtils.copyMessage(e), RemoteInternalException.getLsfStack(e));
         ExceptionUtils.copyStackTraces(e, clientException);        
         return clientException;
     }

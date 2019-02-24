@@ -2,6 +2,7 @@ package lsfusion.server.remote;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.exceptions.RemoteMessageException;
+import lsfusion.interop.exceptions.RemoteServerException;
 import lsfusion.server.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -23,7 +24,7 @@ public class RemoteExceptionsAspect {
         try {
             return thisJoinPoint.proceed();
         } catch (Throwable throwable) {
-            boolean suppressLog = false;
+            boolean suppressLog = throwable instanceof RemoteInternalException; // "nested remote call" so we don't need to log it twice
             if(throwable instanceof ThreadDeath || throwable instanceof InterruptedException) {
                 logger.error("Thread '" + Thread.currentThread() + "' was forcefully stopped.");
                 suppressLog = true; // we don't need that situation, because if client ran some really long action and exited, all his threads will be stopped eventually, and then we'll get a lot of that exceptions
@@ -42,8 +43,8 @@ public class RemoteExceptionsAspect {
         if(throwable instanceof RemoteInternalException) {                                
             try {
                 target.logServerException((RemoteInternalException) throwable);
-            } catch (Exception ex) {
-                logger.error("Error when logging exception: ", ex);
+            } catch (Throwable t) {
+                logger.error("Error when logging exception: ", t);
             }
         }
     }
@@ -51,7 +52,7 @@ public class RemoteExceptionsAspect {
     // result throwable class should exist both on web-server and on desktop-client
     private static Throwable fromAppServerToWebServerAndDesktopClient(Throwable e) {
         // this classes exist both on web-server and desktop-client and unlikely to have causes
-        if(e instanceof RemoteException || e instanceof RemoteMessageException)
+        if(e instanceof RemoteException || e instanceof RemoteServerException)
             return e;
 
         ThrowableWithStack throwableWithStack = new ThrowableWithStack(e);
