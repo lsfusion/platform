@@ -163,7 +163,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
 
             Object value = null;
-            if (i < params.length) // для лишних записываем null
+            if (i < params.length && valueClass != null) // all incorrect params will consider to be nulls
                 value = valueClass.getType().parseHTTP(params[i], charset);
 
             objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);

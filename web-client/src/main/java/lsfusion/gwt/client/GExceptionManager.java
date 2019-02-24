@@ -146,15 +146,27 @@ public class GExceptionManager {
         return sb.toString();
     }
 
-    // the same as in GExceptionManager
+    // the same as in ExceptionUtils
+    public static Throwable getRootCause(Throwable throwable) {
+        Throwable result = throwable;
+        while (result != null && result.getCause() != null) {
+            result = result.getCause();
+        }
+
+        return result;
+    }
+
+    // the same as in ExceptionUtils
     // when class of throwable changes
-    public static SerializableThrowable copyMessage(Throwable throwable) {
-        return new SerializableThrowable(throwable.getClass().getName(), throwable.getMessage());
+    public static String copyMessage(Throwable throwable) {
+        throwable = getRootCause(throwable); // also it may make sense to show also messages of chained exceptions, but for now will show only root
+        return throwable.getClass().getName() + " " + throwable.getMessage();
     }
 
     // the same as in ExceptionUtils
     // assuming that there should be primitive copy (Strings and other very primitive Java classes)  
     public static void copyStackTraces(Throwable from, Throwable to) {
+        from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
         to.setStackTrace(from.getStackTrace());
     }
 }

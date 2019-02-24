@@ -1,5 +1,6 @@
 package lsfusion.server.remote;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ExternalRequest;
 import lsfusion.base.ExternalResponse;
 import lsfusion.base.Result;
@@ -28,6 +29,8 @@ import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
+import lsfusion.server.logics.scripted.EvalUtils;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.io.IOException;
@@ -80,8 +83,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                     throw new RuntimeException("Action run[] was not found");
 
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (SQLException | ParseException | SQLHandledException | IOException | EvalUtils.EvaluationException | ScriptingErrorLog.SemanticErrorException e) {
+                throw Throwables.propagate(e);
             }
         } else {
             throw new RuntimeException("Eval script was not found");
