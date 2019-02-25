@@ -43,20 +43,10 @@
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="<%= ServerMessages.getString(request, "log.in") %>"/>
                                 <div class="desktop-link">
-                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D<%=queryString%>"><%= ServerMessages.getString(request, "run.desktop.client") %></a>
-                                    <div id="spoiler" style="display:none"></div>
-                                    <script>
-                                        function showSpoiler() {
-                                            if (document.getElementById('spoiler').style.display === 'none') {
-                                                document.getElementById('spoiler').innerHTML = '${jnlpUrls}';
-                                                document.getElementById('spoiler').style.display = '';
-                                                document.getElementById('triangle').innerHTML = '&#9660;'
-                                            } else {
-                                                document.getElementById('spoiler').style.display = 'none';
-                                                document.getElementById('triangle').innerHTML = '&#9658;'
-                                            }
-                                        }
-                                    </script>
+                                    <details>
+                                        <summary><a href="${pageContext.request.contextPath}/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D<%=queryString%>"><%= ServerMessages.getString(request, "run.desktop.client") %></a></summary>
+                                        ${jnlpUrls}
+                                    </details>
                                 </div>
                             </fieldset>
                         </form>
