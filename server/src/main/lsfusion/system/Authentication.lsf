@@ -90,7 +90,7 @@ currentAuthToken = NATIVE TEXT();
 secret = DATA TEXT();
 getAuthToken() {
     exportText() <- currentAuthToken();
-}
+} @@api;
 
 forbidChangePassword = ABSTRACT BOOLEAN (CustomUser);
 
@@ -146,7 +146,7 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
 getCurrentUserLocale() {
     FOR CustomUser user AS CustomUser = currentUser() DO
         EXPORT JSON FROM language(user), country(user); 
-}
+} @@api;
 
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
 twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();

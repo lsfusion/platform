@@ -93,9 +93,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     private ExternalResponse executeExternal(LAP<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        String annotation = property.property.annotation;
-        if(annotation == null || !annotation.equals("noauth"))
-            checkEnableApi(authToken.isAnonymous());
+        checkEnableApi(property);
 
         writeRequestInfo(dataSession, property.property, request);
 
@@ -104,13 +102,31 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return readResult(request.returnNames, property.property);
     }
 
-    public static void checkEnableApi(boolean anonymous) {
+    private void checkEnableApi(LAP<?> property) {
+        boolean forceAPI = false;
+        String annotation = property.property.annotation;
+        if(annotation != null) {
+            if(annotation.equals("noauth"))
+                return;
+            forceAPI = annotation.equals("api");
+        }
+        checkEnableApi(authToken.isAnonymous(), forceAPI);
+    }
+    
+    private static void checkEnableApi(boolean anonymous, boolean forceAPI) {
         byte enableApi = Settings.get().getEnableAPI();
-        if(enableApi == 0)
-            throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
+        if(enableApi == 0) {
+            if(forceAPI)
+                enableApi = 1;
+            else
+                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
+        }
 
         if(anonymous && enableApi == 1)
-            throw new AuthenticationException();
+            throw new AuthenticationException();        
+    }
+    public static void checkEnableApi(boolean anonymous) {
+        checkEnableApi(anonymous, false);
     }
 
     public void writeRequestInfo(DataSession session, ActionProperty<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {
