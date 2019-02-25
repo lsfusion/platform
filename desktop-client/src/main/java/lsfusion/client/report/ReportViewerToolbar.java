@@ -55,7 +55,6 @@ public class ReportViewerToolbar extends JRViewerToolbar {
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getParent(),
                             getString("errors.error.saving.file", e.getMessage()), getString("errors.error"), JOptionPane.ERROR_MESSAGE);
-                    ClientExceptionManager.reportClientThrowable(e);
                 }
             }
         });

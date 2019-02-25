@@ -80,7 +80,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 if(runAction != null) {
                     result = executeExternal(runAction, request);
                 } else {
-                    throw new RuntimeException("Action run[] was not found");
+                    throw new RuntimeException("Action with name 'run' was not found");
 
                 }
             } catch (SQLException | ParseException | SQLHandledException | IOException | EvalUtils.EvaluationException | ScriptingErrorLog.SemanticErrorException e) {

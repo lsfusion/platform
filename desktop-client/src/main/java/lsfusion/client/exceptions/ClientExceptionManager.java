@@ -4,11 +4,8 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.RmiQueue;
-import lsfusion.interop.exceptions.FatalHandledRemoteException;
-import lsfusion.interop.exceptions.RemoteAbandonedException;
-import lsfusion.interop.exceptions.RemoteClientException;
-import lsfusion.interop.exceptions.RemoteServerException;
+import lsfusion.client.rmi.ConnectionLostManager;
+import lsfusion.interop.exceptions.*;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -26,7 +23,32 @@ public class ClientExceptionManager {
     private final static List<Throwable> unreportedThrowables = new ArrayList<>();
     
     public static Throwable fromDesktopClientToAppServer(Throwable e) {
-        return e; // assuming that here should be only swing exceptions, so server has all this exceptions and will be able do deserialize them 
+        if (e instanceof RemoteServerException || e instanceof RemoteClientException) {
+            assert e.getCause() == null;
+            return e;
+        }
+
+        // in theory, here should be only swing exceptions, so server has all this exceptions and will be able do deserialize them
+        // but we want to get rid of chained exceptions
+        String message = ExceptionUtils.copyMessage(e);
+        Throwable throwable;
+        if(e instanceof RemoteException) // we want to keep remoteException class to show it as unhandled remote exception in server log
+            throwable = new RemoteException(message);
+        else
+            throwable = new Throwable(getString("errors.internal.client.error")
+                    + ": " + message);
+        ExceptionUtils.copyStackTraces(e, throwable);
+        return throwable;  
+    }
+
+    public static Throwable getRemoteExceptionCause(Throwable e) {
+        for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
+            if (ex instanceof RemoteException || ex instanceof RemoteServerException || ex instanceof RemoteClientException || ex instanceof RemoteAbandonedException) {
+                assert !(ex instanceof NonFatalRemoteClientException);
+                return ex;
+            }
+        }
+        return null;
     }
 
     public static void handle(final Throwable e) {
@@ -34,70 +56,43 @@ public class ClientExceptionManager {
             @Override
             public void run() {
                 logger.error("Client error: ", e);
-                
-                Throwable remote = getRemoteExceptionCause(e);
-                if(remote == null) {
-                    Log.error(getString("errors.internal.client.error"), e);
-                    reportClientThrowable(fromDesktopClientToAppServer(e));
-                }
-                if (remote instanceof RemoteServerException) {
-                    Log.error((RemoteServerException) remote);
-                    reportServerRemoteThrowable((RemoteServerException) remote);
-                }
-                if(remote instanceof FatalHandledRemoteException) {
-                    reportClientHandledRemoteThrowable((RemoteClientException) remote);
-                }
-                if(remote instanceof RemoteException) { // unhandled
-                    RemoteException unhandled = (RemoteException) remote;
-                    RmiQueue.handleNotRetryableRemoteException(unhandled);
-                    reportClientUnhandledRemoteThrowable(unhandled);
-                }
-                if(remote instanceof RemoteAbandonedException) {                    
-                }                    
+
+                Throwable exception = getRemoteExceptionCause(e);
+                if(exception instanceof RemoteAbandonedException)
+                    return;
+                if(exception == null)
+                    exception = e;
+
+                reportThrowable(exception);
             }
         });
     }
 
-    public static Throwable getRemoteExceptionCause(Throwable e) {
-        for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
-            if (ex instanceof RemoteException || ex instanceof RemoteServerException || ex instanceof RemoteClientException || ex instanceof RemoteAbandonedException) {                
-                assert !(ex instanceof RemoteClientException) || ex instanceof FatalHandledRemoteException;  
-                return ex;
-            }
-        }
-        return null;
-    }
-
-    public static void reportClientThrowable(Throwable t) { // не содержит remoteException 
-        reportThrowable(t);
-    }
-    public static void reportServerRemoteThrowable(RemoteServerException t) {
-        reportThrowable(t);
-    }
-    public static void reportClientHandledRemoteThrowable(RemoteClientException t) {
-        reportThrowable(t);
-    }
-    public static void reportClientUnhandledRemoteThrowable(RemoteException t) {
-        reportThrowable(t);
-    }
-
-    public static void reportThrowable(Throwable e) {
+    public static void reportThrowable(Throwable exception) {
         SwingUtils.assertDispatchThread();
-        
-        logger.error("Reporting throwable : " + e, e);
-        
-        if (!(e instanceof ConcurrentModificationException && ExceptionUtils.toString(e).contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
+        exception = fromDesktopClientToAppServer(exception);
+
+        assert exception.getCause() == null;
+
+        if(exception instanceof RemoteException) 
+            ConnectionLostManager.connectionBroke();
+        else if(!(exception instanceof RemoteClientException)) // we don't want to show remote handled exceptions
+            Log.error(exception);
+
+        logger.error("Reporting throwable : " + exception, exception);
+
+        if (!(exception instanceof ConcurrentModificationException && ExceptionUtils.toString(exception).contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             synchronized (unreportedThrowables) {
                 boolean reported = false;
                 try {
-                    reported = Main.clientExceptionLog("Client error", e);
+                    reported = Main.clientExceptionLog("Client error", exception);
                 } catch (ConnectException ex) {
-                    logger.error("Error reporting client connect exception: " + e, ex);
+                    logger.error("Error reporting client connect exception: " + exception, ex);
                 } catch (Throwable ex) {
-                    logger.error("Error reporting client exception: " + e, ex);
+                    logger.error("Error reporting client exception: " + exception, ex);
                 }
                 if(!reported)
-                    unreportedThrowables.add(e);
+                    unreportedThrowables.add(exception);
             }
         }
     }
