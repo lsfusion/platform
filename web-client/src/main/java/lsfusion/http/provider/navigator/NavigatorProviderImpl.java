@@ -3,6 +3,7 @@
 package lsfusion.http.provider.navigator;
 
 import com.google.gwt.core.client.GWT;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SessionInfo;
 import lsfusion.base.SystemUtils;
@@ -65,7 +66,8 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
-        return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null);
+        return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
+                maximumMemory, freeMemory, javaVersion, null, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {

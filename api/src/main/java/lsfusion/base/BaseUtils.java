@@ -55,6 +55,21 @@ public class BaseUtils {
         }
     }
 
+    public static String checkClientVersion(String serverPlatformVersion, Integer serverApiVersion, String clientPlatformVersion, Integer clientApiVersion) {
+        String serverVersion = null;
+        String clientVersion = null;
+        if(clientPlatformVersion != null && !clientPlatformVersion.equals(serverPlatformVersion)) {
+            serverVersion = serverPlatformVersion;
+            clientVersion = clientPlatformVersion;
+        } else {
+            if(!clientApiVersion.equals(serverApiVersion)) {
+                serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
+                clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
+            }
+        }
+        return serverVersion != null ? getString("check.client.version", serverVersion, clientVersion) : null;
+    }
+
     public static boolean nullEquals(Object obj1, Object obj2) {
         if (obj1 == null)
             return obj2 == null;

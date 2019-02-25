@@ -281,7 +281,8 @@ public final class LoginAction {
             screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
         }
 
-        return new NavigatorInfo(getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize);
+        return new NavigatorInfo(getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
+                maximumMemory, freeMemory, javaVersion, screenSize, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     private Object connect() {

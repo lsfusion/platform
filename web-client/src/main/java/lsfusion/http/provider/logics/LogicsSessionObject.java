@@ -33,30 +33,21 @@ public class LogicsSessionObject {
             ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Service.getServerSettings[]", new ExternalRequest());
 
             JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
+            String logicsName = trimToNull(json.optString("logicsName"));
             String displayName = trimToNull(json.optString("displayName"));
             RawFileData logicsLogo = getRawFileData(trimToNull(json.optString("logicsLogo")));
             RawFileData logicsIcon = getRawFileData(trimToNull(json.optString("logicsIcon")));
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
-
             boolean anonymousUI = json.optBoolean("anonymousUI");
-
-            serverSettings = new ServerSettings(displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI);
-        }
-        return serverSettings;
-    }
-    
-    public String jnlpUrls;
-    public String getJnlpUrls(HttpServletRequest request) throws RemoteException {
-        if (jnlpUrls == null) {
-            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Security.generateJnlpUrls[]", new ExternalRequest());
-            
-            jnlpUrls = (String) result.results[0];
+            String jnlpUrls = json.getString("jnlpUrls");
             if (jnlpUrls != null) {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", request.getContextPath());
             }
+
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls);
         }
-        return jnlpUrls;
+        return serverSettings;
     }
 
     private RawFileData getRawFileData(String base64) {
@@ -64,6 +55,6 @@ public class LogicsSessionObject {
     }
 
     public String getLogicsName(HttpServletRequest request) throws RemoteException {
-        return getServerSettings(request).displayName;
+        return getServerSettings(request).logicsName;
     }
 }

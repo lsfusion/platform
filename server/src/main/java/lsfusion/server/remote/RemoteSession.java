@@ -101,7 +101,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
         property.execute(dataSession, getStack(), ExternalHTTPActionProperty.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
 
-        return readResult(request.returnNames);
+        return readResult(request.returnNames, property.property);
     }
 
     public static void checkEnableApi(boolean anonymous) {
@@ -134,7 +134,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames) throws SQLException, SQLHandledException, IOException {
+    private ExternalResponse readResult(String[] returnNames, ActionProperty<?> property) throws SQLException, SQLHandledException, IOException {
         List<Object> returns = new ArrayList<>();
 
         LCP[] returnProps;
@@ -151,7 +151,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property));
         } else {
             Result<SessionDataProperty> resultProp = new Result<>(); 
-            ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp);
+            ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp, property);
             returns.add(formatReturnValue(objectValue.getValue(), resultProp.result));
         }
 

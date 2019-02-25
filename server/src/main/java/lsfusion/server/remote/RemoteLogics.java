@@ -5,6 +5,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.action.ReportPath;
+import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
@@ -96,8 +97,17 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) {
         RemoteNavigator.checkEnableUI(token.isAnonymous());
+        checkClientVersion(navigatorInfo);
         
         return navigatorsManager.createNavigator(getStack(), token, navigatorInfo);
+    }
+
+    private void checkClientVersion(NavigatorInfo navigatorInfo) {
+        String error = BaseUtils.checkClientVersion(BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion(),
+                                                 navigatorInfo.platformVersion, navigatorInfo.apiVersion);
+        if(error != null) {
+            throw new RemoteMessageException(error);
+        }
     }
 
     @Override

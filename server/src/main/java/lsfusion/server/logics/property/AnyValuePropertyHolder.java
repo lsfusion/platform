@@ -265,16 +265,23 @@ public class AnyValuePropertyHolder {
         return getLCP(valueType).readClasses(env, keys);
     }
 
-    public ObjectValue readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty) throws SQLException, SQLHandledException { // return, not drop first value
+    private static ObjectValue getFirstChangeProp(ImOrderSet<SessionDataProperty> props, ActionProperty<?> action, Result<SessionDataProperty> readedProperty) {
+        ImOrderSet<SessionDataProperty> changedProps = SetFact.filterOrderFn(props, action.getChangeExtProps().keys());
+        if(changedProps.isEmpty())
+            changedProps = props;
+        
+        readedProperty.set(changedProps.get(0));
+        return NullValue.instance;
+    }
+    
+    public ObjectValue readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty, ActionProperty<?> action) throws SQLException, SQLHandledException { // return, not drop first value
         DataSession session = env.getSession();
 
         ImOrderSet<SessionDataProperty> props = getProps();
         ImSet<SessionDataProperty> changedProps = SetFact.fromJavaSet(session.getSessionChanges(props.getSet()));
 
-        if(changedProps.isEmpty()) { // optimization
-            readedProperty.set(props.get(0));
-            return NullValue.instance;
-        }
+        if(changedProps.isEmpty()) // optimization
+            return getFirstChangeProp(props, action, readedProperty);
         if(changedProps.size() == 1) { // optimization
             SessionDataProperty prop = changedProps.single();
             readedProperty.set(prop);
@@ -288,7 +295,6 @@ public class AnyValuePropertyHolder {
                 return changedValue;
             }
         }
-        readedProperty.set(props.get(0));
-        return NullValue.instance;
+        return getFirstChangeProp(props, action, readedProperty);
     }
 }

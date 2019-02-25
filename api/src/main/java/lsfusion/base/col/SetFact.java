@@ -151,7 +151,10 @@ public class SetFact {
     public static <B, T extends B> ImOrderSet<T> filterOrder(ImOrderSet<B> set, ImSet<T> filter) {
         return BaseUtils.immutableCast(set.filterOrder((FunctionSet<B>)filter));
     }
-
+    public static <F, T extends F> ImOrderSet<T> filterOrderFn(ImOrderSet<T> set, ImSet<F> filter) {
+        return BaseUtils.immutableCast(BaseUtils.<ImOrderSet<F>>immutableCast(set).filterOrder(filter));
+    }
+    
     public static <T> ImSet<T> nullFilter(ImSet<? extends T> set, ImSet<? extends T> filter) {
         return set == null ? null : filter(set, filter);
     }
