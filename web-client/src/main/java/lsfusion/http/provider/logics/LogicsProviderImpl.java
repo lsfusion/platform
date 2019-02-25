@@ -147,19 +147,6 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         }
     }
 
-    @Override
-    public String getJnlpUrls(final HttpServletRequest request) {
-        try {
-            return runRequest(this, request, new LogicsRunnable<String>() {
-                public String run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return sessionObject.getJnlpUrls(request);
-                }
-            });
-        } catch (RemoteException | AppServerNotAvailableException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     public static <R> R runRequest(LogicsProvider logicsProvider, HttpServletRequest request, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
         return logicsProvider.runRequest(
                 request != null ? request.getParameter("host") : null,

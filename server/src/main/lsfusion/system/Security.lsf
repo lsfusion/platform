@@ -642,4 +642,4 @@ generateJnlpUrls () {
         }
         exportText() <- CONCAT '', exportText(), '">{security.run.desktop.client} ', name(ml), '</a><br/>';   
     }
-} @@noauth;
+}

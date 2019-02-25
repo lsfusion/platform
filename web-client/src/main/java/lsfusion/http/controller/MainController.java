@@ -28,7 +28,7 @@ public class MainController {
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
 
-        model.addAttribute("jnlpUrls", logicsProvider.getJnlpUrls(request));
+        model.addAttribute("jnlpUrls", getJNLPUrls(serverSettings));
 
         String error = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion()) : null;
         if (error != null) {
@@ -68,6 +68,10 @@ public class MainController {
     
     private String getLogicsName(ServerSettings serverSettings) {
         return serverSettings != null ? serverSettings.logicsName : null;
+    }
+
+    private String getJNLPUrls(ServerSettings serverSettings) {
+        return serverSettings != null ? serverSettings.jnlpUrls : null;
     }
 
     private String getFileUrl(RawFileData file) {

@@ -39,25 +39,15 @@ public class LogicsSessionObject {
             RawFileData logicsIcon = getRawFileData(trimToNull(json.optString("logicsIcon")));
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
-
             boolean anonymousUI = json.optBoolean("anonymousUI");
-
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI);
-        }
-        return serverSettings;
-    }
-    
-    public String jnlpUrls;
-    public String getJnlpUrls(HttpServletRequest request) throws RemoteException {
-        if (jnlpUrls == null) {
-            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Security.generateJnlpUrls[]", new ExternalRequest());
-            
-            jnlpUrls = (String) result.results[0];
+            String jnlpUrls = json.getString("jnlpUrls");
             if (jnlpUrls != null) {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", request.getContextPath());
             }
+
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI, jnlpUrls);
         }
-        return jnlpUrls;
+        return serverSettings;
     }
 
     private RawFileData getRawFileData(String base64) {

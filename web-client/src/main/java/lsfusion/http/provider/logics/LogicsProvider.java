@@ -8,8 +8,6 @@ import java.rmi.RemoteException;
 public interface LogicsProvider {
 
     ServerSettings getServerSettings(HttpServletRequest request);
-    
-    String getJnlpUrls(HttpServletRequest request);
 
     <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableException;
 

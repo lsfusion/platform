@@ -331,7 +331,9 @@ WHEN CHANGED (baseValue(Setting r, UserRole ur))
     DO updateSetting(r, ur, TRUE);
 
 getServerSettings() {
-    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), anonymousUI=(valueSetting('enableUI')='2');
+    generateJnlpUrls();
+    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
+                anonymousUI=(valueSetting('enableUI')='2'), jnlpUrls=exportText();
 } @@noauth;
 
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
