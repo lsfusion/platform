@@ -50,11 +50,7 @@ public class MainController {
     }
 
     private ServerSettings getServerSettings(HttpServletRequest request) {
-        try {
-            return logicsProvider.getServerSettings(request);
-        } catch (Exception e) {
-            return null;
-        }
+        return logicsProvider.getServerSettings(request);
     }
 
     private String getTitle(ServerSettings serverSettings) {

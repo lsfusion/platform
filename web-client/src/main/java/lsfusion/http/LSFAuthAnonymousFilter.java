@@ -1,11 +1,11 @@
 package lsfusion.http;
 
 import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.http.provider.logics.ServerSettings;
 import lsfusion.interop.remote.AuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -35,7 +35,8 @@ public class LSFAuthAnonymousFilter extends OncePerRequestFilter {
                 .getAuthentication();
 
         // if there is no authentication and server supports anonymous UI, give "anonymous authentication"
-        if ((existingAuth == null || !existingAuth.isAuthenticated() || existingAuth instanceof AnonymousAuthenticationToken) && logicsProvider.getServerSettings(request).anonymousUI) {
+        ServerSettings serverSettings;
+        if ((existingAuth == null || !existingAuth.isAuthenticated() || existingAuth instanceof AnonymousAuthenticationToken) && (serverSettings = logicsProvider.getServerSettings(request)) != null && serverSettings.anonymousUI) {
             LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", AuthenticationToken.ANONYMOUS, Locale.getDefault());
             Authentication authResult = authenticationManager.authenticate(auth);
 
