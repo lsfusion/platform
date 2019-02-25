@@ -231,20 +231,7 @@ public class LoginDialog extends JDialog {
                 String serverPlatformVersion = trimToNull(serverSettings.optString("platformVersion"));
                 Integer serverApiVersion = serverSettings.optInt("apiVersion");
 
-                String serverVersion = null;
-                String clientVersion = null;
-                String clientPlatformVersion = BaseUtils.getPlatformVersion();
-                if(clientPlatformVersion != null && !clientPlatformVersion.equals(serverPlatformVersion)) {
-                    serverVersion = serverPlatformVersion;
-                    clientVersion = clientPlatformVersion;
-                } else {
-                    Integer clientApiVersion = BaseUtils.getApiVersion();
-                    if(!clientApiVersion.equals(serverApiVersion)) {
-                        serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
-                        clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
-                    }
-                }
-                error = serverVersion != null ? getString("client.error.need.restart", serverVersion, clientVersion) : null;
+                error = BaseUtils.checkClientVersion(serverPlatformVersion, serverApiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion());
 
             } catch (Throwable e) {
                 logger.error("Failed to load server settings", e);

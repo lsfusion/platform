@@ -16,10 +16,12 @@ public class NavigatorInfo implements Serializable {
     public final Integer freeMemory;
     public final String javaVersion;
     public final String screenSize;
-    
+    public final String platformVersion;
+    public final Integer apiVersion;
+
     public NavigatorInfo(SessionInfo session, String osVersion, String processor,
                          String architecture, Integer cores, Integer physicalMemory, Integer totalMemory, Integer maximumMemory,
-                         Integer freeMemory, String javaVersion, String screenSize) {
+                         Integer freeMemory, String javaVersion, String screenSize, String platformVersion, Integer apiVersion) {
         this.session = session;
         
         this.osVersion = osVersion;
@@ -32,5 +34,7 @@ public class NavigatorInfo implements Serializable {
         this.freeMemory = freeMemory;
         this.javaVersion = javaVersion;
         this.screenSize = screenSize;
+        this.platformVersion = platformVersion;
+        this.apiVersion = apiVersion;
     }
 }

@@ -2,7 +2,6 @@ package lsfusion.http.controller;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.RawFileData;
-import lsfusion.base.ServerMessages;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
@@ -31,7 +30,7 @@ public class MainController {
 
         model.addAttribute("jnlpUrls", logicsProvider.getJnlpUrls(request));
 
-        String error = checkApiVersion(request, serverSettings);
+        String error = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion()) : null;
         if (error != null) {
             model.addAttribute("error", error);
             return "restricted";
@@ -72,26 +71,5 @@ public class MainController {
 
     private String getFileUrl(RawFileData file) {
         return GwtSharedUtils.getDownloadURL(FileUtils.saveApplicationFile(file), null, null, false);
-    }
-
-    private String checkApiVersion(HttpServletRequest request, ServerSettings serverSettings) {
-        String result = null;
-        if (serverSettings != null) {
-            String serverVersion = null;
-            String clientVersion = null;
-            String clientPlatformVersion = BaseUtils.getPlatformVersion();
-            if (clientPlatformVersion == null || !clientPlatformVersion.equals(serverSettings.platformVersion)) {
-                serverVersion = serverSettings.platformVersion;
-                clientVersion = clientPlatformVersion;
-            } else {
-                Integer clientApiVersion = BaseUtils.getApiVersion();
-                if (!clientApiVersion.equals(serverSettings.apiVersion)) {
-                    serverVersion = serverSettings.platformVersion + " [" + serverSettings.apiVersion + "]";
-                    clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
-                }
-            }
-            result = serverVersion != null ? ServerMessages.getString(request, "check.api.version", serverVersion, clientVersion) : null;
-        }
-        return result;
     }
 }
