@@ -3,6 +3,7 @@ package lsfusion.gwt.client.window;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public abstract class WindowElement {
     protected WindowElement parent;
@@ -55,7 +56,7 @@ public abstract class WindowElement {
     public abstract String getSID();
     
     public String getStorageSizeKey() {
-        return getSID() + "_size";
+        return GwtClientUtils.getLogicsName() + "_" + getSID() + "_size";
     }
     
     protected double getPixelHeight() {

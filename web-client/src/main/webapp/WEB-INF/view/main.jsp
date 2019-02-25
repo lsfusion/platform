@@ -46,7 +46,8 @@
     <body>
         <script language="JavaScript">
             var pageSetup = {
-                webAppRoot: "<%= request.getContextPath() + "/" %>"
+                webAppRoot: "<%= request.getContextPath() + "/" %>",
+                logicsName: "${logicsName}"
             };
         </script>
 

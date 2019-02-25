@@ -130,6 +130,11 @@ public class GwtClientUtils {
         String webAppRoot = getPageSetupArgument("webAppRoot");
         return webAppRoot != null ? webAppRoot : GWT.getHostPageBaseURL();
     }
+    
+    public static String getLogicsName() {
+        String logicsName = getPageSetupArgument("logicsName");
+        return logicsName != null ? logicsName : "default";
+    }
 
     public static void stopPropagation(NativeEvent event) {
         event.stopPropagation();

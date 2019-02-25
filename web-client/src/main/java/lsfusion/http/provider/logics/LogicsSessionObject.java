@@ -33,6 +33,7 @@ public class LogicsSessionObject {
             ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request), "Service.getServerSettings[]", new ExternalRequest());
 
             JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
+            String logicsName = trimToNull(json.optString("logicsName"));
             String displayName = trimToNull(json.optString("displayName"));
             RawFileData logicsLogo = getRawFileData(trimToNull(json.optString("logicsLogo")));
             RawFileData logicsIcon = getRawFileData(trimToNull(json.optString("logicsIcon")));
@@ -41,7 +42,7 @@ public class LogicsSessionObject {
 
             boolean anonymousUI = json.optBoolean("anonymousUI");
 
-            serverSettings = new ServerSettings(displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI);
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, anonymousUI);
         }
         return serverSettings;
     }
@@ -64,6 +65,6 @@ public class LogicsSessionObject {
     }
 
     public String getLogicsName(HttpServletRequest request) throws RemoteException {
-        return getServerSettings(request).displayName;
+        return getServerSettings(request).logicsName;
     }
 }

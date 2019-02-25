@@ -45,6 +45,7 @@ public class MainController {
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
+        model.addAttribute("logicsName", getLogicsName(serverSettings));
 
         return "main";
     }
@@ -63,6 +64,10 @@ public class MainController {
 
     private String getLogicsIcon(ServerSettings serverSettings) {
         return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "favicon.ico";
+    }
+    
+    private String getLogicsName(ServerSettings serverSettings) {
+        return serverSettings != null ? serverSettings.logicsName : null;
     }
 
     private String getFileUrl(RawFileData file) {
