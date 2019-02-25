@@ -108,8 +108,6 @@ public class Settings implements Cloneable {
 
     private int barcodeLength = 13;
 
-    private boolean useUniPass;
-
     private boolean useSingleJoins = false;
 
     private boolean useQueryExpr = true;
@@ -647,14 +645,6 @@ public class Settings implements Cloneable {
 
     public void setBarcodeLength(int barcodeLength) {
         this.barcodeLength = barcodeLength;
-    }
-
-    public boolean getUseUniPass() {
-        return useUniPass;
-    }
-
-    public void setUseUniPass(boolean useUniPass) {
-        this.useUniPass = useUniPass;
     }
 
     public boolean isUseSingleJoins() {

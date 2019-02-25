@@ -49,7 +49,6 @@
                 <entry key="splitIncrementApply" value="${settings.splitIncrementApply:}"/>
                 <entry key="statDegree" value="${settings.statDegree:}"/>
                 <entry key="barcodeLength" value="${settings.barcodeLength:}"/>
-                <entry key="useUniPass" value="${settings.useUniPass:}"/>
                 <entry key="useSingleJoins" value="${settings.useSingleJoins:}"/>
                 <entry key="useQueryExpr" value="${settings.useQueryExpr:}"/>
                 <entry key="noExclusiveCompile" value="${settings.noExclusiveCompile:}"/>
