@@ -42,12 +42,7 @@
                                     <input type="password" id="password" name="password" class="round full-width-input"/>
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="<%= ServerMessages.getString(request, "log.in") %>"/>
-                                <div class="desktop-link">
-                                    <details>
-                                        <summary><a href="${pageContext.request.contextPath}/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D<%=queryString%>"><%= ServerMessages.getString(request, "run.desktop.client") %></a></summary>
-                                        ${jnlpUrls}
-                                    </details>
-                                </div>
+                                <div class="desktop-link">${jnlpUrls}</div>
                             </fieldset>
                         </form>
                         <c:if test="${!empty param.error}">
