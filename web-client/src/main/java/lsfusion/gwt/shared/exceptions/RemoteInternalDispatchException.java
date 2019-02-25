@@ -1,7 +1,6 @@
 package lsfusion.gwt.shared.exceptions;
 
 import com.google.gwt.core.shared.SerializableThrowable;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.gwt.client.GExceptionManager;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
@@ -21,7 +20,7 @@ public class RemoteInternalDispatchException extends DispatchException {
     // the same as in RemoteInternalException
     public static String[] toString(Throwable e) {
         SerializableThrowable throwable = new SerializableThrowable("", GExceptionManager.copyMessage(e));
-        ExceptionUtils.copyStackTraces(e, throwable);
+        GExceptionManager.copyStackTraces(e, throwable);
         String[] exStacks = getExStacks(throwable);
         return new String[] {throwable.getMessage(), exStacks[0], exStacks[1]};
     }
