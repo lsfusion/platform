@@ -48,11 +48,6 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
     }
 
     @Override
-    public CalcPropertyObjectEntity<?> getDrawProperty() {
-        return this;
-    }
-
-    @Override
     public Type getType() {
         return property.getType();
     }

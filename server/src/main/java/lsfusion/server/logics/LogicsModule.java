@@ -222,10 +222,6 @@ public abstract class LogicsModule {
         addModuleLP(lp);
     }
 
-    protected <T extends LP> void makeActionOrPropertyPublic(T lp, String name, ResolveClassSet... signature) {
-        makeActionOrPropertyPublic(lp, name, Arrays.asList(signature));
-    }
-    
     protected void makePropertyPublic(LCP<?> lp, String name, ResolveClassSet... signature) {
         makePropertyPublic(lp, name, Arrays.asList(signature));
     }
