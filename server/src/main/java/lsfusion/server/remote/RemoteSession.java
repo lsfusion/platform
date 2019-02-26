@@ -57,11 +57,15 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     public ExternalResponse exec(String action, ExternalRequest request) {
         ExternalResponse result;
         try {
-            LAP property = businessLogics.findActionByCompoundName(action);
-            if (property != null) {
-                result = executeExternal(property, request);
+            if(action != null) {
+                LAP property = businessLogics.findActionByCompoundName(action);
+                if (property != null) {
+                    result = executeExternal(property, request);
+                } else {
+                    throw new RuntimeException(String.format("Action %s was not found", action));
+                }
             } else {
-                throw new RuntimeException(String.format("Action %s was not found", action));
+                throw new RuntimeException("Action was not specified");
             }
         } catch (ParseException | SQLHandledException | SQLException | IOException e) {
             throw new RuntimeException(e);
