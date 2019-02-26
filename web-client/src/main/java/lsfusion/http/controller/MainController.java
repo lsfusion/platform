@@ -72,9 +72,8 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        String jnlpUrls = serverSettings != null && serverSettings.jnlpUrls != null ? serverSettings.jnlpUrls : "";
-        return "<details><summary><a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D>"
-                + ServerMessages.getString(request, "run.desktop.client") + "</a></summary>" + jnlpUrls + "</details>";
+        String mainUrl = "<a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D>" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
+        return serverSettings != null && serverSettings.jnlpUrls != null ? ("<details><summary>" + mainUrl + "</summary>" + serverSettings.jnlpUrls + "</details>") : mainUrl;
     }
 
     private String getFileUrl(RawFileData file) {

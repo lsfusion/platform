@@ -40,7 +40,7 @@ public class LogicsSessionObject {
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
             boolean anonymousUI = json.optBoolean("anonymousUI");
-            String jnlpUrls = json.optString("jnlpUrls");
+            String jnlpUrls = trimToNull(json.optString("jnlpUrls"));
             if (jnlpUrls != null) {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", request.getContextPath());
             }
