@@ -169,11 +169,9 @@ fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser);
 // sync user logins saved on client 
 syncUsers ABSTRACT LIST (VARISTRING[100], JSONFILE) @@noauth;
 syncUsers (VARISTRING[100] computer, JSONFILE users) + { 
-    IF computer IS VARISTRING[100] AND users IS JSONFILE THEN {
-        LOCAL syncSavedUser = STRING[100](INTEGER);
-        IMPORT FROM users TO syncSavedUser=value;
-        EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i));
-    } 
+    LOCAL syncSavedUser = STRING[100](INTEGER);
+    IMPORT FROM users TO syncSavedUser=value;
+    EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i));
 }
 
 FORM customUser '{authentication.custom.user}'
