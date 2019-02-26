@@ -25,6 +25,8 @@
     <http pattern="/static/images/logo.png" security="none"/>
     <!-- we need to download logo and icon -->
     <http pattern="/downloadFile" security="none"/>
+    <!--for jar -->
+    <http pattern="/lsfusion-client.*" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
