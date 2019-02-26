@@ -336,6 +336,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="finalizeActionAbstractTask"/>
+                <ref bean="finalizeCalcAbstractTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

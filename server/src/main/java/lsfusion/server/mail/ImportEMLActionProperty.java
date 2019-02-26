@@ -20,6 +20,8 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import org.apache.poi.hmef.Attachment;
+import org.apache.poi.hmef.HMEFMessage;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -176,7 +178,11 @@ public class ImportEMLActionProperty extends EmailActionProperty {
                     }
                     fos.close();
 
-                    attachments.putAll(unpack(new RawFileData(f), fileName, unpack));
+                    if(bp.getContentType() != null && bp.getContentType().contains("application/ms-tnef")) {
+                        attachments.putAll(extractWinMail(f).attachments);
+                    } else {
+                        attachments.putAll(unpack(new RawFileData(f), fileName, unpack));
+                    }
 
                 } catch (IOException ioe) {
                     ServerLoggers.mailLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
@@ -196,6 +202,16 @@ public class ImportEMLActionProperty extends EmailActionProperty {
             }
         }
         return new MultipartBody(body, attachments);
+    }
+
+    private MultipartBody extractWinMail(File winMailFile) throws IOException {
+        HMEFMessage msg = new HMEFMessage(new FileInputStream(winMailFile));
+        Map<String, FileData> attachments = new HashMap<>();
+        for(Attachment attach : msg.getAttachments()) {
+            String attachName = attach.getFilename();
+            attachments.put(attachName, new FileData(new RawFileData(attach.getContents()), BaseUtils.getFileExtension(attachName)));
+        }
+        return new MultipartBody(msg.getBody(), attachments);
     }
 
     private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String fileName, boolean unpack) throws IOException {

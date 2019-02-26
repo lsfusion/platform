@@ -27,6 +27,8 @@ $BODY$
 			checkDigit = 10 - mod(sum, 10);
 		END IF;
 		RETURN $1 || checkDigit;
+    EXCEPTION
+        WHEN invalid_text_representation THEN RETURN $1;
 	END;
 $BODY$
   LANGUAGE plpgsql VOLATILE STRICT;

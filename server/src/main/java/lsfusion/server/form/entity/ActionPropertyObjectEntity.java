@@ -49,10 +49,4 @@ public class ActionPropertyObjectEntity<P extends PropertyInterface> extends Pro
 
         return null;
     }
-
-    @Override
-    public CalcPropertyObjectEntity<?> getDrawProperty() {
-//        return DerivedProperty.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
-        return property.getWhereProperty().mapEntityObjects(mapping);
-    }
 }

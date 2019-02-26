@@ -117,8 +117,7 @@ isSubstring = FORMULA NULL INTEGER PG 'CASE WHEN position(($2) in ($1)) > 0 THEN
 
 replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
 
-charLength (TEXT p1) = FORMULA INTEGER PG 'char_length($1)', MS 'len($1)';
-length = FORMULA LONG 'length($1)';
+length (TEXT p1) = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
 
 strpos (TEXT string, TEXT substring) = FORMULA INTEGER PG 'strpos($1, $2)', MS 'charindex($2, $1)'; 
 
