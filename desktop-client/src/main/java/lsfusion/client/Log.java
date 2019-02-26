@@ -4,7 +4,6 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.exceptions.RemoteInternalException;
-import lsfusion.interop.exceptions.RemoteServerException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -107,16 +106,15 @@ public final class Log {
         }
     }
 
-    public static void error(String message, Throwable t) {
-        if(t instanceof RemoteInternalException)
+    public static void error(Throwable remote) {
+        assert remote.getCause() == null;
+    
+        String message = remote.getMessage();
+        if(remote instanceof RemoteInternalException)
             message += "\n" + getString("errors.contact.administrator");
 
-        Pair<String, String> exStacks = RemoteInternalException.getExStacks(t);
+        Pair<String, String> exStacks = RemoteInternalException.getExStacks(remote);
         error(message, null, null, exStacks.first, exStacks.second, false);
-    }
-
-    public static void error(RemoteServerException remote) {
-        error(remote.getMessage(), remote);
     }
 
     public static void messageWarning(String message, List<String> titles, List<List<String>> data) {

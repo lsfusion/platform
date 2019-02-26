@@ -2,6 +2,7 @@ package lsfusion.http.controller;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.RawFileData;
+import lsfusion.base.ServerMessages;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
@@ -28,7 +29,7 @@ public class MainController {
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
 
-        model.addAttribute("jnlpUrls", getJNLPUrls(serverSettings));
+        model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
 
         String error = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion()) : null;
         if (error != null) {
@@ -70,8 +71,9 @@ public class MainController {
         return serverSettings != null ? serverSettings.logicsName : null;
     }
 
-    private String getJNLPUrls(ServerSettings serverSettings) {
-        return serverSettings != null ? serverSettings.jnlpUrls : null;
+    private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
+        String mainUrl = "<a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D>" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
+        return serverSettings != null && serverSettings.jnlpUrls != null ? ("<details><summary>" + mainUrl + "</summary>" + serverSettings.jnlpUrls + "</details>") : mainUrl;
     }
 
     private String getFileUrl(RawFileData file) {

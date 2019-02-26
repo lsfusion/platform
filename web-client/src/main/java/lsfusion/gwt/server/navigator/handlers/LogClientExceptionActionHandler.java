@@ -12,7 +12,7 @@ import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.shared.exceptions.RemoteInternalDispatchException;
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
+import lsfusion.interop.exceptions.NonFatalRemoteClientException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -75,7 +75,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         if (throwable instanceof RemoteInternalDispatchException)
             appThrowable = new RemoteInternalException(throwable.getMessage(), ((RemoteInternalDispatchException) throwable).lsfStack);
         else if(throwable instanceof NonFatalHandledException)
-            appThrowable = new NonFatalHandledRemoteException(throwable.getMessage(), ((NonFatalHandledException) throwable).count, ((NonFatalHandledException) throwable).reqId);
+            appThrowable = new NonFatalRemoteClientException(throwable.getMessage(), ((NonFatalHandledException) throwable).count, ((NonFatalHandledException) throwable).reqId);
         else {
             assert throwable instanceof SerializableThrowable || throwable instanceof DispatchException;
             appThrowable = new Throwable(ExceptionUtils.copyMessage(throwable));

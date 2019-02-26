@@ -45,8 +45,8 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
             }
         }
         // messages.internalServerError();
-        String[] actualStacks = RemoteInternalDispatchException.getActualStacks(caught);
-        ErrorDialog.show(messages.error(), caught.getMessage(), actualStacks[0], actualStacks[1]);
+        String[] actualStacks = RemoteInternalDispatchException.toString(caught);
+        ErrorDialog.show(messages.error(), actualStacks[0], actualStacks[1], actualStacks[2]);
     }
     
     public static boolean isAuthException(Throwable caught) {

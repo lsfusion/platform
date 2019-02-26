@@ -90,11 +90,13 @@ public class ExternalUtils {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
                 Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-                if (script == null) {
+                if (script == null && !paramsList.isEmpty()) {
                     int scriptParam = queryActionParams.size();
-                    script = paramsList.get(scriptParam);
-                    paramsList = paramsList.remove(scriptParam);
-                    request.params = paramsList.toArray(new Object[paramsList.size()]);
+                    if(paramsList.size() > scriptParam) {
+                        script = paramsList.get(scriptParam);
+                        paramsList = paramsList.remove(scriptParam);
+                        request.params = paramsList.toArray(new Object[paramsList.size()]);
+                    }
                 }
                 execResult = remoteExec.eval(isEvalAction, script, request);
             }

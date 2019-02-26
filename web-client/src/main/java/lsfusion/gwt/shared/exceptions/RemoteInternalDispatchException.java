@@ -1,5 +1,6 @@
 package lsfusion.gwt.shared.exceptions;
 
+import com.google.gwt.core.shared.SerializableThrowable;
 import lsfusion.gwt.client.GExceptionManager;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
@@ -17,12 +18,18 @@ public class RemoteInternalDispatchException extends DispatchException {
     }
 
     // the same as in RemoteInternalException
-    // returns server stacks if present     
-    public static String[] getActualStacks(Throwable e) {
-        return new String[] {GExceptionManager.getStackTrace(e), getActualLsfStack(e)};
+    public static String[] toString(Throwable e) {
+        SerializableThrowable throwable = new SerializableThrowable("", GExceptionManager.copyMessage(e));
+        GExceptionManager.copyStackTraces(e, throwable);
+        String[] exStacks = getExStacks(throwable);
+        return new String[] {throwable.getMessage(), exStacks[0], exStacks[1]};
+    }
+    
+    public static String[] getExStacks(Throwable e) {
+        return new String[] {GExceptionManager.getStackTrace(e), getLsfStack(e)};
     }
 
-    public static String getActualLsfStack(Throwable e) {
+    public static String getLsfStack(Throwable e) {
         return e instanceof RemoteInternalDispatchException ? ((RemoteInternalDispatchException) e).lsfStack : null;
     }
 

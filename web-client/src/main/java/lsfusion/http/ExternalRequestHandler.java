@@ -82,9 +82,9 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.setContentType("text/html; charset=utf-8");
-                try {
-                    Pair<String, String> actualStacks = RemoteInternalException.getExStacks(e);
-                    response.getWriter().print(e.getMessage()+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.first, actualStacks.second));
+                try { // in theory here can be changed exception (despite the fact that remote call is wrapped into RemoteExceptionAspect)
+                    Pair<String, Pair<String, String>> actualStacks = RemoteInternalException.toString(e);
+                    response.getWriter().print(actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.first, actualStacks.second.second));
                 } catch (IOException e1) {
                     throw Throwables.propagate(e1);
                 }

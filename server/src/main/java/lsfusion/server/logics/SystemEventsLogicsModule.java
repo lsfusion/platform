@@ -190,8 +190,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     }
 
     public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
-        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-        String message = replaceNonUTFCharacters(Throwables.getRootCause(t).getLocalizedMessage());
+        assert t.getCause() == null;
+        
+        String message = replaceNonUTFCharacters(t.getMessage());
         String errorType = t.getClass().getName();
 
         Pair<String, String> exStacks = RemoteInternalException.getExStacks(t);
@@ -208,15 +209,15 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
                     exceptionObject = session.addObject(remoteServerException);
                 } else if (t instanceof RemoteException) {
                     exceptionObject = session.addObject(unhandledRemoteException);
-                } else if (t instanceof HandledRemoteException) {
-                    HandledRemoteException handled = (HandledRemoteException) t;
+                } else if (t instanceof RemoteClientException) {
+                    RemoteClientException handled = (RemoteClientException) t;
 
-                    if (t instanceof FatalHandledRemoteException)
+                    if (t instanceof FatalRemoteClientException)
                         exceptionObject = session.addObject(fatalHandledRemoteException);
                     else {
                         exceptionObject = session.addObject(nonFatalHandledRemoteException);
 
-                        NonFatalHandledRemoteException nonFatal = (NonFatalHandledRemoteException) t;
+                        NonFatalRemoteClientException nonFatal = (NonFatalRemoteClientException) t;
                         countNonFatalHandledException.change(nonFatal.count, session, exceptionObject);
                         abandonedNonFatalHandledException.change(nonFatal.abandoned, session, exceptionObject);
                     }

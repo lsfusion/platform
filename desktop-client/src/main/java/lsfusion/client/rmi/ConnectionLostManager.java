@@ -8,7 +8,7 @@ import lsfusion.client.*;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
+import lsfusion.interop.exceptions.NonFatalRemoteClientException;
 import lsfusion.interop.remote.ClientCallBackInterface;
 
 import javax.swing.*;
@@ -139,37 +139,39 @@ public class ConnectionLostManager {
         RmiQueue.notifyEdtSyncBlocker();
     }
     
-    private static final ConcurrentHashMap<Long, List<NonFatalHandledRemoteException>> failedNotFatalHandledRequests = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, List<NonFatalRemoteClientException>> failedNotFatalHandledRequests = new ConcurrentHashMap<>();
     public static void addFailedRmiRequest(RemoteException remote, long reqId) {
-        List<NonFatalHandledRemoteException> exceptions = failedNotFatalHandledRequests.get(reqId);
+        List<NonFatalRemoteClientException> exceptions = failedNotFatalHandledRequests.get(reqId);
         if(exceptions == null) {
             exceptions = new ArrayList<>();
             failedNotFatalHandledRequests.put(reqId, exceptions);
         }
-        exceptions.add(new NonFatalHandledRemoteException(remote, reqId)); // !! важно создавать здесь чтобы релевантный stack trace был
+        NonFatalRemoteClientException e = new NonFatalRemoteClientException(ExceptionUtils.copyMessage(remote), reqId);
+        ExceptionUtils.copyStackTraces(remote, e);
+        exceptions.add(e);
     }
     
     public static void flushFailedNotFatalRequests(final boolean abandoned, long reqId) {
-        final List<NonFatalHandledRemoteException> flushExceptions = failedNotFatalHandledRequests.remove(reqId);
+        final List<NonFatalRemoteClientException> flushExceptions = failedNotFatalHandledRequests.remove(reqId);
         if(flushExceptions != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    Map<Pair<String, Long>, Collection<NonFatalHandledRemoteException>> group;
-                        group = BaseUtils.group(new BaseUtils.Group<Pair<String, Long>, NonFatalHandledRemoteException>() {
-                            public Pair<String, Long> group(NonFatalHandledRemoteException key) {
+                    Map<Pair<String, Long>, Collection<NonFatalRemoteClientException>> group;
+                        group = BaseUtils.group(new BaseUtils.Group<Pair<String, Long>, NonFatalRemoteClientException>() {
+                            public Pair<String, Long> group(NonFatalRemoteClientException key) {
                                 return new Pair<>(ExceptionUtils.toString(key), key.reqId);
                             }
                         }, flushExceptions);
 
                     int count = 0;
-                    for (Map.Entry<Pair<String, Long>, Collection<NonFatalHandledRemoteException>> entry : group.entrySet()) {
+                    for (Map.Entry<Pair<String, Long>, Collection<NonFatalRemoteClientException>> entry : group.entrySet()) {
                         if(count++ > 20) // по аналогии с вебом, так как большое количество ошибок открывает слишком много socket'ов (потом может просто надо будет batch обработку сделать) 
                             break;
-                        Collection<NonFatalHandledRemoteException> all = entry.getValue();
-                        NonFatalHandledRemoteException nonFatal = all.iterator().next();
+                        Collection<NonFatalRemoteClientException> all = entry.getValue();
+                        NonFatalRemoteClientException nonFatal = all.iterator().next();
                         nonFatal.count = all.size();
                         nonFatal.abandoned = abandoned;
-                        ClientExceptionManager.reportClientHandledRemoteThrowable(nonFatal);
+                        ClientExceptionManager.reportThrowable(nonFatal);
                     }
 
                 }

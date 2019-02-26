@@ -82,7 +82,6 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
                 content = BaseUtils.filesToBytes(multiple, storeName, custom, files);
             } catch (Exception e) {
                 canceled = true;
-                Log.error(ClientResourceBundle.getString("form.editor.cant.read.file"), e);
                 return;
             }
 

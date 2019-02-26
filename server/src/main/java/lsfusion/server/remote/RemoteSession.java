@@ -57,11 +57,15 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     public ExternalResponse exec(String action, ExternalRequest request) {
         ExternalResponse result;
         try {
-            LAP property = businessLogics.findActionByCompoundName(action);
-            if (property != null) {
-                result = executeExternal(property, request);
+            if(action != null) {
+                LAP property = businessLogics.findActionByCompoundName(action);
+                if (property != null) {
+                    result = executeExternal(property, request);
+                } else {
+                    throw new RuntimeException(String.format("Action %s was not found", action));
+                }
             } else {
-                throw new RuntimeException(String.format("Action %s was not found", action));
+                throw new RuntimeException("Action was not specified");
             }
         } catch (ParseException | SQLHandledException | SQLException | IOException e) {
             throw new RuntimeException(e);
@@ -80,7 +84,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 if(runAction != null) {
                     result = executeExternal(runAction, request);
                 } else {
-                    throw new RuntimeException("Action run[] was not found");
+                    throw new RuntimeException("Action with name 'run' was not found");
 
                 }
             } catch (SQLException | ParseException | SQLHandledException | IOException | EvalUtils.EvaluationException | ScriptingErrorLog.SemanticErrorException e) {
@@ -93,9 +97,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     private ExternalResponse executeExternal(LAP<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        String annotation = property.property.annotation;
-        if(annotation == null || !annotation.equals("noauth"))
-            checkEnableApi(authToken.isAnonymous());
+        checkEnableApi(property);
 
         writeRequestInfo(dataSession, property.property, request);
 
@@ -104,13 +106,31 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return readResult(request.returnNames, property.property);
     }
 
-    public static void checkEnableApi(boolean anonymous) {
+    private void checkEnableApi(LAP<?> property) {
+        boolean forceAPI = false;
+        String annotation = property.property.annotation;
+        if(annotation != null) {
+            if(annotation.equals("noauth"))
+                return;
+            forceAPI = annotation.equals("api");
+        }
+        checkEnableApi(authToken.isAnonymous(), forceAPI);
+    }
+    
+    private static void checkEnableApi(boolean anonymous, boolean forceAPI) {
         byte enableApi = Settings.get().getEnableAPI();
-        if(enableApi == 0)
-            throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
+        if(enableApi == 0) {
+            if(forceAPI)
+                enableApi = 1;
+            else
+                throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
+        }
 
         if(anonymous && enableApi == 1)
-            throw new AuthenticationException();
+            throw new AuthenticationException();        
+    }
+    public static void checkEnableApi(boolean anonymous) {
+        checkEnableApi(anonymous, false);
     }
 
     public void writeRequestInfo(DataSession session, ActionProperty<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {

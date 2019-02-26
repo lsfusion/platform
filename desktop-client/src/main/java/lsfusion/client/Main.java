@@ -260,7 +260,6 @@ public class Main {
                 } catch (Exception e) {
                     closeSplashScreen();
                     logger.error(getString("client.error.application.initialization"), e);
-                    Log.error(getString("client.error.application.initialization"), e);
                     Main.restart();
                 }
             }
