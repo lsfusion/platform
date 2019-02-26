@@ -976,17 +976,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mResult.immutableList();
     }
 
-    public FormLPUsage checkPropertyIsNew(FormLCPUsage property) {
-        if(property.lp.property.getSID().equals(lastOptimizedJPropSID))
-            property = new FormLCPUsage(addJProp(false, LocalizedString.NONAME, property.lp, BaseUtils.consecutiveList(property.lp.property.interfaces.size(), 1).toArray()), property.mapping, property.signature);
-        return property;
-    }
-
     public LP makeActionOrPropertyPublic(FormEntity form, String alias, FormLPUsage<?> lpUsage) {
         String name = "_FORM_" + form.getCanonicalName().replace('.', '_') + "_" + alias;
         LP property = lpUsage.lp;
-        if (property != null && property instanceof LCP && propertyNeedsToBeWrapped((LCP)property)) {
-            property = wrappedProperty((LCP)lpUsage.lp);
+        if (property instanceof LCP) {
+            property = checkPropertyIsNew((LCP)property);
         }
         makeActionOrPropertyPublic(property, name, lpUsage.signature);
         return property;
@@ -1020,9 +1014,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDuplicateProperty(name, signature);
 
         LCP<?> property = baseProperty;
-        if (propertyNeedsToBeWrapped(property)) {
-            property = wrappedProperty(property);
-        }
+        property = checkPropertyIsNew(property);
 
         addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
 
@@ -1086,8 +1078,27 @@ public class ScriptingLogicsModule extends LogicsModule {
                 || property.property instanceof IsClassProperty;
     }
 
-    private LCP<?> wrappedProperty(LCP<?> property) {
+    private LCP<?> wrapProperty(LCP<?> property) {
         return addJProp(false, LocalizedString.NONAME, property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
+    }
+
+    public LCP<?> checkPropertyIsNew(LCP<?> property) {
+        if (propertyNeedsToBeWrapped(property)) {
+            property = wrapProperty(property);
+        }
+        return property;
+    }
+
+    public FormLPUsage checkPropertyIsNew(FormLCPUsage property) {
+        if(propertyNeedsToBeWrapped(property.lp))
+            property = new FormLCPUsage(wrapProperty(property.lp), property.mapping, property.signature);
+        return property;
+    }
+
+    public LCPWithParams checkPropertyIsNew(LCPWithParams property) {
+        if(propertyNeedsToBeWrapped(property.getLP()))
+            property = new LCPWithParams(wrapProperty(property.getLP()), property);
+        return property;
     }
 
     private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {

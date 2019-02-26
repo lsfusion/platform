@@ -36,8 +36,6 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         assert !mapping.containsNull();
     }
 
-    public abstract CalcPropertyObjectEntity<?> getDrawProperty();
-
     public ImSet<ObjectEntity> getObjectInstances() {
         return mapping.valuesSet();
     }

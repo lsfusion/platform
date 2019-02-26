@@ -2297,8 +2297,6 @@ inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer
 	:	'[' 	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
 				|   exprOrCIPD=propertyExpressionOrContextIndependentPD[newContext, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
                                                                     else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
-//                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inMainParseState()) { $property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(newContext); }}
-//                |	'ACTION' ciADB=contextIndependentActionDB { if (inMainParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
 				)
 		']'
 	;
@@ -3663,7 +3661,14 @@ scope {
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+='
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
-        expr=propertyExpression[context, false] { property = $expr.property; } ';'
+        expr=propertyExpression[context, false] 
+        { 
+            property = $expr.property;
+            if(inMainParseState()) {
+                property = self.checkPropertyIsNew(property); // we need new property to guarantee that explicit classes will be set for correct property
+                property.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in property declaration we need explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in expression)
+            }
+        } ';'
 	;
 
 overrideActionStatement
@@ -3688,7 +3693,12 @@ scope {
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+'
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
-        actionDB=listTopContextDependentActionDefinitionBody[context, false, true] { action = $actionDB.property; }
+        actionDB=listTopContextDependentActionDefinitionBody[context, false, true] 
+        { 
+            action = $actionDB.property; 
+            if(inMainParseState())
+                action.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in action declaration we need full context, and explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in body)             
+        }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
