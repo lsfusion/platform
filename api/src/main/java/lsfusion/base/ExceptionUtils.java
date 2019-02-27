@@ -41,15 +41,6 @@ public class ExceptionUtils {
         return s;
     }
 
-    public static Throwable getNonSpringCause(Throwable throwable) {
-        Throwable result = throwable;
-        while (result != null && result.getCause() != null && result instanceof org.springframework.beans.BeansException) {
-            result = result.getCause();
-        }
-
-        return result;
-    }
-
     public static RemoteException propagateRemoteException(Throwable t) throws RemoteException {
         throw propagate(t, RemoteException.class);
     }
