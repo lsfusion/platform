@@ -3,7 +3,6 @@ package lsfusion.base;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import org.apache.commons.io.FileUtils;
-import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -358,7 +357,7 @@ public class SystemUtils {
         File file = getUserFile(appendPath ? resolveName(cls, path + resource) : resource);
         File newFile = getFile(file, resource, path, cls, overwrite);
         if (overwrite || !file.exists() || file.length() != newFile.length())
-            FileCopyUtils.copy(newFile, file);
+            FileUtils.copyFile(newFile, file);
         if(!newFile.delete())
             newFile.deleteOnExit();
         return file.getAbsolutePath();
