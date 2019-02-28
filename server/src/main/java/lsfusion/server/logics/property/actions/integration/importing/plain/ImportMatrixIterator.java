@@ -54,11 +54,17 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
         while(true) {
             String nameValue = null;
             try {
-                nameValue = (String) getPropValue(i++, nameClass);
-            } catch (ParseException e) {
+                nameValue = (String) getPropValue(i, nameClass);
+            } catch (ParseException ignored) {
             }
-            if(nameValue == null || nameValue.isEmpty())
-                break;
+            if(nameValue == null || nameValue.isEmpty()) {
+                if(isLastValue(i)) {
+                    break;
+                } else {
+                    nameValue = "_gecnshfljr" + i;
+                }
+            }
+            i++;
             mFields.exclAdd(nameValue);
         }
         return mFields.immutableOrder();
@@ -79,6 +85,8 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
     }
     
     protected abstract Object getPropValue(Integer fieldIndex, Type type) throws ParseException;
+
+    protected abstract boolean isLastValue(Integer fieldIndex);
 
     public final static ImOrderMap<String, Integer> nameToIndexColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(new GetValue<String, Integer>() {
         public String getMapValue(Integer value) {
