@@ -21,6 +21,8 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import static lsfusion.base.DateConverter.dateToStamp;
+
 public class DateTimeClass extends DataClass<Timestamp> {
 
     public final static DateTimeClass instance = new DateTimeClass();
@@ -81,8 +83,9 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     public Timestamp read(Object value) {
-        if (value == null) return null;
-        return (Timestamp) value;
+        if (value instanceof Timestamp) return (Timestamp) value;
+        if (value instanceof java.util.Date) return dateToStamp((java.util.Date) value);
+        else return null;
     }
 
     @Override
@@ -136,7 +139,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
                 parse = DateConverter.smartParse(s);
             }
             
-            return DateConverter.dateToStamp(parse);
+            return dateToStamp(parse);
         } catch (Exception e) {
             throw new ParseException("error parsing datetime", e);
         }
