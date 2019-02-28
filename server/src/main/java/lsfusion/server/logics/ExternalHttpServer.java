@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.OrderedMap;
 import lsfusion.base.SessionInfo;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.interop.ExecInterface;
@@ -83,6 +84,22 @@ public class ExternalHttpServer extends MonitorServer {
                 String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
                 String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
 
+                OrderedMap<String, String> cookiesMap = new OrderedMap<>();
+                List<String> cookiesList = request.getRequestHeaders().get("Cookie");
+                if(cookiesList != null) {
+                    for (String cookies : cookiesList) {
+                        for (String cookie : cookies.split(";")) {
+                            String[] splittedCookie = cookie.split("=");
+                            if (splittedCookie.length == 2) {
+                                cookiesMap.put(splittedCookie[0], splittedCookie[1]);
+                            }
+                        }
+                    }
+                }
+
+                String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
+                String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+
                 InetSocketAddress remoteAddress = request.getRemoteAddress();
                 InetAddress address = remoteAddress.getAddress();
                 SessionInfo sessionInfo = new SessionInfo(remoteAddress.getHostName(), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
@@ -91,7 +108,7 @@ public class ExternalHttpServer extends MonitorServer {
                 String url = "http://" + request.getRequestHeaders().getFirst("Host") + uriPath;
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec, url, uriPath, request.getRequestURI().getRawQuery(), 
-                        request.getRequestBody(), getContentType(request), headerNames, headerValues, null, null, null);
+                        request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null, null);
 
                 if (response.response != null)
                     sendResponse(request, response);
@@ -151,6 +168,8 @@ public class ExternalHttpServer extends MonitorServer {
             String contentDisposition = responseHttpEntity.contentDisposition;
             String[] headerNames = responseHttpEntity.headerNames;
             String[] headerValues = responseHttpEntity.headerValues;
+            String[] cookieNames = responseHttpEntity.cookieNames;
+            String[] cookieValues = responseHttpEntity.cookieValues;
 
             boolean hasContentType = false;
             boolean hasContentDisposition = false;
@@ -163,6 +182,15 @@ public class ExternalHttpServer extends MonitorServer {
                     response.getResponseHeaders().add(headerName, headerValues[i]);
                 hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
             }
+
+            String cookie = "";
+            for(int i=0;i<cookieNames.length;i++) {
+                String cookieName = cookieNames[i];
+                String cookieValue = cookieValues[i];
+                cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + cookieValue;
+            }
+            response.getResponseHeaders().add("Cookie", cookie);
+
             if (contentType != null && !hasContentType)
                 response.getResponseHeaders().add("Content-Type", contentType);
             if(contentDisposition != null && !hasContentDisposition)

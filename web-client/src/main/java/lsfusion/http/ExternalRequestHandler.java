@@ -3,6 +3,7 @@ package lsfusion.http;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.http.provider.logics.LogicsRunnable;
@@ -48,6 +49,21 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
             String[] headerNames = list((Enumeration<String>)request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
 
+            OrderedMap<String, String> cookiesMap = new OrderedMap<>();
+            String cookies = request.getHeader("Cookie");
+            if(cookies != null) {
+                for (String cookie : cookies.split(";")) {
+                    String[] splittedCookie = cookie.split("=");
+                    if (splittedCookie.length == 2) {
+                        cookiesMap.put(splittedCookie[0], splittedCookie[1]);
+                    }
+                }
+            }
+
+            String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
+            String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+
+
             sessionID = request.getParameter("session");
             ExecInterface remoteExec;
             if(sessionID != null) {
@@ -66,7 +82,7 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
             }
 
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, request.getRequestURL().toString(), 
-                    request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues, 
+                    request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues, cookieNames, cookieValues,
                     logicsConnection.host, logicsConnection.port, logicsConnection.exportName);
 
             if (responseHttpEntity.response != null) {

@@ -106,7 +106,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP statusHttp;
     
     public LCP<?> headers;
+    public LCP<?> cookies;
     public LCP<?> headersTo;
+    public LCP<?> cookiesTo;
     public LCP<?> url;
     public LCP<?> query;
     public LCP<?> host;
@@ -397,7 +399,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         statusHttp = findProperty("statusHttp[]");
         
         headers = findProperty("headers[TEXT]");
+        cookies = findProperty("cookies[TEXT]");
         headersTo = findProperty("headersTo[TEXT]");
+        cookiesTo = findProperty("cookiesTo[TEXT]");
         url = findProperty("url[]");
         query = findProperty("query[]");
         host = findProperty("host[]");

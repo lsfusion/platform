@@ -135,7 +135,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     public void writeRequestInfo(DataSession session, ActionProperty<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {
         if (actionProperty.uses(businessLogics.LM.headers.property)) {
-            ExternalHTTPActionProperty.writeHeaders(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
+            ExternalHTTPActionProperty.writePropertyValues(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
+        }
+        if (actionProperty.uses(businessLogics.LM.cookies.property)) {
+            ExternalHTTPActionProperty.writePropertyValues(session, businessLogics.LM.cookies, request.headerNames, request.headerValues);
         }
         if (request.url != null) {
             businessLogics.LM.url.change(request.url, session);
@@ -175,8 +178,13 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             returns.add(formatReturnValue(objectValue.getValue(), resultProp.result));
         }
 
-        ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readHeaders(dataSession, businessLogics.LM.headersTo).toOrderMap();
-        return new ExternalResponse(returns.toArray(), headers.keyOrderSet().toArray(new String[headers.size()]), headers.valuesList().toArray(new String[headers.size()]));
+        ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
+        String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
+        String[] headerValues = headers.valuesList().toArray(new String[headers.size()]);
+        ImOrderMap<String, String> cookies = ExternalHTTPActionProperty.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
+        String[] cookieNames = cookies.keyOrderSet().toArray(new String[cookies.size()]);
+        String[] cookieValues = cookies.valuesList().toArray(new String[cookies.size()]);
+        return new ExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues);
     }
 
     private Object formatReturnValue(Object returnValue, CalcProperty returnProperty) {

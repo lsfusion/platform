@@ -5,7 +5,9 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
@@ -26,18 +28,19 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.*;
+import org.apache.http.client.utils.DateUtils;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.server.logics.property.ExternalHttpMethod.PUT;
 
@@ -46,16 +49,21 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
     private LCP<?> headersProperty;
+    private LCP<?> cookiesProperty;
     private LCP headersToProperty;
+    private LCP cookiesToProperty;
 
-    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty, LCP headersToProperty, boolean hasBodyUrl) {
+    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList,
+                                      LCP headersProperty, LCP cookiesProperty, LCP headersToProperty, LCP cookiesToProperty, boolean hasBodyUrl) {
         super(hasBodyUrl ? 2 : 1, params, targetPropList);
 
         this.method = method;
         this.queryInterface = getOrderInterfaces().get(0);
         this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
         this.headersProperty = headersProperty;
+        this.cookiesProperty = cookiesProperty;
         this.headersToProperty = headersToProperty;
+        this.cookiesToProperty = cookiesToProperty;
     }
 
     @Override
@@ -68,8 +76,10 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             if(connectionString != null) {
                 connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
                 bodyUrl = bodyUrl != null ? replaceParams(context, bodyUrl, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN)) : null;
-                ImMap<String, String> headers = headersProperty != null ? readHeaders(context.getEnv(), headersProperty) : MapFact.<String, String>EMPTY();
-                HttpResponse response = readHTTP(context, connectionString, bodyUrl, rNotUsedParams.result, headers);
+                ImMap<String, String> headers = headersProperty != null ? readPropertyValues(context.getEnv(), headersProperty) : MapFact.<String, String>EMPTY();
+                ImMap<String, String> cookies = cookiesProperty != null ? readPropertyValues(context.getEnv(), cookiesProperty) : MapFact.<String, String>EMPTY();
+                CookieStore cookieStore = new BasicCookieStore();
+                HttpResponse response = readHTTP(context, connectionString, bodyUrl, rNotUsedParams.result, headers, cookies, cookieStore);
                 HttpEntity responseEntity = response.getEntity();
 
                 ContentType contentType = ContentType.get(responseEntity);
@@ -81,8 +91,15 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                     String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
                     String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
                     
-                    writeHeaders(context.getSession(), headersToProperty, headerNames, headerValues);
-                }                
+                    writePropertyValues(context.getSession(), headersToProperty, headerNames, headerValues);
+                }
+                if(cookiesToProperty != null) {
+                    Map<String, String> responseCookies = getResponseCookies(cookieStore);
+                    String[] cookieNames = responseCookies.keySet().toArray(new String[0]);
+                    String[] cookieValues = responseCookies.values().toArray(new String[0]);
+
+                    writePropertyValues(context.getSession(), cookiesToProperty, cookieNames, cookieValues);
+                }
                 context.getBL().LM.statusHttp.change(response.getStatusLine().getStatusCode(), context);
                 if (response.getStatusLine().getStatusCode() < 200 || response.getStatusLine().getStatusCode() >= 300) {
                     throw new RuntimeException(response.getStatusLine().toString());
@@ -119,9 +136,15 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         return headerValuesArray;
     }
 
-    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, ImMap<String, String> headers) throws IOException {
-        HttpClient httpClient = HttpClientBuilder.create().build();
+    private Map<String, String> getResponseCookies(CookieStore cookieStore) {
+        Map<String, String> responseCookies = new HashMap<>();
+        for(Cookie cookie : cookieStore.getCookies()) {
+            responseCookies.put(cookie.getName(), cookie.getValue());
+        }
+        return responseCookies;
+    }
 
+    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) throws IOException, java.text.ParseException {
         Object[] paramList = new Object[bodyParams.size()];
         for (int i=0,size=bodyParams.size();i<size;i++)
             paramList[i] = format(context, bodyParams.get(i), null); // пока в body ничего не кодируем (так как content-type'ы другие)
@@ -152,7 +175,49 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         }
         for(int i=0,size=headers.size();i<size;i++)
             httpRequest.addHeader(headers.getKey(i), headers.getValue(i));
-        return httpClient.execute(httpRequest);
+        for(int i=0,size=cookies.size();i<size;i++) {
+            BasicClientCookie cookie = parseRawCookie(cookies.getKey(i), cookies.getValue(i));
+            cookieStore.addCookie(cookie);
+        }
+        
+        return HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(httpRequest);
+    }
+
+    BasicClientCookie parseRawCookie(String cookieName, String rawCookie) {
+        BasicClientCookie cookie;
+        String[] rawCookieParams = rawCookie.split(";");
+
+        String cookieValue = rawCookieParams[0];
+
+        cookie = new BasicClientCookie(cookieName, cookieValue);
+
+        for (int i = 1; i < rawCookieParams.length; i++) {
+
+            String[] rawCookieParam = rawCookieParams[i].split("=");
+            String paramName = rawCookieParam[0].trim();
+
+            if (paramName.equalsIgnoreCase("secure")) {
+                cookie.setSecure(true);
+            } else if (rawCookieParam.length == 2) {
+                String paramValue = rawCookieParam[1].trim();
+
+                if (paramName.equalsIgnoreCase("expires")) {
+                    Date expiryDate = DateUtils.parseDate(paramValue, new String[] {"EEE, dd MMM yyyy HH:mm:ssZZZ"});
+                    cookie.setExpiryDate(expiryDate);
+                } else if (paramName.equalsIgnoreCase("max-age")) {
+                    long maxAge = Long.parseLong(paramValue);
+                    Date expiryDate = new Date(System.currentTimeMillis() + maxAge);
+                    cookie.setExpiryDate(expiryDate);
+                } else if (paramName.equalsIgnoreCase("domain")) {
+                    cookie.setDomain(paramValue);
+                } else if (paramName.equalsIgnoreCase("path")) {
+                    cookie.setPath(paramValue);
+                } else if (paramName.equalsIgnoreCase("comment")) {
+                    cookie.setPath(paramValue);
+                }
+            }
+        }
+        return cookie;
     }
 
     public static ObjectValue[] getParams(DataSession session, LP property, Object[] params, Charset charset) throws ParseException, SQLException, SQLHandledException {
@@ -183,27 +248,27 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         }
     }
 
-    public static ImMap<String, String> readHeaders(ExecutionEnvironment env, LCP<?> headersProperty) throws SQLException, SQLHandledException {
-        return BaseUtils.immutableCast(headersProperty.readAll(env).mapKeys(new GetValue<String, ImList<Object>>() {
+    public static ImMap<String, String> readPropertyValues(ExecutionEnvironment env, LCP<?> property) throws SQLException, SQLHandledException {
+        return BaseUtils.immutableCast(property.readAll(env).mapKeys(new GetValue<String, ImList<Object>>() {
             public String getMapValue(ImList<Object> value) {
                 return (String) value.single();
             }
         }));
     }
 
-    public static <P extends PropertyInterface> void writeHeaders(DataSession session, LCP<P> headersProperty, String[] headerNames, String[] headerValues) throws SQLException, SQLHandledException {
-        CalcProperty<P> headersProp = headersProperty.property;
-        P name = headersProperty.listInterfaces.get(0);
+    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, LCP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
+        CalcProperty<P> prop = property.property;
+        P name = property.listInterfaces.get(0);
 
-        SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("writeHeaders", headersProp.interfaceTypeGetter.getType(name), headersProp.getType());
+        SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("writePropertyValues", prop.interfaceTypeGetter.getType(name), prop.getType());
 
         MExclMap<DataObject, ObjectValue> mRows = MapFact.mExclMap();
-        for (int i = 0; i < headerNames.length; i++)
-            mRows.exclAdd(new DataObject(headerNames[i]), new DataObject(headerValues[i]));
+        for (int i = 0; i < names.length; i++)
+            mRows.exclAdd(new DataObject(names[i]), new DataObject(values[i]));
 
         try {
             table.writeRows(session.sql, session.getOwner(), mRows.immutable());
-            session.change(headersProp, SingleKeyPropertyUsage.getChange(table, name));
+            session.change(prop, SingleKeyPropertyUsage.getChange(table, name));
         } finally {
             table.drop(session.sql, session.getOwner());
         }
