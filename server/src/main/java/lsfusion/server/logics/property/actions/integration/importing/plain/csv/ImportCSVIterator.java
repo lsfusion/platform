@@ -55,4 +55,9 @@ public class ImportCSVIterator extends ImportMatrixIterator {
             throw new ParseException("Column with index " + fieldIndex + " not found");
         return type.parseCSV(line.get(fieldIndex));
     }
+
+    @Override
+    protected boolean isLastValue(Integer fieldIndex) {
+        return fieldIndex >= line.size();
+    }
 }
