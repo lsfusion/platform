@@ -184,6 +184,10 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
             eastEdge.setPixelSize(BORDER_THICKNESS, contentHeight + headerHeight);
         }
         contentWidget.setPixelSize(contentWidth, contentHeight);
+        
+        if (contentWidget instanceof RequiresResize) {
+            ((RequiresResize) contentWidget).onResize();
+        }
     }
 
     @Override
