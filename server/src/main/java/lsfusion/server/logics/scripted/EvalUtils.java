@@ -10,7 +10,10 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.Event;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -123,8 +126,8 @@ public class EvalUtils {
                 if(!script.endsWith(";")) {
                     script += ";";
                 }
+                List<String> paramsList = new ArrayList<>();
                 StringBuilder result = new StringBuilder();
-                StringBuilder params = new StringBuilder();
                 StringBuilder currentParam = new StringBuilder();
                 State currentState = State.SCRIPT;
                 boolean prevSlash = false;
@@ -160,8 +163,9 @@ public class EvalUtils {
                                 //param ends
                                 String param = paramPrefix + currentParam;
                                 result.append(param);
-                                params.append(params.length() > 0 ? ", " : "").append(param);
-
+                                if(!paramsList.contains(param)) {
+                                    paramsList.add(param);
+                                }
                                 if (c == '/' && prevSlash) {
                                     //comment starts
                                     currentState = State.COMMENT;
@@ -193,6 +197,9 @@ public class EvalUtils {
                     prevBackSlash = c == '\\';
                     i++;
                 }
+
+                Collections.sort(paramsList);
+                String params = StringUtils.join(paramsList.iterator(), ", ");
                 return String.format("run(%s) {%s\n}", params, result);
             } else return null;
         }
