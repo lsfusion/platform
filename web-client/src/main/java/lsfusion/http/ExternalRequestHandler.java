@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -49,20 +50,9 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
             String[] headerNames = list((Enumeration<String>)request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
 
-            OrderedMap<String, String> cookiesMap = new OrderedMap<>();
-            String cookies = request.getHeader("Cookie");
-            if(cookies != null) {
-                for (String cookie : cookies.split(";")) {
-                    String[] splittedCookie = cookie.split("=");
-                    if (splittedCookie.length == 2) {
-                        cookiesMap.put(splittedCookie[0], splittedCookie[1]);
-                    }
-                }
-            }
-
+            OrderedMap<String, String> cookiesMap = getRequestCookies(request);
             String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
             String[] cookieValues = cookiesMap.values().toArray(new String[0]);
-
 
             sessionID = request.getParameter("session");
             ExecInterface remoteExec;
@@ -141,6 +131,8 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
         String contentDisposition = responseHttpEntity.contentDisposition;
         String[] headerNames = responseHttpEntity.headerNames;
         String[] headerValues = responseHttpEntity.headerValues;
+        String[] cookieNames = responseHttpEntity.cookieNames;
+        String[] cookieValues = responseHttpEntity.cookieValues;
 
         boolean hasContentType = false; 
         boolean hasContentDisposition = false; 
@@ -153,6 +145,11 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
                 response.addHeader(headerName, headerValues[i]);
             hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");            
         }
+
+        for (int i = 0; i < cookieNames.length; i++) {
+            response.addCookie(new Cookie(cookieNames[i], cookieValues[i]));
+        }
+
         if(contentType != null && !hasContentType)
             response.setContentType(contentType.getValue());
         if(contentDisposition != null && !hasContentDisposition)
@@ -167,5 +164,19 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
             headerValuesArray[i] = StringUtils.join(list(request.getHeaders(headerNames[i])), ",");
         }
         return headerValuesArray;
+    }
+
+    private OrderedMap<String, String> getRequestCookies(HttpServletRequest request) {
+        OrderedMap<String, String> cookiesMap = new OrderedMap<>();
+        String cookies = request.getHeader("Cookie");
+        if (cookies != null) {
+            for (String cookie : cookies.split(";")) {
+                String[] splittedCookie = cookie.split("=");
+                if (splittedCookie.length == 2) {
+                    cookiesMap.put(splittedCookie[0], splittedCookie[1]);
+                }
+            }
+        }
+        return cookiesMap;
     }
 }

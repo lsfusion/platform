@@ -183,7 +183,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         return HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build().execute(httpRequest);
     }
 
-    BasicClientCookie parseRawCookie(String cookieName, String rawCookie) {
+    private BasicClientCookie parseRawCookie(String cookieName, String rawCookie) {
         BasicClientCookie cookie;
         String[] rawCookieParams = rawCookie.split(";");
 

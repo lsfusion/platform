@@ -1619,7 +1619,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                            PropertyUsage headers, PropertyUsage cookies, PropertyUsage headersTo, PropertyUsage cookiesTo,
                                                            List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LCP headersProperty = headers != null ? findLCPStringParamByPropertyUsage(headers) : null;
-        LCP cookiesProperty = headers != null ? findLCPStringParamByPropertyUsage(cookies) : null;
+        LCP cookiesProperty = cookies != null ? findLCPStringParamByPropertyUsage(cookies) : null;
         LCP headersToProperty = headersTo != null ? findLCPStringParamByPropertyUsage(headersTo) : null;
         LCP cookiesToProperty = cookiesTo != null ? findLCPStringParamByPropertyUsage(cookiesTo) : null;
         return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(method != null ? method : ExternalHttpMethod.POST,

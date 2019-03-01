@@ -161,7 +161,7 @@ public class ExternalHttpServer extends MonitorServer {
             os.close();
         }
 
-        // copy of ExternalHTTPServer.sendResponse
+        // copy of ExternalRequestHandler.sendResponse
         private void sendResponse(HttpExchange response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
             HttpEntity responseEntity = responseHttpEntity.response;
             String contentType = responseEntity.getContentType().getValue();
