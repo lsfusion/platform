@@ -217,7 +217,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
 
     public ImOrderMap<K, V> filterOrder(FunctionSet<K> set) {
         if(set.isEmpty()) // оптимизация
-            return this;
+            return MapFact.EMPTYORDER();
         
         MOrderFilterMap<K, V> mResult = MapFact.mOrderFilter(this);
         for(int i=0,size=size();i<size;i++) {
