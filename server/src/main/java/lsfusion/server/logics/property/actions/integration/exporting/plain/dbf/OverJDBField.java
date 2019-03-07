@@ -44,9 +44,7 @@ public class OverJDBField extends JDBField {
                 String s1 = decimalformat.format(number);
                 int k = getLength() - s1.length();
                 if (k < 0) {
-                    throw new JDBFException("Value " + number +
-                            " cannot fit in pattern: '" + stringBuilder +
-                            "'.");
+                    throw new JDBFException("Value " + number + " cannot fit in pattern: '" + stringBuilder + "'.");
                 }
                 StringBuilder stringBuilder2 = new StringBuilder(k);
                 for (int l = 0; l < k; l++) {
@@ -55,19 +53,16 @@ public class OverJDBField extends JDBField {
                 }
                 return stringBuilder2 + s1;
             } else {
-                throw new JDBFException("Expected a Number, got " + obj.getClass() +
-                        ".");
+                throw new JDBFException("Expected a Number, got " + obj.getClass() + ".");
             }
-        }
-        if (type == 'C') {
+        } else if (type == 'C') {
             if (obj == null) {
                 obj = "";
             }
             if (obj instanceof String) {
                 String s = (String) obj;
                 if (s.length() > getLength()) {
-                    throw new JDBFException("'" + obj + "' is longer than " + getLength() +
-                            " characters.");
+                    throw new JDBFException("'" + obj + "' is longer than " + getLength() + " characters.");
                 }
                 StringBuilder stringBuilder1 = new StringBuilder(getLength() - s.length());
                 for (int j = 0; j < getLength() - s.length(); j++) {
@@ -76,24 +71,20 @@ public class OverJDBField extends JDBField {
                 }
                 return s + stringBuilder1;
             } else {
-                throw new JDBFException("Expected a String, got " + obj.getClass() +
-                        ".");
+                throw new JDBFException("Expected a String, got " + obj.getClass() + ".");
             }
-        }
-        if (type == 'L') {
+        } else if (type == 'L') {
             if (obj == null) {
                 //obj = new Boolean(false);
                 return " ";
             }
             if (obj instanceof Boolean) {
                 Boolean boolean1 = (Boolean) obj;
-                return boolean1 ? "Y" : "N";
+                return boolean1 ? "T" : "F";
             } else {
-                throw new JDBFException("Expected a Boolean, got " + obj.getClass() +
-                        ".");
+                throw new JDBFException("Expected a Boolean, got " + obj.getClass() + ".");
             }
-        }
-        if (type == 'D') {
+        } else if (type == 'D') {
             if (obj == null) {
                 //obj = new Date();
                 String result = "";

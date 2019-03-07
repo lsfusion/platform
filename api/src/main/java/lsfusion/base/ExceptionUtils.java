@@ -47,15 +47,6 @@ public class ExceptionUtils {
         return s;
     }
 
-    public static Throwable getNonSpringCause(Throwable throwable) {
-        Throwable result = throwable;
-        while (result != null && result.getCause() != null && result instanceof org.springframework.beans.BeansException) {
-            result = result.getCause();
-        }
-
-        return result;
-    }
-
     public static RemoteException propagateRemoteException(Throwable t) throws RemoteException {
         throw propagate(t, RemoteException.class);
     }
@@ -130,7 +121,7 @@ public class ExceptionUtils {
     }
 
     // the same as in GExceptionManager
-    // assuming that here should be primitive copy (Strings and other very primitive Java classes) to be deserialized everywhere  
+    // assuming that here should be primitive copy (Strings and other very primitive Java classes) to be deserialized everywhere
     public static void copyStackTraces(Throwable from, Throwable to) {
         from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
         to.setStackTrace(from.getStackTrace());

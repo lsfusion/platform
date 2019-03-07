@@ -118,6 +118,11 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     }
 
     @Override
+    protected boolean isLastValue(Integer fieldIndex) {
+        return fieldIndex >= row.getLastCellNum();
+    }
+
+    @Override
     public void release() throws IOException {
         if(wb != null)
             wb.close();

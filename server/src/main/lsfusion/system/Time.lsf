@@ -25,6 +25,8 @@ toDateTime(DATE date) = DATETIME(date AS DATE);
 toDateFormat = FORMULA DATE 'to_date($1,$2)';
 toDateTimeFormat = FORMULA DATETIME PG 'to_timestamp($1,$2)';
 
+toDateISO = FORMULA VARSTRING[10] 'to_char(($1),\'YYYY-MM-DD\')';
+
 toDateDDMMYY = FORMULA VARSTRING[8] 'to_char(($1),\'DD.MM.YY\')';
 toDateDDMMYYYY = FORMULA VARSTRING[10] 'to_char(($1),\'DD.MM.YYYY\')';
 

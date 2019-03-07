@@ -221,7 +221,7 @@ public class Words {
         }
     }
 
-    private static int getNumOfDigits(double num, String type) {
+    private static int getNumOfDigits(double num, String type, Integer forceNumOfDigits) {
         if (type != null) {
             if (numOfDigitsMap.containsKey(type))
                 return numOfDigitsMap.get(type);
@@ -233,7 +233,7 @@ public class Words {
             numOfDigits++;
             num = num * 10;
         }
-        return Math.min(numOfDigits, 6);
+        return Math.min(forceNumOfDigits == null ? numOfDigits : Math.max(numOfDigits, forceNumOfDigits), 6);
     }
 
     //для лонга с типом
@@ -266,16 +266,16 @@ public class Words {
 
     //для дабла с типом
     public static String toString(Double numObject, String type) {
-        return toString(numObject, type, false);
+        return toString(numObject, type, false, null);
     }
 
-    public static String toString(Double numObject, String type, boolean numericFraction) {
+    public static String toString(Double numObject, String type, boolean numericFraction, Integer forceNumOfDigits) {
         double num = numObject == null ? 0.0 : numObject;
-        Integer numOfDigits = getNumOfDigits(num, type);
+        Integer numOfDigits = getNumOfDigits(num, type, forceNumOfDigits);
         if (decimalPostfix.containsKey(type) && (fractalPostfix.containsKey(type) || fractalPostfix.containsKey(type + numOfDigits))) {
             long fract = Math.round(num * Math.pow(10, numOfDigits) - ((long) num) * Math.pow(10, numOfDigits));
             String result;
-            if (fract != 0)
+            if (fract != 0 || forceNumOfDigits != null)
                 result = toString((long) num, type, null, sexMap.get(type), false) + toString(fract, type, numOfDigits, sexMap.get(type + numOfDigits), numericFraction);
             else
                 result = toString((long) num, type);
@@ -326,7 +326,11 @@ public class Words {
     }
 
     public static String toString(BigDecimal numObject, String type, boolean upcase, boolean numericFraction) {
-        String result = numObject == null ? toString((Double) null, type, numericFraction) : toString(numObject.doubleValue(), type, numericFraction);
+        return toString(numObject, type, upcase, numericFraction, null);
+    }
+
+    public static String toString(BigDecimal numObject, String type, boolean upcase, boolean numericFraction, Integer numOfDigits) {
+        String result = numObject == null ? toString(null, type, numericFraction, numOfDigits) : toString(numObject.doubleValue(), type, numericFraction, numOfDigits);
         if (result != null && upcase)
             result = result.substring(0, 1).toUpperCase() + result.substring(1);
         return result;
