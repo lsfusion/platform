@@ -71,9 +71,12 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
                         NavigatorProviderImpl.getSessionInfo(request), remoteLogics);
             }
 
+            String logicsHost = logicsConnection.host != null && !logicsConnection.host.equals("localhost") && !logicsConnection.host.equals("127.0.0.1")
+                    ? logicsConnection.host : request.getServerName();
+
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, request.getRequestURL().toString(), 
                     request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues, cookieNames, cookieValues,
-                    logicsConnection.host, logicsConnection.port, logicsConnection.exportName);
+                    logicsHost, logicsConnection.port, logicsConnection.exportName);
 
             if (responseHttpEntity.response != null) {
                 sendResponse(response, responseHttpEntity);
