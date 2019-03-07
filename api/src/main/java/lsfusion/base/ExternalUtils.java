@@ -65,6 +65,7 @@ public class ExternalUtils {
     }
 
     public static ExternalResponse processRequest(ExecInterface remoteExec, String url, String uri, String query, InputStream is, Map<String, String[]> requestParams, ContentType requestContentType, String[] headerNames, String[] headerValues, 
+                                                  String[] cookieNames, String[] cookieValues,
                                                   String logicsHost, Integer logicsPort, String logicsExportName) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
@@ -80,9 +81,8 @@ public class ExternalUtils {
         
         String filename = "export";
 
-        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]), 
-                charset == null ? null : charset.toString(), url, query, headerNames, headerValues, logicsHost, logicsPort, logicsExportName);
-        
+        ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
+                charset == null ? null : charset.toString(), url, query, headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName);
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
             execResult = remoteExec.exec(action, request);
@@ -111,9 +111,9 @@ public class ExternalUtils {
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
-            return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues);
+            return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues, execResult.cookieNames, execResult.cookieValues);
         }
-        return new ExternalResponse(null, null, null, null);
+        return new ExternalResponse(null, null, null, null, null, null);
     }
 
     public static String getBodyUrl(Object[] results, boolean returnBodyUrl) {
@@ -214,7 +214,7 @@ public class ExternalUtils {
                 Charset charset = getCharsetFromContentType(contentType);
                 List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
                 for(NameValuePair param : params)
-                    mParamsList.add(getRequestParam(param.getValue(), ContentType.create(TEXT_PLAIN.getMimeType(), charset), true));                    
+                    mParamsList.add(getRequestParam(param.getValue(), ContentType.create(TEXT_PLAIN.getMimeType(), charset), true));
             } else
                 mParamsList.add(getRequestParam(bytes, contentType, false));
         }
@@ -263,12 +263,16 @@ public class ExternalUtils {
         public final String contentDisposition;
         public final String[] headerNames;
         public final String[] headerValues;
+        public final String[] cookieNames;
+        public final String[] cookieValues;
 
-        public ExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues) {
+        public ExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues) {
             this.response = response;
             this.contentDisposition = contentDisposition;
             this.headerNames = headerNames;
             this.headerValues = headerValues;
+            this.cookieNames = cookieNames;
+            this.cookieValues = cookieValues;
         }
     }
 }

@@ -15,8 +15,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
     
+    protected LCP<?> idPolicy;
+    protected LCP<?> policyId;
     protected LCP<?> namePolicy;
-    protected LCP<?> policyName;
     public LCP descriptionPolicy;
     public LCP orderUserPolicy;
 
@@ -85,8 +86,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         hasUserRole = findProperty("has[User,UserRole]");
 
         // ------------------------ Политика безопасности ------------------ //
+        idPolicy = findProperty("id[Policy]");
+        policyId = findProperty("policy[VARSTRING[100]]");
         namePolicy = findProperty("name[Policy]");
-        policyName = findProperty("policy[VARISTRING[100]]");
         descriptionPolicy = findProperty("description[Policy]");
         orderUserPolicy = findProperty("order[User,Policy]");
 

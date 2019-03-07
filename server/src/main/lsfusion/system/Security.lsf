@@ -337,9 +337,9 @@ copy (UserRole from, UserRole to) +{
 CLASS Policy '{security.policy}';
 TABLE policy (Policy);
 
+id = DATA VARSTRING[100](Policy);
+policy = GROUP AGGR Policy policy BY id(policy);
 name '{security.name.policy}' = DATA VARISTRING[100](Policy);
-
-policy = GROUP AGGR Policy policy WHERE policy IS Policy BY name(policy);
 description '{security.description.policy}' = DATA VARSTRING[100] (Policy);
 
 TABLE userRolePolicy (UserRole, Policy);

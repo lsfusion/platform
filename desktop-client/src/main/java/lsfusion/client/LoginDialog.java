@@ -176,7 +176,7 @@ public class LoginDialog extends JDialog {
         useAnonymousUICheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                updateAnonymousUIVisibility();
+                updateAnonymousUIActivity();
             }
         });
     }
@@ -249,7 +249,8 @@ public class LoginDialog extends JDialog {
             imageLabel.setIcon(Main.getLogo());
 
             this.hasAnonymousUI = hasAnonymousUI;
-            updateAnonymousUIVisibility();
+            useAnonymousUICheckBox.setVisible(hasAnonymousUI);
+            updateAnonymousUIActivity();
 
             setWarningMsg(error);
             disableOK = error != null;
@@ -257,15 +258,13 @@ public class LoginDialog extends JDialog {
         }
     }
 
-    private void updateAnonymousUIVisibility() {
-        useAnonymousUICheckBox.setVisible(hasAnonymousUI);
-        boolean show = !useAnonymousUI();
-        loginLabel.setVisible(show);
-        loginBox.setVisible(show);
-        passwordLabel.setVisible(show);
-        passwordField.setVisible(show);
-        savePasswordCheckBox.setVisible(show);
-        pack();
+    private void updateAnonymousUIActivity() {
+        boolean enable = !useAnonymousUI();
+        loginLabel.setEnabled(enable);
+        loginBox.setEnabled(enable);
+        passwordLabel.setEnabled(enable);
+        passwordField.setEnabled(enable);
+        savePasswordCheckBox.setEnabled(enable);
     }
 
     private UserInfo getUserInfo(String userName) {
@@ -404,20 +403,23 @@ public class LoginDialog extends JDialog {
         serverDBComboBox.setEditable(true);
         settingsPanel.add(serverDBComboBox, getGridBagConstraints(1, 1, true));
 
+        useAnonymousUICheckBox = new JCheckBox(ClientResourceBundle.getString("dialog.use.anonymous.ui"), true);
+        settingsPanel.add(useAnonymousUICheckBox, getGridBagConstraints(2, 0, false));
+
         loginLabel = new JLabel(ClientResourceBundle.getString("dialog.login"));
         loginLabel.setLabelFor(loginBox);
-        settingsPanel.add(loginLabel, getGridBagConstraints(2, 0, true));
+        settingsPanel.add(loginLabel, getGridBagConstraints(3, 0, true));
 
         loginBox = new JComboBox();
         loginBox.setEditable(true);
-        settingsPanel.add(loginBox, getGridBagConstraints(2, 1, true));
+        settingsPanel.add(loginBox, getGridBagConstraints(3, 1, true));
 
         passwordLabel = new JLabel(ClientResourceBundle.getString("dialog.password"));
         passwordLabel.setLabelFor(passwordField);
-        settingsPanel.add(passwordLabel, getGridBagConstraints(3, 0, true));
+        settingsPanel.add(passwordLabel, getGridBagConstraints(4, 0, true));
 
         passwordField = new JPasswordField();
-        settingsPanel.add(passwordField, getGridBagConstraints(3, 1, true));
+        settingsPanel.add(passwordField, getGridBagConstraints(4, 1, true));
 
         JPanel bottomPanel = new JPanel(new GridBagLayout());
         mainPanel.add(bottomPanel);
@@ -425,11 +427,8 @@ public class LoginDialog extends JDialog {
         savePasswordCheckBox = new JCheckBox(ClientResourceBundle.getString("dialog.remember.me"));
         bottomPanel.add(savePasswordCheckBox, getGridBagConstraints(0, 0, false));
 
-        useAnonymousUICheckBox = new JCheckBox(ClientResourceBundle.getString("dialog.use.anonymous.ui"), true);
-        bottomPanel.add(useAnonymousUICheckBox, getGridBagConstraints(1, 0, false));
-
         JPanel okCancelPanel = new JPanel(new BorderLayout());
-        bottomPanel.add(okCancelPanel, getGridBagConstraints(2, 1, false));
+        bottomPanel.add(okCancelPanel, getGridBagConstraints(1, 1, false));
 
         JPanel subOKCancelPanel = new JPanel(new GridLayout());
         okCancelPanel.add(subOKCancelPanel, BorderLayout.EAST);

@@ -111,10 +111,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         try {
             defaultPolicy = new SecurityPolicy();
 
-            permitAllPolicy = addPolicy(localize("{logics.policy.allow.all}"), localize("{logics.policy.allows.all.actions}"));
+            permitAllPolicy = addPolicy("allowAll", localize("{logics.policy.allow.all}"), localize("{logics.policy.allows.all.actions}"));
             permitAllPolicy.setReplaceMode(true);
 
-            readOnlyPolicy = addPolicy(localize("{logics.policy.forbid.editing.all.properties}"), localize("{logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms}"));
+            readOnlyPolicy = addPolicy("readonly", localize("{logics.policy.forbid.editing.all.properties}"), localize("{logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms}"));
             readOnlyPolicy.property.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.add.defaultPermission = false;
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
@@ -143,7 +143,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            allowConfiguratorPolicy = addPolicy(localize("{logics.policy.allow.configurator}"), localize("{logics.policy.logics.allow.configurator}"));
+            allowConfiguratorPolicy = addPolicy("allowConfiguration", localize("{logics.policy.allow.configurator}"), localize("{logics.policy.logics.allow.configurator}"));
             allowConfiguratorPolicy.configurator = true;
         } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException("Error initializing Security Manager: ", e);
@@ -188,14 +188,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return dbManager.createSession();
     }
 
-    public SecurityPolicy addPolicy(String policyName, String description) throws SQLException, SQLHandledException {
+    public SecurityPolicy addPolicy(String id, String name, String description) throws SQLException, SQLHandledException {
 
         Long policyID;
         try (DataSession session = createSession()) {
-            policyID = readPolicy(policyName, session);
+            policyID = readPolicy(id, session);
             if (policyID == null) {
                 DataObject addObject = session.addObject(securityLM.policy);
-                securityLM.namePolicy.change(policyName, session, addObject);
+                securityLM.idPolicy.change(id, session, addObject);
+                securityLM.namePolicy.change(name, session, addObject);
                 securityLM.descriptionPolicy.change(description, session, addObject);
                 policyID = (Long) addObject.object;
                 apply(session);
@@ -207,8 +208,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return policyObject;
     }
 
-    private Long readPolicy(String name, DataSession session) throws SQLException, SQLHandledException {
-        return (Long) securityLM.policyName.read(session, new DataObject(name, StringClass.get(50)));
+    private Long readPolicy(String id, DataSession session) throws SQLException, SQLHandledException {
+        return (Long) securityLM.policyId.read(session, new DataObject(id, StringClass.get(100)));
     }
 
     protected DataObject addUser(String login, String defaultPassword, DataSession session) throws SQLException, SQLHandledException {

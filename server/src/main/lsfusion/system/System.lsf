@@ -39,7 +39,9 @@ statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 
 headers = DATA LOCAL TEXT(TEXT);    
+cookies = DATA LOCAL TEXT(TEXT);    
 headersTo = DATA LOCAL TEXT(TEXT);
+cookiesTo = DATA LOCAL TEXT(TEXT);
 url = DATA LOCAL TEXT();
 query = DATA LOCAL TEXT();
 host = DATA LOCAL TEXT();
