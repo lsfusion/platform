@@ -315,7 +315,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     }
                 });
                 if(usageProperty instanceof LCP)
-                    property = addJProp(false, LocalizedString.NONAME, (LCP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
+                    property = addJProp((LCP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
                 else
                     property = addJoinAProp((LAP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
                 
@@ -1076,7 +1076,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP<?> wrapProperty(LCP<?> property) {
-        return addJProp(false, LocalizedString.NONAME, property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
+        return addJProp(property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
     }
 
     public LCP<?> checkPropertyIsNew(LCP<?> property) {
@@ -1095,6 +1095,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LCPWithParams checkPropertyIsNew(LCPWithParams property) {
         if(propertyNeedsToBeWrapped(property.getLP()))
             property = new LCPWithParams(wrapProperty(property.getLP()), property);
+        return property;
+    }
+
+    public LCPWithParams checkAndSetExplicitClasses(LCPWithParams property, List<ResolveClassSet> signature) {
+        if(!BaseUtils.nullHashEquals(property.getLP().getExplicitClasses(), signature)) { // optimization
+            property = checkPropertyIsNew(property); // // we need new property to guarantee that explicit classes will be set for correct property
+            property.getLP().setExplicitClasses(signature);
+        }
         return property;
     }
 
@@ -1322,7 +1330,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             prop = mainProp;
             lastOptimizedJPropSID = mainProp.property.getSID();
         } else {
-            prop = addJProp(user, LocalizedString.NONAME, mainProp, resultParams.toArray());
+            prop = addJProp(user, mainProp, resultParams.toArray());
         }
         return new LCPWithParams(prop, mergeAllParams(paramProps));
     }
@@ -4079,9 +4087,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void propertyDefinitionCreated(LP property, DebugInfo.DebugPoint point) {
-        if (property != null && property.property instanceof CalcProperty) {
-            CalcProperty calcProp = (CalcProperty)property.property;
+    public LCPWithParams propertyExpressionCreated(LCPWithParams property, List<TypedParameter> context, boolean needFullContext) {
+        if (needFullContext) 
+            property = patchExtendParams(property, context, Collections.<TypedParameter>emptyList());
+        return property;
+    } 
+    public void propertyDefinitionCreated(LCP<?> property, DebugInfo.DebugPoint point) {
+        if(property != null) { // can be null if property is param
+            CalcProperty calcProp = property.property;
             boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && calcProp instanceof DataProperty;
             if (calcProp.getDebugInfo() == null) { // при использовании в propertyExpression оптимизированных join свойств, не нужно им переустанавливать DebugInfo
                 CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);
@@ -4173,7 +4186,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return lpWithParams;
     }
 
-    // assert'им что newContext "расширяет" oldContext (во всяком случае такое предположение в addScriptedForAProp)
+    // assert that newContext extends oldContext (at least there is such assertion in addScriptedForAProp)
     private LAPWithParams patchExtendParams(LAPWithParams lpWithParams, List<TypedParameter> newContext, List<TypedParameter> oldContext) {
 
         if(!lpWithParams.getLP().listInterfaces.isEmpty() && lpWithParams.usedParams.isEmpty()) {
@@ -4200,10 +4213,42 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         List<Object> resultParams = getParamsPlainList(allCreationParams);
-        LAP wrappedLAP = addListAProp(newContext.size() - oldContext.size(), resultParams.toArray());
-
         List<Integer> wrappedUsed = mergeAllParams(allCreationParams);
+
+        LAP wrappedLAP = addListAProp(newContext.size() - oldContext.size(), resultParams.toArray());
         return new LAPWithParams(wrappedLAP, wrappedUsed);
+    }
+
+    // assert that newContext extends oldContext (at least there is such assertion in addScriptedForAProp)
+    private LCPWithParams patchExtendParams(LCPWithParams lpWithParams, List<TypedParameter> newContext, List<TypedParameter> oldContext) {
+        if(lpWithParams.getLP() != null && !lpWithParams.getLP().listInterfaces.isEmpty() && lpWithParams.usedParams.isEmpty()) {
+            return lpWithParams;
+        }
+
+        Set<Integer> usedExtendParams = new HashSet<>();
+        for (int i = 0; i < lpWithParams.usedParams.size(); i++) {
+            Integer usedParam = lpWithParams.usedParams.get(i);
+            if(usedParam >= oldContext.size()) {
+                usedExtendParams.add(usedParam);
+            }
+        }
+
+        if(usedExtendParams.size() == (newContext.size() - oldContext.size())) { // все использованы
+            return lpWithParams;
+        }
+        
+        // по сути этот алгоритм эмулирует создание ListAction, с докидыванием в конец виртуального action'а который использует все extend параметры, однако само действие при этом не создает 
+        List<LCPWithParams> allCreationParams = new ArrayList<>();
+        allCreationParams.add(lpWithParams);
+        for (int i = oldContext.size(); i < newContext.size(); i++) { // докидываем 
+            allCreationParams.add(new LCPWithParams(i));
+        }
+        
+        List<Object> resultParams = getParamsPlainList(allCreationParams);
+        List<Integer> wrappedUsed = mergeAllParams(allCreationParams);
+        
+        LCP wrappedLCP = addJProp(false, newContext.size() - oldContext.size(), (LCP)resultParams.get(0), resultParams.subList(1, resultParams.size()).toArray());
+        return new LCPWithParams(wrappedLCP, wrappedUsed);
     }
 
     public void checkPropertyValue(LCP property) {

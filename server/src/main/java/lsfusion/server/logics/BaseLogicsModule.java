@@ -571,7 +571,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     public LCP object(ValueClass valueClass) {
-        LCP lcp = addJProp(false, LocalizedString.create(valueClass.toString()), and1, 1, is(valueClass), 1);
+        LCP lcp = addJProp(and1, 1, is(valueClass), 1);
         ((JoinProperty)lcp.property).objectPropertyClass = valueClass;
         return lcp;
     }

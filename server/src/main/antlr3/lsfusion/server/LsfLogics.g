@@ -1213,7 +1213,7 @@ scope {
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[context, dynamic, false] { $property = $ciPD.property; $signature = $ciPD.signature; }
-	|	exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
+	|	exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
                                                     else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $signature = self.getClassesFromTypedParams(context); $property = $exprOrCIPD.property.getLP(); } }}
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inMainParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
@@ -1226,16 +1226,19 @@ actionOrPropertyDeclaration returns [String name, LocalizedString caption, List<
 
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
-    :   exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic] { $property = $exprOrCIPD.property; }
+    :   exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic, false] { $property = $exprOrCIPD.property; }
         { if(inMainParseState()) { self.checkCIInExpr($exprOrCIPD.ci); } }
 ;
 
-propertyExpressionOrContextIndependentPD[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
+propertyExpressionOrContextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
     if (inMainParseState()) {
+        if($ci == null)
+            $property = self.propertyExpressionCreated($property, context, needFullContext);
+            
         self.propertyDefinitionCreated($ci != null ? $ci.property : $property.getLP(), point);
     }
 }
@@ -2294,8 +2297,8 @@ inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer
 		$property.setExplicitClasses(signature);
 	}
 }
-	:	'[' EQ?	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
-				|   exprOrCIPD=propertyExpressionOrContextIndependentPD[newContext, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
+	:	'[' 	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
+				|   exprOrCIPD=propertyExpressionOrContextIndependentPD[newContext, true, false] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
                                                                     else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
 				)
 		']'
@@ -3654,12 +3657,13 @@ scope {
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+='
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
-        expr=propertyExpression[context, false] 
+        expr=propertyExpressionOrContextIndependentPD[context, false, when == null] // for abstract VALUE will also support patch / explicit classes params (because param classes are also explicitly set in property definition, for WHEN will keep as it is)  
         { 
             property = $expr.property;
             if(inMainParseState()) {
-                property = self.checkPropertyIsNew(property); // we need new property to guarantee that explicit classes will be set for correct property
-                property.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in property declaration we need explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in expression)
+                self.checkCIInExpr($expr.ci);
+                if(when == null)
+                    property = self.checkAndSetExplicitClasses(property, self.getClassesFromTypedParams(context)); // just like in property declaration we need explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in expression)
             }
         } ';'
 	;
@@ -3686,11 +3690,13 @@ scope {
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+'
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
-        actionDB=listTopContextDependentActionDefinitionBody[context, false, true] 
+        actionDB=listTopContextDependentActionDefinitionBody[context, false, when == null] // for abstract LIST will also support patch / explicit classes params (because param classes are also explicitly set in property definition, for WHEN will keep as it is)
         { 
             action = $actionDB.property; 
-            if(inMainParseState())
-                action.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in action declaration we need full context, and explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in body)             
+            if(inMainParseState()) {
+                if(when == null)
+                    action.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in action declaration we need full context, and explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in body)
+            }             
         }
 	;
 
