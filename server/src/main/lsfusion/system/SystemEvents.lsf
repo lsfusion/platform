@@ -219,7 +219,7 @@ is64Java '{system.events.is64java.connection}' (Computer computer) = is64Java(la
 
 countDaysClearPings '{system.events.count.days.clear.pings}' = DATA INTEGER (); 
 
-onClientStarted  ABSTRACT LIST ( );
+onDesktopClientStarted  ABSTRACT LIST ( );
 
 onWebClientStarted  ABSTRACT LIST ( );
 
@@ -248,7 +248,7 @@ showDefaultForms()  {
     }
 }
 
-onClientStarted() + {  showDefaultForms(); }
+onDesktopClientStarted() + {  showDefaultForms(); }
 onWebClientStarted() + {  showDefaultForms(); }
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
