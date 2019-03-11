@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
-public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, final Authentication authentication) throws IOException, ServletException {

@@ -58,8 +58,8 @@
         <b:property name="useForward" value="true"/>
     </b:bean>
 
-    <b:bean id="successLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationSuccessHandler"/>
-    <b:bean id="failureLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationFailureHandler"/>
+    <b:bean id="successLoginHandler" class="lsfusion.http.LSFAuthenticationSuccessHandler"/>
+    <b:bean id="failureLoginHandler" class="lsfusion.http.LSFAuthenticationFailureHandler"/>
 
     <b:bean id="successLogoutHandler" class="lsfusion.http.LSFSimpleUrlLogoutSuccessHandler" >
     </b:bean>
