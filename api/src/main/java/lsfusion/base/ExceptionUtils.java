@@ -121,7 +121,7 @@ public class ExceptionUtils {
     }
 
     // the same as in GExceptionManager
-    // assuming that here should be primitive copy (Strings and other very primitive Java classes) to be deserialized everywhere  
+    // assuming that here should be primitive copy (Strings and other very primitive Java classes) to be deserialized everywhere
     public static void copyStackTraces(Throwable from, Throwable to) {
         from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
         to.setStackTrace(from.getStackTrace());

@@ -96,7 +96,7 @@ public class Main {
     public static boolean useRequestTimeout;
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
-    
+
     public static long timeDiffServerClientLog = 1000;
 
     public static Integer fontSize;
@@ -255,7 +255,7 @@ public class Main {
 
                     ((DockableMainFrame) frame).clearForms();
 
-                    ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
+                    ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onDesktopClientStarted[]", 0, null, null);
 
                 } catch (Exception e) {
                     closeSplashScreen();

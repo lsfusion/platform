@@ -527,7 +527,7 @@ showOnStart()  {
     }
 }
 
-onClientStarted() + {  showOnStart(); }
+onDesktopClientStarted() + {  showOnStart(); }
 onWebClientStarted() + {  showOnStart(); }
 
 pushAction(BOOLEAN system, BOOLEAN notificate)  { 

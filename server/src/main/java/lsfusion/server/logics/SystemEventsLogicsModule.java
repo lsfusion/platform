@@ -97,8 +97,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;
     public LCP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
-    public LAP onClientStarted;
-
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/system/SystemEvents.lsf"), "/system/SystemEvents.lsf", baseLM, BL);
         this.authenticationLM = BL.authenticationLM;
@@ -185,13 +183,11 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryFromTo[Computer,DATETIME,DATETIME]");
         minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
         maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
-
-        onClientStarted = findAction("onClientStarted[]");
     }
 
     public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
         assert t.getCause() == null;
-        
+
         String message = replaceNonUTFCharacters(t.getMessage());
         String errorType = t.getClass().getName();
 
