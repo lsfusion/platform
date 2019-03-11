@@ -299,6 +299,8 @@ baseValue '{service.base.value.setting.user.role}' = DATA VARSTRING[100] (Settin
 overBaseValue '{service.over.base.value.setting.user}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
 defaultValue '{service.default.value.setting}' = DATA VARSTRING[100] (Setting);
 value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
+value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
+valueSetting (VARISTRING[100] name) = value(setting(name)); 
 
 pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.logics.service.reflection.PushSettingActionProperty' (VARSTRING[100], VARSTRING[100]);
 popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.logics.service.reflection.PopSettingActionProperty' (VARSTRING[100]);
@@ -328,6 +330,12 @@ WHEN CHANGED (baseValue(Setting r)) DO
 WHEN CHANGED (baseValue(Setting r, UserRole ur)) 
     DO updateSetting(r, ur, TRUE);
 
+getServerSettings() {
+    generateJnlpUrls();
+    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(),
+                anonymousUI=(valueSetting('enableUI')='2'), jnlpUrls=exportText();
+} @@noauth;
+
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
 overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);
 selectedRowBorderColor '{service.selected.row.border.color}' = DATA COLOR (User);
@@ -342,7 +350,9 @@ overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE 
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
-                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer
+                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
+                 dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon,
+                 initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
     OBJECTS u=User
     PROPERTIES(u) READONLY name, login, nameMainRole
     PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
@@ -382,7 +392,18 @@ DESIGN settings {
                     MOVE PROPERTY(reportCharWidth());
                     MOVE PROPERTY(reportRowHeight());
                     MOVE PROPERTY(reportNotToStretch());
-                }                                               
+                }        
+                NEW logoContainer {
+                    caption = '{system.logics.gui.preferences}';
+                    MOVE PROPERTY(dataLogicsName());
+                    MOVE PROPERTY(displayName());
+                    MOVE PROPERTY(loadLogicsLogo());
+                    MOVE PROPERTY(openLogicsLogo());
+                    MOVE PROPERTY(resetLogicsLogo());
+                    MOVE PROPERTY(loadLogicsIcon());
+                    MOVE PROPERTY(openLogicsIcon());
+                    MOVE PROPERTY(resetLogicsIcon());
+                }                                       
             }
             NEW rightColumn {                 
                 NEW virtualMachine {
@@ -418,6 +439,15 @@ DESIGN settings {
             caption = '{service.form.settings.caption.parameters}';
             MOVE BOX(r);
             MOVE BOX(ur);
+        }
+        NEW clientVMOptions {
+            caption = '{service.form.settings.caption.client.vm.options}';
+            MOVE PROPERTY(initHeapSize());
+            MOVE PROPERTY(maxHeapSize());
+            MOVE PROPERTY(minHeapFreeRatio());
+            MOVE PROPERTY(maxHeapFreeRatio());
+            MOVE PROPERTY(vmargs());
+            
             MOVE BOX(m);
         }
     }

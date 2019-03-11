@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -227,10 +228,20 @@ public class AnyValuePropertyHolder {
     @IdentityLazy
     public ImOrderSet<SessionDataProperty> getProps() {
         return SetFact.toOrderExclSet(
-                objectProperty, stringProperty, varStringProperty, textProperty, intProperty, longProperty, doubleProperty, numericProperty, yearProperty, dateTimeProperty, logicalProperty,
-                dateProperty, timeProperty, colorProperty, wordFileProperty, imageFileProperty, pdfFileProperty, rawFileProperty, customFileProperty, excelFileProperty, 
-                csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty, imageLinkProperty, pdfLinkProperty, rawLinkProperty, customLinkProperty, excelLinkProperty,
-                csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty
+                // files
+                customFileProperty, rawFileProperty, wordFileProperty, imageFileProperty, pdfFileProperty, excelFileProperty,
+                csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty,
+                // strings
+                textProperty, stringProperty, varStringProperty,
+                // numbers
+                numericProperty, longProperty, intProperty, doubleProperty,
+                // date / times
+                dateTimeProperty, dateProperty, timeProperty, yearProperty,
+                // links
+                customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty,  excelLinkProperty,
+                csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
+                // others
+                logicalProperty, colorProperty, objectProperty 
         ).mapOrderSetValues(new GetValue<SessionDataProperty, LCP>() {
             public SessionDataProperty getMapValue(LCP value) {
                 return (SessionDataProperty) value.property;
@@ -254,40 +265,36 @@ public class AnyValuePropertyHolder {
         return getLCP(valueType).readClasses(env, keys);
     }
 
-    public void dropChanges(Type valueType, ExecutionContext context) throws SQLException, SQLHandledException {
-        context.getSession().dropChanges((DataProperty) getLCP(valueType).property);
+    private static ObjectValue getFirstChangeProp(ImOrderSet<SessionDataProperty> props, ActionProperty<?> action, Result<SessionDataProperty> readedProperty) {
+        ImOrderSet<SessionDataProperty> changedProps = SetFact.filterOrderFn(props, action.getChangeExtProps().keys());
+        if(changedProps.isEmpty())
+            changedProps = props;
+        
+        readedProperty.set(changedProps.get(0));
+        return NullValue.instance;
     }
     
-    public ObjectValue dropChanges(boolean keepAndReturnFirst, ExecutionContext context) throws SQLException, SQLHandledException { // return, not drop first value
-        DataSession session = context.getSession();
+    public ObjectValue readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty, ActionProperty<?> action) throws SQLException, SQLHandledException { // return, not drop first value
+        DataSession session = env.getSession();
 
         ImOrderSet<SessionDataProperty> props = getProps();
-        Set<SessionDataProperty> changedProps = session.getSessionChanges(props.getSet());
-        if(keepAndReturnFirst) {
-            // оптимизация, самые частные случаи
-            if(changedProps.isEmpty())
-                return NullValue.instance;
-            if(changedProps.size() == 1)
-                return BaseUtils.single(changedProps).readClasses(context);
-            
-            // несколько, самый редкий случай, поэтому не сильно оптимизируем
-            ImSet<SessionDataProperty> changedPropsSet = SetFact.fromJavaSet(changedProps);
-            ImOrderSet<SessionDataProperty> changedOrderProps = props.filterOrder(changedPropsSet);
-            
-            ObjectValue resultValue = NullValue.instance;
-            for(SessionDataProperty prop : changedOrderProps) {
-                ObjectValue changedValue = prop.readClasses(context);
-                if(changedValue instanceof DataObject) { // не null
-                    resultValue = changedValue;
-                    changedPropsSet = changedPropsSet.removeIncl(prop);
-                    break;
-                }
-            }
-            session.dropChanges(changedPropsSet);
-            return resultValue;            
+        ImSet<SessionDataProperty> changedProps = SetFact.fromJavaSet(session.getSessionChanges(props.getSet()));
+
+        if(changedProps.isEmpty()) // optimization
+            return getFirstChangeProp(props, action, readedProperty);
+        if(changedProps.size() == 1) { // optimization
+            SessionDataProperty prop = changedProps.single();
+            readedProperty.set(prop);
+            return prop.readClasses(env);
         }
 
-        session.dropChanges(changedProps);
-        return null;
+        for(SessionDataProperty prop : props.filterOrder(changedProps)) {
+            ObjectValue changedValue = prop.readClasses(env);
+            if (changedValue instanceof DataObject) {
+                readedProperty.set(prop);
+                return changedValue;
+            }
+        }
+        return getFirstChangeProp(props, action, readedProperty);
     }
 }

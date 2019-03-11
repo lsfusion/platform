@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import lsfusion.base.Pair;
 import lsfusion.base.ProgressBar;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.logics.ClientFormChanges;
@@ -7,8 +8,8 @@ import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.gwt.shared.view.GProgressBar;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.server.form.provider.FormSessionObject;
+import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.view.actions.*;
 import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.shared.view.classes.GObjectClass;
@@ -66,7 +67,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = FormClientAction.class)
-    public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, LSFusionDispatchServlet servlet) throws IOException {
+    public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         return new GFormAction(modalityType, servlet.getFormProvider().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.sessionID),
                 action.forbidDuplicate);
@@ -106,14 +107,15 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
 
-        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex);
+        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form);
 
         return new GProcessFormChangesAction(changesDTO);
     }
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, FormSessionObject form) throws IOException {
-        return new GReportAction(FileUtils.exportReport(action.printType, action.generationData));
+        Pair<String, String> report = FileUtils.exportReport(action.printType, action.generationData);
+        return new GReportAction(report.first, report.second);
     }
 
     @Converter(from = RequestUserInputClientAction.class)
@@ -122,7 +124,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
                 ClientTypeSerializer.deserializeClientType(action.readType)
         ) ;
 
-        Object value = valuesConverter.convertOrCast(deserializeServerValue(action.oldValue));
+        Object value = deserializeServerValue(action.oldValue);
 
         return new GRequestUserInputAction(type, value);
     }
@@ -133,7 +135,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = UpdateEditValueClientAction.class)
     public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action) throws IOException {
-        return new GUpdateEditValueAction(valuesConverter.convertOrCast(deserializeServerValue(action.value)));
+        return new GUpdateEditValueAction(deserializeServerValue(action.value));
     }
 
     @Converter(from = AsyncGetRemoteChangesClientAction.class)
@@ -158,25 +160,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = OpenFileClientAction.class)
     public GOpenFileAction convertAction(OpenFileClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file, action.name, action.extension), action.name != null ? appendExtension(action.name, action.extension) : null);
+        return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.name, action.extension);
     }
 
     @Converter(from = WriteClientAction.class)
     public GOpenFileAction convertAction(WriteClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file, action.path, action.extension), appendExtension(action.path, action.extension));
-    }
-
-    private String appendExtension(String path, String extension) {
-        return path + (extension != null ? ("." + extension) : "");
-    }
-
-    @Converter(from = ExportFileClientAction.class)
-    public GExportFileAction convertAction(ExportFileClientAction action) {
-        ArrayList<String> filePaths = new ArrayList<>();
-        for (String fileName : action.files.keySet()) {
-            filePaths.add(FileUtils.saveFile(fileName, action.files.get(fileName)));
-        }
-        return new GExportFileAction(filePaths);
+        return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.path, action.extension);
     }
 
     @Converter(from = ProgressBar.class)
@@ -196,7 +185,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = BeepClientAction.class)
     public GBeepAction convertAction(BeepClientAction action) {
-        return new GBeepAction(FileUtils.saveFile(action.file, "wav"));
+        return new GBeepAction(FileUtils.saveActionFile(action.file));
     }
 
     @Converter(from = ActivateFormClientAction.class)

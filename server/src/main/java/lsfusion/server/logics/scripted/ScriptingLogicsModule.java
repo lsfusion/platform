@@ -1623,17 +1623,24 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.addList(connectionString, params));
     }
 
-    public LAPWithParams addScriptedExternalHTTPActionProp(ExternalHttpMethod method, LCPWithParams connectionString, LCPWithParams bodyUrl, PropertyUsage headers, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedExternalHTTPActionProp(ExternalHttpMethod method, LCPWithParams connectionString, LCPWithParams bodyUrl,
+                                                           PropertyUsage headers, PropertyUsage cookies, PropertyUsage headersTo, PropertyUsage cookiesTo,
+                                                           List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LCP headersProperty = headers != null ? findLCPStringParamByPropertyUsage(headers) : null;
+        LCP cookiesProperty = cookies != null ? findLCPStringParamByPropertyUsage(cookies) : null;
+        LCP headersToProperty = headersTo != null ? findLCPStringParamByPropertyUsage(headersTo) : null;
+        LCP cookiesToProperty = cookiesTo != null ? findLCPStringParamByPropertyUsage(cookiesTo) : null;
         return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(method != null ? method : ExternalHttpMethod.POST,
-                        getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList), headersProperty, bodyUrl != null)),
+                        getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList),
+                        headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
     }
 
-    public LAPWithParams addScriptedExternalLSFActionProp(LCPWithParams connectionString, LCPWithParams action, boolean eval, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedExternalLSFActionProp(LCPWithParams connectionString, LCPWithParams actionLCP, boolean eval, boolean action, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
         return addScriptedExternalHTTPActionProp(ExternalHttpMethod.POST,
-                addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false))))),
-                null, null, BaseUtils.add(params, action), context, toPropertyUsageList);
+                addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
+                null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }
 
     private ImList<LCP> findLCPsNoParamsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
@@ -2013,7 +2020,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAPWithParams addScriptedEvalActionProp(LCPWithParams property, List<LCPWithParams> params, List<TypedParameter> contextParams) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedEvalActionProp(LCPWithParams property, List<LCPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {
         Type exprType = getTypeByParamProperty(property, contextParams);
         if (!(exprType instanceof StringClass)) {
             errLog.emitEvalExpressionError(parser);
@@ -2028,7 +2035,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        LAP<?> res = addEvalAProp(property.getLP(), paramsLCP);
+        LAP<?> res = addEvalAProp(property.getLP(), paramsLCP, action);
         return new LAPWithParams(res, new ArrayList<>(allParams));
     }
 

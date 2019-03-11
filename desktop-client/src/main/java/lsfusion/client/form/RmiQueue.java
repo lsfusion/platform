@@ -9,7 +9,7 @@ import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.dispatch.DispatcherInterface;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.interop.exceptions.FatalHandledRemoteException;
+import lsfusion.interop.exceptions.FatalRemoteClientException;
 import lsfusion.interop.exceptions.RemoteAbandonedException;
 import org.apache.log4j.Logger;
 
@@ -148,7 +148,8 @@ public class RmiQueue implements DispatcherListener {
                         if (reqCount > maxFatal) {
                             ConnectionLostManager.connectionLost();
 
-                            t = new FatalHandledRemoteException(remote, reqId);
+                            t = new FatalRemoteClientException(ExceptionUtils.copyMessage(remote), reqId);
+                            ExceptionUtils.copyStackTraces(remote, t);
                         } else {
                             reqCount++;
 
@@ -174,10 +175,6 @@ public class RmiQueue implements DispatcherListener {
                 ConnectionLostManager.unregisterFailedRmiRequest(abandoned.get(), reqId);
             }
         }
-    }
-
-    public static void handleNotRetryableRemoteException(RemoteException remote) {
-        ConnectionLostManager.connectionBroke();
     }
 
     public void abandon() {

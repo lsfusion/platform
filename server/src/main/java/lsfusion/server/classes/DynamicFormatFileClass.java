@@ -60,7 +60,7 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
         String extension = null;
         if (typeFrom instanceof StaticFormatFileClass) {
-            extension = ((StaticFormatFileClass) typeFrom).getDefaultCastExtension();
+            extension = ((StaticFormatFileClass) typeFrom).getExtension();
         }
         if (extension != null) {
             return "cast_to_custom_file(" + value + ", CAST('" + extension + "' AS VARCHAR))";

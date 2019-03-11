@@ -3,11 +3,11 @@ package lsfusion.gwt.client.form.ui.layout.flex;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.client.form.ui.layout.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.client.form.ui.layout.SplitPanelBase;
 import lsfusion.gwt.shared.view.GComponent;
+import lsfusion.gwt.shared.view.GFlexAlignment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,12 +154,6 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
 
         private void setSplitPanel(FlexSplitPanel splitPanel) {
             this.splitPanel = splitPanel;
-        }
-
-        @Override
-        public void onResize() {
-            splitPanel.update();
-            super.onResize();
         }
     }
 }

@@ -28,9 +28,13 @@ public class RemoteContextAspect {
         ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) target;
 
         ThreadInfo threadInfo = EventThreadInfo.RMI(remoteObject);
-        Context prevContext = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, threadInfo); // так как может быть explicit remote call
+        ThreadLocalContext.AspectState prevState = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, threadInfo); // because there can be explicit remote call (for example for Remote
 
+        // because there can be explicit remote call (for example for Remote
         try {
+            if(remoteObject.isLocal())
+                return thisJoinPoint.proceed();
+
             remoteObject.addContextThread(Thread.currentThread());
             try {
                 return thisJoinPoint.proceed();
@@ -38,7 +42,7 @@ public class RemoteContextAspect {
                 remoteObject.removeContextThread(Thread.currentThread());
             }
         } finally {
-            ThreadLocalContext.aspectAfterRmi(prevContext, false, threadInfo);
+            ThreadLocalContext.aspectAfterRmi(prevState, false, threadInfo);
         }
     }
 }

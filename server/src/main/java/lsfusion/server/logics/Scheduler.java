@@ -7,17 +7,13 @@ import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.Compare;
-import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.SQLTimeoutException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -536,7 +532,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             } finally {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
                 if(exception != null)
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(String.valueOf(exception) + "\n" + ExceptionUtils.getStackTrace(exception), true, ExecutionStackAspect.getExceptionStackString()));
+                    logMessages = logMessages.addList(new AbstractContext.LogMessage(ExceptionUtils.toString(exception), true, ExecutionStackAspect.getExceptionStackTrace()));
                 if(taskLogId != null)
                     logClientTasks(logMessages, taskLogId, taskCaption, stack);
             }

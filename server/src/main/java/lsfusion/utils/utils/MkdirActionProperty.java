@@ -6,6 +6,7 @@ import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -19,7 +20,7 @@ public class MkdirActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface directoryInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public MkdirActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public MkdirActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

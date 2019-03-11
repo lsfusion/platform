@@ -278,12 +278,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public boolean inconsistent = false;
 
     public final static String userParam = "adsadaweewuser";
+    public final static String authTokenParam = "vkljudfshldhfskjhdkjrraae";
     public final static String isServerRestartingParam = "sdfisserverrestartingpdfdf";
     public final static String computerParam = "fjruwidskldsor";
     public final static String formParam = "yfifybdfnenfykfqyth";
     public final static String connectionParam = "ntreottgjlrkxtybt";
     public final static String isDebugParam = "dsiljdsiowee";
-    public final static String isFullClientParam = "fdfdijir";
 
     public final static String limitParam = "sdsnjklirens";
 

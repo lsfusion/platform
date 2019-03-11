@@ -27,7 +27,7 @@ public class XMLNode implements Node<XMLNode> {
 
     @Override
     public XMLNode getNode(String key) {
-        Element childElement = getXMLChild(key);
+        Element childElement = getXMLChild(key, false);
         if(childElement == null)
             return null;
         return new XMLNode(childElement);
@@ -91,10 +91,14 @@ public class XMLNode implements Node<XMLNode> {
         return element.getAttributeValue(shortKey.result, namespace);
     }
 
-    public Element getXMLChild(String key) {
-        Result<String> shortKey = new Result<>();
-        Namespace namespace = getXMLNamespace(key, shortKey, true);
-        return element.getChild(shortKey.result, namespace);
+    public Element getXMLChild(String key, boolean convertValue) {
+        if(convertValue && key.equals("value")) {
+            return element;
+        } else {
+            Result<String> shortKey = new Result<>();
+            Namespace namespace = getXMLNamespace(key, shortKey, true);
+            return element.getChild(shortKey.result, namespace);
+        }
     }
 
     public List getXMLChildren(String key) {
@@ -109,7 +113,7 @@ public class XMLNode implements Node<XMLNode> {
         if(attr)
             stringValue = getXMLAttributeValue(key);
         else {
-            Element childElement = getXMLChild(key);
+            Element childElement = getXMLChild(key, true);
             stringValue = childElement != null ? childElement.getText() : null; // array and objects will be ignored (see getText implementation)
         }
         return type.parseXML(stringValue);
@@ -123,7 +127,7 @@ public class XMLNode implements Node<XMLNode> {
             for (int i = 0; i < children.size(); i++)
                 mResult.add(new Pair<Object, XMLNode>(i, new XMLNode((Element)children.get(i))));
         } else {
-            Element child = getXMLChild(key);
+            Element child = getXMLChild(key, false);
             if(child != null)
                 for(Object value : child.getChildren())
                     mResult.add(new Pair<Object, XMLNode>(((Element)value).getName(), new XMLNode((Element)value)));
@@ -152,11 +156,15 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     private static void addXMLChild(Element element, String key, String stringValue) {
-        Result<String> shortKey = new Result<>();
-        Namespace namespace = addXMLNamespace(element, key, shortKey, true); 
-        Element addElement = new Element(shortKey.result, namespace);
-        addElement.setText(stringValue);
-        element.addContent(addElement);
+        if(key.equals("value")) {
+            element.addContent(stringValue);
+        } else {
+            Result<String> shortKey = new Result<>();
+            Namespace namespace = addXMLNamespace(element, key, shortKey, true);
+            Element addElement = new Element(shortKey.result, namespace);
+            addElement.setText(stringValue);
+            element.addContent(addElement);
+        }
     }
 
     // because of the difference between edge and node-based approaches we have to set name while adding edges 

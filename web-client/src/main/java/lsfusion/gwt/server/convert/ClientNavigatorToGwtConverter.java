@@ -14,7 +14,9 @@ import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
-    public ClientNavigatorToGwtConverter() {
+
+    public ClientNavigatorToGwtConverter(String logicsName) {
+        super(logicsName);
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
@@ -29,7 +31,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.creationPath = clientElement.creationPath;
         element.children = new ArrayList<>();
 
-        element.icon = FileUtils.createImage(clientElement.image, clientElement.imageFileName, "navigator", false);
+        element.icon = createImage(clientElement.image, clientElement.imageFileName, "navigator", false);
 
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);

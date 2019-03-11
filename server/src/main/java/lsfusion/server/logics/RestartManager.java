@@ -58,7 +58,6 @@ public class RestartManager implements InitializingBean {
             e.printStackTrace();
             throw e;
         }
-        updateRestartProperty();
     }
 
     private synchronized void doRestart() {
@@ -89,8 +88,6 @@ public class RestartManager implements InitializingBean {
         restartFuture.cancel(false);
 
         restartFuture = null;
-
-        updateRestartProperty();
     }
 
     public synchronized void forcedRestartIfPending() {
@@ -98,13 +95,5 @@ public class RestartManager implements InitializingBean {
             logger.info("All clients were disconnected, so the server will be stopped.");
             doRestart();
         }
-    }
-
-    public void updateRestartProperty() throws SQLException, SQLHandledException {
-        Boolean isRestarting = isPendingRestart() ? Boolean.TRUE : null;
-        navigatorsManager.updateEnvironmentProperty(
-                (CalcProperty) businessLogics.serviceLM.isServerRestarting.property,
-                ObjectValue.getValue(isRestarting, LogicalClass.instance)
-        );
     }
 }

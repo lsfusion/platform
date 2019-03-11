@@ -108,8 +108,6 @@ public class Settings implements Cloneable {
 
     private int barcodeLength = 13;
 
-    private boolean useUniPass;
-
     private boolean useSingleJoins = false;
 
     private boolean useQueryExpr = true;
@@ -649,14 +647,6 @@ public class Settings implements Cloneable {
         this.barcodeLength = barcodeLength;
     }
 
-    public boolean getUseUniPass() {
-        return useUniPass;
-    }
-
-    public void setUseUniPass(boolean useUniPass) {
-        this.useUniPass = useUniPass;
-    }
-
     public boolean isUseSingleJoins() {
         return useSingleJoins;
     }
@@ -1055,14 +1045,28 @@ public class Settings implements Cloneable {
         this.disableReadClasses = disableReadClasses;
     }
 
-    private boolean enableRESTApi = true;
+    private byte enableUI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled
 
-    public boolean isEnableRESTApi() {
-        return enableRESTApi;
+    public byte getEnableUI() {
+        if(SystemProperties.inDevMode)
+            return 2;
+        return enableUI;
     }
 
-    public void setEnableRESTApi(boolean enableRESTApi) {
-        this.enableRESTApi = enableRESTApi;
+    public void setEnableUI(byte enableUI) {
+        this.enableUI = enableUI;
+    }
+
+    private byte enableAPI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled 
+
+    public byte getEnableAPI() {
+        if(SystemProperties.inDevMode)
+            return 2;
+        return enableAPI;
+    }
+
+    public void setEnableAPI(byte enableAPI) {
+        this.enableAPI = enableAPI;
     }
 
     public int getReserveIDStep() {
@@ -2410,6 +2414,16 @@ public class Settings implements Cloneable {
 
     public void setMinSizeForExcelStreamingReader(int minSizeForExcelStreamingReader) {
         this.minSizeForExcelStreamingReader = minSizeForExcelStreamingReader;
+    }
+
+    private int authTokenExpiration = 60 * 24; // in minutes
+
+    public int getAuthTokenExpiration() {
+        return authTokenExpiration;
+    }
+
+    public void setAuthTokenExpiration(int authTokenExpiration) {
+        this.authTokenExpiration = authTokenExpiration;
     }
 
     //for PostgreDataAdapter, seconds

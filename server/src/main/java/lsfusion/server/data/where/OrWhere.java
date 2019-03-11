@@ -1,5 +1,6 @@
 package lsfusion.server.data.where;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ArrayInstancer;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
@@ -603,7 +604,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         
         if(numWheres > 5 && Thread.interrupted()) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException(new InterruptedException());
+            throw Throwables.propagate(new InterruptedException());
         }
 
         OrObjectWhere[] maxWheres = ((AndWhere)wheres[maxWhere]).wheres.clone();

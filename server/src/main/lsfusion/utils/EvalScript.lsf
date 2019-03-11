@@ -69,7 +69,7 @@ scriptExecution '{eval.script.script.execution}' (Script s)  {
 actionBodyExecution '{eval.script.action.body.execution}' (Script s)  { 
     preRunScript(s);
     NEWSESSION TRY {
-        EVAL CONCAT ' ', 'run() \{', text(s), ';\n\};';
+        EVAL ACTION text(s);
     } CATCH {
         SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();
     }

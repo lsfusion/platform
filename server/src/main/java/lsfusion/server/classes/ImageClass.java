@@ -50,7 +50,7 @@ public class ImageClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "jpg";
     }
 

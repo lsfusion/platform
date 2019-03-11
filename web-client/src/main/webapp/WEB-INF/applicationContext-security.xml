@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<b:beans xmlns="http://www.springframework.org/schema/security"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:b="http://www.springframework.org/schema/beans"
+         xmlns:config="http://www.springframework.org/schema/context"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+                                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <config:annotation-config />
+
+    <!-- API security-->
+    <!-- API doesn't need to redirect to login.jsp and the real authentication process is on app server-->
+    <!-- unlike ant matcher, regex respects ? so we need this odd regex-->
+    <!-- we're trying to avoid creating sessions (it's important for REST requests, otherwise session will be created every time with authenticated request) -->
+    <http request-matcher="regex" pattern="^/(exec|eval|eval/action)($|\?.*)" create-session="never">
+        <http-basic/>
+        <csrf disabled="true"/>
+
+        <custom-filter before="FORM_LOGIN_FILTER" ref="tokenFilter"/>
+    </http>
+    <!-- we need to show login.jsp -->
+    <http pattern="/login.css" security="none"/>
+    <http pattern="/static/images/right_arrow.png" security="none"/>
+    <!-- because we want to have logo even if app server is unavailable, that's why logo.png is on web-server, and it has to be shown before user is authenticated -->
+    <http pattern="/static/images/logo.png" security="none"/>
+    <!-- we need to download logo and icon -->
+    <http pattern="/downloadFile" security="none"/>
+    <!--for jar -->
+    <http pattern="/lsfusion-client.*" security="none"/>
+    <!-- UI security -->
+    <http entry-point-ref="entryPoint">
+        <intercept-url pattern="/**" access="isAuthenticated()"/>
+
+        <form-login login-page="/login" login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
+        <!-- invalidate-session="false" no invalidating session to give user opportunity to relogin, when another tab is opened, but it's not that secure because user can login with another access, and the tab with different access will be available -->
+        <logout logout-url="/logout" success-handler-ref="successLogoutHandler"/>
+        
+        <csrf disabled="true"/>
+
+        <custom-filter ref="characterEncodingFilter" before="FORM_LOGIN_FILTER"/>
+        <custom-filter after="ANONYMOUS_FILTER" ref="anonymousFilter"/>
+    </http>
+
+    <!-- Security beans -->
+    
+    <b:bean id="characterEncodingFilter" class="org.springframework.web.filter.CharacterEncodingFilter">
+        <b:property name="encoding" value="UTF-8"/>
+        <b:property name="forceEncoding" value="true"/>
+    </b:bean>
+
+    <!-- read app token from authentication:bearer -->
+    <b:bean id="tokenFilter" class="lsfusion.http.LSFAuthTokenFilter"/>
+    <!-- authenticate user when anonymousUI is enabled, and no auth provided -->
+    <b:bean id="anonymousFilter" class="lsfusion.http.LSFAuthAnonymousFilter"/>
+
+    <b:bean id="entryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+        <b:constructor-arg value="/login"/>
+        <b:property name="useForward" value="true"/>
+    </b:bean>
+
+    <b:bean id="successLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationSuccessHandler"/>
+    <b:bean id="failureLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationFailureHandler"/>
+
+    <b:bean id="successLogoutHandler" class="lsfusion.http.LSFSimpleUrlLogoutSuccessHandler" >
+    </b:bean>
+
+    <!-- Authentication configuration -->
+    
+    <authentication-manager alias="authenticationManager"> <!-- we need alias to refer it from auth token filter -->
+        <authentication-provider ref="authenticationProvider"/>
+    </authentication-manager>
+
+    <b:bean id="authenticationProvider" class="lsfusion.http.LSFRemoteAuthenticationProvider"/>
+
+</b:beans>

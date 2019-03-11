@@ -28,12 +28,14 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     private final LCP<P> source;
     private final List<LCP<P>> params;
     private final ImMap<P, ClassPropertyInterface> mapSource;
+    private boolean action;
 
-    public EvalActionProperty(LocalizedString caption, LCP<P> source, List<LCP<P>> params) {
+    public EvalActionProperty(LocalizedString caption, LCP<P> source, List<LCP<P>> params, boolean action) {
         super(caption, source.getInterfaceClasses(ClassType.aroundPolicy));
         mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;
         this.params = params;
+        this.action = action;
     }
 
     private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -56,7 +58,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         String script = getScript(context);
 
         try {
-            LAP<?> runAction = context.getBL().evaluateRun(script);
+            LAP<?> runAction = context.getBL().evaluateRun(script, action);
             if (runAction != null)
                 runAction.execute(context, getParams(context));
         } catch (EvalUtils.EvaluationException | RecognitionException e) {

@@ -10,8 +10,8 @@ import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
 public class FileGridCellRenderer extends AbstractGridCellRenderer {
-    public static final String ICON_EMPTY = "empty.png";
-    private static final String ICON_FILE = "file.png";
+    public static final String ICON_EMPTY = "static/images/empty.png";
+    private static final String ICON_FILE = "static/images/file.png";
     private GPropertyDraw property;
 
     public FileGridCellRenderer(GPropertyDraw property) {
@@ -52,6 +52,6 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
 
     private void setImageSrc(ImageElement image, Object value) {
         String imagePath = value == null ? ICON_EMPTY : ICON_FILE;
-        image.setSrc(GWT.getModuleBaseURL() + "images/" + imagePath);
+        image.setSrc(GWT.getModuleBaseURL() + imagePath);
     }
 }

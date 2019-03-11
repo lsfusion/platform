@@ -4,13 +4,11 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
-import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.logging.impl.StackTracePrintStream;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.exceptions.MessageException;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.gwt.client.dispatch.LogicsAndNavigatorDispatchAsync;
+import lsfusion.gwt.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import net.customware.gwt.dispatch.shared.Action;
@@ -23,11 +21,11 @@ public class GExceptionManager {
     private final static Map<Throwable, Integer> unreportedThrowablesTryCount = new HashMap<>();
     
     public static void logClientError(String message, Throwable throwable) {
-        logClientError(new LogClientExceptionAction(message, toSerializable(throwable)), message, throwable);
+        logClientError(new LogClientExceptionAction(message, throwable), message, throwable);
     }
     
     public static void logClientError(NonFatalHandledException ex, String message) {
-        logClientError(new LogClientExceptionAction(message, toSerializable(ex), ex.count, ex.reqId), message, ex);
+        logClientError(new LogClientExceptionAction(message, ex), message, ex);
     }
 
     public static void logClientError(LogClientExceptionAction action, String message, final Throwable throwable) {
@@ -35,7 +33,7 @@ public class GExceptionManager {
         Log.error(message, throwable);
 
         try {
-            LogicsAndNavigatorDispatchAsync dispatcher = MainFrame.logicsAndNavigatorDispatchAsync;
+            NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
             if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
                 dispatcher.execute(action, new ErrorHandlingCallback<VoidResult>() {
                     @Override
@@ -57,36 +55,15 @@ public class GExceptionManager {
         }
     }
 
-    private static SerializableThrowable toSerializable(Throwable t) {
-        Throwable originalT = extractCause(t);
-        SerializableThrowable st = new SerializableThrowable(originalT.getClass().getName(), originalT.getMessage());
-        StackTraceElement[] stackTrace;
-        if (t instanceof MessageException && ((MessageException) t).myTrace != null) {
-            stackTrace = ((MessageException) t).myTrace;
-        } else {
-            stackTrace = originalT.getStackTrace();
-        }
-        st.setStackTrace(stackTrace);
-        st.setDesignatedType(originalT.getClass().getName(), true);
-        return st;
-    }
-    
-    private static Throwable extractCause(Throwable t) {
-        Throwable cause = t.getCause();
-        return cause != null &&  (t instanceof UmbrellaException
-                || t instanceof com.google.web.bindery.event.shared.UmbrellaException
-                || t instanceof RuntimeException) ? extractCause(cause) : t;
-    }
-
     public static void flushUnreportedThrowables() {
         synchronized (unreportedThrowables) {
             final List<Throwable> stillUnreported = new ArrayList<>(unreportedThrowables);
             for (final Throwable t : unreportedThrowables) {
                 Integer tryCount = unreportedThrowablesTryCount.get(t);
                 try {
-                    LogicsAndNavigatorDispatchAsync dispatcher = MainFrame.logicsAndNavigatorDispatchAsync;
+                    NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
                     if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                        dispatcher.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
+                        dispatcher.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), t), new ErrorHandlingCallback<VoidResult>() {
                             @Override
                             public void failure(Throwable caught) {
                                 Log.error("Error logging unreported client exception", caught);
@@ -148,7 +125,7 @@ public class GExceptionManager {
                     Map<Map, Collection<NonFatalHandledException>> group;
                     group = GwtSharedUtils.group(new GwtSharedUtils.Group<Map, NonFatalHandledException>() {
                         public Map group(NonFatalHandledException key) {
-                            return Collections.singletonMap(key.getMessage() + getStackTraceString(key), key.reqId);
+                            return Collections.singletonMap(key.getMessage() + getStackTrace(key), key.reqId);
                         }
                     }, flushExceptions);
 
@@ -163,9 +140,33 @@ public class GExceptionManager {
         }
     }
 
-    public static String getStackTraceString(Throwable t) {
+    public static String getStackTrace(Throwable t) {
         StringBuilder sb = new StringBuilder();
         t.printStackTrace(new PrintStream(new StackTracePrintStream(sb)));
         return sb.toString();
+    }
+
+    // the same as in ExceptionUtils
+    public static Throwable getRootCause(Throwable throwable) {
+        Throwable result = throwable;
+        while (result != null && result.getCause() != null) {
+            result = result.getCause();
+        }
+
+        return result;
+    }
+
+    // the same as in ExceptionUtils
+    // when class of throwable changes
+    public static String copyMessage(Throwable throwable) {
+        throwable = getRootCause(throwable); // also it may make sense to show also messages of chained exceptions, but for now will show only root
+        return throwable.getClass().getName() + " " + throwable.getMessage();
+    }
+
+    // the same as in ExceptionUtils
+    // assuming that there should be primitive copy (Strings and other very primitive Java classes)  
+    public static void copyStackTraces(Throwable from, Throwable to) {
+        from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
+        to.setStackTrace(from.getStackTrace());
     }
 }

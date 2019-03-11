@@ -111,7 +111,7 @@ public class TryActionProperty extends KeepContextActionProperty {
 
             //ignore exception if finallyAction == null
             if (finallyAction == null) {
-                ExecutionStackAspect.getExceptionStackString(); // drop exception stack string
+                ExecutionStackAspect.getExceptionStackTrace(); // drop exception stack string
                 result = FlowResult.FINISH;
             } else {
                 throw Throwables.propagate(e);

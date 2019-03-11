@@ -5,7 +5,7 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 
 public interface MainFrameResources extends ClientBundle {
-    @Source("lsfusion/gwt/public/images/vborder.png")
+    @Source("lsfusion/gwt/public/static/images/vborder.png")
     ImageResource dragger();
 
     @CssResource.NotStrict

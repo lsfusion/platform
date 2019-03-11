@@ -1,38 +1,24 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CurrentAuthTokenFormulaProperty;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.CurrentUserFormulaProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.NoPropertyTableUsage;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import static lsfusion.base.BaseUtils.nullTrim;
 
@@ -58,15 +44,15 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP lastComputerCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
+    public LCP nameContact;
     public LCP currentUserAllowExcessAllocatedBytes;
+    public LCP allowExcessAllocatedBytes;
+
+    public LCP currentAuthToken;
+    public LCP secret;
 
     public LCP hostnameComputer;
     public LCP computerHostname;
-    public LCP scannerComPortComputer;
-    public LCP scannerSingleReadComputer;
-    public LCP useDiscountCardReaderComputer;
-    public LCP scalesComPortComputer;
-
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
 
@@ -96,6 +82,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP userFontSize;
     
     public LAP deliveredNotificationAction;
+    
+    public LAP<?> syncUsers;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(AuthenticationLogicsModule.class.getResourceAsStream("/system/Authentication.lsf"), "/system/Authentication.lsf", baseLM, BL);
@@ -118,6 +106,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         makePropertyPublic(currentUser, "currentUser", new ArrayList<ResolveClassSet>());
         currentComputer = addProperty(null, new LCP<>(new CurrentComputerFormulaProperty(computer)));
         makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
+        currentAuthToken = addProperty(null, new LCP<>(new CurrentAuthTokenFormulaProperty()));
+        makePropertyPublic(currentAuthToken, "currentAuthToken", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();
 
@@ -126,17 +116,14 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         emailContact = findProperty("email[Contact]");
         contactEmail = findProperty("contact[VARSTRING[400]]");
 
+        nameContact = findProperty("name[Contact]");
         currentUserName = findProperty("currentUserName[]");
+        allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
         currentUserAllowExcessAllocatedBytes = findProperty("currentUserAllowExcessAllocatedBytes[]");
 
         // Компьютер
         hostnameComputer = findProperty("hostname[Computer]");
         computerHostname = findProperty("computer[VARISTRING[100]]");
-        scannerComPortComputer = findProperty("scannerComPort[Computer]");
-        scannerSingleReadComputer = findProperty("scannerSingleRead[Computer]");
-        useDiscountCardReaderComputer = findProperty("useDiscountCardReader[Computer]");
-        scalesComPortComputer = findProperty("scalesComPort[Computer]");
-
         hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 
         isLockedCustomUser = findProperty("isLocked[CustomUser]");
@@ -153,6 +140,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         lastActivityCustomUser = findProperty("lastActivity[CustomUser]");
         lastComputerCustomUser = findProperty("lastComputer[CustomUser]");
+
+        secret = findProperty("secret[]");
 
         minHashLength = findProperty("minHashLength[]");
         useLDAP = findProperty("useLDAP[]");
@@ -180,6 +169,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         userFontSize = findProperty("fontSize[CustomUser]");
         
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
+        
+        syncUsers = findAction("syncUsers[VARISTRING[100], JSONFILE]");
     }
     
     public boolean checkPassword(DataSession session, DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -202,52 +193,5 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
             }
         }
         return authenticated;
-    }
-    
-    public Set<String> syncUsers(final Set<String> userNames) throws SQLException, SQLHandledException {
-        final DataSession session = ThreadLocalContext.createSession();
-
-        final String KEY_NAME = "login";
-        KeyExpr loginExpr = new KeyExpr(KEY_NAME);
-        ImRevMap<String, KeyExpr> imRevMap = MapFact.singletonRev(KEY_NAME, loginExpr);
-
-        QueryBuilder<String, String> query = new QueryBuilder<>(imRevMap);
-        query.and(customUserLogin.getExpr(loginExpr).getWhere());
-        query.and(isLockedLogin.getExpr(loginExpr).getWhere().not());
-
-        NoPropertyTableUsage<String> table = null;
-        Set<String> result = new HashSet<>();
-        try {
-            if (userNames != null) {
-                final DataClass KEY_CLASS = (DataClass) loginCustomUser.property.getType();
-
-                table = new NoPropertyTableUsage<>("syncUsers", SetFact.singletonOrder(KEY_NAME), new Type.Getter<String>() {
-                    @Override
-                    public Type getType(String key) {
-                        return KEY_CLASS;
-                    }
-                });
-
-                ImSet<ImMap<String, DataObject>> keys = SetFact.fromJavaSet(userNames).mapItSetValues(new GetValue<ImMap<String, DataObject>, String>() {
-                    @Override
-                    public ImMap<String, DataObject> getMapValue(String value) {
-                        return MapFact.singleton(KEY_NAME, new DataObject(value, KEY_CLASS));
-                    }
-                });
-
-                table.writeKeys(session.sql, keys, session.getOwner());
-                query.and(table.join(imRevMap).getWhere());
-            }
-
-            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(session);
-            for (ImMap<String, Object> keys : queryResult.keyIt()) {
-                result.add(((String) keys.get(KEY_NAME)));
-            }
-        } finally {
-            if (table != null) {
-                table.drop(session.sql, session.getOwner());
-            }
-        }
-        return result;
     }
 }

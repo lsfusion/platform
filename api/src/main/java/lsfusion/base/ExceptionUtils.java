@@ -26,8 +26,14 @@ public class ExceptionUtils {
         return getStackTrace(new Exception());
     }
 
+    public static String toString(Throwable e) {
+        e = ExceptionUtils.getRootCause(e);
+        return e.getMessage() + '\n' + getStackTrace(e);
+    }
+
     public static String getStackTrace(Throwable e) {
-        return org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(e);
+        assert e.getCause() == null;
+        return getStackTrace(e.getStackTrace());
     }
     
     public static String getStackTrace(Thread thread) {
@@ -101,5 +107,23 @@ public class ExceptionUtils {
             return 20;
         
         return 10; // неизвестно что
+    }
+
+    public static String getExStackTrace(String javaStack, String lsfStack) {
+        return lsfStack + '\n' + javaStack;
+    }
+
+    // the same as in GExceptionManager
+    // when class of throwable changes
+    public static String copyMessage(Throwable throwable) {
+        throwable = getRootCause(throwable); // also it may make sense to show also messages of chained exceptions, but for now will show only root
+        return throwable.getClass().getName() + " " + throwable.getMessage();
+    }
+
+    // the same as in GExceptionManager
+    // assuming that here should be primitive copy (Strings and other very primitive Java classes) to be deserialized everywhere
+    public static void copyStackTraces(Throwable from, Throwable to) {
+        from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
+        to.setStackTrace(from.getStackTrace());
     }
 }

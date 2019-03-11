@@ -63,6 +63,9 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     }
 
     public ImOrderSet<K> filterOrder(FunctionSet<K> filter) {
+        if(filter.isEmpty()) // optimization
+            return SetFact.EMPTYORDER();
+        
         MOrderFilterSet<K> mResult = SetFact.mOrderFilter(this);
         for(int i=0,size=size();i<size;i++) {
             K element = get(i);

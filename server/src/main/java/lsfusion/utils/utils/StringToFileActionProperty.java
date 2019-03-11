@@ -5,6 +5,7 @@ import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -18,7 +19,7 @@ public class StringToFileActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface charsetInterface;
     private final ClassPropertyInterface extensionInterface;
 
-    public StringToFileActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public StringToFileActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

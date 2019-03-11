@@ -2,71 +2,17 @@ package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.ClientSettings;
-import lsfusion.interop.LocalePreferences;
-import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
-import lsfusion.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends RemoteObjectProxy<T> implements RemoteNavigatorInterface {
 
     public RemoteNavigatorProxy(T target) {
         super(target);
-    }
-
-    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException {
-        List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteFormProxy.class);
-
-        boolean hasCachedRichDesignByteArray = false;
-        if (RemoteFormProxy.cachedRichDesign.get(formSID) != null) {
-            hasCachedRichDesignByteArray = true;
-            for (int i = 0; i < invocations.size(); ++i) {
-                if (invocations.get(i).name.equals("getRichDesignByteArray")) {
-                    invocations.remove(i);
-                    break;
-                }
-            }
-        }
-
-        RemoteFormProxy proxy = createForm(invocations, MethodInvocation.create(this.getClass(), "createForm", formSID, initialObjects, isModal, interactive));
-
-        if (hasCachedRichDesignByteArray) {
-            proxy.setProperty("getRichDesignByteArray", RemoteFormProxy.cachedRichDesign.get(formSID));
-        } else {
-            RemoteFormProxy.cachedRichDesign.put(formSID, (byte[]) proxy.getProperty("getRichDesignByteArray"));
-        }
-
-        return proxy;
-    }
-
-    private RemoteFormProxy createForm(List<MethodInvocation> immutableMethods, MethodInvocation creator) throws RemoteException {
-
-        Object[] result = createAndExecute(creator, immutableMethods.toArray(new MethodInvocation[immutableMethods.size()]));
-
-        RemoteFormInterface remoteForm = (RemoteFormInterface) result[0];
-        if (remoteForm == null) {
-            return null;
-        }
-
-        RemoteFormProxy proxy = new RemoteFormProxy(remoteForm);
-        for (int i = 0; i < immutableMethods.size(); ++i) {
-            proxy.setProperty(immutableMethods.get(i).name, result[i + 1]);
-        }
-
-        return proxy;
-    }
-
-    public byte[] getCurrentUserInfoByteArray() throws RemoteException {
-        logRemoteMethodStartCall("getCurrentUserInfoByteArray");
-        byte[] result = target.getCurrentUserInfoByteArray();
-        logRemoteMethodEndCall("getCurrentUserInfoByteArray", result);
-        return result;
     }
 
     public void logClientException(String title, String hostname, Throwable t) throws RemoteException {
@@ -81,18 +27,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
 
     public ClientCallBackInterface getClientCallBack() throws RemoteException {
         return target.getClientCallBack();
-    }
-
-    public void setUpdateTime(int updateTime) throws RemoteException {
-        target.setUpdateTime(updateTime);
-    }
-
-    @Override
-    public boolean isForbidDuplicateForms() throws RemoteException {
-        logRemoteMethodStartCall("isForbidDuplicateForms");
-        boolean result = target.isForbidDuplicateForms();
-        logRemoteMethodEndCall("isForbidDuplicateForms", result);
-        return result;
     }
 
     @Override
@@ -122,38 +56,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         }
     }
 
-    @ImmutableMethod
-    public byte[] getCommonWindows() throws RemoteException {
-        try {
-            return callImmutableMethod("getCommonWindows", new Callable<byte[]>() {
-                @Override
-                public byte[] call() throws Exception {
-                    return target.getCommonWindows();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
-    public boolean isConfigurationAccessAllowed() throws RemoteException {
-        return target.isConfigurationAccessAllowed();
-    }
-
     @Override
     public ClientSettings getClientSettings() throws RemoteException {
         return target.getClientSettings();
-    }
-
-    @Override
-    public LocalePreferences getLocalePreferences() throws RemoteException {
-        return target.getLocalePreferences();
-    }
-
-    @Override
-    public Integer getFontSize() throws RemoteException {
-        return target.getFontSize();
     }
 
     @Override

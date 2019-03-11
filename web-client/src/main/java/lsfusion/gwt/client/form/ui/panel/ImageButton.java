@@ -96,7 +96,7 @@ public class ImageButton extends Button {
     }
 
     public void setModuleImagePath(String imagePath) {
-        setAbsoluteImagePath(imagePath == null ? null : GWT.getModuleBaseURL() + "images/" + imagePath);
+        setAbsoluteImagePath(imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath);
     }
 
     public void setAppImagePath(String imagePath) {

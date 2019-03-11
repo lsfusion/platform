@@ -9,13 +9,13 @@ import bibliothek.gui.dock.common.event.CDockableLocationListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import lsfusion.client.EditReportInvoker;
+import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 
-import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,24 +90,9 @@ public class DockableManager {
         openedForms.add(page);
     }
 
-    public ClientDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, int modifiers) throws IOException, ClassNotFoundException, JRException {
-        ClientDockable page;
-        if (MainFrame.forbidDuplicateForms && forms.getFormsList().contains(formSID) && (modifiers & InputEvent.CTRL_MASK) == 0) { //only when ctrl not pressed
-            page = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-            if(page != null) {
-                page.toFront();
-                page.requestFocusInWindow();
-            }
-        } else {
-            page = new ClientFormDockable(navigator, canonicalName, formSID, this);
-            openForm(page);
-        }
-        return page;
-    }
-
     public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
         ClientFormDockable page = null;
-        if (MainFrame.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
+        if (Main.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
             ClientDockable dockable = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
             if (dockable instanceof ClientFormDockable)
                 page = (ClientFormDockable) dockable; 

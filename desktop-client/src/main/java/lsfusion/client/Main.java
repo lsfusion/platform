@@ -1,24 +1,26 @@
 package lsfusion.client;
 
-import jasperapi.ReportGenerator;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
-import lsfusion.client.form.ClientExternalScreen;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.SavingThread;
 import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
-import lsfusion.interop.*;
+import lsfusion.interop.ClientSettings;
+import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.IDaemonTask;
-import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.event.ICleanListener;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.AuthenticationToken;
 import org.apache.log4j.Logger;
+import org.castor.core.util.Base64Decoder;
+import org.json.JSONObject;
 import sun.awt.OSInfo;
 import sun.awt.SunToolkit;
 import sun.security.action.GetPropertyAction;
@@ -35,8 +37,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.security.AccessController;
@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.trimToNull;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
@@ -56,15 +57,10 @@ public class Main {
 
     public static final String LSFUSION_TITLE = "lsFusion";
     public static final String DEFAULT_ICON_PATH = "/images/logo/";
-    public static final String DEFAULT_LOGO_PATH = DEFAULT_ICON_PATH + "logo.png";
 
     public static final File fusionDir = new File(System.getProperty("user.home"), ".fusion");
 
     public static final RMITimeoutSocketFactory rmiSocketFactory = RMITimeoutSocketFactory.getInstance();
-
-    public static boolean configurationAccessAllowed;
-
-    public static ModuleFactory module;
 
     public static RemoteLogicsLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
@@ -74,10 +70,8 @@ public class Main {
     public static String logicsDisplayName;
     public static byte[] logicsMainIcon;
     public static byte[] logicsLogo;
-    
-    public static boolean hideMenu;
 
-    public static Long computerId;
+    public static String computerName;
     public static DateFormat dateFormat;
     public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
@@ -94,23 +88,25 @@ public class Main {
     public static int asyncTimeOut;
 
     public static EventBus eventBus = new EventBus();
-    private static ArrayList<IDaemonTask> daemonTasks;
+    public static List<ICleanListener> cleanListeners = new ArrayList<>();
 
     static SingleInstance singleInstance;
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
+    public static boolean configurationAccessAllowed;
+    public static boolean forbidDuplicateForms;
     
     public static long timeDiffServerClientLog = 1000;
 
     public static Integer fontSize;
     private static Map<Object, FontUIResource> fontUIDefaults = new HashMap<>();
 
-    public static void start(final String[] args, ModuleFactory startModule) {
+    public static void start(final String[] args) {
 
         registerSingleInstanceListener();
 
-        module = startModule;
+        computerName = SystemUtils.getLocalHostName();
 
         System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
 
@@ -201,17 +197,7 @@ public class Main {
                 try {
                     LoginAction loginAction = LoginAction.getInstance();
 
-                    RemoteLogicsInterface tmpRemoteLogics = null;
-                    try {
-                        RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(loginAction.loginInfo.getServerHost(), loginAction.loginInfo.getServerPort(), loginAction.loginInfo.getServerDB()).connect(false);
-                        tmpRemoteLogics = remoteLoader.getLogics();
-                    } catch (Throwable e) {
-                        logger.error("Error creating RemoteLogics", e);
-                    }
-                    //пытаемся подгрузить лого
-                    loadLogicsLogo(tmpRemoteLogics);
-
-                    loginAction.initLoginDialog(tmpRemoteLogics);
+                    loginAction.initLoginDialog();
 
                     if (!loginAction.login()) {
                         return;
@@ -219,39 +205,19 @@ public class Main {
 
                     remoteLogics = loginAction.getRemoteLogics();
 
-                    String serverVersion = null;
-                    String clientVersion = null;
-                    String oldPlatformVersion = BaseUtils.getPlatformVersion();
-                    String newPlatformVersion = remoteLogics.getPlatformVersion();
-                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(newPlatformVersion)) {
-                        serverVersion = newPlatformVersion;
-                        clientVersion = oldPlatformVersion;
-                    } else {
-                        Integer oldApiVersion = BaseUtils.getApiVersion();
-                        Integer newApiVersion = remoteLogics.getApiVersion();
-                        if(!oldApiVersion.equals(newApiVersion)) {
-                            serverVersion = newPlatformVersion + " [" + newApiVersion + "]";
-                            clientVersion = oldPlatformVersion + " [" + oldApiVersion + "]";
-                        }
-                    }
-                    if(serverVersion != null) {
-                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), "lsFusion", JOptionPane.WARNING_MESSAGE);
-                        Main.shutdown();
-                        return;
-                    }
-
-                    GUIPreferences prefs = remoteLogics.getGUIPreferences();
-                    logicsName = prefs.logicsName;
-                    logicsDisplayName = prefs.logicsDisplayName;
-                    logicsMainIcon = prefs.logicsMainIcon;
-                    logicsLogo = prefs.logicsLogo;
-                    hideMenu = prefs.hideMenu;
-
                     remoteNavigator = loginAction.getRemoteNavigator();
 
-                    LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
+                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
 
-                    Locale userLocale = userPreferences.getLocale();
+                    LocalePreferences userPreferences = clientSettings.localePreferences;
+                    fontSize = clientSettings.fontSize;
+                    busyDialog = clientSettings.busyDialog;
+                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
+                    useRequestTimeout = clientSettings.useRequestTimeout;
+                    configurationAccessAllowed = clientSettings.configurationAccessAllowed;
+                    forbidDuplicateForms = clientSettings.forbidDuplicateForms;
+
+                    Locale userLocale = userPreferences.locale;
                     if (userLocale != null) {
                         Locale.setDefault(userLocale);
                         
@@ -264,19 +230,13 @@ public class Main {
 
                     setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
 
-                    fontSize = remoteNavigator.getFontSize();
                     setUIFontSize();
-
-                    computerId = loginAction.getComputerId();
-                    configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
                     startSplashScreen();
 
                     logger.info("Before init frame");
-                    frame = module.initFrame(remoteNavigator);
+                    frame = new DockableMainFrame(remoteNavigator, clientSettings.currentUserName);
                     logger.info("After init frame");
-
-                    remoteNavigator.setUpdateTime(pullMessagesPeriod);
 
                     frame.addWindowListener(
                             new WindowAdapter() {
@@ -289,49 +249,26 @@ public class Main {
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     logger.info("After setExtendedState");
 
-                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack());
+                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode);
 
                     frame.setVisible(true);
 
                     ((DockableMainFrame) frame).clearForms();
-
-                    daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
-                    for (IDaemonTask task : daemonTasks) {
-                        try {
-                            task.setEventBus(eventBus);
-                            task.start();
-                        } catch (Exception e) {
-                            logger.error(getString("client.error.application.initialization"), e);
-                            Log.error(getString("client.error.application.initialization"), e);
-                        }
-                    }
-
-                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
-
-                    busyDialog = clientSettings.busyDialog;
-                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
-                    useRequestTimeout = clientSettings.useRequestTimeout;
 
                     ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
 
                 } catch (Exception e) {
                     closeSplashScreen();
                     logger.error(getString("client.error.application.initialization"), e);
-                    Log.error(getString("client.error.application.initialization"), e);
                     Main.restart();
                 }
             }
         });
     }
 
-    private static void loadLogicsLogo(RemoteLogicsInterface remoteLogics) {
-        try {
-            if (remoteLogics != null) {
-                logicsLogo = remoteLogics.getGUIPreferences().logicsLogo;
-            }
-        } catch (Throwable e) {
-            logger.error("Error loading logics logo", e);
-        }
+    public static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Service.getServerSettings[]", new ExternalRequest());
+        return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
     }
 
     private static void setupTimePreferences(String userTimeZone, Integer twoDigitYearStart) throws RemoteException {
@@ -477,7 +414,7 @@ public class Main {
 
     public static boolean clientExceptionLog(String title, Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.logClientException(title, SystemUtils.getLocalHostName(), t);
+            remoteNavigator.logClientException(title, Main.computerName, t);
             return true;
         }
         return false;
@@ -519,39 +456,31 @@ public class Main {
 
     public static List<Image> getMainIcons() {
         Set<Image> images = new LinkedHashSet<>();
-        // для обратной совместимости пока оставил, как было. но похоже, надо вырезать свойство lsfusion.client.logo
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_256.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_64.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_48.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_32.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_16.png").getImage());
+        if(logicsMainIcon != null) {
+            ImageIcon resource = new ImageIcon(logicsMainIcon);
+            if(resource.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                images.add(resource.getImage());
+            }
+        } else {
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_256.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_64.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_48.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_32.png"));
+            images.add(getImage(DEFAULT_ICON_PATH + "icon_16.png"));
+        }
         return new ArrayList<>(images);
     }
 
     public static ImageIcon getLogo() {
-        return loadResource(logicsLogo, LSFUSION_CLIENT_LOGO, DEFAULT_LOGO_PATH);
+        return logicsLogo != null ? new ImageIcon(logicsLogo) : getImageIcon(DEFAULT_ICON_PATH + "logo.png");
     }
 
-    private static ImageIcon loadResource(byte[] resourceData, String defaultUrlSystemPropName, String defaultResourcePath) {
-        ImageIcon resource = resourceData != null ? new ImageIcon(resourceData) : null;
-        if (resource == null || resource.getImageLoadStatus() != MediaTracker.COMPLETE) {
-            String splashUrlString = System.getProperty(defaultUrlSystemPropName);
-            URL splashUrl = null;
-            if (splashUrlString != null) {
-                try {
-                    splashUrl = new URL(splashUrlString);
-                } catch (MalformedURLException ignored) {
-                }
-            }
-            if (splashUrl != null) {
-                resource = new ImageIcon(splashUrl);
-            }
+    private static Image getImage(String resourcePath) {
+        return getImageIcon(resourcePath).getImage();
+    }
 
-            if (resource == null || resource.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                resource = new ImageIcon(SplashScreen.class.getResource(defaultResourcePath));
-            }
-        }
-        return resource;
+    private static ImageIcon getImageIcon(String resourcePath) {
+        return new ImageIcon(SplashScreen.class.getResource(resourcePath));
     }
 
     public static String getMainTitle() {
@@ -698,16 +627,13 @@ public class Main {
         }
 
         RemoteFormProxy.dropCaches();
-        ClientExternalScreen.dropCaches();
 
-        if (daemonTasks != null) {
-            for (IDaemonTask task : daemonTasks) {
-                task.stop();
-            }
+        for (ICleanListener task : cleanListeners) {
+            task.clean();
         }
+        cleanListeners.clear();
         eventBus.invalidate();
 
-        computerId = -1L;
         frame = null;
         remoteLoader = null;
         remoteLogics = null;
@@ -716,45 +642,14 @@ public class Main {
         System.gc();
     }
 
-    public static String writeToComPort(byte[] file, int comPort) {
-        for (IDaemonTask daemonTask : daemonTasks) {
-            try {
-                daemonTask.writeToComPort(file, comPort);
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-        }
-        return null;
-    }
-
     public static long generateID() throws RemoteException {
         return remoteLogics.generateID();
-    }
-
-    public interface ModuleFactory {
-        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException;
-
-        void openInExcel(ReportGenerationData generationData);
-
-        boolean isFull();
     }
 
     public static void main(final String[] args) {
 
 //        SpanningTreeWithBlackjack.test();
 //        SpanningTreeWithBlackjack.test1();
-        start(args, new ModuleFactory() {
-            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
-                return new DockableMainFrame(remoteNavigator);
-            }
-
-            public void openInExcel(ReportGenerationData generationData) {
-                ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true);
-            }
-
-            public boolean isFull() {
-                return true;
-            }
-        });
+        start(args);
     }
 }

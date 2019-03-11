@@ -1,21 +1,21 @@
 package lsfusion.interop.navigator;
 
 import lsfusion.interop.ClientSettings;
-import lsfusion.interop.LocalePreferences;
-import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
-import java.util.Map;
 
 public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
+    // separate methods, because has complex response serialization (and it will be an overhead using virtual navigator actions anyway)
+
     byte[] getNavigatorTree() throws RemoteException;
 
-    // окна лог, релевантные классы, статус и т.п.
-    byte[] getCommonWindows() throws RemoteException;
+    ClientSettings getClientSettings() throws RemoteException;
+
+    // main interface
 
     ServerResponse executeNavigatorAction(String actionSID, int type) throws RemoteException;
 
@@ -23,32 +23,14 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException;
 
-    RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException;
-
     void logClientException(String title, String hostname, Throwable t) throws RemoteException;
 
     void close() throws RemoteException;
 
-    boolean isForbidDuplicateForms() throws RemoteException;
+    // separate methods, because used really often (and it will be an overhead using virtual navigator actions anyway)
 
-    //for notifications
     void setCurrentForm(String formID) throws RemoteException;
     String getCurrentForm() throws RemoteException;
-
-    // пингование сервера
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 
-    void setUpdateTime(int updateTime) throws RemoteException;
-
-    // аутентификация
-    byte[] getCurrentUserInfoByteArray() throws RemoteException;
-
-    // для конфигуратора методы
-    boolean isConfigurationAccessAllowed() throws RemoteException;
-
-    ClientSettings getClientSettings() throws RemoteException;
-
-    LocalePreferences getLocalePreferences() throws RemoteException;
-
-    Integer getFontSize() throws RemoteException;
 }

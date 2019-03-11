@@ -184,11 +184,7 @@ public class LogicsInstance implements InitializingBean {
                                      : new ThrowableWithStack[]{new ThrowableWithStack(throwable)};
             
             for (ThrowableWithStack nestedThrowable : throwables) {
-                Throwable javaThrowable = nestedThrowable.getThrowable();
-                if(javaThrowable instanceof ScriptParsingException) // don't need ScriptParsingException stack (it is always the same  / doesn't matter) 
-                    logger.info("Parsing error, while starting logics instance: \n" + javaThrowable.getMessage());
-                else 
-                    nestedThrowable.log("Exception while starting business logic", logger);
+                nestedThrowable.log("Exception while starting logics instance", logger);
             }
 
             lifecycle.fireError();

@@ -84,8 +84,14 @@ public class IsClassWhere extends DataWhere {
         // редкая ситуация, связанная с приведением типов в меньшую сторону
         assert classExpr == null;
         String exprSource = expr.getSource(compile);
-        if(classes instanceof StringClass)  
-            return "char_length(" + exprSource + ") <= " + ((StringClass)classes).length;
+        if(classes instanceof StringClass) {
+            String compareString;
+            if(((StringClass) classes).length.isUnlimited())
+                compareString = ">0";
+            else
+                compareString = "<= " + ((StringClass) classes).length;
+            return "char_length(" + exprSource + ") " + compareString;
+        }
         if(classes instanceof IntegralClass) {
             IntegralClass integralClass = (IntegralClass) classes;
             return exprSource + " BETWEEN " + integralClass.getString(integralClass.getInfiniteValue(true), compile.syntax) + " AND " + integralClass.getString(integralClass.getInfiniteValue(false), compile.syntax);

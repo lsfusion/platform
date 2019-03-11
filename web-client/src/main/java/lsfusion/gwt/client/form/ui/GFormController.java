@@ -8,7 +8,6 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
@@ -814,7 +813,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         final int position = controller.getGrid().getTable().getKeyboardSelectedRow();
 
         if (add) {
-            MainFrame.logicsAndNavigatorDispatchAsync.execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
+            MainFrame.logicsDispatchAsync.execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
                     executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID), position);
@@ -1000,16 +999,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void runGroupReport(Integer groupObjectID, final boolean toExcel) {
-        syncDispatch(new GroupReport(groupObjectID, toExcel, getUserPreferences()), new ErrorHandlingCallback<StringResult>() {
+        syncDispatch(new GroupReport(groupObjectID, toExcel, getUserPreferences()), new ErrorHandlingCallback<GroupReportResult>() {
             @Override
-            public void success(StringResult result) {
-                openReportWindow(result.get());
+            public void success(GroupReportResult result) {
+                GwtClientUtils.downloadFile(result.filename, "lsfReport", result.extension);
             }
         });
-    }
-
-    public void openReportWindow(String fileName) {
-        GwtClientUtils.downloadFile(fileName, null);
     }
 
     public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final ErrorHandlingCallback<ServerResponseResult> callback) {

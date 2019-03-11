@@ -12,7 +12,7 @@ public class LSFSimpleUrlAuthenticationFailureHandler extends SimpleUrlAuthentic
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         saveException(request, exception);
-        getRedirectStrategy().sendRedirect(request, response, "/login.jsp" + "?" + getQueryString(request));
+        getRedirectStrategy().sendRedirect(request, response, "/login" + "?" + getQueryString(request));
     }
 
     private String getQueryString(HttpServletRequest request) {

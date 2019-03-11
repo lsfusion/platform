@@ -14,7 +14,6 @@ import lsfusion.interop.Compare;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
 import java.awt.*;
@@ -77,9 +76,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
     public boolean panelCaptionAbove;
-
-    public ClientExternalScreen externalScreen;
-    public ExternalScreenConstraints externalScreenConstraints;
 
     public int charHeight;
     public int charWidth;
@@ -353,12 +349,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         outStream.writeBoolean(panelCaptionAbove);
 
-        outStream.writeBoolean(externalScreen != null);
-        if (externalScreen != null) {
-            outStream.writeInt(externalScreen.getID());
-        }
-        pool.writeObject(outStream, externalScreenConstraints);
-
         outStream.writeBoolean(panelCaptionAfter);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
@@ -392,12 +382,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         editType = PropertyEditType.deserialize(inStream.readByte());
 
         panelCaptionAbove = inStream.readBoolean();
-
-        if (inStream.readBoolean()) {
-            externalScreen = ClientExternalScreen.getScreen(inStream.readInt());
-        }
-
-        externalScreenConstraints = pool.readObject(inStream);
 
         panelCaptionAfter = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();

@@ -16,7 +16,7 @@ public class ImageLinkGridCellRenderer extends ImageGridCellRenderer {
         if (value instanceof String) {
             img.setSrc((String) value);
         } else {
-            img.setSrc(GWT.getModuleBaseURL() + "images/" + ICON_EMPTY);
+            img.setSrc(GWT.getModuleBaseURL() + ICON_EMPTY);
         }
     }
 }

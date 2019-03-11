@@ -10,7 +10,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>lsfusion.jsp</welcome-file>
+        <welcome-file>main</welcome-file>
     </welcome-file-list>
 
     <context-param>
@@ -23,75 +23,22 @@
         <param-name>port</param-name>
         <param-value>7652</param-value>
     </context-param>
-    <context-param>
-        <param-name>serviceUserLogin</param-name>
-        <param-value>serviceUser</param-value>
-    </context-param>
-    <context-param>
-        <param-name>serviceUserPassword</param-name>
-        <param-value>servicePass</param-value>
-    </context-param>
 
-    <listener>
-        <listener-class>lsfusion.gwt.server.AppContextListener</listener-class>
-    </listener>
 
+    <!-- UI (gwt) dispatch servlet-->
+    <!-- it's tricky here, we already have a dispatch servlet (MainDispatchServlet), but we want it to be instantiated with spring (to autowire it), that's why we've implemented HttpRequestHandler interface and redirect HttpRequestHandler.handleRequest to Servlet.service (and in that xml we use "proxy" HttpRequestHandlerServlet) -->
     <servlet>
-        <servlet-name>lsfusionDispatch</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-
-    <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
-    <servlet-mapping>
-        <servlet-name>lsfusionDispatch</servlet-name>
-        <url-pattern>/lsfusion/dispatch</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>jnlpHandler</servlet-name>
+        <servlet-name>mainDispatch</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>jnlpHandler</servlet-name>
-        <url-pattern>/client.jnlp</url-pattern>
+        <servlet-name>mainDispatch</servlet-name>
+        <!-- gwt dispatch endpoint is <moduleName>/dispatch -->
+        <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
+        <url-pattern>/main/dispatch</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>readFileHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>readFileHandler</servlet-name>
-        <url-pattern>/readFile</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>readLogoHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>readLogoHandler</servlet-name>
-        <url-pattern>/readLogo</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>readMemoryLimitsHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>readMemoryLimitsHandler</servlet-name>
-        <url-pattern>/readMemoryLimits</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>readFormHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>readFormHandler</servlet-name>
-        <url-pattern>/readForm</url-pattern>
-    </servlet-mapping>
-
+    <!-- API (external requests) servlet -->
     <servlet>
         <servlet-name>externalHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
@@ -99,18 +46,7 @@
     <servlet-mapping>
         <servlet-name>externalHandler</servlet-name>
         <url-pattern>/exec</url-pattern>
-        <url-pattern>/eval</url-pattern>
-        <url-pattern>/eval/action</url-pattern>
-        <url-pattern>/read</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>propertyImageHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>propertyImageHandler</servlet-name>
-        <url-pattern>/propertyImage</url-pattern>
+        <url-pattern>/eval/*</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -131,50 +67,23 @@
         <url-pattern>/downloadFile</url-pattern>
     </servlet-mapping>
 
+    <!--spring MVC-->
+    <!-- xml with mvc settings is <serlvet-name>-servlet.xml, LSFWeb-servlet.xml in our case -->
     <servlet>
-        <servlet-name>captchaHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+        <servlet-name>LSFWeb</servlet-name>
+        <servlet-class>
+            org.springframework.web.servlet.DispatcherServlet
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>captchaHandler</servlet-name>
-        <url-pattern>/jcaptcha</url-pattern>
+        <servlet-name>LSFWeb</servlet-name>
+        <url-pattern>/login</url-pattern>
+        <url-pattern>/main</url-pattern>
     </servlet-mapping>
 
 
-    <listener>
-        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-    </listener>
-
-    <!-- Init RMI Listener -->
-    <listener>
-        <listener-class>lsfusion.http.InitRMIContextListener</listener-class>
-    </listener>
-
-    <!-- UrlRewrite configuration -->
-    <filter>
-        <filter-name>UrlRewriteFilter</filter-name>
-        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
-
-        <!-- you can change status path (defaults to /rewrite-status), must start with / -->
-        <init-param>
-            <param-name>statusPath</param-name>
-            <param-value>/rewrite-status</param-value>
-        </init-param>
-
-        <!-- you can disable status page if desired can be: true, false (default true) -->
-        <init-param>
-            <param-name>statusEnabled</param-name>
-            <param-value>false</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>UrlRewriteFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <!--<dispatcher>FORWARD</dispatcher>-->
-    </filter-mapping>
-
-    <!-- Spring configuration -->
+    <!-- LOG4J configuration -->
     <context-param>
         <param-name>log4jConfigLocation</param-name>
         <param-value>/WEB-INF/classes/log4j.xml</param-value>
@@ -187,14 +96,29 @@
         <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
     </listener>
 
+    <!-- Spring configuration -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/spring/applicationContext-security.xml</param-value>
+        <param-value>
+            /WEB-INF/applicationContext-security.xml
+            /WEB-INF/LSFWeb-servlet.xml
+        </param-value>
     </context-param>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
+    
+    <!-- exposes request params and locale to the thread, used in LSFRemoteAuthenticationProvider and ServerMessages.getString (where there is no explicit request) -->
+    <filter>
+        <filter-name>springRequestContextFilter</filter-name>
+        <filter-class>org.springframework.web.filter.RequestContextFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springRequestContextFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
+    <!-- initializing spring security -->
     <filter>
         <filter-name>springSecurityFilterChain</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -204,15 +128,17 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- sets lsf user locale for request -->
     <filter>
-        <filter-name>springRequestContextFilter</filter-name>
-        <filter-class>lsfusion.http.RequestContextFilter</filter-class>
+        <filter-name>LSFLocaleFilter</filter-name>
+        <filter-class>lsfusion.http.LSFLocaleFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>springRequestContextFilter</filter-name>
+        <filter-name>LSFLocaleFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- CORS -->
     <filter>
         <filter-name>CORS</filter-name>
         <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
@@ -220,8 +146,16 @@
     <filter-mapping>
         <filter-name>CORS</filter-name>
         <url-pattern>/exec</url-pattern>
-        <url-pattern>/eval</url-pattern>
-        <url-pattern>/eval/action</url-pattern>
-        <url-pattern>/read</url-pattern>
+        <url-pattern>/eval/*</url-pattern>
+    </filter-mapping>
+
+    <!-- need to cache static resources - gwt/public and webapp (see urlrewrite.xml) -->
+    <filter>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
 </web-app>

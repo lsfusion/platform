@@ -92,11 +92,11 @@ a:hover {
 }
 
 .ic-left-arrow {
-    background-image: url("images/left_arrow.png");
+    background-image: url("static/images/left_arrow.png");
 }
 
 .ic-right-arrow {
-    background-image: url("images/right_arrow.png");
+    background-image: url("static/images/right_arrow.png");
 }
 
 form label {
@@ -156,11 +156,6 @@ form#login-form {
     float: right;
 }
 
-.triangle {
-    cursor:default;
-    color: #75AEEA;
-}
-
 .errorblock {
     color: #ff0000;
     background-color: #ffEEEE;
@@ -169,4 +164,8 @@ form#login-form {
     text-align: left;
     width: 30em;
     margin: 10px auto;
+}
+
+details summary::-webkit-details-marker {
+    color: #75AEEA;
 }

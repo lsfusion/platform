@@ -1,6 +1,7 @@
 package lsfusion.server.context;
 
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
@@ -54,10 +55,6 @@ public class LogicsInstanceContext extends AbstractContext {
         return null;
     }
 
-    public Long getCurrentConnection() {
-        return null;
-    }
-
     @Override
     public Locale getLocale() {
         return Locale.getDefault();
@@ -65,11 +62,7 @@ public class LogicsInstanceContext extends AbstractContext {
 
     @Override
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
-        try {
-            return new RemoteForm(formInstance, logicsInstance.getRmiManager().getExportPort(), null, stack);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        throw new UnsupportedOperationException("createRemoteForm is not supported in server context");
     }
 
     @Override

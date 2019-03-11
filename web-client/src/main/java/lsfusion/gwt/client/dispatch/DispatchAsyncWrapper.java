@@ -67,10 +67,15 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
                 int maxTries = ErrorHandlingCallback.getMaxTries(caught);
+                boolean isAuthException = ErrorHandlingCallback.isAuthException(caught);
                 if (finalRequestTry <= maxTries) {
-                    if (finalRequestTry == 2) //first retry
-                        GConnectionLostManager.registerFailedRmiRequest();
-                    GExceptionManager.addFailedRmiRequest(caught, action);
+                    if (isAuthException)
+                        GConnectionLostManager.connectionLost(true, true);
+                    else {
+                        if (finalRequestTry == 2) //first retry
+                            GConnectionLostManager.registerFailedRmiRequest();
+                        GExceptionManager.addFailedRmiRequest(caught, action);
+                    }
 
                     Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
                         @Override
@@ -80,9 +85,8 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                     };
                     timer.schedule(1000);
                 } else {
-                    boolean isAuthException = ErrorHandlingCallback.isAuthException(caught);
-                    if (maxTries > -1 || isAuthException) // some connection problem
-                        GConnectionLostManager.connectionLost(isAuthException);
+                    if (maxTries > -1) // some connection problem
+                        GConnectionLostManager.connectionLost(true, isAuthException);
                     DispatchAsyncWrapper.this.onFailure(action, caught, callback);
                 }
             }

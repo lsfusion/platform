@@ -11,13 +11,13 @@ import java.util.Map;
 
 public interface RemoteFormInterface extends PendingRemoteInterface {
 
-    // структура формы
+    // form structure + design
 
     byte[] getRichDesignByteArray() throws RemoteException;
 
     Integer getInitFilterPropertyDraw() throws RemoteException;
 
-    // синхронное общение с сервером
+    // sync communication with server
 
     ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException;
 
@@ -29,7 +29,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     void interrupt(boolean cancelable) throws RemoteException;
 
-    // события формы
+    // events : form
 
     void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
@@ -39,7 +39,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
 
-    // события групп объектов
+    // events : group objects
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException;
 
@@ -53,7 +53,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     ServerResponse changeClassView(long requestIndex, long lastReceivedRequestIndex, int groupID, ClassViewType classView) throws RemoteException;
 
-    // деревья
+    // events : trees
 
     ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException;
 
@@ -61,17 +61,17 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
-    // свойства
+    // events : properties
 
     ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException;
 
     ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, int idNotification) throws RemoteException;
 
-    // асинхронные вызовы
+    // async events : properties
 
     ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Long pushAdd) throws RemoteException;
 
-    // фильтры / порядки
+    // events : filters + orders
 
     ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, long idClass) throws RemoteException;
 
@@ -83,11 +83,9 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, int groupID, int filterID) throws RemoteException;
 
-    // отчеты
+    // group object shortcut actions (system toolbar)
 
     ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException;
-
-    // быстрая информация
 
     int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;
 
@@ -100,7 +98,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
     
     void saveGrouping(long requestIndex, long lastReceivedRequestIndex, FormGrouping grouping) throws RemoteException;
 
-    // пользовательские настройки
+    // user design customization
 
     ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps) throws RemoteException;
 

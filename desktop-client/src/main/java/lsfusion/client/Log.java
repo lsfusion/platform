@@ -1,9 +1,9 @@
 package lsfusion.client;
 
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.exceptions.RemoteInternalException;
-import lsfusion.interop.exceptions.RemoteServerException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -106,22 +106,15 @@ public final class Log {
         }
     }
 
-    public static void error(String message, Throwable t) {
-        error(message, t, null, null);
-    }
+    public static void error(Throwable remote) {
+        assert remote.getCause() == null;
+    
+        String message = remote.getMessage();
+        if(remote instanceof RemoteInternalException)
+            message += "\n" + getString("errors.contact.administrator");
 
-    public static void error(RemoteServerException remote) {
-        if(remote instanceof RemoteInternalException) {
-            Log.error(remote.getMessage() + "\n" + getString("errors.contact.administrator"), remote, ((RemoteInternalException) remote).javaStack, ((RemoteInternalException) remote).lsfStack);
-        } else {
-            Log.error(remote.getMessage(), remote);
-        }
-    }
-    private static void error(String message, Throwable t, String remoteJavaStack, String lsfStack) {
-        String javaStack = ExceptionUtils.getStackTraceString(t);
-        if(remoteJavaStack != null)
-            javaStack = remoteJavaStack + '\n' + javaStack;
-        error(message, null, null, javaStack, lsfStack, false);
+        Pair<String, String> exStacks = RemoteInternalException.getExStacks(remote);
+        error(message, null, null, exStacks.first, exStacks.second, false);
     }
 
     public static void messageWarning(String message, List<String> titles, List<List<String>> data) {

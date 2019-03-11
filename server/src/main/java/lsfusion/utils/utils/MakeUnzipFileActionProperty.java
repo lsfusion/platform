@@ -10,6 +10,7 @@ import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -28,7 +29,7 @@ import java.util.zip.ZipInputStream;
 
 public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
 
-    public MakeUnzipFileActionProperty(ScriptingLogicsModule LM) {
+    public MakeUnzipFileActionProperty(UtilsLogicsModule LM) {
         super(LM);
     }
 

@@ -12,6 +12,7 @@ import lsfusion.gwt.shared.view.filter.GCompare;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static lsfusion.gwt.shared.view.filter.GCompare.EQUALS;
 import static lsfusion.gwt.shared.view.filter.GCompare.NOT_EQUALS;
@@ -20,7 +21,7 @@ public abstract class GFileType extends GDataType {
     public boolean multiple;
     public boolean storeName;
     public String description;
-    public ArrayList<String> extensions;
+    public ArrayList<String> validContentTypes;
 
     public GFileType() {
     }
@@ -42,7 +43,7 @@ public abstract class GFileType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new FileGridCellEditor(editManager, editProperty, description, multiple, storeName, extensions);
+        return new FileGridCellEditor(editManager, editProperty, description, multiple, storeName, validContentTypes);
     }
 
     @Override

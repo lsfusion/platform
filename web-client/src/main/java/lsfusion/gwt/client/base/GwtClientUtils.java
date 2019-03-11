@@ -43,7 +43,7 @@ public class GwtClientUtils {
     }
 
     public static String getLoginUrl() {
-        return getPageUrlPreservingParameters("login.jsp");
+        return getPageUrlPreservingParameters("login");
     }
 
     public static void relogin() {
@@ -54,11 +54,15 @@ public class GwtClientUtils {
         Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
     }
 
-    public static void downloadFile(String name, String displayName) {
+    public static void downloadFile(String name, String displayName, String extension) {
         if(name != null) {
-            String fileUrl = getWebAppBaseURL() + "downloadFile?name=" + name + (displayName != null ? "&displayName=" + displayName : "");
-            Window.open(fileUrl, displayName != null ? displayName : name, "");
+            String fileUrl = getDownloadURL(name, displayName, extension, true);
+            Window.open(fileUrl, "_blank", ""); // displayName != null ? displayName : name
         }
+    }
+
+    public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
+        return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension, actionFile);
     }
 
     public static Map<String, String> getPageParameters() {
@@ -125,6 +129,11 @@ public class GwtClientUtils {
     public static String getWebAppBaseURL() {
         String webAppRoot = getPageSetupArgument("webAppRoot");
         return webAppRoot != null ? webAppRoot : GWT.getHostPageBaseURL();
+    }
+    
+    public static String getLogicsName() {
+        String logicsName = getPageSetupArgument("logicsName");
+        return logicsName != null ? logicsName : "default";
     }
 
     public static void stopPropagation(NativeEvent event) {

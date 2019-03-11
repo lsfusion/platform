@@ -5,11 +5,11 @@ import java.rmi.RemoteException;
 // ошибка связи
 public abstract class RemoteClientException extends RuntimeException {
 
-    public final RemoteException cause;
-    
-    public RemoteClientException(RemoteException cause) {
-        super(cause);
-        
-        this.cause = cause;        
+    public final long reqId;
+
+    public RemoteClientException(String message, long reqId) {
+        super(message);
+
+        this.reqId = reqId;
     }
 }

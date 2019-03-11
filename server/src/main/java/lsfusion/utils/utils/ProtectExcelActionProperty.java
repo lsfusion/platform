@@ -7,6 +7,7 @@ import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -27,7 +28,7 @@ public class ProtectExcelActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface passwordInterface;
 
-    public ProtectExcelActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public ProtectExcelActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

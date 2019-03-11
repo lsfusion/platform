@@ -32,7 +32,7 @@ public class AssertSynchronizedAspect {
             Thread prevThread = prevWeakThread.get();
             if(prevThread != currentThread && !suppress.containsKey(currentThread) && !(prevThread != null && suppress.containsKey(prevThread)))
                 ServerLoggers.assertLog(false, "ASSERT SYNCHRONIZED " + object + '\n' +
-                     (prevThread == null? "DEAD" : prevThread.toString() + '\n' + ExceptionUtils.getStackTrace(prevThread.getStackTrace())) + " PREV CURRENT " + currentThread + '\n');
+                     (prevThread == null? "DEAD" : prevThread.toString() + '\n' + ExceptionUtils.getStackTrace(prevThread)) + " PREV CURRENT " + currentThread + '\n');
         }
         
         try {

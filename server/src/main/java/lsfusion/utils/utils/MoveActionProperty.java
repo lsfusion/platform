@@ -3,6 +3,7 @@ package lsfusion.utils.utils;
 import com.google.common.base.Throwables;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -16,7 +17,7 @@ public class MoveActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface destinationInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public MoveActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public MoveActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

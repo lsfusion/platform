@@ -46,7 +46,7 @@ public class CSVClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "csv";
     }
 

@@ -2,6 +2,7 @@ package lsfusion.utils.utils;
 
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -13,7 +14,7 @@ import java.util.Iterator;
 public class PrintToLogActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface stringInterface;
 
-    public PrintToLogActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public PrintToLogActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

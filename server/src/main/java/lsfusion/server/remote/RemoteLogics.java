@@ -1,54 +1,28 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ApiResourceBundle;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.NavigatorInfo;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.RemoteMessageException;
-import lsfusion.interop.form.screen.ExternalScreen;
-import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.PreAuthentication;
+import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.type.ParseException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
     protected final static Logger logger = ServerLoggers.remoteLogger;
@@ -58,19 +32,13 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     protected NavigatorsManager navigatorsManager;
 
+    private RMIManager rmiManager; // for sessions
+
     protected RestartManager restartManager;
     
     protected lsfusion.server.logics.SecurityManager securityManager;
 
     protected DBManager dbManager;
-
-    private VMOptions clientVMOptions;
-
-    private String displayName;
-    private String logicsLogo;
-    private String name;
-    
-    private String clientHideMenu;
 
     public void setBusinessLogics(T businessLogics) {
         this.businessLogics = businessLogics;
@@ -82,6 +50,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void setNavigatorsManager(NavigatorsManager navigatorsManager) {
         this.navigatorsManager = navigatorsManager;
+    }
+
+    public void setRmiManager(RMIManager rmiManager) {
+        this.rmiManager = rmiManager;
     }
 
     public void setRestartManager(RestartManager restartManager) {
@@ -96,24 +68,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         this.dbManager = dbManager;
     }
 
-    public void setClientVMOptions(VMOptions clientVMOptions) {
-        this.clientVMOptions = clientVMOptions;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public void setLogicsLogo(String logicsLogo) {
-        this.logicsLogo = logicsLogo;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public void setClientHideMenu(String clientHideMenu) {
-        this.clientHideMenu = clientHideMenu;
+    public RemoteLogics() {
+        super("logics");
     }
 
     @Override
@@ -123,13 +79,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         Assert.notNull(restartManager, "restartManager must be specified");
         Assert.notNull(securityManager, "securityManager must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
-        Assert.notNull(clientVMOptions, "clientVMOptions must be specified");
         //assert logicsInstance by checking the context
         Assert.notNull(getContext(), "logicsInstance must be specified");
-
-        if (name == null) {
-            name = businessLogics.getClass().getSimpleName();
-        }
     }
 
     @Override
@@ -144,80 +95,78 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
-        if (restartManager.isPendingRestart() && (navigatorInfo.login == null || !navigatorInfo.login.equals("admin")))
-            throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
-
-        return navigatorsManager.createNavigator(getStack(), isFullClient, navigatorInfo, reuseSession);
+    public RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) {
+        RemoteNavigator.checkEnableUI(token.isAnonymous());
+        checkClientVersion(navigatorInfo);
+        
+        return navigatorsManager.createNavigator(getStack(), token, navigatorInfo);
     }
 
-    @Override
-    public Set<String> syncUsers(Set<String> userNames) throws RemoteException {
-        try {
-            return businessLogics.authenticationLM.syncUsers(userNames);
-        } catch (Exception e) {
-            throw new RuntimeException("Error synchronizing user names", e);
+    private void checkClientVersion(NavigatorInfo navigatorInfo) {
+        String error = BaseUtils.checkClientVersion(BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion(),
+                                                 navigatorInfo.platformVersion, navigatorInfo.apiVersion);
+        if(error != null) {
+            throw new RemoteMessageException(error);
         }
     }
 
-    public Long getComputer(String strHostName) {
-        return dbManager.getComputer(strHostName, getStack());
+    @Override
+    public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
+        RemoteSession.checkEnableApi(token.isAnonymous());
+
+        return createSession(rmiManager.getExportPort(), token, sessionInfo);
+    }
+
+    public RemoteSession createSession(int port, AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
+        try {
+            return new RemoteSession(port, getContext().getLogicsInstance(), token, sessionInfo, getStack());
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    private ExternalResponse runInNewSession(AuthenticationToken token, SessionInfo sessionInfo, CallableWithParam<RemoteSession, ExternalResponse> callable) throws RemoteException {
+        // in theory it's better to cache sessions for a token in some pool (clearing them after usage) 
+        RemoteSession session = createSession(-1, token, sessionInfo);
+        try {
+            return callable.call(session);
+        } finally {
+            session.localClose();
+        }
     }
 
     @Override
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException {
-        return businessLogics.getDaemonTasks(compId);
+    public ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, final String action, final ExternalRequest request) throws RemoteException {
+        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
+            public ExternalResponse call(RemoteSession session) {
+                return session.exec(action, request);
+            }
+        });
     }
 
-    public ExternalScreen getExternalScreen(int screenID) {
-        return businessLogics.getExternalScreen(screenID);
-    }
-
-    public ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException {
-        return businessLogics.getExternalScreenParameters(screenID, computerId);
+    @Override
+    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final Object paramScript, final ExternalRequest request) throws RemoteException {
+        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
+            public ExternalResponse call(RemoteSession session) {
+                return session.eval(action, paramScript, request);
+            }
+        });
     }
 
     public void ping() throws RemoteException {
         //for filterIncl-alive
     }
 
-    @Override
-    public Integer getApiVersion() {
-        return BaseUtils.getApiVersion();
-    }
-
-    @Override
-    public String getPlatformVersion() {
-        return BaseUtils.getPlatformVersion();
-    }
-
-    public GUIPreferences getGUIPreferences() throws RemoteException {
-        byte[] logicsLogoBytes = null;
-        try {
-            if (logicsLogo != null && !logicsLogo.isEmpty())
-                logicsLogoBytes = IOUtils.toByteArray(getClass().getResourceAsStream("/" + logicsLogo));
-        } catch (IOException e) {
-            logger.error("Error reading logics logo: ", e);
-        }
-        return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu));
-    }
-
-    public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) {
-        Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerId);
+    public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) {
+        Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerName);
         pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : MapFact.<Long, List<Long>>getGlobalConcurrentHashMap();
         pingInfoEntry.putAll(pingInfoMap);
-        RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
-    }
-
-    // web spring authentication
-    @Override
-    public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
-        return securityManager.preAuthenticateUser(userName, password, language, country, getStack());
+        RemoteLoggerAspect.pingInfoMap.put(computerName, pingInfoEntry);
     }
 
     @Override
-    public VMOptions getClientVMOptions() throws RemoteException {
-        return clientVMOptions;
+    public AuthenticationToken authenticateUser(String userName, String password) throws RemoteException {
+        return securityManager.authenticateUser(userName, password, getStack());
     }
 
     @Override
@@ -226,167 +175,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public void remindPassword(String email, String localeLanguage) throws RemoteException {
-//        securityManager.remindPassword(email, localeLanguage);
-    }
-
-    public boolean isSingleInstance() throws RemoteException {
-        return Settings.get().isSingleInstance();
-    }
-
-    @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charsetName) {
-        List<Object> returnList;
-        try {
-            LAP property = businessLogics.findActionByCompoundName(action);
-            if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params, Charset.forName(charsetName));
-            } else {
-                throw new RuntimeException(String.format("Action %s was not found", action));
-            }
-        } catch (ParseException | SQLHandledException | SQLException | IOException e) {
-            throw new RuntimeException(e);
-        }
-        return returnList;
-    }
-
-    @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charsetName) {
-        List<Object> returnList = new ArrayList<>();
-        if (paramScript != null) {
-            try {
-                Charset charset = Charset.forName(charsetName);
-                String script = StringClass.text.parseHTTP(paramScript, charset);
-                if (action) {
-                    //оборачиваем в run без параметров
-                    script = "run() = {" + script + ";\n};";
-                }
-                LAP<?> runAction = businessLogics.evaluateRun(script);
-                if (runAction != null)
-                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            throw new RuntimeException("Eval script was not found");
-        }
-        return returnList;
-    }
-
-    // system actions that are needed for native clients     
-    public boolean isClientNativeRESTAction(ActionProperty action) {
-        return false;
-    }
-    
-    private List<Object> executeExternal(LAP<?> property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
-        if(!isClientNativeRESTAction(property.property) && !Settings.get().isEnableRESTApi())
-            throw new RuntimeException("REST Api is disabled. It can be enabled using setting enableRESTApi.");
-        try (DataSession session = dbManager.createSession()) {
-            property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
-
-            return readReturnProperties(session, returnCanonicalNames);
-        }
-    }
-
-    private List<Object> readReturnProperties(DataSession session, String[] returnCanonicalNames) throws SQLException, SQLHandledException, IOException {
-        LCP[] returnProps; 
-        if (returnCanonicalNames.length > 0) {
-            returnProps = new LCP[returnCanonicalNames.length];
-            for (int i = 0; i < returnCanonicalNames.length; i++) {
-                String returnCanonicalName = returnCanonicalNames[i];
-                LCP returnProperty = businessLogics.findProperty(returnCanonicalName);
-                if (returnProperty == null)
-                    throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
-                returnProps[i] = returnProperty;
-            }
-        } else {
-            returnProps = new LCP[] {businessLogics.LM.exportFile};
-        }
-
-        List<Object> returnList = new ArrayList<>();
-        for (LCP returnProperty : returnProps)
-            returnList.addAll(readReturnProperty(session, returnProperty));
-        return returnList;
-    }
-
-    private List<Object> readReturnProperty(DataSession session, LCP<?> returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
-        Object returnValue = returnProperty.read(session, params);
-        Type returnType = returnProperty.property.getType();
-        return readReturnProperty(returnValue, returnType);
-    }
-
-    private List<Object> readReturnProperty(Object returnValue, Type returnType) throws IOException {
-        List<Object> returnList = new ArrayList<>();
-//        boolean jdbcSingleRow = false;
-//        if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
-//            if (((FileData) returnValue).getExtension().equals("jdbc")) {
-//                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(((FileData) returnValue).getRawFile());
-//                if (jdbcTable.singleRow) {
-//                    ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
-//                    for (String field : jdbcTable.fields) {
-//                        Type fieldType = jdbcTable.fieldTypes.get(field);
-//                        if(row == null)
-//                            returnList.add(null);
-//                        else
-//                            returnList.addAll(readReturnProperty(row.get(field), fieldType));
-//                    }
-//                    jdbcSingleRow = true;
-//                }
-//            }
-//        }
-//        if (!jdbcSingleRow)
-            returnList.add(returnType.formatHTTP(returnValue, null));
-        return returnList;
-    }
-
-    @Override
-    public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
-        return securityManager.addUser(username, email, password, firstName, lastName, localeLanguage, getStack());
-    }
-
-    @Deprecated // change to http request with the common mechanism
-    @Override
-    public Map<String, String> readMemoryLimits() {
-        Map<String, String> memoryLimitMap = new HashMap<>();
-        try (DataSession session = dbManager.createSession()) {
-            KeyExpr memoryLimitExpr = new KeyExpr("memoryLimit");
-            ImRevMap<Object, KeyExpr> memoryLimitKeys = MapFact.singletonRev((Object) "memoryLimit", memoryLimitExpr);
-            QueryBuilder<Object, Object> query = new QueryBuilder<>(memoryLimitKeys);
-
-            String[] names = new String[]{"name", "maxHeapSize", "vmargs"};
-            LCP[] properties = businessLogics.securityLM.findProperties("name[MemoryLimit]", "maxHeapSize[MemoryLimit]",
-                    "vmargs[MemoryLimit]");
-            for (int j = 0; j < properties.length; j++) {
-                query.addProperty(names[j], properties[j].getExpr(memoryLimitExpr));
-            }
-            query.and(businessLogics.securityLM.findProperty("name[MemoryLimit]").getExpr(memoryLimitExpr).getWhere());
-
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
-            for (ImMap<Object, Object> entry : result.values()) {
-                String name = (String) entry.get("name");
-                String line = "";
-                String maxHeapSize = (String) entry.get("maxHeapSize");
-                if(maxHeapSize != null)
-                    line += "maxHeapSize=" + maxHeapSize;
-                String vmargs = (String) entry.get("vmargs");
-                if(vmargs != null)
-                    line += (line.isEmpty() ? "" : "&") + "vmargs=" + URLEncoder.encode(vmargs, "utf-8");
-                memoryLimitMap.put(name, line);
-            }
-        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException | UnsupportedEncodingException e) {
-            logger.error("Error reading MemoryLimit: ", e);
-        }
-        return memoryLimitMap;
-    }
-
-    @Override
     protected boolean isEnabledUnreferenced() { // иначе когда отключаются все клиенты логика закрывается
         return false;
-    }
-
-    @Override
-    public String getSID() {
-        return "logics";
     }
 
     @Override

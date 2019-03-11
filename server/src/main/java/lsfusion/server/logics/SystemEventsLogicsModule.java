@@ -3,10 +3,8 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.interop.exceptions.FatalHandledRemoteException;
-import lsfusion.interop.exceptions.HandledRemoteException;
-import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
-import lsfusion.interop.exceptions.RemoteServerException;
+import lsfusion.base.Pair;
+import lsfusion.interop.exceptions.*;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
@@ -24,6 +22,7 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -190,11 +189,18 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onClientStarted = findAction("onClientStarted[]");
     }
 
-    public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, String lsfStack, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
-        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-        String message = replaceNonUTFCharacters(Throwables.getRootCause(t).getLocalizedMessage());
+    public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
+        assert t.getCause() == null;
+        
+        String message = replaceNonUTFCharacters(t.getMessage());
         String errorType = t.getClass().getName();
-        String erTrace = replaceNonUTFCharacters(ExceptionUtils.getStackTraceString(t));
+
+        Pair<String, String> exStacks = RemoteInternalException.getExStacks(t);
+        String javaStack = replaceNonUTFCharacters(exStacks.first);
+        String lsfStack = exStacks.second;
+
+        String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
+        logger.error( message + " at '" + time + "' from '" + clientName + "': " + '\n' + ExceptionUtils.getExStackTrace(javaStack, lsfStack));
 
         try (DataSession session = ThreadLocalContext.createSession()) {
             DataObject exceptionObject;
@@ -203,15 +209,15 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
                     exceptionObject = session.addObject(remoteServerException);
                 } else if (t instanceof RemoteException) {
                     exceptionObject = session.addObject(unhandledRemoteException);
-                } else if (t instanceof HandledRemoteException) {
-                    HandledRemoteException handled = (HandledRemoteException) t;
+                } else if (t instanceof RemoteClientException) {
+                    RemoteClientException handled = (RemoteClientException) t;
 
-                    if (t instanceof FatalHandledRemoteException)
+                    if (t instanceof FatalRemoteClientException)
                         exceptionObject = session.addObject(fatalHandledRemoteException);
                     else {
                         exceptionObject = session.addObject(nonFatalHandledRemoteException);
 
-                        NonFatalHandledRemoteException nonFatal = (NonFatalHandledRemoteException) t;
+                        NonFatalRemoteClientException nonFatal = (NonFatalRemoteClientException) t;
                         countNonFatalHandledException.change(nonFatal.count, session, exceptionObject);
                         abandonedNonFatalHandledException.change(nonFatal.abandoned, session, exceptionObject);
                     }
@@ -232,7 +238,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             }
             messageException.change(message, session, exceptionObject);
             typeException.change(errorType, session, exceptionObject);
-            erTraceException.change(erTrace, session, exceptionObject);
+            erTraceException.change(javaStack, session, exceptionObject);
             lsfTraceException.change(lsfStack, session, exceptionObject);
             dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
 

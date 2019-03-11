@@ -1,6 +1,8 @@
 package lsfusion.interop.action;
 
 import lsfusion.base.RawFileData;
+import lsfusion.interop.event.EventBus;
+import lsfusion.interop.event.ICleanListener;
 
 import java.io.IOException;
 import java.util.Map;
@@ -66,5 +68,7 @@ public interface ClientActionDispatcher {
 
     void execute(MaximizeFormClientAction action);
 
-    String execute(WriteToComPortClientAction action);
+    EventBus getEventBus();
+
+    void addCleanListener(ICleanListener daemonTask);
 }

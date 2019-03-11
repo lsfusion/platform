@@ -10,33 +10,23 @@ TABLE computer (Computer);
 hostname '{authentication.host.name.computer}' = DATA VARISTRING[100] (Computer) IN id;
 computer = GROUP LAST Computer computer BY hostname(computer);
 
-// Сканер
-scannerComPort 'Com-port сканнера' = DATA INTEGER (Computer);
-scannerSingleRead 'Одно событие на весь штрих-код' = DATA BOOLEAN (Computer);
-
-//Считыватель дисконтных карт
-useDiscountCardReader 'Включить считыватель дисконтных карт' = DATA BOOLEAN (Computer);
-
-//Весы
-scalesComPort 'Com-port весов' = DATA INTEGER (Computer);
-
 FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL
-    PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) hostname
     
     EDIT Computer OBJECT c
 ;
 
 FORM computers '{authentication.computers}'
     OBJECTS c = Computer
-    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) READONLY hostname
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE GRID
 ;
 
 FORM computersDialog '{authentication.computers}'
     OBJECTS c = Computer
     
-    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) READONLY hostname
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Computer OBJECT c     
@@ -95,6 +85,13 @@ changeSHA256Password(CustomUser customUser)  {
     }
 }
 
+// tokens
+currentAuthToken = NATIVE TEXT();    
+secret = DATA TEXT();
+getAuthToken() {
+    exportText() <- currentAuthToken();
+} @@api;
+
 forbidChangePassword = ABSTRACT BOOLEAN (CustomUser);
 
 minHashLength = DATA INTEGER ();
@@ -145,6 +142,12 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
                                                                 THEN clientCountry(user)
                                                                 ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
 
+// "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
+getCurrentUserLocale() {
+    FOR CustomUser user AS CustomUser = currentUser() DO
+        EXPORT JSON FROM language(user), country(user); 
+} @@api;
+
 timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
 twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
 
@@ -162,6 +165,14 @@ useRequestTimeout() = useRequestTimeout(currentUser());
 fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser); 
 
 // -------------------------- Forms ---------------------------- //
+
+// sync user logins saved on client 
+syncUsers ABSTRACT LIST (VARISTRING[100], JSONFILE) @@noauth;
+syncUsers (VARISTRING[100] computer, JSONFILE users) + { 
+    LOCAL syncSavedUser = STRING[100](INTEGER);
+    IMPORT FROM users TO syncSavedUser=value;
+    EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i));
+}
 
 FORM customUser '{authentication.custom.user}'
     OBJECTS u=CustomUser PANEL

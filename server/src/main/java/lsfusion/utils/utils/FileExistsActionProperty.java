@@ -3,6 +3,7 @@ package lsfusion.utils.utils;
 import com.google.common.base.Throwables;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -16,7 +17,7 @@ public class FileExistsActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface pathInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public FileExistsActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public FileExistsActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

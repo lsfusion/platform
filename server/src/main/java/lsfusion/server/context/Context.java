@@ -52,14 +52,12 @@ public interface Context {
     Object[] requestUserInteraction(ClientAction... actions);
 
     // для создания форм
-    SecurityPolicy getSecurityPolicy();
     FocusListener getFocusListener();
     CustomClassListener getClassListener();
     Long getCurrentComputer();
     Long getCurrentUser();
     Long getCurrentUserRole();
-    Long getCurrentConnection();
-    
+
     String localize(LocalizedString s);
     String localize(LocalizedString s, Locale locale);
     Locale getLocale();

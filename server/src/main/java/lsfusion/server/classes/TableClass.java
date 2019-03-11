@@ -43,7 +43,7 @@ public class TableClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getDefaultCastExtension() {
+    public String getExtension() {
         return "table";
     }
 

@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -19,7 +20,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface charsetInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public ListFilesActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public ListFilesActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

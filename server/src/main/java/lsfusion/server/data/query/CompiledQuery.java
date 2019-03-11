@@ -383,7 +383,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             if(pending.contains(key)) {
                 if(stackUsedPendingKeys.empty())
-                    throw new RuntimeException(ThreadLocalContext.localize("{exceptions.incorrect.set.operation}"));
+                    throw getIncorrectOperationException();
                 else
                     stackUsedPendingKeys.peek().add(key);
             }
@@ -1630,6 +1630,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
     }
 
+    public static RuntimeException getIncorrectOperationException() {
+        return new RuntimeException(ThreadLocalContext.localize("{exceptions.incorrect.set.operation}"));
+    }
+
     private static <V> ImMap<V, String> castProperties(ImMap<V, String> propertySelect, final ImMap<V, Type> castTypes, final SQLSyntax syntax, final TypeEnvironment typeEnv) { // проставим Cast'ы для null'ов
         return propertySelect.mapValues(new GetKeyValue<String, V, String>() {
             public String getMapValue(V key, String propertyString) {
@@ -1930,11 +1934,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }
             });
         mMapValues.exclAdd(SQLSession.userParam, env.getSQLUser());
+        mMapValues.exclAdd(SQLSession.authTokenParam, env.getSQLAuthToken());
         mMapValues.exclAdd(SQLSession.computerParam, env.getSQLComputer());
         mMapValues.exclAdd(SQLSession.formParam, env.getSQLForm());
         mMapValues.exclAdd(SQLSession.connectionParam, env.getSQLConnection());
         mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
-        mMapValues.exclAdd(SQLSession.isFullClientParam, env.getIsFullClient());
         mMapValues.exclAdd(SQLSession.isDebugParam, new LogicalParseInterface() {
             public boolean isTrue() {
                 return SystemProperties.inDevMode;

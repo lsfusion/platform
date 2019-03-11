@@ -73,7 +73,6 @@
         <jxlayer.version>3.0.4</jxlayer.version>
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
-        <formsrt.version>7.0.3</formsrt.version>
         <jssc.version>0.8</jssc.version>
         <!--<jtds.version>1.2.4</jtds.version>-->
         <mssql.version>4.0</mssql.version>
@@ -95,11 +94,11 @@
         <org.jdbf.version>1.1</org.jdbf.version>
         <org.jfree.version>1.0.23</org.jfree.version>
 
-        <spring.version>3.0.5.RELEASE</spring.version>
+        <spring.version>4.3.22.RELEASE</spring.version>
+        <spring.security.version>4.2.11.RELEASE</spring.security.version>
         <aspectj.version>1.8.5</aspectj.version>
 
         <servlet.api.version>2.5</servlet.api.version>
-        <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
         <json.version>20180813</json.version>
         <junrar.version>0.7</junrar.version>
@@ -107,8 +106,8 @@
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
 
-        <httpcomponents.httpmime.version>4.5.4</httpcomponents.httpmime.version>
-        <httpcomponents.httpclient.version>4.5.4</httpcomponents.httpclient.version>
+        <httpcomponents.httpmime.version>4.5.7</httpcomponents.httpmime.version>
+        <httpcomponents.httpclient.version>4.5.7</httpcomponents.httpclient.version>
         <httpcomponents.httpclient-android.version>4.3.5.1</httpcomponents.httpclient-android.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
@@ -498,11 +497,6 @@
                 <version>${jcalendar.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.intellij</groupId>
-                <artifactId>forms_rt</artifactId>
-                <version>${formsrt.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jssc</groupId>
                 <artifactId>jssc</artifactId>
                 <version>${jssc.version}</version>
@@ -607,17 +601,17 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-core</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -663,11 +657,6 @@
                 <artifactId>servlet-api</artifactId>
                 <version>${servlet.api.version}</version>
                 <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.octo.captcha</groupId>
-                <artifactId>jcaptcha</artifactId>
-                <version>${jcaptcha.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.validation</groupId>

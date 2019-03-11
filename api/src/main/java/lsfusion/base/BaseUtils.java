@@ -44,7 +44,7 @@ public class BaseUtils {
 
     //client auto restart in dev mode + charHeight option for property
     public static Integer getApiVersion() {
-        return 81;
+        return 82;
     }
 
     public static String getPlatformVersion() {
@@ -53,6 +53,21 @@ public class BaseUtils {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    public static String checkClientVersion(String serverPlatformVersion, Integer serverApiVersion, String clientPlatformVersion, Integer clientApiVersion) {
+        String serverVersion = null;
+        String clientVersion = null;
+        if(clientPlatformVersion != null && !clientPlatformVersion.equals(serverPlatformVersion)) {
+            serverVersion = serverPlatformVersion;
+            clientVersion = clientPlatformVersion;
+        } else {
+            if(!clientApiVersion.equals(serverApiVersion)) {
+                serverVersion = serverPlatformVersion + " [" + serverApiVersion + "]";
+                clientVersion = clientPlatformVersion + " [" + clientApiVersion + "]";
+            }
+        }
+        return serverVersion != null ? getString("check.client.version", serverVersion, clientVersion) : null;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {
@@ -2724,5 +2739,21 @@ public class BaseUtils {
             }
         }
         return result;
+    }
+
+    private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    public static String generatePassword(int length, boolean useAtLeastOneDigit, boolean useBothRegisters) {
+        String password = null;
+        while (password == null || (useAtLeastOneDigit && !password.matches(".*\\d.*")) || (useBothRegisters && (!password.matches(".*[A-Z].*") || !password.matches(".*[a-z].*")))) {
+            StringBuilder passwordBuilder = new StringBuilder(length);
+            Random random = new Random(System.nanoTime());
+
+            for (int i = 0; i < length; i++) {
+                passwordBuilder.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+            }
+            password = passwordBuilder.toString();
+        }
+        return password;
     }
 }
