@@ -16,7 +16,6 @@ import java.awt.event.*;
 import java.util.List;
 
 import static lsfusion.base.BaseUtils.trimToNull;
-import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.LSFUSION_CLIENT_HOSTPORT;
 
 public class LoginDialog extends JDialog {
@@ -24,14 +23,13 @@ public class LoginDialog extends JDialog {
 
     private JPanel contentPane;
     private JButton buttonOK;
-    private boolean disableOK = false;
+    private String checkVersionError;
     private JButton buttonCancel;
     private JComboBox loginBox;
     private JPasswordField passwordField;
     private JComboBox serverHostComboBox;
     private JCheckBox savePasswordCheckBox;
     private JCheckBox useAnonymousUICheckBox;
-    private boolean hasAnonymousUI = false;
     private JLabel warningLabel;
     private JPanel warningPanel;
     private JComboBox serverDBComboBox;
@@ -248,12 +246,11 @@ public class LoginDialog extends JDialog {
             Main.logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
             imageLabel.setIcon(Main.getLogo());
 
-            this.hasAnonymousUI = hasAnonymousUI;
             useAnonymousUICheckBox.setVisible(hasAnonymousUI);
             updateAnonymousUIActivity();
 
             setWarningMsg(error);
-            disableOK = error != null;
+            checkVersionError = error;
             pack();
         }
     }
@@ -293,7 +290,7 @@ public class LoginDialog extends JDialog {
 
     private boolean isOkEnabled() {
         Object item = serverHostComboBox.getEditor().getItem();
-        return !disableOK && !((String) loginBox.getEditor().getItem()).isEmpty()
+        return checkVersionError == null && !((String) loginBox.getEditor().getItem()).isEmpty()
                 && (item instanceof ServerInfo || isValid(item.toString()));
     }
 
@@ -340,9 +337,11 @@ public class LoginDialog extends JDialog {
     }
 
     public void setWarningMsg(String msg) {
-        warningLabel.setText(msg);
-        warningPanel.setVisible(msg != null && !msg.isEmpty());
-        pack();
+        if(checkVersionError == null) {
+            warningLabel.setText(msg);
+            warningPanel.setVisible(msg != null && !msg.isEmpty());
+            pack();
+        }
     }
 
     public void setAutoLogin(boolean autoLogin) {
