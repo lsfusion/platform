@@ -7,6 +7,7 @@ import lsfusion.http.provider.logics.LogicsSessionObject;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.remote.AuthenticationToken;
@@ -49,6 +50,8 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
                         return new Pair<>(authToken, getUserLocale(sessionObject.remoteLogics, authentication, authToken));
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());
+                    } catch (LockedException le) {
+                        throw new org.springframework.security.authentication.LockedException(le.getMessage());
                     } catch (RemoteMessageException le) {
                         throw new RuntimeException(le.getMessage());
                     }

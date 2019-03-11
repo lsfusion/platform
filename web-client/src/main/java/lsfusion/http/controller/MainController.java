@@ -8,6 +8,8 @@ import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,11 @@ public class MainController {
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            return "redirect:/main"; // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+        }
+        
         ServerSettings serverSettings = getServerSettings(request);
 
         model.addAttribute("title", getTitle(serverSettings));
@@ -60,11 +67,11 @@ public class MainController {
     }
 
     private String getLogicsLogo(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "static/images/logo.png";
+        return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "static/noauth/logo.png";
     }
 
     private String getLogicsIcon(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "favicon.ico";
+        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "static/noauth/favicon.ico";
     }
     
     private String getLogicsName(ServerSettings serverSettings) {
