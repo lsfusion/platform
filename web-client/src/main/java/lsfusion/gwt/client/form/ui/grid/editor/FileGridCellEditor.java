@@ -324,6 +324,21 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
             }
         });
 
+        focusPanel.addDropHandler(new DropHandler() {
+            @Override
+            public void onDrop(DropEvent event) {
+                // Nothing to do, avoid the default browser behaviour which is to open the file
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
+
+        focusPanel.addDragOverHandler(new DragOverHandler() {
+            public void onDragOver(DragOverEvent event) {
+                // Nothing to do, avoid the default browser behaviour which is to open the file
+            }
+        });
+
         VerticalPanel vp = new VerticalPanel();
         vp.add(focusPanel);
         vp.setCellHeight(focusPanel, "100%");
