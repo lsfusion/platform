@@ -496,6 +496,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return interfaces.mapList(ListFact.fromJavaList(signature)).removeNulls();
     }
 
+    public List<ResolveClassSet> getExplicitClasses(ImOrderSet<T> interfaces) {
+        if(explicitClasses == null)
+            return null;
+        return interfaces.mapList(explicitClasses).toJavaList();
+    }
+
     public void setExplicitClasses(ImOrderSet<T> interfaces, List<ResolveClassSet> signature) {
         this.explicitClasses = getPackedSignature(interfaces, signature);
     }

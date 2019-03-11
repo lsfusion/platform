@@ -168,6 +168,10 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         return PropertyObjectEntity.create(property, getRevMap(objects), creationScript, creationPath);
     }
 
+    public List<ResolveClassSet> getExplicitClasses() {
+        return property.getExplicitClasses(listInterfaces);
+    }
+
     public void setExplicitClasses(List<ResolveClassSet> signature) {
         property.setExplicitClasses(listInterfaces, signature);
     }

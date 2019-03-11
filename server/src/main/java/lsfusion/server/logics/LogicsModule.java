@@ -1038,36 +1038,23 @@ public abstract class LogicsModule {
     // ------------------- JOIN (продолжение) ----------------- //
 
     public LCP addJProp(LCP mainProp, Object... params) {
-        return addJProp(null, LocalizedString.NONAME, mainProp, params);
+        return addJProp( false, mainProp, params);
     }
 
-    protected LCP addJProp(boolean user, LocalizedString caption, LCP mainProp, Object... params) {
-        return addJProp(false, user, caption, mainProp, params);
+    protected LCP addJProp(boolean user, LCP mainProp, Object... params) {
+        return addJProp(user, 0, mainProp, params);
     }
-
-    protected LCP addJProp(boolean persistent, boolean user, LocalizedString caption, LCP mainProp, Object... params) {
-        return addJProp(null, persistent, user, caption, mainProp, params);
-    }
-
-    protected LCP addJProp(AbstractGroup group, LocalizedString caption, LCP mainProp, Object... params) {
-        return addJProp(group, false, caption, mainProp, params);
-    }
-
-    protected LCP addJProp(AbstractGroup group, boolean persistent, LocalizedString caption, LCP mainProp, Object... params) {
-        return addJProp(group, persistent, false, caption, mainProp, params);
-    }
-
-    protected LCP addJProp(AbstractGroup group, boolean persistent, boolean user, LocalizedString caption, LCP<?> mainProp, Object... params) {
+    protected LCP addJProp(boolean user, int removeLast, LCP<?> mainProp, Object... params) {
 
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(getIntNum(params));
-        ImList<CalcPropertyInterfaceImplement<JoinProperty.Interface>> listImplements = readCalcImplements(listInterfaces, params);
-        JoinProperty<?> property = new JoinProperty(caption, listInterfaces, user,
+        ImList<CalcPropertyInterfaceImplement<JoinProperty.Interface>> listImplements = readCalcImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params);
+        JoinProperty<?> property = new JoinProperty(LocalizedString.NONAME, listInterfaces, user,
                 mapCalcImplement(mainProp, listImplements));
 
         for(CalcProperty andProp : mainProp.property.getAndProperties())
             property.drawOptions.inheritDrawOptions(andProp.drawOptions);
 
-        return addProperty(group, new LCP<>(property, listInterfaces));
+        return addProperty(null, new LCP<>(property, listInterfaces));
     }
 
     // ------------------- mapLProp ----------------- //
@@ -1487,7 +1474,7 @@ public abstract class LogicsModule {
         LCP logDropProperty = addLogProp(LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
 
         LCP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
-        LCP whereProperty = addJProp(false, LocalizedString.NONAME, baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
+        LCP whereProperty = addJProp(baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
 
         Object[] params = directLI(baseLM.vtrue);
         if (whereProperty != null) {
@@ -1502,7 +1489,7 @@ public abstract class LogicsModule {
     }
 
     private LCP toLogical(LCP property) {
-        return addJProp(false, LocalizedString.NONAME, baseLM.and1, add(baseLM.vtrue, directLI(property)));
+        return addJProp(baseLM.and1, add(baseLM.vtrue, directLI(property)));
     }
 
     private LCP convertToLogical(LCP property) {
