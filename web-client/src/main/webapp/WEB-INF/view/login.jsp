@@ -9,7 +9,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>${title}</title>
         <link rel="shortcut icon" href="${logicsIcon}" />
-        <link rel="stylesheet" href="login.css">
+        <link rel="stylesheet" href="static/noauth/login.css">
     </head>
     <body onload="document.loginForm.username.focus();">
 
@@ -45,11 +45,12 @@
                                 <div class="desktop-link">${jnlpUrls}</div>
                             </fieldset>
                         </form>
-                        <c:if test="${!empty param.error}">
+                        <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
                             <div class="errorblock round">
                                 <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
                                 <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["SPRING_SECURITY_LAST_EXCEPTION"].message}
                             </div>
+                            <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
                         </c:if>
                     </div>
                 </td>
