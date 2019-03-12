@@ -2,6 +2,7 @@ package lsfusion.http.provider.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
@@ -100,7 +101,7 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         } catch (MalformedURLException e) {
             throw Throwables.propagate(e);
         } catch (NotBoundException | RemoteException e) {
-            throw new AppServerNotAvailableException();
+            throw new AppServerNotAvailableException("Application server [" + connection.host + ":" + connection.port + "(" + connection.exportName + ")] is not available. Reason : " + ExceptionUtils.copyMessage(e));
         }
         logicsSessionObject = new LogicsSessionObject(logics, connection);
         return logicsSessionObject;
