@@ -102,7 +102,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         return calculations;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeCollection(outStream, objects);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);

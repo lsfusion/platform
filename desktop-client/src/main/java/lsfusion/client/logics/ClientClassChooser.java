@@ -17,8 +17,8 @@ public class ClientClassChooser extends ClientComponent {
     }
 
     @Override
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
         pool.serializeObject(outStream, object);
         outStream.writeBoolean(visible);

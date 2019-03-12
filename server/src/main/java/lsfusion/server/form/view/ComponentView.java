@@ -246,9 +246,9 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return nf != null && nf.remove(this, version);
     }
 
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.writeObject(outStream, design);
-        pool.serializeObject(outStream, getContainer(), serializationType);
+        pool.serializeObject(outStream, getContainer());
 
         pool.writeObject(outStream, getSize());
         

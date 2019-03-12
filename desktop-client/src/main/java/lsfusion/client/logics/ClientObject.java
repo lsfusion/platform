@@ -23,7 +23,7 @@ public class ClientObject extends IdentityObject implements ClientIdentitySerial
 
     public ClientClassChooser classChooser;
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeObject(outStream, classChooser);
     }
 

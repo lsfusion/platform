@@ -128,7 +128,7 @@ public abstract class SerializationPool<C> {
         return (T) instance;
     }
 
-    public <T extends CustomSerializable> void serializeObject(DataOutputStream outStream, T object, String type) throws IOException {
+    public <T extends CustomSerializable> void serializeObject(DataOutputStream outStream, T object) throws IOException {
         if (object == null) {
             outStream.writeInt(NULL_REF_CLASS);
             return;
@@ -144,10 +144,10 @@ public abstract class SerializationPool<C> {
 
             if (get(classId, id) == null) {
                 put(classId, id, object);
-                object.customSerialize(this, outStream, type);
+                object.customSerialize(this, outStream);
             }
         } else {
-            object.customSerialize(this, outStream, type);
+            object.customSerialize(this, outStream);
         }
     }
 
@@ -173,54 +173,33 @@ public abstract class SerializationPool<C> {
     }
 
     public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, Collection<T> list) throws IOException {
-        serializeCollection(outStream, list, null);
-    }
-
-    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, Collection<T> list, String type) throws IOException {
         outStream.writeInt(list.size());
         for (T element : list) {
-            serializeObject(outStream, element, type);
+            serializeObject(outStream, element);
         }
     }
 
     public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImList<T> list) throws IOException {
-        serializeCollection(outStream, list, null);
-    }
-
-    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImList<T> list, String type) throws IOException {
         outStream.writeInt(list.size());
         for (T element : list) {
-            serializeObject(outStream, element, type);
+            serializeObject(outStream, element);
         }
     }
 
     public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImSet<T> list) throws IOException {
-        serializeCollection(outStream, list, null);
-    }
-
-    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImSet<T> list, String type) throws IOException {
         outStream.writeInt(list.size());
         for (T element : list) {
-            serializeObject(outStream, element, type);
+            serializeObject(outStream, element);
         }
     }
 
     public <K extends CustomSerializable<? extends SerializationPool<C>>,
             V extends CustomSerializable<? extends SerializationPool<C>>> void serializeMap(DataOutputStream outStream, Map<K, V> map) throws IOException {
-        serializeMap(outStream, map, null);
-    }
-
-    public <K extends CustomSerializable<? extends SerializationPool<C>>,
-            V extends CustomSerializable<? extends SerializationPool<C>>> void serializeMap(DataOutputStream outStream, Map<K, V> map, String type) throws IOException {
         outStream.writeInt(map.size());
         for (Map.Entry<K, V> entry : map.entrySet()) {
-            serializeObject(outStream, entry.getKey(), type);
-            serializeObject(outStream, entry.getValue(), type);
+            serializeObject(outStream, entry.getKey());
+            serializeObject(outStream, entry.getValue());
         }
-    }
-
-    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeObject(DataOutputStream outStream, T object) throws IOException {
-        serializeObject(outStream, object, null);
     }
 
     public void writeObject(DataOutputStream outStream, Object object) throws IOException {

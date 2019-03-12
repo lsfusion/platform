@@ -21,7 +21,6 @@ import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.table.MapKeysTable;
-import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -211,10 +210,10 @@ public class PropertyDrawView extends ComponentView {
     }
 
     @Override
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
-        pool.writeString(outStream, ThreadLocalContext.localize(SerializationType.VISUAL_SETUP.equals(serializationType) ? caption : getCaption()));
+        pool.writeString(outStream, ThreadLocalContext.localize(getCaption()));
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
@@ -291,8 +290,7 @@ public class PropertyDrawView extends ComponentView {
         pool.writeString(outStream, debugBinding.getCanonicalName());
         pool.writeString(outStream, getPropertyFormName());
         pool.writeString(outStream, toolTip);
-        pool.serializeObject(outStream, pool.context.view.getGroupObject(
-                SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(pool.context.view.entity)));
+        pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.view.entity)));
 
         pool.writeString(outStream, entity.columnsName);
         ImOrderSet<GroupObjectEntity> columnGroupObjects = entity.getColumnGroupObjects();

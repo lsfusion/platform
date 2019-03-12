@@ -21,8 +21,8 @@ public class FilterView extends ComponentView {
     }
 
     @Override
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(visible);
     }

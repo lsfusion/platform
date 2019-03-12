@@ -324,8 +324,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return PropertyReadType.DRAW;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
