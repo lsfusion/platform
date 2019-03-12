@@ -1,4 +1,4 @@
-package jasperapi;
+package lsfusion.interop.form.report;
 
 public class ReportConstants {
     public static final String sourceSuffix = "_source";

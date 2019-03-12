@@ -1,4 +1,4 @@
-package jasperapi;
+package lsfusion.interop.form.report;
 
 import net.sf.jasperreports.engine.JRPropertiesMap;
 import net.sf.jasperreports.engine.JRPropertiesUtil;

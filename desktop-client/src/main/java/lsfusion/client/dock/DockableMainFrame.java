@@ -30,7 +30,7 @@ import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
-import jasperapi.ReportGenerationData;
+import lsfusion.interop.form.report.ReportGenerationData;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.sf.jasperreports.engine.JRException;

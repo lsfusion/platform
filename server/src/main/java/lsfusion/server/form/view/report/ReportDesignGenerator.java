@@ -7,8 +7,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.design.FontInfo;
-import jasperapi.FormPrintType;
-import jasperapi.ReportConstants;
+import lsfusion.interop.form.report.FormPrintType;
+import lsfusion.interop.form.report.ReportConstants;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
@@ -35,7 +35,7 @@ import net.sf.jasperreports.engine.type.StretchTypeEnum;
 import java.sql.SQLException;
 import java.util.*;
 
-import static jasperapi.ReportConstants.*;
+import static lsfusion.interop.form.report.ReportConstants.*;
 import static lsfusion.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 public class ReportDesignGenerator {

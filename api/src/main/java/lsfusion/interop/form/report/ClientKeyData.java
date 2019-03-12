@@ -1,4 +1,4 @@
-package jasperapi;
+package lsfusion.interop.form.report;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -7,7 +7,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static jasperapi.ReportConstants.objectSuffix;
+import static lsfusion.interop.form.report.ReportConstants.objectSuffix;
 
 public class ClientKeyData {
     private final Map<String, Integer> objects = new HashMap<>(); // for getting object values by name

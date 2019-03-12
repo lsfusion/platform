@@ -1,8 +1,8 @@
 package lsfusion.server.form.stat;
 
-import jasperapi.FormPrintType;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.interop.form.user.FormUserPreferences;
-import jasperapi.ReportGenerationData;
+import lsfusion.interop.form.report.ReportGenerationData;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
 

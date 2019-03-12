@@ -1,4 +1,4 @@
-package jasperapi;
+package lsfusion.interop.form.report;
 
 import java.io.Serializable;
 

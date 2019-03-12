@@ -1,12 +1,12 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
-import jasperapi.ReportGenerationData;
+import lsfusion.interop.form.report.ReportGenerationData;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.user.ColorPreferences;
 import lsfusion.interop.form.user.FormGrouping;
-import jasperapi.FormPrintType;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.interop.form.*;
 import lsfusion.interop.form.user.FormUserPreferences;
 import lsfusion.interop.form.user.GroupObjectUserPreferences;

@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.collect.Iterables;
-import jasperapi.FormPrintType;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Pair;

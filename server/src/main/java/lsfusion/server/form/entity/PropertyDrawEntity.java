@@ -16,7 +16,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
-import jasperapi.ReportConstants;
+import lsfusion.interop.form.report.ReportConstants;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.ViewPropertySecurityPolicy;
 import lsfusion.server.caches.IdentityStartLazy;

@@ -1,7 +1,7 @@
 package lsfusion.interop.form;
 
-import jasperapi.ReportGenerationData;
-import jasperapi.FormPrintType;
+import lsfusion.interop.form.report.ReportGenerationData;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.interop.PendingRemoteInterface;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;

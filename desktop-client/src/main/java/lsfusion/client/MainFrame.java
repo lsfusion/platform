@@ -4,7 +4,7 @@ import com.jhlabs.image.BlurFilter;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
-import jasperapi.ReportGenerationData;
+import lsfusion.interop.form.report.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;

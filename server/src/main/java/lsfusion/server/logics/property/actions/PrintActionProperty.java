@@ -1,16 +1,16 @@
 package lsfusion.server.logics.property.actions;
 
-import jasperapi.ReportGenerator;
+import lsfusion.interop.form.report.ReportGenerator;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import jasperapi.FormPrintType;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.server.form.stat.PrintMessageData;
-import jasperapi.ReportGenerationData;
+import lsfusion.interop.form.report.ReportGenerationData;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;

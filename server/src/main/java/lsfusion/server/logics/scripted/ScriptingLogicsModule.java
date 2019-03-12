@@ -1,7 +1,7 @@
 package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
-import jasperapi.FormPrintType;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;

@@ -1,4 +1,4 @@
-package jasperapi;
+package lsfusion.interop.form.report;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
@@ -32,7 +32,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static jasperapi.ReportConstants.*;
+import static lsfusion.interop.form.report.ReportConstants.*;
 
 public class ReportGenerator {
     private final ReportGenerationData generationData;

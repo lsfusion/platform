@@ -1,4 +1,4 @@
-package jasperapi;
+package lsfusion.interop.form.report;
 
 
 public enum FormPrintType implements FormStaticType {

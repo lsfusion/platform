@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import jasperapi.FormStaticType;
+import lsfusion.interop.form.report.FormStaticType;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
