@@ -1,4 +1,4 @@
-package lsfusion.interop.form.report;
+package lsfusion.interop.form.stat.report;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;

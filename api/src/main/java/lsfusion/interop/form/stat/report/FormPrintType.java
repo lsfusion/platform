@@ -1,5 +1,7 @@
-package lsfusion.interop.form.report;
+package lsfusion.interop.form.stat.report;
 
+
+import lsfusion.interop.form.stat.FormStaticType;
 
 public enum FormPrintType implements FormStaticType {
     PRINT, // preview - interactive  

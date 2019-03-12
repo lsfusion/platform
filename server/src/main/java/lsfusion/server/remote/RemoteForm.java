@@ -2,8 +2,8 @@ package lsfusion.server.remote;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import lsfusion.interop.form.report.FormPrintType;
-import lsfusion.interop.form.report.ReportGenerationData;
+import lsfusion.interop.form.stat.report.FormPrintType;
+import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;

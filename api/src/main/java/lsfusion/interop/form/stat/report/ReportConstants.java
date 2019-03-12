@@ -1,4 +1,4 @@
-package lsfusion.interop.form.report;
+package lsfusion.interop.form.stat.report;
 
 public class ReportConstants {
     public static final String sourceSuffix = "_source";

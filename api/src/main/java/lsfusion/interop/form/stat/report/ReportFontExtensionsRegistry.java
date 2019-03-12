@@ -1,4 +1,4 @@
-package lsfusion.interop.form.report;
+package lsfusion.interop.form.stat.report;
 
 import com.lowagie.text.pdf.BaseFont;
 import lsfusion.base.ReflectionUtils;
