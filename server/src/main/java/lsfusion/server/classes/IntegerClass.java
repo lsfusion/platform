@@ -1,15 +1,13 @@
 package lsfusion.server.classes;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
-import net.iryndin.jdbf.core.DbfRecord;
 
-import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +27,7 @@ public class IntegerClass extends IntClass<Integer> {
     }
 
     public byte getTypeID() {
-        return Data.INTEGER;
+        return DataType.INTEGER;
     }
 
     public int getWhole() {

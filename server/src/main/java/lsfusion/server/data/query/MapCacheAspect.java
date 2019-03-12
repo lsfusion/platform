@@ -1,8 +1,8 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DProcessor;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.lambda.DProcessor;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;

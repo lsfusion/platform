@@ -1,23 +1,16 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
 import com.google.common.base.Throwables;
-import com.hexiong.jdbf.DBFReader;
-import lsfusion.base.RawFileData;
-import lsfusion.base.col.MapFact;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainIterator;
 import net.iryndin.jdbf.core.DbfField;
-import net.iryndin.jdbf.core.DbfRecord;
-import net.iryndin.jdbf.reader.DbfReader;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;

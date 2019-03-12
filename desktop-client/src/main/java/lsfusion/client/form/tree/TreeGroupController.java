@@ -10,7 +10,7 @@ import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.queries.FilterController;
 import lsfusion.client.logics.*;
-import lsfusion.interop.Order;
+import lsfusion.interop.form.user.Order;
 
 import java.awt.*;
 import java.io.IOException;

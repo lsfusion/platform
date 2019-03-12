@@ -1,6 +1,6 @@
 package lsfusion.server.caches.hash;
 
-import lsfusion.base.GlobalObject;
+import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;

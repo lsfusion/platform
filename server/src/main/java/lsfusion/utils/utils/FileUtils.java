@@ -2,7 +2,7 @@ package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.FTPPath;
 import lsfusion.base.file.Path;
 import lsfusion.base.file.ReadUtils;

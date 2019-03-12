@@ -1,13 +1,13 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.EProvider;
+import lsfusion.base.lambda.EProvider;
 import lsfusion.client.ClientLoggers;
 import lsfusion.client.Main;
 import lsfusion.client.form.BusyDialogDisplayer;
 import lsfusion.client.form.BusyDisplayer;
-import lsfusion.interop.remote.MethodInvocation;
-import lsfusion.interop.remote.PendingRemoteInterface;
+import lsfusion.interop.PendingMethodInvocation;
+import lsfusion.interop.PendingRemoteInterface;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -35,12 +35,12 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
     }
 
     @Override
-    public Object[] createAndExecute(final MethodInvocation creator, final MethodInvocation[] invocations) throws RemoteException {
+    public Object[] createAndExecute(final PendingMethodInvocation creator, final PendingMethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("createAndExecute");
 
         if (logger.isDebugEnabled()) {
             logger.debug("  Creator in createAndExecute: " + creator.toString());
-            for (MethodInvocation invocation : invocations) {
+            for (PendingMethodInvocation invocation : invocations) {
                 logger.debug("  Invocation in createAndExecute: " + invocation.toString());
             }
         }
@@ -166,8 +166,8 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
         logRemoteMethodEndCall(methodName, null);
     }
 
-    protected static List<MethodInvocation> getImmutableMethodInvocations(Class clazz) {
-        List<MethodInvocation> invocations = new ArrayList<>();
+    protected static List<PendingMethodInvocation> getImmutableMethodInvocations(Class clazz) {
+        List<PendingMethodInvocation> invocations = new ArrayList<>();
         for (Method method : clazz.getMethods()) {
             if (method.getAnnotation(ImmutableMethod.class) == null) {
                 continue;
@@ -176,7 +176,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
             // естественно, разрешены только функи без параметров
             assert method.getParameterTypes().length == 0;
 
-            MethodInvocation invocation = new MethodInvocation(method.getName(), new Class[0], new Object[0], method.getReturnType());
+            PendingMethodInvocation invocation = new PendingMethodInvocation(method.getName(), new Class[0], new Object[0], method.getReturnType());
             invocations.add(invocation);
         }
 

@@ -1,6 +1,6 @@
 package lsfusion.server.session;
 
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.classes.ValueClass;

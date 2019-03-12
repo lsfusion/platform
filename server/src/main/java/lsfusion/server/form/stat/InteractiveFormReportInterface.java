@@ -1,8 +1,8 @@
 package lsfusion.server.form.stat;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.FontInfo;
-import lsfusion.interop.form.FormUserPreferences;
+import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.user.FormUserPreferences;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;

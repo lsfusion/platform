@@ -1,11 +1,7 @@
 package lsfusion.server.logics.mutables.impl;
 
-import lsfusion.base.MutableObject;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.ServerLoggers;
+import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.logics.mutables.Version;
-
-import java.util.TreeMap;
 
 public abstract class NFImpl<M, F> extends MutableObject implements NF {
 

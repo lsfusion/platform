@@ -2,7 +2,7 @@ package lsfusion.server.data.expr.where;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;

@@ -2,12 +2,12 @@ package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.interop.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamLazy;

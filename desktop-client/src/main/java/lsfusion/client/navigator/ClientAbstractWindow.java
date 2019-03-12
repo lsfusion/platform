@@ -1,6 +1,6 @@
 package lsfusion.client.navigator;
 
-import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.navigator.WindowType;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -27,13 +27,13 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
         caption = inStream.readUTF();
 
         position = inStream.readInt();
-        if (position == AbstractWindowType.DOCKING_POSITION) {
+        if (position == WindowType.DOCKING_POSITION) {
             x = inStream.readInt();
             y = inStream.readInt();
             width = inStream.readInt();
             height = inStream.readInt();
         }
-        if (position == AbstractWindowType.BORDER_POSITION) {
+        if (position == WindowType.BORDER_POSITION) {
             borderConstraint = inStream.readUTF();
         }
 

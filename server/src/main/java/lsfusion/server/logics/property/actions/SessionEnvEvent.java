@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;

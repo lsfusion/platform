@@ -1,6 +1,6 @@
 package lsfusion.server.data.where.classes;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;

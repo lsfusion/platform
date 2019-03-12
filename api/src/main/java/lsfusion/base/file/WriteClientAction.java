@@ -1,8 +1,6 @@
 package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FileDialogUtils;
-import lsfusion.base.RawFileData;
 import lsfusion.interop.action.ClientActionDispatcher;
 import lsfusion.interop.action.ExecuteClientAction;
 

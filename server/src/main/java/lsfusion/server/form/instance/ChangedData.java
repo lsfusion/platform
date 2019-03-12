@@ -1,7 +1,7 @@
 package lsfusion.server.form.instance;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.CalcProperty;

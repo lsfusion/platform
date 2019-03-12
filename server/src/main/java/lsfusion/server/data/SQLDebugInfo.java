@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;

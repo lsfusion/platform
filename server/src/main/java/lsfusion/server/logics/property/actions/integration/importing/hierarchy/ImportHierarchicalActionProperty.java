@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy;
 
-import lsfusion.base.ExternalUtils;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
@@ -12,7 +11,6 @@ import lsfusion.server.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.hierarchy.Node;
-import lsfusion.server.logics.property.actions.integration.hierarchy.ParseNode;
 import lsfusion.server.logics.property.actions.integration.importing.FormImportData;
 import lsfusion.server.logics.property.actions.integration.importing.ImportActionProperty;
 

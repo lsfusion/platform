@@ -1,6 +1,6 @@
 package lsfusion.server.caches;
 
-import lsfusion.base.EmptyIterator;
+import lsfusion.base.comb.EmptyIterator;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.Value;

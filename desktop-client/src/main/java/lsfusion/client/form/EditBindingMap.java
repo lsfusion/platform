@@ -1,15 +1,15 @@
 package lsfusion.client.form;
 
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.KeyStrokes;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.action.ServerResponse;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 
-import static lsfusion.interop.KeyStrokes.getKeyStrokeForEvent;
+import static lsfusion.interop.form.event.KeyStrokes.getKeyStrokeForEvent;
 
 public class EditBindingMap {
     private Map<KeyStroke, String> keyBindingMap = new HashMap<>();

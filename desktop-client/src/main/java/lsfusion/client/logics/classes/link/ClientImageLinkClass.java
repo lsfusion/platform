@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientImageLinkClass extends ClientStaticFormatLinkClass {
 
@@ -15,7 +15,7 @@ public class ClientImageLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public byte getTypeId() {
-        return Data.IMAGELINK;
+        return DataType.IMAGELINK;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

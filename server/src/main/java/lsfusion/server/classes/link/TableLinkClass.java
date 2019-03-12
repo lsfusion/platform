@@ -1,6 +1,6 @@
 package lsfusion.server.classes.link;
 
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.classes.DataClass;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class TableLinkClass extends StaticFormatLinkClass {
     }
 
     public byte getTypeID() {
-        return Data.TABLELINK;
+        return DataType.TABLELINK;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package lsfusion.server.context;
 
-import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.base.DaemonThreadFactory;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.property.ExecutionContext;

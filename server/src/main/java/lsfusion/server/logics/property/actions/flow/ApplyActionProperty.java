@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;

@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.E2Callable;
+import lsfusion.base.lambda.E2Callable;
 
 import java.sql.SQLException;
 

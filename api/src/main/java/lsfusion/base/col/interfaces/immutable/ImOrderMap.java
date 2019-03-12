@@ -1,9 +1,7 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
-import lsfusion.base.NotFunctionSet;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
 public interface ImOrderMap<K,V> {

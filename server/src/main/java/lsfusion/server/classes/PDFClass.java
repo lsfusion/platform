@@ -1,7 +1,7 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.RawFileData;
-import lsfusion.interop.Data;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class PDFClass extends StaticFormatFileClass {
     }
 
     public byte getTypeID() {
-        return Data.PDF;
+        return DataType.PDF;
     }
 
     public String getOpenExtension(RawFileData file) {

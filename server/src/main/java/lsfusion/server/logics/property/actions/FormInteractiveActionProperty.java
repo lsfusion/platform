@@ -10,8 +10,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.ModalityType;
-import lsfusion.interop.WindowFormType;
+import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.ContextFilter;
@@ -26,7 +26,6 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class FormInteractiveActionProperty<O extends ObjectSelector> extends FormActionProperty<O> {
 

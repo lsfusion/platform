@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.remote.RMIUtils;
+import lsfusion.base.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;

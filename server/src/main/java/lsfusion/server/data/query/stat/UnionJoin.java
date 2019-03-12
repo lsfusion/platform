@@ -1,9 +1,9 @@
 package lsfusion.server.data.query.stat;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;

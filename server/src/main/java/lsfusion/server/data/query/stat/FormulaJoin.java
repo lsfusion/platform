@@ -1,6 +1,6 @@
 package lsfusion.server.data.query.stat;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.BaseExpr;
 

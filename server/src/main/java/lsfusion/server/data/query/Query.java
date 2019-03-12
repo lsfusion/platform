@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.col.lru.LRUWVWSMap;
+import lsfusion.base.lambda.Processor;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.BaseClass;

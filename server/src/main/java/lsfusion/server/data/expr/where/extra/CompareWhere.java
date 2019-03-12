@@ -4,7 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
@@ -14,7 +14,6 @@ import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 
 public abstract class CompareWhere<This extends CompareWhere<This>> extends BinaryWhere<This> {

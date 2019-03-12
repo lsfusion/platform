@@ -4,6 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
+import lsfusion.base.col.heavy.weak.WeakLinkedHashSet;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
@@ -14,6 +17,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.base.lambda.ERunnable;
+import lsfusion.base.lambda.Provider;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.expr.KeyExpr;
@@ -1499,7 +1505,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // б) большое количество NULL значений (скажем 0,999975) - например признак своей компании в множестве юрлиц, тогда становится очень большая дисперсия (то есть тогда либо не компания, и результат 0, или компания и результат большой 100к, при этом когда применяется selectivity он ессно round'ся и 0-100к превращается в 10, что неправильно в общем случае)  
     // Лечится только разнесением в разные таблицы / по разным классам (когда это возможно)
     // Postgres - иногда может быть большое время планирования, но пока проблема была локальная на других базах не повторялась
-    public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml, Supplier<String> fullText) throws SQLException {
+    public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml, Provider<String> fullText) throws SQLException {
         long l = System.currentTimeMillis();
         long actualTime = System.currentTimeMillis() - l;
         int minSpaces = Integer.MAX_VALUE;

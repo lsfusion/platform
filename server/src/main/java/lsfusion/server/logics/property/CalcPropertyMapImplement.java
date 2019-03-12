@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -19,7 +19,6 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;

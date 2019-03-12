@@ -4,7 +4,7 @@ import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.GetClientSettings;
 import lsfusion.gwt.shared.actions.navigator.GetClientSettingsResult;
-import lsfusion.interop.ClientSettings;
+import lsfusion.interop.navigator.ClientSettings;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

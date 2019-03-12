@@ -1,6 +1,6 @@
 package lsfusion.server.logics.scripted;
 
-import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.logics.i18n.LocalizedString;
 

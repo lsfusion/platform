@@ -1,11 +1,11 @@
 package lsfusion.client.form.sort;
 
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Order;
+import lsfusion.interop.form.user.Order;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

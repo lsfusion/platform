@@ -1,8 +1,8 @@
 package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.SFunctionSet;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;

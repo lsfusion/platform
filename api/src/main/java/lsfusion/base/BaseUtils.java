@@ -2,6 +2,7 @@ package lsfusion.base;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -11,6 +12,16 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.IOUtils;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.lambda.ArrayInstancer;
+import lsfusion.base.lambda.set.FullFunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.MergeFunctionSet;
+import lsfusion.base.lambda.set.RemoveFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
@@ -44,7 +55,7 @@ public class BaseUtils {
 
     //client auto restart in dev mode + charHeight option for property
     public static Integer getApiVersion() {
-        return 82;
+        return 83;
     }
 
     public static String getPlatformVersion() {

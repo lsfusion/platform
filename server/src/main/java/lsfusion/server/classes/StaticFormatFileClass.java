@@ -1,7 +1,7 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.query.TypeEnvironment;

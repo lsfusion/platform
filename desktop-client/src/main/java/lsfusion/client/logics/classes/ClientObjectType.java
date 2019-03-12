@@ -11,14 +11,14 @@ import lsfusion.client.form.editor.IntegerPropertyEditor;
 import lsfusion.client.form.renderer.IntegralPropertyRenderer;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Compare;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.DataType;
 
 import java.awt.*;
 import java.io.IOException;
 import java.text.ParseException;
 
-import static lsfusion.interop.Compare.*;
+import static lsfusion.interop.form.property.Compare.*;
 
 public class ClientObjectType implements ClientType, ClientTypeClass {
 
@@ -27,7 +27,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     public byte getTypeId() {
-        return Data.OBJECT;
+        return DataType.OBJECT;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.FileData;
-import lsfusion.interop.Data;
+import lsfusion.base.file.FileData;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
@@ -53,7 +53,7 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
     }
 
     public byte getTypeID() {
-        return Data.DYNAMICFORMATFILE;
+        return DataType.DYNAMICFORMATFILE;
     }
 
     @Override

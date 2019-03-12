@@ -13,7 +13,7 @@ import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
-import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.form.report.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.File;

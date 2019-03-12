@@ -1,13 +1,13 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.interop.FormStaticType;
+import lsfusion.interop.form.report.FormStaticType;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;

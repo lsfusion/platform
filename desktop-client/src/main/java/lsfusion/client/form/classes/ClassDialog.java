@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.logics.classes.ClientClass;
 import lsfusion.client.logics.classes.ClientObjectClass;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,6 +1,6 @@
 package lsfusion.server.session;
 
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.OperationOwner;

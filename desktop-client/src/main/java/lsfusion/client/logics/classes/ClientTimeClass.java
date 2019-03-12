@@ -7,7 +7,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.TimePropertyEditor;
 import lsfusion.client.form.renderer.TimePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.sql.Time;
 import java.text.DateFormat;
@@ -66,7 +66,7 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
     }
 
     public byte getTypeId() {
-        return Data.TIME;
+        return DataType.TIME;
     }
 
     public String toString() {

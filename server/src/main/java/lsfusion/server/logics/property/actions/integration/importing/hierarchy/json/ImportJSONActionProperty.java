@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy.json;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ExternalUtils;
-import lsfusion.base.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.property.actions.integration.hierarchy.json.JSONNode;
 import lsfusion.server.logics.property.actions.integration.importing.hierarchy.ImportHierarchicalActionProperty;

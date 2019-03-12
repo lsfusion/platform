@@ -1,15 +1,15 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Pair;
-import lsfusion.base.Processor;
+import lsfusion.base.lambda.Processor;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.ModalityType;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;

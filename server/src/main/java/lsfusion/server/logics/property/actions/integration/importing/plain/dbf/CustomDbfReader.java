@@ -1,13 +1,10 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
-import lsfusion.base.RawFileData;
-import net.iryndin.jdbf.core.DbfField;
+import lsfusion.base.file.RawFileData;
 import net.iryndin.jdbf.core.DbfMetadata;
 import net.iryndin.jdbf.util.DbfMetadataUtils;
-import org.apache.commons.io.FileUtils;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class CustomDbfReader implements Closeable {

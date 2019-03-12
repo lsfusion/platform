@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;

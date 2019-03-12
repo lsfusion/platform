@@ -1,8 +1,7 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -16,10 +15,9 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
-import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.StaticParamNullableExpr;
@@ -47,7 +45,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.interop.ClassViewType.DEFAULT;
+import static lsfusion.interop.form.property.ClassViewType.DEFAULT;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
 

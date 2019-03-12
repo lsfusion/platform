@@ -1,10 +1,10 @@
 package lsfusion.server.data.type;
 
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
 
@@ -60,31 +60,31 @@ public class TypeSerializer {
     public static DataClass deserializeDataClass(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
 
-        if (type == Data.INTEGER) return IntegerClass.instance;
-        if (type == Data.LONG) return LongClass.instance;
-        if (type == Data.DOUBLE) return DoubleClass.instance;
-        if (type == Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
-        if (type == Data.LOGICAL) return LogicalClass.instance;
-        if (type == Data.DATE) return DateClass.instance;
-        if (type == Data.YEAR) return YearClass.instance;
-        if (type == Data.DATETIME) return DateTimeClass.instance;
-        if (type == Data.TIME) return TimeClass.instance;
-        if (type == Data.COLOR) return ColorClass.instance;
+        if (type == DataType.INTEGER) return IntegerClass.instance;
+        if (type == DataType.LONG) return LongClass.instance;
+        if (type == DataType.DOUBLE) return DoubleClass.instance;
+        if (type == DataType.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
+        if (type == DataType.LOGICAL) return LogicalClass.instance;
+        if (type == DataType.DATE) return DateClass.instance;
+        if (type == DataType.YEAR) return YearClass.instance;
+        if (type == DataType.DATETIME) return DateTimeClass.instance;
+        if (type == DataType.TIME) return TimeClass.instance;
+        if (type == DataType.COLOR) return ColorClass.instance;
 
         
-        if (type == Data.STRING) {
+        if (type == DataType.STRING) {
             return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
         }
 
-        if (type == Data.IMAGE) return ImageClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.WORD) return WordClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.EXCEL) return ExcelClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.CSV) return CSVClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.JSON) return JSONClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.TABLE) return TableClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.CUSTOMSTATICFORMATFILE) {
+        if (type == DataType.IMAGE) return ImageClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.WORD) return WordClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.EXCEL) return ExcelClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.CSV) return CSVClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.JSON) return JSONClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.TABLE) return TableClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.CUSTOMSTATICFORMATFILE) {
             boolean multiple = inStream.readBoolean();
             boolean storeName = inStream.readBoolean();
             String filterDescription = inStream.readUTF();
@@ -101,18 +101,18 @@ public class TypeSerializer {
             }
             return CustomStaticFormatFileClass.get(multiple, storeName, filterDescription, filterExtensions);
         }
-        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
 
-        if (type == Data.IMAGELINK) return ImageLinkClass.get(inStream.readBoolean());
-        if (type == Data.WORDLINK) return WordLinkClass.get(inStream.readBoolean());
-        if (type == Data.EXCELLINK) return ExcelLinkClass.get(inStream.readBoolean());
-        if (type == Data.CSVLINK) return CSVLinkClass.get(inStream.readBoolean());
-        if (type == Data.HTMLLINK) return HTMLLinkClass.get(inStream.readBoolean());
-        if (type == Data.JSONLINK) return JSONLinkClass.get(inStream.readBoolean());
-        if (type == Data.XMLLINK) return XMLLinkClass.get(inStream.readBoolean());
-        if (type == Data.TABLELINK) return TableLinkClass.get(inStream.readBoolean());
-        if (type == Data.CUSTOMSTATICFORMATLINK) {
+        if (type == DataType.IMAGELINK) return ImageLinkClass.get(inStream.readBoolean());
+        if (type == DataType.WORDLINK) return WordLinkClass.get(inStream.readBoolean());
+        if (type == DataType.EXCELLINK) return ExcelLinkClass.get(inStream.readBoolean());
+        if (type == DataType.CSVLINK) return CSVLinkClass.get(inStream.readBoolean());
+        if (type == DataType.HTMLLINK) return HTMLLinkClass.get(inStream.readBoolean());
+        if (type == DataType.JSONLINK) return JSONLinkClass.get(inStream.readBoolean());
+        if (type == DataType.XMLLINK) return XMLLinkClass.get(inStream.readBoolean());
+        if (type == DataType.TABLELINK) return TableLinkClass.get(inStream.readBoolean());
+        if (type == DataType.CUSTOMSTATICFORMATLINK) {
             boolean multiple = inStream.readBoolean();
             String filterDescription = inStream.readUTF();
             ImSet<String> filterExtensions;
@@ -127,8 +127,8 @@ public class TypeSerializer {
             }
             return CustomStaticFormatLinkClass.get(multiple, filterDescription, filterExtensions);
         }
-        if (type == Data.DYNAMICFORMATLINK) return DynamicFormatLinkClass.get(inStream.readBoolean());
-        if (type == Data.PDFLINK) return PDFLinkClass.get(inStream.readBoolean());
+        if (type == DataType.DYNAMICFORMATLINK) return DynamicFormatLinkClass.get(inStream.readBoolean());
+        if (type == DataType.PDFLINK) return PDFLinkClass.get(inStream.readBoolean());
 
         throw new IOException();
     }

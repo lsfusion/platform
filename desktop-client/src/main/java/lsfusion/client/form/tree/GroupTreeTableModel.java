@@ -1,7 +1,7 @@
 package lsfusion.client.form.tree;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.logics.ClientGroupObject;

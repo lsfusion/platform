@@ -1,7 +1,7 @@
 package lsfusion.http;
 
 import com.google.common.io.ByteStreams;
-import lsfusion.base.MIMETypeUtil;
+import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.file.WriteUtils;
 import lsfusion.gwt.server.FileUtils;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -30,7 +29,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
 
         File file = new File(FileUtils.APP_TEMP_FOLDER_URL, fileName);
         
-        response.setContentType(MIMETypeUtil.MIMETypeForFileExtension(extension));
+        response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
         response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(WriteUtils.appendExtension(displayName != null ? displayName : fileName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 

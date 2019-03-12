@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.handlers;
 
-import lsfusion.base.ProgressBar;
+import lsfusion.interop.ProgressBar;
 import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
@@ -33,7 +33,7 @@ public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemo
 
             for (Object object : form.remoteForm.getRemoteActionMessageList()) {
                 if (object instanceof ProgressBar)
-                    result.add(clientActionConverter.convertProgressBar((lsfusion.base.ProgressBar) object));
+                    result.add(clientActionConverter.convertProgressBar((ProgressBar) object));
                 else
                     result.add(object);
             }

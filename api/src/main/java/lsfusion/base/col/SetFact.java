@@ -1,7 +1,7 @@
 package lsfusion.base.col;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.implementations.*;
 import lsfusion.base.col.implementations.order.ArOrderSet;
 import lsfusion.base.col.implementations.order.HOrderSet;
@@ -10,7 +10,6 @@ import lsfusion.base.col.implementations.simple.EmptySet;
 import lsfusion.base.col.implementations.simple.SingletonSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 

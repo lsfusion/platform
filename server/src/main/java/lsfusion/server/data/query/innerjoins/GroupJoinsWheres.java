@@ -1,11 +1,9 @@
 package lsfusion.server.data.query.innerjoins;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ImmutableObject;
-import lsfusion.base.SymmPair;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;

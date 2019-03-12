@@ -1,9 +1,9 @@
 package lsfusion.base.col.implementations.abs;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
-import lsfusion.base.NotFunctionSet;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.NotFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;

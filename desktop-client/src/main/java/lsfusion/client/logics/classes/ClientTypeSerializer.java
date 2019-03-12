@@ -1,8 +1,8 @@
 package lsfusion.client.logics.classes;
 
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.client.logics.classes.link.*;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -54,44 +54,44 @@ public class ClientTypeSerializer {
 
         byte type = inStream.readByte();
 
-        if (type == Data.OBJECT) return ClientObjectClass.deserialize(inStream);
-        if (type == Data.INTEGER) return ClientIntegerClass.instance;
-        if (type == Data.LONG) return ClientLongClass.instance;
-        if (type == Data.DOUBLE) return ClientDoubleClass.instance;
-        if (type == Data.NUMERIC) return new ClientNumericClass(inStream.readInt(), inStream.readInt());
-        if (type == Data.LOGICAL) return ClientLogicalClass.instance;
-        if (type == Data.DATE) return ClientDateClass.instance;
-        if (type == Data.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
-        if (type == Data.YEAR) return ClientIntegerClass.instance;
-        if (type == Data.DATETIME) return ClientDateTimeClass.instance;
-        if (type == Data.TIME) return ClientTimeClass.instance;
-        if (type == Data.COLOR) return ClientColorClass.instance;
+        if (type == DataType.OBJECT) return ClientObjectClass.deserialize(inStream);
+        if (type == DataType.INTEGER) return ClientIntegerClass.instance;
+        if (type == DataType.LONG) return ClientLongClass.instance;
+        if (type == DataType.DOUBLE) return ClientDoubleClass.instance;
+        if (type == DataType.NUMERIC) return new ClientNumericClass(inStream.readInt(), inStream.readInt());
+        if (type == DataType.LOGICAL) return ClientLogicalClass.instance;
+        if (type == DataType.DATE) return ClientDateClass.instance;
+        if (type == DataType.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+        if (type == DataType.YEAR) return ClientIntegerClass.instance;
+        if (type == DataType.DATETIME) return ClientDateTimeClass.instance;
+        if (type == DataType.TIME) return ClientTimeClass.instance;
+        if (type == DataType.COLOR) return ClientColorClass.instance;
 
-        if (type == Data.PDF) return new ClientPDFClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.IMAGE) return new ClientImageClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.WORD) return new ClientWordClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.EXCEL) return new ClientExcelClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.CSV) return new ClientCSVClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.HTML) return new ClientHTMLClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.JSON) return new ClientJSONClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.XML) return new ClientXMLClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.TABLE) return new ClientTableClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream.readBoolean(), inStream.readBoolean());
-        if (type == Data.CUSTOMSTATICFORMATFILE) return ClientCustomStaticFormatFileClass.deserialize(inStream);
+        if (type == DataType.PDF) return new ClientPDFClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.IMAGE) return new ClientImageClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.WORD) return new ClientWordClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.EXCEL) return new ClientExcelClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.CSV) return new ClientCSVClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.HTML) return new ClientHTMLClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.JSON) return new ClientJSONClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.XML) return new ClientXMLClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.TABLE) return new ClientTableClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.CUSTOMSTATICFORMATFILE) return ClientCustomStaticFormatFileClass.deserialize(inStream);
 
-        if (type == Data.PDFLINK) return new ClientPDFLinkClass(inStream.readBoolean());
-        if (type == Data.IMAGELINK) return new ClientImageLinkClass(inStream.readBoolean());
-        if (type == Data.WORDLINK) return new ClientWordLinkClass(inStream.readBoolean());
-        if (type == Data.EXCELLINK) return new ClientExcelLinkClass(inStream.readBoolean());
-        if (type == Data.CSVLINK) return new ClientCSVLinkClass(inStream.readBoolean());
-        if (type == Data.HTMLLINK) return new ClientHTMLLinkClass(inStream.readBoolean());
-        if (type == Data.JSONLINK) return new ClientJSONLinkClass(inStream.readBoolean());
-        if (type == Data.XMLLINK) return new ClientXMLLinkClass(inStream.readBoolean());
-        if (type == Data.TABLELINK) return new ClientTableLinkClass(inStream.readBoolean());
-        if (type == Data.DYNAMICFORMATLINK) return new ClientDynamicFormatLinkClass(inStream.readBoolean());
-        if (type == Data.CUSTOMSTATICFORMATLINK) return ClientCustomStaticFormatLinkClass.deserialize(inStream);
+        if (type == DataType.PDFLINK) return new ClientPDFLinkClass(inStream.readBoolean());
+        if (type == DataType.IMAGELINK) return new ClientImageLinkClass(inStream.readBoolean());
+        if (type == DataType.WORDLINK) return new ClientWordLinkClass(inStream.readBoolean());
+        if (type == DataType.EXCELLINK) return new ClientExcelLinkClass(inStream.readBoolean());
+        if (type == DataType.CSVLINK) return new ClientCSVLinkClass(inStream.readBoolean());
+        if (type == DataType.HTMLLINK) return new ClientHTMLLinkClass(inStream.readBoolean());
+        if (type == DataType.JSONLINK) return new ClientJSONLinkClass(inStream.readBoolean());
+        if (type == DataType.XMLLINK) return new ClientXMLLinkClass(inStream.readBoolean());
+        if (type == DataType.TABLELINK) return new ClientTableLinkClass(inStream.readBoolean());
+        if (type == DataType.DYNAMICFORMATLINK) return new ClientDynamicFormatLinkClass(inStream.readBoolean());
+        if (type == DataType.CUSTOMSTATICFORMATLINK) return ClientCustomStaticFormatLinkClass.deserialize(inStream);
 
-        if (type == Data.ACTION) return ClientActionClass.instance;
+        if (type == DataType.ACTION) return ClientActionClass.instance;
 
         throw new IOException();
     }

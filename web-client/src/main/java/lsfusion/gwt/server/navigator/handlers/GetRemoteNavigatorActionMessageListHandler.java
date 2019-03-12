@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.navigator.handlers;
 
-import lsfusion.base.ProgressBar;
+import lsfusion.interop.ProgressBar;
 import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
@@ -29,7 +29,7 @@ public class GetRemoteNavigatorActionMessageListHandler extends NavigatorActionH
         List<Object> result = new ArrayList<>();
         for (Object object : getRemoteNavigator(action).getRemoteActionMessageList()) {
             if (object instanceof ProgressBar)
-                result.add(clientActionConverter.convertProgressBar((lsfusion.base.ProgressBar) object));
+                result.add(clientActionConverter.convertProgressBar((ProgressBar) object));
             else
                 result.add(object);
         }

@@ -1,20 +1,16 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.ExtInt;
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
+import lsfusion.interop.form.property.ExtInt;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
-import org.apache.commons.net.util.Base64;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 
 public abstract class FileClass<T> extends DataClass<T> {

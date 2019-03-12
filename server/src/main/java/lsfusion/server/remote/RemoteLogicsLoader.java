@@ -1,8 +1,8 @@
 package lsfusion.server.remote;
 
 import com.google.common.io.Resources;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.RemoteLogicsLoaderInterface;
+import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;

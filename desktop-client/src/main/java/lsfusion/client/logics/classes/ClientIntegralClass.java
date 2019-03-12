@@ -12,7 +12,7 @@ import java.util.EventObject;
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
-import static lsfusion.interop.KeyStrokes.isSuitableNumberEditEvent;
+import static lsfusion.interop.form.event.KeyStrokes.isSuitableNumberEditEvent;
 
 abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat> {
 

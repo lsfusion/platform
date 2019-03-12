@@ -1,11 +1,11 @@
 package lsfusion.server.form.view;
 
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.Compare;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.StringClass;
@@ -35,8 +35,8 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
-import static lsfusion.interop.form.ServerResponse.CHANGE;
-import static lsfusion.interop.form.ServerResponse.EDIT_OBJECT;
+import static lsfusion.interop.action.ServerResponse.CHANGE;
+import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -253,7 +253,7 @@ public class PropertyDrawView extends ComponentView {
             TypeSerializer.serializeType(outStream, getType());
         else {
             outStream.writeByte(1);
-            outStream.writeByte(Data.ACTION);
+            outStream.writeByte(DataType.ACTION);
         }
 
         // асинхронные интерфейсы
@@ -327,7 +327,7 @@ public class PropertyDrawView extends ComponentView {
         if(debug instanceof CalcPropertyObjectEntity)
             ((CalcPropertyObjectEntity<?>)debug).property.getValueClass(ClassType.formPolicy).serialize(outStream);
         else
-            outStream.writeByte(Data.ACTION);
+            outStream.writeByte(DataType.ACTION);
 
         pool.writeString(outStream, entity.eventID);
 

@@ -1,6 +1,6 @@
 package lsfusion.client.form.panel;
 
-import lsfusion.base.Callback;
+import lsfusion.base.lambda.Callback;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.layout.ClientFormLayout;

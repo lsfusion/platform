@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy.json;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.ReflectionUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.json.JSONArray;
@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.Iterator;
 
 public class JSONReader {

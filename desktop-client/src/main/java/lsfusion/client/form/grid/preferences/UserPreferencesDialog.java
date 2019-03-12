@@ -1,7 +1,7 @@
 package lsfusion.client.form.grid.preferences;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Callback;
+import lsfusion.base.lambda.Callback;
 import lsfusion.base.Pair;
 import lsfusion.client.ArrayListTransferHandler;
 import lsfusion.client.Main;
@@ -11,7 +11,7 @@ import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.form.queries.TitledPanel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.FontInfo;
+import lsfusion.interop.form.design.FontInfo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

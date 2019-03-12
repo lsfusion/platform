@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.Provider;
+import lsfusion.base.lambda.Provider;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;

@@ -2,7 +2,7 @@ package lsfusion.http;
 
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.logics.ServerSettings;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.connection.AuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;

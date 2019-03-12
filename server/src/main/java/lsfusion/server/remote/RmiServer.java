@@ -1,6 +1,6 @@
 package lsfusion.server.remote;
 
-import lsfusion.interop.remote.RmiServerInterface;
+import lsfusion.interop.server.RmiServerInterface;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.EventServer;

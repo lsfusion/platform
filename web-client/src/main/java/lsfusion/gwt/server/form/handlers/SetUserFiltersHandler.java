@@ -10,7 +10,6 @@ import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.form.SetUserFilters;
 import lsfusion.gwt.shared.view.changes.dto.GPropertyFilterDTO;
-import lsfusion.interop.FilterType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -33,7 +32,6 @@ public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUs
             for (GPropertyFilterDTO filter : action.filters) {
                 ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
                 DataOutputStream outStream = new DataOutputStream(byteStream);
-                outStream.writeByte(FilterType.COMPARE);
                 outStream.writeInt(filter.propertyID);
                 outStream.writeBoolean(filter.columnKey != null);
                 if (filter.columnKey != null) 

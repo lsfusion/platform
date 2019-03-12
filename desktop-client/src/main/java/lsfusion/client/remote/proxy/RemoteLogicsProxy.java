@@ -1,13 +1,13 @@
 package lsfusion.client.remote.proxy;
 
-import lsfusion.base.ExternalRequest;
-import lsfusion.base.ExternalResponse;
-import lsfusion.base.NavigatorInfo;
-import lsfusion.base.SessionInfo;
-import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.navigator.NavigatorInfo;
+import lsfusion.interop.session.SessionInfo;
+import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
 
 import java.rmi.RemoteException;

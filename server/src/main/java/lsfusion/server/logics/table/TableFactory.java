@@ -1,7 +1,7 @@
 package lsfusion.server.logics.table;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;

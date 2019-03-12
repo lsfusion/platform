@@ -4,7 +4,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.interop.FilterType;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -45,36 +44,20 @@ public abstract class FilterInstance implements Updated {
     }
 
     public static FilterInstance deserialize(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        byte type = inStream.readByte();
-        switch(type) {
-            case FilterType.OR:
-                return new OrFilterInstance(inStream, form);
-            case FilterType.AND:
-                return new AndFilterInstance(inStream, form);
-            case FilterType.COMPARE:
-                CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
-                if (filter.value instanceof NullValue) {
-                    FilterInstance notNullFilter = new NotNullFilterInstance(filter.property);
-                    notNullFilter.junction = filter.junction;
-                    if (!filter.negate) {
-                        NotFilterInstance notFilter = new NotFilterInstance(notNullFilter);
-                        notFilter.junction = notNullFilter.junction;
-                        return notFilter;
-                    } else {
-                        return notNullFilter;
-                    }
-                }
-                else
-                    return filter;
-            case FilterType.NOTNULL:
-                return new NotNullFilterInstance(inStream, form);
-            case FilterType.ISCLASS:
-                return new IsClassFilterInstance(inStream, form);
-            case FilterType.NOT:
-                return new NotFilterInstance(inStream, form);
+        CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
+        if (filter.value instanceof NullValue) {
+            FilterInstance notNullFilter = new NotNullFilterInstance(filter.property);
+            notNullFilter.junction = filter.junction;
+            if (!filter.negate) {
+                NotFilterInstance notFilter = new NotFilterInstance(notNullFilter);
+                notFilter.junction = notNullFilter.junction;
+                return notFilter;
+            } else {
+                return notNullFilter;
+            }
         }
-
-        throw new IOException();
+        else
+            return filter;
     }
 
     public abstract GroupObjectInstance getApplyObject();

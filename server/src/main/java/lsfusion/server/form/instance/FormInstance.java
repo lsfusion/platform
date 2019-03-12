@@ -2,10 +2,12 @@ package lsfusion.server.form.instance;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
@@ -13,12 +15,14 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
-import lsfusion.interop.*;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.*;
-import lsfusion.interop.form.ColorPreferences;
-import lsfusion.interop.form.ColumnUserPreferences;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.GroupObjectUserPreferences;
+import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.user.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
@@ -72,8 +76,8 @@ import java.util.Map.Entry;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
-import static lsfusion.interop.Order.*;
-import static lsfusion.interop.form.ServerResponse.*;
+import static lsfusion.interop.form.user.Order.*;
+import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.form.instance.GroupObjectInstance.*;
 
 // класс в котором лежит какие изменения произошли

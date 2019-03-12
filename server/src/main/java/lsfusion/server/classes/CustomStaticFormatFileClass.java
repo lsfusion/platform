@@ -1,9 +1,9 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 
 import java.io.ByteArrayInputStream;
@@ -86,7 +86,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
 
     @Override
     public byte getTypeID() {
-        return Data.CUSTOMSTATICFORMATFILE;
+        return DataType.CUSTOMSTATICFORMATFILE;
     }
 
     public List<RawFileData> getMultipleFiles(Object value) {

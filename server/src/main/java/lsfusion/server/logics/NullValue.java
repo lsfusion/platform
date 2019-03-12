@@ -1,15 +1,12 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.Field;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -21,9 +18,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.session.SessionChanges;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 public class NullValue extends ObjectValue<NullValue> {
 

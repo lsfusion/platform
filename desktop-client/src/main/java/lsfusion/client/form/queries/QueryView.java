@@ -7,7 +7,7 @@ import lsfusion.client.form.cell.DataPanelView;
 import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;

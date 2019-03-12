@@ -2,7 +2,7 @@ package lsfusion.utils;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ProgressBar;
+import lsfusion.interop.ProgressBar;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;

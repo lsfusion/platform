@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import net.iryndin.jdbf.core.MemoFileHeader;
 import net.iryndin.jdbf.core.MemoRecord;
 import net.iryndin.jdbf.util.BitUtils;

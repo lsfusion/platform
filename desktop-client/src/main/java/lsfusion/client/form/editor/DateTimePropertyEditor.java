@@ -1,7 +1,7 @@
 package lsfusion.client.form.editor;
 
 import lsfusion.base.DateConverter;
-import lsfusion.interop.ComponentDesign;
+import lsfusion.interop.form.design.ComponentDesign;
 
 import java.beans.PropertyChangeEvent;
 import java.sql.Timestamp;

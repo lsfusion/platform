@@ -2,7 +2,7 @@ package lsfusion.server.form.view;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.interop.ComponentDesign;
+import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.layout.AbstractComponent;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.caches.IdentityLazy;

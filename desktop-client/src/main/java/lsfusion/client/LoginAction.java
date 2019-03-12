@@ -1,12 +1,18 @@
 package lsfusion.client;
 
 import lsfusion.base.*;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.remote.proxy.RemoteLogicsProxy;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.RemoteLogicsLoaderInterface;
-import lsfusion.interop.exceptions.*;
+import lsfusion.interop.exception.*;
+import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.session.SessionInfo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;

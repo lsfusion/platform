@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.logics.SystemEventsLogicsModule;

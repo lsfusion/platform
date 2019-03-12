@@ -13,6 +13,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.base.col.lru.LRUWVSMap;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.dnf.ExtraMultiIntersectSetWhere;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.ManualLazy;
@@ -30,8 +33,8 @@ import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
-import lsfusion.utils.DebugInfoWriter;
-import lsfusion.utils.GreedyTreeBuilding;
+import lsfusion.base.logging.DebugInfoWriter;
+import lsfusion.base.tree.GreedyTreeBuilding;
 
 import java.util.*;
 

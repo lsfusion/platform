@@ -1,6 +1,6 @@
 package lsfusion.server.data.query.innerjoins;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.where.Where;

@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.actions.file;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.ReadClientAction;
 import lsfusion.base.file.ReadUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;

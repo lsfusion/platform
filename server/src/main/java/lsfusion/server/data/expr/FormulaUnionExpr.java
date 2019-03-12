@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.SFunctionSet;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;

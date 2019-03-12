@@ -340,6 +340,7 @@ TABLE policy (Policy);
 id = DATA VARSTRING[100](Policy);
 policy = GROUP AGGR Policy policy BY id(policy);
 name '{security.name.policy}' = DATA VARISTRING[100](Policy);
+policyName = GROUP AGGR Policy policy BY name(policy);
 description '{security.description.policy}' = DATA VARSTRING[100] (Policy);
 
 TABLE userRolePolicy (UserRole, Policy);
@@ -348,6 +349,26 @@ order (User user, Policy policy) = order (mainRole(user), policy);
 
 copy (UserRole from, UserRole to) +{
     order(to, Policy userPolicy) <- order(from, userPolicy);
+}
+
+//policies migration
+migrated = DATA BOOLEAN();
+onStarted() + {
+    IF NOT migrated() THEN {
+        FOR id(Policy policy) DO {
+            LOCAL oldPolicy = Policy();
+            oldPolicy() <- policyName(name(policy));
+            LOCAL newPolicy = Policy();
+            newPolicy() <- policy(id(policy));
+            
+            IF newPolicy() != oldPolicy() THEN {
+                FOR(name(UserRole role)) DO {
+                    order(role, p) <- order(role, oldPolicy()) WHERE p = newPolicy();
+                }
+            }
+        }
+        migrated() <- TRUE;
+    }
 }
 
 // ------------------ Security policy form ----------------------- //

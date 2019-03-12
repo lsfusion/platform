@@ -10,9 +10,8 @@ import lsfusion.client.form.editor.ActionPropertyEditor;
 import lsfusion.client.form.renderer.ActionPropertyRenderer;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
-import java.text.Format;
 import java.text.ParseException;
 
 public class ClientActionClass extends ClientDataClass implements ClientTypeClass {
@@ -22,7 +21,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     public byte getTypeId() {
-        return Data.ACTION;
+        return DataType.ACTION;
     }
 
     @Override

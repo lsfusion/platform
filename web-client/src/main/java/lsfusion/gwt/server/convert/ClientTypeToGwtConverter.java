@@ -1,17 +1,13 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.MIMETypeUtil;
+import lsfusion.base.MIMETypeUtils;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.logics.classes.link.*;
-import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.view.GExtInt;
 import lsfusion.gwt.shared.view.classes.*;
 import lsfusion.gwt.shared.view.classes.link.*;
 
-import javax.activation.MimetypesFileTypeMap;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientTypeToGwtConverter extends ObjectConverter {
@@ -78,7 +74,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
             ArrayList<String> validContentTypes = new ArrayList<>();
             for (String extension : ((ClientStaticFormatFileClass) clientFileClass).getExtensions()) {
                 if (extension != null && !extension.isEmpty() && !extension.equals("*.*") && !extension.equals("*")) {
-                    validContentTypes.add(MIMETypeUtil.MIMETypeForFileExtension(extension.toLowerCase()));
+                    validContentTypes.add(MIMETypeUtils.MIMETypeForFileExtension(extension.toLowerCase()));
                 } else {
                     validContentTypes.add(extension);
                 }

@@ -1,7 +1,6 @@
 package lsfusion.client.form.queries;
 
-import lsfusion.client.logics.ClientComponent;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 

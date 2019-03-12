@@ -1,6 +1,6 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.ImmutableObject;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.*;

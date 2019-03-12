@@ -1,12 +1,12 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.base.IOUtils;
+import lsfusion.base.file.IOUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.serialization.SerializationUtil;
-import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.navigator.WindowType;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.window.NavigatorWindow;
@@ -252,7 +252,7 @@ public abstract class NavigatorElement {
         outStream.writeUTF(ThreadLocalContext.localize(caption));
         outStream.writeBoolean(hasChildren());
         if (window == null) {
-            outStream.writeInt(AbstractWindowType.NULL_VIEW);
+            outStream.writeInt(WindowType.NULL_VIEW);
         } else {
             window.serialize(outStream);
         }

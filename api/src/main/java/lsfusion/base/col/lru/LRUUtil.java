@@ -2,7 +2,7 @@ package lsfusion.base.col.lru;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
-import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.base.DaemonThreadFactory;
 
 import javax.management.Notification;
 import javax.management.NotificationEmitter;

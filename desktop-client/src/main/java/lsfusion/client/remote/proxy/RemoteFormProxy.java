@@ -1,10 +1,15 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.FormGrouping;
-import lsfusion.interop.FormPrintType;
+import lsfusion.interop.form.report.ReportGenerationData;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.user.ColorPreferences;
+import lsfusion.interop.form.user.FormGrouping;
+import lsfusion.interop.form.report.FormPrintType;
 import lsfusion.interop.form.*;
+import lsfusion.interop.form.user.FormUserPreferences;
+import lsfusion.interop.form.user.GroupObjectUserPreferences;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;

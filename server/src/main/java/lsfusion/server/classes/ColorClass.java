@@ -1,11 +1,10 @@
 package lsfusion.server.classes;
 
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
-import net.iryndin.jdbf.core.DbfRecord;
 
 import java.awt.*;
 import java.sql.PreparedStatement;
@@ -29,7 +28,7 @@ public class ColorClass extends DataClass<Color> {
 
     @Override
     public byte getTypeID() {
-        return Data.COLOR;
+        return DataType.COLOR;
     }
 
     @Override

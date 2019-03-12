@@ -1,13 +1,8 @@
 package lsfusion.server.classes.sets;
 
-import lsfusion.base.ArrayCombinations;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.*;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.where.classes.AbstractClassWhere;
 import lsfusion.server.logics.ClassCanonicalNameUtils;
 
 import java.util.Arrays;

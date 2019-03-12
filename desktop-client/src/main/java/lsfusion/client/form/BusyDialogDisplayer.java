@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.base.InterruptibleProvider;
+import lsfusion.base.lambda.InterruptibleProvider;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 

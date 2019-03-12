@@ -1,6 +1,6 @@
 package lsfusion.server.data.query.innerjoins;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.translator.JoinExprTranslator;

@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.actions.external;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExternalUtils;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;

@@ -1,6 +1,6 @@
 package lsfusion.base.context;
 
-import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 
 import java.util.*;
 

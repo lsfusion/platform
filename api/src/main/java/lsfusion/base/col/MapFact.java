@@ -1,6 +1,9 @@
 package lsfusion.base.col;
 
 import lsfusion.base.*;
+import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.implementations.ArIndexedMap;
 import lsfusion.base.col.implementations.ArMap;
 import lsfusion.base.col.implementations.HMap;
@@ -24,8 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static lsfusion.base.ConcurrentWeakHashMap.DEFAULT_INITIAL_CAPACITY;
-import static lsfusion.base.ConcurrentWeakHashMap.DEFAULT_LOAD_FACTOR;
+import static lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap.DEFAULT_INITIAL_CAPACITY;
+import static lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap.DEFAULT_LOAD_FACTOR;
 
 public class MapFact {
     private final static AddValue<Object, Integer> addLinear = new SymmAddValue<Object, Integer>() {

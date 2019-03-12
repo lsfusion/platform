@@ -1,18 +1,17 @@
 package lsfusion.server.form.instance;
 
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.form.PropertyReadType;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.property.NullValueProperty;
 import lsfusion.server.logics.property.PropertyInterface;

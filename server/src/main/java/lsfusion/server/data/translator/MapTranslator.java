@@ -1,7 +1,7 @@
 package lsfusion.server.data.translator;
 
-import lsfusion.base.SFunctionSet;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.ParamExpr;

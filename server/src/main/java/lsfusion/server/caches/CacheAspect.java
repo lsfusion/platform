@@ -1,9 +1,9 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.GlobalObject;
-import lsfusion.base.SoftHashMap;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.col.heavy.SoftHashMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;

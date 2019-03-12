@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions.external;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FileData;
+import lsfusion.base.file.FileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;

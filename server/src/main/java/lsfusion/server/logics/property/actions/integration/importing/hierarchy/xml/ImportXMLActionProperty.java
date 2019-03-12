@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy.xml;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.property.actions.integration.hierarchy.xml.XMLNode;
 import lsfusion.server.logics.property.actions.integration.importing.hierarchy.ImportHierarchicalActionProperty;

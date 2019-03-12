@@ -3,13 +3,13 @@ package lsfusion.client.rmi;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.client.*;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
-import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.interop.exceptions.NonFatalRemoteClientException;
-import lsfusion.interop.remote.ClientCallBackInterface;
+import lsfusion.base.DaemonThreadFactory;
+import lsfusion.interop.exception.NonFatalRemoteClientException;
+import lsfusion.interop.navigator.callback.ClientCallBackInterface;
 
 import javax.swing.*;
 import java.awt.*;

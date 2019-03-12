@@ -1,6 +1,6 @@
 package lsfusion.server.form.window;
 
-import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.navigator.WindowType;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -51,7 +51,7 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
 
     @Override
     public int getViewType() {
-        return AbstractWindowType.TOOLBAR_VIEW;
+        return WindowType.TOOLBAR_VIEW;
     }
 
     @Override

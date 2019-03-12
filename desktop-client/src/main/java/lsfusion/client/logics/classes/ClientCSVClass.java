@@ -6,7 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.FilePropertyEditor;
 import lsfusion.client.form.renderer.CSVPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientCSVClass extends ClientStaticFormatFileClass {
 
@@ -31,7 +31,7 @@ public class ClientCSVClass extends ClientStaticFormatFileClass {
     }
 
     public byte getTypeId() {
-        return Data.CSV;
+        return DataType.CSV;
     }
 
     @Override

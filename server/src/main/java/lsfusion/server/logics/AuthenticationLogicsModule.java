@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.remote.UserInfo;
+import lsfusion.server.logics.authentication.UserInfo;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.ResolveClassSet;

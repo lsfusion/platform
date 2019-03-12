@@ -1,6 +1,6 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 

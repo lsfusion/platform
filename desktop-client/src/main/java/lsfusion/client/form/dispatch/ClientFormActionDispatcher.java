@@ -4,9 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
-import lsfusion.interop.ModalityType;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.action.ServerResponse;
 
 import java.awt.*;
 import java.io.IOException;

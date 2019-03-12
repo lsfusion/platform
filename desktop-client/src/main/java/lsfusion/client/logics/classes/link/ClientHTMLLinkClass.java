@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.renderer.link.HTMLLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientHTMLLinkClass extends ClientStaticFormatLinkClass {
 
@@ -19,7 +19,7 @@ public class ClientHTMLLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public byte getTypeId() {
-        return Data.HTMLLINK;
+        return DataType.HTMLLINK;
     }
 
     @Override

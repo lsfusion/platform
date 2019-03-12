@@ -1,7 +1,7 @@
 package lsfusion.client.form.renderer;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.Main;
 import lsfusion.client.logics.ClientPropertyDraw;
 
@@ -12,7 +12,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class ImagePropertyRenderer extends FilePropertyRenderer {

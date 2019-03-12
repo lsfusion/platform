@@ -1,10 +1,8 @@
 package lsfusion.client.form.editor;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.RawFileData;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Log;
 import lsfusion.client.SwingUtils;
 
 import javax.swing.*;

@@ -3,8 +3,8 @@ package lsfusion.client.form.editor.rich;
 import lsfusion.client.form.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
-import lsfusion.interop.ComponentDesign;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.design.ComponentDesign;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;

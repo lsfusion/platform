@@ -2,7 +2,7 @@ package lsfusion.server.form.stat;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.FontInfo;
+import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;

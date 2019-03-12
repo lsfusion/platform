@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.ValueClass;

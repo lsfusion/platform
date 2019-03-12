@@ -1,7 +1,7 @@
 package lsfusion.client.form.queries;
 
-import lsfusion.base.OrderedMap;
-import lsfusion.base.RawFileData;
+import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.Main;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;

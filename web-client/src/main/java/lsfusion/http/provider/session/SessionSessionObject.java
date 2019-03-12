@@ -1,6 +1,5 @@
 package lsfusion.http.provider.session;
 
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.session.RemoteSessionInterface;
 
 public class SessionSessionObject {

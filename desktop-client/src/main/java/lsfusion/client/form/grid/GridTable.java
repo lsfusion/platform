@@ -20,12 +20,12 @@ import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientLogicalClass;
 import lsfusion.client.logics.classes.ClientStringClass;
-import lsfusion.interop.FontInfo;
-import lsfusion.interop.KeyStrokes;
-import lsfusion.interop.Order;
-import lsfusion.interop.Scroll;
-import lsfusion.interop.form.GroupObjectUserPreferences;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.user.Scroll;
+import lsfusion.interop.form.user.GroupObjectUserPreferences;
+import lsfusion.interop.action.ServerResponse;
 import sun.swing.UIAction;
 
 import javax.swing.*;

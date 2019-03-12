@@ -2,7 +2,7 @@ package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.Processor;
+import lsfusion.base.lambda.Processor;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;

@@ -1,7 +1,5 @@
 package lsfusion.base;
 
-import lsfusion.utils.LocalizeUtils;
-
 import java.text.MessageFormat;
 
 public class ApiResourceBundle {

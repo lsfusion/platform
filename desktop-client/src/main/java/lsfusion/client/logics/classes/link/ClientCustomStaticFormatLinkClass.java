@@ -5,7 +5,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.renderer.link.CustomStaticFormatLinkRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,7 +23,7 @@ public class ClientCustomStaticFormatLinkClass extends ClientStaticFormatLinkCla
     }
 
     public byte getTypeId() {
-        return Data.CUSTOMSTATICFORMATLINK;
+        return DataType.CUSTOMSTATICFORMATLINK;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

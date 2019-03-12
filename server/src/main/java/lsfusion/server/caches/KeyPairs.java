@@ -1,7 +1,7 @@
 package lsfusion.server.caches;
 
-import lsfusion.base.GlobalObject;
-import lsfusion.base.GroupPairs;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.comb.GroupPairs;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.Settings;

@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.renderer.link.TableLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientTableLinkClass extends ClientStaticFormatLinkClass {
 
@@ -19,7 +19,7 @@ public class ClientTableLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public byte getTypeId() {
-        return Data.TABLELINK;
+        return DataType.TABLELINK;
     }
 
     @Override

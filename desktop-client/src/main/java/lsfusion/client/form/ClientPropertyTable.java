@@ -12,7 +12,7 @@ import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.client.logics.classes.ClientType;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

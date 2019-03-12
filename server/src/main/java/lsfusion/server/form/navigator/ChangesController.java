@@ -1,6 +1,5 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.property.CalcProperty;

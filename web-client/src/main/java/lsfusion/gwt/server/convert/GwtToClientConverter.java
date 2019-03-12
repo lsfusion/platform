@@ -9,12 +9,12 @@ import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.shared.view.changes.dto.GFilesDTO;
 import lsfusion.gwt.shared.view.changes.dto.GTimeDTO;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.FontInfo;
-import lsfusion.interop.form.ColumnUserPreferences;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.GroupObjectUserPreferences;
-import lsfusion.interop.form.UserInputResult;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.user.ColumnUserPreferences;
+import lsfusion.interop.form.user.FormUserPreferences;
+import lsfusion.interop.form.user.GroupObjectUserPreferences;
+import lsfusion.interop.form.user.UserInputResult;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;

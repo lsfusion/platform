@@ -3,11 +3,11 @@ package lsfusion.client;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ERunnable;
+import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.form.TableTransferHandler;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObject;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 import org.jdesktop.swingx.SwingXUtilities;
 import sun.swing.SwingUtilities2;
 

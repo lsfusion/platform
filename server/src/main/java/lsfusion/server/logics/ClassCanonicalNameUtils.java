@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
 import lsfusion.server.classes.sets.ResolveClassSet;

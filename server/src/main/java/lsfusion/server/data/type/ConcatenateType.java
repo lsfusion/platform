@@ -1,7 +1,7 @@
 package lsfusion.server.data.type;
 
-import lsfusion.base.ExtInt;
-import lsfusion.base.ListCombinations;
+import lsfusion.interop.form.property.ExtInt;
+import lsfusion.base.comb.ListCombinations;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;

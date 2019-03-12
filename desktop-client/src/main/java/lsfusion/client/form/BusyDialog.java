@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.base.ProgressBar;
+import lsfusion.interop.ProgressBar;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 

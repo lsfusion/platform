@@ -1,10 +1,10 @@
 package lsfusion.client.rmi;
 
-import lsfusion.base.ConcurrentWeakLinkedHashSet;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakLinkedHashSet;
 import lsfusion.client.StartupProperties;
-import lsfusion.interop.remote.CompressedStreamObserver;
-import lsfusion.interop.remote.CountZipSocket;
-import lsfusion.interop.remote.ZipSocketFactory;
+import lsfusion.base.remote.CompressedStreamObserver;
+import lsfusion.base.remote.CountZipSocket;
+import lsfusion.base.remote.ZipSocketFactory;
 
 import java.io.IOException;
 

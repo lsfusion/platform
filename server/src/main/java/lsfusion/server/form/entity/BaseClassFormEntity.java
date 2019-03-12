@@ -1,7 +1,7 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;

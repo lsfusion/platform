@@ -2,8 +2,7 @@ package lsfusion.server.classes.link;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.Data;
-import lsfusion.server.classes.CustomStaticFormatFileClass;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.classes.DataClass;
 
 import java.io.DataOutputStream;
@@ -78,6 +77,6 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
 
     @Override
     public byte getTypeID() {
-        return Data.CUSTOMSTATICFORMATLINK;
+        return DataType.CUSTOMSTATICFORMATLINK;
     }
 }

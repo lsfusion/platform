@@ -9,7 +9,10 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
-import lsfusion.interop.Compare;
+import lsfusion.base.lambda.set.NotFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.ImmutableObject;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
@@ -42,13 +45,13 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionContextProvider;
 import lsfusion.server.session.PropertyChange;
-import lsfusion.utils.DebugInfoWriter;
-import lsfusion.utils.StringDebugInfoWriter;
+import lsfusion.base.logging.DebugInfoWriter;
+import lsfusion.base.logging.StringDebugInfoWriter;
 
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.utils.DebugInfoWriter.pushPrefix;
+import static lsfusion.base.logging.DebugInfoWriter.pushPrefix;
 
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe
@@ -1714,19 +1717,19 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         final InnerSelect compile = new InnerSelect(freeKeys, innerSelect.where, innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax, mSubQueries, env, params, subcontext);
 
         if(Settings.get().getInnerGroupExprs() > 0) { // если не одни joinData
-            final MAddSet<GroupExpr> groupExprs = SetFact.mAddSet(); final Counter repeats = new Counter();
+            final MAddSet<GroupExpr> groupExprs = SetFact.mAddSet(); final Result<Integer> repeats = new Result<>(0);
             for(Expr property : compiledProps.valueIt())
                 property.enumerate(new ExprEnumerator() {
                     public Boolean enumerate(OuterContext join) {
                         if (join instanceof JoinData) { // если JoinData то что внутри не интересует
                             if (join instanceof GroupExpr && !compile.isInner(((GroupExpr) join).getInnerJoin()) && !groupExprs.add((GroupExpr) join))
-                                repeats.add();
+                                repeats.set(repeats.result + 1);
                             return false;
                         }
                         return true;
                     }
                 });
-            if(repeats.getValue() > Settings.get().getInnerGroupExprs())
+            if(repeats.result > Settings.get().getInnerGroupExprs())
                 return fillSingleSelect(mapKeys, innerSelect, compiledProps, resultKey, resultProperty, params, syntax, subcontext, env, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, debugInfoWriter);
         }
 

@@ -9,6 +9,9 @@ import lsfusion.base.col.implementations.simple.FilterValueMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.NotFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Comparator;
 import java.util.HashMap;

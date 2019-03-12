@@ -1,9 +1,9 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.ExtInt;
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.ExtInt;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
@@ -40,7 +40,7 @@ public class ByteArrayClass extends DataClass<RawFileData> {
     }
 
     public byte getTypeID() {
-        return Data.BYTEARRAY;
+        return DataType.BYTEARRAY;
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

@@ -1,6 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.ArrayInstancer;
+import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;

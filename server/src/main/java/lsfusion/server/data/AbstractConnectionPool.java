@@ -1,7 +1,7 @@
 package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.MutableObject;
+import lsfusion.base.mutability.MutableObject;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.ServerLoggers;

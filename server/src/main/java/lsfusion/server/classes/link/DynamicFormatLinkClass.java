@@ -1,6 +1,6 @@
 package lsfusion.server.classes.link;
 
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.classes.DataClass;
 
 import java.util.ArrayList;
@@ -34,6 +34,6 @@ public class DynamicFormatLinkClass extends LinkClass {
     }
 
     public byte getTypeID() {
-        return Data.DYNAMICFORMATLINK;
+        return DataType.DYNAMICFORMATLINK;
     }
 }

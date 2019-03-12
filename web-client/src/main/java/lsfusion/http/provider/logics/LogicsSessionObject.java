@@ -1,13 +1,13 @@
 package lsfusion.http.provider.logics;
 
-import lsfusion.base.ExternalRequest;
-import lsfusion.base.ExternalResponse;
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.connection.AuthenticationToken;
 import org.castor.core.util.Base64Decoder;
 import org.json.JSONObject;
 

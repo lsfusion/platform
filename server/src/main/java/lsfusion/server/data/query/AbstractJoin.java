@@ -1,6 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.ImmutableObject;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityLazy;

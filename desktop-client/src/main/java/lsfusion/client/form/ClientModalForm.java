@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.RemoteFormInterface;
 
 import javax.swing.*;

@@ -1,22 +1,18 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
-import lsfusion.base.RawFileData;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.Settings;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportMatrixIterator;
-import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,16 +1,12 @@
 package lsfusion.server.classes.sets;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtraMultiIntersectSetWhere;
-import lsfusion.base.ExtraSetWhere;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ClassCanonicalNameUtils;
 
 public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements ResolveClassSet {

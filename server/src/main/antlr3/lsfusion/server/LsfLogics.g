@@ -3,19 +3,19 @@ grammar LsfLogics;
 @header {
 	package lsfusion.server;
 
-	import lsfusion.base.OrderedMap;
+	import lsfusion.base.col.heavy.OrderedMap;
 	import lsfusion.base.Pair;
-	import lsfusion.interop.ClassViewType;
-	import lsfusion.interop.PropertyEditType;
+	import lsfusion.interop.form.property.ClassViewType;
+	import lsfusion.interop.form.property.PropertyEditType;
 	import lsfusion.interop.form.layout.ContainerType;
 	import lsfusion.interop.form.layout.FlexAlignment;
 	import lsfusion.interop.form.layout.Alignment;
-	import lsfusion.interop.form.ServerResponse;
-	import lsfusion.interop.FormEventType;
-	import lsfusion.interop.FormPrintType;
-	import lsfusion.interop.ModalityType;
-	import lsfusion.interop.WindowFormType;
-	import lsfusion.interop.ReflectionPropertyType;
+	import lsfusion.interop.action.ServerResponse;
+	import lsfusion.interop.form.event.FormEventType;
+	import lsfusion.interop.form.report.FormPrintType;
+	import lsfusion.interop.form.ModalityType;
+	import lsfusion.interop.form.WindowFormType;
+	import lsfusion.server.logics.property.ReflectionPropertyType;
 	import lsfusion.server.form.instance.FormSessionScope;
 	import lsfusion.server.data.expr.query.PartitionType;
 	import lsfusion.server.form.entity.*;

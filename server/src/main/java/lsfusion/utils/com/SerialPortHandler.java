@@ -5,7 +5,7 @@ import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortException;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.interop.event.ICleanListener;
+import lsfusion.interop.form.event.ICleanListener;
 import lsfusion.server.ServerLoggers;
 import org.apache.log4j.Logger;
 

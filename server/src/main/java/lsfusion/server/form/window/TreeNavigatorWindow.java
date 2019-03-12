@@ -1,6 +1,6 @@
 package lsfusion.server.form.window;
 
-import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.navigator.WindowType;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
@@ -18,7 +18,7 @@ public class TreeNavigatorWindow extends NavigatorWindow {
 
     @Override
     public int getViewType() {
-        return AbstractWindowType.TREE_VIEW;
+        return WindowType.TREE_VIEW;
     }
 
     @Override

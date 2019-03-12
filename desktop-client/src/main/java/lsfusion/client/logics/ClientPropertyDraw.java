@@ -10,9 +10,9 @@ import lsfusion.client.form.renderer.FormatPropertyRenderer;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.Compare;
-import lsfusion.interop.PropertyEditType;
-import lsfusion.interop.form.PropertyReadType;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.interop.form.layout.FlexAlignment;
 
 import javax.swing.*;

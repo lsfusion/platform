@@ -13,9 +13,9 @@ import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientIntegralClass;
-import lsfusion.interop.FormGrouping;
-import lsfusion.interop.Order;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.user.FormGrouping;
+import lsfusion.interop.form.user.Order;
+import lsfusion.interop.action.ServerResponse;
 
 import javax.swing.*;
 import java.awt.*;

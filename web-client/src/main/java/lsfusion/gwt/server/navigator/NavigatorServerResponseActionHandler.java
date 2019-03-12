@@ -5,10 +5,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.navigator.NavigatorRequestAction;
-import lsfusion.interop.form.ServerResponse;
-
-import java.io.IOException;
-import java.rmi.RemoteException;
+import lsfusion.interop.action.ServerResponse;
 
 public abstract class NavigatorServerResponseActionHandler<A extends NavigatorRequestAction> extends NavigatorActionHandler<A, ServerResponseResult> {
 

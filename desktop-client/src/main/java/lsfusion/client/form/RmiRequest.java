@@ -3,7 +3,7 @@ package lsfusion.client.form;
 import lsfusion.base.Pair;
 import lsfusion.client.ClientLoggers;
 import lsfusion.client.Main;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.action.ServerResponse;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;

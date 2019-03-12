@@ -1,13 +1,13 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
-import jasperapi.ReportGenerator;
+import lsfusion.interop.form.report.ReportGenerator;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FileDialogUtils;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.FileDialogUtils;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
@@ -22,12 +22,12 @@ import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.report.ClientReportUtils;
-import lsfusion.interop.FormPrintType;
-import lsfusion.interop.ModalityType;
+import lsfusion.interop.form.report.FormPrintType;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
-import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.ICleanListener;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.event.EventBus;
+import lsfusion.interop.form.event.ICleanListener;
+import lsfusion.interop.action.ServerResponse;
 import org.apache.commons.io.FileUtils;
 
 import javax.sound.sampled.AudioInputStream;

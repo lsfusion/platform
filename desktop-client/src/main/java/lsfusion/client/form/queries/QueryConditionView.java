@@ -6,7 +6,7 @@ import lsfusion.client.form.ItemAdapter;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
-import lsfusion.interop.Compare;
+import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import java.awt.*;

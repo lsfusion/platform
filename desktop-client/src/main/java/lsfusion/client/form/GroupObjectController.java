@@ -1,9 +1,8 @@
 package lsfusion.client.form;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Main;
 import lsfusion.client.form.calculations.CalculationsView;
 import lsfusion.client.form.grid.GridController;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
@@ -14,10 +13,10 @@ import lsfusion.client.form.queries.FilterController;
 import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;
 import lsfusion.client.form.showtype.ShowTypeController;
 import lsfusion.client.logics.*;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.KeyStrokes;
-import lsfusion.interop.Order;
-import lsfusion.interop.form.GroupObjectUserPreferences;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.user.GroupObjectUserPreferences;
 
 import javax.swing.*;
 import java.awt.*;

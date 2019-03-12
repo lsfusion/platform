@@ -1,10 +1,7 @@
 package lsfusion.http.provider.navigator;
 
-import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.http.provider.logics.LogicsSessionObject;
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.ClientCallBackInterface;
+import lsfusion.interop.navigator.callback.ClientCallBackInterface;
 
 import java.rmi.RemoteException;
 

@@ -1,7 +1,7 @@
 package lsfusion.utils.system;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FileData;
+import lsfusion.base.file.FileData;
 import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;

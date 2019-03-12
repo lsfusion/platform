@@ -1,6 +1,6 @@
 package lsfusion.server.form.view.report;
 
-import lsfusion.base.SetBuilder;
+import lsfusion.base.comb.SetBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;

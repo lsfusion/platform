@@ -5,7 +5,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.editor.IntegerPropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -15,7 +15,7 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
     public final static ClientLongClass instance = new ClientLongClass();
 
     public byte getTypeId() {
-        return Data.LONG;
+        return DataType.LONG;
     }
 
     @Override

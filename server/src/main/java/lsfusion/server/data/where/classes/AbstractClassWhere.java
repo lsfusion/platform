@@ -1,9 +1,9 @@
 package lsfusion.server.data.where.classes;
 
-import lsfusion.base.ArrayCombinations;
-import lsfusion.base.ArrayInstancer;
+import lsfusion.base.comb.ArrayCombinations;
+import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtraMapSetWhere;
+import lsfusion.base.dnf.ExtraMapSetWhere;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.WrapMap;

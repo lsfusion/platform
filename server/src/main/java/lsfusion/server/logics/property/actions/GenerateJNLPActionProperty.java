@@ -1,9 +1,9 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FileData;
-import lsfusion.base.IOUtils;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.IOUtils;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;

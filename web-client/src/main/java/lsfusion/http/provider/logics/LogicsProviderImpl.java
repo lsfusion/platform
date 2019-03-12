@@ -5,9 +5,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.RemoteLogicsLoaderInterface;
-import lsfusion.interop.remote.RMIUtils;
+import lsfusion.interop.exception.AuthenticationException;
+import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.base.remote.RMIUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +124,7 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         LogicsSessionObject logicsSessionObject = createOrGetLogicsSessionObject(host, port, exportName);
         try {
             return runnable.run(logicsSessionObject);
-        } catch (lsfusion.interop.exceptions.AuthenticationException e) {
+        } catch (AuthenticationException e) {
             // if there is an AuthenticationException and server has anonymousUI, that means that the mode has changed, so we we'll drop serverSettings cache
             if(logicsSessionObject.serverSettings != null && logicsSessionObject.serverSettings.anonymousUI)
                 logicsSessionObject.serverSettings = null;

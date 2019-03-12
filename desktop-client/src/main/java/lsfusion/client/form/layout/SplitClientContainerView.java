@@ -2,7 +2,7 @@ package lsfusion.client.form.layout;
 
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.layout.CachableLayout;
 import lsfusion.interop.form.layout.FlexAlignment;
 

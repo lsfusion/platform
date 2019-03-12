@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.where.extra;
 
-import lsfusion.interop.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.CompileSource;

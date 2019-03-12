@@ -1,11 +1,5 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.SFunctionSet;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.classes.ConcreteValueClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.UpdateType;
@@ -14,7 +8,6 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 

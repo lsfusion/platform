@@ -1,6 +1,6 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.ArrayCombinations;
+import lsfusion.base.comb.ArrayCombinations;
 import lsfusion.base.col.ListFact;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
@@ -9,7 +9,6 @@ import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ClassCanonicalNameUtils;
 
 import java.util.Arrays;
 

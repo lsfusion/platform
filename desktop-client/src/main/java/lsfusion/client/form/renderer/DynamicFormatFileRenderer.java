@@ -1,6 +1,6 @@
 package lsfusion.client.form.renderer;
 
-import lsfusion.base.FileData;
+import lsfusion.base.file.FileData;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.logics.ClientPropertyDraw;
 
