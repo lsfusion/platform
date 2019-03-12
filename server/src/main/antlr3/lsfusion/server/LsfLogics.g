@@ -12,7 +12,7 @@ grammar LsfLogics;
 	import lsfusion.interop.form.layout.Alignment;
 	import lsfusion.interop.action.ServerResponse;
 	import lsfusion.interop.form.event.FormEventType;
-	import lsfusion.interop.form.report.FormPrintType;
+	import lsfusion.interop.form.stat.report.FormPrintType;
 	import lsfusion.interop.form.ModalityType;
 	import lsfusion.interop.form.WindowFormType;
 	import lsfusion.server.logics.property.ReflectionPropertyType;

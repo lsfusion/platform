@@ -1,4 +1,4 @@
-package lsfusion.interop.form.report;
+package lsfusion.interop.form.stat.report;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -7,7 +7,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.interop.form.report.ReportConstants.*;
+import static lsfusion.interop.form.stat.report.ReportConstants.*;
 
 public class ClientPropertyData {
 

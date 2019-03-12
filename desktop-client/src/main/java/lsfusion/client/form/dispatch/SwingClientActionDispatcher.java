@@ -1,7 +1,7 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.form.report.ReportGenerator;
+import lsfusion.interop.form.stat.report.ReportGenerator;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -22,7 +22,7 @@ import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.report.ClientReportUtils;
-import lsfusion.interop.form.report.FormPrintType;
+import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.event.EventBus;

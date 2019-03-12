@@ -1,4 +1,4 @@
-package lsfusion.interop.form.report;
+package lsfusion.interop.form.stat.report;
 
 import net.sf.jasperreports.engine.JRPropertiesMap;
 import net.sf.jasperreports.engine.JRPropertiesUtil;

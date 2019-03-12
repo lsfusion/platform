@@ -2,7 +2,7 @@ package lsfusion.server.form.instance;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
-import lsfusion.interop.form.report.FormPrintType;
+import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
