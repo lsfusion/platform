@@ -340,7 +340,7 @@ TABLE policy (Policy);
 id = DATA VARSTRING[100](Policy);
 policy = GROUP AGGR Policy policy BY id(policy);
 name '{security.name.policy}' = DATA VARISTRING[100](Policy);
-policyName = GROUP AGGR Policy policy BY name(policy);
+policyName = GROUP MAX Policy policy BY name(policy) IF NOT id(policy);
 description '{security.description.policy}' = DATA VARSTRING[100] (Policy);
 
 TABLE userRolePolicy (UserRole, Policy);
