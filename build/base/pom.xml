@@ -416,6 +416,7 @@
                 </exclusions>
             </dependency>
             <!--подменяем для обхода бага Jasper при запуске на Java 8 приложения, скомпилированного на Java 7 (api)-->
+            <!--нужна для правильной компиляции клиента-->
             <dependency>
                 <groupId>org.eclipse.jdt.core.compiler</groupId>
                 <artifactId>ecj</artifactId>
