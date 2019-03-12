@@ -2,15 +2,18 @@ package lsfusion.client.form;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
+import lsfusion.base.lambda.ERunnable;
+import lsfusion.base.lambda.InterruptibleProvider;
+import lsfusion.base.lambda.Provider;
 import lsfusion.client.ClientLoggers;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.dispatch.DispatcherInterface;
 import lsfusion.client.rmi.ConnectionLostManager;
-import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.interop.exceptions.FatalRemoteClientException;
-import lsfusion.interop.exceptions.RemoteAbandonedException;
+import lsfusion.base.DaemonThreadFactory;
+import lsfusion.interop.exception.FatalRemoteClientException;
+import lsfusion.interop.exception.RemoteAbandonedException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

@@ -1,6 +1,6 @@
 package lsfusion.server.data.type;
 
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.BaseClass;

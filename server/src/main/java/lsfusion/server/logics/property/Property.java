@@ -2,7 +2,7 @@ package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ListPermutations;
+import lsfusion.base.comb.ListPermutations;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -17,9 +17,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.Compare;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.LogicalClass;
@@ -45,7 +45,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static lsfusion.interop.form.ServerResponse.*;
+import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.BusinessLogics.linkComparator;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractPropertyNode {

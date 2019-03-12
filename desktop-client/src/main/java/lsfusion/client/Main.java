@@ -1,6 +1,7 @@
 package lsfusion.client;
 
 import lsfusion.base.*;
+import lsfusion.base.file.FileData;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.ClientFormController;
@@ -9,17 +10,18 @@ import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
-import lsfusion.interop.ClientSettings;
-import lsfusion.interop.LocalePreferences;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.RemoteLogicsLoaderInterface;
+import lsfusion.interop.navigator.ClientSettings;
+import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.ICleanListener;
+import lsfusion.interop.form.event.EventBus;
+import lsfusion.interop.form.event.ICleanListener;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
 import org.apache.log4j.Logger;
-import org.castor.core.util.Base64Decoder;
 import org.json.JSONObject;
 import sun.awt.OSInfo;
 import sun.awt.SunToolkit;
@@ -46,11 +48,10 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.base.BaseUtils.trimToNull;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
-import static lsfusion.interop.remote.RMIUtils.initRMI;
+import static lsfusion.base.remote.RMIUtils.initRMI;
 
 public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);

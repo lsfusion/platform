@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.i18n.LocalizedString;
 

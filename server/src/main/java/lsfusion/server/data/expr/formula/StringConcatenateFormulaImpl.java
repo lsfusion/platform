@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.type.Type;
 

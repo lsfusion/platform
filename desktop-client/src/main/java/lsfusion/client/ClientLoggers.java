@@ -1,7 +1,7 @@
 package lsfusion.client;
 
-import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.logging.FlushableRollingFileAppender;
+import lsfusion.base.DaemonThreadFactory;
+import lsfusion.base.logging.FlushableRollingFileAppender;
 import org.apache.log4j.Logger;
 
 import java.util.Enumeration;

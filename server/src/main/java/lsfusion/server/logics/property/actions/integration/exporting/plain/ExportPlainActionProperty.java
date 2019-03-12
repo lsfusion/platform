@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;

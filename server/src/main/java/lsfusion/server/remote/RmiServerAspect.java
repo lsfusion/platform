@@ -12,7 +12,7 @@ import org.aspectj.lang.annotation.Aspect;
 public class RmiServerAspect {
 
 
-    @Around("execution(* (lsfusion.interop.remote.RmiServerInterface+ && *..*Interface).*(..)) && target(server)")
+    @Around("execution(* (lsfusion.interop.server.RmiServerInterface+ && *..*Interface).*(..)) && target(server)")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object server) throws Throwable {
         RmiServer rmiServer = (RmiServer) server;
 

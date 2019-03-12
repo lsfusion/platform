@@ -1,16 +1,11 @@
 package lsfusion.server.context;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.ModalityType;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
-import lsfusion.interop.form.UserInputResult;
-import lsfusion.interop.remote.AuthenticationToken;
-import lsfusion.server.Settings;
-import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
@@ -18,13 +13,9 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.filter.ContextFilter;
-import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
-import lsfusion.server.form.instance.listener.FocusListener;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.DialogRequest;
@@ -32,9 +23,6 @@ import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 

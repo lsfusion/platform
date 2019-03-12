@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.caches.hash.HashContext;

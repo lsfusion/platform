@@ -1,9 +1,9 @@
 package lsfusion.server.data.where;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ArrayInstancer;
+import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;

@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;

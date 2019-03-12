@@ -1,7 +1,7 @@
 package lsfusion.server.logics.scripted.proxy;
 
-import lsfusion.base.SoftHashMap;
-import lsfusion.interop.FontInfo;
+import lsfusion.base.col.heavy.SoftHashMap;
+import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.converters.FontInfoConverter;
 import lsfusion.server.logics.scripted.converters.KeyStrokeConverter;

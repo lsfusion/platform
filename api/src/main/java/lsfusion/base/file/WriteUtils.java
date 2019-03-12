@@ -1,8 +1,6 @@
 package lsfusion.base.file;
 
 import com.jcraft.jsch.*;
-import lsfusion.base.RawFileData;
-import lsfusion.utils.CopyExcelUtil;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;

@@ -7,13 +7,12 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.FilePropertyEditor;
 import lsfusion.client.form.renderer.CustomStaticFormatFileRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Arrays;
 
 public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileClass {
 
@@ -32,7 +31,7 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
     }
 
     public byte getTypeId() {
-        return Data.CUSTOMSTATICFORMATFILE;
+        return DataType.CUSTOMSTATICFORMATFILE;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

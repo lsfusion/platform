@@ -1,9 +1,9 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.GlobalInteger;
-import lsfusion.base.GlobalObject;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.comb.map.GlobalInteger;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.hash.HashContext;

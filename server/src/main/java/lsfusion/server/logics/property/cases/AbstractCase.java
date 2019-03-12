@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;

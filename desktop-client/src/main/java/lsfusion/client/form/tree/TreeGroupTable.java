@@ -20,7 +20,7 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.ClientTreeGroup;
 import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.client.logics.classes.ClientType;
-import lsfusion.interop.Order;
+import lsfusion.interop.form.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;

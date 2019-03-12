@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.infer;
 
-import lsfusion.base.AddIntersectSet;
+import lsfusion.base.dnf.AddIntersectSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;

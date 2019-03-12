@@ -1,7 +1,6 @@
 package lsfusion.server.logics.authentication;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.AuthenticationLogicsModule;

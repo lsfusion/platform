@@ -8,7 +8,7 @@ import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ChangeClassView;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.view.GClassViewType;
-import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.property.ClassViewType;
 
 import java.rmi.RemoteException;
 

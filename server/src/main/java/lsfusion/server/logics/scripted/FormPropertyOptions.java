@@ -1,15 +1,14 @@
 package lsfusion.server.logics.scripted;
 
-import lsfusion.base.OrderedMap;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.PropertyEditType;
+import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
 import java.util.HashMap;

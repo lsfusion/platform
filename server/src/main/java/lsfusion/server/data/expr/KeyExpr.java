@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.GlobalInteger;
+import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;

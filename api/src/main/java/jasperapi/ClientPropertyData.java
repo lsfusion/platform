@@ -1,14 +1,13 @@
 package jasperapi;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.Result;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.interop.form.ReportConstants.*;
+import static jasperapi.ReportConstants.*;
 
 public class ClientPropertyData {
 

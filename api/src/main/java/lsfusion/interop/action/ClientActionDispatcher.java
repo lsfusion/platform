@@ -1,8 +1,8 @@
 package lsfusion.interop.action;
 
-import lsfusion.base.RawFileData;
-import lsfusion.interop.event.EventBus;
-import lsfusion.interop.event.ICleanListener;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.form.event.EventBus;
+import lsfusion.interop.form.event.ICleanListener;
 
 import java.io.IOException;
 import java.util.Map;

@@ -1,7 +1,7 @@
 package lsfusion.client;
 
-import lsfusion.interop.RemoteLogicsLoaderInterface;
-import lsfusion.interop.remote.RMIUtils;
+import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.base.remote.RMIUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,6 +46,7 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
             try {
                 return (RemoteLogicsLoaderInterface)RMIUtils.rmiLookup(serverHost, serverPort, serverDB, "RemoteLogicsLoader", Main.rmiSocketFactory);
             } catch (ConnectException | NotBoundException | NoSuchObjectException ignore) {
+                attempts = attempts;
             }
 
             if (remoteLoader != null) {

@@ -3,7 +3,7 @@ package lsfusion.server.mail;
 
 import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.context.ThreadLocalContext;

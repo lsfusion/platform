@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.CustomClass;

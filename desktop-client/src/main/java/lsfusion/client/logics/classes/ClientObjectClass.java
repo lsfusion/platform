@@ -1,6 +1,6 @@
 package lsfusion.client.logics.classes;
 
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,7 +27,7 @@ public class ClientObjectClass extends ClientClass {
 
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(Data.OBJECT);
+        outStream.writeByte(DataType.OBJECT);
         outStream.writeLong(ID);
     }
 

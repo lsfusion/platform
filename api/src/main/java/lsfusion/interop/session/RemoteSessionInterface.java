@@ -1,9 +1,6 @@
 package lsfusion.interop.session;
 
-import lsfusion.base.ExternalRequest;
-import lsfusion.base.ExternalResponse;
-import lsfusion.interop.ExecInterface;
-import lsfusion.interop.remote.PendingRemoteInterface;
+import lsfusion.interop.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
 

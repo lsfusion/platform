@@ -8,6 +8,9 @@ import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.NotFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 // вся реализация в AMap (для множественного наследования)
 public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V> {

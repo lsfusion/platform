@@ -2,7 +2,7 @@ package lsfusion.server.data.query.innerjoins;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -24,7 +24,6 @@ import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.where.DNFWheres;
-import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 
 public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {

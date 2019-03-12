@@ -3,7 +3,7 @@ package lsfusion.client;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.rmi.ConnectionLostManager;
-import lsfusion.interop.exceptions.RemoteInternalException;
+import lsfusion.interop.exception.RemoteInternalException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

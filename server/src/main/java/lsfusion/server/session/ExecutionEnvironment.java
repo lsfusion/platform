@@ -1,11 +1,11 @@
 package lsfusion.server.session;
 
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.exceptions.ApplyCanceledException;
+import lsfusion.interop.exception.ApplyCanceledException;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.MutableClosedObject;

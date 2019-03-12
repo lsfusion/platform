@@ -1,11 +1,10 @@
 package lsfusion.client.form.renderer;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.logics.ClientPropertyDraw;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class WordPropertyRenderer extends FilePropertyRenderer {

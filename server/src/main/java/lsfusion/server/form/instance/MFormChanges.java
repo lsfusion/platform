@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;

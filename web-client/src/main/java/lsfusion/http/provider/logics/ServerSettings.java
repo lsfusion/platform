@@ -1,6 +1,6 @@
 package lsfusion.http.provider.logics;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 
 public class ServerSettings {
     public String logicsName;

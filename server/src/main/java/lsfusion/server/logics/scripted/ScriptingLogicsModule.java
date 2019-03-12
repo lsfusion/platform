@@ -1,11 +1,12 @@
 package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
+import jasperapi.FormPrintType;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -13,8 +14,13 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.*;
+import lsfusion.base.file.IOUtils;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
@@ -2775,8 +2781,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAPWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                              Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
-                                              boolean checkOnOk, Boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
+                                                                          Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
+                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
         List<O> allObjects = mapped.objects;
         MList<O> mObjects = ListFact.mList(allObjects.size());
         List<LCPWithParams> mapping = new ArrayList<>();
@@ -3075,8 +3081,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAPWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                           LCPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage,
-                                               Boolean syncType, Integer selectTop, PropertyUsage sheetNamePropUsage, LCPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
+                                                                           LCPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage,
+                                                                           Boolean syncType, Integer selectTop, PropertyUsage sheetNamePropUsage, LCPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
         List<O> allObjects = mapped.objects;
         MList<O> mObjects = ListFact.mList(allObjects.size());

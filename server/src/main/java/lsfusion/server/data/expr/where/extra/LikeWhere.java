@@ -1,8 +1,8 @@
 package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.TwinImmutableObject;
-import lsfusion.interop.Compare;
+import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.expr.BaseExpr;

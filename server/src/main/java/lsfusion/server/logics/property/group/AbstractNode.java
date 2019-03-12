@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.group;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ImmutableObject;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.classes.ValueClass;

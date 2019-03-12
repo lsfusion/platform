@@ -1,10 +1,7 @@
 package lsfusion.server.data.type;
 
-import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.ListFact;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.data.query.MStaticExecuteEnvironment;
-import lsfusion.server.data.query.StaticExecuteEnvironment;
 
 public class ParsedString extends TwinImmutableObject {
 

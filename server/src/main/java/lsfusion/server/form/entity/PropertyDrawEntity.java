@@ -1,7 +1,7 @@
 package lsfusion.server.form.entity;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -13,10 +13,10 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.PropertyEditType;
-import lsfusion.interop.form.PropertyReadType;
-import lsfusion.interop.form.ReportConstants;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.interop.form.property.PropertyReadType;
+import jasperapi.ReportConstants;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.ViewPropertySecurityPolicy;
 import lsfusion.server.caches.IdentityStartLazy;
@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.interop.form.ServerResponse.*;
+import static lsfusion.interop.action.ServerResponse.*;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 

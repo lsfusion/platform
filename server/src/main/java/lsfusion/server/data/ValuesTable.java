@@ -1,21 +1,16 @@
 package lsfusion.server.data;
 
-import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.MapFact;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.query.stat.TableStatKeys;
-import lsfusion.server.data.where.classes.ClassWhere;
 
 public class ValuesTable extends Table {
 

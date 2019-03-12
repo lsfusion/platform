@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.GlobalObject;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;

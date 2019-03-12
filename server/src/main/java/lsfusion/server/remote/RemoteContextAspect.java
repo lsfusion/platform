@@ -11,17 +11,17 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class RemoteContextAspect {
     
-    public static final String allRemoteCalls = "execution(public * (lsfusion.interop.remote.PendingRemoteInterface+ && *..*Interface).*(..))" +
+    public static final String allRemoteCalls = "execution(public * (lsfusion.interop.PendingRemoteInterface+ && *..*Interface).*(..))" +
             " && !execution(public * *.ping(..))" +
             " && !execution(public * *.toString())" +
             " && target(target)";
 
     // за исключением системных вызовов, так как иначе они будут учавствовать в getLastThread, а значит в interrupt (и в итоге могут interrupt'ся они)
-    public static final String allUserRemoteCalls = "execution(public * (lsfusion.interop.remote.PendingRemoteInterface+ && *..*Interface).*(..))" +
+    public static final String allUserRemoteCalls = "execution(public * (lsfusion.interop.PendingRemoteInterface+ && *..*Interface).*(..))" +
             " && !execution(public * *.ping(..))" +
             " && !execution(public * *.toString())" +
             " && target(target)" + 
-            " && !execution(public * lsfusion.interop.remote.PendingRemoteInterface.*(..))";
+            " && !execution(public * lsfusion.interop.PendingRemoteInterface.*(..))";
 
     @Around(allRemoteCalls)
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {

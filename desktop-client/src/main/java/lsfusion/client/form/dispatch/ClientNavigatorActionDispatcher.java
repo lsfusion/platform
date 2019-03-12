@@ -1,9 +1,8 @@
 package lsfusion.client.form.dispatch;
 
-import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.navigator.ClientNavigator;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.action.ServerResponse;
 
 import java.io.IOException;
 import java.rmi.RemoteException;

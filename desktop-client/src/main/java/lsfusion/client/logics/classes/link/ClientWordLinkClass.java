@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.renderer.link.WordLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientWordLinkClass extends ClientStaticFormatLinkClass {
 
@@ -19,7 +19,7 @@ public class ClientWordLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public byte getTypeId() {
-        return Data.WORDLINK;
+        return DataType.WORDLINK;
     }
 
     @Override

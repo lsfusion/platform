@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;

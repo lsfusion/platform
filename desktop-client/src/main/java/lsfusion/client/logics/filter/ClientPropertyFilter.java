@@ -4,8 +4,7 @@ import lsfusion.client.logics.ClientFilterValue;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Compare;
-import lsfusion.interop.FilterType;
+import lsfusion.interop.form.property.Compare;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -23,8 +22,6 @@ public class ClientPropertyFilter {
     public boolean junction = true; //true - conjunction, false - disjunction
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(FilterType.COMPARE);
-
         outStream.writeInt(property.getID());
         outStream.writeBoolean(columnKey != null);
         if(columnKey != null)

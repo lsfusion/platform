@@ -1,7 +1,7 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.RawFileData;
-import lsfusion.interop.Data;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -38,7 +38,7 @@ public class XMLClass extends StaticFormatFileClass {
     }
 
     public byte getTypeID() {
-        return Data.XML;
+        return DataType.XML;
     }
 
     public String getOpenExtension(RawFileData file) {

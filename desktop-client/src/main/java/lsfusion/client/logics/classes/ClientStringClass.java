@@ -1,7 +1,7 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.Pair;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
@@ -13,21 +13,20 @@ import lsfusion.client.form.editor.rich.RichTextPropertyEditor;
 import lsfusion.client.form.renderer.StringPropertyRenderer;
 import lsfusion.client.form.renderer.TextPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Compare;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.DataType;
 
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
-import static lsfusion.interop.Compare.CONTAINS;
-import static lsfusion.interop.Compare.EQUALS;
+import static lsfusion.interop.form.property.Compare.CONTAINS;
+import static lsfusion.interop.form.property.Compare.EQUALS;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -161,7 +160,7 @@ public class ClientStringClass extends ClientDataClass {
         }
 
         public byte getTypeId() {
-            return Data.STRING;
+            return DataType.STRING;
         }
 
         public ClientStringClass getDefaultType() {

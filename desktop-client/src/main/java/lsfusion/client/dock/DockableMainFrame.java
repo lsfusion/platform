@@ -15,8 +15,8 @@ import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
-import lsfusion.base.EProvider;
-import lsfusion.base.ERunnable;
+import lsfusion.base.lambda.EProvider;
+import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.*;
 import lsfusion.client.form.*;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
@@ -24,14 +24,14 @@ import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
 import lsfusion.client.report.ReportDialog;
-import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.navigator.WindowType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
-import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.interop.form.ServerResponse;
+import jasperapi.ReportGenerationData;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
@@ -391,7 +391,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         for (Map.Entry<ClientAbstractWindow, JComponent> entry : windows.entrySet()) {
             ClientAbstractWindow window = entry.getKey();
             JComponent component = entry.getValue();
-            if (window.position == AbstractWindowType.DOCKING_POSITION) {
+            if (window.position == WindowType.DOCKING_POSITION) {
                 ClientWindowDockable dockable = new ClientWindowDockable(window, entry.getValue());
                 dockable.setMinimizable(false);
                 navigatorController.recordDockable(component, dockable);

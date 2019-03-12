@@ -2,9 +2,8 @@ package jasperapi;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.interop.FormPrintType;
-import lsfusion.interop.form.ReportConstants;
-import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.base.file.IOUtils;
+import lsfusion.base.file.RawFileData;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -33,7 +32,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.interop.form.ReportConstants.*;
+import static jasperapi.ReportConstants.*;
 
 public class ReportGenerator {
     private final ReportGenerationData generationData;

@@ -1,8 +1,8 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.ConnectionInfo;
-import lsfusion.interop.LocalePreferences;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.SyncType;

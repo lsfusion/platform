@@ -1,6 +1,6 @@
 package lsfusion.server.caches;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.lru.*;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashCodeKeys;

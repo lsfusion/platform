@@ -1,6 +1,6 @@
 package lsfusion.client.form.editor;
 
-import lsfusion.interop.ComponentDesign;
+import lsfusion.interop.form.design.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;

@@ -1,7 +1,7 @@
 package lsfusion.client;
 
-import lsfusion.interop.remote.LifecycleMessage;
-import lsfusion.interop.remote.PushMessage;
+import lsfusion.interop.navigator.callback.LifecycleMessage;
+import lsfusion.interop.navigator.callback.PushMessage;
 
 import javax.swing.*;
 import java.util.List;

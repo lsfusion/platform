@@ -3,7 +3,7 @@ package lsfusion.client.form;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Order;
+import lsfusion.interop.form.user.Order;
 
 import java.io.IOException;
 import java.util.List;

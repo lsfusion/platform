@@ -2,8 +2,8 @@ package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FullFunctionSet;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FullFunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;

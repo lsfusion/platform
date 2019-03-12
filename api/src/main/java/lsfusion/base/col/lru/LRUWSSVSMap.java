@@ -1,7 +1,7 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.DProcessor;
-import lsfusion.base.Processor;
+import lsfusion.base.lambda.DProcessor;
+import lsfusion.base.lambda.Processor;
 
 import java.lang.ref.ReferenceQueue;
 

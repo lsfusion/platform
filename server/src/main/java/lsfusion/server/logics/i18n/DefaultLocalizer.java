@@ -1,7 +1,7 @@
 package lsfusion.server.logics.i18n;
 
 import lsfusion.base.ResourceUtils;
-import lsfusion.utils.LocalizeUtils;
+import lsfusion.base.LocalizeUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;

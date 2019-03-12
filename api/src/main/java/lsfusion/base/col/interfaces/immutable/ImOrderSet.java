@@ -1,7 +1,7 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
 public interface ImOrderSet<K> extends ImList<K> {

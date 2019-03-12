@@ -6,7 +6,7 @@ import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientShowType;
-import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.property.ClassViewType;
 
 import java.io.IOException;
 

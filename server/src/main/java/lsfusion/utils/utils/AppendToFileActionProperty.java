@@ -1,14 +1,13 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.IOUtils;
+import lsfusion.base.file.IOUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.File;
 import java.nio.file.Files;

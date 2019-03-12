@@ -1,7 +1,7 @@
 package lsfusion.client;
 
 
-import lsfusion.utils.LocalizeUtils;
+import lsfusion.base.LocalizeUtils;
 
 import java.text.MessageFormat;
 

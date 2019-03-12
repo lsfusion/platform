@@ -1,6 +1,5 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.interop.remote.AuthenticationToken;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;

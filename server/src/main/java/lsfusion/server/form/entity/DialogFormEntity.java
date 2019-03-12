@@ -1,6 +1,6 @@
 package lsfusion.server.form.entity;
 
-import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.logics.BaseLogicsModule;

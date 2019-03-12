@@ -1,8 +1,8 @@
 package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
-import lsfusion.base.RawFileData;
+import lsfusion.interop.form.property.ExtInt;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;

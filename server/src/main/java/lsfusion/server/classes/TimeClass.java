@@ -1,8 +1,8 @@
 package lsfusion.server.classes;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.base.ExtInt;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.ExtInt;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -34,7 +34,7 @@ public class TimeClass extends DataClass<Time> {
     }
 
     public byte getTypeID() {
-        return Data.TIME;
+        return DataType.TIME;
     }
 
     protected Class getReportJavaClass() {

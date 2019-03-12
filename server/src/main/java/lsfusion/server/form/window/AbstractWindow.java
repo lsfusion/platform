@@ -1,6 +1,6 @@
 package lsfusion.server.form.window;
 
-import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.navigator.WindowType;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -48,13 +48,13 @@ public class AbstractWindow {
         outStream.writeUTF(ThreadLocalContext.localize(caption));
 
         outStream.writeInt(position);
-        if (position == AbstractWindowType.DOCKING_POSITION) {
+        if (position == WindowType.DOCKING_POSITION) {
             outStream.writeInt(x);
             outStream.writeInt(y);
             outStream.writeInt(width);
             outStream.writeInt(height);
         }
-        if (position == AbstractWindowType.BORDER_POSITION) {
+        if (position == WindowType.BORDER_POSITION) {
             outStream.writeUTF(borderConstraint);
         }
 
@@ -63,7 +63,7 @@ public class AbstractWindow {
     }
 
     public void setDockPosition(int x, int y, int width, int height) {
-        this.position = AbstractWindowType.DOCKING_POSITION;
+        this.position = WindowType.DOCKING_POSITION;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -71,7 +71,7 @@ public class AbstractWindow {
     }
 
     private void setBorderPosition(String borderConstraint) {
-        this.position = AbstractWindowType.BORDER_POSITION;
+        this.position = WindowType.BORDER_POSITION;
         this.borderConstraint = borderConstraint;
     }
 

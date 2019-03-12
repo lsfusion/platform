@@ -1,6 +1,6 @@
 package lsfusion.interop.action;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 
 import java.io.IOException;
 import java.util.Map;

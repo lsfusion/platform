@@ -1,7 +1,7 @@
 package lsfusion.client.remote.proxy;
 
-import lsfusion.base.ExternalRequest;
-import lsfusion.base.ExternalResponse;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.RemoteSessionInterface;
 
 import java.rmi.RemoteException;

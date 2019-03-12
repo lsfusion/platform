@@ -1,6 +1,6 @@
 package lsfusion.utils;
 
-import lsfusion.base.FileData;
+import lsfusion.base.file.FileData;
 import lsfusion.interop.action.BeepClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;

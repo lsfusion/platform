@@ -8,7 +8,7 @@ import lsfusion.client.form.editor.DialogBasedPropertyEditor;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexConstraints;
 import lsfusion.interop.form.layout.FlexLayout;

@@ -2,6 +2,8 @@ package lsfusion.server.stack;
 
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
+import lsfusion.interop.ProgressBar;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import lsfusion.server.form.entity.FormEntity;

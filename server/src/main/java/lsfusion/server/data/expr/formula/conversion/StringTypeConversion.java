@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.formula.conversion;
 
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.type.Type;
 

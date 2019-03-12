@@ -1,6 +1,6 @@
 package lsfusion.server.classes.sets;
 
-import lsfusion.base.ExtraMultiIntersectSetWhere;
+import lsfusion.base.dnf.ExtraMultiIntersectSetWhere;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.type.ObjectType;

@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.editor.DoublePropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class ClientNumericClass extends ClientDoubleClass {
 
     public final static ClientTypeClass type = new ClientTypeClass() {
         public byte getTypeId() {
-            return Data.NUMERIC;
+            return DataType.NUMERIC;
         }
 
         public ClientNumericClass getDefaultType() {

@@ -5,7 +5,7 @@ import lsfusion.client.StartupProperties;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.editor.DoublePropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -25,7 +25,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     }
 
     public byte getTypeId() {
-        return Data.DOUBLE;
+        return DataType.DOUBLE;
     }
 
     public NumberFormat getDefaultFormat() {

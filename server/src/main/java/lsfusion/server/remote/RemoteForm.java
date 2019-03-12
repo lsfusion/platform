@@ -2,6 +2,8 @@ package lsfusion.server.remote;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import jasperapi.FormPrintType;
+import jasperapi.ReportGenerationData;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -13,10 +15,12 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.interop.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.*;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.user.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.EExecutionStackCallable;
@@ -1118,16 +1122,16 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             return result;
         }
         
-        @Around("execution(private lsfusion.interop.form.ServerResponse RemoteForm.executeServerInvocation(long, long, RemotePausableInvocation)) && target(form) && args(requestIndex, lastReceivedRequestIndex, invocation)")
+        @Around("execution(private lsfusion.interop.action.ServerResponse RemoteForm.executeServerInvocation(long, long, RemotePausableInvocation)) && target(form) && args(requestIndex, lastReceivedRequestIndex, invocation)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
             return syncExecute(form.syncExecuteServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(public lsfusion.interop.form.ServerResponse RemoteForm.continueServerInvocation(long, long, int, Object[])) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
+        @Around("execution(public lsfusion.interop.action.ServerResponse RemoteForm.continueServerInvocation(long, long, int, Object[])) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
             return syncExecute(form.syncContinueServerInvocationMap, requestIndex, joinPoint);
         }
-        @Around("execution(public lsfusion.interop.form.ServerResponse RemoteForm.throwInServerInvocation(long, long, int, Throwable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
+        @Around("execution(public lsfusion.interop.action.ServerResponse RemoteForm.throwInServerInvocation(long, long, int, Throwable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable throwable) throws Throwable {
             return syncExecute(form.syncThrowInServerInvocationMap, requestIndex, joinPoint);
         }

@@ -6,7 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.DatePropertyEditor;
 import lsfusion.client.form.renderer.DatePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.awt.*;
 import java.text.DateFormat;
@@ -24,7 +24,7 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
     public final static ClientDateClass instance = new ClientDateClass();
 
     public byte getTypeId() {
-        return Data.DATE;
+        return DataType.DATE;
     }
 
     @Override

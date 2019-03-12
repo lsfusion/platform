@@ -1,11 +1,10 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.RawFileData;
-import lsfusion.interop.Data;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +37,7 @@ public class ExcelClass extends StaticFormatFileClass {
     }
 
     public byte getTypeID() {
-        return Data.EXCEL;
+        return DataType.EXCEL;
     }
 
     public String getOpenExtension(RawFileData file) {

@@ -1,6 +1,6 @@
 package lsfusion.utils;
 
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.type.AbstractReader;
 import org.postgresql.util.PGobject;
 

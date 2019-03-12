@@ -6,7 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.FilePropertyEditor;
 import lsfusion.client.form.renderer.DynamicFormatFileRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientDynamicFormatFileClass extends ClientFileClass {
 
@@ -26,7 +26,7 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
     }
 
     public byte getTypeId() {
-        return Data.DYNAMICFORMATFILE;
+        return DataType.DYNAMICFORMATFILE;
     }
 
     @Override

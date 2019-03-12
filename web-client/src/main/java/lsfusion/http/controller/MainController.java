@@ -1,7 +1,7 @@
 package lsfusion.http.controller;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.ServerMessages;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.GwtSharedUtils;

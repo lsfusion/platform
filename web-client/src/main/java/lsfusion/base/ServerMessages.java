@@ -1,7 +1,5 @@
 package lsfusion.base;
 
-import lsfusion.utils.LocalizeUtils;
-
 import javax.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 import java.util.Locale;

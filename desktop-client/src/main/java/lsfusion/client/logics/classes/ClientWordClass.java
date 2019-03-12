@@ -6,7 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.FilePropertyEditor;
 import lsfusion.client.form.renderer.WordPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientWordClass extends ClientStaticFormatFileClass {
 
@@ -31,7 +31,7 @@ public class ClientWordClass extends ClientStaticFormatFileClass {
     }
 
     public byte getTypeId() {
-        return Data.WORD;
+        return DataType.WORD;
     }
 
     @Override

@@ -1,10 +1,9 @@
 package lsfusion.client;
 
-import lsfusion.base.SystemUtils;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.rmi.ConnectionLostManager;
-import lsfusion.interop.remote.ClientCallBackInterface;
-import lsfusion.interop.remote.LifecycleMessage;
+import lsfusion.interop.navigator.callback.ClientCallBackInterface;
+import lsfusion.interop.navigator.callback.LifecycleMessage;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

@@ -1,6 +1,6 @@
 package lsfusion.server.classes;
 
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.util.Calendar;
@@ -22,7 +22,7 @@ public class YearClass extends IntegerClass {
 
     @Override
     public byte getTypeID() {
-        return Data.YEAR;
+        return DataType.YEAR;
     }
 
     public String getSID() {

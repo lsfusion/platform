@@ -6,9 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.FilePropertyEditor;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
-
-import java.awt.*;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientImageClass extends ClientStaticFormatFileClass {
 
@@ -24,7 +22,7 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
     }
 
     public byte getTypeId() {
-        return Data.IMAGE;
+        return DataType.IMAGE;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

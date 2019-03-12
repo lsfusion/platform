@@ -1,7 +1,7 @@
 package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
@@ -10,8 +10,8 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.form.PropertyReadType;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.interop.form.layout.AbstractGroupObject;
 
 import java.io.DataInputStream;

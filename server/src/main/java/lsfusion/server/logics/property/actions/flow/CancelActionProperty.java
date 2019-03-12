@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;

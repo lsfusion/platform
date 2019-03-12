@@ -5,7 +5,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.editor.IntegerPropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -15,7 +15,7 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
     public final static ClientIntegerClass instance = new ClientIntegerClass();
 
     public byte getTypeId() {
-        return Data.INTEGER;
+        return DataType.INTEGER;
     }
 
     @Override

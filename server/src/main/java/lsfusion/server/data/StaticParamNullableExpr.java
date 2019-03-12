@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.StaticNullableExpr;

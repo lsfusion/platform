@@ -1,6 +1,6 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.GlobalObject;
+import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.server.classes.sets.AndClassSet;
 
 public interface ConcreteClass extends RemoteClass, AndClassSet, GlobalObject {

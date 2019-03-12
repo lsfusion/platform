@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain.csv;
 
-import lsfusion.base.ExternalUtils;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;

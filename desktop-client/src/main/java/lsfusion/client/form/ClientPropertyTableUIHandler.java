@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;

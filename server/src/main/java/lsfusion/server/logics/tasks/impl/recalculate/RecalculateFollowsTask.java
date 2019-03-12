@@ -1,6 +1,6 @@
 package lsfusion.server.logics.tasks.impl.recalculate;
 
-import lsfusion.interop.exceptions.ApplyCanceledException;
+import lsfusion.interop.exception.ApplyCanceledException;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;

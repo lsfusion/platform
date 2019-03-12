@@ -2,14 +2,11 @@ package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
-import lsfusion.server.form.navigator.RemoteNavigator;
-import lsfusion.server.logics.DataObject;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

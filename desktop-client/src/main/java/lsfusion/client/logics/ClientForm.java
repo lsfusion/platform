@@ -1,7 +1,7 @@
 package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.context.ApplicationContextHolder;
 import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.client.Main;

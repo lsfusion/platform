@@ -1,6 +1,6 @@
 package lsfusion.server.classes;
 
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -28,7 +28,7 @@ public class LongClass extends IntClass<Long> {
     }
 
     public byte getTypeID() {
-        return Data.LONG;
+        return DataType.LONG;
     }
 
     public int getWhole() {

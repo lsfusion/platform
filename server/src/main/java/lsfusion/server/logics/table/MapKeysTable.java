@@ -1,6 +1,6 @@
 package lsfusion.server.logics.table;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.KeyField;
 

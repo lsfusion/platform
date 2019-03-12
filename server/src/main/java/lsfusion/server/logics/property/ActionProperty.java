@@ -1,16 +1,16 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Pair;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;

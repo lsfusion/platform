@@ -1,7 +1,7 @@
 package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.base.ExtInt;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteClass;

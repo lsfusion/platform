@@ -9,7 +9,7 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import javax.swing.*;
 import java.awt.*;
 
-import static lsfusion.interop.KeyStrokes.getEnter;
+import static lsfusion.interop.form.event.KeyStrokes.getEnter;
 
 public class DataPanelViewTable extends SingleCellTable {
     private Color backgroundColor;

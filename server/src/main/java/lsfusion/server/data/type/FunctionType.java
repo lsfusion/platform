@@ -1,6 +1,6 @@
 package lsfusion.server.data.type;
 
-import lsfusion.base.BinarySerializable;
+import lsfusion.base.serialization.BinarySerializable;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 

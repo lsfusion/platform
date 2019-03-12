@@ -2,10 +2,9 @@ package lsfusion.client;
 
 import com.jhlabs.image.BlurFilter;
 import lsfusion.client.dock.ClientFormDockable;
-import lsfusion.client.form.ClientFormController;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
-import lsfusion.interop.form.ReportGenerationData;
+import jasperapi.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;

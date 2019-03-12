@@ -6,7 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.FilePropertyEditor;
 import lsfusion.client.form.renderer.JSONPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientJSONClass extends ClientStaticFormatFileClass {
 
@@ -31,7 +31,7 @@ public class ClientJSONClass extends ClientStaticFormatFileClass {
     }
 
     public byte getTypeId() {
-        return Data.JSON;
+        return DataType.JSON;
     }
 
     @Override

@@ -1,15 +1,15 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ExternalRequest;
-import lsfusion.base.ExternalResponse;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
 import lsfusion.base.Result;
-import lsfusion.base.SessionInfo;
+import lsfusion.interop.session.SessionInfo;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.exceptions.AuthenticationException;
-import lsfusion.interop.remote.AuthenticationToken;
+import lsfusion.interop.exception.AuthenticationException;
+import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;

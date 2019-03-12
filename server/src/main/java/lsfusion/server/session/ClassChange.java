@@ -1,6 +1,6 @@
 package lsfusion.server.session;
 
-import lsfusion.base.ImmutableObject;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.BaseClass;

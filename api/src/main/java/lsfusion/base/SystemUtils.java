@@ -2,6 +2,7 @@ package lsfusion.base;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.serialization.BinarySerializable;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;

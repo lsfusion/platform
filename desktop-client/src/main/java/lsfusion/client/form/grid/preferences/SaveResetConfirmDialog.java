@@ -1,8 +1,8 @@
 package lsfusion.client.form.grid.preferences;
 
-import lsfusion.base.Callback;
+import lsfusion.base.lambda.Callback;
 import lsfusion.client.Main;
-import lsfusion.interop.KeyStrokes;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

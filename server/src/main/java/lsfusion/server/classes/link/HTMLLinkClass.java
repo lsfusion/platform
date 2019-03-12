@@ -1,6 +1,6 @@
 package lsfusion.server.classes.link;
 
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.classes.DataClass;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class HTMLLinkClass extends StaticFormatLinkClass {
     }
 
     public byte getTypeID() {
-        return Data.HTMLLINK;
+        return DataType.HTMLLINK;
     }
 
     @Override

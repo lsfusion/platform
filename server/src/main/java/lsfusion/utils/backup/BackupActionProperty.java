@@ -25,7 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static lsfusion.base.IOUtils.readFileToString;
+import static lsfusion.base.file.IOUtils.readFileToString;
 
 public class BackupActionProperty extends ScriptingActionProperty {
 

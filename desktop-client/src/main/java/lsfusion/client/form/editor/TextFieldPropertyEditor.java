@@ -2,7 +2,7 @@ package lsfusion.client.form.editor;
 
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
-import lsfusion.interop.ComponentDesign;
+import lsfusion.interop.form.design.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

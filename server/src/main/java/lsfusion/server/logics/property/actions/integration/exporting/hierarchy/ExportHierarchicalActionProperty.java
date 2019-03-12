@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.exporting.hierarchy;
 
-import lsfusion.base.ExternalUtils;
-import lsfusion.base.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;

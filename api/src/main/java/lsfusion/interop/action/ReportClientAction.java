@@ -1,7 +1,7 @@
 package lsfusion.interop.action;
 
-import lsfusion.interop.FormPrintType;
-import lsfusion.interop.form.ReportGenerationData;
+import jasperapi.FormPrintType;
+import jasperapi.ReportGenerationData;
 
 import java.io.IOException;
 import java.util.List;

@@ -6,7 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.FilePropertyEditor;
 import lsfusion.client.form.renderer.ExcelPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientExcelClass extends ClientStaticFormatFileClass {
 
@@ -31,7 +31,7 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
     }
 
     public byte getTypeId() {
-        return Data.EXCEL;
+        return DataType.EXCEL;
     }
 
     @Override

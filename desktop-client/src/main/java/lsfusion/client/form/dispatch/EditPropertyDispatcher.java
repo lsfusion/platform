@@ -2,7 +2,7 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import lsfusion.base.Callback;
+import lsfusion.base.lambda.Callback;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
@@ -13,8 +13,8 @@ import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
-import lsfusion.interop.form.ServerResponse;
-import lsfusion.interop.form.UserInputResult;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.user.UserInputResult;
 
 import javax.swing.*;
 import java.io.IOException;

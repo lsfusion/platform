@@ -7,7 +7,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Compare;
+import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
 import java.io.IOException;

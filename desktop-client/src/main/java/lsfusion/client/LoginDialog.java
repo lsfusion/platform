@@ -1,10 +1,9 @@
 package lsfusion.client;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.KeyStrokes;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.RemoteLogicsLoaderInterface;
-import lsfusion.interop.ServerInfo;
+import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
 import org.apache.log4j.Logger;
 import org.castor.core.util.Base64Decoder;
 import org.json.JSONObject;

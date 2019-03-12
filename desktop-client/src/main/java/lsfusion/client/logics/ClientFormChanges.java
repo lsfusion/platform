@@ -1,8 +1,8 @@
 package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.form.PropertyReadType;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.DataInputStream;
 import java.io.IOException;

@@ -1,9 +1,8 @@
 package lsfusion.interop.navigator;
 
-import lsfusion.interop.ClientSettings;
-import lsfusion.interop.form.ServerResponse;
-import lsfusion.interop.remote.ClientCallBackInterface;
-import lsfusion.interop.remote.PendingRemoteInterface;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.PendingRemoteInterface;
+import lsfusion.interop.navigator.callback.ClientCallBackInterface;
 
 import java.rmi.RemoteException;
 

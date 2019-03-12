@@ -1,7 +1,7 @@
 package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FullFunctionSet;
+import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.sets.ResolveClassSet;

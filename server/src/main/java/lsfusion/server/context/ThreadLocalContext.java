@@ -1,11 +1,11 @@
 package lsfusion.server.context;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.ModalityType;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;

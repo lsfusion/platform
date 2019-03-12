@@ -3,7 +3,7 @@ package lsfusion.client.form.queries;
 import lsfusion.client.Main;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.grid.GridTable;
-import lsfusion.interop.FormGrouping;
+import lsfusion.interop.form.user.FormGrouping;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

@@ -1,11 +1,10 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.FileData;
-import lsfusion.base.GlobalObject;
-import lsfusion.base.RawFileData;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.file.FileData;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;

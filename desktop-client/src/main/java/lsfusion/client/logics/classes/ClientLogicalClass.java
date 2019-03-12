@@ -7,10 +7,9 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.LogicalPropertyEditor;
 import lsfusion.client.form.renderer.LogicalPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.awt.*;
-import java.text.Format;
 import java.text.ParseException;
 
 public class ClientLogicalClass extends ClientDataClass implements ClientTypeClass {
@@ -18,7 +17,7 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     public final static ClientLogicalClass instance = new ClientLogicalClass();
 
     public byte getTypeId() {
-        return Data.LOGICAL;
+        return DataType.LOGICAL;
     }
 
     @Override

@@ -2,9 +2,9 @@ package lsfusion.client.form.grid.preferences;
 
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.FontInfo;
-import lsfusion.interop.form.ColumnUserPreferences;
-import lsfusion.interop.form.GroupObjectUserPreferences;
+import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.user.ColumnUserPreferences;
+import lsfusion.interop.form.user.GroupObjectUserPreferences;
 
 import java.util.Comparator;
 import java.util.HashMap;

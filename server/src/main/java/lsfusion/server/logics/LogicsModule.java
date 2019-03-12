@@ -1,8 +1,9 @@
 package lsfusion.server.logics;
 
 import com.google.common.collect.Iterables;
+import jasperapi.FormPrintType;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -13,7 +14,10 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.*;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;

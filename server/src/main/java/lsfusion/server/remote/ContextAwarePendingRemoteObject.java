@@ -2,9 +2,8 @@ package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.WeakIdentityHashSet;
-import lsfusion.interop.exceptions.RemoteInternalException;
-import lsfusion.interop.remote.PendingRemoteObject;
+import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
+import lsfusion.interop.exception.RemoteInternalException;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.context.*;

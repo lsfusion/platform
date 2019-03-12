@@ -1,8 +1,8 @@
 package lsfusion.server.logics.systemevents;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ThreadDumpClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;

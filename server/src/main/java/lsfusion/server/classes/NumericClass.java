@@ -2,8 +2,8 @@ package lsfusion.server.classes;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.ExtInt;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.Settings;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -37,7 +37,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     public byte getTypeID() {
-        return Data.NUMERIC; 
+        return DataType.NUMERIC; 
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

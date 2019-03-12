@@ -6,7 +6,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.LinkPropertyEditor;
 import lsfusion.client.form.renderer.link.DynamicFormatLinkRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 public class ClientDynamicFormatLinkClass extends ClientLinkClass {
 
@@ -21,7 +21,7 @@ public class ClientDynamicFormatLinkClass extends ClientLinkClass {
     }
 
     public byte getTypeId() {
-        return Data.DYNAMICFORMATLINK;
+        return DataType.DYNAMICFORMATLINK;
     }
 
     @Override

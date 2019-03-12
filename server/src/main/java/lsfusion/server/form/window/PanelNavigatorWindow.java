@@ -1,6 +1,6 @@
 package lsfusion.server.form.window;
 
-import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.navigator.WindowType;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
@@ -16,7 +16,7 @@ public class PanelNavigatorWindow extends NavigatorWindow {
 
     @Override
     public int getViewType() {
-        return AbstractWindowType.PANEL_VIEW;
+        return WindowType.PANEL_VIEW;
     }
 
     @Override

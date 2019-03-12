@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.Pair;
-import lsfusion.base.ProgressBar;
+import lsfusion.interop.ProgressBar;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.logics.classes.ClientObjectClass;
@@ -15,7 +15,7 @@ import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.shared.view.classes.GObjectClass;
 import lsfusion.gwt.shared.view.classes.GType;
 import lsfusion.gwt.shared.view.window.GModalityType;
-import lsfusion.interop.ModalityType;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
 
 import java.io.ByteArrayInputStream;

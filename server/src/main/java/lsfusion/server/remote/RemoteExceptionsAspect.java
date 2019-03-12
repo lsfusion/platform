@@ -1,14 +1,14 @@
 package lsfusion.server.remote;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.interop.exceptions.RemoteMessageException;
-import lsfusion.interop.exceptions.RemoteServerException;
+import lsfusion.interop.exception.RemoteMessageException;
+import lsfusion.interop.exception.RemoteServerException;
 import lsfusion.server.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import lsfusion.interop.exceptions.RemoteInternalException;
+import lsfusion.interop.exception.RemoteInternalException;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 

@@ -4,10 +4,15 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import jasperapi.FormPrintType;
+import jasperapi.ReportGenerationData;
 import jasperapi.ReportGenerator;
 import lsfusion.base.*;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.base.lambda.EProvider;
+import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.dock.ClientFormDockable;
@@ -26,12 +31,10 @@ import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.*;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ExceptionClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.action.ReportPath;
+import lsfusion.interop.action.*;
 import lsfusion.interop.form.*;
+import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.user.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -52,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.interop.Order.*;
+import static lsfusion.interop.form.user.Order.*;
 
 public class ClientFormController implements AsyncListener {
 

@@ -1,6 +1,6 @@
 package lsfusion.interop.action;
 
-import lsfusion.base.IOUtils;
+import lsfusion.base.file.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,10 +1,10 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.ClientSettings;
-import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.navigator.ClientSettings;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.ClientCallBackInterface;
+import lsfusion.interop.navigator.callback.ClientCallBackInterface;
 
 import java.rmi.RemoteException;
 import java.util.concurrent.Callable;

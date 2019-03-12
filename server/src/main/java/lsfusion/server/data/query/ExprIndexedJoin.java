@@ -8,7 +8,9 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.interop.Compare;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
@@ -22,8 +24,6 @@ import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.translator.MapTranslate;
-
-import java.util.List;
 
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 

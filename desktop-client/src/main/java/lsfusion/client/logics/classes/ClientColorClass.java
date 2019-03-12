@@ -6,10 +6,9 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.ColorPropertyEditor;
 import lsfusion.client.form.renderer.ColorPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 
 import java.awt.*;
-import java.text.Format;
 import java.text.ParseException;
 
 public class ClientColorClass extends ClientDataClass implements ClientTypeClass {
@@ -46,7 +45,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
 
     @Override
     public byte getTypeId() {
-        return Data.COLOR;
+        return DataType.COLOR;
     }
 
     public String toString() {

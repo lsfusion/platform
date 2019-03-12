@@ -7,7 +7,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.interop.form.ReportConstants.objectSuffix;
+import static jasperapi.ReportConstants.objectSuffix;
 
 public class ClientKeyData {
     private final Map<String, Integer> objects = new HashMap<>(); // for getting object values by name

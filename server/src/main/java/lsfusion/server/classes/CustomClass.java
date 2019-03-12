@@ -1,8 +1,8 @@
 package lsfusion.server.classes;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ImmutableObject;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.mutability.ImmutableObject;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
-import lsfusion.interop.Data;
+import lsfusion.interop.form.property.DataType;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
@@ -293,7 +293,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(Data.OBJECT);
+        outStream.writeByte(DataType.OBJECT);
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
         outStream.writeUTF(caption.getSourceString());
         outStream.writeLong(ID);

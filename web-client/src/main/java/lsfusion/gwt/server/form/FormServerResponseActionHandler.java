@@ -7,9 +7,7 @@ import lsfusion.gwt.shared.actions.form.FormAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.view.actions.GAction;
 import lsfusion.gwt.shared.view.actions.GThrowExceptionAction;
-import lsfusion.interop.form.ServerResponse;
-
-import java.io.IOException;
+import lsfusion.interop.action.ServerResponse;
 
 public abstract class FormServerResponseActionHandler<A extends FormAction<ServerResponseResult>> extends FormActionHandler<A, ServerResponseResult> {
     private static ClientActionToGwtConverter clientActionConverter = ClientActionToGwtConverter.getInstance();

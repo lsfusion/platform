@@ -1,7 +1,10 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.interop.remote.*;
+import lsfusion.interop.navigator.callback.ClientCallBackInterface;
+import lsfusion.interop.navigator.callback.LifecycleMessage;
+import lsfusion.interop.navigator.callback.PushMessage;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.remote.RemoteObject;
 
 import java.rmi.RemoteException;
 import java.rmi.server.Unreferenced;

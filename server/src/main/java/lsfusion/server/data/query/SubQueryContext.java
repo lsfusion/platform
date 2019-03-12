@@ -1,6 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 

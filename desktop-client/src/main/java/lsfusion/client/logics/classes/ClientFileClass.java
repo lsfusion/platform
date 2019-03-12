@@ -1,16 +1,15 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.Compare;
+import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
 import java.text.ParseException;
 
-import static lsfusion.interop.Compare.EQUALS;
-import static lsfusion.interop.Compare.NOT_EQUALS;
+import static lsfusion.interop.form.property.Compare.EQUALS;
+import static lsfusion.interop.form.property.Compare.NOT_EQUALS;
 
 public abstract class ClientFileClass extends ClientDataClass implements ClientTypeClass {
 

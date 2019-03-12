@@ -8,8 +8,8 @@ import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.gwt.shared.actions.form.GroupReport;
 import lsfusion.gwt.shared.actions.form.GroupReportResult;
-import lsfusion.interop.FormPrintType;
-import lsfusion.interop.form.ReportGenerationData;
+import jasperapi.FormPrintType;
+import jasperapi.ReportGenerationData;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

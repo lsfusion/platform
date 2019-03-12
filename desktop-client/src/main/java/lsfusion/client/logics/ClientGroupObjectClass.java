@@ -1,6 +1,6 @@
 package lsfusion.client.logics;
 
-import lsfusion.base.OrderedMap;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.logics.classes.ClientClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 

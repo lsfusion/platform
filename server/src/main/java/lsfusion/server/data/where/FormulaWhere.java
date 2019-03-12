@@ -1,6 +1,6 @@
 package lsfusion.server.data.where;
 
-import lsfusion.base.ArrayInstancer;
+import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;

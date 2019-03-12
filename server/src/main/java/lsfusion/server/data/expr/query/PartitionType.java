@@ -1,14 +1,12 @@
 package lsfusion.server.data.expr.query;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.order.PartitionCalc;
 import lsfusion.server.data.expr.order.PartitionParam;

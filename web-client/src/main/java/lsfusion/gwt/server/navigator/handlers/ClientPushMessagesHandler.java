@@ -5,8 +5,8 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.navigator.ClientPushMessage;
 import lsfusion.gwt.shared.actions.navigator.ClientMessageResult;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.LifecycleMessage;
-import lsfusion.interop.remote.PushMessage;
+import lsfusion.interop.navigator.callback.LifecycleMessage;
+import lsfusion.interop.navigator.callback.PushMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

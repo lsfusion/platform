@@ -1,6 +1,6 @@
 package lsfusion.server.mail;
 
-import lsfusion.interop.FormPrintType;
+import jasperapi.FormPrintType;
 
 @Deprecated
 public enum AttachmentFormat {

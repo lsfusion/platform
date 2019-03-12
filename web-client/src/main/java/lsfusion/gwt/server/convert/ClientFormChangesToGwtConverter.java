@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.FileData;
-import lsfusion.base.RawFileData;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.gwt.server.FileUtils;
@@ -10,7 +10,7 @@ import lsfusion.gwt.shared.view.GClassViewType;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValueBuilder;
 import lsfusion.gwt.shared.view.changes.dto.*;
-import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.property.ClassViewType;
 
 import java.awt.*;
 import java.sql.Date;

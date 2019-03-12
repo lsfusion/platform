@@ -1,7 +1,7 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -11,7 +11,6 @@ import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.expr.UnionExpr;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.where.Where;
 
 import java.util.Map;
 import java.util.TreeMap;

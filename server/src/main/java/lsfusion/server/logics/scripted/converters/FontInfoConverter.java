@@ -1,6 +1,6 @@
 package lsfusion.server.logics.scripted.converters;
 
-import lsfusion.interop.FontInfo;
+import lsfusion.interop.form.design.FontInfo;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.converters.AbstractConverter;
 import org.apache.commons.lang3.math.NumberUtils;

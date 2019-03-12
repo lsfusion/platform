@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.base.Provider;
+import lsfusion.base.lambda.Provider;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
