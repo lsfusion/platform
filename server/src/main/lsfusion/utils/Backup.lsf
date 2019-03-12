@@ -2,18 +2,18 @@ MODULE Backup;
 
 REQUIRE System, Reflection, SchedulerDefaultData;
 
-makeBackup '{backup.make.backup}' INTERNAL  'lsfusion.utils.backup.BackupActionProperty' () TOOLBAR;
+makeBackup '{backup.make.backup}' INTERNAL  'lsfusion.utils.admin.backup.BackupActionProperty' () TOOLBAR;
 makeBackupAction '{backup.make.backup}'  { 
     makeBackup();
     formRefresh();
 }
-makePartialBackup '{backup.make.partial.backup}' INTERNAL  'lsfusion.utils.backup.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackup '{backup.make.partial.backup}' INTERNAL  'lsfusion.utils.admin.backup.PartialBackupActionProperty' () TOOLBAR;
 makePartialBackupAction '{backup.make.partial.backup}'  { 
     makePartialBackup();
     formRefresh();
 }
-save '{backup.save.backup}' INTERNAL  'lsfusion.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
-delete '{backup.delete.backup}' INTERNAL  'lsfusion.utils.backup.DeleteBackupActionProperty' (Backup);
+save '{backup.save.backup}' INTERNAL  'lsfusion.utils.admin.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
+delete '{backup.delete.backup}' INTERNAL  'lsfusion.utils.admin.backup.DeleteBackupActionProperty' (Backup);
 
 deleteAction '{backup.delete.backup}' (Backup b)  { 
     delete(b);
@@ -23,13 +23,13 @@ deleteAction '{backup.delete.backup}' (Backup b)  {
 saveMondayBackups '{backup.dave.monday.backups}' = DATA BOOLEAN ();
 saveFirstDayBackups '{backup.first.day.backups}' = DATA BOOLEAN ();
 maxQuantityBackups '{backup.max.quantity.backups}' = DATA INTEGER ();
-decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.utils.admin.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
 decimateBackupsAction '{backup.decimate.backups}'  { 
     decimateBackups();
     formRefresh();
 }
 
-customRestore '{backup.custom.restore}'  INTERNAL  'lsfusion.utils.backup.CustomRestoreActionProperty' (Backup);
+customRestore '{backup.custom.restore}'  INTERNAL  'lsfusion.utils.admin.backup.CustomRestoreActionProperty' (Backup);
 inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (Table);
 restoreObjects '{backup.restore.objects}' = DATA BOOLEAN (Table);
 inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (TableColumn);

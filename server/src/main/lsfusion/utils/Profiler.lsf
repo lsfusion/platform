@@ -36,7 +36,7 @@ isStoppedProfiler '{profiler.is.stopped.profiler}' () = NOT isStartedProfiler();
 
 onStarted() + {  isStartedProfiler() <- NULL; }
 
-doStartProfiler '{profiler.start.profiler}' ()  INTERNAL  'lsfusion.utils.StartProfilerActionProperty';
+doStartProfiler '{profiler.start.profiler}' ()  INTERNAL  'lsfusion.utils.admin.profiler.StartProfilerActionProperty';
 startProfiler '{profiler.start.profiler}' ()  { 
     totalTime(ProfileObject p1, ProfileObject p2, User u, Form f) <- NULL;
     totalSQLTime(ProfileObject p1, ProfileObject p2, User u, Form f) <- NULL; 
@@ -52,7 +52,7 @@ startProfiler '{profiler.start.profiler}' ()  {
     doStartProfiler();
 }
 
-doStopProfiler '{profiler.stop.profiler}' ()  INTERNAL  'lsfusion.utils.StopProfilerActionProperty';
+doStopProfiler '{profiler.stop.profiler}' ()  INTERNAL  'lsfusion.utils.admin.profiler.StopProfilerActionProperty';
 
 stopProfiler '{profiler.stop.profiler}' ()  { 
     doStopProfiler();

@@ -102,6 +102,7 @@
             <groupId>org.olap4j</groupId>
             <artifactId>olap4j</artifactId>
         </dependency>
+        <!-- need this compiler for JasperReports to run without jre (and do not have problems with encodings in JRJavacCompiler https://community.jaspersoft.com/jasperreports-library/issues/9106)-->
         <dependency>
             <groupId>org.eclipse.jdt.core.compiler</groupId>
             <artifactId>ecj</artifactId>

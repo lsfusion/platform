@@ -3,11 +3,11 @@ MODULE Printer;
 REQUIRE System;
 
 //text, charset, printerName
-writeToPrinter '{printer.write.to.printer}'  INTERNAL  'lsfusion.utils.printer.WriteToPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
-writeToServerPrinter '{printer.write.to.server.printer}'  INTERNAL  'lsfusion.utils.printer.WriteToServerPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+writeToPrinter '{printer.write.to.printer}'  INTERNAL  'lsfusion.utils.equ.printer.WriteToPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+writeToServerPrinter '{printer.write.to.server.printer}'  INTERNAL  'lsfusion.utils.equ.printer.WriteToServerPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
 printed '{printer.printed}' = DATA LOCAL BOOLEAN ();
 
-getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.utils.printer.GetAvailablePrintersActionProperty' ();
+getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.utils.equ.printer.GetAvailablePrintersActionProperty' ();
 
 //text, charset, ip, port
-writeToSocketAction  INTERNAL  'lsfusion.utils.printer.WriteToServerSocketActionProperty' (TEXT, VARSTRING[10], VARSTRING[30], INTEGER);
+writeToSocketAction  INTERNAL  'lsfusion.utils.equ.printer.WriteToServerSocketActionProperty' (TEXT, VARSTRING[10], VARSTRING[30], INTEGER);
