@@ -147,10 +147,6 @@
                     <artifactId>olap4j</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.eclipse.jdt.core.compiler</groupId>
-                    <artifactId>ecj</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>commons-net</groupId>
                     <artifactId>commons-net</artifactId>
                 </exclusion>
