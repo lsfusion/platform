@@ -21,11 +21,11 @@ CLASS StateProcess '{process.monitor.status.process}' {
     idle '{process.monitor.status.process.idle}'
 }
 
-updateProcessMonitorAction '{process.monitor.update.process.monitor.action}'  INTERNAL  'lsfusion.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
-killJavaProcess '{process.monitor.kill.java.process}'  INTERNAL  'lsfusion.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
-killSQLProcess '{process.monitor.kill.sql.process}'  INTERNAL  'lsfusion.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
-cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
-cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
+updateProcessMonitorAction '{process.monitor.update.process.monitor.action}'  INTERNAL  'lsfusion.utils.admin.monitor.UpdateProcessMonitorActionProperty' () TOOLBAR;
+killJavaProcess '{process.monitor.kill.java.process}'  INTERNAL  'lsfusion.utils.admin.monitor.KillJavaProcessActionProperty' (VARSTRING[10]);
+killSQLProcess '{process.monitor.kill.sql.process}'  INTERNAL  'lsfusion.utils.admin.monitor.KillSQLProcessActionProperty' (VARSTRING[10]);
+cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.utils.admin.monitor.CancelJavaProcessActionProperty' (VARSTRING[10]);
+cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.utils.admin.monitor.CancelSQLProcessActionProperty' (VARSTRING[10]);
 
 processType '{process.monitor.process.type}'= DATA LOCAL ProcessType();
 nameProcessType '{process.monitor.process.type}' () = staticName(processType()) CHARWIDTH 15;
@@ -54,7 +54,7 @@ dateTimeCallProcess '{process.monitor.date.time.call.process}' = DATA LOCAL DATE
 idSQLProcess '{process.monitor.id.sql.process}' = DATA LOCAL INTEGER (VARSTRING[10]);
 querySQLProcess '{process.monitor.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
 fullQuerySQLProcess '{process.monitor.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (VARSTRING[10] i)  INTERNAL  'lsfusion.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
+copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (VARSTRING[10] i)  INTERNAL  'lsfusion.utils.admin.monitor.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
 copiedFullQuerySQLProcess '{process.monitor.copied.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
 addressUserSQLProcess '{process.monitor.address.user.sql.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 debugInfoSQLProcess '{process.monitor.debug.info.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);

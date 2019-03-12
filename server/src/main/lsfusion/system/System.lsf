@@ -137,18 +137,18 @@ isServer = DATA LOCAL BOOLEAN ();
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name
-open '{system.open.file}'  INTERNAL  'lsfusion.utils.system.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.utils.file.open.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
 open '{system.open.file}' (VARSTRING[255] source)  { open(source, NULL); }
 //source file, name
-open '{system.open.file}'  INTERNAL  'lsfusion.utils.system.OpenFileActionProperty' (FILE, VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.utils.file.open.OpenFileActionProperty' (FILE, VARISTRING[255]);
 open '{system.open.file}' (FILE source)  { open(source, NULL); }
 //source rawFile, name
-open '{system.open.file}'  INTERNAL  'lsfusion.utils.system.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.utils.file.open.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }
 //source link
-open '{system.open.link}'  INTERNAL  'lsfusion.utils.system.OpenLinkActionProperty' (LINK);
+open '{system.open.link}'  INTERNAL  'lsfusion.utils.file.open.OpenLinkActionProperty' (LINK);
 //source rawLink
-open '{system.open.link}'  INTERNAL  'lsfusion.utils.system.OpenRawLinkActionProperty' (RAWLINK);
+open '{system.open.link}'  INTERNAL  'lsfusion.utils.file.open.OpenRawLinkActionProperty' (RAWLINK);
   
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();

@@ -2,18 +2,18 @@ MODULE Backup;
 
 REQUIRE System, Reflection, SchedulerDefaultData;
 
-makeBackup 'Создать копию' INTERNAL  'lsfusion.utils.backup.BackupActionProperty' () TOOLBAR;
+makeBackup 'Создать копию' INTERNAL  'lsfusion.utils.admin.backup.BackupActionProperty' () TOOLBAR;
 makeBackupAction 'Создать копию'  { 
     makeBackup();
     formRefresh();
 }
-makePartialBackup 'Создать копию (оперативно)' INTERNAL  'lsfusion.utils.backup.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackup 'Создать копию (оперативно)' INTERNAL  'lsfusion.utils.admin.backup.PartialBackupActionProperty' () TOOLBAR;
 makePartialBackupAction 'Создать копию (оперативно)'  { 
     makePartialBackup();
     formRefresh();
 }
-save 'Скачать' INTERNAL  'lsfusion.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
-delete 'Удалить' INTERNAL  'lsfusion.utils.backup.DeleteBackupActionProperty' (Backup);
+save 'Скачать' INTERNAL  'lsfusion.utils.admin.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
+delete 'Удалить' INTERNAL  'lsfusion.utils.admin.backup.DeleteBackupActionProperty' (Backup);
 
 deleteAction 'Удалить' (Backup b)  { 
     delete(b);
@@ -30,13 +30,13 @@ WHEN CHANGED(dumpDir()) DO setDumpDir();
 saveMondayBackups '{backup.dave.monday.backups}' = DATA BOOLEAN ();
 saveFirstDayBackups '{backup.first.day.backups}' = DATA BOOLEAN ();
 maxQuantityBackups '{backup.max.quantity.backups}' = DATA INTEGER ();
-decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.utils.admin.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
 decimateBackupsAction '{backup.decimate.backups}'  { 
     decimateBackups();
     formRefresh();
 }
 
-customRestore 'Восстановить таблицы'  INTERNAL  'lsfusion.utils.backup.CustomRestoreActionProperty' (Backup);
+customRestore 'Восстановить таблицы'  INTERNAL  'lsfusion.utils.admin.backup.CustomRestoreActionProperty' (Backup);
 inCustomRestore 'Вкл' = DATA BOOLEAN (Table);
 restoreObjects 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
 inCustomRestore 'Вкл' = DATA BOOLEAN (TableColumn);
