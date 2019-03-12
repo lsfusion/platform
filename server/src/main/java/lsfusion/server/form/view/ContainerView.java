@@ -205,10 +205,10 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     @Override
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
-        pool.serializeCollection(outStream, getChildrenList(), serializationType);
+        pool.serializeCollection(outStream, getChildrenList());
 
         pool.writeString(outStream, ThreadLocalContext.localize(caption));
         pool.writeString(outStream, ThreadLocalContext.localize(description));

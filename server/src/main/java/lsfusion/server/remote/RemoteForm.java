@@ -37,7 +37,6 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.stack.ThrowableWithStack;
@@ -120,7 +119,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign, form.BL)).serializeObject(new DataOutputStream(outStream), richDesign, SerializationType.GENERAL);
+            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign, form.BL)).serializeObject(new DataOutputStream(outStream), richDesign);
             //            richDesign.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
             throw new RuntimeException(e);

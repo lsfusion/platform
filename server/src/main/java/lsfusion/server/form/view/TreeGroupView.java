@@ -73,12 +73,12 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         groups.add(group);
     }
 
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
-        pool.serializeCollection(outStream, groups, serializationType);
-        pool.serializeObject(outStream, toolbarSystem, serializationType);
-        pool.serializeObject(outStream, userFilter, serializationType);
+        pool.serializeCollection(outStream, groups);
+        pool.serializeObject(outStream, toolbarSystem);
+        pool.serializeObject(outStream, userFilter);
 
         outStream.writeBoolean(entity.plainTreeMode);
         

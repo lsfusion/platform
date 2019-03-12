@@ -35,12 +35,12 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         return filter;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
-        pool.serializeCollection(outStream, groups, serializationType);
-        pool.serializeObject(outStream, toolbar, serializationType);
-        pool.serializeObject(outStream, filter, serializationType);
+        pool.serializeCollection(outStream, groups);
+        pool.serializeObject(outStream, toolbar);
+        pool.serializeObject(outStream, filter);
         
         outStream.writeBoolean(expandOnClick);
     }

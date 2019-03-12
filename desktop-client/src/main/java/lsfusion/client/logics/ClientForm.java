@@ -175,9 +175,9 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
         return result;
     }
 
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.serializeObject(outStream, mainContainer);
-        pool.serializeCollection(outStream, treeGroups, serializationType);
+        pool.serializeCollection(outStream, treeGroups);
         pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, regularFilterGroups);

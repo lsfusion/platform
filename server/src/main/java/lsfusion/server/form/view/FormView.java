@@ -614,18 +614,18 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return CLASSCHOOSER_COMPONENT + "(" + entity.getSID() + ")";
     }
 
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, mainContainer, serializationType);
-        pool.serializeCollection(outStream, getTreeGroups(), serializationType);
-        pool.serializeCollection(outStream, getGroupObjectsListIt(), serializationType);
-        pool.serializeCollection(outStream, getPropertiesList(), serializationType);
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        pool.serializeObject(outStream, mainContainer);
+        pool.serializeCollection(outStream, getTreeGroups());
+        pool.serializeCollection(outStream, getGroupObjectsListIt());
+        pool.serializeCollection(outStream, getPropertiesList());
         pool.serializeCollection(outStream, getRegularFiltersList());
 
         ImOrderMap<PropertyDrawView, Boolean> defaultOrders = getDefaultOrders();
         int size = defaultOrders.size();
         outStream.writeInt(size);
         for (int i=0;i<size;i++) {
-            pool.serializeObject(outStream, defaultOrders.getKey(i), serializationType);
+            pool.serializeObject(outStream, defaultOrders.getKey(i));
             outStream.writeBoolean(defaultOrders.getValue(i));
         }
 

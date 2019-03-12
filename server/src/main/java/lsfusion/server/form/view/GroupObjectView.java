@@ -99,16 +99,16 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return getSID();
     }
 
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.writeObject(outStream, entity.banClassView);
-        pool.serializeCollection(outStream, this, serializationType);
+        pool.serializeCollection(outStream, this);
         pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.treeGroup));
 
-        pool.serializeObject(outStream, grid, serializationType);
-        pool.serializeObject(outStream, showType, serializationType);
-        pool.serializeObject(outStream, toolbarSystem, serializationType);
-        pool.serializeObject(outStream, userFilter, serializationType);
-        pool.serializeObject(outStream, calculations, serializationType);
+        pool.serializeObject(outStream, grid);
+        pool.serializeObject(outStream, showType);
+        pool.serializeObject(outStream, toolbarSystem);
+        pool.serializeObject(outStream, userFilter);
+        pool.serializeObject(outStream, calculations);
 
         outStream.writeBoolean(entity.isParent != null);
 

@@ -1,4 +1,4 @@
-package lsfusion.spring;
+package lsfusion.server.spring;
 
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 

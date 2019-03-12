@@ -36,12 +36,12 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
         return entity.getCaption();
     }
 
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, groupObject, serializationType);
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        pool.serializeObject(outStream, groupObject);
         pool.writeString(outStream, ThreadLocalContext.localize(entity.caption));
 
         entity.baseClass.serialize(outStream);
-        pool.serializeObject(outStream, classChooser, serializationType);
+        pool.serializeObject(outStream, classChooser);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
