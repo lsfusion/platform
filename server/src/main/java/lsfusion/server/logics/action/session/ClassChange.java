@@ -2,7 +2,7 @@ package lsfusion.server.logics.action.session;
 
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.MapFact;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.ConcreteObjectClass;
 import lsfusion.server.data.*;

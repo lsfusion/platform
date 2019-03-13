@@ -7,7 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.sets.AndClassSet;

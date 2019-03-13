@@ -12,7 +12,7 @@ import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;

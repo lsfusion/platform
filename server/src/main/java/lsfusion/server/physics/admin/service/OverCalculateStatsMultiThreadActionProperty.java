@@ -7,7 +7,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.impl.recalculate.OverCalculateStatsTask;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class OverCalculateStatsMultiThreadActionProperty extends MultiThreadActionProperty {
 

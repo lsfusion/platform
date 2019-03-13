@@ -14,7 +14,7 @@ import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.DateTimeClass;
 import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.logics.classes.StringClass;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.type.ParseInterface;
@@ -28,7 +28,7 @@ import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.remote.RemoteLoggerAspect;
-import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.base.stack.ExecutionStackAspect;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;

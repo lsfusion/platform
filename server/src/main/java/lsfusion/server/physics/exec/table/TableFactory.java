@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
 import lsfusion.server.logics.*;

@@ -1,8 +1,8 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.lifecycle.LogicsManager;
+import lsfusion.server.base.lifecycle.LifecycleEvent;
+import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import org.apache.log4j.Logger;

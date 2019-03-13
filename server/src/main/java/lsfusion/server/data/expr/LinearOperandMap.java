@@ -2,7 +2,7 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.col.WrapMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.data.expr.formula.AbstractFormulaImpl;
 import lsfusion.server.data.expr.formula.ListExprType;

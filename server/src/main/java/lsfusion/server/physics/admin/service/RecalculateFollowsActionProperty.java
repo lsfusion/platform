@@ -11,7 +11,7 @@ import lsfusion.server.logics.action.session.SessionCreator;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
     public RecalculateFollowsActionProperty(ServiceLogicsModule LM) {

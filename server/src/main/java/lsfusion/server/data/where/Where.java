@@ -2,8 +2,8 @@ package lsfusion.server.data.where;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.caches.OuterContext;
-import lsfusion.server.caches.ParamExpr;
+import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.base.caches.ParamExpr;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;

@@ -40,7 +40,7 @@ import lsfusion.server.physics.admin.profiler.Profiler;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.PropertyChange;
 import lsfusion.server.logics.action.session.SessionTableUsage;
-import lsfusion.server.stack.StackProgress;
+import lsfusion.server.base.stack.StackProgress;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

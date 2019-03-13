@@ -6,7 +6,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ActionPropertyValueImplement;
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;

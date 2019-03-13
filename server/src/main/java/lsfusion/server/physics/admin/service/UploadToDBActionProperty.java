@@ -14,7 +14,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class UploadToDBActionProperty extends ScriptingActionProperty {
 

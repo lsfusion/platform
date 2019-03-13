@@ -5,8 +5,8 @@ import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.ExecutorFactory;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ExecutorFactory;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -28,7 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class EmailSender {
     private final static Logger logger = ServerLoggers.mailLogger;

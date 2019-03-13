@@ -14,7 +14,7 @@ import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.logics.classes.StringClass;
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;

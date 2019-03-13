@@ -26,13 +26,14 @@ import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.base.stack.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.context.AbstractContext;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.AbstractContext;
+import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
@@ -68,7 +69,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 
@@ -977,7 +978,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     @LogTime
     @StackMessage("{message.local.event.exec}")
-    @ThisMessage (profile = false)
+    @ThisMessage(profile = false)
     private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction || !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;

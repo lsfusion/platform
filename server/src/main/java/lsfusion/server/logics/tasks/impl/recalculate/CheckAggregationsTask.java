@@ -3,7 +3,7 @@ package lsfusion.server.logics.tasks.impl.recalculate;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.AggregateProperty;

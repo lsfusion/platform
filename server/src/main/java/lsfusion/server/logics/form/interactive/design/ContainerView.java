@@ -5,7 +5,7 @@ import lsfusion.interop.form.layout.AbstractContainer;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;

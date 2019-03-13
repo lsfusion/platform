@@ -24,7 +24,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.StackMessage;
+import lsfusion.server.base.stack.StackMessage;
 
 import java.sql.SQLException;
 import java.util.Collection;

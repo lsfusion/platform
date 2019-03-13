@@ -4,7 +4,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.StatType;

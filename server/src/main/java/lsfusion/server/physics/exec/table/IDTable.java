@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.logics.classes.SystemClass;

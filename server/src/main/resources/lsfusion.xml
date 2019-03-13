@@ -683,7 +683,7 @@
     </bean>
 
     <!-- Список для переопределения custom-объектов -->
-    <bean id="instanceCustomObjects" class="lsfusion.server.lifecycle.SpringListsMergerFactory">
+    <bean id="instanceCustomObjects" class="lsfusion.server.base.lifecycle.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreCustomObjects"/>
@@ -737,11 +737,11 @@
     </bean>
 
     <!-- Lifecycle Manager setup -->
-    <bean id="lifecycleManager" class="lsfusion.server.lifecycle.LifecycleManager">
+    <bean id="lifecycleManager" class="lsfusion.server.base.lifecycle.LifecycleManager">
         <constructor-arg ref="lifecycleListeners"/>
     </bean>
 
-    <bean id="lifecycleListeners" class="lsfusion.server.lifecycle.SpringListsMergerFactory">
+    <bean id="lifecycleListeners" class="lsfusion.server.base.lifecycle.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreLifecycleListeners"/>

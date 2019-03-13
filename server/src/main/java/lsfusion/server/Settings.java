@@ -1,6 +1,6 @@
 package lsfusion.server;
 
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.property.AlgType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;

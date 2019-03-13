@@ -20,7 +20,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.logics.classes.StringClass;
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -28,8 +28,8 @@ import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
-import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.lifecycle.LogicsManager;
+import lsfusion.server.base.lifecycle.LifecycleEvent;
+import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -45,7 +45,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;

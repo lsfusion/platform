@@ -3,7 +3,7 @@ package lsfusion.server.data.query;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseJoin;
 import lsfusion.server.data.expr.where.ifs.IfJoin;

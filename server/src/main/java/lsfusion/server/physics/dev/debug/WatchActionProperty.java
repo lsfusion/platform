@@ -1,6 +1,6 @@
 package lsfusion.server.physics.dev.debug;
 
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;

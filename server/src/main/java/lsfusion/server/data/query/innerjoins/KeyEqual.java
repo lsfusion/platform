@@ -10,8 +10,9 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
@@ -26,7 +27,7 @@ import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 
-public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {
+public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWheres.Interface<KeyEqual>, TranslateContext<KeyEqual> {
 
     public final ImMap<ParamExpr, BaseExpr> keyExprs;
 

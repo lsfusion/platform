@@ -2,7 +2,7 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.caches.ParamExpr;
+import lsfusion.server.base.caches.ParamExpr;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.OrClassSet;

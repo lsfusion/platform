@@ -7,7 +7,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
 import lsfusion.server.physics.admin.profiler.Profiler;
-import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.base.stack.ExecutionStackAspect;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

@@ -10,7 +10,7 @@ import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.Settings;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.form.interactive.design.ComponentView;

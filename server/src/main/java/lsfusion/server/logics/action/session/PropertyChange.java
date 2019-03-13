@@ -12,8 +12,9 @@ import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.BaseExpr;
@@ -34,8 +35,8 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.StackMessage;
+import lsfusion.server.base.stack.ParamMessage;
+import lsfusion.server.base.stack.StackMessage;
 
 import java.sql.SQLException;
 

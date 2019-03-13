@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.classes.ClassWhere;

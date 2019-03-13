@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.server.caches.hash.HashValues;
+import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;

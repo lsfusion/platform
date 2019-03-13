@@ -6,14 +6,14 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.base.stack.ExecutionStackAspect;
 
 import java.sql.SQLException;
 

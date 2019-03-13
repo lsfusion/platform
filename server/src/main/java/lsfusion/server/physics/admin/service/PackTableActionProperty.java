@@ -15,7 +15,7 @@ import lsfusion.server.physics.exec.table.ImplementTable;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class PackTableActionProperty extends ScriptingActionProperty {
 

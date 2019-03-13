@@ -35,8 +35,8 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.physics.exec.table.ImplementTable;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.StackMessage;
+import lsfusion.server.base.stack.ParamMessage;
+import lsfusion.server.base.stack.StackMessage;
 
 import java.sql.SQLException;
 import java.util.Collections;

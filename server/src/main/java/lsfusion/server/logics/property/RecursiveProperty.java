@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;

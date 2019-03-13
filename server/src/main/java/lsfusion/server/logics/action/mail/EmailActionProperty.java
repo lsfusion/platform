@@ -13,7 +13,7 @@ import javax.mail.MessagingException;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public abstract class EmailActionProperty extends ScriptingActionProperty {
     EmailLogicsModule emailLM;

@@ -1,8 +1,8 @@
 package lsfusion.server.data.translator;
 
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.caches.ParamExpr;
-import lsfusion.server.caches.TranslateContext;
+import lsfusion.server.base.caches.ParamExpr;
+import lsfusion.server.base.caches.TranslateContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;

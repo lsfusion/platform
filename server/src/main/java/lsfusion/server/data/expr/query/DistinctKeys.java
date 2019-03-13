@@ -4,7 +4,7 @@ import lsfusion.base.col.WrapMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.translator.MapTranslate;
 

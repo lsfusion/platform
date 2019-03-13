@@ -24,7 +24,7 @@ import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.nullTrim;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class ReceiveEmailActionProperty extends ScriptingActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;

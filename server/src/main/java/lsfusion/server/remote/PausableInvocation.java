@@ -3,8 +3,8 @@ package lsfusion.server.remote;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
 import lsfusion.server.physics.admin.profiler.Profiler;
-import lsfusion.server.stack.ExecutionStackAspect;
-import lsfusion.server.stack.ThrowableWithStack;
+import lsfusion.server.base.stack.ExecutionStackAspect;
+import lsfusion.server.base.stack.ThrowableWithStack;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

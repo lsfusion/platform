@@ -3,7 +3,7 @@ package lsfusion.server.data.translator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.caches.ParamExpr;
+import lsfusion.server.base.caches.ParamExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.PullExpr;

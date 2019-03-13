@@ -15,7 +15,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.ParamExpr;
+import lsfusion.server.base.caches.ParamExpr;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.StatType;

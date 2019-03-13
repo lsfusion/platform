@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;

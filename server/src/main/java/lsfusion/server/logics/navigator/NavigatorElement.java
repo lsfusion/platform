@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.serialization.SerializationUtil;
 import lsfusion.interop.navigator.WindowType;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.CanonicalNameUtils;

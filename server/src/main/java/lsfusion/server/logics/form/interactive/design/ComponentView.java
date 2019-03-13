@@ -5,7 +5,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.layout.AbstractComponent;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;

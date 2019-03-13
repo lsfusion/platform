@@ -1,6 +1,6 @@
 package lsfusion.server.remote;
 
-import lsfusion.server.stack.ThrowableWithStack;
+import lsfusion.server.base.stack.ThrowableWithStack;
 
 public class InvocationResult {
     public static final InvocationResult PAUSED = new InvocationResult(Status.PAUSED);

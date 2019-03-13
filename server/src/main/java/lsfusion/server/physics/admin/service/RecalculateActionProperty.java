@@ -11,7 +11,7 @@ import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class RecalculateActionProperty extends ScriptingActionProperty {
     public RecalculateActionProperty(ServiceLogicsModule LM) {

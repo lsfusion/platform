@@ -2,8 +2,8 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.caches.ParamLazy;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.ParamLazy;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;

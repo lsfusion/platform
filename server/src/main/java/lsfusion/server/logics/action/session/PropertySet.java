@@ -2,11 +2,11 @@ package lsfusion.server.logics.action.session;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.caches.AbstractInnerContext;
-import lsfusion.server.caches.AbstractOuterContext;
-import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.caches.ParamExpr;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.AbstractInnerContext;
+import lsfusion.server.base.caches.AbstractOuterContext;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.ParamExpr;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;

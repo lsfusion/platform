@@ -11,10 +11,10 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.server.caches.AbstractOuterContext;
-import lsfusion.server.caches.OuterContext;
-import lsfusion.server.caches.ParamExpr;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.AbstractOuterContext;
+import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.base.caches.ParamExpr;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;
@@ -314,7 +314,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             return result;
         }
 
-        public ImSet<lsfusion.server.caches.OuterContext> calculateOuterDepends() {
+        public ImSet<lsfusion.server.base.caches.OuterContext> calculateOuterDepends() {
             return BaseUtils.immutableCast(keySet());
         }
 
@@ -345,7 +345,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
     public int hashOuter(HashContext hashContext) {
         return getOuter().hashOuter(hashContext);
     }
-    public ImSet<lsfusion.server.caches.OuterContext> getOuterDepends() {
+    public ImSet<lsfusion.server.base.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
     public boolean enumerate(ExprEnumerator enumerator) {

@@ -1,6 +1,6 @@
 package lsfusion.server.physics.dev.i18n;
 
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 
 import java.util.Locale;
 

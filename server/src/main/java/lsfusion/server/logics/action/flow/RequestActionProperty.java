@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;

@@ -1,9 +1,9 @@
 package lsfusion.server.remote;
 
 import lsfusion.interop.server.RmiServerInterface;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.lifecycle.EventServer;
+import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.lifecycle.EventServer;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;

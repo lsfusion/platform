@@ -9,7 +9,7 @@ import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class VacuumDBActionProperty extends ScriptingActionProperty {
     public VacuumDBActionProperty(ServiceLogicsModule LM) {
