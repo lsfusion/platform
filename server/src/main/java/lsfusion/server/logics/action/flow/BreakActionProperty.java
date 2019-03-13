@@ -3,7 +3,7 @@ package lsfusion.server.logics.action.flow;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 

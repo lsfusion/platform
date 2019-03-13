@@ -4,8 +4,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 

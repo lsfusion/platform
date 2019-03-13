@@ -30,7 +30,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
-import lsfusion.server.logics.form.interactive.InstanceFactory;
+import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.physics.dev.integration.service.*;

@@ -8,7 +8,7 @@ import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.PostgreDataAdapter;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 

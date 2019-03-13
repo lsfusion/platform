@@ -15,7 +15,7 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;

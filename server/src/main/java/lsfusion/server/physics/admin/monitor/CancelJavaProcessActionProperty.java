@@ -5,7 +5,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 

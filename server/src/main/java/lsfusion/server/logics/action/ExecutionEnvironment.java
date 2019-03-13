@@ -10,7 +10,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.action.ui.UserInteraction;
+import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.classes.ConcreteObjectClass;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.MutableClosedObject;
@@ -22,7 +22,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.FormEnvironment;
+import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.sql.SQLException;

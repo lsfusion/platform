@@ -2,9 +2,9 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.property.actions.BaseEvent;
-import lsfusion.server.logics.property.actions.SessionEnvEvent;
-import lsfusion.server.logics.property.actions.SystemEvent;
+import lsfusion.server.logics.event.BaseEvent;
+import lsfusion.server.logics.event.SessionEnvEvent;
+import lsfusion.server.logics.event.SystemEvent;
 
 public class Event {
     public final BaseEvent base;

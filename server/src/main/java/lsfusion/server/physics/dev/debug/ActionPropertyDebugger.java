@@ -19,6 +19,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
@@ -27,7 +28,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.FormEnvironment;
+import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.language.EvalUtils;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -159,7 +160,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             "import lsfusion.server.logics.property.CalcProperty;\n" +
             "import lsfusion.server.logics.property.ClassPropertyInterface;\n" +
             "import lsfusion.server.logics.property.DataProperty;\n" +
-            "import lsfusion.server.logics.property.ExecutionContext;\n" +
+            "import lsfusion.server.logics.action.ExecutionContext;\n" +
             "import lsfusion.server.logics.action.flow.FlowResult;\n" +
             "import ClassChange;\n" +
             "import DataSession;\n" +

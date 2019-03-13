@@ -46,7 +46,7 @@ import lsfusion.server.logics.mutables.interfaces.NFDefault;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
+import lsfusion.server.logics.action.change.ChangeClassActionProperty;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.action.session.DataSession;

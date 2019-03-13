@@ -8,7 +8,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.ApplyActionEvent;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.actions.FormEnvironment;
+import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 

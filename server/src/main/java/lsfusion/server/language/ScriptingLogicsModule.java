@@ -25,6 +25,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.Union;
@@ -33,6 +34,8 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.event.BaseEvent;
+import lsfusion.server.logics.event.SessionEnvEvent;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateActionProperty;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormActionProperty;
@@ -58,7 +61,6 @@ import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBFActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
@@ -1534,7 +1536,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             String javaClass = "import lsfusion.server.data.SQLHandledException;\n" +
                     "import lsfusion.server.logics.property.ClassPropertyInterface;\n" +
-                    "import lsfusion.server.logics.property.ExecutionContext;\n" +
+                    "import lsfusion.server.logics.action.ExecutionContext;\n" +
                     "import lsfusion.server.language.ScriptingActionProperty;\n" +
                     "import lsfusion.server.language.ScriptingLogicsModule;\n" +
                     "\n" +

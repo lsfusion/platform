@@ -8,10 +8,10 @@ import lsfusion.server.logics.form.interactive.instance.object.DataObjectInstanc
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 
 import java.sql.SQLException;
 

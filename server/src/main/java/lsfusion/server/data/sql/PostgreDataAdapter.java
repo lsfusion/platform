@@ -9,7 +9,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;

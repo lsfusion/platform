@@ -7,8 +7,8 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.actions.ExplicitActionProperty;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.property.group.AbstractGroup;
 
