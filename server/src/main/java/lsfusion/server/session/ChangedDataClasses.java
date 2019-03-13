@@ -3,8 +3,8 @@ package lsfusion.server.session;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.server.classes.ConcreteObjectClass;
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.logics.classes.ConcreteObjectClass;
+import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.property.ClassDataProperty;
 
 public class ChangedDataClasses {

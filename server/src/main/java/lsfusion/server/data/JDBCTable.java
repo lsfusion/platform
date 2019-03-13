@@ -17,6 +17,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
+import lsfusion.server.logics.classes.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.*;

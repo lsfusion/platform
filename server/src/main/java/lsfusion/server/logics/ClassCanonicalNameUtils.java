@@ -3,10 +3,12 @@ package lsfusion.server.logics;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
-import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
-import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
-import lsfusion.server.classes.sets.ResolveUpClassSet;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.link.*;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.sets.ResolveConcatenateClassSet;
+import lsfusion.server.logics.classes.sets.ResolveOrObjectClassSet;
+import lsfusion.server.logics.classes.sets.ResolveUpClassSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.service;
 
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.query.DynamicExecuteEnvironment;
 import lsfusion.server.logics.ServiceLogicsModule;

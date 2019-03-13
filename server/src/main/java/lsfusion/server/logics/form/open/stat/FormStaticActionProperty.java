@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.form.stat.FormStaticType;
-import lsfusion.server.classes.StaticFormatFileClass;
+import lsfusion.server.logics.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.form.open.FormActionProperty;

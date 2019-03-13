@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.logics.classes.ConcreteClass;
 
 public abstract class VariableClassExpr extends BaseExpr {
 

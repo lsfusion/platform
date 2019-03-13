@@ -1,7 +1,6 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.classes.NumericClass;
 import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.type.ArrayClass;

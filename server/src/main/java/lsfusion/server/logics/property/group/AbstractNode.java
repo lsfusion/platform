@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.mutables.Version;

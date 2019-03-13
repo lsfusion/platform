@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 // вообще Collection

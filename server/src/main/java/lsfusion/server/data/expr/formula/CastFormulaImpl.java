@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.type.Type;
 
 public class CastFormulaImpl implements FormulaJoinImpl {

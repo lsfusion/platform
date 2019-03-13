@@ -1,39 +1,20 @@
 package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.classes.BaseClass;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.formula.FormulaExpr;
-import lsfusion.server.data.expr.query.AggrExpr;
-import lsfusion.server.data.expr.query.PartitionExpr;
-import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.type.NullReader;
-import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.property.PropertyInterface;
-
-import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.hashEquals;
 

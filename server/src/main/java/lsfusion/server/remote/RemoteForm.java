@@ -22,7 +22,7 @@ import lsfusion.interop.form.*;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.user.*;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.context.EExecutionStackCallable;
 import lsfusion.server.context.EExecutionStackRunnable;
 import lsfusion.server.context.ExecutionStack;

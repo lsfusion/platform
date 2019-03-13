@@ -43,6 +43,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.ObjectClassField;
 
 import java.sql.SQLException;

@@ -3,7 +3,7 @@ package lsfusion.server.logics.action.flow;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.action.ConfirmClientAction;
-import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;

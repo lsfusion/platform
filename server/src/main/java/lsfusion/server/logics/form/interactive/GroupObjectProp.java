@@ -1,6 +1,9 @@
 package lsfusion.server.logics.form.interactive;
 
 import lsfusion.server.classes.*;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.LogicalClass;
+import lsfusion.server.logics.classes.OrderClass;
 
 public enum GroupObjectProp {
     FILTER, ORDER, VIEW;

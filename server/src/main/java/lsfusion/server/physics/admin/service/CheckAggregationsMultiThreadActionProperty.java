@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.service;
 
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;

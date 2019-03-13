@@ -16,6 +16,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;

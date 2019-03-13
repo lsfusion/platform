@@ -1,6 +1,6 @@
 package lsfusion.server.data.type;
 
-import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.data.sql.SQLSyntax;
 
 public abstract class LogicalParseInterface extends StringParseInterface {

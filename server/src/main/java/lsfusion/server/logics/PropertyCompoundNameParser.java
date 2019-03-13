@@ -1,9 +1,9 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.classes.CustomClass;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.CompoundNameUtils.ParseException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;

@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

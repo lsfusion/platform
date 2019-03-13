@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.type.Type;

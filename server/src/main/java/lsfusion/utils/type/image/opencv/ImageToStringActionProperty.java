@@ -3,7 +3,7 @@ package lsfusion.utils.type.image.opencv;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;

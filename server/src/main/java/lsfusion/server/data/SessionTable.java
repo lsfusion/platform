@@ -44,6 +44,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.classes.*;
 import lsfusion.server.session.ClassChanges;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;

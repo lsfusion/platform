@@ -2,7 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.InfiniteExpr;
 import lsfusion.server.data.where.WhereBuilder;

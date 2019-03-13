@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LCP;

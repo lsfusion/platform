@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.server.classes.ObjectValueClassSet;
+import lsfusion.server.logics.classes.ObjectValueClassSet;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.SingleClassExpr;

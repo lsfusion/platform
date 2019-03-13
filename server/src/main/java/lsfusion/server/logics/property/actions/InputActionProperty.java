@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;

@@ -1,7 +1,7 @@
 package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;

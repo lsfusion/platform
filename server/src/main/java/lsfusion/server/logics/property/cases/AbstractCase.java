@@ -6,7 +6,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;

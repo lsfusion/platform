@@ -19,7 +19,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.*;
-import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.data.SQLQuery;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.cases.CaseExpr;

@@ -1,8 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.CustomClass;
 import lsfusion.server.logics.property.ChangedProperty;
-import lsfusion.server.logics.property.ClassDataProperty;
 import lsfusion.server.logics.property.IsClassProperty;
 
 // удаление объекта с заданным ClassDataProperty

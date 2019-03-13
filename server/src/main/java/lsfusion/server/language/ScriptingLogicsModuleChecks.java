@@ -1,7 +1,8 @@
 package lsfusion.server.language;
 
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.ConcatenateType;
