@@ -413,9 +413,9 @@ public class Main {
         return UIManager.getSystemLookAndFeelClassName();
     }
 
-    public static boolean clientExceptionLog(String title, Throwable t) throws RemoteException {
+    public static boolean clientExceptionLog(Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.logClientException(title, Main.computerName, t);
+            remoteNavigator.logClientException("", Main.computerName, t);
             return true;
         }
         return false;

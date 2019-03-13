@@ -88,7 +88,7 @@ public class ClientExceptionManager {
             synchronized (unreportedThrowables) {
                 boolean reported = false;
                 try {
-                    reported = Main.clientExceptionLog("Client error", exception);
+                    reported = Main.clientExceptionLog(exception);
                 } catch (ConnectException ex) {
                     logger.error("Error reporting client connect exception: " + exception, ex);
                 } catch (Throwable ex) {
@@ -106,7 +106,7 @@ public class ClientExceptionManager {
                 Throwable t = iterator.next();
                 boolean reported = false;
                 try {
-                    reported = Main.clientExceptionLog("Unreported client error", t);
+                    reported = Main.clientExceptionLog(t);
                 } catch (Throwable e) {
                     logger.error("Error reporting unreported client exception: " + t, e);
                 }

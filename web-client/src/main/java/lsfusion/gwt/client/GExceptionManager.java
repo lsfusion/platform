@@ -3,8 +3,8 @@ package lsfusion.gwt.client;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.logging.impl.StackTracePrintStream;
+import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.shared.result.VoidResult;
@@ -20,17 +20,17 @@ public class GExceptionManager {
     private final static List<Throwable> unreportedThrowables = new ArrayList<>();
     private final static Map<Throwable, Integer> unreportedThrowablesTryCount = new HashMap<>();
     
-    public static void logClientError(String message, Throwable throwable) {
-        logClientError(new LogClientExceptionAction(message, throwable), message, throwable);
+    public static void logClientError(Throwable throwable) {
+        logClientError(new LogClientExceptionAction(throwable), throwable);
     }
     
-    public static void logClientError(NonFatalHandledException ex, String message) {
-        logClientError(new LogClientExceptionAction(message, ex), message, ex);
+    public static void logClientError(NonFatalHandledException ex) {
+        logClientError(new LogClientExceptionAction(ex), ex);
     }
 
-    public static void logClientError(LogClientExceptionAction action, String message, final Throwable throwable) {
-        GWT.log(message, throwable);
-        Log.error(message, throwable);
+    public static void logClientError(LogClientExceptionAction action, final Throwable throwable) {
+        GWT.log("", throwable);
+        Log.error("", throwable);
 
         try {
             NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
@@ -63,7 +63,7 @@ public class GExceptionManager {
                 try {
                     NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
                     if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                        dispatcher.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), t), new ErrorHandlingCallback<VoidResult>() {
+                        dispatcher.execute(new LogClientExceptionAction(t), new ErrorHandlingCallback<VoidResult>() {
                             @Override
                             public void failure(Throwable caught) {
                                 Log.error("Error logging unreported client exception", caught);
@@ -113,7 +113,7 @@ public class GExceptionManager {
             reqId = ind;
         }
         
-        exceptions.add(new NonFatalHandledException(t, reqId));
+        exceptions.add(new NonFatalHandledException(copyMessage(t), reqId));
     }
 
     public static void flushFailedNotFatalRequests(Action action) {
@@ -133,7 +133,7 @@ public class GExceptionManager {
                         Collection<NonFatalHandledException> all = entry.getValue();
                         NonFatalHandledException nonFatal = all.iterator().next();
                         nonFatal.count = all.size();
-                        logClientError(nonFatal, "Connection error");
+                        logClientError(nonFatal);
                     }
                 }
             });
@@ -167,6 +167,9 @@ public class GExceptionManager {
     // assuming that there should be primitive copy (Strings and other very primitive Java classes)  
     public static void copyStackTraces(Throwable from, Throwable to) {
         from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
-        to.setStackTrace(from.getStackTrace());
+        if(!(from instanceof StatusCodeException)) // temporary hack to understand how statuscodeexception can pass check in DispatchAsyncWrapper  
+            to.setStackTrace(from.getStackTrace());
+        else
+            assert false;
     }
 }

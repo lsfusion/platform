@@ -92,7 +92,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     protected void handleDispatchException(Throwable t) {
-        GExceptionManager.logClientError("Error dispatching ServerResponseResult: ", t);
+        GExceptionManager.logClientError(t);
         DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
     }
 

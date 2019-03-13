@@ -170,7 +170,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                GExceptionManager.logClientError("Uncaught GWT : " + messages.uncaughtGWTException() + ": ", t);
+                GExceptionManager.logClientError(t);
             }
         });
 
