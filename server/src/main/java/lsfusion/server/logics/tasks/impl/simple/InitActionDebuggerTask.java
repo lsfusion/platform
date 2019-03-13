@@ -7,9 +7,9 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.logics.debug.DebuggerService;
-import lsfusion.server.logics.debug.LocalhostClientSocketFactory;
 import lsfusion.server.logics.tasks.GroupSplitTask;
+import lsfusion.server.physics.dev.debug.DebuggerService;
+import lsfusion.server.physics.dev.debug.LocalhostClientSocketFactory;
 import org.apache.log4j.Logger;
 import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
