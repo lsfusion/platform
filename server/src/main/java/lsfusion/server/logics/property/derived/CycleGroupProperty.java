@@ -18,10 +18,10 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.session.DataChanges;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.PropertyChanges;
-import lsfusion.server.session.StructChanges;
+import lsfusion.server.logics.action.session.DataChanges;
+import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.StructChanges;
 
 public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyInterface> extends MaxGroupProperty<I> {
 

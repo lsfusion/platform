@@ -1,7 +1,7 @@
 package lsfusion.server;
 
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
 
 public interface EnvStackRunnable {
 

@@ -15,7 +15,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 public class SumUnionProperty extends IncrementUnionProperty {
 

@@ -24,7 +24,7 @@ import lsfusion.server.logics.property.actions.AddObjectActionProperty;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
-import lsfusion.server.session.LocalNestedType;
+import lsfusion.server.logics.action.session.LocalNestedType;
 
 import java.util.List;
 

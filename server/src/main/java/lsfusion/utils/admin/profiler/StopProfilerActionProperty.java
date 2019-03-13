@@ -37,9 +37,9 @@ import lsfusion.server.physics.admin.profiler.ProfileItem;
 import lsfusion.server.physics.admin.profiler.ProfileObject;
 import lsfusion.server.physics.admin.profiler.ProfileValue;
 import lsfusion.server.physics.admin.profiler.Profiler;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SessionTableUsage;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.SessionTableUsage;
 import lsfusion.server.stack.StackProgress;
 
 import java.sql.SQLException;

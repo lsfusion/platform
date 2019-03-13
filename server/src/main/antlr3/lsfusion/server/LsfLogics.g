@@ -26,7 +26,7 @@ grammar LsfLogics;
 	import DataClass;
 	import CustomClass;
 	import ValueClass;
-	import lsfusion.server.session.LocalNestedType;
+	import LocalNestedType;
 	import lsfusion.server.physics.dev.i18n.LocalizedString;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.language.linear.LP;

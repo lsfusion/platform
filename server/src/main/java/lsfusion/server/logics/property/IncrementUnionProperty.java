@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 public abstract class IncrementUnionProperty extends UnionProperty {
 

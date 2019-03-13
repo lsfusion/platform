@@ -21,8 +21,8 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.SessionChanges;
+import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.SessionChanges;
 
 import java.sql.SQLException;
 

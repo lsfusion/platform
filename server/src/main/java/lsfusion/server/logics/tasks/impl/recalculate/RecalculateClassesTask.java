@@ -11,7 +11,7 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

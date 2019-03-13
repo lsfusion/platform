@@ -16,8 +16,8 @@ import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;

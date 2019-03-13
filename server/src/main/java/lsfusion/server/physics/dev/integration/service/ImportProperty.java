@@ -11,6 +11,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.property.CalcPropertyImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;

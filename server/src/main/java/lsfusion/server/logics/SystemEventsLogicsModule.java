@@ -14,7 +14,7 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CurrentConnectionFormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

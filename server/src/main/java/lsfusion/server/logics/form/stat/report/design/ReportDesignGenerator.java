@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.stat.report.FormReportInterface;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;

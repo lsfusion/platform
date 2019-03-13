@@ -14,7 +14,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 // выбирает объект по битам
 public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Interface> {

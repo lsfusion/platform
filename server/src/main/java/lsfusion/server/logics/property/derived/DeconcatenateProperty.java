@@ -13,7 +13,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty.Interface> {
     

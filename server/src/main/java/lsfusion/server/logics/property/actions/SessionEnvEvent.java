@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 public class SessionEnvEvent extends TwinImmutableObject {
 

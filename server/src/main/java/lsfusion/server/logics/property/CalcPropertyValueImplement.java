@@ -7,9 +7,9 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.PropertyChange;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.PropertyChange;
 
 import java.sql.SQLException;
 

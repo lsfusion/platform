@@ -26,7 +26,7 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Reader;
-import lsfusion.server.session.SessionTableUsage;
+import lsfusion.server.logics.action.session.SessionTableUsage;
 import lsfusion.server.stack.StackMessage;
 import org.apache.commons.lang3.StringUtils;
 

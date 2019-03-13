@@ -23,7 +23,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.interactive.action.edit.DefaultChangeObjectActionProperty;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
-import lsfusion.server.session.Modifier;
+import lsfusion.server.logics.action.session.Modifier;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
 

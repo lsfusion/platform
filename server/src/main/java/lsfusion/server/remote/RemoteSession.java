@@ -31,7 +31,7 @@ import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
 import lsfusion.server.language.EvalUtils;
 import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

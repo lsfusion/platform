@@ -4,7 +4,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 

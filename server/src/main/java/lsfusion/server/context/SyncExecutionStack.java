@@ -1,6 +1,6 @@
 package lsfusion.server.context;
 
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 public class SyncExecutionStack extends UpExecutionStack implements NewThreadExecutionStack {
 

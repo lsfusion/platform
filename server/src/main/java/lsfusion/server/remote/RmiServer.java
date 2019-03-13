@@ -4,7 +4,7 @@ import lsfusion.interop.server.RmiServerInterface;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.EventServer;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 

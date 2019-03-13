@@ -28,6 +28,7 @@ import lsfusion.server.data.translator.MapValuesTranslator;
 import lsfusion.server.data.translator.RemapValuesTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.session.*;
@@ -203,7 +204,7 @@ public class MapCacheAspect {
         return result;
     }
 
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getUsedChanges(lsfusion.server.session.StructChanges)) " +
+    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getUsedChanges(StructChanges)) " +
             "&& target(property) && args(changes)")
     public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, CalcProperty property, StructChanges changes) throws Throwable {
         return getUsedChanges(property, changes, thisJoinPoint);
@@ -317,7 +318,7 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(lsfusion.server.session.DataChanges lsfusion.server.logics.property.CalcProperty.getDataChanges(lsfusion.server.session.PropertyChange,lsfusion.server.session.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(DataChanges lsfusion.server.logics.property.CalcProperty.getDataChanges(PropertyChange,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(change,propChanges,changedWhere)")
     public Object callGetDataChanges(ProceedingJoinPoint thisJoinPoint, CalcProperty property, PropertyChange change, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
@@ -439,7 +440,7 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getQuery(lsfusion.server.logics.property.CalcType,lsfusion.server.session.PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,lsfusion.base.col.interfaces.immutable.ImMap)) " +
+    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getQuery(lsfusion.server.logics.property.CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,lsfusion.base.col.interfaces.immutable.ImMap)) " +
             "&& target(property) && args(calcType,propChanges,queryType,interfaceValues)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap interfaceValues) throws Throwable {
         // сначала target в аспекте должен быть
@@ -587,7 +588,7 @@ public class MapCacheAspect {
     public static boolean checkInfinite = false;
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.CalcType,lsfusion.server.session.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
@@ -642,7 +643,7 @@ public class MapCacheAspect {
     }
 
     // aspect нужен по большому счету чтобы сохранять query, и не делать лишних getInnerComponents
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getIncrementChange(lsfusion.server.session.PropertyChanges)) " +
+    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getIncrementChange(PropertyChanges)) " +
             "&& target(property) && args(propChanges)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, PropertyChanges propChanges) throws Throwable {
         return getIncrementChange(property, propChanges, thisJoinPoint);
@@ -733,7 +734,7 @@ public class MapCacheAspect {
         return query;
     }
 
-    @Around("execution(* ImplementTable.getReadSaveQuery(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.session.PropertyChanges)) " +
+    @Around("execution(* ImplementTable.getReadSaveQuery(lsfusion.base.col.interfaces.immutable.ImSet, PropertyChanges)) " +
             "&& target(table) && args(properties, propChanges)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, ImplementTable table, ImSet properties, PropertyChanges propChanges) throws Throwable {
         return getReadSaveQuery(table, properties, propChanges, thisJoinPoint);

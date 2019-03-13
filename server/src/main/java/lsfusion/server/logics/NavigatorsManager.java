@@ -16,7 +16,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

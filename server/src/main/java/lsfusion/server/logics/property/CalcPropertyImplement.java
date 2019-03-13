@@ -5,7 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
     public CalcProperty<P> property;

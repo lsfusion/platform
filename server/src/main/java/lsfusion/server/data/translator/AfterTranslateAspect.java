@@ -16,12 +16,11 @@ import lsfusion.server.caches.CacheAspect;
 import lsfusion.server.caches.CacheStats;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.innerjoins.GroupStatType;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.MeanClassWheres;
-import lsfusion.server.session.PropertyChange;
+import lsfusion.server.logics.action.session.PropertyChange;
 
 
 // аспект который заодно транслирует ManualLazy операции
@@ -142,7 +141,7 @@ public class AfterTranslateAspect {
         return true;        
     }
 
-    @Around("execution(* lsfusion.server.session.PropertyChange.getQuery()) && target(change)")
+    @Around("execution(* PropertyChange.getQuery()) && target(change)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, PropertyChange change) throws Throwable {
         return test(thisJoinPoint, change);
     }

@@ -25,7 +25,7 @@ import lsfusion.server.remote.RemoteConnection;
 import lsfusion.server.remote.RemoteConnectionContext;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemoteUIContext;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.Locale;

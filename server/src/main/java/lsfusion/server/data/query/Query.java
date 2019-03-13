@@ -31,8 +31,8 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
 import lsfusion.server.stack.StackMessage;
 
 import java.sql.SQLException;

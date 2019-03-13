@@ -7,6 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;

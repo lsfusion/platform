@@ -28,7 +28,7 @@ import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.ObjectClassProperty;
 import lsfusion.server.physics.exec.table.FullTablesInterface;
 import lsfusion.server.physics.exec.table.ImplementTable;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;

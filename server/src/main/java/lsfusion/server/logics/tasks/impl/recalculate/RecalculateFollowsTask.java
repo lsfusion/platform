@@ -7,7 +7,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.tasks.GroupGraphTask;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

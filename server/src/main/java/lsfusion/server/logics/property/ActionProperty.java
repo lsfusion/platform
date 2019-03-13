@@ -37,7 +37,7 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.physics.dev.debug.*;
-import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.ThisMessage;
 

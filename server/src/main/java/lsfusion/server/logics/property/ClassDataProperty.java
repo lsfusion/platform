@@ -20,7 +20,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.table.ImplementTable;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 import java.sql.SQLException;
 

@@ -10,7 +10,7 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 

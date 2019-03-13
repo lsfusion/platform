@@ -12,6 +12,7 @@ import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
+import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;

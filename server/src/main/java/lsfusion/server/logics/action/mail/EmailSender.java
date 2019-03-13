@@ -10,7 +10,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import org.apache.log4j.Logger;
 
 import javax.activation.DataHandler;

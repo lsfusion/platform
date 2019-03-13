@@ -20,8 +20,8 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.LocalNestedType;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.LocalNestedType;
 
 import java.awt.*;
 import java.io.DataInputStream;
