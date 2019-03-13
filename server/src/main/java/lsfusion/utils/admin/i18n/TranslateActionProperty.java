@@ -8,7 +8,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

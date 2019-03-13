@@ -16,7 +16,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.action.flow.AroundAspectActionProperty;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 

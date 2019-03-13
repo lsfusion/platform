@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.interactive.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.session.Modifier;
+import lsfusion.server.logics.action.session.Modifier;
 
 import java.sql.SQLException;
 

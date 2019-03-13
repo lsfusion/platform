@@ -19,8 +19,8 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.Modifier;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.Modifier;
 
 import java.sql.SQLException;
 

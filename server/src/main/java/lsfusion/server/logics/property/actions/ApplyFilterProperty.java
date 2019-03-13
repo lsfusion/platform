@@ -5,7 +5,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
-import lsfusion.server.session.ApplyFilter;
+import lsfusion.server.logics.action.session.ApplyFilter;
 
 import java.sql.SQLException;
 

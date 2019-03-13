@@ -18,8 +18,8 @@ import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ListActionProperty;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.List;

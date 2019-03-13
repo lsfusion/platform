@@ -14,7 +14,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.IsClassProperty;
-import lsfusion.server.session.SessionChanges;
+import lsfusion.server.logics.action.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;

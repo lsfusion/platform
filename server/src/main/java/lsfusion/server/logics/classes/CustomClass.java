@@ -49,7 +49,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

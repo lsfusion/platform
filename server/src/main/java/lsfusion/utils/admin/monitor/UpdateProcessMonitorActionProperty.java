@@ -36,8 +36,8 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SingleKeyTableUsage;
+import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.SingleKeyTableUsage;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;

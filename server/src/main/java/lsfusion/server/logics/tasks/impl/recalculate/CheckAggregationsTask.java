@@ -8,7 +8,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

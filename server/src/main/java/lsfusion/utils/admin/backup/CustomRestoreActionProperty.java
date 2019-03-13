@@ -33,9 +33,9 @@ import lsfusion.server.logics.property.StoredDataProperty;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SessionTableUsage;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.SessionTableUsage;
 
 import java.io.File;
 import java.io.IOException;

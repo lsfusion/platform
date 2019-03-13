@@ -2,7 +2,7 @@ package lsfusion.server.logics.tasks;
 
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 

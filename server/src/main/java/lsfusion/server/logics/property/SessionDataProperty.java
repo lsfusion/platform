@@ -6,8 +6,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.session.LocalNestedType;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.LocalNestedType;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 public class SessionDataProperty extends DataProperty {
 

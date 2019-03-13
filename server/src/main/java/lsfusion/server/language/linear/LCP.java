@@ -25,10 +25,10 @@ import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.ExecutionEnvironment;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.PropertyChange;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.PropertyChange;
 
 import java.math.BigDecimal;
 import java.sql.Date;

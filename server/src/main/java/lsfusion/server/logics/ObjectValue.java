@@ -21,8 +21,8 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.filter.CompareInstance;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.SessionChanges;
+import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.SessionChanges;
 
 import java.sql.SQLException;
 import java.util.Collection;

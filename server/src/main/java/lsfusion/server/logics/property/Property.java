@@ -37,8 +37,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.group.AbstractPropertyNode;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 import javax.swing.*;
 import java.awt.*;

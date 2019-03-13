@@ -3,7 +3,7 @@ package lsfusion.server.logics.navigator;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 public interface ChangesController {
 

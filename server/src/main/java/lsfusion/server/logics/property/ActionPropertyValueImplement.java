@@ -9,8 +9,8 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.ApplyActionEvent;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.actions.FormEnvironment;
-import lsfusion.server.session.ExecutionEnvironment;
-import lsfusion.server.session.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 

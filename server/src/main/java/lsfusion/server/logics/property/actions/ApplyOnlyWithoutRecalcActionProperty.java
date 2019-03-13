@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.session.ApplyFilter;
+import lsfusion.server.logics.action.session.ApplyFilter;
 
 public class ApplyOnlyWithoutRecalcActionProperty extends ApplyFilterProperty {
 

@@ -5,7 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.session.Modifier;
+import lsfusion.server.logics.action.session.Modifier;
 
 import java.sql.SQLException;
 

@@ -29,9 +29,9 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.PropertyChanges;
-import lsfusion.server.session.StructChanges;
+import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.StructChanges;
 
 import java.sql.SQLException;
 

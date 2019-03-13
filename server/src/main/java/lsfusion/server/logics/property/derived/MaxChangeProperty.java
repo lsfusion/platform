@@ -22,7 +22,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.logics.action.session.PropertyChanges;
 
 // св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения
 public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, MaxChangeProperty.Interface<P>> {

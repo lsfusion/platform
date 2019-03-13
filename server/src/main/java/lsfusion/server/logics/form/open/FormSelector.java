@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 

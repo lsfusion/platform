@@ -15,7 +15,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.navigator.*;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.logics.action.session.DataSession;
 
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
