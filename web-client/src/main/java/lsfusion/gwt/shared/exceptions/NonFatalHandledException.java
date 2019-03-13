@@ -7,8 +7,8 @@ public class NonFatalHandledException extends Exception {
     public NonFatalHandledException() {
     }
 
-    public NonFatalHandledException(Throwable t, long reqId) {
-        super(t);
+    public NonFatalHandledException(String message, long reqId) {
+        super(message);
         this.reqId = reqId;
     }
 }

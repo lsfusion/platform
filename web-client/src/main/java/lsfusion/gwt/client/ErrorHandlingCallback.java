@@ -24,7 +24,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     }
 
     protected void showErrorMessage(final Throwable caught) {
-        GExceptionManager.logClientError("Failure, while performing an action. ", caught);
+        GExceptionManager.logClientError(caught);
 
         if(getMaxTries(caught) > -1) // if there is a trouble in connection, then we just setting connectionLost in DispatchAsyncWrapper, and showing no message (because there will be connection lost dialog anyway)
             return;
