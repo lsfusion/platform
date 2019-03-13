@@ -135,10 +135,6 @@
                     <artifactId>jcommon</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>xmlgraphics-commons</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.olap4j</groupId>
                     <artifactId>olap4j</artifactId>
                 </exclusion>
