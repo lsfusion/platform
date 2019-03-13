@@ -64,7 +64,7 @@ grammar LsfLogics;
 	import lsfusion.server.language.ScriptingLogicsModule.FormActionProps;
 	import lsfusion.server.language.ScriptingLogicsModule.NavigatorElementOptions;
 	import lsfusion.server.language.ScriptingFormEntity.RegularFilterInfo;
-	import lsfusion.server.logics.action.mail.AttachmentFormat;
+	import lsfusion.server.physics.dev.integration.external.to.mail.AttachmentFormat;
 	import lsfusion.server.logics.action.flow.Inline;
 	import lsfusion.server.logics.property.actions.SystemEvent;
 	import lsfusion.server.logics.property.Event;

@@ -3,4 +3,4 @@ MODULE Com;
 REQUIRE System;
 
 //file, baudrate, com-port, daemon
-writeToComPort '{com.write.to.com.port}'  INTERNAL  'lsfusion.utils.equ.com.WriteToComPortActionProperty' (FILE, INTEGER, INTEGER);
+writeToComPort '{com.write.to.com.port}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.com.WriteToComPortActionProperty' (FILE, INTEGER, INTEGER);

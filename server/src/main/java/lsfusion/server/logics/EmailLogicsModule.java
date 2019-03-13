@@ -8,7 +8,7 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.action.mail.SendEmailActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailActionProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
