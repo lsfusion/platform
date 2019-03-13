@@ -1,7 +1,7 @@
 package lsfusion.server.form.window;
 
 import lsfusion.interop.navigator.WindowType;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

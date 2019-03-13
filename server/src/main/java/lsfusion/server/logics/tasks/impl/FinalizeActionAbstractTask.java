@@ -2,7 +2,7 @@ package lsfusion.server.logics.tasks.impl;
 
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.tasks.GroupPropertiesTask;
 
 public class FinalizeActionAbstractTask extends GroupPropertiesTask {

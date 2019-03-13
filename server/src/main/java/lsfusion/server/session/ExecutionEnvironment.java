@@ -18,7 +18,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormEnvironment;
-import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.sql.SQLException;
 

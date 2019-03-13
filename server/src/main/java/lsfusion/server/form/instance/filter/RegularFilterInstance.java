@@ -2,7 +2,7 @@ package lsfusion.server.form.instance.filter;
 
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.io.Serializable;

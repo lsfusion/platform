@@ -13,7 +13,7 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormDataInterface;
 import lsfusion.server.form.instance.StaticKeyData;
 import lsfusion.server.form.instance.StaticPropertyData;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

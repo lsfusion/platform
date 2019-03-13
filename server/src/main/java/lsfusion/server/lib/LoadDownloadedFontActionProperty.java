@@ -7,7 +7,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 import java.util.Iterator;

@@ -2,7 +2,7 @@ package lsfusion.server.classes;
 
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.property.DataType;
-import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
+import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
 import java.io.IOException;

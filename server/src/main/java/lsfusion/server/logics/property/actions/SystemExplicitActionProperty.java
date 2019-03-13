@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 // usually are created from parser
 public abstract class SystemExplicitActionProperty extends ExplicitActionProperty {

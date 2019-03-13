@@ -5,7 +5,7 @@ import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
+import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 
 import java.util.ArrayList;
 import java.util.Collection;

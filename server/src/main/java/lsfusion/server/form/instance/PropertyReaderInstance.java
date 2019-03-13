@@ -1,7 +1,6 @@
 package lsfusion.server.form.instance;
 
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.profiler.ProfiledObject;
+import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 public interface PropertyReaderInstance extends ProfiledObject {
 

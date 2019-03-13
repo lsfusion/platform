@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.io.IOException;
 

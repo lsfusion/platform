@@ -683,7 +683,7 @@
     </bean>
 
     <!-- Список для переопределения custom-объектов -->
-    <bean id="instanceCustomObjects" class="lsfusion.server.spring.SpringListsMergerFactory">
+    <bean id="instanceCustomObjects" class="lsfusion.server.lifecycle.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreCustomObjects"/>
@@ -741,7 +741,7 @@
         <constructor-arg ref="lifecycleListeners"/>
     </bean>
 
-    <bean id="lifecycleListeners" class="lsfusion.server.spring.SpringListsMergerFactory">
+    <bean id="lifecycleListeners" class="lsfusion.server.lifecycle.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreLifecycleListeners"/>
@@ -767,7 +767,7 @@
 
     <util:list id="customLifecycleListeners"/>
 
-    <bean id="businessLogics" class="lsfusion.server.logics.scripted.ScriptingBusinessLogics">
+    <bean id="businessLogics" class="lsfusion.server.language.ScriptingBusinessLogics">
         <property name="scriptFilePaths" value="${logics.includedPaths:}"/>
         <property name="excludedScriptFilePaths" value="${logics.excludedPaths:}"/>
 

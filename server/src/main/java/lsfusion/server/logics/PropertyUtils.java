@@ -11,9 +11,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.*;
 
 import java.util.HashMap;

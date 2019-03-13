@@ -10,16 +10,16 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.profiler.Profiler;
+import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.physics.admin.profiler.Profiler;
 
 import java.sql.SQLException;
 import java.util.HashSet;
 
-import static lsfusion.server.profiler.Profiler.profileForms;
-import static lsfusion.server.profiler.Profiler.profileUsers;
+import static lsfusion.server.physics.admin.profiler.Profiler.profileForms;
+import static lsfusion.server.physics.admin.profiler.Profiler.profileUsers;
 
 public class StartProfilerActionProperty extends ScriptingActionProperty {
     public StartProfilerActionProperty(ScriptingLogicsModule LM) {

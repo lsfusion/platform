@@ -3,7 +3,7 @@ package lsfusion.server.logics.property;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.language.linear.LP;
 
 public abstract class PropertyClassImplement<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 

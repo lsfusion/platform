@@ -1,6 +1,6 @@
 package lsfusion.server.serialization;
 
-import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BusinessLogics;

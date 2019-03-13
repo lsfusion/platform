@@ -1,18 +1,18 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.logics.authentication.UserInfo;
+import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CurrentAuthTokenFormulaProperty;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.CurrentUserFormulaProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 

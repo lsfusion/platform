@@ -9,7 +9,7 @@ import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.user.UserInputResult;
 import lsfusion.server.Settings;
-import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.AbstractContext;

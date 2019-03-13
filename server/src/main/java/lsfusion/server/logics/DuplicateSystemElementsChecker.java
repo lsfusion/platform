@@ -3,10 +3,10 @@ package lsfusion.server.logics;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.resolving.NamespaceElementFinder.FoundItem;
+import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.resolving.NamespaceElementFinder.FoundItem;
 import lsfusion.server.logics.table.ImplementTable;
 
 import java.util.*;

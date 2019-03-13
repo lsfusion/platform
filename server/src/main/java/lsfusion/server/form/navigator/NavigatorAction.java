@@ -1,7 +1,7 @@
 package lsfusion.server.form.navigator;
 
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 
 public class NavigatorAction extends NavigatorElement {

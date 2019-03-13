@@ -3,7 +3,6 @@ package lsfusion.server.form.entity;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
@@ -18,12 +17,12 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.DefaultChangeObjectActionProperty;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 import lsfusion.server.session.Modifier;
 
-import static lsfusion.server.logics.i18n.LocalizedString.create;
+import static lsfusion.server.physics.dev.i18n.LocalizedString.create;
 
 public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ObjectSelector {
 

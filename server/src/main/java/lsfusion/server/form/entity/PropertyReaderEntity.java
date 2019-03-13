@@ -2,7 +2,7 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.profiler.ProfiledObject;
+import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 public interface PropertyReaderEntity extends ProfiledObject {
 

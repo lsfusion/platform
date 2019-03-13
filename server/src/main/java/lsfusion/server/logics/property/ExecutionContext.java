@@ -29,7 +29,7 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.session.*;
 

@@ -1,6 +1,6 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorFolder extends NavigatorElement {
     public NavigatorFolder(String canonicalName, LocalizedString caption) {

@@ -21,7 +21,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFStaticLazy;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.derived.DerivedProperty;

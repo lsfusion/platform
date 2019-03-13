@@ -1,7 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.form.property.DataType;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Calendar;
 

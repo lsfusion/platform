@@ -4,7 +4,7 @@ import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerFactory;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class FormContainerSet {
     public static final String BOX_CONTAINER = "BOX";

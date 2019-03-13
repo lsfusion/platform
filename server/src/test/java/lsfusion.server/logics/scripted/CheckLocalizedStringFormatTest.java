@@ -1,6 +1,6 @@
 package lsfusion.server.logics.scripted;
 
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

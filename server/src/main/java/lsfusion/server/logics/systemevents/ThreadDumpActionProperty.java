@@ -10,8 +10,8 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;
 

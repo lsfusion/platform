@@ -4,8 +4,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.PropertyClassImplement;
 

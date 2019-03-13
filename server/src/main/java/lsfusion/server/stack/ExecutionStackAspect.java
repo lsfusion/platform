@@ -8,9 +8,9 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.profiler.ExecutionTimeCounter;
-import lsfusion.server.profiler.ProfileObject;
-import lsfusion.server.profiler.Profiler;
+import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
+import lsfusion.server.physics.admin.profiler.ProfileObject;
+import lsfusion.server.physics.admin.profiler.Profiler;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteContextAspect;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,7 +19,7 @@ import org.aspectj.lang.annotation.Aspect;
 
 import java.util.*;
 
-import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
+import static lsfusion.server.physics.admin.profiler.Profiler.PROFILER_ENABLED;
 
 @Aspect
 public class ExecutionStackAspect {
@@ -156,7 +156,7 @@ public class ExecutionStackAspect {
     private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
     public static ThreadLocal<ExecutionTimeCounter> executionTime = new ThreadLocal<>();
     
-    @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext))")
+    @Around("execution(lsfusion.server.logics.action.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext))")
     public Object execution(final ProceedingJoinPoint joinPoint) throws Throwable {
         ExecuteActionStackItem item = new ExecuteActionStackItem(joinPoint);
         return processStackItem(joinPoint, item);

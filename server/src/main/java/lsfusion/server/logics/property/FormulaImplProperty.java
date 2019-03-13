@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.formula.FormulaImpl;
 import lsfusion.server.data.expr.formula.FormulaJoinImpl;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.PropertyChanges;

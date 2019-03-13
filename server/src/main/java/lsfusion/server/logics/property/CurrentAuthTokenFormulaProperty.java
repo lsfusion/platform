@@ -1,9 +1,8 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class CurrentAuthTokenFormulaProperty extends CurrentEnvironmentFormulaProperty {
 

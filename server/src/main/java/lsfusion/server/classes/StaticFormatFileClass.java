@@ -8,7 +8,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
+import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import org.apache.commons.net.util.Base64;
 
 import java.sql.PreparedStatement;

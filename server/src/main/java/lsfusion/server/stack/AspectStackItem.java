@@ -7,10 +7,10 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.profiler.AspectProfileObject;
-import lsfusion.server.profiler.ProfileObject;
-import lsfusion.server.profiler.ProfiledObject;
-import lsfusion.server.profiler.Profiler;
+import lsfusion.server.physics.admin.profiler.AspectProfileObject;
+import lsfusion.server.physics.admin.profiler.ProfileObject;
+import lsfusion.server.physics.admin.profiler.ProfiledObject;
+import lsfusion.server.physics.admin.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 

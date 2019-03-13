@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
-import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;

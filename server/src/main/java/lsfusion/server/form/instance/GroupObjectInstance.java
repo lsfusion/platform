@@ -44,7 +44,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.profiler.ProfiledObject;
+import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.ThisMessage;

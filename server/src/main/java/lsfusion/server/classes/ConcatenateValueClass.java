@@ -7,7 +7,7 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.ObjectInstance;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.IsClassProperty;
 
 import java.io.DataOutputStream;

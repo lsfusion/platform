@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.session.PropertyChanges;
 
 public abstract class AddGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {

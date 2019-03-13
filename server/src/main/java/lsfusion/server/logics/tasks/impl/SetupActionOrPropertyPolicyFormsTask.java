@@ -5,10 +5,9 @@ import lsfusion.server.SystemProperties;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.tasks.GroupPropertiesTask;
 
 public abstract class SetupActionOrPropertyPolicyFormsTask extends GroupPropertiesTask {
