@@ -6,10 +6,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <title>${title}</title>
         <link rel="shortcut icon" href="${logicsIcon}" />
-        <link rel="stylesheet" href="static/noauth/login.css">
+        <link rel="stylesheet" href="static/noauth/login.css"/>
     </head>
     <body onload="document.loginForm.username.focus();">
 

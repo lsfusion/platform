@@ -22,6 +22,8 @@
     <http pattern="/static/noauth/*" security="none"/>
     <!-- we need to download logo and icon -->
     <http pattern="/downloadFile" security="none"/>
+    <!--for backward compatibility-->
+    <http pattern="/client.jnlp" security="none"/>
     <!--for jar -->
     <http pattern="/lsfusion-client.*" security="none"/>
     <!-- UI security -->

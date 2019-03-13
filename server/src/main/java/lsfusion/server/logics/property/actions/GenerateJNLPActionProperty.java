@@ -8,11 +8,11 @@ import lsfusion.server.Settings;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.SecurityLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.net.URLDecoder;
 import java.sql.SQLException;
@@ -57,7 +57,9 @@ public class GenerateJNLPActionProperty extends ScriptingActionProperty {
             String url = (String) LM.findProperty("url[]").read(context);
             int execSlashIndex = url.lastIndexOf("/");
             String codebaseUrl = url.substring(0, execSlashIndex);
-            String jnlpUrl = url.substring(execSlashIndex + 1) + "?" + LM.findProperty("query[]").read(context);
+            String query = (String) LM.findProperty("query[]").read(context);
+            query = query.replaceAll("&", "&amp;"); // escaping
+            String jnlpUrl = url.substring(execSlashIndex + 1) + "?" + query;
             String host = (String) LM.findProperty("host[]").read(context);
             Integer port = (Integer) LM.findProperty("port[]").read(context);
             String exportName = (String) LM.findProperty("exportName[]").read(context);
