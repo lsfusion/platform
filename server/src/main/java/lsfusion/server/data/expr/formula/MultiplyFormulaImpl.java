@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.IntegralClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;

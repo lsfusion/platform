@@ -15,6 +15,8 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.language.linear.LCP;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.link.*;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 

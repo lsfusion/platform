@@ -1,9 +1,9 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.LogicalClass;
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.LogicalClass;
+import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CurrentFormFormulaProperty;

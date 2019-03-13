@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.ValueClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 
 import java.util.List;
 

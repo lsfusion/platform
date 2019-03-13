@@ -1,9 +1,9 @@
 package lsfusion.server.data;
 
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.DateTimeClass;
-import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.classes.LongClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.DateTimeClass;
+import lsfusion.server.logics.classes.IntegerClass;
+import lsfusion.server.logics.classes.LongClass;
 import lsfusion.server.data.query.CompileSource;
 
 public enum Time {

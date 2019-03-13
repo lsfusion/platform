@@ -14,6 +14,10 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.IntegralClass;
+import lsfusion.server.logics.classes.StaticClass;
+import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StaticValueExpr extends AbstractValueExpr<StaticClass> {

@@ -1,6 +1,6 @@
 package lsfusion.server.session;
 
-import lsfusion.server.classes.ConcreteValueClass;
+import lsfusion.server.logics.classes.ConcreteValueClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

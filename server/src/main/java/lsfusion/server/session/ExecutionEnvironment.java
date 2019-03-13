@@ -6,7 +6,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.exception.ApplyCanceledException;
-import lsfusion.server.classes.ConcreteObjectClass;
+import lsfusion.server.logics.classes.ConcreteObjectClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.MutableClosedObject;
 import lsfusion.server.data.QueryEnvironment;

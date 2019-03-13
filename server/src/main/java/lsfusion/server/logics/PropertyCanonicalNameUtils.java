@@ -1,8 +1,8 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.NumericClass;
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.NumericClass;
+import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 
 import java.util.Arrays;
 import java.util.List;

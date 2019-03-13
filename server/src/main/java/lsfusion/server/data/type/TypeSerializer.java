@@ -7,6 +7,8 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.link.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 
 public class ValueClassWrapper {
     public ValueClass valueClass;

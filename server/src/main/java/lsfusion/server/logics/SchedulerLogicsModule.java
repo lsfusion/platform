@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.ScriptingLogicsModule;

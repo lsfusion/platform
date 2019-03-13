@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.auto;
 
 import lsfusion.interop.form.property.PropertyEditType;
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.mutables.Version;

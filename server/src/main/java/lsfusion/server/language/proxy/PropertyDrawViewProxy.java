@@ -1,9 +1,9 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.server.classes.DateClass;
-import lsfusion.server.classes.DateTimeClass;
-import lsfusion.server.classes.IntegralClass;
-import lsfusion.server.classes.TimeClass;
+import lsfusion.server.logics.classes.DateClass;
+import lsfusion.server.logics.classes.DateTimeClass;
+import lsfusion.server.logics.classes.IntegralClass;
+import lsfusion.server.logics.classes.TimeClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.PropertyUtils;

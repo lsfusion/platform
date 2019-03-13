@@ -1,7 +1,7 @@
 package lsfusion.utils.admin.migration;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.logics.DataObject;

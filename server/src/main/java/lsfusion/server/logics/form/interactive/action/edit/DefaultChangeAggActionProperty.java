@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.interactive.action.edit;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.classes.CustomClass;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;

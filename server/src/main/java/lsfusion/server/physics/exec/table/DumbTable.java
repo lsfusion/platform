@@ -3,7 +3,7 @@ package lsfusion.server.physics.exec.table;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.classes.SystemClass;
+import lsfusion.server.logics.classes.SystemClass;
 import lsfusion.server.data.DBTable;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;

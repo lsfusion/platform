@@ -1,8 +1,8 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.CustomClass;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

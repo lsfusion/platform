@@ -14,10 +14,11 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.classes.sets.ObjectClassSet;
-import lsfusion.server.classes.sets.OrClassSet;
-import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.sets.ObjectClassSet;
+import lsfusion.server.logics.classes.sets.OrClassSet;
+import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.cases.MCaseList;
@@ -316,7 +317,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return mObjectFields.immutable();
     }
 
-    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, Result<ImSet<KeyField>> resultKeys, Result<ImSet<PropertyField>> resultProps, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> inconsistentRereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+    public ImMap<ImMap<KeyField, ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, Result<ImSet<KeyField>> resultKeys, Result<ImSet<PropertyField>> resultProps, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> inconsistentRereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
         MExclSet<Field> mInconsistentRereadChanges = SetFact.mExclSetMax(getTableKeys().size() + properties.size()); 
         final ImMap<KeyField, ObjectValueClassSet> objectKeyClasses = splitRead(getTableKeys(), classes.getCommonClasses(getTableKeys()).fnGetValue(), inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
         if(objectKeyClasses == null) {

@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.cases;
 
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.PropertyInterface;

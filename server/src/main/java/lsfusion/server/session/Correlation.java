@@ -1,7 +1,7 @@
 package lsfusion.server.session;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;

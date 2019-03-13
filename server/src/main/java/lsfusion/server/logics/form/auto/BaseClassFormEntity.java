@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.auto;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.PropertyEditType;
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;

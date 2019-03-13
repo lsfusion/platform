@@ -24,6 +24,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.user.*;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.form.auto.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.*;
 import lsfusion.server.logics.form.interactive.change.*;

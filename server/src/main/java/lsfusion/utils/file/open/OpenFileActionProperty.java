@@ -3,7 +3,7 @@ package lsfusion.utils.file.open;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.OpenFileClientAction;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;

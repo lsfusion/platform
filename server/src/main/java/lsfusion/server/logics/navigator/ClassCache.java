@@ -1,8 +1,8 @@
 package lsfusion.server.logics.navigator;
 
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.CustomClass;
 
 import java.util.Map;
 

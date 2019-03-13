@@ -1,7 +1,7 @@
 package lsfusion.server.language.resolving;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.language.resolving.NamespaceElementFinder.FoundItem;

@@ -2,7 +2,7 @@ package lsfusion.utils.type.geo;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.OpenUriClientAction;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;

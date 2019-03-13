@@ -2,14 +2,12 @@ package lsfusion.server.logics.form.interactive.instance.object;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.ValueClass;
-import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
-import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;

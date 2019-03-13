@@ -17,7 +17,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.classes.FileClass;
+import lsfusion.server.logics.classes.FileClass;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.sql.SQLExecute;

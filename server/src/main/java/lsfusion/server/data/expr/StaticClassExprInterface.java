@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.logics.classes.ConcreteClass;
 
 public interface StaticClassExprInterface {
     ConcreteClass getStaticClass();

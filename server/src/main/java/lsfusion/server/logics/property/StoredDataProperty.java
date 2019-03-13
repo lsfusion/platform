@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StoredDataProperty extends DataProperty {

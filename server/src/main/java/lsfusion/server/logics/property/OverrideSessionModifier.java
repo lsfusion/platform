@@ -12,7 +12,7 @@ import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
-import lsfusion.server.classes.BaseClass;
+import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;

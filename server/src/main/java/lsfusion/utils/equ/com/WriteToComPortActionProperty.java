@@ -2,7 +2,7 @@ package lsfusion.utils.equ.com;
 
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;

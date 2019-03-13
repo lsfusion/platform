@@ -1,7 +1,7 @@
 package lsfusion.server.session;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.logics.classes.CustomClass;
 
 public interface RegisterClassRemove {
 

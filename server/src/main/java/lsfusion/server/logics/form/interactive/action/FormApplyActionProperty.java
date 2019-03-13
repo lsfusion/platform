@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.interactive.action;
 
-import lsfusion.server.classes.ColorClass;
+import lsfusion.server.logics.classes.ColorClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;

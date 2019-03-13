@@ -2,8 +2,8 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;

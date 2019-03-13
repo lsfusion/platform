@@ -2,7 +2,8 @@ package lsfusion.server.logics.form.interactive.instance.object;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;

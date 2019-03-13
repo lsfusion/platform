@@ -6,7 +6,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;

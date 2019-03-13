@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.Time;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;

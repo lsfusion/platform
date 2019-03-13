@@ -1,7 +1,7 @@
 package lsfusion.server.session;
 
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.BaseClass;
+import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;

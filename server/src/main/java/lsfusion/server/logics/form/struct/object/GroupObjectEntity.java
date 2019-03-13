@@ -18,7 +18,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.StaticParamNullableExpr;
 import lsfusion.server.data.expr.Expr;

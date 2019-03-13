@@ -19,7 +19,7 @@ import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;

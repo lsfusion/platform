@@ -1,8 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.Type;
 
 // obsolete - вместо SumFormulaImpl
 public class StringJoinConcatenateFormulaImpl extends StringConcatenateFormulaImpl implements FormulaJoinImpl {

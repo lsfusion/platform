@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
