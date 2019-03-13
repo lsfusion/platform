@@ -1,6 +1,6 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.server.form.view.ToolbarView;
+import lsfusion.server.logics.form.interactive.design.object.ToolbarView;
 
 public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
     public ToolbarViewProxy(ToolbarView target) {

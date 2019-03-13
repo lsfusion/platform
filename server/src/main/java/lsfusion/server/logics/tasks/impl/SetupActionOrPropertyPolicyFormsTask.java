@@ -2,8 +2,8 @@ package lsfusion.server.logics.tasks.impl;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LAP;

@@ -3,7 +3,7 @@ package lsfusion.server.classes;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.CustomDbfRecord;

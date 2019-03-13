@@ -2,8 +2,8 @@ package lsfusion.server.logics.form.stat.integration.exporting.hierarchy.xml;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.form.entity.FormSelector;
-import lsfusion.server.form.entity.ObjectSelector;
+import lsfusion.server.logics.form.open.FormSelector;
+import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.logics.form.stat.integration.exporting.hierarchy.ExportHierarchicalActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.form.navigator.RemoteNavigator;
+import lsfusion.server.logics.navigator.RemoteNavigator;
 
 public abstract class NavigatorFilter {
     public final static NavigatorFilter FALSE = new NavigatorFilter() {

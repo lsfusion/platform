@@ -16,12 +16,12 @@ grammar LsfLogics;
 	import lsfusion.interop.form.ModalityType;
 	import lsfusion.interop.form.WindowFormType;
 	import lsfusion.server.logics.property.ReflectionPropertyType;
-	import lsfusion.server.form.instance.FormSessionScope;
+	import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 	import lsfusion.server.data.expr.query.PartitionType;
 	import lsfusion.server.form.entity.*;
-	import lsfusion.server.form.navigator.NavigatorElement;
-	import lsfusion.server.form.view.ComponentView;
-	import lsfusion.server.form.view.PropertyDrawView;
+	import lsfusion.server.logics.navigator.NavigatorElement;
+	import lsfusion.server.logics.form.interactive.design.ComponentView;
+	import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 	import lsfusion.server.classes.sets.ResolveClassSet;
 	import lsfusion.server.classes.DataClass;
 	import lsfusion.server.classes.CustomClass;
@@ -81,7 +81,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.ActionOrPropertySettings;
 	import javax.mail.Message;
 
-	import lsfusion.server.form.entity.GroupObjectProp;
+	import lsfusion.server.logics.form.interactive.GroupObjectProp;
 
 	import java.util.*;
 	import java.awt.*;

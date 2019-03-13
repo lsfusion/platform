@@ -3,8 +3,8 @@ package lsfusion.server.language.proxy;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
-import lsfusion.server.form.view.ContainerView;
+import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {

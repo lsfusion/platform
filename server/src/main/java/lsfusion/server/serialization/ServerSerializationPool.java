@@ -1,7 +1,14 @@
 package lsfusion.server.serialization;
 
 import lsfusion.base.serialization.SerializationPool;
-import lsfusion.server.form.view.*;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterView;
+import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
+import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
+import lsfusion.server.logics.form.interactive.design.object.*;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 
 
 public class ServerSerializationPool extends SerializationPool<ServerContext> {

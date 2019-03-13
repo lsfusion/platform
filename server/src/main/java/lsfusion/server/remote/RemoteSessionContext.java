@@ -1,8 +1,8 @@
 package lsfusion.server.remote;
 
 import lsfusion.interop.action.ClientAction;
-import lsfusion.server.form.instance.listener.CustomClassListener;
-import lsfusion.server.form.instance.listener.FocusListener;
+import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
+import lsfusion.server.logics.form.interactive.listener.FocusListener;
 
 import static lsfusion.server.ServerLoggers.systemLogger;
 

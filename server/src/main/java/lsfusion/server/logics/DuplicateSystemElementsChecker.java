@@ -1,8 +1,8 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.CustomClass;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;

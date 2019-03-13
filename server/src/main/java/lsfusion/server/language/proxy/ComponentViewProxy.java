@@ -3,7 +3,7 @@ package lsfusion.server.language.proxy;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.form.view.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;

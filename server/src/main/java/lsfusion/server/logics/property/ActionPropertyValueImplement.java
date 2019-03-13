@@ -2,18 +2,13 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.server.classes.BaseClass;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.ApplyActionEvent;
-import lsfusion.server.logics.ApplyEvent;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.actions.FormEnvironment;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.UpdateCurrentClassesSession;
 

@@ -35,7 +35,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.form.navigator.SQLSessionContextProvider;
+import lsfusion.server.logics.navigator.SQLSessionContextProvider;
 import lsfusion.server.logics.*;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionModifier;

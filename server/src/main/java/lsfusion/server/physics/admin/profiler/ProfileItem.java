@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.profiler;
 
-import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.form.struct.FormEntity;
 
 import static lsfusion.base.BaseUtils.nullEquals;
 import static lsfusion.base.BaseUtils.nullHash;

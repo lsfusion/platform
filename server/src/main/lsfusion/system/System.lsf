@@ -55,13 +55,13 @@ lsfStackTraceCaughtException = DATA LOCAL TEXT();
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
-formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.action.form.FormApplyActionProperty' ();
-formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.action.form.FormCancelActionProperty' ();
-formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.action.form.EditReportActionProperty' ();
-formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.action.form.DropActionProperty' ();
-formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.action.form.RefreshActionProperty' ();
-formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.action.form.OkActionProperty' ();
-formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.action.form.CloseActionProperty' ();
+formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.FormApplyActionProperty' ();
+formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.FormCancelActionProperty' ();
+formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.EditReportActionProperty' ();
+formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.DropActionProperty' ();
+formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.RefreshActionProperty' ();
+formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.OkActionProperty' ();
+formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.CloseActionProperty' ();
 
 seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
 

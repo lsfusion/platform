@@ -1,9 +1,13 @@
 package lsfusion.server.language;
 
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.view.*;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.language.proxy.ViewProxyUtil;
 

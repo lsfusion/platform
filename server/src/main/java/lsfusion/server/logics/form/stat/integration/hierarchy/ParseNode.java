@@ -5,10 +5,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.stat.StaticDataGenerator;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.property.group.AbstractGroup;
 
 import java.util.HashMap;

@@ -2,7 +2,7 @@ package lsfusion.server.language.proxy;
 
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.form.view.FormView;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;

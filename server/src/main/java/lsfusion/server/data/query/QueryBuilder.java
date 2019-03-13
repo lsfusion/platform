@@ -15,14 +15,13 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.PropertyChange;
-import org.apache.xmlbeans.impl.common.XPath;
 
 import java.sql.SQLException;
 

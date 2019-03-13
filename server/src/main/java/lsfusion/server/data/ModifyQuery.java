@@ -14,7 +14,7 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.navigator.SQLSessionContextProvider;
+import lsfusion.server.logics.navigator.SQLSessionContextProvider;
 import lsfusion.server.session.DataSession;
 
 public class ModifyQuery {

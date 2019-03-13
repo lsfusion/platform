@@ -3,9 +3,9 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyDrawInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 

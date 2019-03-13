@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;

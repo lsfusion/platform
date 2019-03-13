@@ -12,7 +12,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.CustomDbfRecord;

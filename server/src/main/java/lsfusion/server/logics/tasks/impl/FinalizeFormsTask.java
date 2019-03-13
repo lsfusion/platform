@@ -1,6 +1,6 @@
 package lsfusion.server.logics.tasks.impl;
 
-import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.tasks.GroupFormsTask;
 
 public class FinalizeFormsTask extends GroupFormsTask {

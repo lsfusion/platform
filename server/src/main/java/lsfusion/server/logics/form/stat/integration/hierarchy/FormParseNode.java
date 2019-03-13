@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.stat.integration.hierarchy;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 public class FormParseNode extends GroupParseNode {
 

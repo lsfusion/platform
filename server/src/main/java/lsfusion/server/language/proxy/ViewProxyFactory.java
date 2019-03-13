@@ -1,6 +1,14 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.server.form.view.*;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterView;
+import lsfusion.server.logics.form.interactive.design.object.ClassChooserView;
+import lsfusion.server.logics.form.interactive.design.object.GridView;
+import lsfusion.server.logics.form.interactive.design.object.ToolbarView;
+import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 
 import java.util.HashMap;
 import java.util.Map;

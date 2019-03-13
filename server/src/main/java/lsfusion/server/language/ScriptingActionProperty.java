@@ -2,7 +2,7 @@ package lsfusion.server.language;
 
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;

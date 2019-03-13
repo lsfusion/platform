@@ -2,7 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;

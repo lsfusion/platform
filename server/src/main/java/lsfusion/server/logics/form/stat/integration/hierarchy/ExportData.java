@@ -4,9 +4,9 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 public interface ExportData {
 

@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.profiler;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -7,10 +7,12 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.*;
-import lsfusion.server.form.instance.StaticKeyData;
-import lsfusion.server.form.instance.StaticPropertyData;
+import lsfusion.server.logics.form.stat.StaticKeyData;
+import lsfusion.server.logics.form.stat.StaticPropertyData;
 import lsfusion.server.logics.form.stat.integration.hierarchy.ExportData;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 import java.util.Map;
 

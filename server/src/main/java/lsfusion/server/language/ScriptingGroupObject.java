@@ -1,7 +1,10 @@
 package lsfusion.server.language;
 
 import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.server.form.entity.*;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;

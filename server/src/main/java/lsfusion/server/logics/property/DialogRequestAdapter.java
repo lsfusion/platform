@@ -1,9 +1,9 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.ObjectValue;
 
 import java.sql.SQLException;

@@ -13,7 +13,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.navigator.RemoteNavigator;
+import lsfusion.server.logics.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.session.DataSession;

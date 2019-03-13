@@ -1,6 +1,6 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.server.form.view.FilterView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 
 public class FilterViewProxy extends ComponentViewProxy<FilterView> {
     public FilterViewProxy(FilterView target) {

@@ -9,8 +9,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.sql.SQLException;
 

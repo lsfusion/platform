@@ -4,13 +4,13 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.stat.StaticDataGenerator;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;
 import lsfusion.server.logics.form.stat.integration.importing.FormImportData;
-import lsfusion.server.logics.form.stat.integration.importing.ImportActionProperty;
+import lsfusion.server.logics.form.open.stat.ImportActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 

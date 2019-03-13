@@ -23,7 +23,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

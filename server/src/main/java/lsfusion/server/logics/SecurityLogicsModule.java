@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.ScriptingLogicsModule;
