@@ -28,9 +28,9 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.table.MapKeysTable;
-import lsfusion.server.serialization.ServerContext;
-import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.physics.exec.table.MapKeysTable;
+import lsfusion.server.logics.form.interactive.serialization.ServerContext;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import javax.swing.*;
 import java.awt.*;

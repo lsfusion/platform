@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;

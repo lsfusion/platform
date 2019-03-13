@@ -32,7 +32,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.integration.*;
+import lsfusion.server.physics.dev.integration.service.*;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionChanges;
 import lsfusion.server.session.SessionTableUsage;

@@ -12,7 +12,7 @@ import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.MetaCodeFragment;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 
 import java.util.List;
 

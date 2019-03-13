@@ -17,8 +17,8 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.IsClassField;
-import lsfusion.server.logics.table.FullTablesInterface;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.FullTablesInterface;
+import lsfusion.server.physics.exec.table.ImplementTable;
 
 public class InnerFollows<K> extends TwinImmutableObject {
 

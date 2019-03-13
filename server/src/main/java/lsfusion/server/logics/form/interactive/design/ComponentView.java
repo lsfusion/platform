@@ -18,8 +18,8 @@ import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.LocalNestedType;
 

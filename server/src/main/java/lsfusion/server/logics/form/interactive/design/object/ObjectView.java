@@ -5,8 +5,8 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

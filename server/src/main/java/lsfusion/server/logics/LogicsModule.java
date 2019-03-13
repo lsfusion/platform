@@ -92,7 +92,7 @@ import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.resolving.ResolveManager;
 import lsfusion.server.language.resolving.ResolvingErrors;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;

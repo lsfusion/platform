@@ -32,8 +32,8 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderMap;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.interfaces.NFSet;
-import lsfusion.server.serialization.ServerCustomSerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.serialization.ServerCustomSerializable;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import javax.swing.*;
 import java.awt.*;

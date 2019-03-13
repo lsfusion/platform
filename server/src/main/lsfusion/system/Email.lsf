@@ -167,11 +167,11 @@ lastError '{email.last.error.attachment.email}' = DATA TEXT (AttachmentEmail);
 importErrors '{email.import.errors}' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
 
 // Receive actions
-receiveEmailAction '{email.receive.email.action}'  INTERNAL  'lsfusion.server.mail.ReceiveEmailActionProperty' ();
-receiveEmailAction '{email.receive.email.action.account}'  INTERNAL  'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
+receiveEmailAction '{email.receive.email.action}'  INTERNAL  'lsfusion.server.logics.action.mail.ReceiveEmailActionProperty' ();
+receiveEmailAction '{email.receive.email.action.account}'  INTERNAL  'lsfusion.server.logics.action.mail.ReceiveEmailAccountActionProperty' (Account);
 
-receiveEML '{email.receive.eml}'  INTERNAL  'lsfusion.server.mail.ReceiveEMLActionProperty' (Account);
-importEML '{email.import.eml}'  INTERNAL  'lsfusion.server.mail.ImportEMLActionProperty' (Account, LONG, FILE);
+receiveEML '{email.receive.eml}'  INTERNAL  'lsfusion.server.logics.action.mail.ReceiveEMLActionProperty' (Account);
+importEML '{email.import.eml}'  INTERNAL  'lsfusion.server.logics.action.mail.ImportEMLActionProperty' (Account, LONG, FILE);
 
 emlFile '{email.eml.file}' = DATA LOCAL FILE (LONG);
 

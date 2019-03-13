@@ -29,7 +29,7 @@ import lsfusion.server.data.translator.RemapValuesTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.session.*;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -733,7 +733,7 @@ public class MapCacheAspect {
         return query;
     }
 
-    @Around("execution(* lsfusion.server.logics.table.ImplementTable.getReadSaveQuery(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.session.PropertyChanges)) " +
+    @Around("execution(* ImplementTable.getReadSaveQuery(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.session.PropertyChanges)) " +
             "&& target(table) && args(properties, propChanges)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, ImplementTable table, ImSet properties, PropertyChanges propChanges) throws Throwable {
         return getReadSaveQuery(table, properties, propChanges, thisJoinPoint);

@@ -4,27 +4,27 @@ REQUIRE System, Reflection, Time, Security;
 
 NAMESPACE Service;
 
-serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.logics.service.ServiceDBActionProperty' ();
-checkAggregationsAction '{service.check.aggregations.action}'  INTERNAL  'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
-checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.logics.service.CheckClassesActionProperty' ();
-checkIndicesAction '{service.check.indices.action}'  INTERNAL  'lsfusion.server.logics.service.CheckIndicesActionProperty' ();
-recalculateClassesAction '{service.recalculate.classes.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
-recalculateAction '{service.recalculate.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateActionProperty' ();
-recalculateFollowsAction '{service.recalculate.follow.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
-recalculateStatsAction '{service.recalculate.stats.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
-overCalculateStatsAction '{service.over.calculate.stats.action}'  INTERNAL  'lsfusion.server.logics.service.OverCalculateStatsActionProperty' ();
+serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.ServiceDBActionProperty' ();
+checkAggregationsAction '{service.check.aggregations.action}'  INTERNAL  'lsfusion.server.physics.admin.service.CheckAggregationsActionProperty' ();
+checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.physics.admin.service.CheckClassesActionProperty' ();
+checkIndicesAction '{service.check.indices.action}'  INTERNAL  'lsfusion.server.physics.admin.service.CheckIndicesActionProperty' ();
+recalculateClassesAction '{service.recalculate.classes.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateClassesActionProperty' ();
+recalculateAction '{service.recalculate.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateActionProperty' ();
+recalculateFollowsAction '{service.recalculate.follow.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateFollowsActionProperty' ();
+recalculateStatsAction '{service.recalculate.stats.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateStatsActionProperty' ();
+overCalculateStatsAction '{service.over.calculate.stats.action}'  INTERNAL  'lsfusion.server.physics.admin.service.OverCalculateStatsActionProperty' ();
 maxQuantityOverCalculate '{service.max.quantity.over.calculate}' = DATA INTEGER ();
 
-makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.logics.service.process.MakeProcessDumpActionProperty' ();
+makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.utils.admin.monitor.MakeProcessDumpActionProperty' ();
 
-serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-checkAggregationsMultiThreadAction '{service.check.aggregations.multi.thread.action}'  INTERNAL  'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-checkClassesMultiThreadAction '{service.check.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateMultiThreadAction '{service.recalculate.multi.thread.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateFollowsMultiThreadAction '{service.recalculate.follows.multi.thread.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action}'  INTERNAL  'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action}'  INTERNAL  'lsfusion.server.logics.service.OverCalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkAggregationsMultiThreadAction '{service.check.aggregations.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkClassesMultiThreadAction '{service.check.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.CheckClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateMultiThreadAction '{service.recalculate.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateFollowsMultiThreadAction '{service.recalculate.follows.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.OverCalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.timeout}' (INTEGER propertyTimeout)  { serviceDBMultiThreadAction (NULL, propertyTimeout); }
 checkAggregationsMultiThreadAction '{service.check.aggregations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkAggregationsMultiThreadAction (NULL, propertyTimeout); }
@@ -45,10 +45,10 @@ recalculateFollowsMultiThreadAction '{service.recalculate.follows.multi.thread.a
 recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action.thread.count}'  { recalculateStatsMultiThreadAction (threadCountMultiThread(), NULL); }
 overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action.thread.count}'  { overCalculateStatsMultiThreadAction (threadCountMultiThread(), NULL); }
 
-analyzeDBAction '{service.analyze.db.action}'  INTERNAL  'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
-vacuumDBAction '{service.vacuum.db.action}'  INTERNAL  'lsfusion.server.logics.service.VacuumDBActionProperty' ();
-packAction '{service.pack.action}'  INTERNAL  'lsfusion.server.logics.service.PackActionProperty' ();
-getVMInfo '{service.get.vm.info}'  INTERNAL  'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
+analyzeDBAction '{service.analyze.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.AnalyzeDBActionProperty' ();
+vacuumDBAction '{service.vacuum.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.VacuumDBActionProperty' ();
+packAction '{service.pack.action}'  INTERNAL  'lsfusion.server.physics.admin.service.PackActionProperty' ();
+getVMInfo '{service.get.vm.info}'  INTERNAL  'lsfusion.server.physics.admin.service.GetVMInfoActionProperty' ();
 
 singleTransaction '{service.single.transaction}' = DATA BOOLEAN ();
 
@@ -72,7 +72,7 @@ onStarted() + {
     uploadInstance() <- 'SQLEXPRESS';
 }
 uploadDB '{service.upload.db}' = DATA VARSTRING[100] (); 
-uploadToDBAction '{service.upload.to.db.action}'  INTERNAL  'lsfusion.server.logics.service.UploadToDBActionProperty' ();
+uploadToDBAction '{service.upload.to.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.UploadToDBActionProperty' ();
 
 META defineMode(property, action, type, caption1, caption2)
     setRepeatableRead###property caption1  INTERNAL  action (type);
@@ -91,11 +91,11 @@ disableTILMode '{service.disable.til.mode}' = DATA BOOLEAN ();
 serverComputer '{service.server.computer}' = DATA Computer();
 hostnameServerComputer '{service.server.computer}' () = hostname(serverComputer());
 
-@defineMode(disableTILMode, 'lsfusion.server.logics.service.SetRepeatableReadDisableTILModeActionProperty', BOOLEAN, '{service.define.mode.set.repeatable.read.disable.til.mode}', '{service.define.mode.refresh.repeatable.read.disable.til.mode}');
+@defineMode(disableTILMode, 'lsfusion.server.physics.admin.service.SetRepeatableReadDisableTILModeActionProperty', BOOLEAN, '{service.define.mode.set.repeatable.read.disable.til.mode}', '{service.define.mode.refresh.repeatable.read.disable.til.mode}');
 
-@defineMode(hostnameServerComputer, 'lsfusion.server.logics.service.SetHostnameServerComputerActionProperty', VARSTRING[100], '{service.define.mode.set.repeatable.read.hostname.server.computer}', '{service.define.mode.refresh.repeatable.read.hostname.server.computer}');
+@defineMode(hostnameServerComputer, 'lsfusion.server.physics.admin.service.SetHostnameServerComputerActionProperty', VARSTRING[100], '{service.define.mode.set.repeatable.read.hostname.server.computer}', '{service.define.mode.refresh.repeatable.read.hostname.server.computer}');
 
-setExplainAnalyzeMode '{service.set.explain.analyze.mode}'  INTERNAL  'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
+setExplainAnalyzeMode '{service.set.explain.analyze.mode}'  INTERNAL  'lsfusion.server.physics.admin.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
 explainAnalyzeMode '{service.explain.analyze.mode}' = DATA BOOLEAN (User);
 refreshExplainAnalyzeMode '{service.refresh.explain.analyze.mode}'(User user)  { 
     setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
@@ -108,7 +108,7 @@ turnExplainAnalizeOnCurrentUser '{service.turn.explain.analyze.on.current.user}'
     explainAnalyzeMode(User user) <- TRUE WHERE user == currentUser();     
 }
 
-setLoggerDebugEnabled '{service.set.logger.debug.enabled}'  INTERNAL  'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+setLoggerDebugEnabled '{service.set.logger.debug.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 loggerDebugEnabled '{service.logger.debug.enabled}' = DATA BOOLEAN (User);
 refreshLoggerDebugEnabled ''(User user)  { 
     setLoggerDebugEnabled(loggerDebugEnabled(user), user);
@@ -117,7 +117,7 @@ WHEN CHANGED(loggerDebugEnabled(User user)) DO {
     refreshLoggerDebugEnabled(user);
 }
 
-setRemoteLoggerDebugEnabled '{service.set.remote.logger.debug.enabled}'  INTERNAL  'lsfusion.server.logics.service.SetRemoteLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+setRemoteLoggerDebugEnabled '{service.set.remote.logger.debug.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.SetRemoteLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 remoteLoggerDebugEnabled '{service.remote.logger.debug.enabled}' = DATA BOOLEAN (User);
 refreshRemoteLoggerDebugEnabled ''(User user)  { 
     setRemoteLoggerDebugEnabled(remoteLoggerDebugEnabled(user), user);
@@ -126,7 +126,7 @@ WHEN CHANGED(remoteLoggerDebugEnabled(User user)) DO {
     refreshRemoteLoggerDebugEnabled(user);
 }
 
-setExLogEnabled '{service.set.ex.log.enabled}'  INTERNAL  'lsfusion.server.logics.service.SetExLogUserActionProperty' (BOOLEAN, User);
+setExLogEnabled '{service.set.ex.log.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.SetExLogUserActionProperty' (BOOLEAN, User);
 remoteExLogEnabled '{service.remote.ex.log.enabled}' = DATA BOOLEAN (User);
 refreshExLogEnabled ''(User user)  { 
     setExLogEnabled(remoteExLogEnabled(user), user);
@@ -135,7 +135,7 @@ WHEN CHANGED(remoteExLogEnabled(User user)) DO {
     refreshExLogEnabled(user);
 }
 
-setPausableLogEnabled '{service.set.pausable.log.enabled}'  INTERNAL  'lsfusion.server.logics.service.SetPausableLogUserActionProperty' (BOOLEAN, User);
+setPausableLogEnabled '{service.set.pausable.log.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.SetPausableLogUserActionProperty' (BOOLEAN, User);
 remotePausableLogEnabled '{service.remote.pausable.log.enabled}' = DATA BOOLEAN (User);
 refreshPausableLogEnabled ''(User user)  { 
     setPausableLogEnabled(remotePausableLogEnabled(user), user);
@@ -157,7 +157,7 @@ id (TypeExecEnv type) = CASE EXCLUSIVE
                         WHEN type == TypeExecEnv.disablenestloop THEN 1
                         WHEN type == TypeExecEnv.none THEN 0 IN base;
 
-setExecEnv '{service.set.exec.env}'  INTERNAL  'lsfusion.server.logics.service.SetExecEnvUserActionProperty' (INTEGER, User);
+setExecEnv '{service.set.exec.env}'  INTERNAL  'lsfusion.server.physics.admin.service.SetExecEnvUserActionProperty' (INTEGER, User);
 execEnv '{service.exec.env.user}' = DATA TypeExecEnv (User);
 refreshExecEnv '{service.refresh.exec.env.user}'(User user)  { 
     setExecEnv(id(execEnv(user)), user);  
@@ -203,11 +203,11 @@ DESIGN options {
 @defineLog (Email, '{service.define.log.of.incoming.email}', log, dateSent);
 
 countDaysClearFusionTempFiles '{service.count.days.clear.fusion.temp.files}' = DATA INTEGER (); 
-clearFusionTempFiles  INTERNAL  'lsfusion.server.logics.service.ClearFusionTempFilesActionProperty' ();
+clearFusionTempFiles  INTERNAL  'lsfusion.server.physics.admin.service.ClearFusionTempFilesActionProperty' ();
 EXTEND FORM options PROPERTIES countDaysClearFusionTempFiles();
     DESIGN options { log { MOVE PROPERTY(countDaysClearFusionTempFiles());} }    
 
-setVolatileStatsEnabled '{service.set.volatile.stats.enabled}'  INTERNAL  'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
+setVolatileStatsEnabled '{service.set.volatile.stats.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
 volatileStatsEnabled '{service.volatile.stats.enabled}' = DATA BOOLEAN (User);
 refreshVolatileStatsEnabled ''(User user)  { 
     setVolatileStatsEnabled(volatileStatsEnabled(user), user);
@@ -233,7 +233,7 @@ onStarted() + {
         refreshExecEnv(u);
 } 
 
-setReupdateMode '{service.set.reupdate.mode}'  INTERNAL  'lsfusion.server.logics.service.SetReupdateModeActionProperty' (BOOLEAN);
+setReupdateMode '{service.set.reupdate.mode}'  INTERNAL  'lsfusion.server.physics.admin.service.SetReupdateModeActionProperty' (BOOLEAN);
 reupdateMode '{service.reupdate.mode}' = DATA BOOLEAN ();
 refreshReupdateMode '{service.refresh.reupdate.mode}'()  { 
     setReupdateMode(reupdateMode());
@@ -249,8 +249,8 @@ restartPushed = DATA BOOLEAN ();
 notRestartPushed = NOT restartPushed();
 
 scheduledRestart '{service.scheduled.restart}' = DATA BOOLEAN ();
-restartServerAction '{service.restart.server.action}'  INTERNAL  'lsfusion.server.logics.service.RestartActionProperty' ();
-cancelRestartServerAction '{service.cancel.restart.server.action}'  INTERNAL  'lsfusion.server.logics.service.CancelRestartActionProperty' ();
+restartServerAction '{service.restart.server.action}'  INTERNAL  'lsfusion.server.physics.admin.service.RestartActionProperty' ();
+cancelRestartServerAction '{service.cancel.restart.server.action}'  INTERNAL  'lsfusion.server.physics.admin.service.CancelRestartActionProperty' ();
 
 forbidLogin '{service.forbid.login}' = DATA BOOLEAN ();
 setPendingRestartAction '{service.set.pending.restart.action}'  INTERNAL  <{ context.getRestartManager().setPendingRestart(true); }>;
@@ -277,13 +277,13 @@ onStarted() + {
     restartPushed() <- NULL;
 } 
 
-runGarbageCollector '{service.run.garbage.collector}'  INTERNAL  'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
+runGarbageCollector '{service.run.garbage.collector}'  INTERNAL  'lsfusion.server.physics.admin.service.GarbageCollectorActionProperty' ();
 dropLRUPercent '{service.drop.lru.percent}' = DATA DOUBLE ();
 randomDropLRU '{service.random.drop.lru}' = DATA BOOLEAN ();
-dropLRUCustom '{service.drop.lru}'  INTERNAL  'lsfusion.server.logics.service.DropLRUActionProperty' (DOUBLE, BOOLEAN);
+dropLRUCustom '{service.drop.lru}'  INTERNAL  'lsfusion.server.physics.admin.service.DropLRUActionProperty' (DOUBLE, BOOLEAN);
 dropLRU '{service.drop.lru}' ()  { dropLRUCustom(dropLRUPercent(), randomDropLRU()); }
-turnCacheStatsOff '{service.turn.cache.stats.off}'  INTERNAL  'lsfusion.server.logics.service.TurnCacheStatsOff' ();
-makeHeapDump '{service.make.heap.dump}'  INTERNAL  'lsfusion.server.logics.service.MakeHeapDumpActionProperty' ();
+turnCacheStatsOff '{service.turn.cache.stats.off}'  INTERNAL  'lsfusion.server.physics.admin.service.TurnCacheStatsOff' ();
+makeHeapDump '{service.make.heap.dump}'  INTERNAL  'lsfusion.server.physics.admin.service.MakeHeapDumpActionProperty' ();
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
@@ -302,11 +302,11 @@ value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE ba
 value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
 valueSetting (VARISTRING[100] name) = value(setting(name)); 
 
-pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.logics.service.reflection.PushSettingActionProperty' (VARSTRING[100], VARSTRING[100]);
-popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.logics.service.reflection.PopSettingActionProperty' (VARSTRING[100]);
+pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.PushSettingActionProperty' (VARSTRING[100], VARSTRING[100]);
+popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.PopSettingActionProperty' (VARSTRING[100]);
 
-writeDefaultSettings '{service.write.default.settings}'  INTERNAL  'lsfusion.server.logics.service.reflection.WriteDefaultSettingsActionProperty' ();
-updateSetting '{service.update.setting}'  INTERNAL  'lsfusion.server.logics.service.reflection.UpdateSettingActionProperty' (Setting, UserRole, BOOLEAN);
+writeDefaultSettings '{service.write.default.settings}'  INTERNAL  'lsfusion.server.physics.admin.service.WriteDefaultSettingsActionProperty' ();
+updateSetting '{service.update.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.UpdateSettingActionProperty' (Setting, UserRole, BOOLEAN);
 
 updateGlobalSetting(Setting r) {
     updateSetting(r, NULL, TRUE); // system user and users without role

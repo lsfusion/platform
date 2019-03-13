@@ -36,9 +36,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.service.process.JavaProcess;
-import lsfusion.server.logics.service.process.ProcessDumpActionProperty;
-import lsfusion.server.logics.service.process.SQLProcess;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 

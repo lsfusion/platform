@@ -131,7 +131,7 @@ reportToStretch '{system.report.to.stretch}' = NOT reportNotToStretch();
 
 hashModules '{system.hash.modules}' = DATA VARSTRING[200] ();
 
-checkIsServer INTERNAL 'lsfusion.server.logics.security.CheckIsServerActionProperty' ();
+checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.CheckIsServerActionProperty' ();
 isServer = DATA LOCAL BOOLEAN ();
 
 // ----------------------------------- open files ----------------------------------- //
@@ -199,10 +199,10 @@ readFile = DATA LOCAL FILE ();
 getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
 getExtension = getFileExtension(FILE(file));
 
-downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
+downloadFile '{system.download.file}'  INTERNAL  'lsfusion.utils.file.DownloadFileActionProperty' (VARSTRING[100]); 
 
-loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
-loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100]);
+loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.utils.file.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
+loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.utils.file.LoadDownloadedFontActionProperty' (VARSTRING[100]);
 
 loadLibrary '{system.load.library}' (path)   { 
     downloadFile(path);
