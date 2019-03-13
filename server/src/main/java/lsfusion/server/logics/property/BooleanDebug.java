@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.server.logics.debug.DebugInfo;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 
 public class BooleanDebug {
 

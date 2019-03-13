@@ -17,7 +17,7 @@ import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.NotFilterInstance;
 import lsfusion.server.form.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.PropertyInterface;

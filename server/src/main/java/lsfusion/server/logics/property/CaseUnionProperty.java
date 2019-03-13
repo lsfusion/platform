@@ -25,7 +25,7 @@ import lsfusion.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ScriptParsingException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.impl.NFListImpl;

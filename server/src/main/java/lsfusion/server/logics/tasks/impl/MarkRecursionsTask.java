@@ -4,7 +4,7 @@ import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CaseUnionProperty;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.tasks.GroupPropertiesTask;
 
 public class MarkRecursionsTask extends GroupPropertiesTask {

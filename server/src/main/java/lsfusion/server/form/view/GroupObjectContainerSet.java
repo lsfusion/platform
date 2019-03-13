@@ -1,7 +1,7 @@
 package lsfusion.server.form.view;
 
 import lsfusion.interop.form.layout.*;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить

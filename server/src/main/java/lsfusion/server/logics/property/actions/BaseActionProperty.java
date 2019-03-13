@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 

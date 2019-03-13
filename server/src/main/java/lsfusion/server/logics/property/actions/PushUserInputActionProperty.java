@@ -4,13 +4,13 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.flow.AroundAspectActionProperty;
-import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.action.flow.AroundAspectActionProperty;
+import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.sql.SQLException;
 

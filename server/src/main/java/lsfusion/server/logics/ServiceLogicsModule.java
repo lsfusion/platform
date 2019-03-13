@@ -1,10 +1,10 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.IsServerRestartingFormulaProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

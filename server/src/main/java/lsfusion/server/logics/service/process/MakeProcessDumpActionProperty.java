@@ -16,7 +16,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;
 import java.util.Map;

@@ -7,10 +7,9 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -3,8 +3,7 @@ package lsfusion.server.data.type;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.logics.i18n.LocalizedString;
-import net.iryndin.jdbf.core.DbfRecord;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

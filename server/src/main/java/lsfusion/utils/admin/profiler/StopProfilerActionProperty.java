@@ -24,18 +24,18 @@ import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.profiler.ProfileItem;
-import lsfusion.server.profiler.ProfileObject;
-import lsfusion.server.profiler.ProfileValue;
-import lsfusion.server.profiler.Profiler;
+import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.physics.admin.profiler.ProfileItem;
+import lsfusion.server.physics.admin.profiler.ProfileObject;
+import lsfusion.server.physics.admin.profiler.ProfileValue;
+import lsfusion.server.physics.admin.profiler.Profiler;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionTableUsage;
@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
-import static lsfusion.server.profiler.Profiler.profileData;
+import static lsfusion.server.physics.admin.profiler.Profiler.profileData;
 
 public class StopProfilerActionProperty extends ScriptingActionProperty {
     private LCP totalTime;

@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.ExecutionStack;

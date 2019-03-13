@@ -28,8 +28,8 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.property.ObjectClassField;
-import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
-import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
+import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.json.JSONException;
 

@@ -1,9 +1,8 @@
 package lsfusion.server.logics.tasks.impl;
 
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 
 public class SetupActionPolicyFormsTask extends SetupActionOrPropertyPolicyFormsTask {

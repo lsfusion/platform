@@ -1,8 +1,7 @@
 package lsfusion.server.session;
 
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.ChangeEvent;
-import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 
 public enum ApplyFilter {
     WITHOUT_RECALC, ONLYCHECK, NO, ONLY_CALC, ONLY_DATA;

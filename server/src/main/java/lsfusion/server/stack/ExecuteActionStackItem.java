@@ -1,11 +1,11 @@
 package lsfusion.server.stack;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.logics.debug.ActionDelegationType;
-import lsfusion.server.logics.debug.DebugInfo;
+import lsfusion.server.physics.dev.debug.ActionDelegationType;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.profiler.ActionProfileObject;
-import lsfusion.server.profiler.Profiler;
+import lsfusion.server.physics.admin.profiler.ActionProfileObject;
+import lsfusion.server.physics.admin.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;

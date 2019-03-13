@@ -7,7 +7,7 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.session.SessionCreator;
 
 import java.sql.SQLException;

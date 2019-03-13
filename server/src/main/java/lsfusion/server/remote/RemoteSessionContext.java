@@ -1,14 +1,8 @@
 package lsfusion.server.remote;
 
 import lsfusion.interop.action.ClientAction;
-import lsfusion.server.auth.SecurityPolicy;
-import lsfusion.server.context.AbstractContext;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
-import lsfusion.server.form.navigator.LogInfo;
-import lsfusion.server.logics.LogicsInstance;
-
-import java.util.Locale;
 
 import static lsfusion.server.ServerLoggers.systemLogger;
 

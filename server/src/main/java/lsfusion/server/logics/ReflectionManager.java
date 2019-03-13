@@ -22,7 +22,7 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;

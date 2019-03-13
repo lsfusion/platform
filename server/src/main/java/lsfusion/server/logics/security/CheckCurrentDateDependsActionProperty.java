@@ -10,7 +10,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingActionProperty;
 
 import javax.swing.*;
 import java.sql.SQLException;

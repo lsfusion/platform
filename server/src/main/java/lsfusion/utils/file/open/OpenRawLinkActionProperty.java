@@ -10,8 +10,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.language.ScriptingActionProperty;
 import org.apache.commons.httpclient.util.URIUtil;
 
 import java.net.URI;

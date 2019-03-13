@@ -1,7 +1,7 @@
 package lsfusion.server.stack;
 
 import lsfusion.interop.ProgressBar;
-import lsfusion.server.profiler.ProfileObject;
+import lsfusion.server.physics.admin.profiler.ProfileObject;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 

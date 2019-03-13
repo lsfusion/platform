@@ -32,7 +32,7 @@ import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.IsClassProperty;

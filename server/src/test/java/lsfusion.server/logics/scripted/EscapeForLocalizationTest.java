@@ -2,7 +2,7 @@ package lsfusion.server.logics.scripted;
 
 import org.junit.Test;
 
-import static lsfusion.server.logics.i18n.LocalizedString.escapeForLocalization;
+import static lsfusion.server.physics.dev.i18n.LocalizedString.escapeForLocalization;
 import static org.junit.Assert.assertEquals;
 
 public class EscapeForLocalizationTest {

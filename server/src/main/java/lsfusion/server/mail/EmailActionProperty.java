@@ -5,7 +5,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingActionProperty;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;

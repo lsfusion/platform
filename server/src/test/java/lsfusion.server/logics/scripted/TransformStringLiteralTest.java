@@ -1,10 +1,11 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.server.language.ScriptedStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static lsfusion.server.logics.scripted.ScriptedStringUtils.transformStringLiteral;
+import static lsfusion.server.language.ScriptedStringUtils.transformStringLiteral;
 import static org.junit.Assert.assertEquals;
 
 public class TransformStringLiteralTest {

@@ -2,7 +2,7 @@ package lsfusion.server.logics.tasks.impl.simple;
 
 import com.google.common.base.Throwables;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.tasks.SimpleBLTask;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;

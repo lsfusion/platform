@@ -5,8 +5,8 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.CompoundNameUtils.ParseException;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.util.ArrayList;
 import java.util.List;

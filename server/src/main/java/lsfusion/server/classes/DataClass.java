@@ -28,7 +28,7 @@ import lsfusion.server.form.instance.DataObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;

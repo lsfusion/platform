@@ -1,7 +1,7 @@
 package lsfusion.server.form.entity.drilldown;
 
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.SumUnionProperty;
 

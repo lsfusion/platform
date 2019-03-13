@@ -9,7 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.session.PropertyChanges;
 
 public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupProperty<I> {

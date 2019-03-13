@@ -8,19 +8,19 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
-import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.action.flow.CaseActionProperty;
+import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.resolving.SignatureMatcher;
+import lsfusion.server.language.resolving.SignatureMatcher;
 
 import java.util.*;
 

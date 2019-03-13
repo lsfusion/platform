@@ -15,12 +15,12 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.debug.ActionDelegationType;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.debug.ActionDelegationType;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
-import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
-import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.flow.ExtendContextActionProperty;
+import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.*;
 

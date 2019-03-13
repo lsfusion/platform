@@ -8,7 +8,7 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.utils.file.client.ListFilesClientAction;
 
 import java.sql.SQLException;

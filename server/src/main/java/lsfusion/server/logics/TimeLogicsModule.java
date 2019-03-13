@@ -2,6 +2,12 @@ package lsfusion.server.logics;
 
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.data.Time;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

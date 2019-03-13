@@ -10,11 +10,10 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CurrentConnectionFormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 

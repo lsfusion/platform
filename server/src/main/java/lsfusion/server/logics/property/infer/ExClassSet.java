@@ -14,7 +14,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.resolving.SignatureMatcher;
+import lsfusion.server.language.resolving.SignatureMatcher;
 
 import java.util.List;
 

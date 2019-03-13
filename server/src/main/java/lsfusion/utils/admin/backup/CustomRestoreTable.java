@@ -1,7 +1,6 @@
 package lsfusion.utils.admin.backup;
 
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.language.linear.LCP;
 
 import java.util.ArrayList;
 import java.util.HashSet;

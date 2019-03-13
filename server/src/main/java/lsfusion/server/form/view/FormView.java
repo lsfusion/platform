@@ -14,7 +14,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.SIDHandler;
 import lsfusion.server.logics.mutables.Version;

@@ -77,7 +77,7 @@ customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(custom
 // password
 sha256Password '{authentication.password}' = DATA VARSTRING[100] (CustomUser) ECHO;
 calculatedHash = DATA LOCAL VARSTRING[100] ();
-calculateBase64Hash INTERNAL  'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
+calculateBase64Hash INTERNAL  'lsfusion.server.physics.admin.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
 changeSHA256Password(CustomUser customUser)  { 
     INPUT st=STRING[30] DO {
         calculateBase64Hash('SHA-256', st);
@@ -117,7 +117,7 @@ currentUser = NATIVE User ();
 currentUserName '{authentication.current.user.name}' () = name[Contact](currentUser());
 
 // User management
-logOut (restart, reconnect)  INTERNAL  'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
+logOut (restart, reconnect)  INTERNAL  'lsfusion.server.physics.admin.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
 shutdown { logOut(NULL, NULL); }
 reconnect { logOut(TRUE, TRUE); }
 restart { logOut(TRUE, NULL); }
@@ -377,7 +377,7 @@ DESIGN reloginLoginUser {
     REMOVE PROPERTY(formRefresh());
 }
 
-relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
+relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.physics.admin.authentication.ReloginUserActionProperty' (CustomUser);
 
 reloginLoginUser()  { 
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {

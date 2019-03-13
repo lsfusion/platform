@@ -1,7 +1,7 @@
 package lsfusion.server.form.entity.filter;
 
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 

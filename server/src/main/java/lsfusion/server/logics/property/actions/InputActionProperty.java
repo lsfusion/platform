@@ -1,16 +1,13 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;

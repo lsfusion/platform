@@ -12,7 +12,7 @@ import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;

@@ -9,8 +9,8 @@ import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.logics.SystemEventsLogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 

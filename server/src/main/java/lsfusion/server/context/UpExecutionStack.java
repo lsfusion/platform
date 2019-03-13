@@ -10,7 +10,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LCP;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClassesSession;
 

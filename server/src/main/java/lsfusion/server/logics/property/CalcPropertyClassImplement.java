@@ -2,7 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.language.linear.LCP;
 
 public class CalcPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, CalcProperty<P>> {
 
