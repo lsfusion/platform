@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.action;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.sql.SQLException;

@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;
 import lsfusion.server.logics.form.stat.integration.importing.FormImportData;
 import lsfusion.server.logics.form.open.stat.ImportActionProperty;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;

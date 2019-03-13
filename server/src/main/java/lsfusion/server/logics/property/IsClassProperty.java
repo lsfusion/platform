@@ -24,7 +24,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFStaticLazy;
-import lsfusion.server.logics.property.actions.ChangeEvent;
+import lsfusion.server.logics.event.ChangeEvent;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;

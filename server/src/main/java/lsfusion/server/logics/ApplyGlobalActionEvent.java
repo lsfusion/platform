@@ -3,10 +3,8 @@ package lsfusion.server.logics;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.OldProperty;
-import lsfusion.server.logics.property.actions.SessionEnvEvent;
-import lsfusion.server.logics.property.actions.SystemEvent;
-
-import java.util.Objects;
+import lsfusion.server.logics.event.SessionEnvEvent;
+import lsfusion.server.logics.event.SystemEvent;
 
 public class ApplyGlobalActionEvent extends ApplyGlobalEvent implements ApplyActionEvent {
     

@@ -7,7 +7,7 @@ import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import org.apache.log4j.Logger;
 

@@ -4,7 +4,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.SystemExplicitActionProperty;
 
 // тут их все наверное надо рефакторить на addJoinAProp
 // остался незарефакторенный только LOAD, который должен исчезнуть

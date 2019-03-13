@@ -23,7 +23,7 @@ import lsfusion.server.logics.navigator.LogInfo;
 import lsfusion.server.logics.CustomReader;
 import lsfusion.server.logics.PGObjectReader;
 import lsfusion.server.logics.ThreadUtils;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;

@@ -7,7 +7,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.base.context.Context;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;

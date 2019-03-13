@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
-import lsfusion.server.logics.form.interactive.InstanceFactory;
+import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;

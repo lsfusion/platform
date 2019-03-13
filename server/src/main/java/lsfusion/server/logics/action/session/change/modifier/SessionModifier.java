@@ -13,7 +13,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.ValuesContext;
-import lsfusion.server.logics.action.session.PrereadRows;
+import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.session.UpdateResult;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;

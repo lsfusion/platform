@@ -9,7 +9,7 @@ import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.server.logics.form.open.stat.FormStaticActionProperty;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.form.stat.report.PrintMessageData;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.server.SystemProperties;

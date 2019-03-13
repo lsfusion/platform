@@ -17,9 +17,9 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;

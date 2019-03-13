@@ -15,7 +15,7 @@ import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.form.stat.StaticFormDataManager;
 
 import java.io.IOException;

@@ -15,14 +15,14 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.form.interactive.InstanceFactory;
+import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.interactive.action.edit.DefaultChangeObjectActionProperty;
-import lsfusion.server.logics.property.actions.ExplicitActionProperty;
+import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.create;

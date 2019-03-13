@@ -7,7 +7,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.Scheduler;
 import lsfusion.server.logics.SchedulerLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 

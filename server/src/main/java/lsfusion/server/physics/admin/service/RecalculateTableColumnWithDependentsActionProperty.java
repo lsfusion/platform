@@ -9,7 +9,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;

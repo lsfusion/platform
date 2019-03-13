@@ -65,18 +65,18 @@ formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interact
 
 seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
 
-sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
+sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepActionProperty' (LONG);
 
 sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 
-applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
-applyOnlyCalc  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty' ();
-applyOnlyCheck  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyCheckActionProperty' ();
-applyOnlyData  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
-applyAll  INTERNAL  'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
+applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyWithoutRecalcActionProperty' ();
+applyOnlyCalc  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyCalcActionProperty' ();
+applyOnlyCheck  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyCheckActionProperty' ();
+applyOnlyData  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyDataActionProperty' ();
+applyAll  INTERNAL  'lsfusion.server.logics.action.session.ApplyAllActionProperty' ();
 
-throwException  INTERNAL  'lsfusion.server.logics.property.actions.ThrowExceptionActionProperty' (TEXT);
+throwException  INTERNAL  'lsfusion.server.logics.action.flow.ThrowExceptionActionProperty' (TEXT);
 
 setNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(true); }>;
 dropNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(false); }>;
@@ -94,7 +94,7 @@ check()  {
     }    
 }
 
-executeLocalEvents  INTERNAL  'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' (TEXT);
+executeLocalEvents  INTERNAL  'lsfusion.server.logics.event.ExecuteLocalEventsActionProperty' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
 staticName '{system.static.name.object}' = DATA STRING[250] (Object); // temporary for migration

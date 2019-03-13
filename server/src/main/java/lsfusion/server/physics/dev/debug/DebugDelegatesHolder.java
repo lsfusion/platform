@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.debug;
 
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.sql.SQLException;

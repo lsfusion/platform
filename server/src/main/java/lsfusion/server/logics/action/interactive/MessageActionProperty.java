@@ -7,9 +7,9 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.SystemActionProperty;
+import lsfusion.server.logics.action.SystemActionProperty;
 
 import java.sql.SQLException;
 

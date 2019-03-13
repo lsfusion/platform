@@ -37,7 +37,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.navigator.LogInfo;
-import lsfusion.server.logics.form.interactive.InteractiveFormReportManager;
+import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.DataObject;

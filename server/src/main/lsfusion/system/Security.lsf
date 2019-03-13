@@ -644,7 +644,7 @@ minHeapFreeRatio '{security.client.min.heap.free.ratio}' = DATA VARSTRING[100]()
 maxHeapFreeRatio '{security.client.max.heap.free.ratio}' = DATA VARSTRING[100]();
 vmargs '{security.client.vm.args}' = DATA VARSTRING[100]();
 
-generateJnlp INTERNAL 'lsfusion.server.logics.property.actions.GenerateJNLPActionProperty' (VARSTRING[10], VARSTRING[1000]) NULL @@noauth;
+generateJnlp INTERNAL 'lsfusion.server.logics.navigator.GenerateJNLPActionProperty' (VARSTRING[10], VARSTRING[1000]) NULL @@noauth;
 
 // ------------------ Memory limits ---------------- //
 CLASS MemoryLimit '{security.memory.limit}';
