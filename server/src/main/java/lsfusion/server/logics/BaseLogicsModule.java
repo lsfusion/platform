@@ -41,7 +41,7 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.physics.exec.table.TableFactory;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.ExecutionEnvironment;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

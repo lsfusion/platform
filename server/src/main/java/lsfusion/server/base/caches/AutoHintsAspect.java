@@ -32,9 +32,9 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.action.session.Modifier;
-import lsfusion.server.logics.action.session.PropertyChanges;
-import lsfusion.server.logics.action.session.SessionModifier;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 
 import java.sql.SQLException;
 

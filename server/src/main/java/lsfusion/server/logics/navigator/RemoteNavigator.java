@@ -39,7 +39,7 @@ import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.remote.*;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.ExecutionEnvironment;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

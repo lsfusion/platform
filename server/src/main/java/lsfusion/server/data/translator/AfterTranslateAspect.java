@@ -20,7 +20,7 @@ import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.MeanClassWheres;
-import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 
 
 // аспект который заодно транслирует ManualLazy операции

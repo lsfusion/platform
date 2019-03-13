@@ -54,7 +54,7 @@ import lsfusion.server.physics.exec.table.IDTable;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.SessionCreator;
-import lsfusion.server.logics.action.session.SingleKeyTableUsage;
+import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.stack.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;

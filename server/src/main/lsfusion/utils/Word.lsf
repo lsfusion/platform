@@ -11,7 +11,7 @@ loadFile '{word.load.file.template}'(Template t)  { INPUT =file(t) CHANGE; }
 openFile '{word.open.file.template}'(Template t)  { open(file(t)); }
 id '{word.id.template}' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
 
-process  INTERNAL  'lsfusion.server.logics.action.utils.type.word.ProcessTemplateActionProperty' (Template);
+process  INTERNAL  'lsfusion.server.logics.classes.utils.word.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA LOCAL WORDFILE ();
 openResultTemplate ()  { open(resultTemplate()); }

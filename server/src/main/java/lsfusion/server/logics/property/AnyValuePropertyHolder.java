@@ -18,7 +18,7 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.link.*;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.ExecutionEnvironment;
 
 import java.sql.SQLException;
 

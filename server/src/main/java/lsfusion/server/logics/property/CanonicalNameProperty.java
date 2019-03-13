@@ -7,7 +7,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class CanonicalNameProperty extends FormulaProperty<CanonicalNameProperty.Interface> {
     private final LP property;

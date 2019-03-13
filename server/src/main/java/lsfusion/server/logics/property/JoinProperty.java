@@ -24,10 +24,10 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.logics.action.session.DataChanges;
-import lsfusion.server.logics.action.session.PropertyChange;
-import lsfusion.server.logics.action.session.PropertyChanges;
-import lsfusion.server.logics.action.session.StructChanges;
+import lsfusion.server.logics.action.session.change.DataChanges;
+import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.action.session.change.StructChanges;
 
 import java.util.Comparator;
 import java.util.Iterator;
