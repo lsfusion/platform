@@ -17,7 +17,7 @@ import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 @Aspect
 public class WrapComplexityAspect {

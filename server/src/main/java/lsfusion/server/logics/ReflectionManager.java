@@ -30,7 +30,7 @@ import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

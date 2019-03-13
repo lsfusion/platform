@@ -8,8 +8,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.action.session.Modifier;
-import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 import java.sql.SQLException;
 

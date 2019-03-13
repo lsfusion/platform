@@ -12,7 +12,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.action.session.SessionChanges;
+import lsfusion.server.logics.action.session.change.SessionChanges;
 
 import java.sql.SQLException;
 

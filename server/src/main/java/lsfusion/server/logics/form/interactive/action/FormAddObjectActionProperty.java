@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.AddObjectActionProperty;
+import lsfusion.server.logics.action.change.AddObjectActionProperty;
 
 import java.sql.SQLException;
 

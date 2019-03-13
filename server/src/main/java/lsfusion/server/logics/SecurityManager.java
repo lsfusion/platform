@@ -35,7 +35,7 @@ import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

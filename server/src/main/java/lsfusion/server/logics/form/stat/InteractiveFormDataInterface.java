@@ -29,7 +29,7 @@ import lsfusion.server.logics.form.struct.order.CompareEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 

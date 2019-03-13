@@ -6,10 +6,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.action.session.IncrementChangeProps;
-import lsfusion.server.logics.action.session.IncrementTableProps;
-import lsfusion.server.logics.action.session.OverrideIncrementProps;
-import lsfusion.server.logics.action.session.SessionModifier;
+import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
+import lsfusion.server.logics.action.session.change.increment.IncrementTableProps;
+import lsfusion.server.logics.action.session.change.increment.OverrideIncrementProps;
+import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 
 import java.sql.SQLException;
 

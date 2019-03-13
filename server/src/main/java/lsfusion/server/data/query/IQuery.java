@@ -18,7 +18,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.base.stack.StackMessage;
 
 import java.sql.SQLException;

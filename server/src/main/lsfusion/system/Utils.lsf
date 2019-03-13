@@ -35,7 +35,7 @@ fileToString(FILE file) { fileToString(file, 'UTF-8'); }
 //cast link to string
 linkToString '{utils.link.to.string}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.LinkToStringActionProperty' (LINK);
 //cast richtext to string
-richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.action.utils.type.string.RichTextToStringActionProperty' (RICHTEXT);
+richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.classes.utils.string.RichTextToStringActionProperty' (RICHTEXT);
 
 //path, text, charset
 appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
@@ -46,7 +46,7 @@ changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extensi
 
 // --------------------------------- Logging --------------------------------- //
 
-printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.logics.action.utils.admin.logging.PrintToLogActionProperty' (TEXT);
+printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.logging.PrintToLogActionProperty' (TEXT);
 logToFile (VARSTRING[1000] file, TEXT message) {
     appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message, '\n')); 
 }
@@ -83,7 +83,7 @@ unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (VARSTRING[100]);
 makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeUnzipFileActionProperty' ();
 
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
-cmd '{utils.cmd}'  INTERNAL  'lsfusion.server.logics.action.utils.admin.interpreter.RunCommandActionProperty' (TEXT, BOOLEAN);
+cmd '{utils.cmd}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.RunCommandActionProperty' (TEXT, BOOLEAN);
 cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL); }
 cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, TRUE); }
 
@@ -94,7 +94,7 @@ pingClient '{utils.ping.client}' (TEXT host)  {ping(host, TRUE); }
 
 // ---------------------------------- Работа с файлами Excel  ---------------------------------- //
 protectedExcel '{utils.protected.excel}' = DATA LOCAL EXCELFILE ();
-protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.server.logics.action.utils.type.excel.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
+protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.server.logics.classes.utils.excel.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
 
 // ---------------------------------- Генерация паролей  ---------------------------------- //
 generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
@@ -152,13 +152,13 @@ decode = FORMULA RAWFILE 'decode(($1),($2))';
 decodeText = FORMULA TEXT 'decode(($1),($2))';
 
 encodedBase64 = DATA LOCAL TEXT();
-encodeBase64  INTERNAL  'lsfusion.server.logics.action.utils.type.string.EncodeBase64ActionProperty' (TEXT);
+encodeBase64  INTERNAL  'lsfusion.server.logics.classes.utils.string.EncodeBase64ActionProperty' (TEXT);
 
 decodedBase64 = DATA LOCAL TEXT();
-decodeBase64  INTERNAL  'lsfusion.server.logics.action.utils.type.string.DecodeBase64ActionProperty' (TEXT);
+decodeBase64  INTERNAL  'lsfusion.server.logics.classes.utils.string.DecodeBase64ActionProperty' (TEXT);
 
 urlEncoded = DATA LOCAL TEXT();
-urlEncode  INTERNAL 'lsfusion.server.logics.action.utils.type.string.UrlEncodeActionProperty' (TEXT, STRING[20]);
+urlEncode  INTERNAL 'lsfusion.server.logics.classes.utils.string.UrlEncodeActionProperty' (TEXT, STRING[20]);
 
 // --------------------------------------------- Работа с числами --------------------------------- //
 
@@ -212,7 +212,7 @@ round6 (number) = round(number, 6);
 
 // ---------------------------------- Работа с датами  ---------------------------------- //
 resultMilliseconds '{utils.result.milliseconds}' = DATA LOCAL LONG();
-toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.action.utils.type.time.ToMillisecondsActionProperty' (DATETIME);
+toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classes.utils.time.ToMillisecondsActionProperty' (DATETIME);
 
 // -------------------------------------------- Свойства под файлы ---------------------------- //
 

@@ -42,8 +42,8 @@ import lsfusion.server.logics.property.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.Modifier;
-import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.base.stack.StackProgress;
 
 import java.sql.SQLException;

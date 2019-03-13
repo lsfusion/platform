@@ -44,7 +44,7 @@ import lsfusion.server.data.where.CheckWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.navigator.SQLSessionContextProvider;
-import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.logging.StringDebugInfoWriter;
 

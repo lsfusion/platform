@@ -19,8 +19,8 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyValueImplement;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
-import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;

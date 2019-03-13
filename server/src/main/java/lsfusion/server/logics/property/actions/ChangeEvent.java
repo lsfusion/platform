@@ -11,10 +11,10 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.session.DataChanges;
-import lsfusion.server.logics.action.session.PropertyChange;
-import lsfusion.server.logics.action.session.PropertyChanges;
-import lsfusion.server.logics.action.session.StructChanges;
+import lsfusion.server.logics.action.session.change.DataChanges;
+import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.action.session.change.StructChanges;
 
 public class ChangeEvent<C extends PropertyInterface> {
 

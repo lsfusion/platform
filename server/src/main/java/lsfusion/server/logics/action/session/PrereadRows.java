@@ -76,7 +76,7 @@ public class PrereadRows<P extends PropertyInterface> extends AbstractValuesCont
         return mResult.immutable();
     }
 
-    protected int hash(HashValues hashValues) {
+    public int hash(HashValues hashValues) {
         if(isEmpty()) // оптимизация
             return 0;
 

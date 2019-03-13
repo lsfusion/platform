@@ -20,7 +20,7 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.logics.action.flow.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.AddObjectActionProperty;
+import lsfusion.server.logics.action.change.AddObjectActionProperty;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;

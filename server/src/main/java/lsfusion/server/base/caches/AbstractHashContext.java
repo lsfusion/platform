@@ -69,6 +69,6 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
         } else
             return hash(hash);
     }
-    protected abstract int hash(H hash); // по сути protected
+    public abstract int hash(H hash); // по сути protected
 
 }

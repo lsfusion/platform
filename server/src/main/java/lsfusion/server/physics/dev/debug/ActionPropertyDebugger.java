@@ -33,7 +33,7 @@ import lsfusion.server.language.EvalUtils;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import sun.management.jmxremote.LocalRMIServerSocketFactory;

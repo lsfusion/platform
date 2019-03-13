@@ -24,9 +24,9 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
-import lsfusion.server.logics.action.session.Modifier;
-import lsfusion.server.logics.action.session.PropertyChange;
+import lsfusion.server.logics.action.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.action.session.change.PropertyChange;
 
 import java.io.DataInputStream;
 import java.io.IOException;

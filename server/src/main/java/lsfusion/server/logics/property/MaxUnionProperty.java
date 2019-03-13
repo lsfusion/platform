@@ -10,7 +10,7 @@ import lsfusion.server.logics.form.struct.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.form.struct.drilldown.MaxUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class MaxUnionProperty extends IncrementUnionProperty {
 

@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.listener;
 
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.remote.RemoteForm;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.ExecutionEnvironment;
 
 import java.rmi.RemoteException;
 

@@ -25,7 +25,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyValueImplement;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 

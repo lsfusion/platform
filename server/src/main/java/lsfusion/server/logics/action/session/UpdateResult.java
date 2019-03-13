@@ -1,5 +1,7 @@
 package lsfusion.server.logics.action.session;
 
+import lsfusion.server.logics.action.session.change.ModifyResult;
+
 public interface UpdateResult {
     
     boolean dataChanged();

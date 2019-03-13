@@ -45,10 +45,10 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.action.session.ClassChanges;
+import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.RegisterClassRemove;
-import lsfusion.server.logics.action.session.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
+import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;

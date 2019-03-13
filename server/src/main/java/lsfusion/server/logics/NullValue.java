@@ -17,7 +17,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.action.session.SessionChanges;
+import lsfusion.server.logics.action.session.change.SessionChanges;
 
 public class NullValue extends ObjectValue<NullValue> {
 

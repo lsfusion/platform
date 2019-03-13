@@ -29,7 +29,7 @@ import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.property.IsClassField;
-import lsfusion.server.logics.action.session.ClassChanges;
+import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 
 public class IsClassWhere extends DataWhere {
 

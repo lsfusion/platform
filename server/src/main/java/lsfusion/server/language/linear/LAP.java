@@ -19,7 +19,7 @@ import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ListActionProperty;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.ExecutionEnvironment;
+import lsfusion.server.logics.action.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.List;

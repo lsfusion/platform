@@ -42,7 +42,7 @@ import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

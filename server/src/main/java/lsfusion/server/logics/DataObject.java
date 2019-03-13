@@ -34,10 +34,10 @@ import lsfusion.server.logics.form.interactive.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.physics.dev.integration.service.*;
-import lsfusion.server.logics.action.session.Modifier;
-import lsfusion.server.logics.action.session.SessionChanges;
-import lsfusion.server.logics.action.session.SessionTableUsage;
-import lsfusion.server.logics.action.session.SinglePropertyTableUsage;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.action.session.change.SessionChanges;
+import lsfusion.server.logics.action.session.table.SessionTableUsage;
+import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
 

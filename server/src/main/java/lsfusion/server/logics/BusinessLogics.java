@@ -75,7 +75,7 @@ import lsfusion.server.physics.exec.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.logics.action.session.ApplyFilter;
-import lsfusion.server.logics.action.session.Correlation;
+import lsfusion.server.logics.action.session.change.Correlation;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.SessionCreator;
 import lsfusion.base.logging.DebugInfoWriter;

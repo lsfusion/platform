@@ -27,7 +27,7 @@ import lsfusion.server.logics.action.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ForActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.action.session.ClassChange;
+import lsfusion.server.logics.action.session.classes.change.ClassChange;
 
 import java.sql.SQLException;
 

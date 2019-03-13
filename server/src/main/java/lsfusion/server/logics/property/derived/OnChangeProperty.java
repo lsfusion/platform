@@ -24,7 +24,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.logics.action.session.PropertyChanges;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 // определяет не максимум изменения, а для конкретных входов
 public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, OnChangeProperty.Interface<T, P>> {

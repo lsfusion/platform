@@ -24,7 +24,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.SetActionProperty;
-import lsfusion.server.logics.action.session.Modifier;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.io.IOException;
 import java.sql.SQLException;
