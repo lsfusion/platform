@@ -86,10 +86,12 @@
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-html-component</artifactId>
         </dependency>
+        <!--need for JasperReports-->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-bridge</artifactId>
         </dependency>
+        <!--need for JasperReports-->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>xmlgraphics-commons</artifactId>
@@ -118,6 +120,10 @@
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
         </dependency>
     </dependencies>
 </project>
