@@ -1,6 +1,6 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.server.form.view.ClassChooserView;
+import lsfusion.server.logics.form.interactive.design.object.ClassChooserView;
 
 public class ClassChooserViewProxy extends ComponentViewProxy<ClassChooserView> {
     public ClassChooserViewProxy(ClassChooserView target) {

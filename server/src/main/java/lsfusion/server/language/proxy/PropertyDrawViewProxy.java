@@ -5,7 +5,7 @@ import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.classes.TimeClass;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.PropertyUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

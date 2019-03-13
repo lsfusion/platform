@@ -17,7 +17,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.LogFormEntity;
+import lsfusion.server.logics.form.auto.LogFormEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;

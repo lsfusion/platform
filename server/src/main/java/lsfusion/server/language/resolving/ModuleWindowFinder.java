@@ -1,6 +1,6 @@
 package lsfusion.server.language.resolving;
 
-import lsfusion.server.form.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.LogicsModule;
 
 public class ModuleWindowFinder extends ModuleSingleElementFinder<AbstractWindow, Object> {

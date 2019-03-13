@@ -19,7 +19,7 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Reader;
-import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.navigator.LogInfo;
 import lsfusion.server.logics.CustomReader;
 import lsfusion.server.logics.PGObjectReader;
 import lsfusion.server.logics.ThreadUtils;

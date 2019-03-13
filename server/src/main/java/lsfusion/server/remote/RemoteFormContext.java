@@ -2,11 +2,11 @@ package lsfusion.server.remote;
 
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.listener.CustomClassListener;
-import lsfusion.server.form.instance.listener.FocusListener;
-import lsfusion.server.form.instance.listener.RemoteFormListener;
-import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
+import lsfusion.server.logics.form.interactive.listener.FocusListener;
+import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;
 
 import java.util.Locale;

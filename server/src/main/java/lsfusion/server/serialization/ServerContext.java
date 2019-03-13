@@ -1,8 +1,8 @@
 package lsfusion.server.serialization;
 
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.view.FormView;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.BusinessLogics;
 
 public class ServerContext {

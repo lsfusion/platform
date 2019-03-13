@@ -3,10 +3,10 @@ package lsfusion.server.language;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
-import lsfusion.server.form.entity.ActionPropertyObjectEntity;
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 

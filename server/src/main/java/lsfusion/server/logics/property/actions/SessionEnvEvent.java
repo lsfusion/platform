@@ -6,8 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.session.DataSession;
 
 public class SessionEnvEvent extends TwinImmutableObject {

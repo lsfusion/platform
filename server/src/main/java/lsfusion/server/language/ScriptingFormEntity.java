@@ -19,12 +19,19 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.form.entity.*;
-import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.entity.filter.RegularFilterEntity;
-import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
-import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
+import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
+import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LAP;
@@ -43,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.form.instance.FormSessionScope.OLDSESSION;
+import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
 
 public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;

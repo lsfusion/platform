@@ -1,6 +1,6 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.server.form.view.GridView;
+import lsfusion.server.logics.form.interactive.design.object.GridView;
 
 public class GridViewProxy extends ComponentViewProxy<GridView> {
     public GridViewProxy(GridView target) {

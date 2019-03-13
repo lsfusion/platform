@@ -1,7 +1,7 @@
 package lsfusion.server.remote;
 
 import lsfusion.server.context.AbstractContext;
-import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;
 
 import java.util.Locale;

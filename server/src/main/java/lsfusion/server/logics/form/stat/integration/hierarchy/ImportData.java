@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.stat.integration.hierarchy;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 import java.sql.SQLException;
 

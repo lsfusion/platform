@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.authentication.policy;
 
-import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.NavigatorElement;
 
 import java.util.Collection;
 

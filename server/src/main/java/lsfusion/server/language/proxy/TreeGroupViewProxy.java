@@ -1,6 +1,6 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.server.form.view.TreeGroupView;
+import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 
 public class TreeGroupViewProxy extends ComponentViewProxy<TreeGroupView> {
     public TreeGroupViewProxy(TreeGroupView target) {

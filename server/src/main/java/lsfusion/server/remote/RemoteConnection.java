@@ -9,12 +9,12 @@ import lsfusion.server.context.SyncType;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.navigator.*;
 import lsfusion.server.session.DataSession;
 
 import java.lang.ref.WeakReference;
