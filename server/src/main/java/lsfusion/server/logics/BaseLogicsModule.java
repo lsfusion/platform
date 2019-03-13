@@ -39,7 +39,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.table.TableFactory;
+import lsfusion.server.physics.exec.table.TableFactory;
 import lsfusion.server.session.ExecutionEnvironment;
 import org.antlr.runtime.RecognitionException;
 

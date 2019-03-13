@@ -3,8 +3,8 @@ package lsfusion.server.logics.form.interactive.design.filter;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

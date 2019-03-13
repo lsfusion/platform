@@ -27,7 +27,7 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.ScriptingLogicsModule.GroupingType;
 import lsfusion.server.language.ScriptingLogicsModule.LCPWithParams;
 import lsfusion.server.language.ScriptingLogicsModule.TypedParameter;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 
 import java.util.HashSet;
 import java.util.List;

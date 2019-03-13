@@ -26,8 +26,8 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.ObjectClassProperty;
-import lsfusion.server.logics.table.FullTablesInterface;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.FullTablesInterface;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 

@@ -33,7 +33,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
 

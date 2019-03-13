@@ -236,12 +236,12 @@ sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(Table
 
 notRecalculate '{reflection.not.recalculate}' = DATA BOOLEAN (TableColumn);
 
-recalculateAggregation '{reflection.recalculate.aggregation}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
-recalculateAggregationWithDependencies '{reflection.recalculate.aggregation.with.dependencies}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
-recalculateAggregationWithDependents '{reflection.recalculate.aggregation.with.dependents}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
-checkAggregation '{reflection.check.aggregation}'  INTERNAL  'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
+recalculateAggregation '{reflection.recalculate.aggregation}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateTableColumnActionProperty' (TableColumn);
+recalculateAggregationWithDependencies '{reflection.recalculate.aggregation.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
+recalculateAggregationWithDependents '{reflection.recalculate.aggregation.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
+checkAggregation '{reflection.check.aggregation}'  INTERNAL  'lsfusion.server.physics.admin.service.CheckTableColumnActionProperty' (TableColumn);
 checkAggregation(VARISTRING[100] string)  { checkAggregation(tableColumnSID(string)); }
-dropDB  INTERNAL  'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
+dropDB  INTERNAL  'lsfusion.server.physics.admin.service.DropColumnActionProperty' (DropColumn);
 drop '{reflection.drop.drop.column}' (DropColumn cl)  { 
     dropDB(cl);
     DELETE cl;
@@ -252,12 +252,12 @@ recalculateColumnsAggregations '{reflection.recalculate.column.aggregations}' (T
         recalculateAggregation(tableColumn);    
     }
 }
-checkClasses '{reflection.check.classes}'  INTERNAL  'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
+checkClasses '{reflection.check.classes}'  INTERNAL  'lsfusion.server.physics.admin.service.CheckTableClassesActionProperty' (Table);
 checkClasses(VARISTRING[100] string)  { checkClasses(table(string)); }
-recalculateClasses '{reflection.recalculate.classes}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
+recalculateClasses '{reflection.recalculate.classes}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateTableClassesActionProperty' (Table);
 notRecalculateStats '{reflection.not.recalculate.stats}' = DATA BOOLEAN (Table);
-recalculateStats '{reflection.recalculate.stats}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
-pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.logics.reflection.PackTableActionProperty' (Table);
+recalculateStats '{reflection.recalculate.stats}'  INTERNAL  'lsfusion.server.physics.admin.service.RecalculateTableStatsActionProperty' (Table);
+pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.physics.admin.service.PackTableActionProperty' (Table);
 
 disableClasses 'Отключить пересчёт и проверку классов' = DATA BOOLEAN (Table);
 disableStatsTable 'Отключить пересчёт и проверку статистики' (Table t) = notRecalculateStats(t);

@@ -42,7 +42,7 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
 

@@ -6,7 +6,7 @@ import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
-import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

@@ -56,8 +56,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
-import lsfusion.server.logics.table.IDTable;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.IDTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.stack.*;
 
 import javax.swing.*;

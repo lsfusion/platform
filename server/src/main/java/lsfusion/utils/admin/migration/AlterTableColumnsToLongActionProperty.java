@@ -9,7 +9,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.physics.exec.table.ImplementTable;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
