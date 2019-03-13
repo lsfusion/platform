@@ -2,4 +2,4 @@ MODULE Sound;
 
 REQUIRE System;
 
-beep(file, async)  INTERNAL  'lsfusion.utils.equ.BeepActionProperty'(FILE, BOOLEAN);
+beep(file, async)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.BeepActionProperty'(FILE, BOOLEAN);

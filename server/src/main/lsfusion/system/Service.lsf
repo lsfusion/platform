@@ -15,7 +15,7 @@ recalculateStatsAction '{service.recalculate.stats.action}'  INTERNAL  'lsfusion
 overCalculateStatsAction '{service.over.calculate.stats.action}'  INTERNAL  'lsfusion.server.physics.admin.service.OverCalculateStatsActionProperty' ();
 maxQuantityOverCalculate '{service.max.quantity.over.calculate}' = DATA INTEGER ();
 
-makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.utils.admin.monitor.MakeProcessDumpActionProperty' ();
+makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.logics.action.utils.admin.monitor.MakeProcessDumpActionProperty' ();
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 checkAggregationsMultiThreadAction '{service.check.aggregations.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
