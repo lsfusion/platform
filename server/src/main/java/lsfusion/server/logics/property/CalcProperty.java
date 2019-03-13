@@ -17,6 +17,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.logics.action.session.*;
@@ -25,8 +26,8 @@ import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.OrClassSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.classes.sets.ResolveUpClassSet;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -66,15 +67,15 @@ import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.physics.exec.table.MapKeysTable;
 import lsfusion.server.physics.exec.table.TableFactory;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.ThisMessage;
+import lsfusion.server.base.stack.StackMessage;
+import lsfusion.server.base.stack.ThisMessage;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
 

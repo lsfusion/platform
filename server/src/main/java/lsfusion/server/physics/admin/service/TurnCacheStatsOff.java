@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.service;
 
-import lsfusion.server.caches.CacheStats;
+import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;

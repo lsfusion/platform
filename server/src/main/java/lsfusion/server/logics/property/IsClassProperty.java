@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;

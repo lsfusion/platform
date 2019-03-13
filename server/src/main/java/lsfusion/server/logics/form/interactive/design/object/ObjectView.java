@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;

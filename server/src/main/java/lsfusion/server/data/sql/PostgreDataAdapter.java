@@ -6,7 +6,7 @@ import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.Settings;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.ExecutionContext;

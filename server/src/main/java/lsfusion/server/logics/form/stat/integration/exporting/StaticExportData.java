@@ -5,7 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.StaticKeyData;
 import lsfusion.server.logics.form.stat.StaticPropertyData;

@@ -10,11 +10,12 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.base.lambda.Processor;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.OrderClass;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
@@ -33,7 +34,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.ExecutionEnvironment;
-import lsfusion.server.stack.StackMessage;
+import lsfusion.server.base.stack.StackMessage;
 
 import java.sql.SQLException;
 

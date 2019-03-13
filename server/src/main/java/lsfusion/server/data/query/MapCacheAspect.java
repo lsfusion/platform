@@ -13,11 +13,12 @@ import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
-import lsfusion.server.caches.CacheStats.CacheType;
-import lsfusion.server.caches.hash.HashCodeKeys;
-import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.caches.hash.HashValues;
+import lsfusion.server.base.caches.CacheStats.CacheType;
+import lsfusion.server.base.caches.hash.HashCodeKeys;
+import lsfusion.server.base.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
@@ -39,8 +40,8 @@ import org.aspectj.lang.annotation.Aspect;
 
 import java.util.Arrays;
 
-import static lsfusion.server.caches.CacheStats.incrementHit;
-import static lsfusion.server.caches.CacheStats.incrementMissed;
+import static lsfusion.server.base.caches.CacheStats.incrementHit;
+import static lsfusion.server.base.caches.CacheStats.incrementMissed;
 
 @Aspect
 public class MapCacheAspect {

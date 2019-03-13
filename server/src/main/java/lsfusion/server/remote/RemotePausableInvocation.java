@@ -6,7 +6,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.stack.ThrowableWithStack;
+import lsfusion.server.base.stack.ThrowableWithStack;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;

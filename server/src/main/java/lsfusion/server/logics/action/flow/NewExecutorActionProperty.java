@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.classes.CustomClass;
-import lsfusion.server.context.ExecutorFactory;
+import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;

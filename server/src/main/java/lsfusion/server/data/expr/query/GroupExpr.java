@@ -18,6 +18,7 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.data.SQLQuery;

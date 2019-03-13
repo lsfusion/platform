@@ -19,8 +19,8 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.ThisMessage;
+import lsfusion.server.base.stack.StackMessage;
+import lsfusion.server.base.stack.ThisMessage;
 
 import java.sql.SQLException;
 

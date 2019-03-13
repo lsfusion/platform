@@ -2,8 +2,8 @@ package lsfusion.server.data.translator;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.caches.hash.HashCodeValues;
-import lsfusion.server.caches.hash.HashValues;
+import lsfusion.server.base.caches.hash.HashCodeValues;
+import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.ValueExpr;
 

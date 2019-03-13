@@ -23,10 +23,10 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.user.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.context.EExecutionStackCallable;
-import lsfusion.server.context.EExecutionStackRunnable;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.SyncType;
+import lsfusion.server.base.context.EExecutionStackCallable;
+import lsfusion.server.base.context.EExecutionStackRunnable;
+import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.base.context.SyncType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
@@ -44,7 +44,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.form.interactive.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
-import lsfusion.server.stack.ThrowableWithStack;
+import lsfusion.server.base.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -1140,7 +1140,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             return syncExecute(form.syncThrowInServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(private Object RemoteForm.processRMIRequest(long, long, lsfusion.server.context.EExecutionStackCallable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, request)")
+        @Around("execution(private Object RemoteForm.processRMIRequest(long, long, EExecutionStackCallable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, request)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, EExecutionStackCallable request) throws Throwable {
             return syncExecute(form.syncProcessRMIRequestMap, requestIndex, joinPoint);
         }

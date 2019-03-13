@@ -3,7 +3,7 @@ package lsfusion.server.data.expr;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.logics.form.struct.drilldown.DrillDownFormEntity;

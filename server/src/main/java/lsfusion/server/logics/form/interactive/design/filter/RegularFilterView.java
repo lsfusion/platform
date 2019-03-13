@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.filter;
 
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;

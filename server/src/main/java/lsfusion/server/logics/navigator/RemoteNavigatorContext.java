@@ -7,7 +7,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.ManageSessionType;

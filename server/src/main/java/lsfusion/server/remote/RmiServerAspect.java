@@ -1,9 +1,8 @@
 package lsfusion.server.remote;
 
-import lsfusion.server.context.Context;
-import lsfusion.server.context.EventThreadInfo;
-import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.context.ThreadInfo;
+import lsfusion.server.base.context.EventThreadInfo;
+import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadInfo;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

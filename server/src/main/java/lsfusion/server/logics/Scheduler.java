@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.base.context.*;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -16,15 +17,15 @@ import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.lifecycle.MonitorServer;
+import lsfusion.server.base.lifecycle.LifecycleEvent;
+import lsfusion.server.base.lifecycle.MonitorServer;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.Modifier;
-import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.base.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -35,7 +36,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {

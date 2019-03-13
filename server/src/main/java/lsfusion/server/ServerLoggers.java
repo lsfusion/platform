@@ -6,8 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.base.logging.FlushableRollingFileAppender;
-import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 import java.util.Enumeration;

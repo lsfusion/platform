@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.where.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.AbstractJoin;
 import lsfusion.server.data.query.Join;

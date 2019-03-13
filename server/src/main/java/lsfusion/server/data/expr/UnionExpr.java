@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.stat.UnionJoin;
 import lsfusion.server.data.where.Where;

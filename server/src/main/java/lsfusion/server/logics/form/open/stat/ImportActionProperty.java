@@ -38,7 +38,7 @@ import lsfusion.server.logics.property.actions.SystemActionProperty;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.StackProgress;
+import lsfusion.server.base.stack.StackProgress;
 
 import java.io.IOException;
 import java.sql.SQLException;

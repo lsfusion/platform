@@ -14,7 +14,7 @@ import lsfusion.server.language.ScriptingActionProperty;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class RecalculateTableClassesActionProperty extends ScriptingActionProperty {
 

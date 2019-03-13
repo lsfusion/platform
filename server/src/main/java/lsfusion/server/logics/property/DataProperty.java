@@ -6,7 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.CustomClass;
@@ -28,8 +28,8 @@ import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.ThisMessage;
+import lsfusion.server.base.stack.StackMessage;
+import lsfusion.server.base.stack.ThisMessage;
 
 import java.sql.SQLException;
 

@@ -42,7 +42,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.serializeObject;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public abstract class FormReportManager extends FormDataManager {
     private static final Logger systemLogger = Logger.getLogger("SystemLogger");

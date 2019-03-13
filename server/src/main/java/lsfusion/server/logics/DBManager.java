@@ -18,10 +18,11 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.*;
-import lsfusion.server.caches.IdentityStrongLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.stack.*;
 import lsfusion.server.classes.*;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -40,8 +41,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.lifecycle.LogicsManager;
+import lsfusion.server.base.lifecycle.LifecycleEvent;
+import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.navigator.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
@@ -72,7 +73,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class DBManager extends LogicsManager implements InitializingBean {
     public static final Logger logger = Logger.getLogger(DBManager.class);

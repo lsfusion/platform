@@ -2,7 +2,7 @@ package lsfusion.server.logics.tasks;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.stack.ThrowableWithStack;
+import lsfusion.server.base.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 
 public abstract class GroupSingleSplitTask<T> extends GroupSplitTask<T> {

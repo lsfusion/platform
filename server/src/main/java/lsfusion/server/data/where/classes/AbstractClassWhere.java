@@ -16,7 +16,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.logics.classes.ObjectValueClassSet;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;

@@ -1,9 +1,9 @@
 package lsfusion.server.logics.tasks;
 
 import lsfusion.server.Settings;
-import lsfusion.server.context.Context;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.Context;
+import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import org.antlr.runtime.RecognitionException;
 

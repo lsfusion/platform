@@ -2,9 +2,9 @@ package lsfusion.server.logics.classes;
 
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.caches.IdentityStrongLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.*;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;

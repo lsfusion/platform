@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.CacheStats;
+import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.data.expr.query.Stat;
 
 import java.lang.ref.WeakReference;

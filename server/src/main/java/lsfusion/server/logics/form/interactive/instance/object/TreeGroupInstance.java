@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.instance.object;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderFilterSet;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 
 public class TreeGroupInstance {

@@ -5,7 +5,7 @@ import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.logics.classes.AbstractCustomClass;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;

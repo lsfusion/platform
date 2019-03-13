@@ -23,7 +23,7 @@ import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;

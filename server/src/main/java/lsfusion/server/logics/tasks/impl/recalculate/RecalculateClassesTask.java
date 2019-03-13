@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
-import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.DBManager;

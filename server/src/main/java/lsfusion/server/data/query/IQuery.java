@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.caches.AbstractInnerContext;
+import lsfusion.server.base.caches.AbstractInnerContext;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -19,7 +19,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.ExecutionEnvironment;
-import lsfusion.server.stack.StackMessage;
+import lsfusion.server.base.stack.StackMessage;
 
 import java.sql.SQLException;
 

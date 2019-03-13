@@ -15,7 +15,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.AndClassSet;
@@ -44,7 +44,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.Modifier;
 import lsfusion.server.logics.action.session.PropertyChanges;
-import lsfusion.server.stack.StackProgress;
+import lsfusion.server.base.stack.StackProgress;
 
 import java.sql.SQLException;
 import java.util.HashSet;

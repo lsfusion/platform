@@ -5,7 +5,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;

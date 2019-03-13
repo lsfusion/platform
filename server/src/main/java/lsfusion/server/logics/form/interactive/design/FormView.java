@@ -10,7 +10,7 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.layout.AbstractForm;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
 import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;

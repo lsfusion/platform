@@ -3,7 +3,7 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.caches.IdentityStrongLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;

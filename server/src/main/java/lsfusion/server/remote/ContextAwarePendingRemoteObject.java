@@ -6,12 +6,13 @@ import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.interop.exception.RemoteInternalException;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.base.context.*;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
-import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.base.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;

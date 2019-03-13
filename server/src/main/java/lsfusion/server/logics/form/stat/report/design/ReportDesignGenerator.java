@@ -10,7 +10,7 @@ import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportConstants;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
