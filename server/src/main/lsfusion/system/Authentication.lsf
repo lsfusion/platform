@@ -26,8 +26,7 @@ FORM computers '{authentication.computers}'
 FORM computersDialog '{authentication.computers}'
     OBJECTS c = Computer
     
-    PROPERTIES(c) READONLY hostname
-    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE 
+    PROPERTIES(c) READONLY hostname 
     
     LIST Computer OBJECT c     
 ;
