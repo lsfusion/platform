@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.init;
 
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 import static lsfusion.base.BaseUtils.systemLogger;
 
@@ -34,7 +34,7 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
         return true;
     }
 
-    protected void runTask(Property property) {
+    protected void runTask(ActionOrProperty property) {
 
         final long maxPrereadCachesTime = Settings.get().getMaxPrereadCachesTime();
         long start = System.currentTimeMillis();

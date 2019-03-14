@@ -32,7 +32,7 @@ import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -140,7 +140,7 @@ public class DerivedProperty {
         ImSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
 
         // создаем свойство - перемаппим интерфейсы
-        ImRevMap<T,PropertyInterface> joinMap = usedInterfaces.mapRevValues(Property.genInterface); // строим карту
+        ImRevMap<T,PropertyInterface> joinMap = usedInterfaces.mapRevValues(ActionOrProperty.genInterface); // строим карту
         ImRevMap<PropertyInterface, T> revJoinMap = joinMap.reverse();
         JoinActionProperty<L> joinProperty = new JoinActionProperty<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
                 new ActionPropertyImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));

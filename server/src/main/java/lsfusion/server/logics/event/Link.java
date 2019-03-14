@@ -1,15 +1,15 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class Link extends TwinImmutableObject {
 
-    public final Property from;
-    public final Property to;
+    public final ActionOrProperty from;
+    public final ActionOrProperty to;
     public final LinkType type;
 
-    public Link(Property from, Property to, LinkType type) {
+    public Link(ActionOrProperty from, ActionOrProperty to, LinkType type) {
         this.from = from;
         this.to = to;
         this.type = type;

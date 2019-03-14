@@ -44,7 +44,7 @@ import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
@@ -62,7 +62,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
+public abstract class ActionProperty<P extends PropertyInterface> extends ActionOrProperty<P> {
     //просто для быстрого доступа
     private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
 
@@ -326,11 +326,11 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public abstract CalcPropertyMapImplement<?, P> calcWhereProperty();
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
+    protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
         if(getEvents().isEmpty()) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
             return SetFact.EMPTY();
 
-        MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
+        MCol<Pair<ActionOrProperty<?>, LinkType>> mResult = ListFact.mCol();
         ImMap<CalcProperty, Boolean> used = getUsedExtProps();
         for(int i=0,size=used.size();i<size;i++) {
             CalcProperty<?> property = used.getKey(i);
@@ -339,9 +339,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             // эвристика : усилим связи к session calc, предполагается 
             ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends(events); // в том числе и для событий усилим, хотя может быть определенная избыточность,когда в SessionCalc - другой SessionCalc, но это очень редкие случаи
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
-                mResult.add(new Pair<Property<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
+                mResult.add(new Pair<ActionOrProperty<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
 
-            mResult.add(new Pair<Property<?>, LinkType>(property, rec ? LinkType.RECUSED : LinkType.USEDACTION));
+            mResult.add(new Pair<ActionOrProperty<?>, LinkType>(property, rec ? LinkType.RECUSED : LinkType.USEDACTION));
         }
 
 //        раньше зачем-то было, но зачем непонятно
@@ -350,7 +350,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         ImSet<CalcProperty> depend = getStrongUsed();
         for(int i=0,size=depend.size();i<size;i++) {
             CalcProperty property = depend.get(i);
-            mResult.add(new Pair<Property<?>, LinkType>(property, isRecursiveStrongUsed(property) ? LinkType.GOAFTERREC : LinkType.DEPEND));
+            mResult.add(new Pair<ActionOrProperty<?>, LinkType>(property, isRecursiveStrongUsed(property) ? LinkType.GOAFTERREC : LinkType.DEPEND));
         }
         return mResult.immutableCol();
     }

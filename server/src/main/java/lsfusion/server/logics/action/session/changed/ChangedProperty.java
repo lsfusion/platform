@@ -31,7 +31,7 @@ import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.infer.*;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.ChangedDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
@@ -136,19 +136,19 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
+    protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
         if(property instanceof IsClassProperty) {
             assert events;  // так как при ONLY_DATA IsClassProperty вообще не может попасть в список
             // специально не вызываем super чтобы развернуть связь и смотреть на реальные DROPPED / SET
-            ImCol<Pair<Property<?>, LinkType>> result = getActionChangeProps(); // только у Data и IsClassProperty
+            ImCol<Pair<ActionOrProperty<?>, LinkType>> result = getActionChangeProps(); // только у Data и IsClassProperty
 
             ValueClass interfaceClass = ((IsClassProperty) property).getInterfaceClass();
             if(interfaceClass instanceof CustomClass) {
                 CustomClass customClass = (CustomClass) interfaceClass;
-                MCol<Pair<Property<?>, LinkType>> mParentLinks = ListFact.mCol();
+                MCol<Pair<ActionOrProperty<?>, LinkType>> mParentLinks = ListFact.mCol();
                 for(CustomClass parent : customClass.getParentsIt()) // добавляем очень слабую связь чтобы удаления классов по возможности группами шли
                     if(!parent.disableSingleApply())
-                        mParentLinks.add(new Pair<Property<?>, LinkType>(parent.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope), LinkType.REMOVEDCLASSES));
+                        mParentLinks.add(new Pair<ActionOrProperty<?>, LinkType>(parent.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope), LinkType.REMOVEDCLASSES));
                 result = result.mergeCol(mParentLinks.immutableCol());
             }
             return result;

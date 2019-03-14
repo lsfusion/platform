@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.init;
 
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class FinalizeCalcAbstractTask extends GroupPropertiesTask {
 
@@ -9,7 +9,7 @@ public class FinalizeCalcAbstractTask extends GroupPropertiesTask {
         return "Initializing abstract properties";
     }
 
-    protected void runTask(Property property) {
+    protected void runTask(ActionOrProperty property) {
         if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract()) {
             property.finalizeInit();
         }

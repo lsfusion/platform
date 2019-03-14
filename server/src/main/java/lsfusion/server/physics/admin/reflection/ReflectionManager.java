@@ -31,7 +31,7 @@ import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.integration.service.*;
 import lsfusion.server.physics.exec.DBManager;
@@ -477,7 +477,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         }
     }
 
-    private boolean needsToBeSynchronized(Property property) {
+    private boolean needsToBeSynchronized(ActionOrProperty property) {
         return property.isNamed() && (property instanceof ActionProperty || !((CalcProperty)property).isEmpty(AlgType.syncType));
     }
 
@@ -508,7 +508,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         try {
             List<List<Object>> dataProperty = new ArrayList<>();
-            for (Property property : businessLogics.getOrderProperties()) {
+            for (ActionOrProperty property : businessLogics.getOrderProperties()) {
                 if (needsToBeSynchronized(property)) {
                     if((property instanceof ActionProperty) != actions)
                         continue;
@@ -590,7 +590,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
 
         List<List<Object>> dataParent = new ArrayList<>();
-        for (Property property : businessLogics.getOrderProperties()) {
+        for (ActionOrProperty property : businessLogics.getOrderProperties()) {
             if (needsToBeSynchronized(property)) {
                 if((property instanceof ActionProperty) != actions)
                     continue;
@@ -684,11 +684,11 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         AbstractGroup nodeParent = abstractNode.getParent();
         int counter = 0;
         for (AbstractNode node : nodeParent.getChildrenIt()) {
-            if(abstractNode instanceof Property && counter > 20)  // оптимизация
-                return nodeParent.getIndexedPropChildren().get((Property) abstractNode);
+            if(abstractNode instanceof ActionOrProperty && counter > 20)  // оптимизация
+                return nodeParent.getIndexedPropChildren().get((ActionOrProperty) abstractNode);
             counter++;
-            if (abstractNode instanceof Property) {
-                if (node instanceof Property)
+            if (abstractNode instanceof ActionOrProperty) {
+                if (node instanceof ActionOrProperty)
                     if (node == abstractNode) {
                         return counter;
                     }

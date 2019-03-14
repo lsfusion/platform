@@ -39,7 +39,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
@@ -298,7 +298,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     
     private boolean checkPermission(ActionProperty editAction, String editActionSID, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
-        Property securityProperty;
+        ActionOrProperty securityProperty;
         if (isEdit(editActionSID) && !editAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
                 return false;
@@ -656,16 +656,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // presentation info, probably should be merged with inheritDrawOptions mechanism
-    public Property getInheritedProperty() {
+    public ActionOrProperty getInheritedProperty() {
         return propertyObject.property;
     }
 
-    public Property getSecurityProperty() {
+    public ActionOrProperty getSecurityProperty() {
         return getInheritedProperty();
     }
 
     // for debug purposes
-    public Property getDebugBindingProperty() {
+    public ActionOrProperty getDebugBindingProperty() {
         return getInheritedProperty();
     }
     public PropertyObjectEntity getDebugProperty() {

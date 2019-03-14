@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.id.resolve;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 import java.util.List;
 
@@ -15,5 +15,5 @@ public abstract class ModuleAbstractLPFinder<L extends LP<?, ?>> extends ModuleP
                 SignatureMatcher.isCompatible(module.getParamClasses(property), signature, false, false);
     }
 
-    protected abstract boolean isAbstract(Property property);
+    protected abstract boolean isAbstract(ActionOrProperty property);
 }

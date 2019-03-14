@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.init;
 
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class CheckAbstractTask extends GroupPropertiesTask {
 
@@ -9,7 +9,7 @@ public class CheckAbstractTask extends GroupPropertiesTask {
         return "Checking abstract";
     }
 
-    protected void runTask(Property property) {
+    protected void runTask(ActionOrProperty property) {
         if (property instanceof CaseUnionProperty) {
 //            ((CaseUnionProperty) property).checkAbstract();
         }

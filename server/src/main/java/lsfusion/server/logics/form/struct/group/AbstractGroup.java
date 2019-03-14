@@ -18,7 +18,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 
@@ -82,13 +82,13 @@ public class AbstractGroup extends AbstractNode {
     }
 
     @IdentityStartLazy
-    public ImMap<Property, Integer> getIndexedPropChildren() { // оптимизация
-        MExclMap<Property, Integer> mResult = MapFact.mExclMap();
+    public ImMap<ActionOrProperty, Integer> getIndexedPropChildren() { // оптимизация
+        MExclMap<ActionOrProperty, Integer> mResult = MapFact.mExclMap();
         int count = 0;
         for (AbstractNode child : getChildrenListIt()) {
             count++;
-            if (child instanceof Property) {
-                mResult.exclAdd((Property) child, count);
+            if (child instanceof ActionOrProperty) {
+                mResult.exclAdd((ActionOrProperty) child, count);
             }
         }
         return mResult.immutable();
@@ -99,7 +99,7 @@ public class AbstractGroup extends AbstractNode {
         prop.parent.set(null, version);
     }
 
-    public boolean hasChild(Property prop) {
+    public boolean hasChild(ActionOrProperty prop) {
         for (AbstractNode child : getChildrenIt()) {
             if (child.hasChild(prop)) {
                 return true;
@@ -108,7 +108,7 @@ public class AbstractGroup extends AbstractNode {
         return false;
     }
 
-    public boolean hasNFChild(Property prop, Version version) {
+    public boolean hasNFChild(ActionOrProperty prop, Version version) {
         for (AbstractNode child : getNFChildrenIt(version)) {
             if (child.hasNFChild(prop, version)) {
                 return true;
@@ -117,8 +117,8 @@ public class AbstractGroup extends AbstractNode {
         return false;
     }
 
-    public ImOrderSet<Property> getProperties() {
-        MOrderSet<Property> result = SetFact.mOrderSet();
+    public ImOrderSet<ActionOrProperty> getProperties() {
+        MOrderSet<ActionOrProperty> result = SetFact.mOrderSet();
         for (AbstractNode child : getChildrenListIt()) {
             result.addAll(child.getProperties());
         }

@@ -8,7 +8,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 
@@ -22,11 +22,11 @@ public abstract class AbstractNode extends ImmutableObject {
         parent.finalizeChanges();
     }
 
-    public abstract boolean hasChild(Property prop);
+    public abstract boolean hasChild(ActionOrProperty prop);
 
-    public abstract boolean hasNFChild(Property prop, Version version);
+    public abstract boolean hasNFChild(ActionOrProperty prop, Version version);
 
-    public abstract ImOrderSet<Property> getProperties();
+    public abstract ImOrderSet<ActionOrProperty> getProperties();
     
     protected abstract ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version);
     

@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.init;
 import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 
 public class MarkRecursionsTask extends GroupPropertiesTask {
@@ -12,7 +12,7 @@ public class MarkRecursionsTask extends GroupPropertiesTask {
         return "Looking for recursions in abstract actions / properties";
     }
 
-    protected void runTask(Property property) {
+    protected void runTask(ActionOrProperty property) {
         if (property instanceof ActionProperty) {
             if (property instanceof ListCaseActionProperty && ((ListCaseActionProperty) property).isAbstract()) {
                 ((ListCaseActionProperty) property).markRecursions();

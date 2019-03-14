@@ -39,7 +39,7 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
@@ -348,7 +348,7 @@ public class ScriptingFormEntity {
                     objects = SetFact.singletonOrder(obj);
                 }
             }
-            Result<Pair<Property, String>> inherited = new Result<>();
+            Result<Pair<ActionOrProperty, String>> inherited = new Result<>();
             if(property == null) {
                 MappedProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, inherited);
                 checkPropertyParameters(prop.property, prop.mapping);

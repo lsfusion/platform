@@ -68,7 +68,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
@@ -171,7 +171,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         super(LOGICS_ORDER);
     }
 
-    public static int compareChangeExtProps(Property p1, Property p2) {
+    public static int compareChangeExtProps(ActionOrProperty p1, ActionOrProperty p2) {
         // если p1 не DataProperty
         String c1 = p1.getChangeExtSID();
         String c2 = p2.getChangeExtSID();
@@ -192,7 +192,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return compareDeepProps(p1, p2);
     }
 
-    public static int compareDeepProps(Property p1, Property p2) {
+    public static int compareDeepProps(ActionOrProperty p1, ActionOrProperty p2) {
 //           return Integer.compare(p1.hashCode(), p2.hashCode());
 
         String className1 = p1.getClass().getName(); 
@@ -700,7 +700,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @NFLazy
-    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property, boolean actions) {
+    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, ActionOrProperty property, boolean actions) {
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
             
@@ -733,17 +733,17 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         securityManager.initSecret();
     }
 
-    public ImOrderSet<Property> getOrderProperties() {
+    public ImOrderSet<ActionOrProperty> getOrderProperties() {
         return LM.getRootGroup().getProperties();
     }
 
-    public ImSet<Property> getProperties() {
+    public ImSet<ActionOrProperty> getProperties() {
         return getOrderProperties().getSet();
     }
 
     public ImOrderSet<CalcProperty> getCalcOrderProperties() {
-        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<Property>() {
-            public boolean contains(Property element) {
+        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
+            public boolean contains(ActionOrProperty element) {
                 return element instanceof CalcProperty;
             }
         }));
@@ -754,8 +754,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImOrderSet<ActionProperty> getActionOrderProperties() {
-        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<Property>() {
-            public boolean contains(Property element) {
+        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
+            public boolean contains(ActionOrProperty element) {
                 return element instanceof ActionProperty;
             }
         }));
@@ -918,7 +918,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return LM.getRootGroup().getChildGroups();
     }
 
-    public ImOrderSet<Property> getPropertyList() {
+    public ImOrderSet<ActionOrProperty> getPropertyList() {
         return getPropertyListWithGraph(ApplyFilter.NO).first;
     }
 
@@ -943,7 +943,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     // находит свойство входящее в "верхнюю" сильносвязную компоненту
-    private static HSet<Link> buildOrder(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, ImSet<Link> removedLinks, boolean include, ImSet<Property> component, boolean events, boolean recursive, boolean checkNotRecursive) {
+    private static HSet<Link> buildOrder(ActionOrProperty<?> property, MAddMap<ActionOrProperty, HSet<Link>> linksMap, List<ActionOrProperty> order, ImSet<Link> removedLinks, boolean include, ImSet<ActionOrProperty> component, boolean events, boolean recursive, boolean checkNotRecursive) {
         HSet<Link> linksIn = linksMap.get(property);
         if (linksIn == null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
             assert !(recursive && checkNotRecursive);
@@ -962,8 +962,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return linksIn;
     }
 
-    public final static Comparator<Property> actionOrPropComparator = new Comparator<Property>() {
-        public int compare(Property o1, Property o2) {
+    public final static Comparator<ActionOrProperty> actionOrPropComparator = new Comparator<ActionOrProperty>() {
+        public int compare(ActionOrProperty o1, ActionOrProperty o2) {
             if(o1 == o2)
                 return 0;
 
@@ -1001,7 +1001,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     };
 
 
-    private static int compare(LinkType aType, Property aProp, LinkType bType, Property bProp) {
+    private static int compare(LinkType aType, ActionOrProperty aProp, LinkType bType, ActionOrProperty bProp) {
         int compare = Integer.compare(aType.getNum(), bType.getNum());
         if(compare != 0) // меньше тот у кого связь слабее (num больше)
             return -compare;
@@ -1009,11 +1009,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return actionOrPropComparator.compare(aProp, bProp);
     }
     // ищем вершину в компоненту (нужно для детерминированности, иначе можно было бы с findMinCycle совместить) - вершину с самыми слабыми исходящими связями (эвристика, потом возможно надо все же объединить все с findMinCycle и искать минимальный цикл с минимальным вырезаемым типом ребра)
-    private static Property<?> findMinProperty(HMap<Property, LinkType> component) {
-        Property minProp = null;
+    private static ActionOrProperty<?> findMinProperty(HMap<ActionOrProperty, LinkType> component) {
+        ActionOrProperty minProp = null;
         LinkType minLinkType = null; 
         for (int i = 0; i < component.size; i++) {
-            Property prop = component.getKey(i);
+            ActionOrProperty prop = component.getKey(i);
             LinkType linkType = component.getValue(i);
             if(minProp == null || compare(minLinkType, minProp, linkType, prop) > 0) {
                 minProp = prop;
@@ -1024,7 +1024,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
     
     // ищем компоненту (нужно для детерминированности, иначе можно было бы с findMinCycle совместить)
-    private static void findComponent(Property<?> property, LinkType linkType, MAddMap<Property, HSet<Link>> linksMap, HSet<Property> proceeded, HMap<Property, LinkType> component) {
+    private static void findComponent(ActionOrProperty<?> property, LinkType linkType, MAddMap<ActionOrProperty, HSet<Link>> linksMap, HSet<ActionOrProperty> proceeded, HMap<ActionOrProperty, LinkType> component) {
         boolean checked = component.containsKey(property);
         component.add(property, linkType);
         if (checked)
@@ -1061,9 +1061,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return 0;
     }
 
-    private static List<Link> findMinCycle(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, ImSet<Property> component) {
+    private static List<Link> findMinCycle(ActionOrProperty<?> property, MAddMap<ActionOrProperty, HSet<Link>> linksMap, ImSet<ActionOrProperty> component) {
         // поиск в ширину
-        HSet<Property> inQueue = new HSet<>();
+        HSet<ActionOrProperty> inQueue = new HSet<>();
         Link[] queue = new Link[component.size()];
         Integer[] from = new Integer[component.size()];
         int left = -1; int right = 0;
@@ -1071,7 +1071,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         List<Link> minCycle = null;
 
         while(true) {
-            Property current = left >= 0 ? queue[left].from : property;
+            ActionOrProperty current = left >= 0 ? queue[left].from : property;
             HSet<Link> linksIn = linksMap.get(current);
             for (int i = 0; i < linksIn.size; i++) {
                 Link link = linksIn.get(i);
@@ -1140,26 +1140,26 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean events, DebugInfoWriter debugInfoWriter) {
-        HSet<Property> proceeded;
+    private static HSet<ActionOrProperty> buildList(HSet<ActionOrProperty> props, HSet<ActionOrProperty> exclude, HSet<Link> removedLinks, MOrderExclSet<ActionOrProperty> mResult, boolean events, DebugInfoWriter debugInfoWriter) {
+        HSet<ActionOrProperty> proceeded;
 
-        List<Property> order = new ArrayList<>();
-        MAddMap<Property, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
+        List<ActionOrProperty> order = new ArrayList<>();
+        MAddMap<ActionOrProperty, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
         for (int i = 0, size = props.size(); i < size ; i++) {
-            Property property = props.get(i);
+            ActionOrProperty property = props.get(i);
             if (linksMap.get(property) == null) // проверка что не было
                 buildOrder(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, events, false, false);
         }
 
         proceeded = new HSet<>();
         for (int i = 0; i < order.size(); i++) { // тут нужн
-            Property orderProperty = order.get(order.size() - 1 - i);
+            ActionOrProperty orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
-                HMap<Property, LinkType> innerComponentOutTypes = new HMap<>(LinkType.<Property>minLinkAdd());                
+                HMap<ActionOrProperty, LinkType> innerComponentOutTypes = new HMap<>(LinkType.<ActionOrProperty>minLinkAdd());                
                 findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
 
-                Property minProperty = findMinProperty(innerComponentOutTypes);
-                HSet<Property> innerComponent = innerComponentOutTypes.keys();
+                ActionOrProperty minProperty = findMinProperty(innerComponentOutTypes);
+                HSet<ActionOrProperty> innerComponent = innerComponentOutTypes.keys();
                         
                 assert innerComponent.size() > 0;
                 if (innerComponent.size() == 1) { // если цикла нет все ОК
@@ -1187,12 +1187,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
 //                    printCycle("Features", minLink, innerComponent, minCycle);
                     if (minLink.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
-                        MOrderExclSet<Property> mCycle = SetFact.mOrderExclSet();
+                        MOrderExclSet<ActionOrProperty> mCycle = SetFact.mOrderExclSet();
                         buildList(innerComponent, null, removedLinks, mCycle, events, pushDebugInfoWriter);
-                        ImOrderSet<Property> cycle = mCycle.immutableOrder();
+                        ImOrderSet<ActionOrProperty> cycle = mCycle.immutableOrder();
 
                         String print = "";
-                        for (Property property : cycle)
+                        for (ActionOrProperty property : cycle)
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
                         throw new RuntimeException(ThreadLocalContext.localize("{message.cycle.detected}") + " : " + print + " -> " + minLink.to);
                     }
@@ -1205,11 +1205,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return proceeded;
     }
 
-    private static void printCycle(String property, Link minLink, ImSet<Property> innerComponent, List<Link> minCycle) {
+    private static void printCycle(String property, Link minLink, ImSet<ActionOrProperty> innerComponent, List<Link> minCycle) {
 
         int showCycle = 0;
 
-        for(Property prop : innerComponent) {
+        for(ActionOrProperty prop : innerComponent) {
             if(prop.toString().contains(property))
                 showCycle = 1;
         }
@@ -1228,7 +1228,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    private static boolean findDependency(Property<?> property, Property<?> with, HSet<Property> proceeded, Stack<Link> path, LinkType desiredType) {
+    private static boolean findDependency(ActionOrProperty<?> property, ActionOrProperty<?> with, HSet<ActionOrProperty> proceeded, Stack<Link> path, LinkType desiredType) {
         if (property.equals(with))
             return true;
 
@@ -1263,7 +1263,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return false;
     }
 
-    private static String outDependency(String direction, Property property, Stack<Link> path) {
+    private static String outDependency(String direction, ActionOrProperty property, Stack<Link> path) {
         String result = direction + " : " + property;
         for (Link link : path)
             result += " " + link.type + " " + link.to;
@@ -1277,7 +1277,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    private static Property checkJoinProperty(Property<?> property) {
+    private static ActionOrProperty checkJoinProperty(ActionOrProperty<?> property) {
         if(property instanceof JoinProperty) {
             JoinProperty joinProperty = (JoinProperty) property;
             if(joinProperty.isIdentity()) {
@@ -1286,7 +1286,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
         return property;
     }
-    private static String findDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
+    private static String findDependency(ActionOrProperty<?> property1, ActionOrProperty<?> property2, LinkType desiredType) {
         property1 = checkJoinProperty(property1);
         property2 = checkJoinProperty(property2);
 
@@ -1297,15 +1297,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    private static String findEventDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
+    private static String findEventDependency(ActionOrProperty<?> property1, ActionOrProperty<?> property2, LinkType desiredType) {
         String result = "";
 
         Stack<Link> forward = new Stack<>();
-        if (findDependency(property1, property2, new HSet<Property>(), forward, desiredType))
+        if (findDependency(property1, property2, new HSet<ActionOrProperty>(), forward, desiredType))
             result += outDependency("FORWARD (" + forward.size() + ")", property1, forward) + '\n';
 
         Stack<Link> backward = new Stack<>();
-        if (findDependency(property2, property1, new HSet<Property>(), backward, desiredType))
+        if (findDependency(property2, property1, new HSet<ActionOrProperty>(), backward, desiredType))
             result += outDependency("BACKWARD (" + backward.size() + ")", property2, backward) + '\n';
 
         if (result.isEmpty())
@@ -1335,7 +1335,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         boolean found = false; // оптимизация, так как showDep не так часто используется
 
-        for (Property property : getOrderProperties())
+        for (ActionOrProperty property : getOrderProperties())
             if (property.showDep != null) {
                 if(!found) {
                     fillActionChangeProps();
@@ -1353,8 +1353,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public Graph<ActionProperty> getRecalculateFollowsGraph() {
-        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
-            public boolean contains(Property element) {
+        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<ActionOrProperty>() {
+            public boolean contains(ActionOrProperty element) {
                 return element instanceof ActionProperty && ((ActionProperty) element).hasResolve();
             }
         }));
@@ -1362,8 +1362,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public Graph<AggregateProperty> getAggregateStoredGraph() {
-        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
-            public boolean contains(Property element) {
+        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<ActionOrProperty>() {
+            public boolean contains(ActionOrProperty element) {
                 return element instanceof AggregateProperty && ((AggregateProperty) element).isStored();
             }
         }));
@@ -1390,12 +1390,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         });
     }
 
-    public Graph<Property> getPropertyGraph() {
+    public Graph<ActionOrProperty> getPropertyGraph() {
         return getPropertyListWithGraph(ApplyFilter.NO).second;
     }
 
     @IdentityStrongLazy // глобальное очень сложное вычисление
-    public Pair<ImOrderSet<Property>, Graph<Property>> getPropertyListWithGraph(ApplyFilter filter) {
+    public Pair<ImOrderSet<ActionOrProperty>, Graph<ActionOrProperty>> getPropertyListWithGraph(ApplyFilter filter) {
         return calcPropertyListWithGraph(filter, null);
     }
     public void printPropertyList(String path) throws IOException {
@@ -1405,15 +1405,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             out.println(debugInfo.getString());
         }
     }
-    public Pair<ImOrderSet<Property>, Graph<Property>> calcPropertyListWithGraph(ApplyFilter filter, DebugInfoWriter debugInfoWriter) {
+    public Pair<ImOrderSet<ActionOrProperty>, Graph<ActionOrProperty>> calcPropertyListWithGraph(ApplyFilter filter, DebugInfoWriter debugInfoWriter) {
         // жестковато тут конечно написано, но пока не сильно времени жрет
 
         fillActionChangeProps();
 
         // сначала бежим по Action'ам с cancel'ами
-        HSet<Property> cancelActions = new HSet<>();
-        HSet<Property> rest = new HSet<>();
-        for (Property property : getOrderProperties())
+        HSet<ActionOrProperty> cancelActions = new HSet<>();
+        HSet<ActionOrProperty> rest = new HSet<>();
+        for (ActionOrProperty property : getOrderProperties())
             if(filter.contains(property)) {
                 if (ApplyFilter.isCheck(property))
                     cancelActions.add(property);
@@ -1422,29 +1422,29 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             }
         boolean events = filter != ApplyFilter.ONLY_DATA;
 
-        MOrderExclSet<Property> mCancelResult = SetFact.mOrderExclSet();
+        MOrderExclSet<ActionOrProperty> mCancelResult = SetFact.mOrderExclSet();
         HSet<Link> firstRemoved = new HSet<>();
-        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), firstRemoved, mCancelResult, events, DebugInfoWriter.pushPrefix(debugInfoWriter, "CANCELABLE"));
-        ImOrderSet<Property> cancelResult = mCancelResult.immutableOrder();
+        HSet<ActionOrProperty> proceeded = buildList(cancelActions, new HSet<ActionOrProperty>(), firstRemoved, mCancelResult, events, DebugInfoWriter.pushPrefix(debugInfoWriter, "CANCELABLE"));
+        ImOrderSet<ActionOrProperty> cancelResult = mCancelResult.immutableOrder();
 
         // потом бежим по всем остальным, за исключением proceeded
-        MOrderExclSet<Property> mRestResult = SetFact.mOrderExclSet();
-        HSet<Property> removed = new HSet<>();
+        MOrderExclSet<ActionOrProperty> mRestResult = SetFact.mOrderExclSet();
+        HSet<ActionOrProperty> removed = new HSet<>();
         removed.addAll(rest.remove(proceeded));
         HSet<Link> secondRemoved = new HSet<>();
         buildList(removed, proceeded, secondRemoved, mRestResult, events, DebugInfoWriter.pushPrefix(debugInfoWriter, "REST")); // потом этот cast уберем
-        ImOrderSet<Property> restResult = mRestResult.immutableOrder();
+        ImOrderSet<ActionOrProperty> restResult = mRestResult.immutableOrder();
 
         // затем по всем кроме proceeded на прошлом шаге
         assert cancelResult.getSet().disjoint(restResult.getSet());
-        ImOrderSet<Property> result = cancelResult.reverseOrder().addOrderExcl(restResult.reverseOrder());
+        ImOrderSet<ActionOrProperty> result = cancelResult.reverseOrder().addOrderExcl(restResult.reverseOrder());
 
-        Graph<Property> graph = null;
+        Graph<ActionOrProperty> graph = null;
         if(filter == ApplyFilter.NO) {
             graph = buildGraph(result, firstRemoved.addExcl(secondRemoved));
         }
 
-        for(Property property : result) {
+        for(ActionOrProperty property : result) {
             property.dropLinks();
             if(property instanceof CalcProperty)
                 ((CalcProperty)property).dropActionChangeProps();
@@ -1452,20 +1452,20 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return new Pair<>(result, graph);
     }
 
-    private static Graph<Property> buildGraph(ImOrderSet<Property> props, ImSet<Link> removedLinks) {
-        MAddMap<Property, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
+    private static Graph<ActionOrProperty> buildGraph(ImOrderSet<ActionOrProperty> props, ImSet<Link> removedLinks) {
+        MAddMap<ActionOrProperty, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
         for (int i = 0, size = props.size(); i < size; i++) {
-            Property property = props.get(i);
+            ActionOrProperty property = props.get(i);
             if (linksMap.get(property) == null) // проверка что не было
                 buildOrder(property, linksMap, null, removedLinks, true, props.getSet(), true, false, true);
         }
 
-        MExclMap<Property, ImSet<Property>> mEdgesIn = MapFact.mExclMap(linksMap.size());
+        MExclMap<ActionOrProperty, ImSet<ActionOrProperty>> mEdgesIn = MapFact.mExclMap(linksMap.size());
         for(int i=0,size=linksMap.size();i<size;i++) {
-            final Property property = linksMap.getKey(i);
+            final ActionOrProperty property = linksMap.getKey(i);
             HSet<Link> links = linksMap.getValue(i);
-            mEdgesIn.exclAdd(property, links.mapSetValues(new GetValue<Property, Link>() {
-                public Property getMapValue(Link value) {
+            mEdgesIn.exclAdd(property, links.mapSetValues(new GetValue<ActionOrProperty, Link>() {
+                public ActionOrProperty getMapValue(Link value) {
                     assert BaseUtils.hashEquals(value.to, property);
                     return value.from;
                 }
@@ -1509,8 +1509,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImOrderSet<CalcProperty> getStoredProperties() {
-        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
-            public boolean contains(Property property) {
+        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<ActionOrProperty>() {
+            public boolean contains(ActionOrProperty property) {
                 return property instanceof CalcProperty && ((CalcProperty) property).isStored();
             }
         }));
@@ -1530,10 +1530,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImOrderMap<ActionProperty, SessionEnvEvent> getSessionEvents() {
-        ImOrderSet<Property> list = getPropertyList();
+        ImOrderSet<ActionOrProperty> list = getPropertyList();
         MOrderExclMap<ActionProperty, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         SessionEnvEvent sessionEnv;
-        for (Property property : list)
+        for (ActionOrProperty property : list)
             if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.SESSION))!=null)
                 mResult.exclAdd((ActionProperty) property, sessionEnv);
         return mResult.immutableOrder();
@@ -1541,10 +1541,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImSet<CalcProperty> getDataChangeEvents() {
-        ImOrderSet<Property> propertyList = getPropertyList();
+        ImOrderSet<ActionOrProperty> propertyList = getPropertyList();
         MSet<CalcProperty> mResult = SetFact.mSetMax(propertyList.size());
         for (int i=0,size=propertyList.size();i<size;i++) {
-            Property property = propertyList.get(i);
+            ActionOrProperty property = propertyList.get(i);
             if (property instanceof DataProperty && ((DataProperty) property).event != null)
                 mResult.add((((DataProperty) property).event).getWhere());
         }
@@ -1554,9 +1554,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @IdentityLazy
     public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter increment) {
         // здесь нужно вернуть список stored или тех кто
-        ImOrderSet<Property> list = getPropertyListWithGraph(increment).first;
+        ImOrderSet<ActionOrProperty> list = getPropertyListWithGraph(increment).first;
         MOrderExclMap<ApplyGlobalEvent, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
-        for (Property property : list) {
+        for (ActionOrProperty property : list) {
             ApplyGlobalEvent applyEvent = property.getApplyEvent();
             if(applyEvent != null)
                 mResult.exclAdd(applyEvent, applyEvent.getSessionEnv());
@@ -1656,7 +1656,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @IdentityLazy
     public List<CalcProperty> getCheckConstrainedProperties() {
         List<CalcProperty> result = new ArrayList<>();
-        for (Property property : getPropertyList()) {
+        for (ActionOrProperty property : getPropertyList()) {
             if (property instanceof CalcProperty && ((CalcProperty) property).checkChange != CalcProperty.CheckType.CHECK_NO) {
                 result.add((CalcProperty) property);
             }
@@ -1703,7 +1703,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction, final ExecutionStack stack) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        for (Property property : getPropertyList())
+        for (ActionOrProperty property : getPropertyList())
             if (property instanceof ActionProperty) {
                 final ActionProperty<?> action = (ActionProperty) property;
                 if (action.hasResolve()) {

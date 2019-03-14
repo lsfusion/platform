@@ -40,7 +40,7 @@ import lsfusion.server.logics.form.struct.property.*;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.env.IsDebugFormulaProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.data.ObjectValue;
@@ -583,7 +583,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return result;
     }
 
-    public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
+    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
         PropertyObjectEntity<I, ?> entity = PropertyObjectEntity.create(property, mapping, null, null);
         return addPropertyDraw(entity, null, entity.property.getReflectionOrderInterfaces(), version);
     }
@@ -594,7 +594,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);
         return addPropertyDraw(propertyImplement, formPath, propertySID, null, version);
     }
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(PropertyObjectEntity<P, ?> propertyImplement, String formPath, String propertySID, Property inheritedProperty, Version version) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(PropertyObjectEntity<P, ?> propertyImplement, String formPath, String propertySID, ActionOrProperty inheritedProperty, Version version) {
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement);
 
         if(inheritedProperty == null)

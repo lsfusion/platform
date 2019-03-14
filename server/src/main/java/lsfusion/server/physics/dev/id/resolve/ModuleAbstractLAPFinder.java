@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.id.resolve;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.action.ActionProperty;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 
 public class ModuleAbstractLAPFinder extends ModuleAbstractLPFinder<LAP<?>> {
@@ -13,7 +13,7 @@ public class ModuleAbstractLAPFinder extends ModuleAbstractLPFinder<LAP<?>> {
     }    
 
     @Override
-    protected boolean isAbstract(Property property) {
+    protected boolean isAbstract(ActionOrProperty property) {
         assert property instanceof ActionProperty;
         return property instanceof ListCaseActionProperty && ((ListCaseActionProperty) property).isAbstract();
     }

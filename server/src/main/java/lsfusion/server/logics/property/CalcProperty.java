@@ -71,7 +71,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.derived.ChangeProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.infer.*;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -102,7 +102,7 @@ import java.util.concurrent.Callable;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
+public abstract class CalcProperty<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
 
     public static Modifier defaultModifier = new Modifier() {
         public PropertyChanges getPropertyChanges() {
@@ -789,15 +789,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return mResult.immutable();
     }
 
-    private MCol<Pair<Property<?>, LinkType>> actionChangeProps; // только у Data и IsClassProperty, чисто для лексикографики
-    public <T extends PropertyInterface> void addActionChangeProp(Pair<Property<T>, LinkType> pair) {
+    private MCol<Pair<ActionOrProperty<?>, LinkType>> actionChangeProps; // только у Data и IsClassProperty, чисто для лексикографики
+    public <T extends PropertyInterface> void addActionChangeProp(Pair<ActionOrProperty<T>, LinkType> pair) {
         ((ActionProperty<?>) pair.first).checkRecursiveStrongUsed(this);
 
         if(actionChangeProps==null)
             actionChangeProps = ListFact.mCol();
-        actionChangeProps.add(BaseUtils.<Pair<Property<?>, LinkType>>immutableCast(pair));
+        actionChangeProps.add(BaseUtils.<Pair<ActionOrProperty<?>, LinkType>>immutableCast(pair));
     }
-    public ImCol<Pair<Property<?>, LinkType>> getActionChangeProps() {
+    public ImCol<Pair<ActionOrProperty<?>, LinkType>> getActionChangeProps() {
         if(actionChangeProps!=null)
             return actionChangeProps.immutableCol();
 
@@ -807,11 +807,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         actionChangeProps = null;
     }
 
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
-        MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
+    protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
+        MCol<Pair<ActionOrProperty<?>, LinkType>> mResult = ListFact.mCol();
 
         for(CalcProperty depend : getDepends(events))
-            mResult.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+            mResult.add(new Pair<ActionOrProperty<?>, LinkType>(depend, LinkType.DEPEND));
 
         return mResult.immutableCol();
     }
@@ -1238,7 +1238,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new ClassWhere<>(ResolveUpClassSet.toAnd(MapFact.<Object, ResolveClassSet>addExcl(ExClassSet.fromEx(inferred), "value", ExClassSet.fromEx(valueCommonClass))).removeNulls());
     }
 
-    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, Property property, Checker<ExClassSet> checker) {
+    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, ActionOrProperty property, Checker<ExClassSet> checker) {
         assert inferType != InferType.RESOLVE;
         return getExplicitCalcInterfaces(interfaces, (inferType == InferType.PREVBASE && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, property, checker);
     }

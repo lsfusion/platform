@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.integration.exporting.StaticExportData;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.FormDataManager;
@@ -24,7 +24,7 @@ import java.sql.SQLException;
 public abstract class ExportActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormIntegrationType> {
     protected final String charset;
 
-    public ExportActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, String charset, Property... extraProps) {
+    public ExportActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, String charset, ActionOrProperty... extraProps) {
         super(caption, form, objectsToSet, nulls, staticType, null, extraProps);
         this.charset = charset;
     }
