@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.data.Value;
+import lsfusion.server.data.expr.ParamExpr;
 
 // только с интерфейсом хэширования, нужен в группировках на "стыке" внешнего и внутреннего контекста 
 public interface InnerHashContext {

@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.ArrayInstancer;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.hash.HashContext;

@@ -3,7 +3,7 @@ package lsfusion.server.logics.remote;
 import com.google.common.io.Resources;
 import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.base.remote.RMIManager;

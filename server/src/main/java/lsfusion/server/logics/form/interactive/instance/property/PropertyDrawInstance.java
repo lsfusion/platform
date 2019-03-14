@@ -19,7 +19,7 @@ import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
 

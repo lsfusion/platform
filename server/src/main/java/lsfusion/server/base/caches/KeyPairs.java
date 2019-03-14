@@ -4,7 +4,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.comb.GroupPairs;
 import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.server.Settings;
+import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.physics.admin.Settings;
 
 public class KeyPairs extends GroupPairs<GlobalObject, ParamExpr, ImRevMap<ParamExpr, ParamExpr>> {
 

@@ -2,7 +2,7 @@ package lsfusion.server.base.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.remote.RMIUtils;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.BusinessLogics;

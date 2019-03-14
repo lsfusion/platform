@@ -1,6 +1,6 @@
 package lsfusion.server.base.remote.ui;
 
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.stack.ExecutionStackAspect;
 import lsfusion.server.base.stack.ThrowableWithStack;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;

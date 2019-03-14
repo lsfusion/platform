@@ -20,6 +20,7 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
+import lsfusion.server.data.pack.Pack;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.*;

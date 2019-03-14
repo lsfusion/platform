@@ -45,7 +45,7 @@ public class ScriptedStringUtils {
         return b.toString();
     }
 
-    static String transformLocalizedStringLiteralToSourceString(String s) throws TransformationError {
+    public static String transformLocalizedStringLiteralToSourceString(String s) throws TransformationError {
         if (s == null) {
             return null;
         }

@@ -3,7 +3,7 @@ package lsfusion.server.data;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.CompiledQuery;
 import lsfusion.server.data.query.IQuery;

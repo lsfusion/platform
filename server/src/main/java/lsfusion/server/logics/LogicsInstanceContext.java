@@ -14,8 +14,8 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.physics.admin.logging.LogInfo;
-import lsfusion.server.physics.admin.authentication.SecurityManager;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.SecurityManager;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import java.sql.SQLException;
 import java.util.Locale;
 
-import static lsfusion.server.ServerLoggers.systemLogger;
+import static lsfusion.server.physics.admin.logging.ServerLoggers.systemLogger;
 
 public class LogicsInstanceContext extends AbstractContext {
     private static final Logger logger = Logger.getLogger(LogicsInstanceContext.class);

@@ -16,7 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.StaticParamNullableExpr;

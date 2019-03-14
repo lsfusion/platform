@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.OuterContext;
-import lsfusion.server.base.caches.ParamExpr;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;

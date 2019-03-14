@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.service;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;

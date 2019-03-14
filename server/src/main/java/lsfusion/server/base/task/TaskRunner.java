@@ -1,7 +1,7 @@
 package lsfusion.server.base.task;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.base.stack.NestedThreadException;

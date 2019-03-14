@@ -11,7 +11,7 @@
 
     <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" system-properties-mode="OVERRIDE"/>
 
-    <bean id="settings" class="lsfusion.server.Settings">
+    <bean id="settings" class="lsfusion.server.physics.admin.Settings">
         <property name="properties">
             <map>
                 <entry key="innerGroupExprs" value="${settings.innerGroupExprs:}"/>
@@ -186,7 +186,7 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="securityManager" class="lsfusion.server.physics.admin.authentication.SecurityManager">
+    <bean id="securityManager" class="lsfusion.server.physics.admin.authentication.security.SecurityManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="initialAdminPassword" value="${logics.initialAdminPassword:#{null}}"/>
@@ -406,7 +406,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="setupPropertyPolicyFormsTask" class="lsfusion.server.physics.admin.authentication.policy.init.SetupPropertyPolicyFormsTask">
+    <bean id="setupPropertyPolicyFormsTask" class="lsfusion.server.physics.admin.authentication.security.policy.init.SetupPropertyPolicyFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -415,7 +415,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="setupActionPolicyFormsTask" class="lsfusion.server.physics.admin.authentication.policy.init.SetupActionPolicyFormsTask">
+    <bean id="setupActionPolicyFormsTask" class="lsfusion.server.physics.admin.authentication.security.policy.init.SetupActionPolicyFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="setupDrillDownTask"/> <!-- т.к. нужна возможность настройки policy и для drilldown action'ов -->

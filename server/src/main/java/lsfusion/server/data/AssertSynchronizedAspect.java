@@ -2,7 +2,7 @@ package lsfusion.server.data;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

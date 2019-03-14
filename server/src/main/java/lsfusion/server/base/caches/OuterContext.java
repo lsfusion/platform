@@ -3,7 +3,9 @@ package lsfusion.server.base.caches;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.Value;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.expr.StaticValueExpr;
+import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
 

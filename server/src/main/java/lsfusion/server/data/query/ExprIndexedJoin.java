@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;

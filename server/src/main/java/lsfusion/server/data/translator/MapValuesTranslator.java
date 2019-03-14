@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.base.caches.ParamExpr;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.base.caches.TranslateValues;
 import lsfusion.server.base.caches.ValuesContext;
 import lsfusion.server.data.Value;

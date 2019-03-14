@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.file.IOUtils;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.data.AbstractConnectionPool;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;

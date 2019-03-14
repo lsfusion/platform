@@ -3,7 +3,7 @@ package lsfusion.server.data;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.stack.ExecutionStackAspect;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
@@ -12,7 +12,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
-import static lsfusion.server.ServerLoggers.sqlLogger;
+import static lsfusion.server.physics.admin.logging.ServerLoggers.sqlLogger;
 
 @Aspect
 public class SQLSessionLoggerAspect {

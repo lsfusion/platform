@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 

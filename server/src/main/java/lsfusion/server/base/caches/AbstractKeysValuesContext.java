@@ -3,6 +3,7 @@ package lsfusion.server.base.caches;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.Value;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.translator.MapTranslate;
 
 public abstract class AbstractKeysValuesContext<T> extends AbstractTranslateContext<T, MapTranslate, HashContext> {

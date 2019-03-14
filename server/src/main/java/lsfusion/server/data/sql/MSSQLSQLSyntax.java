@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.serialization.BinarySerializable;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.SessionTable;

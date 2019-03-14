@@ -4,7 +4,7 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.language.ScriptingErrorLog;

@@ -25,7 +25,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.user.*;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.SameThreadExecutionStack;
@@ -101,7 +101,7 @@ import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 import javax.swing.*;

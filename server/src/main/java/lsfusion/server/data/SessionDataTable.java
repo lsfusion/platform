@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.InnerContext;
 import lsfusion.server.base.caches.MapValuesIterable;
 import lsfusion.server.base.caches.hash.HashValues;

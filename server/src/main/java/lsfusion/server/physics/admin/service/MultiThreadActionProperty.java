@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.service;
 
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.ObjectValue;

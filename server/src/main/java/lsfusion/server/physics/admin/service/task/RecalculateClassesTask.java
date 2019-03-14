@@ -3,7 +3,7 @@ package lsfusion.server.physics.admin.service.task;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;

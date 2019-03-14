@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.query;
 
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 
 public class Stat {
 

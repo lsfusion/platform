@@ -2,8 +2,8 @@ package lsfusion.server.data;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.mutability.MutableObject;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.sql.SQLSyntax;
 import org.postgresql.PGConnection;
 

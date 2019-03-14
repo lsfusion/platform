@@ -249,7 +249,7 @@ copy (UserRole from, UserRole to) +{
 // ------ Property policy caches ----------- //
 
 cachePropertyPolicy '{security.cache.property.policy}' = DATA BOOLEAN (User) CHARWIDTH 10;
-updatePropertyPolicyCaches  INTERNAL  'lsfusion.server.physics.admin.authentication.policy.UpdatePropertyPolicyCachesProperty' (User);
+updatePropertyPolicyCaches  INTERNAL  'lsfusion.server.physics.admin.authentication.security.policy.UpdatePropertyPolicyCachesProperty' (User);
 WHEN [GROUP SUM 1 IF (CHANGED(forbidView(User user, ActionOrProperty actionOrProperty) AND cachePropertyPolicy(user)) OR 
                       CHANGED(forbidChange(user, actionOrProperty) AND cachePropertyPolicy(user))) BY user](User user) DO
     updatePropertyPolicyCaches(user);

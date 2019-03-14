@@ -1,8 +1,8 @@
 package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.sql.SQLSyntax;
 
 import java.sql.Connection;

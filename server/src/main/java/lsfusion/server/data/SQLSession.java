@@ -23,8 +23,8 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.Provider;
 import lsfusion.base.lambda.set.SFunctionSet;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.stack.ExecutionStackAspect;
 import lsfusion.server.base.stack.ParamMessage;
@@ -69,7 +69,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.server.ServerLoggers.explainLogger;
+import static lsfusion.server.physics.admin.logging.ServerLoggers.explainLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> implements AutoCloseable {
     private PreparedStatement executingStatement;
