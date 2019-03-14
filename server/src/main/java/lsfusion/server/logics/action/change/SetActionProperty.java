@@ -20,6 +20,7 @@ import lsfusion.server.logics.action.flow.ForActionProperty;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;

@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.stat.integration.hierarchy;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 
 public class PropertyGroupParseNode extends GroupParseNode {
     private final AbstractGroup group;

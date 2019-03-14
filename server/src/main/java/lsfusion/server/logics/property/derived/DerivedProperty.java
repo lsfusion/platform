@@ -19,6 +19,13 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.logics.action.flow.*;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.AndFormulaProperty;
+import lsfusion.server.logics.property.ConcatenateProperty;
+import lsfusion.server.logics.property.DeconcatenateProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.set.PartitionProperty;
+import lsfusion.server.logics.property.set.SumGroupProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.change.AddObjectActionProperty;
@@ -26,6 +33,7 @@ import lsfusion.server.logics.action.change.ChangeClassActionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.action.session.LocalNestedType;
+import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 
 import java.util.List;
 

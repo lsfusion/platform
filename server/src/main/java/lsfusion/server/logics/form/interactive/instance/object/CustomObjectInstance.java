@@ -13,7 +13,7 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.IsClassProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 
 import java.lang.ref.WeakReference;

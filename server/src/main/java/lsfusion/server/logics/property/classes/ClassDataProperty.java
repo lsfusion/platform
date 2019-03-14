@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.classes;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -18,6 +18,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.action.session.change.PropertyChanges;

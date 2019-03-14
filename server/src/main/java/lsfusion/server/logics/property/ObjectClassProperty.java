@@ -14,6 +14,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.change.ChangeClassActionProperty;
 import lsfusion.server.logics.event.ChangeEvent;

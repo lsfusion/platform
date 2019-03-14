@@ -40,6 +40,8 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.base.stack.ParamMessage;
 import lsfusion.server.base.stack.StackMessage;

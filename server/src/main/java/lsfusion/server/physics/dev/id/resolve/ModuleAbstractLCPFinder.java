@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.id.resolve;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CaseUnionProperty;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.Property;
 
 public class ModuleAbstractLCPFinder extends ModuleAbstractLPFinder<LCP<?>> {

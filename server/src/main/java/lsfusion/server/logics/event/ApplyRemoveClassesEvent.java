@@ -1,7 +1,7 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.server.logics.property.ChangedProperty;
-import lsfusion.server.logics.property.IsClassProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 
 // удаление объекта с заданным ClassDataProperty
 public class ApplyRemoveClassesEvent extends ApplyCalcEvent {

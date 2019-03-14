@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.classes;
 
 import lsfusion.server.logics.classes.ObjectValueClassSet;
 import lsfusion.server.data.PropertyField;

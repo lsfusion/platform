@@ -16,6 +16,8 @@ import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.classes.sets.*;
+import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.NFFact;

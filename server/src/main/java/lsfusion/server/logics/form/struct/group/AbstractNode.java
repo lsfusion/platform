@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.group;
+package lsfusion.server.logics.form.struct.group;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.mutability.ImmutableObject;

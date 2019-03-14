@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.classes;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -22,6 +22,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFStaticLazy;
 import lsfusion.server.logics.event.ChangeEvent;

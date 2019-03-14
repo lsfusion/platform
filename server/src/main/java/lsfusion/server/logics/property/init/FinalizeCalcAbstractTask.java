@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.init;
 
-import lsfusion.server.logics.property.CaseUnionProperty;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.Property;
 
 public class FinalizeCalcAbstractTask extends GroupPropertiesTask {

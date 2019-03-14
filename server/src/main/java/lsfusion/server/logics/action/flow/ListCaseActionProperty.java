@@ -8,6 +8,7 @@ import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;

@@ -57,8 +57,8 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.mutables.interfaces.*;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.property.group.AbstractNode;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.action.session.DataSession;
 import org.apache.log4j.Logger;
 

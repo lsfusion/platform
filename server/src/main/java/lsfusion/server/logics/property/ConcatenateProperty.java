@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.derived;
+package lsfusion.server.logics.property;
 
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.SetFact;
@@ -13,9 +13,6 @@ import lsfusion.server.data.expr.ConcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcType;
-import lsfusion.server.logics.property.FormulaProperty;
-import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;

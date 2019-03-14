@@ -38,10 +38,10 @@ import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.IsClassProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
