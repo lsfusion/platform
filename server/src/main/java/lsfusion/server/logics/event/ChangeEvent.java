@@ -10,6 +10,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;

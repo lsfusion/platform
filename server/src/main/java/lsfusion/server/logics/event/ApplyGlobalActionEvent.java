@@ -2,7 +2,7 @@ package lsfusion.server.logics.event;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.OldProperty;
+import lsfusion.server.logics.action.session.changed.OldProperty;
 
 public class ApplyGlobalActionEvent extends ApplyGlobalEvent implements ApplyActionEvent {
     

@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ChangeProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.session.change.StructChanges;

@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.OverrideSessionModifier;
+import lsfusion.server.logics.action.session.change.modifier.OverrideSessionModifier;
 import lsfusion.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;

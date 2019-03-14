@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.classes.data;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImCol;
@@ -9,6 +9,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.CalcType;
+import lsfusion.server.logics.property.IncrementUnionProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.SumUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;

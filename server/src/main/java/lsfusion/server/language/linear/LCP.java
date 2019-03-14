@@ -18,6 +18,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.admin.logging.LogFormEntity;

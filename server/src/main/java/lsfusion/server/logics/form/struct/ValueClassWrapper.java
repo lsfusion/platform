@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.form.struct;
 
 import lsfusion.server.logics.classes.ValueClass;
 

@@ -4,6 +4,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.form.struct.ValueClassWrapper;
 
 public abstract class PropertyClassImplement<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 

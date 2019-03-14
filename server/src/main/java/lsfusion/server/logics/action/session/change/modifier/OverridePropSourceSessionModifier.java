@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action.session.change.modifier;
 
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -9,7 +9,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
 import lsfusion.server.logics.action.session.change.increment.IncrementTableProps;
 import lsfusion.server.logics.action.session.change.increment.OverrideIncrementProps;
-import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
+import lsfusion.server.logics.property.CalcProperty;
 
 import java.sql.SQLException;
 
