@@ -11,7 +11,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.CalcType;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.classes.data.ValueFormulaProperty;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

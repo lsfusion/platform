@@ -48,6 +48,8 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.navigator.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;

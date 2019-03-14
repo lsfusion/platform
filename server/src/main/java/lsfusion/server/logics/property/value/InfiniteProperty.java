@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.InfiniteExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.NoIncrementProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 

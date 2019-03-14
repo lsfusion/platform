@@ -1,10 +1,12 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.form.struct.property;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class CalcPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, CalcProperty<P>> {
 

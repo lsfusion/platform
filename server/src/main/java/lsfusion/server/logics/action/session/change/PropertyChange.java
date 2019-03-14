@@ -39,8 +39,8 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.base.stack.ParamMessage;
 import lsfusion.server.base.stack.StackMessage;
 

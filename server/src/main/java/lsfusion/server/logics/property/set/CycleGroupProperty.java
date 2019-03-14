@@ -19,6 +19,9 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.session.change.DataChanges;
@@ -49,7 +52,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 //        constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
 //                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
 
-        CalcPropertyMapImplement<?, GroupProperty.Interface<I>> constraintImplement;
+        CalcPropertyMapImplement<?, Interface<I>> constraintImplement;
         CalcPropertyMapImplement<?, I> one = DerivedProperty.createOne();
         if(this instanceof AggregateGroupProperty) {
             constraintImplement = DerivedProperty.createSumGProp(innerInterfaces, getMapInterfaces().values(), DerivedProperty.createAnd(one, groupProperty));

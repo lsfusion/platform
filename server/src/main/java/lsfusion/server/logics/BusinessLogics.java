@@ -67,6 +67,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.SecurityManager;

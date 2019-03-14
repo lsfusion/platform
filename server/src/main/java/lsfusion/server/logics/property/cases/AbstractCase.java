@@ -20,7 +20,11 @@ import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
 
 import java.util.*;

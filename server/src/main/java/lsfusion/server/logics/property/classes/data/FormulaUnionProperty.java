@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

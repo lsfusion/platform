@@ -17,7 +17,7 @@ import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
 

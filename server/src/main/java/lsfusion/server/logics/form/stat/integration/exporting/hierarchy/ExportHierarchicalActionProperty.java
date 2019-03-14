@@ -16,6 +16,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;

@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

@@ -19,7 +19,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.io.IOException;

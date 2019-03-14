@@ -14,7 +14,9 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.implement.*;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 
 import java.util.HashMap;
 import java.util.Map;

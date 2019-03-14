@@ -64,6 +64,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;

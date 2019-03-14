@@ -27,7 +27,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.table.MapKeysTable;
 import lsfusion.server.logics.form.interactive.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;

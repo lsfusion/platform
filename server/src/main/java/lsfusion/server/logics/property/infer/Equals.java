@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.infer;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class Equals<T extends PropertyInterface> extends Compared<T> {
 

@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.implement;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -10,6 +10,9 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.CalcType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 

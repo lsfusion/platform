@@ -20,7 +20,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcType;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 // св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения

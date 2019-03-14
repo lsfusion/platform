@@ -38,9 +38,9 @@ import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 

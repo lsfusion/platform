@@ -28,7 +28,7 @@ import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.physics.exec.DBManager;

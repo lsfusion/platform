@@ -18,7 +18,7 @@ import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObj
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 

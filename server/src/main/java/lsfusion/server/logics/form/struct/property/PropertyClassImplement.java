@@ -1,10 +1,12 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.form.struct.property;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public abstract class PropertyClassImplement<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 

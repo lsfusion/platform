@@ -10,7 +10,7 @@ import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.session.change.Correlation;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class NoPropertyWhereTableUsage<K extends PropertyInterface> extends NoPropertyTableUsage<K> {
 

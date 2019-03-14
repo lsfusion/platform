@@ -1,7 +1,8 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.util.List;
 

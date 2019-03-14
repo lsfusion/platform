@@ -22,9 +22,9 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;

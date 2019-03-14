@@ -44,6 +44,7 @@ import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.ObjectClassProperty;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.base.stack.ParamMessage;
 import lsfusion.server.base.stack.StackMessage;

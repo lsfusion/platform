@@ -1,9 +1,6 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.cases.graph.Graph;
 
 /**

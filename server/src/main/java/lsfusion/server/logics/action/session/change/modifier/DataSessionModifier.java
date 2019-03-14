@@ -8,7 +8,7 @@ import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.session.change.ModifyChange;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public abstract class DataSessionModifier extends SessionModifier {
 
