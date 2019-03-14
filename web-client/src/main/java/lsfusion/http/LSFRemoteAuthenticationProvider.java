@@ -1,17 +1,17 @@
 package lsfusion.http;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.*;
+import lsfusion.base.Pair;
 import lsfusion.base.file.FileData;
 import lsfusion.http.provider.logics.LogicsRunnable;
 import lsfusion.http.provider.logics.LogicsSessionObject;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
+import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.exception.LockedException;
 import lsfusion.interop.exception.LoginException;
 import lsfusion.interop.exception.RemoteMessageException;
-import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
@@ -27,6 +27,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.Locale;
 
@@ -71,7 +72,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
     private static Locale getUserLocale(RemoteLogicsInterface remoteLogics, Authentication auth, AuthenticationToken authToken) throws RemoteException {
         SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth);
         ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", new ExternalRequest());
-        JSONObject localeObject = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
+        JSONObject localeObject = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         String language = localeObject.optString("language");
         String country = localeObject.optString("country");
         return LocalePreferences.getLocale(language, country);
