@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 // первично свойство, соответствующее полю хранящему значение класса
 // строго системное свойство, в логике предполагается использование ObjectClassProperty
-public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> implements ObjectClassField {
+public class ClassDataProperty extends Property<ClassPropertyInterface> implements ObjectClassField {
 
     public final ObjectValueClassSet set;
 

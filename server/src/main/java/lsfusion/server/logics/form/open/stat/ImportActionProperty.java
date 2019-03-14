@@ -241,10 +241,10 @@ public abstract class ImportActionProperty extends SystemActionProperty {
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        MSet<CalcProperty> mProps = SetFact.mSet();
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+        MSet<Property> mProps = SetFact.mSet();
         for(PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList())
-            mProps.add((CalcProperty) propertyDraw.getImportProperty().property);
+            mProps.add((Property) propertyDraw.getImportProperty().property);
         return mProps.immutable().toMap(false);
     }
 }

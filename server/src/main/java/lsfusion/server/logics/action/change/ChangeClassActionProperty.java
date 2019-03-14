@@ -53,19 +53,19 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
      private final I changeInterface;
 
      // когда класс с которого или на который меняется не известен
-     public static ImMap<CalcProperty, Boolean> aspectChangeBaseExtProps(BaseClass baseClass) {
+     public static ImMap<Property, Boolean> aspectChangeBaseExtProps(BaseClass baseClass) {
          return baseClass.getUpAllChangedProps().addExcl(baseClass.getUpDataProps()).toMap(false);
      }
 
     // вот тут пока эвристика вообще надо на внешний контекст смотреть (там может быть веселье с последействием), но пока будет работать достаточно эффективно
      @Override
-     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+     public ImMap<Property, Boolean> aspectChangeExtProps() {
          OrObjectClassSet orSet;
          if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.wherePolicy).getOrSet(changeInterface))==null)
              return aspectChangeBaseExtProps(baseClass);
 
          assert valueClass instanceof ConcreteObjectClass;
-         MSet<CalcProperty> mResult = SetFact.mSet(); // можно было бы оптимизировать (для exclAdd в частности), но пока не критично
+         MSet<Property> mResult = SetFact.mSet(); // можно было бы оптимизировать (для exclAdd в частности), но пока не критично
          
          MSet<ClassDataProperty> mChangedDataProps = SetFact.mSet();
          if(valueClass instanceof CustomClass)
@@ -86,7 +86,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
      }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
         if(where==null)
             return MapFact.EMPTY();
         return getUsedProps(where);
@@ -199,7 +199,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
         return !ordersNotNull;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
         if(where!=null)
             return where.property;

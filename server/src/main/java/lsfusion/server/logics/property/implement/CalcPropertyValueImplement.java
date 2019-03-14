@@ -11,14 +11,14 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
 public class CalcPropertyValueImplement<P extends PropertyInterface> extends CalcPropertyImplement<P, DataObject> {
 
-    public CalcPropertyValueImplement(CalcProperty<P> property, ImMap<P, DataObject> mapping) {
+    public CalcPropertyValueImplement(Property<P> property, ImMap<P, DataObject> mapping) {
         super(property, mapping);
     }
 

@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.form.stat.integration.hierarchy.ExportData;
@@ -135,9 +135,9 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return getChangeProps(exportFiles.values().mapColValues(new GetValue<CalcProperty, LCP>() {
-            public CalcProperty getMapValue(LCP value) {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+        return getChangeProps(exportFiles.values().mapColValues(new GetValue<Property, LCP>() {
+            public Property getMapValue(LCP value) {
                 return ((LCP<?>)value).property;
             }
         }));

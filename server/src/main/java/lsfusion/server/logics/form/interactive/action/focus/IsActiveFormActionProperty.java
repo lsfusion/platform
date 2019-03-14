@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
@@ -18,7 +18,7 @@ public class IsActiveFormActionProperty extends SystemExplicitActionProperty {
     private LCP<?> isActiveFormProperty;
     private FormEntity requestedForm;
 
-    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    public ImMap<Property, Boolean> aspectChangeExtProps() {
         return getChangeProps(isActiveFormProperty.property);
     }
 

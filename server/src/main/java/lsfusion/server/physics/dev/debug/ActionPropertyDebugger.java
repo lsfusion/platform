@@ -151,7 +151,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             "\n" +
             "import lsfusion.server.data.SQLHandledException;\n" +
             "import lsfusion.server.logics.action.ActionProperty;\n" +
-            "import lsfusion.server.logics.property.CalcProperty;\n" +
+            "import lsfusion.server.logics.property.Property;\n" +
             "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
             "import lsfusion.server.logics.property.data.DataProperty;\n" +
             "import lsfusion.server.logics.action.ExecutionContext;\n" +
@@ -176,7 +176,7 @@ public class ActionPropertyDebugger implements DebuggerService {
                         "    }\n";
             } else if (info instanceof CalcPropertyDebugInfo) {
                 sourceString +=
-                        "    public static void " + methodName + "(DataSession session, CalcProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {\n" +
+                        "    public static void " + methodName + "(DataSession session, Property property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {\n" +
                         "        session.changePropertyImpl((DataProperty) property, change);\n" +
                         "    }\n";
             } else { // class change
@@ -269,7 +269,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.getModuleName());
         if (delegatesHolderClass != null) {
             try {
-                Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), DataSession.class, CalcProperty.class, PropertyChange.class);
+                Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), DataSession.class, Property.class, PropertyChange.class);
                 method.invoke(delegatesHolderClass, dataSession, property, change);
                 return;
             } catch (InvocationTargetException e) {

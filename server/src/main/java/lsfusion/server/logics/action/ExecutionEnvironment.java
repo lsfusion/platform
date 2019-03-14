@@ -38,7 +38,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         return getSession().env;
     }
 
-    public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void change(Property<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
         if(change.isEmpty()) // оптимизация
             return;
         

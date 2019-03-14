@@ -30,7 +30,7 @@ import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -251,7 +251,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         try {
             for (LCP lcp : props) {
                 PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                context.getEnv().change((CalcProperty) lcp.property, propChange);
+                context.getEnv().change((Property) lcp.property, propChange);
             }
         } finally {
             importTable.drop(sql, owner);
@@ -289,7 +289,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         try {
             for (LCP lcp : props) {
                 PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                context.getEnv().change((CalcProperty) lcp.property, propChange);
+                context.getEnv().change((Property) lcp.property, propChange);
             }
         } finally {
             importTable.drop(sql, owner);

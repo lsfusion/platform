@@ -1,13 +1,13 @@
 package lsfusion.server.logics.event;
 
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 
 public class ApplyUpdatePrevEvent implements ApplySingleEvent {
     public final OldProperty property;
 
     @Override
-    public CalcProperty getProperty() {
+    public Property getProperty() {
         return property;
     }
 

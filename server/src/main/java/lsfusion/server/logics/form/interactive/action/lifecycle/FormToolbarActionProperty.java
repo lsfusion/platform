@@ -47,7 +47,7 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
         });
     }
 
-    protected CalcProperty getEnableIf() {
+    protected Property getEnableIf() {
         return null;
     }
 
@@ -57,11 +57,11 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
 
     @Override
     public CalcPropertyMapImplement<?, ClassPropertyInterface> getWhereProperty(boolean recursive) {
-        CalcProperty enableIf = getEnableIf();
+        Property enableIf = getEnableIf();
         return enableIf == null ? super.getWhereProperty(recursive) : enableIf.getImplement();
     }
 
-    static LCP createShowIfProperty(final CalcProperty showIfs[], boolean showIfNots[]) {
+    static LCP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {
         assert showIfs != null && showIfNots != null && showIfs.length == showIfNots.length;
 
         MList<CalcPropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(showIfs.length);

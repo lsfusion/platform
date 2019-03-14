@@ -78,14 +78,14 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
         if(where!=null)
             return getUsedProps(writeFrom, where);
         return getUsedProps(writeFrom);
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    public ImMap<Property, Boolean> aspectChangeExtProps() {
         return getChangeProps(writeTo.property);
     }
 
@@ -93,7 +93,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if((where == null || where.property instanceof ValueProperty) && writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(mapInterfaces.valuesSet())
-                && !(writeFrom instanceof CalcPropertyMapImplement && CalcProperty.depends(((CalcPropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
+                && !(writeFrom instanceof CalcPropertyMapImplement && Property.depends(((CalcPropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
             session.dropChanges((SessionDataProperty) writeTo.property);
 
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
@@ -156,7 +156,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
         return !ordersNotNull;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
         return null;
     }

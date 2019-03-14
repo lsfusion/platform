@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.CustomClass;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 
 import java.util.Map;
@@ -18,7 +18,7 @@ public class ChangedClasses {
         this.data = data;
     }
 
-    public ImSet<CalcProperty> getChangedProps(BaseClass baseClass) {
+    public ImSet<Property> getChangedProps(BaseClass baseClass) {
         return ClassChanges.getChangedProps(data, baseClass);
     }
 

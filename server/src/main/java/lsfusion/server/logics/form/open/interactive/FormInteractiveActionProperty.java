@@ -80,14 +80,14 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
                                          FormSelector<O> form,
                                          final ImList<O> objectsToSet, final ImList<Boolean> nulls,
                                          ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls,
-                                         ImList<O> contextObjects, ImList<CalcProperty> contextProperties,
+                                         ImList<O> contextObjects, ImList<Property> contextProperties,
                                          ManageSessionType manageSession,
                                          Boolean noCancel,
                                          boolean syncType,
                                          WindowFormType windowType, boolean forbidDuplicate,
                                          boolean checkOnOk,
                                          boolean readOnly) {
-        super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new CalcProperty[contextProperties.size()]));
+        super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new Property[contextProperties.size()]));
 
         assert inputObjects.isEmpty() || syncType; // если ввод, то синхронный
         this.inputObjects = inputObjects;
@@ -103,8 +103,8 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         this.noCancel = noCancel;
 
         this.contextObjects = contextObjects;
-        this.contextPropertyImplements = contextProperties.mapListValues(new GetValue<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>, CalcProperty>() {
-            public CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> getMapValue(CalcProperty value) {
+        this.contextPropertyImplements = contextProperties.mapListValues(new GetValue<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>, Property>() {
+            public CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> getMapValue(Property value) {
                 return value.getImplement(
                         getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
                 );

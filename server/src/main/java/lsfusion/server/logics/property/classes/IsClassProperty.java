@@ -89,13 +89,13 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return getMapProperty(getMapClasses(interfaces));
      }
 
-    public static <T> Where getWhere(ImMap<T, ValueClass> joinClasses, ImMap<T, ? extends Expr> joinImplement, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public static <T> Where getWhere(ImMap<T, ValueClass> joinClasses, ImMap<T, ? extends Expr> joinImplement, Modifier modifier, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<?, T> property = getProperty(joinClasses);
         if(mUsedProps != null)
             mUsedProps.add(property.property);
         return property.mapExpr(joinImplement, modifier.getPropertyChanges(), null).getWhere();
     }
-    public static Where getWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public static Where getWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<?, String> property = getProperty(valueClass, "value");
         if(mUsedProps != null)
             mUsedProps.add(property.property);
@@ -138,17 +138,17 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
 //    @Override
-//    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
+//    protected void fillDepends(MSet<Property> depends, boolean events) {
 //        if(events)
 //            depends.addAll(getClassDataProps());
 //    }
 
-    public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
+    public ImSet<Property> getSingleApplyDroppedIsClassProps() {
         ValueClass interfaceClass = getInterfaceClass();
         if(interfaceClass instanceof CustomClass) { // возвращаем и parent'ы и children'ов (так как при удалении надо и конкретные и абстрактные свойства смотреть)
             CustomClass customClass = (CustomClass) interfaceClass;
             MSet<CustomClass> mDependClasses = SetFact.mSet();
-            for(CalcProperty upAggrProp : customClass.getUpAggrProps()) {
+            for(Property upAggrProp : customClass.getUpAggrProps()) {
                 ValueClass valueClass = upAggrProp.getValueClass(ClassType.materializeChangePolicy);
                 if(valueClass instanceof CustomClass) { // нас также интересует класс значения корреляций (так как они тоже могут single apply'ся, а значения корреляций никто не обновит) 
                     CustomClass customAggrClass = (CustomClass) valueClass;
@@ -156,8 +156,8 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
                 }
             }
             mDependClasses.addAll(customClass.getAllChildrenParents());
-            return mDependClasses.immutable().mapSetValues(new GetValue<CalcProperty, CustomClass>() {
-                public CalcProperty getMapValue(CustomClass value) {
+            return mDependClasses.immutable().mapSetValues(new GetValue<Property, CustomClass>() {
+                public Property getMapValue(CustomClass value) {
                     return value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope);
                 }});
         }
@@ -179,17 +179,17 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         assert actionChangeProps.isEmpty();
         assert getDepends().isEmpty();
 
-        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+        MExclSet<Property> mResult = SetFact.mExclSet();
         fillChangedProps(mResult, IncrementType.DROP);
         fillChangedProps(mResult, IncrementType.SET);
 
-        return mResult.immutable().mapSetValues(new GetValue<Pair<ActionOrProperty<?>, LinkType>, CalcProperty>() {
-            public Pair<ActionOrProperty<?>, LinkType> getMapValue(CalcProperty value) {
+        return mResult.immutable().mapSetValues(new GetValue<Pair<ActionOrProperty<?>, LinkType>, Property>() {
+            public Pair<ActionOrProperty<?>, LinkType> getMapValue(Property value) {
                 return new Pair<ActionOrProperty<?>, LinkType>(value, LinkType.DEPEND);
             }});
     }
 
-    public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) {
+    public void fillChangedProps(MExclSet<Property> mSet, IncrementType type) {
         for(PrevScope scope : PrevScope.values())
             mSet.exclAdd(getChanged(type, scope));
     }
@@ -266,7 +266,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return null;
     }
 
-    public ImSet<CalcProperty> getRemoveUsedChanges(StructChanges newChanges) {
+    public ImSet<Property> getRemoveUsedChanges(StructChanges newChanges) {
         return getChanged(IncrementType.DROP, ChangeEvent.scope).getUsedChanges(newChanges);
     }
 

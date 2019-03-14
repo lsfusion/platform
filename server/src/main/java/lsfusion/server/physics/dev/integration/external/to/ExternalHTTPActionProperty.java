@@ -260,7 +260,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
     }
 
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, LCP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        CalcProperty<P> prop = property.property;
+        Property<P> prop = property.property;
         P name = property.listInterfaces.get(0);
 
         SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("writePropertyValues", prop.interfaceTypeGetter.getType(name), prop.getType());

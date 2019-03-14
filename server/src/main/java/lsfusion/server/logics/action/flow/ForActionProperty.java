@@ -103,8 +103,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-       MSet<CalcProperty> mUsed = SetFact.mSet();
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
+       MSet<Property> mUsed = SetFact.mSet();
        if(ifProp!=null)
            ifProp.mapFillDepends(mUsed);
        for(CalcPropertyInterfaceImplement<I> order : orders.keyIt())
@@ -279,8 +279,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        ImMap<CalcProperty, Boolean> result = super.aspectChangeExtProps();
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+        ImMap<Property, Boolean> result = super.aspectChangeExtProps();
         if(addObject != null) // может быть, из-за break, noinline и т.п.
             result = result.merge(AddObjectActionProperty.getChangeExtProps(addClass, needDialog()), addValue);
         return result;
@@ -312,7 +312,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             CalcPropertyMapImplement<?, I> noInlineIfProp = ifProp;
             ImSet<I> noInlineInterfaces = extNoInline;
             MSet<SessionDataProperty> mLocals = SetFact.mSet();
-            if(CalcProperty.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
+            if(Property.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
                 noInlineIfProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy), mLocals);// делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(addObject != null ? innerInterfaces.removeIncl(addObject) : innerInterfaces, context, null, noInlineIfProp, ifProp));
                 noInlineInterfaces = noInline;
@@ -363,38 +363,38 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 
-        ImSet<CalcProperty>[] listChangeProps = new ImSet[list.size()];
-        ImSet<CalcProperty>[] listUsedProps = new ImSet[list.size()];
+        ImSet<Property>[] listChangeProps = new ImSet[list.size()];
+        ImSet<Property>[] listUsedProps = new ImSet[list.size()];
         for (int i = 0; i < list.size(); i++) {
             listChangeProps[i] = list.get(i).property.getChangeProps();
             listUsedProps[i] = list.get(i).property.getUsedProps();
         }
 
         // ищем сначала "вытаскиваемые" (changeProps не зависят от usedProps и т.д)
-        final MSet<CalcProperty> mPushChangedProps = SetFact.mSet();
+        final MSet<Property> mPushChangedProps = SetFact.mSet();
         MList<ActionPropertyMapImplement<?, I>> mCanBePushed = ListFact.mFilter(list);
         MList<ActionPropertyMapImplement<?, I>> mRest = ListFact.mFilter(list);
         for (int i = 0; i < list.size(); i++) {
             ActionPropertyMapImplement<?, I> itemAction = list.get(i);
 
             if (itemAction.hasPushFor(context, ordersNotNull)) {
-                MSet<CalcProperty> mSiblingChangeProps = SetFact.mSet();
-                MSet<CalcProperty> mSiblingUsedProps = SetFact.mSet();
+                MSet<Property> mSiblingChangeProps = SetFact.mSet();
+                MSet<Property> mSiblingUsedProps = SetFact.mSet();
                 for (int j = 0; j < list.size(); j++) // читаем sibling'и
                     if (j != i) {
                         mSiblingChangeProps.addAll(listChangeProps[j]);
                         mSiblingUsedProps.addAll(listUsedProps[j]);
                     }
-                ImSet<CalcProperty> siblingChangeProps = mSiblingChangeProps.immutable();
-                ImSet<CalcProperty> siblingUsedProps = mSiblingUsedProps.immutable();
+                ImSet<Property> siblingChangeProps = mSiblingChangeProps.immutable();
+                ImSet<Property> siblingUsedProps = mSiblingUsedProps.immutable();
 
-                ImSet<CalcProperty> changeProps = listChangeProps[i];
-                ImSet<CalcProperty> usedProps = listUsedProps[i];
+                ImSet<Property> changeProps = listChangeProps[i];
+                ImSet<Property> usedProps = listUsedProps[i];
 
-                CalcProperty where = itemAction.getPushWhere(context, ordersNotNull);
-                if (forceInline || (!CalcProperty.depends(siblingUsedProps, changeProps) && // не меняют сиблингов
-                        !CalcProperty.depends(usedProps, siblingChangeProps) && // сиблинги не меняют
-                        !CalcProperty.depends(where!=null?Collections.singleton(where):usedProps, changeProps) && // не рекурсивно зависимо
+                Property where = itemAction.getPushWhere(context, ordersNotNull);
+                if (forceInline || (!Property.depends(siblingUsedProps, changeProps) && // не меняют сиблингов
+                        !Property.depends(usedProps, siblingChangeProps) && // сиблинги не меняют
+                        !Property.depends(where!=null?Collections.singleton(where):usedProps, changeProps) && // не рекурсивно зависимо
                         siblingChangeProps.disjoint(changeProps))) { // несколько раз не меняется
                     mCanBePushed.add(itemAction);
                     mPushChangedProps.addAll(changeProps);
@@ -403,7 +403,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             } else
                 mRest.add(itemAction);
         }
-        ImSet<CalcProperty> pushChangedProps = mPushChangedProps.immutable();
+        ImSet<Property> pushChangedProps = mPushChangedProps.immutable();
         ImList<ActionPropertyMapImplement<?, I>> canBePushed = ListFact.imFilter(mCanBePushed, list);
         ImList<ActionPropertyMapImplement<?, I>> rest = ListFact.imFilter(mRest, list);
 
@@ -415,11 +415,11 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         CalcPropertyMapImplement<?, I> pushProp = ifProp;
         if ((canBePushed.size() + (rest.size() > 0 ? 1 : 0) > 1)) {// если кол-во(вытаскиваемые+оставшиеся) > 1
-            if (CalcProperty.dependsImplement(orders.keys(), pushChangedProps)) // если orders'ы меняются пока не проталкиваем
+            if (Property.dependsImplement(orders.keys(), pushChangedProps)) // если orders'ы меняются пока не проталкиваем
                 return null;
 
-            if (CalcProperty.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
-                    CalcProperty.depends(ifProp.property, StoredDataProperty.set)) {
+            if (Property.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
+                    Property.depends(ifProp.property, StoredDataProperty.set)) {
                 pushProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy), mLocals); // делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, pushProp, ifProp));
             }
@@ -443,12 +443,12 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
     
     // nullable
-    public static <I extends PropertyInterface> CalcProperty getPushWhere(CalcPropertyInterfaceImplement<I> where) {
+    public static <I extends PropertyInterface> Property getPushWhere(CalcPropertyInterfaceImplement<I> where) {
         return where instanceof CalcPropertyMapImplement ? ((CalcPropertyMapImplement) where).property : DerivedProperty.createTrue().property; // тут не null должен возвращаться 
     }
     
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
         return getPushWhere(ifProp);
     }

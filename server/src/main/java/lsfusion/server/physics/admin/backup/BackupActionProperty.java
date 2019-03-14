@@ -11,7 +11,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
@@ -105,9 +105,9 @@ public class BackupActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    public ImMap<Property, Boolean> aspectChangeExtProps() {
         try {
-            return getChangeProps((CalcProperty) findProperty("date[Backup]").property, (CalcProperty) findProperty("time[Backup]").property);
+            return getChangeProps((Property) findProperty("date[Backup]").property, (Property) findProperty("time[Backup]").property);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return null;
         }

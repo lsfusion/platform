@@ -45,13 +45,13 @@ import java.util.List;
 
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
-public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
+public class LCP<T extends PropertyInterface> extends LP<T, Property<T>> {
 
-    public LCP(CalcProperty<T> property) {
+    public LCP(Property<T> property) {
         super(property);
     }
 
-    public LCP(CalcProperty<T> property, ImOrderSet<T> listInterfaces) {
+    public LCP(Property<T> property, ImOrderSet<T> listInterfaces) {
         super(property, listInterfaces);
     }
 

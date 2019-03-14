@@ -1,21 +1,21 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 
 public class ApplyStoredEvent extends ApplyCalcEvent implements ApplySingleEvent {
     
-    public final CalcProperty property;
+    public final Property property;
 
-    public ApplyStoredEvent(CalcProperty property) {
+    public ApplyStoredEvent(Property property) {
         this.property = property;
         assert property.isStored();
     }
 
     @Override
-    public CalcProperty getProperty() {
+    public Property getProperty() {
         return property;
     }
 

@@ -5,14 +5,14 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
 import java.sql.SQLException;
 
 public class OkActionProperty extends FormFlowActionProperty {
-    private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.isSync}, new boolean[] {false});
+    private static LCP showIf = createShowIfProperty(new Property[] {FormEntity.isSync}, new boolean[] {false});
     
     public OkActionProperty(BaseLogicsModule lm) {
         super(lm);

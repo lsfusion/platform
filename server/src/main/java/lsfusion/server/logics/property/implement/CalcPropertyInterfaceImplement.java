@@ -43,13 +43,13 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException;
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement);
 
-    void mapFillDepends(MSet<CalcProperty> depends);
+    void mapFillDepends(MSet<Property> depends);
     ImSet<OldProperty> mapOldDepends();
 
     Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
-    ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
+    ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty);
 
     boolean mapHasAlotKeys();
     int mapEstComplexity();

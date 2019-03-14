@@ -16,19 +16,19 @@ import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
 
-    private final ImMap<CalcProperty, ModifyChange> changes;
+    private final ImMap<Property, ModifyChange> changes;
 
     @Override
     public String toString() {
         return changes.toString();
     }
 
-    public PropertyChanges(ImMap<CalcProperty, ModifyChange> changes) {
+    public PropertyChanges(ImMap<Property, ModifyChange> changes) {
         this.changes = changes;
     }
 
@@ -37,14 +37,14 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return element==null || (!element.isFinal && element.isEmpty());
         }
     };
-    public PropertyChanges replace(ImMap<CalcProperty, ModifyChange> replace) {
-        ImSet<CalcProperty> keys = replace.filterFnValues(emptyChanges).keys();
-        return new PropertyChanges(changes.remove(keys).merge(replace.remove(keys), MapFact.<CalcProperty, ModifyChange>overridePrevRef())); // override с оставлением ссылки
+    public PropertyChanges replace(ImMap<Property, ModifyChange> replace) {
+        ImSet<Property> keys = replace.filterFnValues(emptyChanges).keys();
+        return new PropertyChanges(changes.remove(keys).merge(replace.remove(keys), MapFact.<Property, ModifyChange>overridePrevRef())); // override с оставлением ссылки
     }
 
     @IdentityLazy
-    public PropertyChanges filter(ImSet<? extends CalcProperty> properties) {
-        ImFilterValueMap<CalcProperty, ModifyChange> mvResult = ((ImSet<CalcProperty>)properties).mapFilterValues();
+    public PropertyChanges filter(ImSet<? extends Property> properties) {
+        ImFilterValueMap<Property, ModifyChange> mvResult = ((ImSet<Property>)properties).mapFilterValues();
         for(int i=0,size=properties.size();i<size;i++) {
             ModifyChange<PropertyInterface> change = getModify(properties.get(i));
             if(change!=null)
@@ -58,24 +58,24 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
     public final static PropertyChanges EMPTY = new PropertyChanges();
 
-    public <T extends PropertyInterface> PropertyChanges(CalcProperty<T> property, PropertyChange<T> change) {
+    public <T extends PropertyInterface> PropertyChanges(Property<T> property, PropertyChange<T> change) {
         this(property, new ModifyChange<>(change, true));
     }
 
-    public <T extends PropertyInterface> PropertyChanges(CalcProperty<T> property, ModifyChange<T> change) {
-        changes = MapFact.<CalcProperty, ModifyChange>singleton(property, change);
+    public <T extends PropertyInterface> PropertyChanges(Property<T> property, ModifyChange<T> change) {
+        changes = MapFact.<Property, ModifyChange>singleton(property, change);
     }
 
-    public PropertyChanges(ImMap<? extends CalcProperty, ? extends PropertyChange> mapChanges, final boolean isFinal) {
+    public PropertyChanges(ImMap<? extends Property, ? extends PropertyChange> mapChanges, final boolean isFinal) {
         assert isFinal;
-        changes = ((ImMap<CalcProperty, PropertyChange>)mapChanges).mapValues(new GetValue<ModifyChange, PropertyChange>() {
+        changes = ((ImMap<Property, PropertyChange>)mapChanges).mapValues(new GetValue<ModifyChange, PropertyChange>() {
                             public ModifyChange getMapValue(PropertyChange value) {
                                 return new ModifyChange(value, isFinal);
                             }});
     }
 
     protected PropertyChanges(PropertyChanges changes1, PropertyChanges changes2) {
-        changes = changes1.changes.merge(changes2.changes, ModifyChange.<CalcProperty>addValue());
+        changes = changes1.changes.merge(changes2.changes, ModifyChange.<Property>addValue());
     }
     public PropertyChanges add(PropertyChanges add) {
         if(isEmpty())
@@ -87,7 +87,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return new PropertyChanges(this, add);
     }
 
-    public PropertyChanges remove(CalcProperty property) {
+    public PropertyChanges remove(Property property) {
         assert changes.containsKey(property);
         return new PropertyChanges(changes.remove(property));
     }
@@ -96,7 +96,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return changes.isEmpty();
     }
 
-    public <P extends PropertyInterface> ModifyChange<P> getModify(CalcProperty<P> property) {
+    public <P extends PropertyInterface> ModifyChange<P> getModify(Property<P> property) {
         return (ModifyChange<P>)changes.get(property);
     }
 
@@ -127,14 +127,14 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return changes.equals(((PropertyChanges)o).changes);
     }
 
-    public ImSet<CalcProperty> getProperties() {
+    public ImSet<Property> getProperties() {
         return changes.keys();
     }
 
     public String exToString() {
         String result = "";
         for(int i=0,size=changes.size();i<size;i++) {
-            CalcProperty key = changes.getKey(i);
+            Property key = changes.getKey(i);
             ModifyChange change = changes.getValue(i);
             result += "PROP : " + key + ", CHANGE : " + change + ", HASH : " + change.getValueComponents().hash;
 

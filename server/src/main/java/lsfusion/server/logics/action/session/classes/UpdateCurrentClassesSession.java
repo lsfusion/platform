@@ -16,7 +16,7 @@ import lsfusion.server.data.SQLRunnable;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -45,17 +45,17 @@ public class UpdateCurrentClassesSession {
         }
 
         @Override
-        protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
+        protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
             return changes.getPropertyChange(property, baseClass);
         }
 
         @Override
-        protected ImSet<CalcProperty> getChangedProps() {
+        protected ImSet<Property> getChangedProps() {
             return changes.getChangedProps(baseClass);
         }
 
         @Override
-        public long getMaxCount(CalcProperty recDepends) {
+        public long getMaxCount(Property recDepends) {
             return changes.getMaxDataUsed(recDepends);
         }
 

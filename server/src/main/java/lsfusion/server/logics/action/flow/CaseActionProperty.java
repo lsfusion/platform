@@ -141,9 +141,9 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
         ImList<ActionCase<PropertyInterface>> cases = getCases();
-        MSet<CalcProperty> mWhereProps = SetFact.mSetMax(cases.size());
+        MSet<Property> mWhereProps = SetFact.mSetMax(cases.size());
         for(ActionCase<PropertyInterface> aCase : cases)
             if(aCase.where instanceof CalcPropertyMapImplement)
                 mWhereProps.add(((CalcPropertyMapImplement) aCase.where).property);
@@ -215,7 +215,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         return getCases().size()==1; // нужно разбивать на if true и if false, потом реализуем
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
         return ForActionProperty.getPushWhere(getCases().single().where);
     }
@@ -360,8 +360,8 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        MSet<CalcProperty> used = SetFact.mSet();
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
+        MSet<Property> used = SetFact.mSet();
         ifProp.mapFillDepends(used);
         return used.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
@@ -411,7 +411,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         return falseAction == null; // нужно разбивать на if true и if false, потом реализуем
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
         return ifProp.property;
     }

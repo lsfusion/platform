@@ -20,7 +20,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.CalcPropertyImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.session.*;
@@ -47,7 +47,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         return implement.mapping;
     }
 
-    public CalcProperty<P> getProperty() {
+    public Property<P> getProperty() {
         return implement.property;
     }
 

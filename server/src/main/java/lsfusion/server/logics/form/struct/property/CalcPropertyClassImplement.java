@@ -5,21 +5,21 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class CalcPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, CalcProperty<P>> {
+public class CalcPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, Property<P>> {
 
-    public CalcPropertyClassImplement(CalcProperty<P> property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
+    public CalcPropertyClassImplement(Property<P> property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
         super(property, classes, interfaces);
     }
 
-    public CalcPropertyClassImplement(CalcProperty<P> property, ImRevMap<P, ValueClassWrapper> mapping) {
+    public CalcPropertyClassImplement(Property<P> property, ImRevMap<P, ValueClassWrapper> mapping) {
         super(property, mapping);
     }
 
     public LCP createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
-        CalcProperty<P> createProp = property;
+        Property<P> createProp = property;
         if(prev && property.noOld())
             createProp = createProp.getOld(PrevScope.DB); 
         return new LCP<>(createProp, listInterfaces.mapOrder(mapping.reverse()));

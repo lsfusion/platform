@@ -31,7 +31,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.action.session.changed.SessionCalcProperty;
+import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.action.session.table.NoPropertyWhereTableUsage;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.*;
@@ -102,7 +102,7 @@ import java.util.concurrent.Callable;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public abstract class CalcProperty<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
+public abstract class Property<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
 
     public static Modifier defaultModifier = new Modifier() {
         public PropertyChanges getPropertyChanges() {
@@ -114,11 +114,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return getClass() + "," + debugInfo + "-" + operation;
     }
     
-    public static FunctionSet<CalcProperty> getDependsOnSet(final FunctionSet<CalcProperty> check) {
+    public static FunctionSet<Property> getDependsOnSet(final FunctionSet<Property> check) {
         if(check.isEmpty())
             return check;
-        return new FunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty element) {
+        return new FunctionSet<Property>() {
+            public boolean contains(Property element) {
                 return depends(element, check);
             }
 
@@ -132,11 +132,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         };
     }
    
-    public static FunctionSet<CalcProperty> getSet(final FunctionSet<SessionDataProperty> set) {
+    public static FunctionSet<Property> getSet(final FunctionSet<SessionDataProperty> set) {
         if(set.isEmpty())
             return SetFact.EMPTY();
-        return new FunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty element) {
+        return new FunctionSet<Property>() {
+            public boolean contains(Property element) {
                 return element instanceof SessionDataProperty && set.contains((SessionDataProperty) element);
             }
 
@@ -150,9 +150,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         };
     }
 
-    public static FunctionSet<CalcProperty> getDependsFromSet(final ImSet<CalcProperty> check) {
-        return new FunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty element) {
+    public static FunctionSet<Property> getDependsFromSet(final ImSet<Property> check) {
+        return new FunctionSet<Property>() {
+            public boolean contains(Property element) {
                 return depends(check, element);
             }
 
@@ -166,36 +166,36 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         };
     }
 
-    public static boolean depends(CalcProperty<?> property, CalcProperty check) {
+    public static boolean depends(Property<?> property, Property check) {
         return property.getRecDepends().contains(check);
     }
 
-    public static boolean depends(CalcProperty<?> property, FunctionSet<CalcProperty> check) {
+    public static boolean depends(Property<?> property, FunctionSet<Property> check) {
         return property.getRecDepends().intersectFn(check);
     }
 
-    public static boolean dependsSet(CalcProperty<?> property, FunctionSet<CalcProperty>... checks) {
-        for(FunctionSet<CalcProperty> check : checks)
+    public static boolean dependsSet(Property<?> property, FunctionSet<Property>... checks) {
+        for(FunctionSet<Property> check : checks)
             if(depends(property, check))
                 return true;
         return false;
     }
 
-    public static boolean depends(Iterable<CalcProperty> properties, ImSet<CalcProperty> check) {
-        for(CalcProperty property : properties)
+    public static boolean depends(Iterable<Property> properties, ImSet<Property> check) {
+        for(Property property : properties)
             if(depends(property, check))
                 return true;
         return false;
     }
 
-    public static boolean depends(ImSet<CalcProperty> properties, CalcProperty check) {
-        for(CalcProperty property : properties)
+    public static boolean depends(ImSet<Property> properties, Property check) {
+        for(Property property : properties)
             if(depends(property, check))
                 return true;
         return false;
     }
 
-    public static <T extends CalcProperty> ImSet<T> used(ImSet<T> used, final ImSet<CalcProperty> usedIn) {
+    public static <T extends Property> ImSet<T> used(ImSet<T> used, final ImSet<Property> usedIn) {
         return used.filterFn(new SFunctionSet<T>() {
             public boolean contains(T property) {
                 return depends(usedIn, property);
@@ -203,7 +203,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         });
     }
 
-    public static <T extends PropertyInterface> boolean dependsImplement(ImCol<CalcPropertyInterfaceImplement<T>> properties, ImSet<CalcProperty> check) {
+    public static <T extends PropertyInterface> boolean dependsImplement(ImCol<CalcPropertyInterfaceImplement<T>> properties, ImSet<Property> check) {
         for(CalcPropertyInterfaceImplement<T> property : properties)
             if(property instanceof CalcPropertyMapImplement && depends(((CalcPropertyMapImplement)property).property, check))
                 return true;
@@ -230,11 +230,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     }
 
     // по выражениям проверяет
-    public <P extends PropertyInterface> void checkExclusiveness(String caseInfo, CalcProperty<P> property, String propertyInfo, ImRevMap<P, T> map, String abstractInfo) {
+    public <P extends PropertyInterface> void checkExclusiveness(String caseInfo, Property<P> property, String propertyInfo, ImRevMap<P, T> map, String abstractInfo) {
         AlgType.caseCheckType.checkExclusiveness(this, caseInfo, property, propertyInfo, map, abstractInfo);
     }
 
-    public <P extends PropertyInterface> void inferCheckExclusiveness(String caseInfo, CalcProperty<P> property, String propertyInfo, ImRevMap<P, T> map, InferType inferType, String abstractInfo) {
+    public <P extends PropertyInterface> void inferCheckExclusiveness(String caseInfo, Property<P> property, String propertyInfo, ImRevMap<P, T> map, InferType inferType, String abstractInfo) {
         Inferred<T> classes = inferInterfaceClasses(inferType);
         Inferred<P> propClasses = property.inferInterfaceClasses(inferType);
         if(!classes.and(propClasses.map(map), inferType).isEmpty(inferType))
@@ -242,18 +242,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
                     "\n\tClasses 1: " + ExClassSet.fromEx(classes.finishEx(inferType)) + "\n\tClasses 2: " + ExClassSet.fromEx(propClasses.finishEx(inferType)));
     }
 
-    public <P extends PropertyInterface> void calcCheckExclusiveness(String caseInfo, CalcProperty<P> property, String propertyInfo, ImMap<P, T> map, CalcClassType calcType, String abstractInfo) {
+    public <P extends PropertyInterface> void calcCheckExclusiveness(String caseInfo, Property<P> property, String propertyInfo, ImMap<P, T> map, CalcClassType calcType, String abstractInfo) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         if(!calculateExpr(mapKeys, calcType).getWhere().and(property.calculateExpr(map.join(mapKeys), calcType).getWhere()).not().checkTrue())
             throw new ScriptParsingException("signature intersection of property\n\t" + caseInfo + " (" + this + ") with previosly defined implementation\n\t" + propertyInfo + " (" + property + ")\nfor abstract property " + abstractInfo +
                     "\n\tClasses 1: " + getClassWhere(calcType) + "\n\tClasses 2: " + property.getClassWhere(calcType));
     }
 
-    public <P extends PropertyInterface> void checkContainsAll(CalcProperty<P> property, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <P extends PropertyInterface> void checkContainsAll(Property<P> property, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
         AlgType.caseCheckType.checkContainsAll(this, property, caseInfo, map, value, abstractInfo);
     }
 
-    public <P extends PropertyInterface> void inferCheckContainsAll(CalcProperty<P> property, String caseInfo, ImRevMap<P, T> map, InferType inferType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <P extends PropertyInterface> void inferCheckContainsAll(Property<P> property, String caseInfo, ImRevMap<P, T> map, InferType inferType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
         ImMap<T, ExClassSet> interfaceClasses = getInferInterfaceClasses(inferType);
         ImMap<T, ExClassSet> interfacePropClasses = map.crossJoin(property.getInferInterfaceClasses(inferType));
 
@@ -309,7 +309,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return ExClassSet.intersect(interfaces, interfaceClasses, interfacePropClasses);
     }
 
-    public <P extends PropertyInterface> void calcCheckContainsAll(String caseInfo, CalcProperty<P> property, ImRevMap<P, T> map, CalcClassType calcType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <P extends PropertyInterface> void calcCheckContainsAll(String caseInfo, Property<P> property, ImRevMap<P, T> map, CalcClassType calcType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
         ClassWhere<T> classes = getClassWhere(calcType);
         ClassWhere<T> propClasses = new ClassWhere<>(property.getClassWhere(calcType),map);
         
@@ -325,11 +325,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     }
 
     // assert что CaseUnion
-    public <P extends PropertyInterface> void checkAllImplementations(ImList<CalcProperty<P>> props, ImList<ImRevMap<P, T>> maps) {
+    public <P extends PropertyInterface> void checkAllImplementations(ImList<Property<P>> props, ImList<ImRevMap<P, T>> maps) {
         AlgType.caseCheckType.checkAllImplementations(this, props, maps);
     }
 
-    public <P extends PropertyInterface> void inferCheckAllImplementations(ImList<CalcProperty<P>> props, ImList<ImRevMap<P, T>> maps, InferType calcType) {
+    public <P extends PropertyInterface> void inferCheckAllImplementations(ImList<Property<P>> props, ImList<ImRevMap<P, T>> maps, InferType calcType) {
         ImMap<T, ExClassSet> classes = getInferInterfaceClasses(calcType);
 
         if(props.isEmpty())
@@ -337,7 +337,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
 
         ImMap<T, ExClassSet> propClasses = null;
         for(int i=0,size=props.size();i<size;i++) {
-            CalcProperty<P> prop = props.get(i);
+            Property<P> prop = props.get(i);
             ImRevMap<P, T> map = maps.get(i);
             ImMap<T, ExClassSet> propCaseClasses = map.crossJoin(prop.getInferInterfaceClasses(calcType));
             if(propClasses == null)
@@ -351,12 +351,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         }
     }
 
-    public <P extends PropertyInterface> void calcCheckAllImplementations(ImList<CalcProperty<P>> props, ImList<ImRevMap<P, T>> maps, CalcClassType calcType) {
+    public <P extends PropertyInterface> void calcCheckAllImplementations(ImList<Property<P>> props, ImList<ImRevMap<P, T>> maps, CalcClassType calcType) {
         ClassWhere<T> classes = getClassWhere(calcType);
 
         ClassWhere<T> propClasses = ClassWhere.FALSE();
         for (int i = 0, size = props.size(); i < size; i++) {
-            CalcProperty<P> prop = props.get(i);
+            Property<P> prop = props.get(i);
             ImRevMap<P, T> map = maps.get(i);
             propClasses = propClasses.or(new ClassWhere<>(prop.getClassWhere(calcType), map));
         }
@@ -366,7 +366,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         }
     }
 
-    protected CalcProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
+    protected Property(LocalizedString caption, ImOrderSet<T> interfaces) {
         super(caption, interfaces);
 
         drawOptions.addProcessor(new DefaultProcessor() {
@@ -452,7 +452,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     @IdentityStartLazy
     public ImSet<OldProperty> getParseOldDepends() {
         MSet<OldProperty> mResult = SetFact.mSet();
-        for(CalcProperty<?> property : getDepends(false))
+        for(Property<?> property : getDepends(false))
             mResult.addAll(property.getParseOldDepends());
         return mResult.immutable();
     }
@@ -536,7 +536,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         public final ImRevMap<KeyField, P> mapFields;
         public final PropertyField propValue;
 
-        public VirtualTable(final CalcProperty<P> property, AlgType algType) {
+        public VirtualTable(final Property<P> property, AlgType algType) {
             super(property.getSID());
             
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {
@@ -647,11 +647,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     
     private static class PropCorrelation<K extends PropertyInterface, T extends PropertyInterface> implements Correlation<T> {
         
-        private final CalcProperty<K> property;
+        private final Property<K> property;
         private final T mapInterface;
         private final CustomClass customClass;
 
-        public PropCorrelation(CalcProperty<K> property, T mapInterface, ClassType classType) {
+        public PropCorrelation(Property<K> property, T mapInterface, ClassType classType) {
 //            assert property.isAggr(); // могут быть еще getImplements
             this.property = property;
             this.mapInterface = mapInterface;
@@ -669,7 +669,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
             return property.getType();
         }
 
-        public CalcProperty<?> getProperty() {
+        public Property<?> getProperty() {
             return property;
         }
 
@@ -694,7 +694,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
             ValueClass valueClass = interfaceClasses.get(propertyInterface);
             if(valueClass instanceof CustomClass) {
                 CustomClass customClass = (CustomClass) valueClass;
-                for(CalcProperty<K> aggrProp : customClass.getUpAggrProps())
+                for(Property<K> aggrProp : customClass.getUpAggrProps())
 //                    if(!BaseUtils.hashEquals(aggrProp, this)) // себя тоже надо коррелировать (в общем-то для удаления, как правило удаляется тоже объекты агрегированные в один объект)
                     mResult.exclAdd(new PropCorrelation<K, T>(aggrProp, propertyInterface, classType));
             }
@@ -744,21 +744,21 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     }
 
     @IdentityStrongLazy // just in case
-    public <P extends PropertyInterface> MaxChangeProperty<T, P> getMaxChangeProperty(CalcProperty<P> change) {
+    public <P extends PropertyInterface> MaxChangeProperty<T, P> getMaxChangeProperty(Property<P> change) {
         return new MaxChangeProperty<>(this, change);
     }
     @IdentityStrongLazy // just in case
-    public <P extends PropertyInterface> OnChangeProperty<T, P> getOnChangeProperty(CalcProperty<P> change) {
+    public <P extends PropertyInterface> OnChangeProperty<T, P> getOnChangeProperty(Property<P> change) {
         return new OnChangeProperty<>(this, change);
     }
 
     public enum CheckType { CHECK_NO, CHECK_ALL, CHECK_SOME }
     public CheckType checkChange = CheckType.CHECK_NO;
-    public ImSet<CalcProperty<?>> checkProperties = null;
+    public ImSet<Property<?>> checkProperties = null;
 
-    public Collection<MaxChangeProperty<?, T>> getMaxChangeProperties(Collection<CalcProperty> properties) {
+    public Collection<MaxChangeProperty<?, T>> getMaxChangeProperties(Collection<Property> properties) {
         Collection<MaxChangeProperty<?, T>> result = new ArrayList<>();
-        for (CalcProperty<?> property : properties)
+        for (Property<?> property : properties)
             if (depends(property, this))
                 result.add(property.getMaxChangeProperty(this));
         return result;
@@ -769,9 +769,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return getPullDataChanges(changes, toNull).add(changes);
     }
 
-    private ImSet<CalcProperty> recDepends;
+    private ImSet<Property> recDepends;
     @ManualLazy
-    public ImSet<CalcProperty> getRecDepends() {
+    public ImSet<Property> getRecDepends() {
         if(recDepends == null)
             recDepends = calculateRecDepends();
         return recDepends;
@@ -781,9 +781,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return getRecDepends().size();
     }
 
-    public ImSet<CalcProperty> calculateRecDepends() {
-        MSet<CalcProperty> mResult = SetFact.mSet();
-        for(CalcProperty<?> depend : getDepends())
+    public ImSet<Property> calculateRecDepends() {
+        MSet<Property> mResult = SetFact.mSet();
+        for(Property<?> depend : getDepends())
             mResult.addAll(depend.getRecDepends());
         mResult.add(this);
         return mResult.immutable();
@@ -810,27 +810,27 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
         MCol<Pair<ActionOrProperty<?>, LinkType>> mResult = ListFact.mCol();
 
-        for(CalcProperty depend : getDepends(events))
+        for(Property depend : getDepends(events))
             mResult.add(new Pair<ActionOrProperty<?>, LinkType>(depend, LinkType.DEPEND));
 
         return mResult.immutableCol();
     }
 
-    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<Property> depends, boolean events) {
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов, должен коррелировать с getDepends(Rec), который должен включать в себя все calculateUsedChanges
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
+    public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {
         return SetFact.EMPTY();
     }
 
-    public ImSet<CalcProperty> getDepends(boolean events) {
-        MSet<CalcProperty> mDepends = SetFact.mSet();
+    public ImSet<Property> getDepends(boolean events) {
+        MSet<Property> mDepends = SetFact.mSet();
         fillDepends(mDepends, events);
         return mDepends.immutable();
     }
 
-    public ImSet<CalcProperty> getDepends() {
+    public ImSet<Property> getDepends() {
         return getDepends(true);
     }
 
@@ -840,7 +840,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         if(complex)
             return true;
 
-        for(CalcProperty property : getDepends())
+        for(Property property : getDepends())
             if(property.isComplex())
                 return true;
         return false;
@@ -852,7 +852,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         if(noHint)
             return true;
 
-        for(CalcProperty property : getDepends())
+        for(Property property : getDepends())
             if(property.isNoHint())
                 return true;
         return false;
@@ -864,18 +864,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return setOrDropped ? SET : DROPPED;
     }
 
-    private final AddValue<CalcProperty, Byte> addSetOrDropped = new SymmAddValue<CalcProperty, Byte>() {
-        public Byte addValue(CalcProperty key, Byte prevValue, Byte newValue) {
+    private final AddValue<Property, Byte> addSetOrDropped = new SymmAddValue<Property, Byte>() {
+        public Byte addValue(Property key, Byte prevValue, Byte newValue) {
             return (byte)(prevValue | newValue); // раньше and был, но тогда получалась проблема что если есть и SET и DROP, а скажем DROP "идет за" каким-то FINAL изменением, кэши getUsedChanges не совпадают (см. logCaches)
         }
     };
 
     @IdentityLazy
-    public ImMap<CalcProperty, Byte> getSetOrDroppedDepends() {
-        ImSet<SessionCalcProperty> sessionDepends = getSessionCalcDepends(true); // нужны и вычисляемые события, так как в логике вычислений (getExpr) используется
-        MMap<CalcProperty, Byte> mResult = MapFact.mMap(addSetOrDropped);
+    public ImMap<Property, Byte> getSetOrDroppedDepends() {
+        ImSet<SessionProperty> sessionDepends = getSessionCalcDepends(true); // нужны и вычисляемые события, так как в логике вычислений (getExpr) используется
+        MMap<Property, Byte> mResult = MapFact.mMap(addSetOrDropped);
         for(int i=0,size=sessionDepends.size();i<size;i++) {
-            SessionCalcProperty property = sessionDepends.get(i);
+            SessionProperty property = sessionDepends.get(i);
             if(property instanceof ChangedProperty) {
                 ChangedProperty changed = (ChangedProperty) property;
                 Boolean setOrDropped = changed.getSetOrDropped();
@@ -883,15 +883,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
                     mResult.add(changed.property, getSetDropped(setOrDropped));
             }
         }
-        ImMap<CalcProperty, Byte> result = mResult.immutable();
+        ImMap<Property, Byte> result = mResult.immutable();
         assert getRecDepends().containsAll(result.keys());
         return result;
     }
 
     @IdentityStartLazy
-    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
-        MSet<SessionCalcProperty> mResult = SetFact.mSet();
-        for(CalcProperty<?> property : getDepends(events)) // derived'ы в общем то не интересуют так как используется в singleApply
+    public ImSet<SessionProperty> getSessionCalcDepends(boolean events) {
+        MSet<SessionProperty> mResult = SetFact.mSet();
+        for(Property<?> property : getDepends(events)) // derived'ы в общем то не интересуют так как используется в singleApply
             mResult.addAll(property.getSessionCalcDepends(events));
         return mResult.immutable();
     }
@@ -916,13 +916,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return propChanges.hasChanges(getUsedChanges(propChanges));
     }
 
-    public ImSet<CalcProperty> getUsedChanges(StructChanges propChanges) {
+    public ImSet<Property> getUsedChanges(StructChanges propChanges) {
         if(propChanges.isEmpty()) // чтобы рекурсию разбить
             return SetFact.EMPTY();
 
         ChangeType modifyChanges = propChanges.getUsedChange(this);
         if(modifyChanges!=null)
-            return SetFact.add(SetFact.singleton((CalcProperty) this), modifyChanges.isFinal() ? SetFact.<CalcProperty>EMPTY() : getUsedChanges(propChanges.remove(this)));
+            return SetFact.add(SetFact.singleton((Property) this), modifyChanges.isFinal() ? SetFact.<Property>EMPTY() : getUsedChanges(propChanges.remove(this)));
 
         return calculateUsedChanges(propChanges);
     }
@@ -1046,7 +1046,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
                     String key = ((CalcPropertyObjectImplement<String>) indexField).object;
                     return mapTable.mapKeys.get(mapping.reverse().get(key));
                 } else {
-                    CalcProperty property = ((CalcPropertyRevImplement) indexField).property;
+                    Property property = ((CalcPropertyRevImplement) indexField).property;
                     assert BaseUtils.hashEquals(mapTable.table, property.mapTable.table);
                     return property.field;
                 }
@@ -1094,7 +1094,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, final ExClassSet valueClasses) {
         return classToAlg(type, new CallableWithParam<AlgType, ImMap<T, ValueClass>>() {
             public ImMap<T, ValueClass> call(AlgType arg) {
-                return arg.getInterfaceClasses(CalcProperty.this, valueClasses);
+                return arg.getInterfaceClasses(Property.this, valueClasses);
             }
         });
     }
@@ -1108,7 +1108,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     public ValueClass getValueClass(ClassType classType) {
         return classToAlg(classType, new CallableWithParam<AlgType, ValueClass>() {
             public ValueClass call(AlgType arg) {
-                return arg.getValueClass(CalcProperty.this);
+                return arg.getValueClass(Property.this);
             }
         });
     }
@@ -1337,7 +1337,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return propChanges.filter(getUsedDataChanges(propChanges.getStruct()));
     }
 
-    public ImSet<CalcProperty> getUsedDataChanges(StructChanges propChanges) {
+    public ImSet<Property> getUsedDataChanges(StructChanges propChanges) {
         return calculateUsedDataChanges(propChanges);
     }
 
@@ -1382,7 +1382,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return calculateDataChanges(change, changedWhere, propChanges);
     }
 
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         return SetFact.EMPTY();
     }
 
@@ -1437,7 +1437,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
             return;
         }
 
-        if(!((CalcProperty)whereImplement.property).noDB())
+        if(!((Property)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, ChangeEvent.scope);
 
         ChangeEvent<T> event = new ChangeEvent<>(this, valueImplement, whereImplement);
@@ -1530,7 +1530,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     }
 
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty) {
         ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
         if(interfaceClasses.size() < interfaces.size()) // не все классы есть
             return null;
@@ -1737,7 +1737,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         return result;
     }
 
-    public ImSet<CalcProperty> getSetUsedChanges(PropertyChanges propChanges) {
+    public ImSet<Property> getSetUsedChanges(PropertyChanges propChanges) {
         return getUsedChanges(propChanges.getStruct());
     }
 
@@ -1988,19 +1988,19 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
 
     public void printDepends(boolean events, String tab) {
         System.out.println(tab + this);
-        for(CalcProperty prop : getDepends(events)) {
+        for(Property prop : getDepends(events)) {
             prop.printDepends(events, tab + '\t');
         }
     }
 
     @IdentityStartLazy
-    public ImList<CalcProperty> getSortedDepends() {
+    public ImList<Property> getSortedDepends() {
         return getDepends().sort(BusinessLogics.propComparator());
     }
 
     // странная конечно эвристика, нужна чтобы f(a) IF g(a) наследовал draw options f(a), возможно в будущем надо убрать
-    public ImList<CalcProperty> getAndProperties() {
-        return ListFact.singleton((CalcProperty) this);
+    public ImList<Property> getAndProperties() {
+        return ListFact.singleton((Property) this);
     }
 
     private boolean loggable;
@@ -2029,10 +2029,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
     public boolean isAggr() {
         if(aggr)
             return true;
-        ImSet<CalcProperty> anImplements = getImplements();
+        ImSet<Property> anImplements = getImplements();
         if(anImplements.isEmpty())
             return false;
-        for(CalcProperty implement : anImplements)
+        for(Property implement : anImplements)
             if(!implement.isAggr())
                 return false;
         return true;
@@ -2042,14 +2042,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends ActionOr
         this.aggr = aggr;
     }
     
-    public ImSet<CalcProperty> getImplements() {
+    public ImSet<Property> getImplements() {
         return SetFact.EMPTY();
     }
     
-    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<CalcProperty> path) {
+    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path) {
         if(path != null)
             path = path.addExcl(this);
-        for(CalcProperty depend : getDepends())
+        for(Property depend : getDepends())
             if(depend.checkRecursions(abstractPath, path))
                 return true;
         return false;

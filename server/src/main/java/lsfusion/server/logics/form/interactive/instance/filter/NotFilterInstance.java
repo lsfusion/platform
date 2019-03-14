@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.io.DataInputStream;
@@ -43,7 +43,7 @@ public class NotFilterInstance extends FilterInstance {
         return filter.dataUpdated(changedProps, reallyChanged, modifier, hidden, groupObjects);
     }
 
-    public void fillProperties(MSet<CalcProperty> properties) {
+    public void fillProperties(MSet<Property> properties) {
         filter.fillProperties(properties);
     }
 
@@ -51,7 +51,7 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return filter.getWhere(mapKeys, modifier, reallyChanged, mUsedProps).not();
     }
 

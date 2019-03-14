@@ -48,7 +48,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final boolean ordersNotNull;
 
-    public <T extends PropertyInterface> AddObjectActionProperty(CustomClass valueClass, CalcProperty<T> result, boolean autoSet) {
+    public <T extends PropertyInterface> AddObjectActionProperty(CustomClass valueClass, Property<T> result, boolean autoSet) {
         this(valueClass, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet);
     }
 
@@ -81,25 +81,25 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
         if(where==null)
             return MapFact.EMPTY();
         return getUsedProps(where);
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        ImMap<CalcProperty, Boolean> result = getChangeExtProps(valueClass, needDialog());
+    public ImMap<Property, Boolean> aspectChangeExtProps() {
+        ImMap<Property, Boolean> result = getChangeExtProps(valueClass, needDialog());
         if(this.result!=null)
             result = result.merge(this.result.property.getChangeProps().toMap(false), addValue);
         return result;
     }
     
-    public static ImMap<CalcProperty, Boolean> getChangeExtProps(CustomClass valueClass, boolean needDialog) {
+    public static ImMap<Property, Boolean> getChangeExtProps(CustomClass valueClass, boolean needDialog) {
         if(valueClass == null) // добавление unknown, используется в агрегациях
             return MapFact.EMPTY();
         
-        MExclMap<CalcProperty, Boolean> mResult = MapFact.mExclMap();
+        MExclMap<Property, Boolean> mResult = MapFact.mExclMap();
         mResult.exclAddAll(valueClass.getParentSetProps().toMap(false));
         
         if(needDialog)

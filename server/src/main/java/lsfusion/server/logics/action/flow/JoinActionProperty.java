@@ -86,18 +86,18 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         if(isRecursive) // recursion guard
             return MapFact.EMPTY();
         return super.aspectChangeExtProps();
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        MSet<CalcProperty> used = SetFact.mSet();
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
+        MSet<Property> used = SetFact.mSet();
         for(CalcPropertyInterfaceImplement<PropertyInterface> value : action.mapping.valueIt())
             value.mapFillDepends(used);
-        ImMap<CalcProperty, Boolean> result = used.immutable().toMap(false);
+        ImMap<Property, Boolean> result = used.immutable().toMap(false);
         if(!isRecursive)
             result = result.merge(super.aspectUsedExtProps(), addValue);
         return result;

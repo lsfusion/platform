@@ -17,9 +17,9 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 
-public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
+public class OldProperty<T extends PropertyInterface> extends SessionProperty<T> {
 
-    public OldProperty(CalcProperty<T> property, PrevScope scope) {
+    public OldProperty(Property<T> property, PrevScope scope) {
         super(LocalizedString.concat("(" + scope.getSID() + ",в БД) ", property.localizedToString()), property, scope);
         
         drawOptions.inheritDrawOptions(property.drawOptions);
@@ -91,7 +91,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     }
 
     @Override
-    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
+    public ImSet<SessionProperty> getSessionCalcDepends(boolean events) {
         if(hideOlds())
             return SetFact.EMPTY();
         return super.getSessionCalcDepends(events);

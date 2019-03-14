@@ -62,7 +62,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
         for(int i=0,size=properties.size();i<size;i++) {
             PropertyDrawEntity propertyDraw;
 
-            CalcProperty<M> addProperty;
+            Property<M> addProperty;
             ImRevMap<M, ObjectEntity> addMapping;
             CalcPropertyInterfaceImplement<P> property = properties.get(i);
             if(property instanceof CalcPropertyMapImplement) {

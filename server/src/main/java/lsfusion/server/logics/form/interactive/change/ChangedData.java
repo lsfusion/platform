@@ -4,26 +4,26 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 
 public class ChangedData {
     
-    public final FunctionSet<CalcProperty> props;
+    public final FunctionSet<Property> props;
     public final boolean wasRestart;
 
-    public final FunctionSet<CalcProperty> externalProps;
+    public final FunctionSet<Property> externalProps;
 
-    public static ChangedData EMPTY = new ChangedData(SetFact.<CalcProperty>EMPTY(), SetFact.<CalcProperty>EMPTY(), false);
+    public static ChangedData EMPTY = new ChangedData(SetFact.<Property>EMPTY(), SetFact.<Property>EMPTY(), false);
 
-    public ChangedData(ImSet<CalcProperty> props, boolean wasRestart) {
-        this(CalcProperty.getDependsOnSet(props), SetFact.<CalcProperty>EMPTY(), wasRestart);
+    public ChangedData(ImSet<Property> props, boolean wasRestart) {
+        this(Property.getDependsOnSet(props), SetFact.<Property>EMPTY(), wasRestart);
     }
 
-    public ChangedData(ImSet<CalcProperty> externalProps) {
-        this(SetFact.<CalcProperty>EMPTY(), CalcProperty.getDependsOnSet(externalProps), false);
+    public ChangedData(ImSet<Property> externalProps) {
+        this(SetFact.<Property>EMPTY(), Property.getDependsOnSet(externalProps), false);
     }
 
-    public ChangedData(FunctionSet<CalcProperty> props, FunctionSet<CalcProperty> externalProps, boolean wasRestart) {
+    public ChangedData(FunctionSet<Property> props, FunctionSet<Property> externalProps, boolean wasRestart) {
         this.props = props;
         this.externalProps = externalProps;
         this.wasRestart = wasRestart;

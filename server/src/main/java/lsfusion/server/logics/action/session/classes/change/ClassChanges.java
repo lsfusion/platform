@@ -257,12 +257,12 @@ public class ClassChanges {
         return new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance);
     }
 
-    public ImMap<CalcProperty, UpdateResult> changeClass(MaterializableClassChange matChange, SQLSession sql, BaseClass baseClass, QueryEnvironment env, ChangedClasses changedClasses) throws SQLException, SQLHandledException {
+    public ImMap<Property, UpdateResult> changeClass(MaterializableClassChange matChange, SQLSession sql, BaseClass baseClass, QueryEnvironment env, ChangedClasses changedClasses) throws SQLException, SQLHandledException {
         // если старые классы
         ImMap<ClassDataProperty, ChangedDataClasses> dataProperties = changedClasses.data;
         ImFilterValueMap<ClassDataProperty, ModifyResult> mDataChanges = dataProperties.mapFilterValues();
-        MMap<CalcProperty, UpdateResult> mIsClassChanges = MapFact.mMap(new SymmAddValue<CalcProperty, UpdateResult>() {
-            public UpdateResult addValue(CalcProperty key, UpdateResult prevValue, UpdateResult newValue) {
+        MMap<Property, UpdateResult> mIsClassChanges = MapFact.mMap(new SymmAddValue<Property, UpdateResult>() {
+            public UpdateResult addValue(Property key, UpdateResult prevValue, UpdateResult newValue) {
                 return prevValue.or(newValue);
             }});
         for(int i=0,size=dataProperties.size();i<size;i++) {
@@ -312,7 +312,7 @@ public class ClassChanges {
         return MapFact.addExcl(mDataChanges.immutableValue(), mIsClassChanges.immutable());
     }
 
-    public void aspectChangeClass(ImFilterValueMap<ClassDataProperty, ModifyResult> mDataChanges, MMap<CalcProperty, UpdateResult> mIsClassChanges, int i, ClassDataProperty dataProperty, SingleKeyPropertyUsage dataNews, ModifyResult tableChanged, ChangedDataClasses dataChangedClasses, BaseClass baseClass) {
+    public void aspectChangeClass(ImFilterValueMap<ClassDataProperty, ModifyResult> mDataChanges, MMap<Property, UpdateResult> mIsClassChanges, int i, ClassDataProperty dataProperty, SingleKeyPropertyUsage dataNews, ModifyResult tableChanged, ChangedDataClasses dataChangedClasses, BaseClass baseClass) {
         if(dataNews.isEmpty()) { // есть удаление
             news.remove(dataProperty);
             this.changedClasses.remove(dataProperty);
@@ -329,7 +329,7 @@ public class ClassChanges {
             other.changeClass(entry.getValue().getChange());
     }
 
-    public long getMaxDataUsed(CalcProperty prop) {
+    public long getMaxDataUsed(Property prop) {
         if(prop instanceof IsClassProperty || prop instanceof ClassDataProperty || prop instanceof ObjectClassProperty) {
             ImSet<ClassDataProperty> classDataProps;
             if(prop instanceof IsClassProperty)
@@ -464,20 +464,20 @@ public class ClassChanges {
         newClasses.clear();
     }
     
-    public ImSet<CalcProperty> getChangedProps(BaseClass baseClass) {
+    public ImSet<Property> getChangedProps(BaseClass baseClass) {
         return getChangedProps(news.keySet(), changedClasses, baseClass);
     }
     
-    public static ImSet<CalcProperty> getChangedProps(Iterable<ClassDataProperty> news, Map<ClassDataProperty, ChangedDataClasses> changedClasses, BaseClass baseClass) {
-        MSet<CalcProperty> mResult = SetFact.mSet();
+    public static ImSet<Property> getChangedProps(Iterable<ClassDataProperty> news, Map<ClassDataProperty, ChangedDataClasses> changedClasses, BaseClass baseClass) {
+        MSet<Property> mResult = SetFact.mSet();
         for(ClassDataProperty dataProperty : news) {
             mResult.add(dataProperty);
             mResult.addAll(getChangedIsClassProperties(changedClasses.get(dataProperty), baseClass));
         }
         return mResult.immutable();
     }
-    public static ImSet<CalcProperty> getChangedProps(ImMap<ClassDataProperty, ChangedDataClasses> news, BaseClass baseClass) {
-        MSet<CalcProperty> mResult = SetFact.mSet();
+    public static ImSet<Property> getChangedProps(ImMap<ClassDataProperty, ChangedDataClasses> news, BaseClass baseClass) {
+        MSet<Property> mResult = SetFact.mSet();
         for(int i=0,size=news.size();i<size;i++) {
             mResult.add(news.getKey(i));
             mResult.addAll(getChangedIsClassProperties(news.getValue(i), baseClass));
@@ -485,8 +485,8 @@ public class ClassChanges {
         return mResult.immutable();
     }
 
-    private static ImSet<CalcProperty> getChangedIsClassProperties(ChangedDataClasses dataChangedClasses, BaseClass baseClass) {
-        MSet<CalcProperty> mResult = SetFact.mSet();
+    private static ImSet<Property> getChangedIsClassProperties(ChangedDataClasses dataChangedClasses, BaseClass baseClass) {
+        MSet<Property> mResult = SetFact.mSet();
         for(CustomClass customClass : dataChangedClasses.add)
             mResult.add(customClass.getProperty());
         for(CustomClass customClass : dataChangedClasses.remove)
@@ -602,7 +602,7 @@ public class ClassChanges {
         return null;
     }
 
-    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property, BaseClass baseClass) {
+    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property, BaseClass baseClass) {
         if(property instanceof ObjectClassProperty)
             return (PropertyChange<P>) getObjectClassChange((ObjectClassProperty) property, baseClass);
 
@@ -704,8 +704,8 @@ public class ClassChanges {
         return remove;
     }
 
-    private final Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<CalcProperty, UpdateResult>> EMPTY_SPLIT = new Pair<>(new Pair<>(MapFact.<ClassDataProperty, SingleKeyPropertyUsage>EMPTY(), MapFact.<ClassDataProperty, ChangedDataClasses>EMPTY()), MapFact.<CalcProperty, UpdateResult>EMPTY());
-    public Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<CalcProperty, UpdateResult>> splitSingleApplyRemove(IsClassProperty classProperty, BaseClass baseClass, SQLSession sql, QueryEnvironment queryEnv, Runnable checkTransaction) throws SQLException, SQLHandledException {
+    private final Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<Property, UpdateResult>> EMPTY_SPLIT = new Pair<>(new Pair<>(MapFact.<ClassDataProperty, SingleKeyPropertyUsage>EMPTY(), MapFact.<ClassDataProperty, ChangedDataClasses>EMPTY()), MapFact.<Property, UpdateResult>EMPTY());
+    public Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<Property, UpdateResult>> splitSingleApplyRemove(IsClassProperty classProperty, BaseClass baseClass, SQLSession sql, QueryEnvironment queryEnv, Runnable checkTransaction) throws SQLException, SQLHandledException {
         if(news.isEmpty() || !Settings.get().isEnableApplySingleRemoveClasses())
             return EMPTY_SPLIT;
 
@@ -740,13 +740,13 @@ public class ClassChanges {
     }
 
     @StackMessage("{logics.split.objects.remove.classes}")
-    public Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<CalcProperty, UpdateResult>> splitSingleApplyRemoveWithChanges(ImMap<ClassDataProperty, ObjectValueClassSet> classDataProps, @ParamMessage CustomClass customClass, SQLSession sql, QueryEnvironment queryEnv, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<Property, UpdateResult>> splitSingleApplyRemoveWithChanges(ImMap<ClassDataProperty, ObjectValueClassSet> classDataProps, @ParamMessage CustomClass customClass, SQLSession sql, QueryEnvironment queryEnv, BaseClass baseClass) throws SQLException, SQLHandledException {
         KeyExpr keyExpr = new KeyExpr("split");
         Where had = keyExpr.isUpClass(customClass);
 
         ImFilterValueMap<ClassDataProperty, ModifyResult> mDataChanges = classDataProps.mapFilterValues();
-        MMap<CalcProperty, UpdateResult> mIsClassChanges = MapFact.mMap(new SymmAddValue<CalcProperty, UpdateResult>() {
-            public UpdateResult addValue(CalcProperty key, UpdateResult prevValue, UpdateResult newValue) {
+        MMap<Property, UpdateResult> mIsClassChanges = MapFact.mMap(new SymmAddValue<Property, UpdateResult>() {
+            public UpdateResult addValue(Property key, UpdateResult prevValue, UpdateResult newValue) {
                 return prevValue.or(newValue);
             }});
         ImFilterValueMap<ClassDataProperty, SingleKeyPropertyUsage> mSplitNews = classDataProps.mapFilterValues();

@@ -6,9 +6,9 @@ import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.logics.form.stat.integration.exporting.hierarchy.ExportHierarchicalActionProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.form.stat.integration.hierarchy.xml.XMLNode;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 public class ExportXMLActionProperty<O extends ObjectSelector> extends ExportHierarchicalActionProperty<XMLNode, O> {
     
     public ExportXMLActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                                   FormIntegrationType staticType, LCP exportFile, String charset, CalcProperty root, CalcProperty tag) {
+                                   FormIntegrationType staticType, LCP exportFile, String charset, Property root, Property tag) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile, charset, root, tag);
     }
 

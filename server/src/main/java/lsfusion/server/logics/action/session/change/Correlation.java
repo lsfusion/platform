@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 
 import java.sql.SQLException;
 
@@ -17,7 +17,7 @@ public interface Correlation<K> {
     
     Type getType();
     
-    CalcProperty<?> getProperty();
+    Property<?> getProperty();
     
     CustomClass getCustomClass();
 }

@@ -14,7 +14,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -89,7 +89,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     public boolean hasPushFor(ImSet<T> context, boolean ordersNotNull) {
         return property.hasPushFor(mapping, context, ordersNotNull);
     }
-    public CalcProperty getPushWhere(ImSet<T> context, boolean ordersNotNull) {
+    public Property getPushWhere(ImSet<T> context, boolean ordersNotNull) {
         return property.getPushWhere(mapping, context, ordersNotNull);
     }
     public ActionPropertyMapImplement<?, T> pushFor(ImSet<T> context, CalcPropertyMapImplement<?, T> where, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {

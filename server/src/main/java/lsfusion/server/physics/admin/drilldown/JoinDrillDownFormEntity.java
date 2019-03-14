@@ -40,7 +40,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
 
     @Override
     protected void setupDrillDownForm() {
-        CalcProperty<I> implProperty = property.implement.property;
+        Property<I> implProperty = property.implement.property;
         if(implProperty.isDrillFull()) {
             detailsProperties = new ArrayList<>();
             Version version = LM.getVersion();

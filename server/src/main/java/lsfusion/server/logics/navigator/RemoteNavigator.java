@@ -25,6 +25,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.CustomClass;
@@ -41,7 +42,6 @@ import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.language.linear.LAP;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.remote.*;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;
@@ -207,13 +207,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             this.weakThis = new WeakReference<>(dbManager);
         }
 
-        public void regChange(ImSet<CalcProperty> changes, DataSession session) {
+        public void regChange(ImSet<Property> changes, DataSession session) {
             ChangesSync changesSync = weakThis.get();
             if(changesSync != null)
                 changesSync.regChange(changes, session);
         }
 
-        public ImSet<CalcProperty> update(DataSession session, FormInstance form) {
+        public ImSet<Property> update(DataSession session, FormInstance form) {
             ChangesSync changesSync = weakThis.get();
             if(changesSync != null)
                 return changesSync.update(session, form);
@@ -564,7 +564,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     // обмен изменениями между сессиями в рамках одного подключения
     private static class ChangesSync implements ChangesController {
 
-        private final Map<CalcProperty, LastChanges> changes = MapFact.mAddRemoveMap();
+        private final Map<Property, LastChanges> changes = MapFact.mAddRemoveMap();
         private final WeakIdentityHashMap<FormInstance, Long> formStamps = new WeakIdentityHashMap<>();
         private long minPrevUpdatedStamp = 0;
         private long currentStamp = 0;
@@ -578,18 +578,18 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                         minPrevUpdatedStamp = entry.second;
 
                 // удаляем все меньше minStamp
-                for(Iterator<Map.Entry<CalcProperty,LastChanges>> it = changes.entrySet().iterator();it.hasNext();) {
-                    Map.Entry<CalcProperty, LastChanges> entry = it.next();
+                for(Iterator<Map.Entry<Property,LastChanges>> it = changes.entrySet().iterator(); it.hasNext();) {
+                    Map.Entry<Property, LastChanges> entry = it.next();
                     if(entry.getValue().timeStamp <= minPrevUpdatedStamp) // isChanged никак не будет
                         it.remove();
                 }
             }
         }
 
-        public synchronized void regChange(ImSet<CalcProperty> updateChanges, DataSession session) {
+        public synchronized void regChange(ImSet<Property> updateChanges, DataSession session) {
             currentStamp++;
 
-            for(CalcProperty change : updateChanges) {
+            for(Property change : updateChanges) {
                 LastChanges last = changes.get(change);
                 if(last == null) {
                     last = new LastChanges();
@@ -599,7 +599,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
         }
 
-        public synchronized ImSet<CalcProperty> update(DataSession session, FormInstance form) {
+        public synchronized ImSet<Property> update(DataSession session, FormInstance form) {
             assert session == form.session;
 
             Long lPrevStamp = formStamps.get(form);
@@ -611,8 +611,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             if(prevStamp == currentStamp) // если не было никаких изменений
                 return SetFact.EMPTY();
 
-            MExclSet<CalcProperty> mProps = SetFact.mExclSet();
-            for(Map.Entry<CalcProperty, LastChanges> change : changes.entrySet()) {
+            MExclSet<Property> mProps = SetFact.mExclSet();
+            for(Map.Entry<Property, LastChanges> change : changes.entrySet()) {
                 if(change.getValue().isChanged(prevStamp, session))
                     mProps.exclAdd(change.getKey());
             }

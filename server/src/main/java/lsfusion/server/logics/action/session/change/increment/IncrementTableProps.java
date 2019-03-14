@@ -8,7 +8,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.TableProps;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -29,34 +29,34 @@ public class IncrementTableProps extends IncrementProps {
         return getProperties().isEmpty();
     }
 
-    public <P extends PropertyInterface> IncrementTableProps(CalcProperty<P> property, PropertyChangeTableUsage<P> table) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> IncrementTableProps(Property<P> property, PropertyChangeTableUsage<P> table) throws SQLException, SQLHandledException {
         add(property, table);
     }
 
-    public ImSet<CalcProperty> getProperties() {
+    public ImSet<Property> getProperties() {
         return tableProps.getProperties();
     }
 
-    public boolean contains(CalcProperty property) {
+    public boolean contains(Property property) {
         return tableProps.contains(property);
     }
 
-    public <P extends PropertyInterface> PropertyChangeTableUsage<P> getTable(CalcProperty<P> property) {
+    public <P extends PropertyInterface> PropertyChangeTableUsage<P> getTable(Property<P> property) {
         return tableProps.getTable(property);
     }
 
-    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
+    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
         return tableProps.getPropertyChange(property);
     }
 
-    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChangeTableUsage<P> changeTable) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void add(Property<P> property, PropertyChangeTableUsage<P> changeTable) throws SQLException, SQLHandledException {
         assert !tableProps.contains(property);
         tableProps.add(property, changeTable);
 
         eventChange(property, true);
     }
 
-    public <P extends PropertyInterface> void remove(CalcProperty<P> property, SQLSession sql, OperationOwner owner) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void remove(Property<P> property, SQLSession sql, OperationOwner owner) throws SQLException, SQLHandledException {
         assert tableProps.contains(property);
         tableProps.remove(property, sql, owner);
 
@@ -69,7 +69,7 @@ public class IncrementTableProps extends IncrementProps {
         tableProps.clear(session, owner);
     }
 
-    public long getMaxCount(CalcProperty property) {
+    public long getMaxCount(Property property) {
         PropertyChangeTableUsage table = tableProps.getTable(property);
         if(table != null)
             return table.getCount();

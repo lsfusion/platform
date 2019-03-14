@@ -14,9 +14,9 @@ import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.SystemActionProperty;
@@ -100,14 +100,14 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
         return connectionString;
     }
 
-    public static ImMap<CalcProperty, Boolean> getChangeExtProps(ImList<LCP> props) {
-        return props.mapListValues(new GetValue<CalcProperty, LCP>() {
-            public CalcProperty getMapValue(LCP value) {
+    public static ImMap<Property, Boolean> getChangeExtProps(ImList<LCP> props) {
+        return props.mapListValues(new GetValue<Property, LCP>() {
+            public Property getMapValue(LCP value) {
                 return ((LCP<?>)value).property;
             }}).toOrderSet().getSet().toMap(false);
     }
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         return getChangeExtProps(targetPropList);
     }
 }

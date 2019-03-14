@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.logging.init;
 
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.init.GroupPropertiesTask;
 
@@ -10,7 +10,7 @@ public class FinishLogInitTask extends GroupPropertiesTask {
     }
 
     protected void runTask(ActionOrProperty property) {
-        if(property instanceof CalcProperty)
-            getBL().finishLogInit((CalcProperty) property);
+        if(property instanceof Property)
+            getBL().finishLogInit((Property) property);
     }
 }

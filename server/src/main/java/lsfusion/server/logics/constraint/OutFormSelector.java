@@ -12,7 +12,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.DataSession;
 
@@ -20,10 +20,10 @@ import java.sql.SQLException;
 
 public class OutFormSelector<P extends PropertyInterface> implements FormSelector<ObjectSelector> {
 
-    private final CalcProperty<P> property;
-    private final CalcProperty messageProperty;
+    private final Property<P> property;
+    private final Property messageProperty;
     
-    public OutFormSelector(CalcProperty<P> property, CalcProperty messageProperty) {
+    public OutFormSelector(Property<P> property, Property messageProperty) {
         this.property = property;
         this.messageProperty = messageProperty;
     }

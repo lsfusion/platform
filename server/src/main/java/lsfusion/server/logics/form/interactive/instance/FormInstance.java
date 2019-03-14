@@ -737,12 +737,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return userObjectList;
     }
 
-    protected FunctionSet<CalcProperty> getNoHints() {
+    protected FunctionSet<Property> getNoHints() {
         if (pullProps == null)
             return SetFact.EMPTY();
 
-        return new FunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty element) {
+        return new FunctionSet<Property>() {
+            public boolean contains(Property element) {
                 for (PullChangeProperty pullProp : pullProps)
                     if (pullProp.isChangeBetween(element))
                         return true;
@@ -2233,7 +2233,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // pullProps чтобы запретить hint'ить
     public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getContextFilters(ObjectEntity filterObject, CalcPropertyValueImplement<P> propValues, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
-        CalcProperty<P> implementProperty = propValues.property;
+        Property<P> implementProperty = propValues.property;
 
         MSet<ContextFilter> mContextFilters = SetFact.mSet();
         MSet<PullChangeProperty> mPullProps = SetFact.mSet();
@@ -2246,7 +2246,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
                 for (CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
-                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty) filterImplement.property).getOnChangeProperty((CalcProperty) propValues.property);
+                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((Property) filterImplement.property).getOnChangeProperty((Property) propValues.property);
                     mPullProps.add(onChangeProperty);
                     mContextFilters.add(onChangeProperty.getContextFilter((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject));
                 }
@@ -2316,7 +2316,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public DialogRequest createChangeEditorDialogRequest(final CalcPropertyValueImplement propertyValues,
                                                          final GroupObjectInstance groupObject,
-                                                         final CalcProperty filterProperty,
+                                                         final Property filterProperty,
                                                          final ExecutionStack stack) throws SQLException {
         return new DialogRequestAdapter() {
             @Override
@@ -2454,14 +2454,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private final ImMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> environmentIncrementSources;
 
     private SessionModifier createModifier() {
-        FunctionSet<CalcProperty> noHints = getNoHints();
+        FunctionSet<Property> noHints = getNoHints();
         return new OverridePropSourceSessionModifier<SessionDataProperty>(toString(), environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier()) {
             @Override
-            protected ImSet<CalcProperty> getSourceProperties(SessionDataProperty property) {
+            protected ImSet<Property> getSourceProperties(SessionDataProperty property) {
                 Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
                 if(source == null)
                     return SetFact.EMPTY();
-                ImSet<CalcProperty> result = source.first.getUsedEnvironmentIncrementProps(source.second);
+                ImSet<Property> result = source.first.getUsedEnvironmentIncrementProps(source.second);
                 if(result == null)
                     return SetFact.EMPTY();
                 return result;

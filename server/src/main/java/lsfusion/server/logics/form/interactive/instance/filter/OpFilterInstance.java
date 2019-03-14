@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -51,7 +51,7 @@ public abstract class OpFilterInstance extends FilterInstance {
         return op1.dataUpdated(changedProps, reallyChanged, modifier, hidden, groupObjects) || op2.dataUpdated(changedProps, reallyChanged, modifier, hidden, groupObjects);
     }
 
-    public void fillProperties(MSet<CalcProperty> properties) {
+    public void fillProperties(MSet<Property> properties) {
         op1.fillProperties(properties);
         op2.fillProperties(properties);
     }
@@ -72,7 +72,7 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
+    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
         return BaseUtils.mergeSet(op1.getResolveChangeProperties(toChange), op2.getResolveChangeProperties(toChange));
     }
 

@@ -79,15 +79,15 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
     }
 
 //    @Override
-//    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
+//    protected void fillDepends(MSet<Property> depends, boolean events) {
 //        depends.addAll(getClassDataProps());
 //    }
 
-    public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
+    public ImSet<Property> getSingleApplyDroppedIsClassProps() {
         ValueClass interfaceClass = getInterfaceClass();
         if(interfaceClass instanceof CustomClass) {
-            return baseClass.getAllChildren().mapSetValues(new GetValue<CalcProperty, CustomClass>() {
-                public CalcProperty getMapValue(CustomClass value) {
+            return baseClass.getAllChildren().mapSetValues(new GetValue<Property, CustomClass>() {
+                public Property getMapValue(CustomClass value) {
                     return value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope);
                 }});
         }
@@ -100,7 +100,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         if(editActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return ChangeClassActionProperty.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));

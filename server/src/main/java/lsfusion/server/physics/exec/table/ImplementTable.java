@@ -31,13 +31,13 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -61,7 +61,7 @@ public class ImplementTable extends DBTable { // последний интерф
         return mapFields;
     }
 
-    // для обеспечения детерминированности mapping'a (связано с CalcProperty.getOrderTableInterfaceClasses)
+    // для обеспечения детерминированности mapping'a (связано с Property.getOrderTableInterfaceClasses)
     private final ImOrderMap<KeyField, ValueClass> orderMapFields;
     public ImOrderMap<KeyField, ValueClass> getOrderMapFields() {
         return orderMapFields;
@@ -140,14 +140,14 @@ public class ImplementTable extends DBTable { // последний интерф
         orderMapFields = keys.mapOrderMap(mapFields);
     }
 
-    public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, Modifier modifier) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> IQuery<KeyField, Property> getReadSaveQuery(ImSet<Property> properties, Modifier modifier) throws SQLException, SQLHandledException {
         return getReadSaveQuery(properties, modifier.getPropertyChanges());
     }
 
-    public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, PropertyChanges propertyChanges) {
-        QueryBuilder<KeyField, CalcProperty> changesQuery = new QueryBuilder<>(this);
+    public <P extends PropertyInterface> IQuery<KeyField, Property> getReadSaveQuery(ImSet<Property> properties, PropertyChanges propertyChanges) {
+        QueryBuilder<KeyField, Property> changesQuery = new QueryBuilder<>(this);
         WhereBuilder changedWhere = new WhereBuilder();
-        for (CalcProperty<P> property : properties)
+        for (Property<P> property : properties)
             changesQuery.addProperty(property, property.getIncrementExpr(property.mapTable.mapKeys.join(changesQuery.getMapExprs()), propertyChanges, changedWhere));
         changesQuery.and(changedWhere.toWhere());
         return changesQuery.getQuery();

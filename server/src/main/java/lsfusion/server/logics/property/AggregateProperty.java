@@ -46,9 +46,9 @@ import lsfusion.server.base.stack.ThisMessage;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-public abstract class AggregateProperty<T extends PropertyInterface> extends CalcProperty<T> {
+public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
-    protected static void fillDepends(MSet<CalcProperty> depends, ImCol<? extends CalcPropertyInterfaceImplement> propImplements) {
+    protected static void fillDepends(MSet<Property> depends, ImCol<? extends CalcPropertyInterfaceImplement> propImplements) {
         for(CalcPropertyInterfaceImplement propImplement : propImplements)
             propImplement.mapFillDepends(depends);
     }
@@ -79,7 +79,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return ExClassSet.toExType(aggrType.getType(ExClassSet.fromExType(valueClass)));
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
+    public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {
         return propChanges.getUsedChanges(getDepends());
     }
 

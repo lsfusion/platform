@@ -558,7 +558,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     // использование в aspectChangeExtProps у NEW, ChangeClass и т.п.
-    public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) {
+    public void fillChangedProps(MExclSet<Property> mSet, IncrementType type) {
         getProperty().fillChangedProps(mSet, type);
     }
     public ImSet<ClassDataProperty> getUpDataProps() {
@@ -568,9 +568,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             }});
     }
 
-    public ImSet<CalcProperty> getUpAllChangedProps() {
+    public ImSet<Property> getUpAllChangedProps() {
         ImSet<CustomClass> childs = getAllChildren();
-        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+        MExclSet<Property> mResult = SetFact.mExclSet();
         for(CustomClass customClass : childs) {
             customClass.fillChangedProps(mResult, IncrementType.SET);
             customClass.fillChangedProps(mResult, IncrementType.DROP);
@@ -578,23 +578,23 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return mResult.immutable();
     }
 
-//    public ImSet<CalcProperty> getChildDropProps(final ConcreteObjectClass toClass) {
-//        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+//    public ImSet<Property> getChildDropProps(final ConcreteObjectClass toClass) {
+//        MExclSet<Property> mResult = SetFact.mExclSet();
 //        for(CustomClass child : getAllChildren())
 //            if(!(toClass instanceof CustomClass && ((CustomClass) toClass).isChild(child)))
 //                child.fillChangedProps(mResult, IncrementType.DROP);
 //        return mResult.immutable();
 //    }
 
-    public ImSet<CalcProperty> getParentSetProps() {
-        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+    public ImSet<Property> getParentSetProps() {
+        MExclSet<Property> mResult = SetFact.mExclSet();
         for(CustomClass parent : getAllParents())
             parent.fillChangedProps(mResult, IncrementType.SET);
         return mResult.immutable();
     }
 
-    public static ImSet<CalcProperty> getChangeProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
-        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+    public static ImSet<Property> getChangeProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
+        MExclSet<Property> mResult = SetFact.mExclSet();
         for(CustomClass addClass : addClasses)
             addClass.fillChangedProps(mResult, IncrementType.SET);
         for(CustomClass removeClass : removeClasses)
@@ -670,19 +670,19 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return hasComplex(true) || hasComplex(false);
     }
     
-    public ImSet<CalcProperty> aggrProps = SetFact.EMPTY(); // все свойство с одним параметром
+    public ImSet<Property> aggrProps = SetFact.EMPTY(); // все свойство с одним параметром
 
     @IdentityLazy
-    public ImSet<CalcProperty> getUpAggrProps() {
-        MSet<CalcProperty> mUpAggrProps = SetFact.mSet(aggrProps);
+    public ImSet<Property> getUpAggrProps() {
+        MSet<Property> mUpAggrProps = SetFact.mSet(aggrProps);
         for(CustomClass parent : getParentsIt())
             mUpAggrProps.addAll(parent.getUpAggrProps());        
-        final ImSet<CalcProperty> upAggrProps = mUpAggrProps.immutable();
+        final ImSet<Property> upAggrProps = mUpAggrProps.immutable();
         
         // вырезаем те для кого implements уже есть
-        return upAggrProps.filterFn(new SFunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty element) {
-                return !upAggrProps.intersect(((CalcProperty<?>)element).getImplements());
+        return upAggrProps.filterFn(new SFunctionSet<Property>() {
+            public boolean contains(Property element) {
+                return !upAggrProps.intersect(((Property<?>)element).getImplements());
             }
         });
     }

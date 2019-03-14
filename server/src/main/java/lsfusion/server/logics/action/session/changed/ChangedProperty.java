@@ -41,7 +41,7 @@ import lsfusion.server.session.*;
 
 import java.sql.SQLException;
 
-public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
+public class ChangedProperty<T extends PropertyInterface> extends SessionProperty<T> {
 
     private final IncrementType type;
 
@@ -51,7 +51,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
         }
     }
 
-    public ChangedProperty(CalcProperty<T> property, IncrementType type, PrevScope scope) {
+    public ChangedProperty(Property<T> property, IncrementType type, PrevScope scope) {
         super(LocalizedString.concat("(" + type + ") ", property.localizedToString()), property, scope);
         this.type = type;
 
@@ -67,14 +67,14 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<Property> depends, boolean events) {
         depends.add(property);
         depends.add(property.getOld(scope));
     }
 
 
     @Override
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
+    public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {
         Boolean setOrDropped = getSetOrDropped();
         if(setOrDropped != null && !Settings.get().isDisableSetDroppedOptimization()) {
             if (isFakeChange(propChanges, setOrDropped))
@@ -88,8 +88,8 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
         return isSingleFakeChange(propChanges, property, setOrDropped) && isSingleFakeChange(propChanges, property.getOld(scope), !setOrDropped);
     }
 
-    private static boolean isSingleFakeChange(StructChanges propChanges, CalcProperty<?> property, boolean setOrDropped) {
-        ImSet<CalcProperty> usedChanges = property.getUsedChanges(propChanges);
+    private static boolean isSingleFakeChange(StructChanges propChanges, Property<?> property, boolean setOrDropped) {
+        ImSet<Property> usedChanges = property.getUsedChanges(propChanges);
         if(usedChanges.isEmpty()) // нет изменений
             return true;
 
@@ -156,7 +156,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
             return super.calculateLinks(events);
     }
     
-    public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
+    public ImSet<Property> getSingleApplyDroppedIsClassProps() {
         assert isSingleApplyDroppedIsClassProp();
         return ((IsClassProperty) property).getSingleApplyDroppedIsClassProps();
     }

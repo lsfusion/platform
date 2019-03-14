@@ -76,7 +76,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         return SetFact.add(propChanges.getUsedDataChanges(getDepends()), propChanges.getUsedChanges(getDepends()));
     }
 

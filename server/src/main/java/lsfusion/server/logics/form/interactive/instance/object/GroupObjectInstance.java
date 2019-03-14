@@ -400,7 +400,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         ImSet<FilterInstance> getFilters();
     }
 
-    public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor filterProcessor, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor filterProcessor, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         Where where = Where.TRUE;
         for(FilterInstance filt : (filterProcessor != null ? filterProcessor.getFilters() : filters)) {
             if(filterProcessor != null) {
@@ -425,20 +425,20 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 return value.getGridClass();
             }});
     }
-    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier, mUsedProps);
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        return getWhere(mapKeys, modifier, reallyChanged, (MSet<CalcProperty>) null);
+        return getWhere(mapKeys, modifier, reallyChanged, (MSet<Property>) null);
     }
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return getWhere(mapKeys, modifier, reallyChanged, null, mUsedProps);
     }
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor) throws SQLException, SQLHandledException {
         return getWhere(mapKeys, modifier, reallyChanged, processor, null);
     }
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return getFilterWhere(mapKeys, modifier, reallyChanged, processor, mUsedProps).and(getClassWhere(mapKeys, modifier, mUsedProps));
     }
 
@@ -535,7 +535,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, CalcProperty.defaultModifier, null, null, null).getOuterKeys());
+        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, Property.defaultModifier, null, null, null).getOuterKeys());
 
         return immutableCast(objects.filterFn(new SFunctionSet<ObjectInstance>() {
             public boolean contains(ObjectInstance object) { // если DataObject и нету ключей
@@ -672,15 +672,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return props.get(propType) != null;
     }
     
-    private MAddMap<GroupObjectProp, ImSet<CalcProperty>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
-    public ImSet<CalcProperty> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
+    private MAddMap<GroupObjectProp, ImSet<Property>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
+    public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
         return usedEnvironmentIncrementProps.get(propType);
     }
             
     public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
         if(mappedProp != null) {
-            MSet<CalcProperty> mUsedProps = null;
+            MSet<Property> mUsedProps = null;
             if(propsChanged)
                 mUsedProps = SetFact.mSet();
             
@@ -694,7 +694,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     if(orders.isEmpty())
                         change = mappedProp.property.getNoChange();
                     else {
-                        final MSet<CalcProperty> fmUsedProps = mUsedProps;
+                        final MSet<Property> fmUsedProps = mUsedProps;
                         ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeysEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
                             public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
                                 return value.getExpr(mapKeys, modifier, reallyChanged, fmUsedProps);
@@ -715,7 +715,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 usedEnvironmentIncrementProps.add(propType, mUsedProps.immutable());
 
             if(changedProps != null)
-                changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((CalcProperty) mappedProp.property), false)));
+                changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((Property) mappedProp.property), false)));
         }
     }
 

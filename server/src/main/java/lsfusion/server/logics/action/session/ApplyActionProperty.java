@@ -34,8 +34,8 @@ import java.sql.SQLException;
 
 public class ApplyActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> action;
-    private final CalcProperty canceled;
-    private final CalcProperty applyMessage;
+    private final Property canceled;
+    private final Property applyMessage;
     private final FunctionSet<SessionDataProperty> keepSessionProperties;
     private final boolean serializable;
 
@@ -54,12 +54,12 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     }
     
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         return super.aspectChangeExtProps().replaceValues(true);
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
         return super.aspectUsedExtProps().replaceValues(true);
     }
 

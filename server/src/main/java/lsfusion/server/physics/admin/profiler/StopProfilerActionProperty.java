@@ -27,7 +27,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
@@ -174,7 +174,7 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
         try {
             for (LCP<?> lcp : importTable.getValues()) {
                 PropertyChange propChange = new PropertyChange<>(lcp.listInterfaces.mapSet(keys).join(mapKeys), importJoin.getExpr(lcp), importJoin.getWhere());
-                context.getEnv().change((CalcProperty) lcp.property, propChange);
+                context.getEnv().change((Property) lcp.property, propChange);
             }
         } finally {
             importTable.drop(sql, owner);

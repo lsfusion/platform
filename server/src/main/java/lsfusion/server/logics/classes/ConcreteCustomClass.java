@@ -277,7 +277,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     public ClassDataProperty dataProperty;
     public Long readData(Long data, SQLSession sql) throws SQLException, SQLHandledException {
-        return (Long) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), CalcProperty.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+        return (Long) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
     }
 
     public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {
@@ -305,7 +305,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         BaseUtils.fillDiffChildren(this, getParents, (CustomClass)diffClass, mAddClasses, mRemoveClasses);
     }
 
-    public ImSet<CalcProperty> getChangeProps(ConcreteObjectClass cls) {
+    public ImSet<Property> getChangeProps(ConcreteObjectClass cls) {
         MSet<CustomClass> mAddClasses = SetFact.mSet();
         MSet<CustomClass> mRemoveClasses = SetFact.mSet();
         cls.getDiffSet(this, mAddClasses, mRemoveClasses);

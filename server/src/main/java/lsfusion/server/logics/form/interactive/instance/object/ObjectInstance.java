@@ -20,7 +20,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 
@@ -90,7 +90,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden, ImSet<GroupObjectInstance> groupObjects) { return false; }
-    public void fillProperties(MSet<CalcProperty> properties) { }
+    public void fillProperties(MSet<Property> properties) { }
 
     protected Expr getExpr() {
         return getObjectValue().getExpr();
@@ -110,7 +110,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     @Override
-    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return getExpr(classSource, modifier);
     }
 
