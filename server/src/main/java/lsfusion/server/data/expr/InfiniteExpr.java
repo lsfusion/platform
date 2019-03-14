@@ -21,7 +21,7 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
         return this;
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return objectClass.hashCode() + 17;
     }
 

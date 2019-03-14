@@ -90,7 +90,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
             return new Query(mapIterate, initial.pack(), step.pack(), cyclePossible);
         }
 
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             return 31 * (31 * (31 * hashMapOuter(mapIterate, hash) + initial.hashOuter(hash)) + step.hashOuter(hash)) + (cyclePossible?1:0);
         }
 

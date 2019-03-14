@@ -55,7 +55,7 @@ public class NullValue extends ObjectValue<NullValue> {
         return true;
     }
 
-    protected int hash(HashValues hashValues) {
+    public int hash(HashValues hashValues) {
         return 0;
     }
 

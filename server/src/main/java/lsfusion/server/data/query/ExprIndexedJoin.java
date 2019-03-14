@@ -93,7 +93,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 //            return baseExpr.getTypeStat(keyStat, true);
 //    }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 31 * (31 * super.hash(hashContext) + compare.hashCode()) + valueJoins.hash(hashContext.values) + 13 + (not ? 1 : 0) + (isOrderTop ? 3 : 0);
     }
 

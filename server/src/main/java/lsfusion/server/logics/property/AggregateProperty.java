@@ -255,14 +255,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     @Override
     @IdentityLazy
-    protected boolean calcNotNull(ImSet<T> checkInterfaces, CalcInfoType calcType) {
+    public boolean calcNotNull(ImSet<T> checkInterfaces, CalcInfoType calcType) {
         Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType); // оптимизация
         return query.second.getWhere().means(Expr.getWhere(query.first));
     }
 
     @Override
     @IdentityLazy
-    protected boolean calcEmpty(CalcInfoType calcType) {
+    public boolean calcEmpty(CalcInfoType calcType) {
         return calculateQueryExpr(calcType).second.getWhere().isFalse();
     }
 

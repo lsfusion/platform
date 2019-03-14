@@ -110,7 +110,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         return object.hashCode()*31+objectClass.hashCode();
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return hashContext.values.hash(this);
     }
 

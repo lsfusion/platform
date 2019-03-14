@@ -74,7 +74,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return super.calcTwins(o) && partitions.equals(((Query) o).partitions);
         }
 
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return super.hash(hashContext) * 31 + hashOuter(partitions, hashContext);
         }
 

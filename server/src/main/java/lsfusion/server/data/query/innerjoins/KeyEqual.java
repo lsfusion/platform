@@ -137,7 +137,7 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
         return new KeyEqual(translator.translateMap(keyExprs));
     }
 
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return AbstractOuterContext.hashMapOuter(keyExprs, hash);
     }
 }

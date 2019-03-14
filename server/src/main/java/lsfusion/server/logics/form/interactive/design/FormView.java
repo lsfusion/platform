@@ -51,7 +51,7 @@ import static lsfusion.server.logics.form.interactive.design.object.GroupObjectC
 public class FormView extends IdentityObject implements ServerCustomSerializable, AbstractForm<ContainerView, ComponentView, LocalizedString> {
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
-    protected final IDGenerator idGenerator = new DefaultIDGenerator();
+    public final IDGenerator idGenerator = new DefaultIDGenerator();
 
     public FormEntity entity;
 

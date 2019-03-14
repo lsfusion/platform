@@ -15,7 +15,7 @@ public class StaticParamNullableExpr extends StaticNullableExpr {
         this.name = name;
     }
 
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return System.identityHashCode(this);
     }
 

@@ -45,7 +45,7 @@ public class SubQueryJoin extends QueryJoin<KeyExpr, SubQueryJoin.Query, SubQuer
         protected boolean isComplex() {
             return true;
         }
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return 31 * super.hash(hashContext) + where.hashOuter(hashContext);
         }
 

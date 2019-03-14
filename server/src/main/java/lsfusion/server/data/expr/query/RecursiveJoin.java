@@ -76,7 +76,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         protected boolean isComplex() {
             return true;
         }
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             return 31 * (31 * (31 * (31 * (31 * super.hash(hash) + hashMapOuter(mapIterate, hash)) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash)) + (isLogical ? 1 : 0)) + (cyclePossible ? 1 : 0);
         }
         protected Query translate(MapTranslate translator) {

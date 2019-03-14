@@ -21,7 +21,7 @@ public class RandomExpr extends StaticExpr<DoubleClass> {
         return true;
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 3821;
     }
     

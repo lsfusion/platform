@@ -183,7 +183,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         return translateValues(translator.mapValues());
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return hashValues(hashContext.values);
     }
 

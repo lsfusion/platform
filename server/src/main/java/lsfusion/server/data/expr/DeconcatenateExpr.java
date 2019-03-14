@@ -93,7 +93,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
     protected boolean isComplex() {
         return true;
     }
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return expr.hashOuter(hashContext) * 31 + part;
     }
 
