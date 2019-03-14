@@ -36,7 +36,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.stat.integration.importing.FormImportData;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -85,7 +85,7 @@ public abstract class ImportAction extends SystemAction {
 
     @Override
     protected FlowResult aspectExecute(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        ImMap<CalcPropertyObjectEntity, ImMap<ImMap<ObjectEntity, Object>, Object>> result;
+        ImMap<PropertyObjectEntity, ImMap<ImMap<ObjectEntity, Object>, Object>> result;
         ImMap<ObjectEntity, ImSet<Long>> addedObjects;
         try {
             FormImportData data = getData(context);
@@ -96,7 +96,7 @@ public abstract class ImportAction extends SystemAction {
         }
 
         // dropping previous changes
-        for (CalcPropertyObjectEntity<?> property : result.keys()) {
+        for (PropertyObjectEntity<?> property : result.keys()) {
             for(DataProperty changeProp : property.property.getChangeProps())
                context.getSession().dropChanges(changeProp);
         }
@@ -112,21 +112,21 @@ public abstract class ImportAction extends SystemAction {
         writeClassData(context, mAddedObjects.immutable());
 
         // group by used objects
-        ImMap<ImSet<ObjectEntity>, ImSet<CalcPropertyObjectEntity>> groupedProps = result.keys().group(new BaseUtils.Group<ImSet<ObjectEntity>, CalcPropertyObjectEntity>() {
-            public ImSet<ObjectEntity> group(CalcPropertyObjectEntity key) {
-                return ((CalcPropertyObjectEntity<?>)key).getObjectInstances();
+        ImMap<ImSet<ObjectEntity>, ImSet<PropertyObjectEntity>> groupedProps = result.keys().group(new BaseUtils.Group<ImSet<ObjectEntity>, PropertyObjectEntity>() {
+            public ImSet<ObjectEntity> group(PropertyObjectEntity key) {
+                return ((PropertyObjectEntity<?>)key).getObjectInstances();
             }
         });
 
         for(int i=0,size=groupedProps.size();i<size;i++) {            
             // group by rows, convert to DataObject / ObjectValue, fill map with null values (needed for writeRows)
-            ImSet<CalcPropertyObjectEntity> props = groupedProps.getValue(i);
+            ImSet<PropertyObjectEntity> props = groupedProps.getValue(i);
 
-            ImMap<CalcPropertyObjectEntity, NullValue> nullValues = props.toMap(NullValue.instance);
+            ImMap<PropertyObjectEntity, NullValue> nullValues = props.toMap(NullValue.instance);
 
             // group by rows
-            MExclMap<ImMap<ObjectEntity, DataObject>, MMap<CalcPropertyObjectEntity, ObjectValue>> mRows = MapFact.mExclMap();
-            for(CalcPropertyObjectEntity prop : props) {
+            MExclMap<ImMap<ObjectEntity, DataObject>, MMap<PropertyObjectEntity, ObjectValue>> mRows = MapFact.mExclMap();
+            for(PropertyObjectEntity prop : props) {
                 ImMap<ImMap<ObjectEntity, Object>, Object> propValues = result.get(prop);
                 for(int j=0,sizeJ=propValues.size();j<sizeJ;j++) {
                     // convert to DataObject / ObjectValue
@@ -137,10 +137,10 @@ public abstract class ImportAction extends SystemAction {
                     });
                     ObjectValue value = ObjectValue.getValue(propValues.getValue(j), (DataClass)prop.getType());
 
-                    MMap<CalcPropertyObjectEntity, ObjectValue> mProps = mRows.get(keys);
+                    MMap<PropertyObjectEntity, ObjectValue> mProps = mRows.get(keys);
                     if(mProps == null) {
                         // fill map with null values (needed for writeRows)
-                        mProps = MapFact.mMap(nullValues, MapFact.<CalcPropertyObjectEntity, ObjectValue>override());
+                        mProps = MapFact.mMap(nullValues, MapFact.<PropertyObjectEntity, ObjectValue>override());
                         mRows.exclAdd(keys, mProps);
                     }                    
                     mProps.add(prop, value);
@@ -193,9 +193,9 @@ public abstract class ImportAction extends SystemAction {
         });
     }
 
-    private void writeData(final ExecutionContext context, final ImSet<ObjectEntity> keySet, final ImSet<CalcPropertyObjectEntity> properties, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data) throws SQLException, SQLHandledException {
-        writeData(data, new DataWriter<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>>() {
-            public void writeBatch(ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data, ProgressBar progress) throws SQLException, SQLHandledException {
+    private void writeData(final ExecutionContext context, final ImSet<ObjectEntity> keySet, final ImSet<PropertyObjectEntity> properties, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>> data) throws SQLException, SQLHandledException {
+        writeData(data, new DataWriter<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>>() {
+            public void writeBatch(ImMap<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>> data, ProgressBar progress) throws SQLException, SQLHandledException {
                 ImportAction.this.writeBatch(keySet, properties, data, context, progress);
             }
         });
@@ -215,14 +215,14 @@ public abstract class ImportAction extends SystemAction {
         }
     }
     @StackProgress
-    private <T extends PropertyInterface> void writeBatch(ImSet<ObjectEntity> keySet, ImSet<CalcPropertyObjectEntity> props, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
-        SessionTableUsage<ObjectEntity, CalcPropertyObjectEntity> importTable =
+    private <T extends PropertyInterface> void writeBatch(ImSet<ObjectEntity> keySet, ImSet<PropertyObjectEntity> props, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
+        SessionTableUsage<ObjectEntity, PropertyObjectEntity> importTable =
                 new SessionTableUsage<>("impformdata", keySet.toOrderSet(), props.toOrderSet(), new Type.Getter<ObjectEntity>() {
                     public Type getType(ObjectEntity key) {
                         return key.getType();
                     }
-                }, new Type.Getter<CalcPropertyObjectEntity>() {
-                    public Type getType(CalcPropertyObjectEntity key) {
+                }, new Type.Getter<PropertyObjectEntity>() {
+                    public Type getType(PropertyObjectEntity key) {
                         return key.getType();
                     }
                 });
@@ -231,9 +231,9 @@ public abstract class ImportAction extends SystemAction {
         importTable.writeRows(session.sql, data, session.getOwner());
 
         final ImRevMap<ObjectEntity, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<CalcPropertyObjectEntity> importJoin = importTable.join(mapKeys);
+        Join<PropertyObjectEntity> importJoin = importTable.join(mapKeys);
         try {
-            for (CalcPropertyObjectEntity<T> property : props)
+            for (PropertyObjectEntity<T> property : props)
                 context.getEnv().change(property.property, new PropertyChange<T>(property.mapping.join(mapKeys), importJoin.getExpr(property), importJoin.getWhere()));
         } finally {
             importTable.drop(session.sql, session.getOwner());

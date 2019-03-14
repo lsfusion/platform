@@ -11,8 +11,8 @@ import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInst
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.TreeGroupInstance;
-import lsfusion.server.logics.form.interactive.instance.property.ActionPropertyObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionOrPropertyObjectInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
@@ -20,8 +20,8 @@ import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -60,13 +60,13 @@ public class InstanceFactory {
                 }
             });
 
-            ImMap<ObjectInstance, CalcPropertyObjectInstance> parentInstances = null;
+            ImMap<ObjectInstance, PropertyObjectInstance> parentInstances = null;
             if(entity.isParent !=null) {
                 parentInstances = entity.isParent.mapKeyValues(new GetValue<ObjectInstance, ObjectEntity>() {
                     public ObjectInstance getMapValue(ObjectEntity value) {
                         return getInstance(value);
-                    }}, new GetValue<CalcPropertyObjectInstance, CalcPropertyObjectEntity<?>>() {
-                    public CalcPropertyObjectInstance<?> getMapValue(CalcPropertyObjectEntity value) {
+                    }}, new GetValue<PropertyObjectInstance, PropertyObjectEntity<?>>() {
+                    public PropertyObjectInstance<?> getMapValue(PropertyObjectEntity value) {
                         return getInstance(value);
                     }});
             }
@@ -105,12 +105,12 @@ public class InstanceFactory {
             }});
     }
 
-    public <P extends PropertyInterface> CalcPropertyObjectInstance<P> getInstance(CalcPropertyObjectEntity<P> entity) {
+    public <P extends PropertyInterface> PropertyObjectInstance<P> getInstance(PropertyObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity))
-            propertyObjectInstances.exclAdd(entity, new CalcPropertyObjectInstance<>(entity.property, getInstanceMap(entity)));
+            propertyObjectInstances.exclAdd(entity, new PropertyObjectInstance<>(entity.property, getInstanceMap(entity)));
 
-        return (CalcPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
+        return (PropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
 
     private <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(PropertyRevImplement<P, ObjectEntity> entity) {
@@ -129,18 +129,18 @@ public class InstanceFactory {
 
         // временно
     public <P extends PropertyInterface> ActionOrPropertyObjectInstance<P, ?> getInstance(ActionOrPropertyObjectEntity<P, ?> entity) {
-        if(entity instanceof CalcPropertyObjectEntity)
-            return getInstance((CalcPropertyObjectEntity<P>)entity);
+        if(entity instanceof PropertyObjectEntity)
+            return getInstance((PropertyObjectEntity<P>)entity);
         else
-            return getInstance((ActionPropertyObjectEntity<P>)entity);
+            return getInstance((ActionObjectEntity<P>)entity);
     }
 
-    public <P extends PropertyInterface> ActionPropertyObjectInstance<P> getInstance(ActionPropertyObjectEntity<P> entity) {
+    public <P extends PropertyInterface> ActionObjectInstance<P> getInstance(ActionObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity))
-            propertyObjectInstances.exclAdd(entity, new ActionPropertyObjectInstance<>(entity.property, getInstanceMap(entity)));
+            propertyObjectInstances.exclAdd(entity, new ActionObjectInstance<>(entity.property, getInstanceMap(entity)));
 
-        return (ActionPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
+        return (ActionObjectInstance<P>) propertyObjectInstances.get(entity);
     }
 
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {

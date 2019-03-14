@@ -14,21 +14,21 @@ import lsfusion.server.logics.action.ExecutionEnvironment;
 
 import java.sql.SQLException;
 
-public class ActionPropertyObjectInstance<P extends PropertyInterface> extends ActionOrPropertyObjectInstance<P, Action<P>> {
+public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrPropertyObjectInstance<P, Action<P>> {
 
-    public ActionPropertyObjectInstance(Action<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
+    public ActionObjectInstance(Action<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);
     }
 
-    public ActionPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return new ActionPropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
+    public ActionObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+        return new ActionObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
     public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, DataObject pushAdd, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {
         return env.execute(property, getInterfaceObjectValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushAdd, stack);
     }
 
-    public CalcPropertyObjectInstance<?> getDrawProperty() {
+    public PropertyObjectInstance<?> getDrawProperty() {
 //        return DerivedProperty.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
         return property.getWhereProperty().mapObjects(mapping);
     }

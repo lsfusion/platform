@@ -19,7 +19,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
@@ -54,7 +54,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
             case 1:
                 return form.getObjectInstance(inStream.readInt());
             case 2:
-                return (CalcPropertyObjectInstance)((PropertyDrawInstance<?>)form.getPropertyDraw(inStream.readInt())).getValueProperty();
+                return (PropertyObjectInstance)((PropertyDrawInstance<?>)form.getPropertyDraw(inStream.readInt())).getValueProperty();
         }
 
         throw new IOException();

@@ -11,7 +11,7 @@ import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.util.*;
 
@@ -74,7 +74,7 @@ public class GroupObjectHierarchy {
             return firstGroup != null && firstGroup.isSubReport;
         }
 
-        public CalcPropertyObjectEntity getReportPathProp(FormEntity formEntity) {
+        public PropertyObjectEntity getReportPathProp(FormEntity formEntity) {
             GroupObjectEntity firstGroup = getFirstGroup();
             return firstGroup == null ? formEntity.reportPathProp : firstGroup.reportPathProp;
         }

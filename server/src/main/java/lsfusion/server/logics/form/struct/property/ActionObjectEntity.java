@@ -5,31 +5,31 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.interactive.instance.property.ActionPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.Instantiable;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionPropertyObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionPropertyObjectInstance<P>> {
+public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>> {
 
-    public ActionPropertyObjectEntity() {
+    public ActionObjectEntity() {
         //нужен для десериализации
     }
 
-    public ActionPropertyObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping) {
+    public ActionObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping) {
         this(property, mapping, null, null);
     }
 
-    public ActionPropertyObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public ActionObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         super(property, mapping, creationScript, creationPath);
     }
 
-    public ActionPropertyObjectInstance<P> getInstance(InstanceFactory instanceFactory) {
+    public ActionObjectInstance<P> getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
     }
 
-    public ActionPropertyObjectEntity<?> getGroupChange() {
+    public ActionObjectEntity<?> getGroupChange() {
         return property.getGroupChange().mapObjects(mapping);
     }
 

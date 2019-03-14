@@ -27,7 +27,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.form.interactive.UpdateType;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.interactive.GroupObjectProp;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -61,7 +61,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     public boolean isSubReport;
-    public CalcPropertyObjectEntity<?> reportPathProp;
+    public PropertyObjectEntity<?> reportPathProp;
     
     public UpdateType updateType;
     
@@ -170,8 +170,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public List<ClassViewType> banClassView = new ArrayList<>();
     public Integer pageSize;
 
-    public CalcPropertyObjectEntity<?> propertyBackground;
-    public CalcPropertyObjectEntity<?> propertyForeground;
+    public PropertyObjectEntity<?> propertyBackground;
+    public PropertyObjectEntity<?> propertyForeground;
 
     private boolean finalizedProps = false;
     private Object props = MapFact.mExclMap();
@@ -201,11 +201,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return instanceFactory.getInstance(this);
     }
 
-    public ImMap<ObjectEntity, CalcPropertyObjectEntity<?>> isParent = null;
+    public ImMap<ObjectEntity, PropertyObjectEntity<?>> isParent = null;
 
-    public void setIsParents(final CalcPropertyObjectEntity... properties) {
-        isParent = getOrderObjects().mapOrderValues(new GetIndex<CalcPropertyObjectEntity<?>>() {
-            public CalcPropertyObjectEntity<?> getMapValue(int i) {
+    public void setIsParents(final PropertyObjectEntity... properties) {
+        isParent = getOrderObjects().mapOrderValues(new GetIndex<PropertyObjectEntity<?>>() {
+            public PropertyObjectEntity<?> getMapValue(int i) {
                 return properties[i];
             }});
     }

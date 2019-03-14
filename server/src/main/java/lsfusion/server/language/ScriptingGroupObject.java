@@ -3,8 +3,8 @@ package lsfusion.server.language;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.interactive.UpdateType;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public class ScriptingGroupObject {
     public List<String> objects;
     public List<String> classes;
     public List<LocalizedString> captions;
-    public List<ActionPropertyObjectEntity> events;
+    public List<ActionObjectEntity> events;
     public List<String> integrationSIDs;
     public ClassViewType viewType;
     public boolean isInitType;
@@ -26,12 +26,12 @@ public class ScriptingGroupObject {
     public boolean integrationKey;
 
     public boolean isSubReport;
-    public CalcPropertyObjectEntity subReportPath;
+    public PropertyObjectEntity subReportPath;
 
     public GroupObjectEntity neighbourGroupObject;
     public Boolean isRightNeighbour;
 
-    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events, List<String> integrationSIDs) {
+    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
 
         groupName = name;
@@ -75,7 +75,7 @@ public class ScriptingGroupObject {
         this.integrationKey = integrationKey;
     }
 
-    public void setSubReport(CalcPropertyObjectEntity subReportPath) {
+    public void setSubReport(PropertyObjectEntity subReportPath) {
         this.isSubReport = true;
         this.subReportPath = subReportPath;
     }

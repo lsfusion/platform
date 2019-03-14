@@ -6,7 +6,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.FormDataInterface;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 import java.sql.SQLException;
@@ -15,7 +15,7 @@ public interface FormReportInterface extends FormDataInterface {
 
     BusinessLogics getBL();
 
-    Object read(CalcPropertyObjectEntity reportPathProp) throws SQLException, SQLHandledException;
+    Object read(PropertyObjectEntity reportPathProp) throws SQLException, SQLHandledException;
 
     String getReportPrefix();
 

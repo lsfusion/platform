@@ -27,9 +27,9 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.event.PrevScope;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
@@ -215,12 +215,12 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getValueClassSet();
     }
 
-    public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
-        return new CalcPropertyObjectInstance<>(property, mapping.join(mapObjects));
+    public PropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
+        return new PropertyObjectInstance<>(property, mapping.join(mapObjects));
     }
 
-    public CalcPropertyObjectEntity<P> mapEntityObjects(ImRevMap<T, ObjectEntity> mapObjects) {
-        return new CalcPropertyObjectEntity<>(property, mapping.join(mapObjects));
+    public PropertyObjectEntity<P> mapEntityObjects(ImRevMap<T, ObjectEntity> mapObjects) {
+        return new PropertyObjectEntity<>(property, mapping.join(mapObjects));
     }
 
     public <I extends PropertyInterface> void mapCheckExclusiveness(String caseInfo, PropertyMapImplement<I, T> implement, String implementCaption, String abstractInfo) {

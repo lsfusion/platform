@@ -4,8 +4,8 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -25,17 +25,17 @@ public class FormPropertyOptions {
     private Boolean hintTable;
     private Boolean optimisticAsync;
     private Columns columns;
-    private CalcPropertyObjectEntity showIf;
-    private CalcPropertyObjectEntity readOnlyIf;
-    private CalcPropertyObjectEntity background;
-    private CalcPropertyObjectEntity foreground;
-    private CalcPropertyObjectEntity header;
-    private CalcPropertyObjectEntity footer;
+    private PropertyObjectEntity showIf;
+    private PropertyObjectEntity readOnlyIf;
+    private PropertyObjectEntity background;
+    private PropertyObjectEntity foreground;
+    private PropertyObjectEntity header;
+    private PropertyObjectEntity footer;
     private ClassViewType forceViewType;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
-    private Map<String, ActionPropertyObjectEntity> editActions;
+    private Map<String, ActionObjectEntity> editActions;
     private String eventId;
     private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
@@ -94,51 +94,51 @@ public class FormPropertyOptions {
         this.columns = new Columns(columnsName, columns);
     }
 
-    public CalcPropertyObjectEntity getShowIf() {
+    public PropertyObjectEntity getShowIf() {
         return showIf;
     }
 
-    public void setShowIf(CalcPropertyObjectEntity showIf) {
+    public void setShowIf(PropertyObjectEntity showIf) {
         this.showIf = showIf;
     }
 
-    public CalcPropertyObjectEntity getReadOnlyIf() {
+    public PropertyObjectEntity getReadOnlyIf() {
         return readOnlyIf;
     }
 
-    public void setReadOnlyIf(CalcPropertyObjectEntity readOnlyIf) {
+    public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
         this.readOnlyIf = readOnlyIf;
     }
 
-    public CalcPropertyObjectEntity getBackground() {
+    public PropertyObjectEntity getBackground() {
         return background;
     }
 
-    public void setBackground(CalcPropertyObjectEntity background) {
+    public void setBackground(PropertyObjectEntity background) {
         this.background = background;
     }
 
-    public CalcPropertyObjectEntity getForeground() {
+    public PropertyObjectEntity getForeground() {
         return foreground;
     }
 
-    public void setForeground(CalcPropertyObjectEntity foreground) {
+    public void setForeground(PropertyObjectEntity foreground) {
         this.foreground = foreground;
     }
 
-    public CalcPropertyObjectEntity getHeader() {
+    public PropertyObjectEntity getHeader() {
         return header;
     }
 
-    public void setHeader(CalcPropertyObjectEntity header) {
+    public void setHeader(PropertyObjectEntity header) {
         this.header = header;
     }
 
-    public CalcPropertyObjectEntity getFooter() {
+    public PropertyObjectEntity getFooter() {
         return footer;
     }
 
-    public void setFooter(CalcPropertyObjectEntity footer) {
+    public void setFooter(PropertyObjectEntity footer) {
         this.footer = footer;
     }
 
@@ -182,7 +182,7 @@ public class FormPropertyOptions {
         this.optimisticAsync = optimisticAsync;
     }
 
-    public void addEditAction(String actionSID, ActionPropertyObjectEntity action) {
+    public void addEditAction(String actionSID, ActionObjectEntity action) {
         if (action != null) {
             if (editActions == null) {
                 editActions = new HashMap<>();
@@ -198,7 +198,7 @@ public class FormPropertyOptions {
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void addContextMenuEditAction(LocalizedString caption, ActionPropertyObjectEntity action) {
+    public void addContextMenuEditAction(LocalizedString caption, ActionObjectEntity action) {
         if (action != null) {
             Action property = (Action) action.property;
 
@@ -225,7 +225,7 @@ public class FormPropertyOptions {
         this.contextMenuBindings = contextMenuBindings;
     }
     
-    public void addKeyPressEditAction(String key, ActionPropertyObjectEntity action) {
+    public void addKeyPressEditAction(String key, ActionObjectEntity action) {
         if (action != null) {
             String propertySID = action.property.getSID();
             addEditAction(propertySID, action);
@@ -248,11 +248,11 @@ public class FormPropertyOptions {
         this.keyBindings = keyBindings;
     } 
 
-    public Map<String, ActionPropertyObjectEntity> getEditActions() {
+    public Map<String, ActionObjectEntity> getEditActions() {
         return editActions;
     }
 
-    public void setEditActions(Map<String, ActionPropertyObjectEntity> editActions) {
+    public void setEditActions(Map<String, ActionObjectEntity> editActions) {
         this.editActions = editActions;
     }
 

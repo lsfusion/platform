@@ -14,7 +14,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
@@ -28,10 +28,10 @@ import java.sql.SQLException;
 
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
 
-    protected final CalcPropertyObjectInstance<P> property;
+    protected final PropertyObjectInstance<P> property;
     public final boolean resolveAdd;
 
-    public PropertyFilterInstance(CalcPropertyObjectInstance<P> property, boolean resolveAdd) {
+    public PropertyFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd) {
         this.property = property;
         this.resolveAdd = resolveAdd;
         this.toDraw = null;
@@ -42,7 +42,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
     public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream,form);
         PropertyDrawInstance<P> propertyDraw = form.getPropertyDraw(inStream.readInt());
-        CalcPropertyObjectInstance<P> propertyObject = (CalcPropertyObjectInstance<P>) propertyDraw.getValueProperty();
+        PropertyObjectInstance<P> propertyObject = (PropertyObjectInstance<P>) propertyDraw.getValueProperty();
         if(inStream.readBoolean())
             propertyObject = propertyObject.getRemappedPropertyObject(RemoteForm.deserializePropertyKeys(propertyDraw, inStream, form)); 
         property = propertyObject;

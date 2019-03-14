@@ -70,7 +70,7 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         return property.isInInterface(classImplement, any);
     }
 
-    public abstract CalcPropertyObjectInstance<?> getDrawProperty();
+    public abstract PropertyObjectInstance<?> getDrawProperty();
 
     public ImMap<P, DataObject> getInterfaceDataObjects() {
         return mapping.mapValues(new GetValue<DataObject, PropertyObjectInterfaceInstance>() {

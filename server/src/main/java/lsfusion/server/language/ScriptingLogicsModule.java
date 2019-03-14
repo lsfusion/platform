@@ -378,13 +378,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
     }
 
-    public LP<?> findLCPByPropertyUsage(PropertyUsage pUsage, FormEntity form, List<String> mapping, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> findLCPByPropertyUsage(NamedPropertyUsage pUsage, FormEntity form, List<String> mapping, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
         if (pUsage.classNames != null)
             return findLCPByPropertyUsage(nullIfNotFound, pUsage);
         List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
         return findLCPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes, nullIfNotFound);
     }
-    public LA<?> findLAPByPropertyUsage(PropertyUsage pUsage, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public LA<?> findLAPByPropertyUsage(NamedPropertyUsage pUsage, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         if (pUsage.classNames != null)
             return findLAPByPropertyUsage(pUsage);
         List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
@@ -392,11 +392,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAP<?, ?> findLPByActionOrPropertyUsage(ActionOrPropertyUsage orUsage) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyUsage pUsage = orUsage.property;
-        if(orUsage instanceof CalcPropertyUsage) {
+        NamedPropertyUsage pUsage = orUsage.property;
+        if(orUsage instanceof PropertyUsage) {
             return findLCPByPropertyUsage(pUsage);
         }
-        if(orUsage instanceof ActionPropertyUsage) {
+        if(orUsage instanceof ActionUsage) {
             return findLAPByPropertyUsage(pUsage);
         }
         assert orUsage instanceof PropertyElseActionUsage;
@@ -406,11 +406,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
     public LAP<?, ?> findLPByActionOrPropertyUsage(ActionOrPropertyUsage orUsage, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyUsage pUsage = orUsage.property;
-        if(orUsage instanceof CalcPropertyUsage) {
+        NamedPropertyUsage pUsage = orUsage.property;
+        if(orUsage instanceof PropertyUsage) {
             return findLCPByPropertyUsage(pUsage, form, mapping, false);
         }
-        if(orUsage instanceof ActionPropertyUsage) {
+        if(orUsage instanceof ActionUsage) {
             return findLAPByPropertyUsage(pUsage, form, mapping);
         }
         assert orUsage instanceof PropertyElseActionUsage;
@@ -592,28 +592,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property;
     }
 
-    public LP<?> findLCPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> findLCPByPropertyUsage(NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPByPropertyUsage(pUsage, false);
     }
-    public LP<?> findLCPByPropertyUsage(boolean nullIfNotFound, PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> findLCPByPropertyUsage(boolean nullIfNotFound, NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPByPropertyUsage(pUsage, false, nullIfNotFound);
     }
 
-    public LA<?> findLAPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public LA<?> findLAPByPropertyUsage(NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLAPByPropertyUsage(pUsage, false);
     }
 
-    public LP<?> findLCPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> findLCPByPropertyUsage(NamedPropertyUsage pUsage, boolean isAbstract) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPByPropertyUsage(pUsage, isAbstract, false);
     }
-    public LP<?> findLCPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> findLCPByPropertyUsage(NamedPropertyUsage pUsage, boolean isAbstract, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage), isAbstract, false, nullIfNotFound);
     }
-    public LA<?> findLAPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract) throws ScriptingErrorLog.SemanticErrorException {
+    public LA<?> findLAPByPropertyUsage(NamedPropertyUsage pUsage, boolean isAbstract) throws ScriptingErrorLog.SemanticErrorException {
         return findLAPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage), isAbstract, false);
     }
 
-    public LA<?> findLAPNoParamsByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public LA<?> findLAPNoParamsByPropertyUsage(NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
         if (pUsage.classNames == null) {
             pUsage.classNames = Collections.emptyList();
         }
@@ -625,7 +625,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return LA;
     }
 
-    public LP<?> findLCPNoParamsByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> findLCPNoParamsByPropertyUsage(NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPParamByPropertyUsage(pUsage, ListFact.<ValueClass>EMPTY());
     }
 
@@ -664,7 +664,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return forms;
     }
 
-    public Event createScriptedEvent(BaseEvent base, List<String> formIds, List<PropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
+    public Event createScriptedEvent(BaseEvent base, List<String> formIds, List<NamedPropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
         return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
     }
 
@@ -797,7 +797,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // todo [dale]: выделить общий код    
-    public void addImplementationToAbstractAction(PropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+    public void addImplementationToAbstractAction(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
         LA abstractLP = findLAPByPropertyUsage(abstractPropUsage, context, true);
         checks.checkParamCount(abstractLP, context.size());
         checks.checkImplementIsNotMain(abstractLP, implement.getLP());
@@ -813,7 +813,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addImplementationToAbstractAction(abstractPropUsage.name, abstractLP, signature, when != null, params);
     }
 
-    public void addImplementationToAbstractProp(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+    public void addImplementationToAbstractProp(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
         LP abstractLP = findLCPByPropertyUsage(abstractPropUsage, context, true);
         checks.checkParamCount(abstractLP, context.size());
         checks.checkImplementIsNotMain(abstractLP, implement.getLP());
@@ -1270,7 +1270,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.drawOptions.setEventID(id);
     }
 
-    public List<ResolveClassSet> getParamClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
+    public List<ResolveClassSet> getParamClasses(NamedPropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
         List<ValueClass> valueClasses = getValueClasses(usage);
         if (valueClasses == null) {
             return null;
@@ -1287,7 +1287,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return classes;
     }
 
-    public List<ValueClass> getValueClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
+    public List<ValueClass> getValueClasses(NamedPropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
         if (usage.classNames == null) {
             return null;
         }
@@ -1323,41 +1323,41 @@ public class ScriptingLogicsModule extends LogicsModule {
         return classes;
     }
 
-    private LP findLCPByPropertyUsage(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPByPropertyUsage(NamedPropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.classNames != null)
             return findLCPByPropertyUsage(mainProp);
         List<ResolveClassSet> classes = getParamClassesByParamProperties(paramProps, context);
         return findLCPByNameAndClasses(mainProp.name, mainProp.getSourceName(), classes);
     }
 
-    private LA findLAPByPropertyUsage(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+    private LA findLAPByPropertyUsage(NamedPropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.classNames != null)
             return findLAPByPropertyUsage(mainProp);
         List<ResolveClassSet> classes = getParamClassesByParamProperties(paramProps, context);
         return findLAPByNameAndClasses(mainProp.name, mainProp.getSourceName(), classes);
     }
 
-    private LP findLCPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPByPropertyUsage(NamedPropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPByPropertyUsage(mainProp, params, false);
     }
 
-    private LP findLCPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPByPropertyUsage(NamedPropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.classNames != null)
             return findLCPByPropertyUsage(mainProp, onlyAbstract);
         return findLCPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract, true);
     }
 
-    private LA findLAPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+    private LA findLAPByPropertyUsage(NamedPropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         return findLAPByPropertyUsage(mainProp, params, false);
     }
 
-    private LA findLAPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+    private LA findLAPByPropertyUsage(NamedPropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.classNames != null)
             return findLAPByPropertyUsage(mainProp, onlyAbstract);
         return findLAPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract, true);
     }
 
-    public LPWithParams addScriptedJProp(boolean user, PropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedJProp(boolean user, NamedPropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         LP mainProp = findLCPByPropertyUsage(pUsage, paramProps, params);
         return addScriptedJProp(user, mainProp, paramProps);
     }
@@ -1657,23 +1657,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
-    public LAWithParams addScriptedExternalJavaActionProp(List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) {
+    public LAWithParams addScriptedExternalJavaActionProp(List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) {
         throw new UnsupportedOperationException("EXTERNAL JAVA not supported");
     }
 
-    public LAWithParams addScriptedExternalDBActionProp(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExternalDBActionProp(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new ExternalDBActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.mergeList(Arrays.asList(connectionString, exec), params));
     }
 
-    public LAWithParams addScriptedExternalDBFActionProp(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExternalDBFActionProp(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new ExternalDBFActionProperty(getTypesForExternalProp(params, context), charset, findLCPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.addList(connectionString, params));
     }
 
     public LAWithParams addScriptedExternalHTTPActionProp(ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl,
-                                                          PropertyUsage headers, PropertyUsage cookies, PropertyUsage headersTo, PropertyUsage cookiesTo,
-                                                          List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+                                                          NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
+                                                          List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LP headersProperty = headers != null ? findLCPStringParamByPropertyUsage(headers) : null;
         LP cookiesProperty = cookies != null ? findLCPStringParamByPropertyUsage(cookies) : null;
         LP headersToProperty = headersTo != null ? findLCPStringParamByPropertyUsage(headersTo) : null;
@@ -1684,19 +1684,19 @@ public class ScriptingLogicsModule extends LogicsModule {
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
     }
 
-    public LAWithParams addScriptedExternalLSFActionProp(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExternalLSFActionProp(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
         return addScriptedExternalHTTPActionProp(ExternalHttpMethod.POST,
                 addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
                 null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }
 
-    private ImList<LP> findLCPsNoParamsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    private ImList<LP> findLCPsNoParamsByPropertyUsage(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(propUsages == null)
             return ListFact.EMPTY();
 
         MList<LP> mProps = ListFact.mList(propUsages.size());
-        for (PropertyUsage propUsage : propUsages) {
+        for (NamedPropertyUsage propUsage : propUsages) {
             LP<?> lcp = findLCPNoParamsByPropertyUsage(propUsage);
             mProps.add(lcp);
         }
@@ -1880,7 +1880,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(listLP, usedParams);
     }
 
-    public LAWithParams addScriptedNewSessionAProp(LAWithParams action, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
+    public LAWithParams addScriptedNewSessionAProp(LAWithParams action, List<NamedPropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
                                                    boolean isNested, boolean singleApply, boolean newSQL) throws ScriptingErrorLog.SemanticErrorException {
         LA<?> sessionLP = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
         return new LAWithParams(sessionLP, action.usedParams);
@@ -1901,7 +1901,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return requestDataClass;
     }
 
-    public LAWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
         assert targetProp == null;
         LP<?> tprop = getInputProp(targetProp, requestDataClass, null);
 
@@ -1953,7 +1953,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (String name : names) {
             LP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
             addLocal(lcp, new LocalPropertyData(name, signature));
-            lcp.property.setDebugInfo(new CalcPropertyDebugInfo(point, false));
+            lcp.property.setDebugInfo(new PropertyDebugInfo(point, false));
             res.add(lcp);
         }
         return res;
@@ -1966,7 +1966,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return lp;
     }
 
-    public LAWithParams addScriptedJoinAProp(PropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         LA mainProp = findLAPByPropertyUsage(pUsage, properties, params);
         return addScriptedJoinAProp(mainProp, properties);
     }
@@ -2092,7 +2092,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(res, property.usedParams);
     }
 
-    public LAWithParams addScriptedAssignPropertyAProp(List<TypedParameter> context, PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedAssignPropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         LP toPropertyLP = findLCPByPropertyUsage(toPropertyUsage, toPropertyMapping, newContext);
 
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
@@ -2119,7 +2119,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(result, resultInterfaces);
     }
 
-    public LAWithParams addScriptedAddObjProp(List<TypedParameter> context, String className, PropertyUsage toPropUsage, List<LPWithParams> toPropMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedAddObjProp(List<TypedParameter> context, String className, NamedPropertyUsage toPropUsage, List<LPWithParams> toPropMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass cls = findClass(className);
         checks.checkAddActionsClass(cls, className);
         checks.checkAddObjTOParams(context.size(), toPropMapping);
@@ -2261,7 +2261,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     }
 
-    public LAWithParams addScriptedApplyAProp(LAWithParams action, boolean singleApply, List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps, boolean serializable)
+    public LAWithParams addScriptedApplyAProp(LAWithParams action, boolean singleApply, List<NamedPropertyUsage> keepSessionProps, boolean keepAllSessionProps, boolean serializable)
             throws ScriptingErrorLog.SemanticErrorException {
         List<LAPWithParams> propParams = Collections.<LAPWithParams>singletonList(action);
 
@@ -2271,19 +2271,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(result, mergeAllParams(propParams));
     }
 
-    public LAWithParams addScriptedCancelAProp(List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps)
+    public LAWithParams addScriptedCancelAProp(List<NamedPropertyUsage> keepSessionProps, boolean keepAllSessionProps)
             throws ScriptingErrorLog.SemanticErrorException {
         LAP result = addCancelAProp(null, LocalizedString.NONAME, getMigrateProps(keepSessionProps, keepAllSessionProps));
         return new LAPWithParams(result, new ArrayList<Integer>());
     }
 
-    private FunctionSet<SessionDataProperty> getMigrateProps(List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps) throws ScriptingErrorLog.SemanticErrorException {
+    private FunctionSet<SessionDataProperty> getMigrateProps(List<NamedPropertyUsage> keepSessionProps, boolean keepAllSessionProps) throws ScriptingErrorLog.SemanticErrorException {
         FunctionSet<SessionDataProperty> keepProps;
         if(keepAllSessionProps) {
             keepProps = DataSession.keepAllSessionProperties;
         } else {
             MExclSet<SessionDataProperty> mKeepProps = SetFact.mExclSet(keepSessionProps.size());
-            for (PropertyUsage migratePropUsage : keepSessionProps) {
+            for (NamedPropertyUsage migratePropUsage : keepSessionProps) {
                 LP<?> prop = findLCPByPropertyUsage(migratePropUsage);
                 checks.checkSessionProperty(prop);
                 mKeepProps.exclAdd((SessionDataProperty) prop.property);
@@ -2571,7 +2571,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
-    public LPWithParams addScriptedPartitionProp(PartitionType partitionType, PropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending,
+    public LPWithParams addScriptedPartitionProp(PartitionType partitionType, NamedPropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending,
                                                  boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkPartitionWindowConsistence(partitionType, useLast);
         LP ungroupProp = ungroupPropUsage != null ? findLCPByPropertyUsage(ungroupPropUsage, paramProps.subList(0, groupPropsCnt), context) : null;
@@ -2859,7 +2859,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private LP<?> getInputProp(PropertyUsage targetProp, ValueClass valueClass, Set<Property> usedProps) throws ScriptingErrorLog.SemanticErrorException {
+    private LP<?> getInputProp(NamedPropertyUsage targetProp, ValueClass valueClass, Set<Property> usedProps) throws ScriptingErrorLog.SemanticErrorException {
         if(targetProp != null) {
             LP<?> result = findLCPNoParamsByPropertyUsage(targetProp);
             usedProps.add(result.property);
@@ -3116,8 +3116,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                                                          LPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage,
-                                                                          Boolean syncType, Integer selectTop, PropertyUsage sheetNamePropUsage, LPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
+                                                                          LPWithParams printerProperty, FormPrintType printType, NamedPropertyUsage propUsage,
+                                                                          Boolean syncType, Integer selectTop, NamedPropertyUsage sheetNamePropUsage, LPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
         List<O> allObjects = mapped.objects;
         MList<O> mObjects = ListFact.mList(allObjects.size());
@@ -3177,8 +3177,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams rootProperty, LPWithParams tagProperty, boolean attr,
-                                                                           boolean noHeader, String separator, boolean noEscape, String charset, PropertyUsage propUsage,
-                                                                           OrderedMap<GroupObjectEntity, PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+                                                                           boolean noHeader, String separator, boolean noEscape, String charset, NamedPropertyUsage propUsage,
+                                                                           OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
             exportType = FormIntegrationType.JSON;
 
@@ -3204,7 +3204,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         MExclMap<GroupObjectEntity, LP> exportFiles = MapFact.mExclMap();
         if(exportType.isPlain()) {
             if(propUsages != null) {
-                for (Map.Entry<GroupObjectEntity, PropertyUsage> entry : propUsages.entrySet()) {
+                for (Map.Entry<GroupObjectEntity, NamedPropertyUsage> entry : propUsages.entrySet()) {
                     exportFiles.exclAdd(entry.getKey(), findLCPNoParamsByPropertyUsage(entry.getValue()));
                 }
             } else if (propUsage != null) {
@@ -3340,7 +3340,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(addFocusActionProp(property), new ArrayList<Integer>());
     }
 
-    public LAWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = getValueClassByParamProperty(sourcePathProp, params);
         LP<?> targetProp = propUsage == null ? baseLM.readFile : findLCPNoParamsByPropertyUsage(propUsage);
         return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, clientAction, dialog)),
@@ -3358,7 +3358,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
-                                                        List<LPWithParams> exprs, LPWithParams whereProperty, PropertyUsage fileProp, LPWithParams rootProperty, LPWithParams tagProperty,
+                                                        List<LPWithParams> exprs, LPWithParams whereProperty, NamedPropertyUsage fileProp, LPWithParams rootProperty, LPWithParams tagProperty,
                                                         String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
                                                         List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
@@ -3463,9 +3463,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(property, allParams);
     }
 
-    private ImList<LP> findLCPsForImport(List<PropertyUsage> propUsages, ImList<ValueClass> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
+    private ImList<LP> findLCPsForImport(List<NamedPropertyUsage> propUsages, ImList<ValueClass> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
         MList<LP> mProps = ListFact.mList(propUsages.size());
-        for (PropertyUsage propUsage : propUsages) {
+        for (NamedPropertyUsage propUsage : propUsages) {
             mProps.add(findLCPParamByPropertyUsage(propUsage, paramClasses));
         }
         return mProps.immutableList();
@@ -3480,23 +3480,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mResult.immutableList();
     }
 
-    private ImList<LP> findLCPsIntegerParamByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    private ImList<LP> findLCPsIntegerParamByPropertyUsage(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         MList<LP> mProps = ListFact.mList(propUsages.size());
-        for (PropertyUsage propUsage : propUsages) {
+        for (NamedPropertyUsage propUsage : propUsages) {
             mProps.add(findLCPIntegerParamByPropertyUsage(propUsage));
         }
         return mProps.immutableList();
     }
 
-    private LP findLCPIntegerParamByPropertyUsage(PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPIntegerParamByPropertyUsage(NamedPropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPParamByPropertyUsage(propUsage, ListFact.singleton((ValueClass) IntegerClass.instance));
     }
 
-    private LP findLCPStringParamByPropertyUsage(PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPStringParamByPropertyUsage(NamedPropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLCPParamByPropertyUsage(propUsage, ListFact.singleton((ValueClass) StringClass.text));
     }
 
-    private LP findLCPParamByPropertyUsage(PropertyUsage propUsage, ImList<ValueClass> valueClasses) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPParamByPropertyUsage(NamedPropertyUsage propUsage, ImList<ValueClass> valueClasses) throws ScriptingErrorLog.SemanticErrorException {
         if (propUsage.classNames == null) {
             propUsage.classNames = new ArrayList<>();
             for (ValueClass valueClass : valueClasses) {
@@ -3538,9 +3538,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return format;
     }
 
-    public LAWithParams addScriptedImportActionProperty(FormIntegrationType format, LPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages,
+    public LAWithParams addScriptedImportActionProperty(FormIntegrationType format, LPWithParams fileProp, List<String> ids, List<Boolean> literals, List<NamedPropertyUsage> propUsages,
                                                         List<Boolean> nulls, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext,
-                                                        PropertyUsage wherePropertyUsage, LPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, boolean noEscape,
+                                                        NamedPropertyUsage wherePropertyUsage, LPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, boolean noEscape,
                                                         String charset, LPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
                                                         LPWithParams whereProp, LPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
@@ -3573,7 +3573,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(wherePropertyUsage != null)
                 whereLCP = findLCPByPropertyUsage(wherePropertyUsage);
             else
-                whereLCP = findLCPByPropertyUsage(new PropertyUsage("imported", toParamClasses), false, true);
+                whereLCP = findLCPByPropertyUsage(new NamedPropertyUsage("imported", toParamClasses), false, true);
         }
 
         List<LPWithParams> params = new ArrayList<>();
@@ -3660,7 +3660,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addTypeProp(findClass(className), bIs), Collections.singletonList(ccProp));
     }
 
-    public void addScriptedConstraint(LP<?> property, Event event, boolean checked, List<PropertyUsage> propUsages, LP<?> messageProperty, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedConstraint(LP<?> property, Event event, boolean checked, List<NamedPropertyUsage> propUsages, LP<?> messageProperty, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (!property.property.checkAlwaysNull(true)) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
@@ -3668,7 +3668,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         Property.CheckType type = (checked ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO);
         if (checked && propUsages != null) {
             MSet<Property<?>> mCheckedProps = SetFact.mSet();
-            for (PropertyUsage propUsage : propUsages) {
+            for (NamedPropertyUsage propUsage : propUsages) {
                 LP<?> lcp = findLCPByPropertyUsage(propUsage);
                 mCheckedProps.add(lcp.property);
             }
@@ -3719,7 +3719,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(new LP<>(component.getActiveTab().property));
     }
 
-    public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFollows(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         LP mainProp = findLCPByPropertyUsage(mainPropUsage, namedParams);
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
@@ -3735,7 +3735,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         follows(mainProp, debugPoint, ListFact.fromJavaList(resolveOptions), event, rightProp.getLP(), params);
     }
 
-    public void addScriptedWriteWhen(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWriteWhen(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {
         LP mainProp = findLCPByPropertyUsage(mainPropUsage, namedParams);
         if (!(mainProp.property instanceof DataProperty)) {
             errLog.emitOnlyDataPropertyIsAllowedError(parser, mainPropUsage.name);
@@ -3747,12 +3747,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         mainProp.setEventChange(this, action, params.toArray());
     }
 
-    public Set<Property> findPropsByPropertyUsages(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    public Set<Property> findPropsByPropertyUsages(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(propUsages==null)
             return null;
 
         Set<Property> props = new HashSet<>(); // функционально из-за exception'а не сделаешь
-        for (PropertyUsage usage : propUsages) {
+        for (NamedPropertyUsage usage : propUsages) {
             LP<?> lp = findLCPByPropertyUsage(usage);
             props.add(lp.property);
         }
@@ -3781,7 +3781,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         findLPByActionOrPropertyUsage(property).property.showDep = findLPByActionOrPropertyUsage(propFrom).property;
     }
 
-    public void addScriptedAspect(PropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedAspect(NamedPropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
         LA mainProp = findLAPByPropertyUsage(mainPropUsage, mainPropParams);
         checks.checkParamCount(mainProp, mainPropParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(mainPropParams));
@@ -3854,7 +3854,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams findIndexProp(PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams findIndexProp(NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         LP toPropertyLP = findLCPByPropertyUsage(toPropertyUsage, toPropertyMapping, context);
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
@@ -3881,8 +3881,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedLoggable(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        for (PropertyUsage propUsage : propUsages) {
+    public void addScriptedLoggable(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+        for (NamedPropertyUsage propUsage : propUsages) {
             LP lp = findLCPByPropertyUsage(propUsage);
             lp.makeLoggable(this, BL.systemEventsLM);
         }
@@ -4007,7 +4007,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
-                                                           PropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
+                                                           NamedPropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
         LA<?> action = null;
         FormEntity form = null;
         if (formName != null) {
@@ -4068,7 +4068,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return newElement;
     }
 
-    private LA<?> findNavigatorAction(PropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
+    private LA<?> findNavigatorAction(NamedPropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
         assert actionUsage != null;
         if (actionUsage.classNames == null) {
             actionUsage.classNames = Collections.emptyList();
@@ -4143,7 +4143,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             Property calcProp = property.property;
             boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && calcProp instanceof DataProperty;
             if (calcProp.getDebugInfo() == null) { // при использовании в propertyExpression оптимизированных join свойств, не нужно им переустанавливать DebugInfo
-                CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);
+                PropertyDebugInfo debugInfo = new PropertyDebugInfo(point, needToCreateDelegate);
                 if (needToCreateDelegate) {
                     debugger.addDelegate(debugInfo);
                 }
@@ -4425,15 +4425,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class PropertyUsage {
+    public static class NamedPropertyUsage {
         public String name;
         public List<String> classNames;
 
-        public PropertyUsage(String name) {
+        public NamedPropertyUsage(String name) {
             this(name, null);
         }
 
-        public PropertyUsage(String name, List<String> classNames) {
+        public NamedPropertyUsage(String name, List<String> classNames) {
             this.name = name;
             this.classNames = classNames;
         }
@@ -4458,9 +4458,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class FormPredefinedUsage extends BaseFormActionOrPropertyUsage {
-        public final PropertyUsage property;
+        public final NamedPropertyUsage property;
 
-        public FormPredefinedUsage(PropertyUsage property, List<String> mapping) {
+        public FormPredefinedUsage(NamedPropertyUsage property, List<String> mapping) {
             super(mapping);
             this.property = property;
         }
@@ -4476,10 +4476,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class FormPropertyUsage extends FormActionOrPropertyUsage implements AbstractFormPropertyUsage {
-        public FormPropertyUsage(PropertyUsage property, List<String> mapping) {
-            this(new CalcPropertyUsage(property), mapping);
+        public FormPropertyUsage(NamedPropertyUsage property, List<String> mapping) {
+            this(new PropertyUsage(property), mapping);
         }
-        public FormPropertyUsage(CalcPropertyUsage property, List<String> mapping) {
+        public FormPropertyUsage(PropertyUsage property, List<String> mapping) {
             super(property, mapping);
         }
     }
@@ -4491,26 +4491,26 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class FormActionUsage extends FormActionOrPropertyUsage implements AbstractFormActionUsage {
-        public FormActionUsage(PropertyUsage property, List<String> mapping) {
-            this(new ActionPropertyUsage(property), mapping);
+        public FormActionUsage(NamedPropertyUsage property, List<String> mapping) {
+            this(new ActionUsage(property), mapping);
         }
-        public FormActionUsage(ActionPropertyUsage property, List<String> mapping) {
+        public FormActionUsage(ActionUsage property, List<String> mapping) {
             super(property, mapping);
         }
     }
 
     public abstract static class ActionOrPropertyUsage {
-        public final PropertyUsage property;
+        public final NamedPropertyUsage property;
 
-        public ActionOrPropertyUsage(PropertyUsage property) {
+        public ActionOrPropertyUsage(NamedPropertyUsage property) {
             this.property = property;
         }
         
         public abstract FormActionOrPropertyUsage createFormUsage(List<String> mapping);
     }
 
-    public static class CalcPropertyUsage extends ActionOrPropertyUsage {
-        public CalcPropertyUsage(PropertyUsage property) {
+    public static class PropertyUsage extends ActionOrPropertyUsage {
+        public PropertyUsage(NamedPropertyUsage property) {
             super(property);
         }
 
@@ -4520,7 +4520,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class PropertyElseActionUsage extends ActionOrPropertyUsage {
-        public PropertyElseActionUsage(PropertyUsage property) {
+        public PropertyElseActionUsage(NamedPropertyUsage property) {
             super(property);
         }
 
@@ -4529,8 +4529,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class ActionPropertyUsage extends ActionOrPropertyUsage {
-        public ActionPropertyUsage(PropertyUsage property) {
+    public static class ActionUsage extends ActionOrPropertyUsage {
+        public ActionUsage(NamedPropertyUsage property) {
             super(property);
         }
 
@@ -4572,7 +4572,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final boolean out;
         public final Integer outParamNum;
         public final Boolean outNull;
-        public final PropertyUsage outProp;
+        public final NamedPropertyUsage outProp;
 
         public final LPWithParams changeProp;
 
@@ -4581,7 +4581,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final boolean constraintFilter;
 
 
-        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Integer outParamNum, Boolean outNull, PropertyUsage outProp, boolean constraintFilter, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint changeDebugPoint) {
+        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Integer outParamNum, Boolean outNull, NamedPropertyUsage outProp, boolean constraintFilter, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint changeDebugPoint) {
             assert outProp == null;
             this.in = in;
             this.inNull = inNull;

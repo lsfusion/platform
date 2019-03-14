@@ -8,7 +8,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.event.Event;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -52,8 +52,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<PropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
     }
 
-    public ActionPropertyObjectEntity<P> mapObjects(ImRevMap<T, ObjectEntity> mapObjects) {
-        return new ActionPropertyObjectEntity<>(property, mapping.join(mapObjects));
+    public ActionObjectEntity<P> mapObjects(ImRevMap<T, ObjectEntity> mapObjects) {
+        return new ActionObjectEntity<>(property, mapping.join(mapObjects));
     }
 
     public PropertyMapImplement<?, T> mapWhereProperty() {

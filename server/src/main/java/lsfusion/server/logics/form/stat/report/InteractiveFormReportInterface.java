@@ -5,10 +5,10 @@ import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.user.FormUserPreferences;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.InteractiveFormDataInterface;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.BusinessLogics;
 
@@ -31,8 +31,8 @@ public class InteractiveFormReportInterface extends InteractiveFormDataInterface
     }
 
     @Override
-    public Object read(CalcPropertyObjectEntity reportPathProp) throws SQLException, SQLHandledException {
-        CalcPropertyObjectInstance propInstance = getInstance(reportPathProp, form);
+    public Object read(PropertyObjectEntity reportPathProp) throws SQLException, SQLHandledException {
+        PropertyObjectInstance propInstance = getInstance(reportPathProp, form);
         return propInstance.read(form);
     }
 

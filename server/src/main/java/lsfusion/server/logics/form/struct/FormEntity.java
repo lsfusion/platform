@@ -96,11 +96,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private String defaultImagePath;
     
-    public NFMapList<Object, ActionPropertyObjectEntity<?>> eventActions = NFFact.mapList();
-    public ImMap<Object, ImList<ActionPropertyObjectEntity<?>>> getEventActions() {
+    public NFMapList<Object, ActionObjectEntity<?>> eventActions = NFFact.mapList();
+    public ImMap<Object, ImList<ActionObjectEntity<?>>> getEventActions() {
         return eventActions.getOrderMap();
     }
-    public Iterable<ActionPropertyObjectEntity<?>> getEventActionsListIt(Object eventObject) {
+    public Iterable<ActionObjectEntity<?>> getEventActionsListIt(Object eventObject) {
         return eventActions.getListIt(eventObject);
     }
 
@@ -178,7 +178,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
 
-    public CalcPropertyObjectEntity<?> reportPathProp;
+    public PropertyObjectEntity<?> reportPathProp;
 
     protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
         this(canonicalName, null, caption, null, version);
@@ -207,8 +207,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         closeActionPropertyDraw = addPropertyDraw(formClose, version);
         dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
         
-        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionPropertyObjectEntity<>(formOk.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
-        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionPropertyObjectEntity<>(formClose.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
     }
 
     public void finalizeInit(Version version) {
@@ -436,7 +436,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, null); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching 
+            ActionObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, null); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching 
             if (editAction != null && editAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
                 return false;
         }
@@ -644,28 +644,28 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LP<P> property, ImOrderSet<ObjectEntity> objects) {
+    public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP<P> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyObject(property, property.getRevMap(objects));
     }
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LP<P> property) {
+    public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP<P> property) {
         return addPropertyObject(property, MapFact.<P, ObjectEntity>EMPTYREV());
     }
-    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LA<P> property, ImOrderSet<ObjectEntity> objects) {
+    public <P extends PropertyInterface> ActionObjectEntity<P> addPropertyObject(LA<P> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyObject(property, property.getRevMap(objects));
     }
 
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LP<P> property, ImRevMap<P, ObjectEntity> objects) {
-        return new CalcPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
+    public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP<P> property, ImRevMap<P, ObjectEntity> objects) {
+        return new PropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
-    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LA<P> property, ImRevMap<P, ObjectEntity> objects) {
-        return new ActionPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
+    public <P extends PropertyInterface> ActionObjectEntity<P> addPropertyObject(LA<P> property, ImRevMap<P, ObjectEntity> objects) {
+        return new ActionObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
     
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(PropertyRevImplement<P, ObjectEntity> impl) {
+    public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(PropertyRevImplement<P, ObjectEntity> impl) {
         return addPropertyObject(impl.property, impl.mapping);
     }
-    public <P extends PropertyInterface> CalcPropertyObjectEntity<P> addPropertyObject(Property<P> property, ImRevMap<P, ObjectEntity> objects) {
-        return new CalcPropertyObjectEntity<>(property, objects);
+    public <P extends PropertyInterface> PropertyObjectEntity<P> addPropertyObject(Property<P> property, ImRevMap<P, ObjectEntity> objects) {
+        return new PropertyObjectEntity<>(property, objects);
     }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
@@ -842,19 +842,19 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.<GroupObjectEntity>EMPTYORDER()));
     }
 
-    public void addActionsOnObjectChange(ObjectEntity object, Version version, ActionPropertyObjectEntity... actions) {
+    public void addActionsOnObjectChange(ObjectEntity object, Version version, ActionObjectEntity... actions) {
         addActionsOnObjectChange(object, false, version, actions);
     }
 
-    public void addActionsOnObjectChange(ObjectEntity object, boolean drop, Version version, ActionPropertyObjectEntity... actions) {
+    public void addActionsOnObjectChange(ObjectEntity object, boolean drop, Version version, ActionObjectEntity... actions) {
         addActionsOnEvent(object, drop, version, actions);
     }
 
-    public void addActionsOnEvent(Object eventObject, Version version, ActionPropertyObjectEntity<?>... actions) {
+    public void addActionsOnEvent(Object eventObject, Version version, ActionObjectEntity<?>... actions) {
         addActionsOnEvent(eventObject, false, version, actions);
     }
 
-    public void addActionsOnEvent(Object eventObject, boolean drop, Version version, ActionPropertyObjectEntity<?>... actions) {
+    public void addActionsOnEvent(Object eventObject, boolean drop, Version version, ActionObjectEntity<?>... actions) {
         if(drop)
             eventActions.removeAll(eventObject, version);
         eventActions.addAll(eventObject, Arrays.asList(actions), version);
@@ -1065,7 +1065,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return result;
     }
 
-    public void setReadOnlyIf(PropertyDrawEntity property, CalcPropertyObjectEntity condition) {
+    public void setReadOnlyIf(PropertyDrawEntity property, PropertyObjectEntity condition) {
         property.propertyReadOnly = condition;
     }
 

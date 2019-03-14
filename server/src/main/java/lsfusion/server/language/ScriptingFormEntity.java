@@ -30,8 +30,8 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -154,13 +154,13 @@ public class ScriptingFormEntity {
         return groupObj;
     }
 
-    public void addScriptingTreeGroupObject(String treeSID, GroupObjectEntity neighbour, boolean isRightNeighbour, List<ScriptingGroupObject> groupObjects, List<List<ScriptingLogicsModule.PropertyUsage>> parentProperties, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptingTreeGroupObject(String treeSID, GroupObjectEntity neighbour, boolean isRightNeighbour, List<ScriptingGroupObject> groupObjects, List<List<ScriptingLogicsModule.NamedPropertyUsage>> parentProperties, Version version) throws ScriptingErrorLog.SemanticErrorException {
         checkNeighbour(neighbour, isRightNeighbour);
 
         TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
         List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, isRightNeighbour, version);
         for (ScriptingGroupObject groupObject : groupObjects) {
-            List<ScriptingLogicsModule.PropertyUsage> properties = parentProperties.get(groupObjects.indexOf(groupObject));
+            List<ScriptingLogicsModule.NamedPropertyUsage> properties = parentProperties.get(groupObjects.indexOf(groupObject));
 
             if (properties != null && groupObject.objects.size() != properties.size()) {
                 LM.getErrLog().emitDifferentObjsNPropsQuantityError(LM.getParser(), groupObject.objects.size());
@@ -168,8 +168,8 @@ public class ScriptingFormEntity {
             if (properties != null) {
                 GroupObjectEntity groupObj = groups.get(groupObjects.indexOf(groupObject));
 
-                List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
-                for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
+                List<PropertyObjectEntity> propertyObjects = new ArrayList<>();
+                for (ScriptingLogicsModule.NamedPropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
                         LP property = findLCPByPropertyUsage(pUsage, groupObj);
                         propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects()));
@@ -177,14 +177,14 @@ public class ScriptingFormEntity {
                 }
 
                 if (!propertyObjects.isEmpty())
-                    groupObj.setIsParents(propertyObjects.toArray(new CalcPropertyObjectEntity[propertyObjects.size()]));
+                    groupObj.setIsParents(propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
             }
         }
 
         form.addTreeGroupObject(treeGroup, neighbour, isRightNeighbour, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
-    private LP findLCPByPropertyUsage(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPByPropertyUsage(ScriptingLogicsModule.NamedPropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
         if (property.classNames != null) {
             return LM.findLCPByPropertyUsage(property);
         } else {
@@ -264,7 +264,7 @@ public class ScriptingFormEntity {
         return groupObject;
     }
     
-    public void setReportPath(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) {
+    public void setReportPath(GroupObjectEntity groupObject, PropertyObjectEntity property) {
         if (groupObject != null)
             setSubReport(groupObject, property);
         else
@@ -275,16 +275,16 @@ public class ScriptingFormEntity {
         form.setIntegrationSID(sID);
     }
 
-    public void setReportPath(CalcPropertyObjectEntity property) {
+    public void setReportPath(PropertyObjectEntity property) {
         form.reportPathProp = property;
     }
 
-    public void setSubReport(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) {
+    public void setSubReport(GroupObjectEntity groupObject, PropertyObjectEntity property) {
         groupObject.isSubReport = true;
         groupObject.reportPathProp = property;
     }
     
-    private CustomClass getSingleAddClass(ScriptingLogicsModule.PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+    private CustomClass getSingleAddClass(ScriptingLogicsModule.NamedPropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
         List<ValueClass> valueClasses = LM.getValueClasses(propertyUsage);
         if(valueClasses != null) {
             ValueClass valueClass = BaseUtils.single(valueClasses);
@@ -319,7 +319,7 @@ public class ScriptingFormEntity {
             ImOrderSet<ObjectEntity> objects = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
                 ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
-                ScriptingLogicsModule.PropertyUsage pUsage = prefefUsage.property;
+                ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
                 List<String> mapping = prefefUsage.mapping;
                 String propertyName = pUsage.name;
                 if (propertyName.equals("VALUE")) {
@@ -435,15 +435,15 @@ public class ScriptingFormEntity {
 
         property.quickFilterProperty = options.getQuickFilterPropertyDraw();
 
-        CalcPropertyObjectEntity backgroundProperty = options.getBackground();
-        if (backgroundProperty != null && !((CalcPropertyObjectEntity<?>)backgroundProperty).property.getType().equals(ColorClass.instance)) {
+        PropertyObjectEntity backgroundProperty = options.getBackground();
+        if (backgroundProperty != null && !((PropertyObjectEntity<?>)backgroundProperty).property.getType().equals(ColorClass.instance)) {
             property.propertyBackground = addGroundPropertyObject(backgroundProperty, true);
         } else {
             property.propertyBackground = backgroundProperty;
         }
 
-        CalcPropertyObjectEntity foregroundProperty = options.getForeground();
-        if (foregroundProperty != null && !((CalcPropertyObjectEntity<?>)foregroundProperty).property.getType().equals(ColorClass.instance)) {
+        PropertyObjectEntity foregroundProperty = options.getForeground();
+        if (foregroundProperty != null && !((PropertyObjectEntity<?>)foregroundProperty).property.getType().equals(ColorClass.instance)) {
             property.propertyForeground = addGroundPropertyObject(foregroundProperty, false);
         } else {
             property.propertyForeground = foregroundProperty;
@@ -472,9 +472,9 @@ public class ScriptingFormEntity {
             property.optimisticAsync = true;
         }
 
-        Map<String, ActionPropertyObjectEntity> editActions = options.getEditActions();
+        Map<String, ActionObjectEntity> editActions = options.getEditActions();
         if (editActions != null) {
-            for (Map.Entry<String, ActionPropertyObjectEntity> e : editActions.entrySet()) {
+            for (Map.Entry<String, ActionObjectEntity> e : editActions.entrySet()) {
                 property.setEditAction(e.getKey(), e.getValue());
             }
         }
@@ -498,7 +498,7 @@ public class ScriptingFormEntity {
             property.setEditType(editType);
 
         Boolean isSelector = options.getSelector();
-        ActionPropertyObjectEntity selectorAction;
+        ActionObjectEntity selectorAction;
         if(isSelector != null && isSelector && (selectorAction = property.getSelectorAction(form, version)) != null)
             property.setEditAction(ServerResponse.CHANGE, selectorAction);
 
@@ -529,12 +529,12 @@ public class ScriptingFormEntity {
         }
     }
 
-    private <P extends PropertyInterface, C extends PropertyInterface> CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity<P> groundProperty, boolean back) {
+    private <P extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity<P> groundProperty, boolean back) {
         LP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
         PropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
         PropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
                 new PropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
-        return new CalcPropertyObjectEntity(
+        return new PropertyObjectEntity(
                 mapImpl.property,
                 mapImpl.mapping.join(groundProperty.mapping));
     }
@@ -573,7 +573,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedHints(boolean isHintNoUpdate, List<ScriptingLogicsModule.PropertyUsage> propUsages, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedHints(boolean isHintNoUpdate, List<ScriptingLogicsModule.NamedPropertyUsage> propUsages, Version version) throws ScriptingErrorLog.SemanticErrorException {
         LP[] properties = new LP[propUsages.size()];
         for (int i = 0; i < propUsages.size(); i++) {
             properties[i] = LM.findLCPByPropertyUsage(propUsages.get(i));
@@ -633,29 +633,29 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedFormEvents(List<ActionPropertyObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFormEvents(List<ActionObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert actions.size() == types.size();
         for (int i = 0; i < actions.size(); i++) {
             Object eventType = types.get(i);
             if (eventType instanceof String) {
                 form.addActionsOnEvent(getObjectEntity((String) eventType), version, actions.get(i));
             } else {
-                ActionPropertyObjectEntity action = actions.get(i);
+                ActionObjectEntity action = actions.get(i);
                 form.addActionsOnEvent(eventType, eventType == FormEventType.QUERYOK || eventType == FormEventType.QUERYCLOSE, version, action);
             }
         }
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
         return addCalcPropertyObject(LM, form, property);
     }
 
-    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public static PropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LP)prop.property, prop.mapping);
     }
 
-    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public ActionObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
