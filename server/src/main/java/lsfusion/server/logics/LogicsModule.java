@@ -63,7 +63,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.set.*;
@@ -1279,7 +1279,7 @@ public abstract class LogicsModule {
     */
 
     protected ImOrderSet<PropertyInterface> genInterfaces(int interfaces) {
-        return SetFact.toOrderExclSet(interfaces, Property.genInterface);
+        return SetFact.toOrderExclSet(interfaces, ActionOrProperty.genInterface);
     }
 
     // ------------------- GROUP SUM ----------------- //
@@ -1811,7 +1811,7 @@ public abstract class LogicsModule {
         property.setShowChangeKey(false);
 
         if(objectEntity != null) {
-            property.addProcessor(new Property.DefaultProcessor() {
+            property.addProcessor(new ActionOrProperty.DefaultProcessor() {
                 public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                     if(entity.toDraw == null)
                         entity.toDraw = objectEntity.groupTo;
@@ -1861,7 +1861,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LCP(prop));
     }
 
-    protected void addPropertyToGroup(Property<?> property, AbstractGroup group) {
+    protected void addPropertyToGroup(ActionOrProperty<?> property, AbstractGroup group) {
         Version version = getVersion();
         if (group != null) {
             group.add(property, version);

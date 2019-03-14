@@ -8,7 +8,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.language.ScriptingActionProperty;
 
 import javax.swing.*;
@@ -35,7 +35,7 @@ public class CheckCurrentDateDependsActionProperty extends ScriptingActionProper
         boolean allow = true;
         String dbNameProperty = (String) BL.reflectionLM.dbNameProperty.read(context, propertyObject);
         if (dbNameProperty != null) {
-            for (Property property : context.getBL().getPropertyList())
+            for (ActionOrProperty property : context.getBL().getPropertyList())
                 if (dbNameProperty.equals(property.getDBName())) {
                     if (property instanceof CalcProperty && ((CalcProperty) property).getRecDepends().contains(BL.timeLM.currentDate.property)) {
                         allow = JOptionPane.YES_OPTION == (Integer) context.requestUserInteraction(

@@ -36,7 +36,7 @@ import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
@@ -499,7 +499,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             }
 
             if(forbidViewAllSetupPolicies || forbidChangeAllSetupPolicies) {
-                for (Property prop : LM.propertyPolicyGroup.getIndexedPropChildren().keyIt()) {
+                for (ActionOrProperty prop : LM.propertyPolicyGroup.getIndexedPropChildren().keyIt()) {
                     if(forbidViewAllSetupPolicies)
                         policy.property.view.deny(prop);
                     if(forbidChangeAllSetupPolicies)

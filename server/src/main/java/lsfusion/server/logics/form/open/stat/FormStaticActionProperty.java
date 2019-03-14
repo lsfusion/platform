@@ -22,7 +22,7 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 import java.sql.SQLException;
 
@@ -38,7 +38,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                                     ImList<Boolean> nulls,
                                     T staticType,
                                     Integer selectTop,
-                                    Property... extraProps) {
+                                    ActionOrProperty... extraProps) {
         super(caption, form, objectsToSet, nulls, false, extraProps);
 
         this.staticType = staticType;

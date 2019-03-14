@@ -14,7 +14,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -26,9 +26,9 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
     public final FormSelector<O> form;
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;
 
-    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, Property... extraProps) {
+    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, ActionOrProperty... extraProps) {
         int extraPropInterfaces = 0;
-        for(Property extraProp : extraProps)
+        for(ActionOrProperty extraProp : extraProps)
             if(extraProp != null)
                 extraPropInterfaces += extraProp.interfaces.size();
 
@@ -39,7 +39,7 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
             valueClasses[i] = form.getBaseClass(objects.get(i));
         }
 
-        for(Property extraProp : extraProps) 
+        for(ActionOrProperty extraProp : extraProps) 
             if(extraProp != null) {
                 ImMap<PropertyInterface, ValueClass> interfaceClasses = extraProp.getInterfaceClasses(ClassType.formPolicy);
                 ImOrderSet<PropertyInterface> propInterfaces = extraProp.getFriendlyOrderInterfaces();
@@ -69,7 +69,7 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
                               FormSelector<O> form,
                               final ImList<O> objectsToSet,
                               final ImList<Boolean> nulls, boolean extraNotNull,
-                              Property... extraProps) {
+                              ActionOrProperty... extraProps) {
         super(caption, getValueClasses(form, objectsToSet, extraProps));
 
         ImOrderSet<ClassPropertyInterface> objectInterfaces = getOrderInterfaces()

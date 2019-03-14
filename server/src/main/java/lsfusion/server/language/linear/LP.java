@@ -11,13 +11,13 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import javax.swing.*;
 import java.util.List;
 
-public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
+public abstract class LP<T extends PropertyInterface, P extends ActionOrProperty<T>> {
 
     public P property;
     public ImOrderSet<T> listInterfaces;
@@ -119,7 +119,7 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.drawOptions.setShowChangeKey(showEditKey);
     }
     
-    public void addProcessor(Property.DefaultProcessor processor) {
+    public void addProcessor(ActionOrProperty.DefaultProcessor processor) {
         property.drawOptions.addProcessor(processor);
     }
 

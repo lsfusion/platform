@@ -5,10 +5,10 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
+public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
 
     public T property;
     public ImRevMap<P, ObjectEntity> mapping;
@@ -54,7 +54,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return creationPath;
     }
 
-    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath) {
+    public static <I extends PropertyInterface, T extends ActionOrProperty<I>> PropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath) {
         if(property instanceof CalcProperty)
             return new CalcPropertyObjectEntity<>((CalcProperty<I>) property, map, creationScript, creationPath);
         else

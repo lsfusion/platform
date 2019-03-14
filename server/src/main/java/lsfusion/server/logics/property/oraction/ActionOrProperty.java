@@ -49,8 +49,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.struct.group.AbstractPropertyNode;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
@@ -63,7 +61,7 @@ import java.util.concurrent.Callable;
 import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.BusinessLogics.linkComparator;
 
-public abstract class Property<T extends PropertyInterface> extends AbstractPropertyNode {
+public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractPropertyNode {
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
         public PropertyInterface getMapValue(int i) {
             return new PropertyInterface(i);
@@ -138,7 +136,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);
 
-    public Property(LocalizedString caption, ImOrderSet<T> interfaces) {
+    public ActionOrProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.interfaces = interfaces.getSet();
@@ -310,16 +308,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return interfaces.toRevMap();
     }
 
-    public boolean hasChild(Property prop) {
+    public boolean hasChild(ActionOrProperty prop) {
         return prop.equals(this);
     }
 
-    public boolean hasNFChild(Property prop, Version version) {
+    public boolean hasNFChild(ActionOrProperty prop, Version version) {
         return hasChild(prop);
     }
     
-    public ImOrderSet<Property> getProperties() {
-        return SetFact.singletonOrder((Property) this);
+    public ImOrderSet<ActionOrProperty> getProperties() {
+        return SetFact.singletonOrder((ActionOrProperty) this);
     }
     
     public static void cleanPropCaches() {
@@ -327,12 +325,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     private static class CacheEntry {
-        private final Property property;
+        private final ActionOrProperty property;
         private final ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses;
 
         private ImList<PropertyClassImplement> result;
         
-        public CacheEntry(Property property, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
+        public CacheEntry(ActionOrProperty property, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
             this.property = property;
             this.mapClasses = mapClasses;
         }
@@ -457,15 +455,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         getInterfaceClasses(ClassType.signaturePolicy);
     }
 
-    protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events);
+    protected abstract ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events);
 
     private ImOrderSet<Link> links;
     @ManualLazy
     public ImOrderSet<Link> getSortedLinks(boolean events) { // чисто для лексикографики
         if(links==null) {
-            links = calculateLinks(events).mapMergeSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
-                public Link getMapValue(Pair<Property<?>, LinkType> value) {
-                    return new Link(Property.this, value.first, value.second);
+            links = calculateLinks(events).mapMergeSetValues(new GetValue<Link, Pair<ActionOrProperty<?>, LinkType>>() {
+                public Link getMapValue(Pair<ActionOrProperty<?>, LinkType> value) {
+                    return new Link(ActionOrProperty.this, value.first, value.second);
                 }}).sortSet(linkComparator); // sorting for determenism, no need to cache because it's called once for each property
         }
         return links;
@@ -499,7 +497,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return false;
     }
 
-    public Property showDep; // assert что не null когда events не isEmpty
+    public ActionOrProperty showDep; // assert что не null когда events не isEmpty
 
     protected static <T extends PropertyInterface> ImMap<T, ResolveClassSet> getPackedSignature(ImOrderSet<T> interfaces, List<ResolveClassSet> signature) {
         return interfaces.mapList(ListFact.fromJavaList(signature)).removeNulls();
@@ -552,7 +550,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     //
-    protected static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, Property property, Checker<V> checker) {
+    protected static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, ActionOrProperty property, Checker<V> checker) {
         
         ImMap<T, V> inferred = null;
         if (explicitInterfaces != null)
@@ -594,7 +592,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return null;
     }
 
-    public void inheritCaption(Property property) {
+    public void inheritCaption(ActionOrProperty property) {
         caption = property.caption;         
     }
     
@@ -744,7 +742,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
         public void setImage(String iconPath) {
             this.setIconPath(iconPath);
-            setImage(new ImageIcon(Property.class.getResource("/images/" + iconPath)));
+            setImage(new ImageIcon(ActionOrProperty.class.getResource("/images/" + iconPath)));
         }
 
         public Compare getDefaultCompare() {

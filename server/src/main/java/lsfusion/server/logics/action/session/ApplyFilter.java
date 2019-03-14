@@ -4,7 +4,7 @@ import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public enum ApplyFilter {
     WITHOUT_RECALC, ONLYCHECK, NO, ONLY_CALC, ONLY_DATA;
@@ -21,11 +21,11 @@ public enum ApplyFilter {
         throw new UnsupportedOperationException();
     }*/
 
-    public static boolean isCheck(Property property) {
+    public static boolean isCheck(ActionOrProperty property) {
         return property instanceof ActionProperty && ((ActionProperty) property).hasFlow(ChangeFlowType.CANCEL);
     }
 
-    public boolean contains(Property property) {
+    public boolean contains(ActionOrProperty property) {
         switch (this) {
             case NO:
                 return true;

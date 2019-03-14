@@ -3,7 +3,7 @@ package lsfusion.server.physics.admin.authentication.policy.init;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.ActionProperty;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class SetupActionPolicyFormsTask extends SetupActionOrPropertyPolicyFormsTask {
 
@@ -22,7 +22,7 @@ public class SetupActionPolicyFormsTask extends SetupActionOrPropertyPolicyForms
     }
 
     @Override
-    protected void runTask(Property property) {
+    protected void runTask(ActionOrProperty property) {
         if(property instanceof ActionProperty)
             getBL().setupPropertyPolicyForms(setupPolicyByCN, property, true);
     }

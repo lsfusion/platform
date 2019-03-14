@@ -68,7 +68,7 @@ import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrPropertySettings;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.Cycle;
 import lsfusion.server.logics.property.value.ValueProperty;
@@ -339,7 +339,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return obj;
     }
 
-    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormPropertyUsage pDrawUsage, Result<Pair<Property, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
+    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormPropertyUsage pDrawUsage, Result<Pair<ActionOrProperty, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
         assert !(pDrawUsage instanceof FormPredefinedUsage);
         LP<?, ?> property;
         ImOrderSet<String> mapping;

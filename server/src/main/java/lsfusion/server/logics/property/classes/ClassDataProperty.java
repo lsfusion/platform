@@ -22,7 +22,7 @@ import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.infer.CalcClassType;
 import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -67,7 +67,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
     }
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
+    protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
         if(events)
             return getActionChangeProps();
         return SetFact.EMPTY();

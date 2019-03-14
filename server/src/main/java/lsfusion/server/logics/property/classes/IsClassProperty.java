@@ -32,7 +32,7 @@ import lsfusion.server.logics.property.implement.CalcPropertyImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.infer.*;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFStaticLazy;
@@ -172,10 +172,10 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
     
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
+    protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
         assert events; // так как при ONLY_DATA IsClassProperty вообще не может попасть в список
 
-        ImCol<Pair<Property<?>, LinkType>> actionChangeProps = getActionChangeProps(); // чтобы обnull'ить использование
+        ImCol<Pair<ActionOrProperty<?>, LinkType>> actionChangeProps = getActionChangeProps(); // чтобы обnull'ить использование
         assert actionChangeProps.isEmpty();
         assert getDepends().isEmpty();
 
@@ -183,9 +183,9 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         fillChangedProps(mResult, IncrementType.DROP);
         fillChangedProps(mResult, IncrementType.SET);
 
-        return mResult.immutable().mapSetValues(new GetValue<Pair<Property<?>, LinkType>, CalcProperty>() {
-            public Pair<Property<?>, LinkType> getMapValue(CalcProperty value) {
-                return new Pair<Property<?>, LinkType>(value, LinkType.DEPEND);
+        return mResult.immutable().mapSetValues(new GetValue<Pair<ActionOrProperty<?>, LinkType>, CalcProperty>() {
+            public Pair<ActionOrProperty<?>, LinkType> getMapValue(CalcProperty value) {
+                return new Pair<ActionOrProperty<?>, LinkType>(value, LinkType.DEPEND);
             }});
     }
 

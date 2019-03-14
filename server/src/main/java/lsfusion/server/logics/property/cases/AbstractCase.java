@@ -24,7 +24,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
@@ -342,7 +342,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
     }
 
     // оптимизация
-    public static <P extends PropertyInterface, BP extends Property<P>, L extends LP<P, BP>, AP extends BP> boolean preFillImplicitCases(L lp) {
+    public static <P extends PropertyInterface, BP extends ActionOrProperty<P>, L extends LP<P, BP>, AP extends BP> boolean preFillImplicitCases(L lp) {
         if(lp instanceof LCP)
             return ((LCP) lp).property instanceof CaseUnionProperty && ((CaseUnionProperty)((LCP) lp).property).isAbstract() && ((CaseUnionProperty)((LCP) lp).property).getAbstractType() == CaseUnionProperty.Type.MULTI;
         else
