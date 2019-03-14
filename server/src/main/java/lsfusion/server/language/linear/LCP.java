@@ -18,11 +18,11 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.form.auto.LogFormEntity;
+import lsfusion.server.physics.admin.logging.LogFormEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.SystemEventsLogicsModule;
+import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
@@ -36,7 +36,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
-import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
+import static lsfusion.server.logics.property.PropertyUtils.readCalcImplements;
 
 public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
 

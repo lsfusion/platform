@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
-import lsfusion.server.logics.CompoundNameUtils;
+import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;

@@ -177,7 +177,7 @@
         <property name="navigatorsManager" ref="navigatorsManager"/>
     </bean>
 
-    <bean id="navigatorsManager" class="lsfusion.server.logics.NavigatorsManager">
+    <bean id="navigatorsManager" class="lsfusion.server.logics.navigator.NavigatorsManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="restartManager" ref="restartManager"/>
@@ -186,7 +186,7 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="securityManager" class="lsfusion.server.logics.SecurityManager">
+    <bean id="securityManager" class="lsfusion.server.physics.admin.authentication.SecurityManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="initialAdminPassword" value="${logics.initialAdminPassword:#{null}}"/>
@@ -397,7 +397,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="setupDrillDownTask" class="lsfusion.server.logics.form.auto.drilldown.init.SetupDrillDownTask">
+    <bean id="setupDrillDownTask" class="lsfusion.server.physics.admin.drilldown.init.SetupDrillDownTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -701,7 +701,7 @@
     <util:list id="customObjects"/>
 
     <!-- Remoting -->
-    <bean id="rmiManager" class="lsfusion.server.logics.RMIManager">
+    <bean id="rmiManager" class="lsfusion.server.remote.RMIManager">
         <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
@@ -725,13 +725,13 @@
     </bean>
 
     <!-- Other services -->
-    <bean id="scheduler" class="lsfusion.server.logics.Scheduler">
+    <bean id="scheduler" class="lsfusion.server.physics.admin.scheduler.Scheduler">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="externalHttpServer" class="lsfusion.server.logics.ExternalHttpServer">
+    <bean id="externalHttpServer" class="lsfusion.server.physics.dev.integration.external.from.ExternalHttpServer">
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>

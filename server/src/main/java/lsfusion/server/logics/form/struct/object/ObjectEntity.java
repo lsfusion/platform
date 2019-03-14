@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.form.interactive.action.edit.DefaultChangeObjectActionProperty;
+import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectActionProperty;
 import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 

@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;

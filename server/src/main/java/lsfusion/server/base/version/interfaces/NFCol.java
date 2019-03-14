@@ -1,11 +1,7 @@
 package lsfusion.server.base.version.interfaces;
 
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.server.logics.mutables.FindIndex;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.impl.NF;
-
-import java.util.Collection;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.NF;
 
 public interface NFCol<T> extends NF {
     

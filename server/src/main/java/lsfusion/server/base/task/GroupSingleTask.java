@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.logics.ScriptParsingException;
+import lsfusion.server.language.ScriptParsingException;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 

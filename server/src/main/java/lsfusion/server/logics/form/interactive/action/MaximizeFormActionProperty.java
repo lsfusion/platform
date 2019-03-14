@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.action;
 
 import lsfusion.interop.action.MaximizeFormClientAction;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.SecurityLogicsModule;
+import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;

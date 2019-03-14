@@ -15,7 +15,7 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;

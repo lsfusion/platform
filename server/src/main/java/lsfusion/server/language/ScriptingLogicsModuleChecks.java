@@ -12,7 +12,7 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.PropertyCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;

@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.logics.classes.TimeClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.PropertyUtils;
+import lsfusion.server.logics.property.PropertyUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;

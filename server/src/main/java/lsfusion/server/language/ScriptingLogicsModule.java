@@ -61,6 +61,9 @@ import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBFActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
@@ -103,7 +106,7 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.PropertyUtils.*;
+import static lsfusion.server.logics.property.PropertyUtils.*;
 import static lsfusion.server.language.AlignmentUtils.*;
 
 public class ScriptingLogicsModule extends LogicsModule {

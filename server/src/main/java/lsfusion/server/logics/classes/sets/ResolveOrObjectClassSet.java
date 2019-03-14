@@ -9,7 +9,7 @@ import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ClassCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 
 // по большому счету только для class data props
 public class ResolveOrObjectClassSet extends TwinImmutableObject implements ResolveClassSet {

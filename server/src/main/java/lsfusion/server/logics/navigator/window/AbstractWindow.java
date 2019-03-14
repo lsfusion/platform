@@ -2,7 +2,7 @@ package lsfusion.server.logics.navigator.window;
 
 import lsfusion.interop.navigator.WindowType;
 import lsfusion.server.base.context.ThreadLocalContext;
-import lsfusion.server.logics.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
