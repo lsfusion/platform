@@ -17,6 +17,7 @@ import lsfusion.server.logics.navigator.RemoteNavigator;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

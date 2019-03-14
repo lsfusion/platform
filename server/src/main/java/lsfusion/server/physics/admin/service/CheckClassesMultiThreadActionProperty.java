@@ -4,8 +4,8 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.impl.recalculate.CheckClassesTask;
+import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
+import lsfusion.server.physics.admin.service.task.CheckClassesTask;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 

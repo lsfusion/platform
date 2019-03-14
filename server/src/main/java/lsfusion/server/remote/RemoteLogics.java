@@ -21,6 +21,7 @@ import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LifecycleListener;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
+import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

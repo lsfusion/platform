@@ -10,6 +10,8 @@ import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.base.lifecycle.LifecycleManager;
 import lsfusion.server.base.stack.NestedThreadException;
 import lsfusion.server.base.stack.ThrowableWithStack;
+import lsfusion.server.physics.admin.reflection.ReflectionManager;
+import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

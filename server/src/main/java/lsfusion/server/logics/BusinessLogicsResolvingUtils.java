@@ -1,9 +1,9 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.language.resolving.*;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.language.resolving.NamespaceElementFinder.FoundItem;
+import lsfusion.server.physics.dev.id.resolve.*;
+import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 
 import java.util.ArrayList;
 import java.util.Collection;

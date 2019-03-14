@@ -48,6 +48,7 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
+import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;

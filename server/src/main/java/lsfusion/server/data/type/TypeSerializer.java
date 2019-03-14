@@ -9,6 +9,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.link.*;
+import lsfusion.server.physics.exec.DBManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -57,7 +58,7 @@ public class TypeSerializer {
     }
 
     /**
-     * номер последней версии определён в {@link lsfusion.server.logics.DBManager.DBStructure#DBStructure(lsfusion.server.logics.DBManager.DBVersion)}
+     * номер последней версии определён в {@link DBManager.DBStructure#DBStructure(DBManager.DBVersion)}
      */
     public static DataClass deserializeDataClass(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();

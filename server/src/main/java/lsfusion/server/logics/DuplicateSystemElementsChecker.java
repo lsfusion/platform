@@ -6,7 +6,7 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.language.resolving.NamespaceElementFinder.FoundItem;
+import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import lsfusion.server.physics.exec.table.ImplementTable;
 
 import java.util.*;
