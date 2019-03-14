@@ -12,7 +12,7 @@ import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInsta
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExecutionEnvironment;
@@ -72,7 +72,7 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
+    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
         return BaseUtils.mergeSet(op1.getResolveChangeProperties(toChange), op2.getResolveChangeProperties(toChange));
     }
 

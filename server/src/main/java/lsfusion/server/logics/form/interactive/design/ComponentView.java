@@ -15,7 +15,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
@@ -108,9 +108,9 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public boolean defaultComponent = false;
 
-    private CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> activeTab;
+    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> activeTab;
 
-    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
+    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
         if (activeTab == null) {
             activeTab = DerivedProperty.createDataPropRev(LocalizedString.create(this.toString()), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, LocalNestedType.ALL);
         }

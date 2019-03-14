@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
@@ -34,7 +34,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         super(caption, interfaces);
     }
 
-    public abstract ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands();
+    public abstract ImCol<PropertyInterfaceImplement<Interface>> getOperands();
 
     @Override
     public void fillDepends(MSet<Property> depends, boolean events) {
@@ -43,7 +43,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
 
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        ImCol<CalcPropertyInterfaceImplement<Interface>> operands = getOperands();
+        ImCol<PropertyInterfaceImplement<Interface>> operands = getOperands();
         return op(operands.toList(), ListFact.toList(commonValue, operands.size()), operands.size(), -1, inferType, true);
     }
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {

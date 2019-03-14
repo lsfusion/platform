@@ -10,8 +10,8 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
@@ -41,11 +41,11 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
         ImList<CalcCase<UnionProperty.Interface>> cases = property.getCases();
 
         for (int i = 0; i < cases.size(); ++i) {
-            CalcPropertyInterfaceImplement<CaseUnionProperty.Interface> intImpl = cases.get(i).implement;
-            if (intImpl instanceof CalcPropertyMapImplement) {
+            PropertyInterfaceImplement<CaseUnionProperty.Interface> intImpl = cases.get(i).implement;
+            if (intImpl instanceof PropertyMapImplement) {
 
                 //добавляем фильтр для этого объекта и соотв. свойства
-                CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface>) intImpl;
+                PropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface> mapImplement = (PropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface>) intImpl;
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
@@ -59,10 +59,10 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
             }
 
             intImpl = cases.get(i).where;
-            if (intImpl instanceof CalcPropertyMapImplement) {
+            if (intImpl instanceof PropertyMapImplement) {
 
                 //добавляем фильтр для этого объекта и соотв. свойства
-                CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface>) intImpl;
+                PropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface> mapImplement = (PropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface>) intImpl;
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity

@@ -14,7 +14,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.NoIncrementProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
@@ -33,7 +33,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
         finalizeInit();
     }
 
-    private CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+    private PropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
         assert !noClasses();
         return IsClassProperty.getProperty(interfaces);
     }

@@ -11,9 +11,9 @@ import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.DataSession;
@@ -25,15 +25,15 @@ import java.util.concurrent.TimeUnit;
 
 public class NewThreadActionProperty extends AroundAspectAction {
 
-    private CalcPropertyInterfaceImplement<PropertyInterface> periodProp;
-    private CalcPropertyInterfaceImplement<PropertyInterface> delayProp;
-    private CalcPropertyInterfaceImplement<PropertyInterface> connectionProp;
+    private PropertyInterfaceImplement<PropertyInterface> periodProp;
+    private PropertyInterfaceImplement<PropertyInterface> delayProp;
+    private PropertyInterfaceImplement<PropertyInterface> connectionProp;
 
     public <I extends PropertyInterface> NewThreadActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                                  ActionPropertyMapImplement<?, I> action,
-                                                                 CalcPropertyInterfaceImplement<I> period,
-                                                                 CalcPropertyInterfaceImplement<I> delay,
-                                                                 CalcPropertyInterfaceImplement<I> connection) {
+                                                                 PropertyInterfaceImplement<I> period,
+                                                                 PropertyInterfaceImplement<I> delay,
+                                                                 PropertyInterfaceImplement<I> connection) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();

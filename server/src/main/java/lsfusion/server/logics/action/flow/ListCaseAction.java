@@ -11,8 +11,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
@@ -23,7 +23,7 @@ import java.util.List;
 
 public abstract class ListCaseAction extends KeepContextAction {
 
-    private final CalcPropertyMapImplement<UnionProperty.Interface, PropertyInterface> abstractWhere;
+    private final PropertyMapImplement<UnionProperty.Interface, PropertyInterface> abstractWhere;
     protected boolean isExclusive;
     
     public enum AbstractType { CASE, MULTI, LIST }
@@ -45,7 +45,7 @@ public abstract class ListCaseAction extends KeepContextAction {
         ((CaseUnionProperty) abstractWhere.property).addOperand(action.mapWhereProperty().map(abstractWhere.mapping.reverse()), signature, version);
     }
 
-    protected void addWhereCase(CalcPropertyInterfaceImplement<PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
+    protected void addWhereCase(PropertyInterfaceImplement<PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         ImRevMap<PropertyInterface, UnionProperty.Interface> abstractMap = abstractWhere.mapping.reverse();
         ((CaseUnionProperty) abstractWhere.property).addCase(where.map(abstractMap), action.mapWhereProperty().map(abstractMap), version);
     }
@@ -76,10 +76,10 @@ public abstract class ListCaseAction extends KeepContextAction {
         abstractWhere = DerivedProperty.createUnion(checkExclusiveImplementations, checkAllImplementations, isLast, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
-    protected abstract CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty();
+    protected abstract PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty();
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+    public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         if(isAbstract())
             return abstractWhere;
 

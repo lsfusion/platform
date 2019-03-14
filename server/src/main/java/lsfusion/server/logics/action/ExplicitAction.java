@@ -8,8 +8,8 @@ import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -65,7 +65,7 @@ public abstract class ExplicitAction extends BaseAction<ClassPropertyInterface> 
         return SetFact.EMPTY();
     }
     
-    public CalcPropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
+    public PropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
         return IsClassProperty.getProperty(interfaces.removeIncl(getNoClassesInterfaces()));
     }
 

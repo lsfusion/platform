@@ -10,7 +10,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
+public class PropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
     public Property<P> property;
     public ImMap<P, T> mapping;
 
@@ -18,15 +18,15 @@ public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinI
         return property.toString() + " {" + mapping + "}";
     }
 
-    public CalcPropertyImplement() {
+    public PropertyImplement() {
     }
 
-    public CalcPropertyImplement(Property<P> property, ImMap<P, T> mapping) {
+    public PropertyImplement(Property<P> property, ImMap<P, T> mapping) {
         this.property = property;
         this.mapping = mapping;
     }
 
-    public CalcPropertyImplement(Property<P> property) {
+    public PropertyImplement(Property<P> property) {
         this.property = property;
         mapping = MapFact.<P, T>EMPTY();
     }
@@ -35,12 +35,12 @@ public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinI
         return mapping.join(map);
     }
 
-    public <L> CalcPropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
-        return new CalcPropertyImplement<>(property, join(mapImplement));
+    public <L> PropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
+        return new PropertyImplement<>(property, join(mapImplement));
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return property.equals(((CalcPropertyImplement) o).property) && mapping.equals(((CalcPropertyImplement) o).mapping);
+        return property.equals(((PropertyImplement) o).property) && mapping.equals(((PropertyImplement) o).mapping);
     }
 
     public int immutableHashCode() {

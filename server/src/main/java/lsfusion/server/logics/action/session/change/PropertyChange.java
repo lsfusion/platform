@@ -39,7 +39,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.base.stack.ParamMessage;
 import lsfusion.server.base.stack.StackMessage;
@@ -310,7 +310,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize();
     }
 
-    public static <T extends PropertyInterface, K extends PropertyInterface> Where materializeWhere(String debugInfo, CalcPropertyMapImplement<T, K> whereProp, DataSession session, ImRevMap<K, KeyExpr> mapKeys, ImMap<K, ? extends ObjectValue> mapValues, ImMap<K, Expr> innerExprs, final Where where, Result<SessionTableUsage> usedTable) throws SQLException, SQLHandledException {
+    public static <T extends PropertyInterface, K extends PropertyInterface> Where materializeWhere(String debugInfo, PropertyMapImplement<T, K> whereProp, DataSession session, ImRevMap<K, KeyExpr> mapKeys, ImMap<K, ? extends ObjectValue> mapValues, ImMap<K, Expr> innerExprs, final Where where, Result<SessionTableUsage> usedTable) throws SQLException, SQLHandledException {
 
         if(Settings.get().isDisableCorrelations()) {
             final ImRevMap<K, KeyExpr> fMapKeys = mapKeys;

@@ -6,9 +6,9 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -29,11 +29,11 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
 
         implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
 
-        CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> where = (CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.where; //h
+        PropertyMapImplement<PropertyInterface, ClassPropertyInterface> where = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.where; //h
         ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = where.mapping;
         wherePropertyDraw = addPropertyDraw(where.property, whereMapping.join(interfaceObjects), version);
 
-        CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> writeFrom = (CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.writeFrom; //g
+        PropertyMapImplement<PropertyInterface, ClassPropertyInterface> writeFrom = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.writeFrom; //g
         ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = writeFrom.mapping;
         writeFromPropertyDraw = addPropertyDraw(writeFrom.property, writeFromMapping.join(interfaceObjects), version);
     }

@@ -29,7 +29,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;
@@ -140,7 +140,7 @@ public class IntegrationService {
 
             ImRevMap<P, KeyExpr> intraKeyExprs = delete.deleteProperty.property.getMapKeys(); // генерим ключи (использовать будем только те, что не в DataObject
             KeyExpr groupExpr = null;
-            ImMap<P, ImportDeleteInterface> deleteMapping = ((CalcPropertyImplement<P, ImportDeleteInterface>) delete.deleteProperty).mapping;
+            ImMap<P, ImportDeleteInterface> deleteMapping = ((PropertyImplement<P, ImportDeleteInterface>) delete.deleteProperty).mapping;
             ImValueMap<P,Expr> mvDeleteExprs = deleteMapping.mapItValues();
             for (int i=0,size=deleteMapping.size();i<size;i++) {
                 KeyExpr intraKeyExpr = intraKeyExprs.get(deleteMapping.getKey(i));

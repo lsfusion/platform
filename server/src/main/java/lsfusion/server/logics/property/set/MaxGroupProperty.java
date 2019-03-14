@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -24,7 +24,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return min?GroupType.MIN:GroupType.MAX;
     }
 
-    public MaxGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, boolean min) {
+    public MaxGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property, boolean min) {
         super(caption, innerInterfaces, groupInterfaces, property);
 
         this.min = min;
@@ -32,7 +32,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         finalizeInit();
     }
 
-    public MaxGroupProperty(LocalizedString caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, Property<I> property, boolean min) {
+    public MaxGroupProperty(LocalizedString caption, ImCol<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property, boolean min) {
         super(caption, interfaces, property);
 
         this.min = min;

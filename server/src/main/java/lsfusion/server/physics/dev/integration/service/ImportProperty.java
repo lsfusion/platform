@@ -18,7 +18,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
-import lsfusion.server.logics.property.implement.CalcPropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;
@@ -27,55 +27,55 @@ import lsfusion.server.base.stack.ThisMessage;
 import java.sql.SQLException;
 
 public class ImportProperty <P extends PropertyInterface> {
-    private CalcPropertyImplement<P, ImportKeyInterface> implement;
+    private PropertyImplement<P, ImportKeyInterface> implement;
     private ImportFieldInterface importField;
     private GroupType groupType;
     private boolean replaceOnlyNull;
 
-    private CalcPropertyImplement<P, ImportKeyInterface> converter;
+    private PropertyImplement<P, ImportKeyInterface> converter;
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement) {
         this.importField = importField;
         this.implement = implement;
     }
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, boolean replaceOnlyNull) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, boolean replaceOnlyNull) {
         this.importField = importField;
         this.implement = implement;
         this.replaceOnlyNull = replaceOnlyNull;
     }
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, GroupType groupType) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, GroupType groupType) {
         this(importField, implement);
         this.groupType = groupType;
     }
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, GroupType groupType, boolean replaceOnlyNull) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, GroupType groupType, boolean replaceOnlyNull) {
         this(importField, implement, replaceOnlyNull);
         this.groupType = groupType;
     }
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter) {
         this(importField, implement);
         this.converter = converter;
     }
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter, boolean replaceOnlyNull) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter, boolean replaceOnlyNull) {
         this(importField, implement, replaceOnlyNull);
         this.converter = converter;
     }
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter, GroupType groupType) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter, GroupType groupType) {
         this(importField, implement, converter);
         this.groupType = groupType;
     }
 
-    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter, GroupType groupType, boolean replaceOnlyNull) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter, GroupType groupType, boolean replaceOnlyNull) {
         this(importField, implement, converter, replaceOnlyNull);
         this.groupType = groupType;
     }
 
-    public CalcPropertyImplement<P, ImportKeyInterface> getProperty() {
+    public PropertyImplement<P, ImportKeyInterface> getProperty() {
         return implement;
     }
 

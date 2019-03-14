@@ -11,8 +11,8 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -27,13 +27,13 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
             
-    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<CalcPropertyInterfaceImplement<P>> properties, CalcPropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<PropertyInterfaceImplement<P>> properties, PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super("Export.export", LocalizedString.NONAME, version);
 
         final ImMap<P, ValueClass> interfaceClasses;
         if(innerClasses == null) { // export
-            if (where instanceof CalcPropertyMapImplement) { // it'not clear what to do with parameter as where
-                CalcPropertyMapImplement<M, P> mapWhere = (CalcPropertyMapImplement<M, P>) where;
+            if (where instanceof PropertyMapImplement) { // it'not clear what to do with parameter as where
+                PropertyMapImplement<M, P> mapWhere = (PropertyMapImplement<M, P>) where;
                 interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
             } else 
                 interfaceClasses = MapFact.EMPTY();
@@ -64,9 +64,9 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
 
             Property<M> addProperty;
             ImRevMap<M, ObjectEntity> addMapping;
-            CalcPropertyInterfaceImplement<P> property = properties.get(i);
-            if(property instanceof CalcPropertyMapImplement) {
-                CalcPropertyMapImplement<M, P> mapProperty = (CalcPropertyMapImplement<M, P>) property;
+            PropertyInterfaceImplement<P> property = properties.get(i);
+            if(property instanceof PropertyMapImplement) {
+                PropertyMapImplement<M, P> mapProperty = (PropertyMapImplement<M, P>) property;
                 addProperty = mapProperty.property;
                 addMapping = mapProperty.mapping.join(mapObjects);
             } else {
@@ -100,8 +100,8 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
                 propertyDraw.attr = true;
         }
 
-        if(where instanceof CalcPropertyMapImplement) { // it'not clear what to do with parameter as where
-            CalcPropertyMapImplement<M, P> mapWhere = (CalcPropertyMapImplement<M, P>) where;
+        if(where instanceof PropertyMapImplement) { // it'not clear what to do with parameter as where
+            PropertyMapImplement<M, P> mapWhere = (PropertyMapImplement<M, P>) where;
             addFixedFilter(new FilterEntity<>(addPropertyObject(mapWhere.property, mapWhere.mapping.join(mapObjects))), version);
         }
         

@@ -28,8 +28,8 @@ import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -78,7 +78,7 @@ public abstract class DataProperty extends Property<ClassPropertyInterface> {
     }
 
     @IdentityInstanceLazy
-    protected CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+    protected PropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
         assert !noClasses();
         return IsClassProperty.getProperty(interfaces);
     }
@@ -266,12 +266,12 @@ public abstract class DataProperty extends Property<ClassPropertyInterface> {
         return getOrderInterfaces().mapSet(list);
     }
 
-    public <V extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, V> getImplement(ImOrderSet<V> list) {
-        return new CalcPropertyMapImplement<>(this, getMapInterfaces(list));
+    public <V extends PropertyInterface> PropertyMapImplement<ClassPropertyInterface, V> getImplement(ImOrderSet<V> list) {
+        return new PropertyMapImplement<>(this, getMapInterfaces(list));
     }
 
-    public <V> CalcPropertyRevImplement<ClassPropertyInterface, V> getRevImplement(ImOrderSet<V> list) {
-        return new CalcPropertyRevImplement<>(this, getMapInterfaces(list));
+    public <V> PropertyRevImplement<ClassPropertyInterface, V> getRevImplement(ImOrderSet<V> list) {
+        return new PropertyRevImplement<>(this, getMapInterfaces(list));
     }
 
     public boolean depends(ImSet<CustomClass> cls) { // оптимизация

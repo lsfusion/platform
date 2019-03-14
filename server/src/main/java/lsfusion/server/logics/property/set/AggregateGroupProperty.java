@@ -15,8 +15,8 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -24,16 +24,16 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 // связь один к одному
 public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGroupProperty<T ,PropertyInterface> {
 
-    private final CalcPropertyInterfaceImplement<T> whereProp;
+    private final PropertyInterfaceImplement<T> whereProp;
     private final T aggrInterface;
-    private final ImSet<CalcPropertyInterfaceImplement<T>> groupProps;
+    private final ImSet<PropertyInterfaceImplement<T>> groupProps;
 
     // чисто из-за ограничения конструктора
-    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
-        CalcPropertyMapImplement<?, T> and = DerivedProperty.createAnd(innerInterfaces, aggrInterface, property);
+    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, T aggrInterface, ImSet<PropertyInterfaceImplement<T>> groupProps) {
+        PropertyMapImplement<?, T> and = DerivedProperty.createAnd(innerInterfaces, aggrInterface, property);
         if(caption.isEmpty()) {
-            ImCol<CalcPropertyMapImplement<?, T>> groupMapProps = CalcPropertyMapImplement.filter(groupProps);
-            for(CalcPropertyMapImplement<?, T> groupProp : groupMapProps)
+            ImCol<PropertyMapImplement<?, T>> groupMapProps = PropertyMapImplement.filter(groupProps);
+            for(PropertyMapImplement<?, T> groupProp : groupMapProps)
                 caption = LocalizedString.concat(caption, (caption.isEmpty() ? "" : ", ") + groupProp.property.toString());
             if(groupMapProps.size() > 1)
                 caption = LocalizedString.concatList("(", caption, ")"); 
@@ -45,11 +45,11 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     }
 
     // чисто для generics
-    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, PropertyInterfaceImplement<T> and, ImCol<PropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<PropertyInterfaceImplement<T>> groupProps) {
         return new AggregateGroupProperty<>(caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
     }
 
-    private AggregateGroupProperty(LocalizedString caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+    private AggregateGroupProperty(LocalizedString caption, PropertyInterfaceImplement<T> and, ImCol<PropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<PropertyInterfaceImplement<T>> groupProps) {
         super(caption, innerInterfaces, groupInterfaces, and, null);
 
         this.whereProp = whereProp;
@@ -73,18 +73,18 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     public ActionPropertyMapImplement<?, Interface<T>> getSetNotNullAction(boolean notNull) {
         if(notNull) {
             PropertyInterface addedObject = new PropertyInterface();
-            ImRevMap<CalcPropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = getMapInterfaces().toRevExclMap().reverse();
+            ImRevMap<PropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = getMapInterfaces().toRevExclMap().reverse();
 
             ImRevMap<T, PropertyInterface> propValues = MapFact.addRevExcl(MapFact.singletonRev(aggrInterface, addedObject), // aggrInterface = aggrObject, остальные из row'а читаем
                     aggrInterfaces.filterInclRev(innerInterfaces.removeIncl(aggrInterface))); // assert что будут все в aggrInterfaces
 
             MList<ActionPropertyMapImplement<?, PropertyInterface>> mActions = ListFact.mList();
-            if(whereProp instanceof CalcPropertyMapImplement)
-                mActions.add(((CalcPropertyMapImplement<?, T>) whereProp).getSetNotNullAction(true).map(propValues));
+            if(whereProp instanceof PropertyMapImplement)
+                mActions.add(((PropertyMapImplement<?, T>) whereProp).getSetNotNullAction(true).map(propValues));
             for(int i=0,size= aggrInterfaces.size();i<size;i++) {
-                CalcPropertyInterfaceImplement<T> keyImplement = aggrInterfaces.getKey(i);
-                if(keyImplement instanceof CalcPropertyMapImplement) {
-                    CalcPropertyMapImplement<?, PropertyInterface> change = ((CalcPropertyMapImplement<?, T>) keyImplement).map(propValues);
+                PropertyInterfaceImplement<T> keyImplement = aggrInterfaces.getKey(i);
+                if(keyImplement instanceof PropertyMapImplement) {
+                    PropertyMapImplement<?, PropertyInterface> change = ((PropertyMapImplement<?, T>) keyImplement).map(propValues);
                     Interface<T> valueInterface = aggrInterfaces.getValue(i);
                     ImSet<PropertyInterface> usedInterfaces = change.mapping.valuesSet().addExcl(valueInterface); // assert что не будет
                     mActions.add(DerivedProperty.createSetAction(usedInterfaces, change, (PropertyInterface) valueInterface));
@@ -104,7 +104,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
             return interfaces.mapSetValues(new GetValue<StoredDataProperty, Interface<T>>() {
                 @Override
                 public StoredDataProperty getMapValue(Interface<T> value) {
-                    return (StoredDataProperty) ((CalcPropertyMapImplement<?, T>)value.implement).property;
+                    return (StoredDataProperty) ((PropertyMapImplement<?, T>)value.implement).property;
                 }
             });
         return null;

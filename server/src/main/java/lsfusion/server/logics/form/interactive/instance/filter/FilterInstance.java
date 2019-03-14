@@ -17,7 +17,7 @@ import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInsta
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -72,7 +72,7 @@ public abstract class FilterInstance implements Updated {
     public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject, ExecutionStack stack) throws SQLException, SQLHandledException {
     }
 
-    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
+    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
         return new HashSet<>();
     }
 

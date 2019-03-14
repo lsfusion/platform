@@ -7,8 +7,8 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
@@ -56,7 +56,7 @@ public abstract class FormToolbarActionProperty extends ScriptingAction {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, ClassPropertyInterface> getWhereProperty(boolean recursive) {
+    public PropertyMapImplement<?, ClassPropertyInterface> getWhereProperty(boolean recursive) {
         Property enableIf = getEnableIf();
         return enableIf == null ? super.getWhereProperty(recursive) : enableIf.getImplement();
     }
@@ -64,7 +64,7 @@ public abstract class FormToolbarActionProperty extends ScriptingAction {
     static LCP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {
         assert showIfs != null && showIfNots != null && showIfs.length == showIfNots.length;
 
-        MList<CalcPropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(showIfs.length);
+        MList<PropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(showIfs.length);
         MList<Boolean> mNots = ListFact.mList(showIfs.length);
 
         for (int i = 0; i < showIfs.length; ++i) {
@@ -72,7 +72,7 @@ public abstract class FormToolbarActionProperty extends ScriptingAction {
             mNots.add(showIfNots[i]);
         }
 
-        CalcPropertyMapImplement showIfImplement = createAnd(SetFact.<PropertyInterface>EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
+        PropertyMapImplement showIfImplement = createAnd(SetFact.<PropertyInterface>EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
         return new LCP(showIfImplement.property);
     }
 

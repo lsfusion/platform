@@ -17,8 +17,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -64,10 +64,10 @@ public class ListActionProperty extends ListCaseAction {
         localsInScope = SetFact.EMPTY();
     }
 
-    public CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
+    public PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
 
-        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
-            public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
+            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
                 return value.mapCalcWhereProperty();
             }});
         return DerivedProperty.createUnion(interfaces, listWheres);

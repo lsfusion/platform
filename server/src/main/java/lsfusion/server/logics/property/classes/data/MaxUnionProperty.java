@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.IncrementUnionProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
@@ -17,7 +17,7 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class MaxUnionProperty extends IncrementUnionProperty {
 
-    private final ImCol<CalcPropertyInterfaceImplement<Interface>> operands;
+    private final ImCol<PropertyInterfaceImplement<Interface>> operands;
     private boolean isMin;
 
     @Override
@@ -37,8 +37,8 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     @Override
     public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
 
-        ImCol<Expr> operandExprs = operands.mapColValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
-            public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
+        ImCol<Expr> operandExprs = operands.mapColValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
+            public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
                 return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }});
 
@@ -54,11 +54,11 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return result;
     }
 
-    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<PropertyInterfaceImplement<Interface>> getOperands() {
         return operands;
     }
 
-    public MaxUnionProperty(boolean isMin, LocalizedString caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands) {
+    public MaxUnionProperty(boolean isMin, LocalizedString caption, ImOrderSet<Interface> interfaces, ImCol<PropertyInterfaceImplement<Interface>> operands) {
         super(caption, interfaces);
         this.operands = operands;
         this.isMin = isMin;

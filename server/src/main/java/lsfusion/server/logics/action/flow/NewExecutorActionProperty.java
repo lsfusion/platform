@@ -9,8 +9,8 @@ import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -23,11 +23,11 @@ import java.util.concurrent.TimeUnit;
 
 public class NewExecutorActionProperty extends AroundAspectAction {
     ScheduledExecutorService executor;
-    private final CalcPropertyInterfaceImplement threadsProp;
+    private final PropertyInterfaceImplement threadsProp;
 
     public <I extends PropertyInterface> NewExecutorActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                                    ActionPropertyMapImplement<?, I> action,
-                                                                   CalcPropertyInterfaceImplement threadsProp) {
+                                                                   PropertyInterfaceImplement threadsProp) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -47,7 +47,7 @@ public class NewExecutorActionProperty extends AroundAspectAction {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+    public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return IsClassProperty.getMapProperty(
                 super.calcWhereProperty().mapInterfaceClasses(ClassType.wherePolicy));
     }

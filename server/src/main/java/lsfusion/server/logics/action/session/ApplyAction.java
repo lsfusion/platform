@@ -16,8 +16,8 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.implement.ActionPropertyValueImplement;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -64,16 +64,16 @@ public class ApplyAction extends KeepContextAction {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+    public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         
         MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         if(action != null)
             actions.add(action);
 
-        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres =
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres =
                 ((ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
-                            public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
+                            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
                                 return value.mapCalcWhereProperty();
                             }});
         return DerivedProperty.createUnion(interfaces, listWheres);

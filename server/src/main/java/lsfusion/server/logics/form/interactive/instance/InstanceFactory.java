@@ -24,7 +24,7 @@ import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class InstanceFactory {
@@ -113,17 +113,17 @@ public class InstanceFactory {
         return (CalcPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
 
-    private <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(CalcPropertyRevImplement<P, ObjectEntity> entity) {
+    private <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(PropertyRevImplement<P, ObjectEntity> entity) {
         return entity.mapping.mapRevValues(new GetValue<ObjectInstance, ObjectEntity>() {
             public ObjectInstance getMapValue(ObjectEntity value) {
                 return InstanceFactory.this.getInstance(value);
             }});
     }
 
-    public <T, P extends PropertyInterface> ImMap<T, CalcPropertyRevImplement<P, ObjectInstance>> getInstance(ImMap<T, CalcPropertyRevImplement<P, ObjectEntity>> entities) {
-        return entities.mapValues(new GetValue<CalcPropertyRevImplement<P, ObjectInstance>, CalcPropertyRevImplement<P, ObjectEntity>>() {
-            public CalcPropertyRevImplement<P, ObjectInstance> getMapValue(CalcPropertyRevImplement<P, ObjectEntity> entity) {
-                return new CalcPropertyRevImplement<>(entity.property, getInstanceMap(entity));
+    public <T, P extends PropertyInterface> ImMap<T, PropertyRevImplement<P, ObjectInstance>> getInstance(ImMap<T, PropertyRevImplement<P, ObjectEntity>> entities) {
+        return entities.mapValues(new GetValue<PropertyRevImplement<P, ObjectInstance>, PropertyRevImplement<P, ObjectEntity>>() {
+            public PropertyRevImplement<P, ObjectInstance> getMapValue(PropertyRevImplement<P, ObjectEntity> entity) {
+                return new PropertyRevImplement<>(entity.property, getInstanceMap(entity));
             }});
     }
 

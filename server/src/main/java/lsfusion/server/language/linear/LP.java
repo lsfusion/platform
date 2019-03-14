@@ -83,7 +83,7 @@ public abstract class LP<T extends PropertyInterface, P extends ActionOrProperty
         Map<L, T> mapInterfaces = new HashMap<L, T>();
         for(int i=0;i<lp.listInterfaces.size();i++)
             mapInterfaces.put(lp.listInterfaces.get(i), listInterfaces.get(mapping[i]-1));
-        property.addFollows(new CalcPropertyMapImplement<L, T>(lp.property, mapInterfaces));
+        property.addFollows(new PropertyMapImplement<L, T>(lp.property, mapInterfaces));
     }
 
     public void followed(LP... lps) {

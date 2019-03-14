@@ -15,10 +15,9 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
@@ -30,7 +29,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class ActionPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements PropertyInterfaceImplement<T> {
+public class ActionPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements lsfusion.server.logics.property.oraction.PropertyInterfaceImplement {
 
     public Action<P> property;
     public ImRevMap<P, T> mapping;
@@ -49,19 +48,19 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return new ActionPropertyMapImplement<>(property, mapping.join(remap));
     }
 
-    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, CalcPropertyMapImplement<L, T> where, Event event, boolean resolve, DebugInfo.DebugPoint debugInfo) {
-        lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<CalcPropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
+    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, PropertyMapImplement<L, T> where, Event event, boolean resolve, DebugInfo.DebugPoint debugInfo) {
+        lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<PropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
     }
 
     public ActionPropertyObjectEntity<P> mapObjects(ImRevMap<T, ObjectEntity> mapObjects) {
         return new ActionPropertyObjectEntity<>(property, mapping.join(mapObjects));
     }
 
-    public CalcPropertyMapImplement<?, T> mapWhereProperty() {
+    public PropertyMapImplement<?, T> mapWhereProperty() {
         return property.getWhereProperty().map(mapping);
     }
 
-    public CalcPropertyMapImplement<?, T> mapCalcWhereProperty() {
+    public PropertyMapImplement<?, T> mapCalcWhereProperty() {
         return property.getWhereProperty(true).map(mapping);
     }
 
@@ -92,7 +91,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     public Property getPushWhere(ImSet<T> context, boolean ordersNotNull) {
         return property.getPushWhere(mapping, context, ordersNotNull);
     }
-    public ActionPropertyMapImplement<?, T> pushFor(ImSet<T> context, CalcPropertyMapImplement<?, T> where, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public ActionPropertyMapImplement<?, T> pushFor(ImSet<T> context, PropertyMapImplement<?, T> where, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         return property.pushFor(mapping, context, where, orders, ordersNotNull);
     }
     public boolean hasFlow(ChangeFlowType... types) {
@@ -123,7 +122,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return null;        
     }
 
-    public boolean equalsMap(PropertyInterfaceImplement<T> object) {
+    public boolean equalsMap(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement object) {
         if(!(object instanceof ActionPropertyMapImplement))
             return false;
 

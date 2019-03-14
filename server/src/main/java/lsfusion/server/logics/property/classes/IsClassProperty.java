@@ -28,9 +28,9 @@ import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.implement.CalcPropertyImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -60,43 +60,43 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
     // по аналогии с SessionDataProperty
-    public final static MAddExclMap<ImMap<ValueClass, Integer>, CalcPropertyImplement<?, ValueClass>> cacheClasses = MapFact.mBigStrongMap();
+    public final static MAddExclMap<ImMap<ValueClass, Integer>, PropertyImplement<?, ValueClass>> cacheClasses = MapFact.mBigStrongMap();
     @ManualLazy
     @NFStaticLazy
-    public static <T, P extends PropertyInterface> CalcPropertyRevImplement<?, T> getProperty(ImMap<T, ValueClass> classes) {
+    public static <T, P extends PropertyInterface> PropertyRevImplement<?, T> getProperty(ImMap<T, ValueClass> classes) {
         ImMap<ValueClass, Integer> multiClasses = classes.values().multiSet();
         synchronized (cacheClasses) {
-            CalcPropertyImplement<P, ValueClass> implement = (CalcPropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
+            PropertyImplement<P, ValueClass> implement = (PropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
             if(implement==null) {
-                CalcPropertyRevImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
+                PropertyRevImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
                 cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
                 return classImplement;
             } else
-                return new CalcPropertyRevImplement<>(implement.property, MapFact.mapValues(implement.mapping, classes));
+                return new PropertyRevImplement<>(implement.property, MapFact.mapValues(implement.mapping, classes));
         }
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> getMapProperty(ImMap<T, ValueClass> classes) {
-        return CalcPropertyRevImplement.mapPropertyImplement(getProperty(classes));
+    public static <T extends PropertyInterface> PropertyMapImplement<?, T> getMapProperty(ImMap<T, ValueClass> classes) {
+        return PropertyRevImplement.mapPropertyImplement(getProperty(classes));
     }
 
-    public static <T> CalcPropertyRevImplement<?, T> getProperty(ValueClass valueClass, T map) {
+    public static <T> PropertyRevImplement<?, T> getProperty(ValueClass valueClass, T map) {
         IsClassProperty classProperty = valueClass.getProperty();
-        return new CalcPropertyRevImplement<>(classProperty, MapFact.singletonRev(classProperty.interfaces.single(), map));
+        return new PropertyRevImplement<>(classProperty, MapFact.singletonRev(classProperty.interfaces.single(), map));
     }
 
-    public static CalcPropertyMapImplement<?, ClassPropertyInterface> getProperty(ImSet<ClassPropertyInterface> interfaces) {
+    public static PropertyMapImplement<?, ClassPropertyInterface> getProperty(ImSet<ClassPropertyInterface> interfaces) {
         return getMapProperty(getMapClasses(interfaces));
      }
 
     public static <T> Where getWhere(ImMap<T, ValueClass> joinClasses, ImMap<T, ? extends Expr> joinImplement, Modifier modifier, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
-        CalcPropertyRevImplement<?, T> property = getProperty(joinClasses);
+        PropertyRevImplement<?, T> property = getProperty(joinClasses);
         if(mUsedProps != null)
             mUsedProps.add(property.property);
         return property.mapExpr(joinImplement, modifier.getPropertyChanges(), null).getWhere();
     }
     public static Where getWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
-        CalcPropertyRevImplement<?, String> property = getProperty(valueClass, "value");
+        PropertyRevImplement<?, String> property = getProperty(valueClass, "value");
         if(mUsedProps != null)
             mUsedProps.add(property.property);
         return property.mapExpr(MapFact.singleton("value", valueExpr), modifier.getPropertyChanges(), null).getWhere();

@@ -8,7 +8,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 // нужны сами классы - в Info не нужны
@@ -24,7 +24,7 @@ public interface AlgType {
 
     <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(Property<T> property, String caseInfo, Property<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo);
 
-    <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo);
+    <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, PropertyInterfaceImplement<T> value, String abstractInfo);
 
     <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(Property<T> property, ImList<Property<P>> intersects, ImList<ImRevMap<P, T>> maps);
 

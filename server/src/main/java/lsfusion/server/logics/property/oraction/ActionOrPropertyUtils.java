@@ -120,29 +120,29 @@ public class ActionOrPropertyUtils {
         return mResult.immutableList();
     }
 
-    private static <T extends PropertyInterface> ImList<PropertyInterfaceImplement<T>> mapLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
-        return linearImpl.mapListValues(new GetValue<PropertyInterfaceImplement<T>, LI>() {
-            public PropertyInterfaceImplement<T> getMapValue(LI value) {
+    private static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> mapLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
+        return linearImpl.mapListValues(new GetValue<PropertyInterfaceImplement, LI>() {
+            public PropertyInterfaceImplement getMapValue(LI value) {
                 return value.map(interfaces);
             }});
     }
 
-    private static <T> ImList<CalcPropertyObjectInterfaceImplement<T>> mapObjectLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
-        return linearImpl.mapListValues(new GetValue<CalcPropertyObjectInterfaceImplement<T>, LI>() {
-            public CalcPropertyObjectInterfaceImplement<T> getMapValue(LI value) {
+    private static <T> ImList<PropertyObjectInterfaceImplement<T>> mapObjectLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
+        return linearImpl.mapListValues(new GetValue<PropertyObjectInterfaceImplement<T>, LI>() {
+            public PropertyObjectInterfaceImplement<T> getMapValue(LI value) {
                 return value.mapObject(interfaces);
             }});
     }
 
-    public static <T extends PropertyInterface> ImList<PropertyInterfaceImplement<T>> readImplements(ImOrderSet<T> listInterfaces, Object... params) {
+    public static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> readImplements(ImOrderSet<T> listInterfaces, Object... params) {
         return mapLI(readLI(params), listInterfaces);
     }
 
-    public static <T> ImList<CalcPropertyObjectInterfaceImplement<T>> readObjectImplements(ImOrderSet<T> listInterfaces, Object... params) {
+    public static <T> ImList<PropertyObjectInterfaceImplement<T>> readObjectImplements(ImOrderSet<T> listInterfaces, Object... params) {
         return mapObjectLI(readLI(params), listInterfaces);
     }
 
-    public static <T extends PropertyInterface> ImList<CalcPropertyInterfaceImplement<T>> readCalcImplements(ImOrderSet<T> listInterfaces, Object... params) {
+    public static <T extends PropertyInterface> ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<T>> readCalcImplements(ImOrderSet<T> listInterfaces, Object... params) {
         return BaseUtils.immutableCast(readImplements(listInterfaces, params));
     }
 
@@ -187,15 +187,15 @@ public class ActionOrPropertyUtils {
         }
     }
 
-    public static <P extends PropertyInterface> ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, ImList<CalcPropertyInterfaceImplement<P>> propImpl) {
+    public static <P extends PropertyInterface> ActionPropertyImplement<P, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
         return new ActionPropertyImplement<>(property.property, getMapping(property, propImpl));
     }
 
-    public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyImplement<T, CalcPropertyInterfaceImplement<P>> mapCalcImplement(LCP<T> property, ImList<CalcPropertyInterfaceImplement<P>> propImpl) {
-        return new CalcPropertyImplement<>(property.property, getMapping(property, propImpl));
+    public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapCalcImplement(LCP<T> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
+        return new PropertyImplement<>(property.property, getMapping(property, propImpl));
     }
 
-    private static <T extends PropertyInterface, P extends PropertyInterface> ImMap<T, CalcPropertyInterfaceImplement<P>> getMapping(LP<T, ?> property, ImList<CalcPropertyInterfaceImplement<P>> propImpl) {
+    private static <T extends PropertyInterface, P extends PropertyInterface> ImMap<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> getMapping(LP<T, ?> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
         return property.listInterfaces.mapList(propImpl);
     }
 
@@ -215,9 +215,9 @@ public class ActionOrPropertyUtils {
 
     // Linear Implement
     static abstract class LI {
-        abstract <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(ImOrderSet<T> interfaces);
+        abstract <T extends PropertyInterface<T>> PropertyInterfaceImplement map(ImOrderSet<T> interfaces);
 
-        abstract <T> CalcPropertyObjectInterfaceImplement<T> mapObject(ImOrderSet<T> interfaces);
+        abstract <T> PropertyObjectInterfaceImplement<T> mapObject(ImOrderSet<T> interfaces);
 
         abstract Object[] write();
 
@@ -230,12 +230,12 @@ public class ActionOrPropertyUtils {
             this.intNum = intNum;
         }
 
-        <T extends PropertyInterface<T>> CalcPropertyInterfaceImplement<T> map(ImOrderSet<T> interfaces) {
+        <T extends PropertyInterface<T>> lsfusion.server.logics.property.implement.PropertyInterfaceImplement<T> map(ImOrderSet<T> interfaces) {
             return interfaces.get(intNum - 1);
         }
 
-        <T> CalcPropertyObjectInterfaceImplement<T> mapObject(ImOrderSet<T> interfaces) {
-            return new CalcPropertyObjectImplement<>(interfaces.get(intNum - 1));
+        <T> PropertyObjectInterfaceImplement<T> mapObject(ImOrderSet<T> interfaces) {
+            return new PropertyObjectImplement<>(interfaces.get(intNum - 1));
         }
 
         Object[] write() {
@@ -253,7 +253,7 @@ public class ActionOrPropertyUtils {
             this.mapInt = new int[lp.listInterfaces.size()];
         }
 
-        <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(final ImOrderSet<T> interfaces) {
+        <T extends PropertyInterface<T>> PropertyInterfaceImplement map(final ImOrderSet<T> interfaces) {
             ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(new GetIndex<T>() {
                 public T getMapValue(int i) {
                     return interfaces.get(mapInt[i] - 1);
@@ -262,16 +262,16 @@ public class ActionOrPropertyUtils {
             if(lp.property instanceof Action)
                 return new ActionPropertyMapImplement<>((Action<P>) lp.property, mapping);
             else
-                return new CalcPropertyMapImplement<>((Property<P>) lp.property, mapping);
+                return new PropertyMapImplement<>((Property<P>) lp.property, mapping);
         }
 
-        <T> CalcPropertyObjectInterfaceImplement<T> mapObject(final ImOrderSet<T> interfaces) {
+        <T> PropertyObjectInterfaceImplement<T> mapObject(final ImOrderSet<T> interfaces) {
             ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(new GetIndex<T>() {
                 public T getMapValue(int i) {
                     return interfaces.get(mapInt[i] - 1);
                 }});
 
-            return new CalcPropertyRevImplement<>((Property<P>) lp.property, mapping);
+            return new PropertyRevImplement<>((Property<P>) lp.property, mapping);
         }
 
         Object[] write() {

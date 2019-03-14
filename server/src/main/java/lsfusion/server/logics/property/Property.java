@@ -73,7 +73,6 @@ import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -203,9 +202,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         });
     }
 
-    public static <T extends PropertyInterface> boolean dependsImplement(ImCol<CalcPropertyInterfaceImplement<T>> properties, ImSet<Property> check) {
-        for(CalcPropertyInterfaceImplement<T> property : properties)
-            if(property instanceof CalcPropertyMapImplement && depends(((CalcPropertyMapImplement)property).property, check))
+    public static <T extends PropertyInterface> boolean dependsImplement(ImCol<PropertyInterfaceImplement<T>> properties, ImSet<Property> check) {
+        for(PropertyInterfaceImplement<T> property : properties)
+            if(property instanceof PropertyMapImplement && depends(((PropertyMapImplement)property).property, check))
                 return true;
         return false;
     }
@@ -249,11 +248,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                     "\n\tClasses 1: " + getClassWhere(calcType) + "\n\tClasses 2: " + property.getClassWhere(calcType));
     }
 
-    public <P extends PropertyInterface> void checkContainsAll(Property<P> property, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <P extends PropertyInterface> void checkContainsAll(Property<P> property, String caseInfo, ImRevMap<P, T> map, PropertyInterfaceImplement<T> value, String abstractInfo) {
         AlgType.caseCheckType.checkContainsAll(this, property, caseInfo, map, value, abstractInfo);
     }
 
-    public <P extends PropertyInterface> void inferCheckContainsAll(Property<P> property, String caseInfo, ImRevMap<P, T> map, InferType inferType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <P extends PropertyInterface> void inferCheckContainsAll(Property<P> property, String caseInfo, ImRevMap<P, T> map, InferType inferType, PropertyInterfaceImplement<T> value, String abstractInfo) {
         ImMap<T, ExClassSet> interfaceClasses = getInferInterfaceClasses(inferType);
         ImMap<T, ExClassSet> interfacePropClasses = map.crossJoin(property.getInferInterfaceClasses(inferType));
 
@@ -309,7 +308,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return ExClassSet.intersect(interfaces, interfaceClasses, interfacePropClasses);
     }
 
-    public <P extends PropertyInterface> void calcCheckContainsAll(String caseInfo, Property<P> property, ImRevMap<P, T> map, CalcClassType calcType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <P extends PropertyInterface> void calcCheckContainsAll(String caseInfo, Property<P> property, ImRevMap<P, T> map, CalcClassType calcType, PropertyInterfaceImplement<T> value, String abstractInfo) {
         ClassWhere<T> classes = getClassWhere(calcType);
         ClassWhere<T> propClasses = new ClassWhere<>(property.getClassWhere(calcType),map);
         
@@ -1037,16 +1036,16 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
 
-    public void markIndexed(final ImRevMap<T, String> mapping, ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
+    public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index) {
         assert isStored();
 
-        ImList<Field> indexFields = index.mapListValues(new GetValue<Field, CalcPropertyObjectInterfaceImplement<String>>() {
-            public Field getMapValue(CalcPropertyObjectInterfaceImplement<String> indexField) {
-                if (indexField instanceof CalcPropertyObjectImplement) {
-                    String key = ((CalcPropertyObjectImplement<String>) indexField).object;
+        ImList<Field> indexFields = index.mapListValues(new GetValue<Field, PropertyObjectInterfaceImplement<String>>() {
+            public Field getMapValue(PropertyObjectInterfaceImplement<String> indexField) {
+                if (indexField instanceof PropertyObjectImplement) {
+                    String key = ((PropertyObjectImplement<String>) indexField).object;
                     return mapTable.mapKeys.get(mapping.reverse().get(key));
                 } else {
-                    Property property = ((CalcPropertyRevImplement) indexField).property;
+                    Property property = ((PropertyRevImplement) indexField).property;
                     assert BaseUtils.hashEquals(mapTable.table, property.mapTable.table);
                     return property.field;
                 }
@@ -1407,14 +1406,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public Expr changeExpr;
 
-    public <D extends PropertyInterface> void setEventChange(CalcPropertyMapImplement<D, T> valueImplement, ImList<CalcPropertyMapImplement<?, T>> whereImplements, ImCol<CalcPropertyMapImplement<?, T>> onChangeImplements) {
+    public <D extends PropertyInterface> void setEventChange(PropertyMapImplement<D, T> valueImplement, ImList<PropertyMapImplement<?, T>> whereImplements, ImCol<PropertyMapImplement<?, T>> onChangeImplements) {
 
-        ImCol<CalcPropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(new GetValue<CalcPropertyMapImplement<?, T>, CalcPropertyMapImplement<?, T>>() {
-                    public CalcPropertyMapImplement<?, T> getMapValue(CalcPropertyMapImplement<?, T> value) {
+        ImCol<PropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(new GetValue<PropertyMapImplement<?, T>, PropertyMapImplement<?, T>>() {
+                    public PropertyMapImplement<?, T> getMapValue(PropertyMapImplement<?, T> value) {
                         return value.mapChanged(IncrementType.SETCHANGED, ChangeEvent.scope);
                     }});
 
-        CalcPropertyMapImplement<?, T> where;
+        PropertyMapImplement<?, T> where;
         if(onChangeWhereImplements.size() > 0) {
             if(onChangeWhereImplements.size()==1)
                 where = onChangeWhereImplements.single();
@@ -1430,10 +1429,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         setEventChange(null, false, valueImplement, where);
     }
 
-    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement) {
+    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
         if(action && !Settings.get().isDisableWhenCalcDo()) {
             ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false, null);
+            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<PropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false, null);
             return;
         }
 
@@ -1485,12 +1484,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return calcType.isExpr() || (changes.isEmpty() && changedWhere==null);
     }
 
-    public CalcPropertyMapImplement<T, T> getImplement() {
-        return new CalcPropertyMapImplement<>(this, getIdentityInterfaces());
+    public PropertyMapImplement<T, T> getImplement() {
+        return new PropertyMapImplement<>(this, getIdentityInterfaces());
     }
 
-    public <V extends PropertyInterface> CalcPropertyMapImplement<T, V> getImplement(ImOrderSet<V> list) {
-        return new CalcPropertyMapImplement<>(this, getMapInterfaces(list));
+    public <V extends PropertyInterface> PropertyMapImplement<T, V> getImplement(ImOrderSet<V> list) {
+        return new PropertyMapImplement<>(this, getMapInterfaces(list));
     }
 
     // важно для подсветки
@@ -1514,7 +1513,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         try {
             Expr changeExpr = getChangeExpr(); // нижнее условие по аналогии с DataProperty
             Where classWhere = getClassProperty().mapExpr(mapKeys, modifier).getWhere();
-            CalcPropertyRevImplement<?, String> valueProperty = getValueClassProperty();
+            PropertyRevImplement<?, String> valueProperty = getValueClassProperty();
             if(valueProperty != null)
                 classWhere = classWhere.and(valueProperty.mapExpr(MapFact.singleton("value", changeExpr), modifier).getWhere());
             DataChanges dataChanges = getDataChanges(new PropertyChange<>(mapKeys, changeExpr, classWhere), modifier);
@@ -1612,7 +1611,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return result;
     }
 
-    public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, CalcPropertyInterfaceImplement<T>> operands, ImMap<I, ExClassSet> operandClasses, FunctionSet<I> operandNotNulls, InferType inferType, boolean or) {
+    public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, PropertyInterfaceImplement<T>> operands, ImMap<I, ExClassSet> operandClasses, FunctionSet<I> operandNotNulls, InferType inferType, boolean or) {
         Inferred<T> result = Inferred.EMPTY();
         for(int i=0,size=operands.size();i<size;i++) {
             Inferred<T> operandInferred = operands.getValue(i).mapInferInterfaceClasses(operandClasses.get(operands.getKey(i)), inferType);
@@ -1625,14 +1624,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
         return result;
     }
-    public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, CalcPropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, ImSet<I>[] operandNotNulls, final InferType inferType) {
+    public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, PropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, ImSet<I>[] operandNotNulls, final InferType inferType) {
         ImMap<I, Inferred<T>> inferred = mapInfer(operands, operandClasses, inferType);
         return op(operandNotNulls, inferType, inferred);
     }
 
-    public static <I, T extends PropertyInterface> ImMap<I, Inferred<T>> mapInfer(ImMap<I, CalcPropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, final InferType inferType) {
-        return operands.mapValues(new GetKeyValue<Inferred<T>, I, CalcPropertyInterfaceImplement<T>>() {
-                public Inferred<T> getMapValue(I key, CalcPropertyInterfaceImplement<T> value) {
+    public static <I, T extends PropertyInterface> ImMap<I, Inferred<T>> mapInfer(ImMap<I, PropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, final InferType inferType) {
+        return operands.mapValues(new GetKeyValue<Inferred<T>, I, PropertyInterfaceImplement<T>>() {
+                public Inferred<T> getMapValue(I key, PropertyInterfaceImplement<T> value) {
                     return value.mapInferInterfaceClasses(operandClasses.get(key), inferType);
                 }
             });
@@ -1666,7 +1665,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }), false, inferType), inferType);
     }
 
-    public static <T extends PropertyInterface> Inferred<T> op(ImList<CalcPropertyInterfaceImplement<T>> operands, ImList<ExClassSet> operandClasses, int operandNotNullCount, int skipNotNull, InferType inferType, boolean or) {
+    public static <T extends PropertyInterface> Inferred<T> op(ImList<PropertyInterfaceImplement<T>> operands, ImList<ExClassSet> operandClasses, int operandNotNullCount, int skipNotNull, InferType inferType, boolean or) {
         ImSet<Integer>[] operandNotNulls;        
         if(or) { // мн-во singleton'ов
             operandNotNulls = new ImSet[operandNotNullCount];
@@ -1708,7 +1707,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         assert this instanceof ChangeProperty || this instanceof IsClassProperty || this instanceof ObjectClassProperty || getDepends().isEmpty(); // гарантирует "атомарность" метода
         return calcClassValueWhere(CalcClassType.PREVBASE).getCommonExClasses(SetFact.singleton("value")).get("value");
     }
-    public static <I extends PropertyInterface> ExClassSet opInferValueClasses(ImCol<? extends CalcPropertyInterfaceImplement<I>> props, ImMap<I, ExClassSet> inferred, boolean or, InferType inferType) {
+    public static <I extends PropertyInterface> ExClassSet opInferValueClasses(ImCol<? extends PropertyInterfaceImplement<I>> props, ImMap<I, ExClassSet> inferred, boolean or, InferType inferType) {
         ExClassSet result = null;
         for (int i = 0; i < props.size(); i++) {
             ExClassSet classSet = props.get(i).mapInferValueClass(inferred, inferType);
@@ -1721,12 +1720,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     // костыль для email
-    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> props) {
+    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> props) {
         ValueClass[] result = new ValueClass[mapInterfaces.size()];
-        for(PropertyInterfaceImplement<I> prop : props) {
+        for(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement prop : props) {
             ImMap<I, ValueClass> propClasses;
-            if(prop instanceof CalcPropertyMapImplement) {
-                propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
+            if(prop instanceof PropertyMapImplement) {
+                propClasses = ((PropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
             } else {
                 propClasses = MapFact.EMPTY();
             }
@@ -1837,17 +1836,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
     }
 
-    public CalcPropertyMapImplement<?, T> getClassProperty() {
+    public PropertyMapImplement<?, T> getClassProperty() {
         return getClassProperty(interfaces);
     }
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, T> getClassProperty(ImSet<T> interfaces) {
+    public PropertyMapImplement<?, T> getClassProperty(ImSet<T> interfaces) {
         return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy).filter(interfaces));
     }
 
     @IdentityInstanceLazy
-    protected CalcPropertyRevImplement<?, String> getValueClassProperty() {
+    protected PropertyRevImplement<?, String> getValueClassProperty() {
         ValueClass valueClass = getValueClass(ClassType.signaturePolicy);
         if(valueClass instanceof ConcatenateValueClass) // getClassProperty not supported
             return null;

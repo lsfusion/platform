@@ -64,7 +64,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;
@@ -141,7 +141,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, ImMap<ObjectInstance, CalcPropertyObjectInstance> parent, ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
+    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, ImMap<ObjectInstance, CalcPropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
         this.entity = entity;
 
@@ -662,7 +662,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         change(session, value, eventForm, stack);
     }
 
-    public ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
+    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
 
     // вообще касается всего что идет после проверки на hidden, можно было бо обобщить, но пока нет смысла
     private boolean pendingHiddenUpdateKeys;
@@ -678,7 +678,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
             
     public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged) throws SQLException, SQLHandledException {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
+        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
         if(mappedProp != null) {
             MSet<Property> mUsedProps = null;
             if(propsChanged)
@@ -1050,7 +1050,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
     
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {
             updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE) :
                     new PropertyChange<>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
@@ -1058,14 +1058,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
     
     private void updateViewProperty(ExecutionEnvironment execEnv, NoPropertyTableUsage<ObjectInstance> keyTable1) throws SQLException, SQLHandledException {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             updateViewProperty(execEnv, viewProperty, new PropertyChange<>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable1.join(mapKeys).getWhere()));
         }
     }
 
-    private void updateViewProperty(ExecutionEnvironment execEnv, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
+    private void updateViewProperty(ExecutionEnvironment execEnv, PropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
         execEnv.getSession().dropChanges((SessionDataProperty)viewProperty.property);
         execEnv.change(viewProperty.property, change);
     }

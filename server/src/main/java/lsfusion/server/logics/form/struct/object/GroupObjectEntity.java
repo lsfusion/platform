@@ -37,7 +37,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -175,10 +175,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     private boolean finalizedProps = false;
     private Object props = MapFact.mExclMap();
-    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getProperty(GroupObjectProp type) {
+    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getProperty(GroupObjectProp type) {
         assert finalizedObjects && !finalizedProps;
-        MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
+        MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
+        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
             prop = DerivedProperty.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
@@ -189,12 +189,12 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return prop;
     }
 
-    public ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
+    public ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> getProperties() {
         if(!finalizedProps) {
-            props = ((MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props).immutable();
+            props = ((MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props).immutable();
             finalizedProps = true;
         }
-        return (ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
+        return (ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
     }
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {

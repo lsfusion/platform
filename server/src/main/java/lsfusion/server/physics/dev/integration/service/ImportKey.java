@@ -21,7 +21,7 @@ import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.CalcPropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;
@@ -31,14 +31,14 @@ import java.sql.SQLException;
 
 public class ImportKey<P extends PropertyInterface> implements ImportKeyInterface, ImportDeleteInterface {
     CustomClass keyClass;
-    final CalcPropertyImplement<P, ImportFieldInterface> implement;
+    final PropertyImplement<P, ImportFieldInterface> implement;
 
     public ImportKey(ImportKey<P> key) {
         this.keyClass = key.keyClass;
         this.implement = key.implement;
     }
 
-    public ImportKey(CustomClass keyClass, CalcPropertyImplement<P, ImportFieldInterface> implement) {
+    public ImportKey(CustomClass keyClass, PropertyImplement<P, ImportFieldInterface> implement) {
         this.keyClass = keyClass;
         this.implement = implement;
     }

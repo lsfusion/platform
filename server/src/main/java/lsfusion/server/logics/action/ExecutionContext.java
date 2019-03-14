@@ -50,7 +50,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.navigator.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.language.linear.LCP;
@@ -538,7 +538,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends PropertyInterfaceImplement<P>> mapInterfaces) {
         return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null);
     }
 

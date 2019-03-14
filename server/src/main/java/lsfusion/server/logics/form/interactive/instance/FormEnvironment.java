@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class FormEnvironment<P extends PropertyInterface> {
@@ -23,7 +23,7 @@ public class FormEnvironment<P extends PropertyInterface> {
         return mapObjects;
     }
     
-    public <T extends PropertyInterface> FormEnvironment<T> mapJoin(ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> map) {
+    public <T extends PropertyInterface> FormEnvironment<T> mapJoin(ImMap<T, ? extends PropertyInterfaceImplement<P>> map) {
         return new FormEnvironment<>(MapFact.nullInnerJoin(map, mapObjects), changingDrawInstance, formInstance);
     }
 

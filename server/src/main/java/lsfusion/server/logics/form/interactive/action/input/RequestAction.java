@@ -17,8 +17,8 @@ import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.KeepContextAction;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -44,7 +44,7 @@ public class RequestAction extends KeepContextAction {
     }
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+    public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
 
         MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         actions.add(requestAction);
@@ -52,10 +52,10 @@ public class RequestAction extends KeepContextAction {
         if(elseAction != null)
             actions.add(elseAction);
 
-        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres =
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres =
                 ((ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
-                            public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
+                            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
                                 return value.mapCalcWhereProperty();
                             }});
         return DerivedProperty.createUnion(interfaces, listWheres);

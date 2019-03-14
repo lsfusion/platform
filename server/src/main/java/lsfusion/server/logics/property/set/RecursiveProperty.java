@@ -19,8 +19,8 @@ import lsfusion.server.data.expr.query.RecursiveExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -52,8 +52,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
 
     protected final ImRevMap<Interface, T> mapInterfaces;
     protected final ImRevMap<T, T> mapIterate; // старый на новый
-    protected final CalcPropertyMapImplement<?, T> initial;
-    protected final CalcPropertyMapImplement<?, T> step;
+    protected final PropertyMapImplement<?, T> initial;
+    protected final PropertyMapImplement<?, T> step;
     
     protected final Cycle cycle;
     
@@ -78,7 +78,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return constraint;
     }
 
-    public RecursiveProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, CalcPropertyMapImplement<?, T> initial, CalcPropertyMapImplement<?, T> step) {
+    public RecursiveProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, PropertyMapImplement<?, T> initial, PropertyMapImplement<?, T> step) {
         super(caption, interfaces);
         this.mapInterfaces = mapInterfaces;
         this.mapIterate = mapIterate;
@@ -87,8 +87,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         ImSet<T> innerInterfaces = getInnerInterfaces();
 
         // в initial докинем недостающие ключи
-        ImCol<CalcPropertyInterfaceImplement<T>> and = mapIterate.mapColValues(new GetKeyValue<CalcPropertyInterfaceImplement<T>, T, T>() {
-            public CalcPropertyInterfaceImplement<T> getMapValue(T key, T value) {
+        ImCol<PropertyInterfaceImplement<T>> and = mapIterate.mapColValues(new GetKeyValue<PropertyInterfaceImplement<T>, T, T>() {
+            public PropertyInterfaceImplement<T> getMapValue(T key, T value) {
                 return DerivedProperty.createCompare(Compare.EQUALS, key, value);
             }});
         initial = DerivedProperty.createAnd(innerInterfaces, initial, and);
@@ -136,7 +136,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(calcType.getAlgInfo()), SetFact.singleton((CalcPropertyInterfaceImplement<T>)initial), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
+        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(calcType.getAlgInfo()), SetFact.singleton((PropertyInterfaceImplement<T>)initial), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
     }
 
     protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {

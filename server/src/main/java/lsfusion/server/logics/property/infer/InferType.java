@@ -7,7 +7,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class InferType implements AlgType {
@@ -45,7 +45,7 @@ public class InferType implements AlgType {
         property.inferCheckExclusiveness(caseInfo, intersect, intersectInfo, map, this, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, PropertyInterfaceImplement<T> value, String abstractInfo) {
         assert this != RESOLVE;
         property.inferCheckContainsAll(intersect, caseInfo, map, this, value, abstractInfo);
     }

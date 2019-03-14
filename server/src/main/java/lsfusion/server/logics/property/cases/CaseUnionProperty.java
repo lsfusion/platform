@@ -25,8 +25,8 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.CaseUnionDrillDownFormEntity;
@@ -66,47 +66,47 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         MSet<Property> mResult = SetFact.mSetMax(simpleCases.size());
         for(int i=0,size=simpleCases.size();i<size;i++) {
             CalcCase<Interface> simpleCase = simpleCases.get(i);
-            if (simpleCase.implement instanceof CalcPropertyMapImplement)
-                mResult.add(((CalcPropertyMapImplement) simpleCase.implement).property);
+            if (simpleCase.implement instanceof PropertyMapImplement)
+                mResult.add(((PropertyMapImplement) simpleCase.implement).property);
         }
         return mResult.immutable();
     }
 
-    private static class OperandCase implements GetValue<CalcCase<Interface>, CalcPropertyInterfaceImplement<Interface>> {
+    private static class OperandCase implements GetValue<CalcCase<Interface>, PropertyInterfaceImplement<Interface>> {
         private final boolean caseClasses;
 
         private OperandCase(boolean caseClasses) {
             this.caseClasses = caseClasses;
         }
 
-        public CalcCase getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
-            return new CalcCase(caseClasses ? ((CalcPropertyMapImplement<?, Interface>)value).mapClassProperty() : value, value);
+        public CalcCase getMapValue(PropertyInterfaceImplement<Interface> value) {
+            return new CalcCase(caseClasses ? ((PropertyMapImplement<?, Interface>)value).mapClassProperty() : value, value);
         }
     }
 
-    public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, boolean isExclusive, boolean toReverse) {
+    public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<PropertyInterfaceImplement<Interface>> operands, boolean caseClasses, boolean isExclusive, boolean toReverse) {
         this(caption, interfaces, isExclusive, (toReverse ? operands.reverseList() : operands).mapListValues(new OperandCase(caseClasses)));
     }
 
-    public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
+    public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImCol<PropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
         this(caption, interfaces, true, operands.mapColValues(new OperandCase(caseClasses)).toList());
     }
 
     @Override
-    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<PropertyInterfaceImplement<Interface>> getOperands() {
         assert finalized;
         return getWheres().merge(getProps());
     }
 
-    public ImSet<CalcPropertyInterfaceImplement<Interface>> getWheres() {
-        return getCases().getCol().mapMergeSetValues(new GetValue<CalcPropertyInterfaceImplement<Interface>, CalcCase<Interface>>() {
-            public CalcPropertyInterfaceImplement<Interface> getMapValue(CalcCase<Interface> value) {
+    public ImSet<PropertyInterfaceImplement<Interface>> getWheres() {
+        return getCases().getCol().mapMergeSetValues(new GetValue<PropertyInterfaceImplement<Interface>, CalcCase<Interface>>() {
+            public PropertyInterfaceImplement<Interface> getMapValue(CalcCase<Interface> value) {
                 return value.where;
             }});
     }
-    public ImSet<CalcPropertyInterfaceImplement<Interface>> getProps() {
-        return getCases().getCol().mapMergeSetValues(new GetValue<CalcPropertyInterfaceImplement<Interface>, CalcCase<Interface>>() {
-            public CalcPropertyInterfaceImplement<Interface> getMapValue(CalcCase<Interface> value) {
+    public ImSet<PropertyInterfaceImplement<Interface>> getProps() {
+        return getCases().getCol().mapMergeSetValues(new GetValue<PropertyInterfaceImplement<Interface>, CalcCase<Interface>>() {
+            public PropertyInterfaceImplement<Interface> getMapValue(CalcCase<Interface> value) {
                 return value.implement;
             }
         });
@@ -162,7 +162,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @Override
     public boolean canBeHeurChanged(boolean global) {
         for(CalcCase<Interface> operand : getCases()) // считаем where сиблингов и потом ими xor'им change
-            if(operand.implement instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) operand.implement).property.canBeHeurChanged(global))
+            if(operand.implement instanceof PropertyMapImplement && ((PropertyMapImplement) operand.implement).property.canBeHeurChanged(global))
                 return true;
         return false;
     }
@@ -290,11 +290,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                     lastNotNullAction = mActionCases.size() + 1;
             }
 
-            CalcPropertyMapImplement<?, Interface> where;
+            PropertyMapImplement<?, Interface> where;
             if(propCase.isSimple())
-                where = ((CalcPropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
+                where = ((PropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
             else
-                where = (CalcPropertyMapImplement<?, Interface>) propCase.where;
+                where = (PropertyMapImplement<?, Interface>) propCase.where;
             mActionCases.add(new ActionCase<>(where, editAction));
         }
         ImList<ActionCase<Interface>> actionCases = mActionCases.immutableList();
@@ -318,7 +318,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
 
-    public void addImplicitCase(CalcPropertyMapImplement<?, Interface> property, List<ResolveClassSet> signature, boolean sameNamespace, Version version) {
+    public void addImplicitCase(PropertyMapImplement<?, Interface> property, List<ResolveClassSet> signature, boolean sameNamespace, Version version) {
         addAbstractCase(new ImplicitCalcCase<>(property, signature, sameNamespace), version);
     }
 
@@ -371,16 +371,16 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         classValueWhere = new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
     }
 
-    public void addCase(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property, Version version) {
+    public void addCase(PropertyInterfaceImplement<Interface> where, PropertyInterfaceImplement<Interface> property, Version version) {
         assert abs.type == Type.CASE;
 //        
-//        if(property instanceof CalcPropertyMapImplement)
-//            where = DerivedProperty.createAnd(interfaces, where, ((CalcPropertyMapImplement<?, Interface>)property).mapClassProperty());
+//        if(property instanceof PropertyMapImplement)
+//            where = DerivedProperty.createAnd(interfaces, where, ((PropertyMapImplement<?, Interface>)property).mapClassProperty());
 
         addCase(new ExplicitCalcCase(where, property), version);
     }
 
-    public void addOperand(CalcPropertyMapImplement<?, Interface> operand, List<ResolveClassSet> signature, Version version) {
+    public void addOperand(PropertyMapImplement<?, Interface> operand, List<ResolveClassSet> signature, Version version) {
         assert isAbstract();
 
         ExplicitCalcCase addCase;
@@ -395,8 +395,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     public <L extends PropertyInterface> void addCase(ExplicitCalcCase addCase, Version version) {
         assert isAbstract();
 
-        CalcPropertyMapImplement<L, Interface> caseWhere = (CalcPropertyMapImplement<L, Interface>) addCase.where;
-        CalcPropertyInterfaceImplement<Interface> caseImplement = (CalcPropertyInterfaceImplement<Interface>)addCase.implement;
+        PropertyMapImplement<L, Interface> caseWhere = (PropertyMapImplement<L, Interface>) addCase.where;
+        PropertyInterfaceImplement<Interface> caseImplement = (PropertyInterfaceImplement<Interface>)addCase.implement;
         String caseInfo = caseImplement.toString();
         checkContainsAll(caseWhere.property, caseInfo, caseWhere.mapping, caseImplement, this.toString());
 
@@ -464,27 +464,27 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 ImList<CalcCase<Interface>> listCases = getCases();
 
                 for (int i = 0; i < listCases.size(); i++) {
-                    CalcPropertyMapImplement<?, Interface> caseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
+                    PropertyMapImplement<?, Interface> caseWhere = (PropertyMapImplement<?, Interface>) listCases.get(i).where;
                     for (int j = i + 1; j < listCases.size(); j++) {
-                        CalcPropertyMapImplement<?, Interface> prevCaseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(j).where;
+                        PropertyMapImplement<?, Interface> prevCaseWhere = (PropertyMapImplement<?, Interface>) listCases.get(j).where;
                         prevCaseWhere.mapCheckExclusiveness(listCases.get(j).implement.toString(), caseWhere, listCases.get(i).implement.toString(), this.toString());
                     }
                 }
             }
 
             if (abs.checkAllImplementations) {
-                ImList<CalcPropertyMapImplement<?, Interface>> cases = getCases().mapListValues(new GetValue<CalcPropertyMapImplement<?, Interface>, CalcCase<Interface>>() {
-                    public CalcPropertyMapImplement<?, Interface> getMapValue(CalcCase<Interface> value) {
-                        return (CalcPropertyMapImplement<?, Interface>) value.where;
+                ImList<PropertyMapImplement<?, Interface>> cases = getCases().mapListValues(new GetValue<PropertyMapImplement<?, Interface>, CalcCase<Interface>>() {
+                    public PropertyMapImplement<?, Interface> getMapValue(CalcCase<Interface> value) {
+                        return (PropertyMapImplement<?, Interface>) value.where;
                     }
                 });
 
-                checkAllImplementations(cases.mapListValues(new GetValue<Property<PropertyInterface>, CalcPropertyMapImplement<?, Interface>>() {
-                    public Property<PropertyInterface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
+                checkAllImplementations(cases.mapListValues(new GetValue<Property<PropertyInterface>, PropertyMapImplement<?, Interface>>() {
+                    public Property<PropertyInterface> getMapValue(PropertyMapImplement<?, Interface> value) {
                         return (Property<PropertyInterface>) value.property;
                     }
-                }), cases.mapListValues(new GetValue<ImRevMap<PropertyInterface, Interface>, CalcPropertyMapImplement<?, Interface>>() {
-                    public ImRevMap<PropertyInterface, Interface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
+                }), cases.mapListValues(new GetValue<ImRevMap<PropertyInterface, Interface>, PropertyMapImplement<?, Interface>>() {
+                    public ImRevMap<PropertyInterface, Interface> getMapValue(PropertyMapImplement<?, Interface> value) {
                         return (ImRevMap<PropertyInterface, Interface>) value.mapping;
                     }
                 }));
@@ -532,11 +532,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 /*
 public class IfUnionProperty extends IncrementUnionProperty {
 
-    private CalcPropertyInterfaceImplement<Interface> ifProp;
-    private CalcPropertyInterfaceImplement<Interface> trueProp;
-    private CalcPropertyInterfaceImplement<Interface> falseProp;
+    private PropertyInterfaceImplement<Interface> ifProp;
+    private PropertyInterfaceImplement<Interface> trueProp;
+    private PropertyInterfaceImplement<Interface> falseProp;
 
-    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<PropertyInterfaceImplement<Interface>> getOperands() {
         return SetFact.toSet(ifProp, trueProp, falseProp);
     }
 
@@ -547,7 +547,7 @@ public class IfUnionProperty extends IncrementUnionProperty {
         ActionPropertyMapImplement<?, Interface> result = falseProp.mapEditAction(editActionSID, filterProperty);
         ActionPropertyMapImplement<?, Interface> trueAction = trueProp.mapEditAction(editActionSID, filterProperty);
         if (trueAction != null) {
-            result = DerivedProperty.createIfAction(interfaces, (CalcPropertyMapImplement<?, Interface>) ifProp, trueAction, result);
+            result = DerivedProperty.createIfAction(interfaces, (PropertyMapImplement<?, Interface>) ifProp, trueAction, result);
         }
         return result;
     }
@@ -561,7 +561,7 @@ public class IfUnionProperty extends IncrementUnionProperty {
         return result.immutable();
     }
 
-    public IfUnionProperty(String sID, LocalizedString caption, ImOrderSet<Interface> interfaces, CalcPropertyInterfaceImplement<Interface> ifProp, CalcPropertyInterfaceImplement<Interface> trueProp, CalcPropertyInterfaceImplement<Interface> falseProp) {
+    public IfUnionProperty(String sID, LocalizedString caption, ImOrderSet<Interface> interfaces, PropertyInterfaceImplement<Interface> ifProp, PropertyInterfaceImplement<Interface> trueProp, PropertyInterfaceImplement<Interface> falseProp) {
         super(sID, caption, interfaces);
         this.ifProp = ifProp;
         this.trueProp = trueProp;
