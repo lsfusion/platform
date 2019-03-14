@@ -35,7 +35,7 @@ import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -327,7 +327,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private final ActionOrProperty property;
         private final ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses;
 
-        private ImList<PropertyClassImplement> result;
+        private ImList<ActionOrPropertyClassImplement> result;
         
         public CacheEntry(ActionOrProperty property, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
             this.property = property;
@@ -362,10 +362,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
 
     // вся оптимизация в общем то для drillDown
-    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
+    protected ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
         if(valueClasses.size() == 1) { // доп оптимизация для DrillDown
             if(interfaces.size() == 1 && isInInterface(MapFact.singleton(interfaces.single(), valueClasses.single().valueClass.getUpSet()), true))
-                return ListFact.<PropertyClassImplement>singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
+                return ListFact.<ActionOrPropertyClassImplement>singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
             return ListFact.EMPTY();
         }
 
@@ -380,8 +380,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 for (CacheEntry cachedEntry : col.it()) {
                     final ImRevMap<ValueClassWrapper, ValueClassWrapper> map = cachedEntry.map(entry);
                     if (map != null) {
-                        return cachedEntry.result.mapListValues(new GetValue<PropertyClassImplement, PropertyClassImplement>() {
-                            public PropertyClassImplement getMapValue(PropertyClassImplement value) {
+                        return cachedEntry.result.mapListValues(new GetValue<ActionOrPropertyClassImplement, ActionOrPropertyClassImplement>() {
+                            public ActionOrPropertyClassImplement getMapValue(ActionOrPropertyClassImplement value) {
                                 return value.map(map);
                             }
                         });
@@ -390,7 +390,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             }
         }
         
-        ImList<PropertyClassImplement> result = getProperties(FormEntity.getSubsets(valueClasses));
+        ImList<ActionOrPropertyClassImplement> result = getProperties(FormEntity.getSubsets(valueClasses));
         
         entry.result = result;
         synchronized (col) {
@@ -400,8 +400,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return result;
     }
     
-    private ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists) {
-        MList<PropertyClassImplement> mResultList = ListFact.mList();
+    private ImList<ActionOrPropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists) {
+        MList<ActionOrPropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (interfaces.size() == classes.size()) {
                 final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
@@ -419,7 +419,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return mResultList.immutableList();
     }
     
-    protected abstract PropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping);
+    protected abstract ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping);
 
     public T getInterfaceById(int iID) {
         for (T inter : interfaces) {

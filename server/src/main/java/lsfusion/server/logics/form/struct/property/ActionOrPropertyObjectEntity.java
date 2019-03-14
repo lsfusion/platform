@@ -8,12 +8,12 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
+public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
 
     public T property;
     public ImRevMap<P, ObjectEntity> mapping;
 
-    protected PropertyObjectEntity() {
+    protected ActionOrPropertyObjectEntity() {
         //нужен для десериализации
         creationScript = null;
         creationPath = null;
@@ -24,14 +24,14 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return property.equals(((PropertyObjectEntity) o).property) && mapping.equals(((PropertyObjectEntity) o).mapping);
+        return property.equals(((ActionOrPropertyObjectEntity) o).property) && mapping.equals(((ActionOrPropertyObjectEntity) o).mapping);
     }
 
     public int immutableHashCode() {
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public PropertyObjectEntity(T property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public ActionOrPropertyObjectEntity(T property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         this.property = property;
         this.mapping = mapping;
         this.creationScript = creationScript==null ? null : creationScript.substring(0, Math.min(10000, creationScript.length()));
@@ -54,7 +54,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return creationPath;
     }
 
-    public static <I extends PropertyInterface, T extends ActionOrProperty<I>> PropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath) {
+    public static <I extends PropertyInterface, T extends ActionOrProperty<I>> ActionOrPropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath) {
         if(property instanceof Property)
             return new CalcPropertyObjectEntity<>((Property<I>) property, map, creationScript, creationPath);
         else

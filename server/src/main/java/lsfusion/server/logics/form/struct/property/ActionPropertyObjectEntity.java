@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.interactive.instance.Instantiable;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, Action<P>> implements Instantiable<ActionPropertyObjectInstance<P>> {
+public class ActionPropertyObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionPropertyObjectInstance<P>> {
 
     public ActionPropertyObjectEntity() {
         //нужен для десериализации

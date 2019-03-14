@@ -33,7 +33,7 @@ import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -361,7 +361,7 @@ public class ScriptingFormEntity {
 
             String formPath = points.get(i).toString();
             PropertyDrawEntity propertyDraw;
-            PropertyObjectEntity propertyObject = property.createObjectEntity(objects);
+            ActionOrPropertyObjectEntity propertyObject = property.createObjectEntity(objects);
             if(inherited.result != null)
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, version);
             else

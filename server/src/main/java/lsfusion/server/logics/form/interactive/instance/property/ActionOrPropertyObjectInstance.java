@@ -17,20 +17,20 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public abstract class PropertyObjectInstance<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
+public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
 
     public T property;
     public ImMap<P, PropertyObjectInterfaceInstance> mapping;
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return property.equals(((PropertyObjectInstance) o).property) && mapping.equals(((PropertyObjectInstance) o).mapping);
+        return property.equals(((ActionOrPropertyObjectInstance) o).property) && mapping.equals(((ActionOrPropertyObjectInstance) o).mapping);
     }
 
     public int immutableHashCode() {
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public PropertyObjectInstance(T property,ImMap<P,? extends PropertyObjectInterfaceInstance> mapping) {
+    public ActionOrPropertyObjectInstance(T property, ImMap<P,? extends PropertyObjectInterfaceInstance> mapping) {
         this.property = property;
         this.mapping = (ImMap<P, PropertyObjectInterfaceInstance>) mapping;
     }

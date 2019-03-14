@@ -514,7 +514,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         // here can be more precise heuristics than implemented in FormDataManager.getPrintTable (calculating expr and putting expr itself (not its values)  in a set)
 
         ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
-        for (PropertyClassImplement implement : group.getProperties(valueClasses, version)) {
+        for (ActionOrPropertyClassImplement implement : group.getProperties(valueClasses, version)) {
             ImSet<ValueClassWrapper> wrappers = implement.mapping.valuesSet();
             ImOrderSet<ObjectEntity> filterObjects = objects.filterOrderIncl(objectToClass.filterValuesRev(wrappers).keys());
             addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrappers), prev), version, filterObjects);
@@ -584,17 +584,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
-        PropertyObjectEntity<I, ?> entity = PropertyObjectEntity.create(property, mapping, null, null);
+        ActionOrPropertyObjectEntity<I, ?> entity = ActionOrPropertyObjectEntity.create(property, mapping, null, null);
         return addPropertyDraw(entity, null, entity.property.getReflectionOrderInterfaces(), version);
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(PropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {
         String propertySID = null;
         if (propertyImplement.property.isNamed()) 
             propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);
         return addPropertyDraw(propertyImplement, formPath, propertySID, null, version);
     }
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(PropertyObjectEntity<P, ?> propertyImplement, String formPath, String propertySID, ActionOrProperty inheritedProperty, Version version) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath, String propertySID, ActionOrProperty inheritedProperty, Version version) {
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement);
 
         if(inheritedProperty == null)

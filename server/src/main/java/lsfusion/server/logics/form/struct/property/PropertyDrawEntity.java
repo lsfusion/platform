@@ -57,7 +57,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
-    private final PropertyObjectEntity<P, ?> propertyObject;
+    private final ActionOrPropertyObjectEntity<P, ?> propertyObject;
     
     public GroupObjectEntity toDraw;
 
@@ -249,7 +249,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     };
 
-    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject) {
+    public PropertyDrawEntity(int ID, ActionOrPropertyObjectEntity<P, ?> propertyObject) {
         super(ID);
         setSID("propertyDraw" + ID);
         setIntegrationSID("propertyDraw" + ID);
@@ -531,7 +531,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     @IdentityStartLazy
     public ImSet<ObjectEntity> getObjectInstances() {
-        MAddSet<PropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
+        MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
         if(propertyCaption != null)
             propertyObjects.add(propertyCaption);
         if(propertyFooter != null)
@@ -582,7 +582,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sidBuilder.toString();        
     }
 
-    public static <P extends PropertyInterface> String createSID(PropertyObjectEntity<?, ?> property, ImOrderSet<P> interfaces) {
+    public static <P extends PropertyInterface> String createSID(ActionOrPropertyObjectEntity<?, ?> property, ImOrderSet<P> interfaces) {
         assert property.property.isNamed();
         List<String> mapping = new ArrayList<>();
         for (P pi : interfaces)
@@ -642,7 +642,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // for getExpr, getType purposes
-    public PropertyObjectEntity<?, ?> getValueProperty() {
+    public ActionOrPropertyObjectEntity<?, ?> getValueProperty() {
         return propertyObject;
     }
 
@@ -668,7 +668,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ActionOrProperty getDebugBindingProperty() {
         return getInheritedProperty();
     }
-    public PropertyObjectEntity getDebugProperty() {
+    public ActionOrPropertyObjectEntity getDebugProperty() {
         return propertyObject;
     }
 

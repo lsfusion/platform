@@ -9,7 +9,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 
 public abstract class AbstractNode extends ImmutableObject {
@@ -28,16 +28,16 @@ public abstract class AbstractNode extends ImmutableObject {
 
     public abstract ImOrderSet<ActionOrProperty> getProperties();
     
-    protected abstract ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version);
+    protected abstract ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version);
     
-    public ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classLists, Version version) {
+    public ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classLists, Version version) {
         return getProperties(classLists, classLists.group(new BaseUtils.Group<ValueClass, ValueClassWrapper>() { // для "кэширования" mapClasses так как очень часто вызывается
             public ValueClass group(ValueClassWrapper key) {
                 return key.valueClass;
             }}), version);
     }
     
-    public ImList<PropertyClassImplement> getProperties(ValueClass valueClass, Version version) {
+    public ImList<ActionOrPropertyClassImplement> getProperties(ValueClass valueClass, Version version) {
         return getProperties(valueClass != null ? SetFact.singleton(new ValueClassWrapper(valueClass)) : SetFact.<ValueClassWrapper>EMPTY(), version);
     }
 }
