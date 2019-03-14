@@ -10,7 +10,7 @@ import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.property.CalcPropertyClassImplement;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -97,10 +97,10 @@ public class LogFormEntity extends FormEntity {
 
         addPropertyDraw(logValueProperty, version, entities);
 
-        ImList<PropertyClassImplement> recognizePropImpls =
+        ImList<ActionOrPropertyClassImplement> recognizePropImpls =
                 systemEventsLM.baseLM.getRecognizeGroup().getProperties(property.property.getValueClass(ClassType.logPolicy), version);
 
-        for (PropertyClassImplement impl : recognizePropImpls) {
+        for (ActionOrPropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {
                 CalcPropertyClassImplement<?> calcImpl = ((CalcPropertyClassImplement)impl);
                 int paramCnt = logValueProperty.property.interfaces.size();

@@ -22,7 +22,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ClassType;
@@ -290,7 +290,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
 
-        PropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
+        ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
 
         pool.writeString(outStream, debugBinding.getNamespace());

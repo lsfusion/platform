@@ -62,7 +62,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.struct.property.CalcPropertyClassImplement;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -1559,7 +1559,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return setNotNull;
     }
 
-    protected PropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
+    protected ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
         return new CalcPropertyClassImplement<>(this, classes, mapping);
     }
 

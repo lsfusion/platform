@@ -7,7 +7,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, Action<P>> {
+public class ActionPropertyClassImplement<P extends PropertyInterface> extends ActionOrPropertyClassImplement<P, Action<P>> {
 
     public ActionPropertyClassImplement(Action<P> property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
         super(property, classes, interfaces);

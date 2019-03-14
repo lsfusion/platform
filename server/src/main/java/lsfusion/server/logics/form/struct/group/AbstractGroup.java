@@ -19,7 +19,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 
 public class AbstractGroup extends AbstractNode {
@@ -152,8 +152,8 @@ public class AbstractGroup extends AbstractNode {
     }
 
     @Override
-    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
-        MList<PropertyClassImplement> mResult = ListFact.mList();
+    protected ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
+        MList<ActionOrPropertyClassImplement> mResult = ListFact.mList();
         for (AbstractNode child : getNFChildrenListIt(version)) {
             mResult.addAll(child.getProperties(valueClasses, mapClasses, version));
         }

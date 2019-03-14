@@ -14,7 +14,7 @@ import lsfusion.server.logics.form.interactive.instance.object.TreeGroupInstance
 import lsfusion.server.logics.form.interactive.instance.property.ActionPropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.ActionOrPropertyObjectInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -23,7 +23,7 @@ import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -35,7 +35,7 @@ public class InstanceFactory {
     private final MAddExclMap<ObjectEntity, ObjectInstance> objectInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<GroupObjectEntity, GroupObjectInstance> groupInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<TreeGroupEntity, TreeGroupInstance> treeInstances = MapFact.mSmallStrongMap();
-    private final MAddExclMap<PropertyObjectEntity, PropertyObjectInstance> propertyObjectInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<ActionOrPropertyObjectEntity, ActionOrPropertyObjectInstance> propertyObjectInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = MapFact.mSmallStrongMap();
 
 
@@ -98,7 +98,7 @@ public class InstanceFactory {
         return treeInstances.get(entity);
     }
 
-    private <P extends PropertyInterface> ImMap<P, ObjectInstance> getInstanceMap(PropertyObjectEntity<P, ?> entity) {
+    private <P extends PropertyInterface> ImMap<P, ObjectInstance> getInstanceMap(ActionOrPropertyObjectEntity<P, ?> entity) {
         return entity.mapping.mapValues(new GetValue<ObjectInstance, ObjectEntity>() {
             public ObjectInstance getMapValue(ObjectEntity value) {
                 return value.getInstance(InstanceFactory.this);
@@ -128,7 +128,7 @@ public class InstanceFactory {
     }
 
         // временно
-    public <P extends PropertyInterface> PropertyObjectInstance<P, ?> getInstance(PropertyObjectEntity<P, ?> entity) {
+    public <P extends PropertyInterface> ActionOrPropertyObjectInstance<P, ?> getInstance(ActionOrPropertyObjectEntity<P, ?> entity) {
         if(entity instanceof CalcPropertyObjectEntity)
             return getInstance((CalcPropertyObjectEntity<P>)entity);
         else

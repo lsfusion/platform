@@ -24,7 +24,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 
-public class CalcPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, Property<P>> implements OrderEntity<CalcPropertyObjectInstance<P>> {
+public class CalcPropertyObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Property<P>> implements OrderEntity<CalcPropertyObjectInstance<P>> {
 
     public CalcPropertyObjectEntity() {
         //нужен для десериализации

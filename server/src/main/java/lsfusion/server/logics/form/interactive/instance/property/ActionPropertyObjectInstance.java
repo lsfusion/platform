@@ -14,7 +14,7 @@ import lsfusion.server.logics.action.ExecutionEnvironment;
 
 import java.sql.SQLException;
 
-public class ActionPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, Action<P>> {
+public class ActionPropertyObjectInstance<P extends PropertyInterface> extends ActionOrPropertyObjectInstance<P, Action<P>> {
 
     public ActionPropertyObjectInstance(Action<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);

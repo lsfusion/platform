@@ -29,7 +29,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 
-public class CalcPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, Property<P>> implements OrderInstance {
+public class CalcPropertyObjectInstance<P extends PropertyInterface> extends ActionOrPropertyObjectInstance<P, Property<P>> implements OrderInstance {
 
     public CalcPropertyObjectInstance(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);

@@ -33,9 +33,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return null;
     }
 
-    private PropertyObjectInstance<?, ?> propertyObject;
+    private ActionOrPropertyObjectInstance<?, ?> propertyObject;
     
-    public PropertyObjectInstance<?, ?> getValueProperty() {
+    public ActionOrPropertyObjectInstance<?, ?> getValueProperty() {
         return propertyObject;
     }
 
@@ -96,7 +96,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public HiddenReaderInstance hiddenReader = new HiddenReaderInstance();
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
-                                PropertyObjectInstance<?, ?> propertyObject,
+                                ActionOrPropertyObjectInstance<?, ?> propertyObject,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 CalcPropertyObjectInstance<?> propertyCaption,
