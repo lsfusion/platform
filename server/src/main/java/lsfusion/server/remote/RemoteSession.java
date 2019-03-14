@@ -13,6 +13,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
@@ -25,7 +26,6 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
@@ -133,7 +133,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         checkEnableApi(anonymous, false);
     }
 
-    public void writeRequestInfo(DataSession session, ActionProperty<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {
+    public void writeRequestInfo(DataSession session, Action<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {
         if (actionProperty.uses(businessLogics.LM.headers.property)) {
             ExternalHTTPActionProperty.writePropertyValues(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
         }
@@ -157,7 +157,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, ActionProperty<?> property) throws SQLException, SQLHandledException, IOException {
+    private ExternalResponse readResult(String[] returnNames, Action<?> property) throws SQLException, SQLHandledException, IOException {
         List<Object> returns = new ArrayList<>();
 
         LCP[] returnProps;

@@ -5,11 +5,11 @@ import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 
-public class AnalyzeDBActionProperty extends ScriptingActionProperty {
+public class AnalyzeDBActionProperty extends ScriptingAction {
     public AnalyzeDBActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }

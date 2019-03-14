@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionPropertyImplement;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
@@ -259,8 +259,8 @@ public class ActionOrPropertyUtils {
                     return interfaces.get(mapInt[i] - 1);
                 }});
 
-            if(lp.property instanceof ActionProperty)
-                return new ActionPropertyMapImplement<>((ActionProperty<P>) lp.property, mapping);
+            if(lp.property instanceof Action)
+                return new ActionPropertyMapImplement<>((Action<P>) lp.property, mapping);
             else
                 return new CalcPropertyMapImplement<>((Property<P>) lp.property, mapping);
         }

@@ -17,7 +17,8 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -53,7 +54,6 @@ import lsfusion.server.base.version.interfaces.NFDefault;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.change.ChangeClassActionProperty;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.action.session.DataSession;
@@ -602,12 +602,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return mResult.immutable();
     }
 
-    public static ActionProperty getChangeClassAction(ObjectClass cls) {
-        return ChangeClassActionProperty.create(cls, false, cls.getBaseClass());
+    public static Action getChangeClassAction(ObjectClass cls) {
+        return ChangeClassAction.create(cls, false, cls.getBaseClass());
     }
 
     @IdentityStrongLazy // для ID
-    public ActionProperty getChangeClassAction() {
+    public Action getChangeClassAction() {
         return getChangeClassAction(this);
     }
 

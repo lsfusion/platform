@@ -2,14 +2,14 @@ package lsfusion.server.physics.admin.scheduler;
 
 import com.google.common.base.Throwables;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
-public class StopSchedulerActionProperty extends ScriptingActionProperty {
+public class StopSchedulerActionProperty extends ScriptingAction {
 
     public StopSchedulerActionProperty(SchedulerLogicsModule LM) {
         super(LM);

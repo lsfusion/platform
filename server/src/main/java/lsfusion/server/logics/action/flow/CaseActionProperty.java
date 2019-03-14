@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
@@ -45,9 +45,9 @@ import java.util.List;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.createForAction;
 
-public class CaseActionProperty extends ListCaseActionProperty {
+public class CaseActionProperty extends ListCaseAction {
 
-    public static <I extends PropertyInterface> ActionProperty createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public static <I extends PropertyInterface> Action createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         assert trueAction != null;
         if(not) // просто not'им if
             ifProp = DerivedProperty.createNot(ifProp);
@@ -217,14 +217,14 @@ public class CaseActionProperty extends ListCaseActionProperty {
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
-        return ForActionProperty.getPushWhere(getCases().single().where);
+        return ForAction.getPushWhere(getCases().single().where);
     }
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         final ActionCase<PropertyInterface> singleCase = getCases().single();
-        return ForActionProperty.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<PropertyInterface, PropertyInterface>() {
+        return ForAction.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<PropertyInterface, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
                 return createForAction(context, where, orders, ordersNotNull, singleCase.implement.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
             }

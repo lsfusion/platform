@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.event.ApplyActionEvent;
@@ -22,7 +22,7 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
     private final ImMap<T, PropertyObjectInterfaceInstance> mapObjects;
     private final FormInstance formInstance;
 
-    public ActionPropertyValueImplement(ActionProperty<T> action, ImMap<T, ? extends ObjectValue> mapping, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
+    public ActionPropertyValueImplement(Action<T> action, ImMap<T, ? extends ObjectValue> mapping, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
         super(action, (ImMap<T, ObjectValue>)mapping);
         this.mapObjects = mapObjects;
         this.formInstance = formInstance;

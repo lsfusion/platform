@@ -30,7 +30,7 @@ import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
@@ -45,7 +45,7 @@ import java.util.Map;
 
 import static lsfusion.server.physics.admin.profiler.Profiler.profileData;
 
-public class StopProfilerActionProperty extends ScriptingActionProperty {
+public class StopProfilerActionProperty extends ScriptingAction {
     private LCP totalTime;
     private LCP totalSQLTime;
     private LCP totalUserInteractionTime;

@@ -9,9 +9,9 @@ import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
-public abstract class SystemActionProperty extends BaseActionProperty<PropertyInterface> {
+public abstract class SystemAction extends BaseAction<PropertyInterface> {
 
-    protected SystemActionProperty(LocalizedString caption, ImOrderSet<PropertyInterface> interfaces) {
+    protected SystemAction(LocalizedString caption, ImOrderSet<PropertyInterface> interfaces) {
         super(caption, interfaces);
     }
 

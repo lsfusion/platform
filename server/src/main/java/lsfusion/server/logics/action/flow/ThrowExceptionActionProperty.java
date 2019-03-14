@@ -5,11 +5,11 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 
-public class ThrowExceptionActionProperty extends ScriptingActionProperty {
+public class ThrowExceptionActionProperty extends ScriptingAction {
 
     public ThrowExceptionActionProperty(BaseLogicsModule lm, ValueClass... classes) {
         super(lm, classes);

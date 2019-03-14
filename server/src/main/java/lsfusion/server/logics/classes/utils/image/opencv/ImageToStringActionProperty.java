@@ -6,7 +6,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -15,7 +15,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.Iterator;
 
-public class ImageToStringActionProperty extends ScriptingActionProperty {
+public class ImageToStringActionProperty extends ScriptingAction {
     protected final ClassPropertyInterface imageInterface;
     protected final ClassPropertyInterface languageInterface;
     protected final ClassPropertyInterface oemInterface;

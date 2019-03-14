@@ -22,12 +22,12 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-public abstract class ExtendContextActionProperty<I extends PropertyInterface> extends FlowActionProperty {
+public abstract class ExtendContextAction<I extends PropertyInterface> extends FlowAction {
 
     protected final ImSet<I> innerInterfaces;
     protected final ImRevMap<PropertyInterface, I> mapInterfaces;
 
-    public ExtendContextActionProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces) {
+    public ExtendContextAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces) {
         super(caption, mapInterfaces.size());
 
         this.innerInterfaces = innerInterfaces;

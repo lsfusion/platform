@@ -1,6 +1,6 @@
 package lsfusion.server.logics.action.session;
 
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -22,7 +22,7 @@ public enum ApplyFilter {
     }*/
 
     public static boolean isCheck(ActionOrProperty property) {
-        return property instanceof ActionProperty && ((ActionProperty) property).hasFlow(ChangeFlowType.CANCEL);
+        return property instanceof Action && ((Action) property).hasFlow(ChangeFlowType.CANCEL);
     }
 
     public boolean contains(ActionOrProperty property) {
@@ -33,8 +33,8 @@ public enum ApplyFilter {
             case ONLY_DATA:
                 return property instanceof DataProperty || property instanceof ClassDataProperty;
             case WITHOUT_RECALC:
-                return property instanceof DataProperty || property instanceof ClassDataProperty || ((property instanceof ActionProperty)
-                        && !((ActionProperty)property).hasResolve());
+                return property instanceof DataProperty || property instanceof ClassDataProperty || ((property instanceof Action)
+                        && !((Action)property).hasResolve());
             case ONLYCHECK:
                 return isCheck(property);
         }

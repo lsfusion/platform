@@ -4,11 +4,11 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 
-public class ApplyFilterProperty extends ScriptingActionProperty {
+public class ApplyFilter extends ScriptingAction {
 
     private final ApplyFilter type;
 

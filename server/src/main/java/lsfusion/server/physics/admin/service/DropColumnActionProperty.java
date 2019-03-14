@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.service;
 
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -8,11 +9,10 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-public class DropColumnActionProperty extends ScriptingActionProperty {
+public class DropColumnActionProperty extends ScriptingAction {
 
     public DropColumnActionProperty(ReflectionLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

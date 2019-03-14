@@ -1,9 +1,9 @@
 package lsfusion.server.physics.admin.profiler;
 
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 
 public class ActionProfileObject extends ProfileObject {
-    public ActionProfileObject(ActionProperty property) {
+    public ActionProfileObject(Action property) {
         super(property);
     }
 

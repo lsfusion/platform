@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionPropertyImplement;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
@@ -26,11 +26,11 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class JoinActionProperty<T extends PropertyInterface> extends KeepContextActionProperty {
+public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     public final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinActionProperty(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
+    public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
         super(caption, listInterfaces.size());
 
         action = DerivedProperty.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
@@ -81,8 +81,8 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         return super.hasFlow(type);
     }
 
-    public ImSet<ActionProperty> getDependActions() {
-        return SetFact.singleton((ActionProperty)action.property);
+    public ImSet<Action> getDependActions() {
+        return SetFact.singleton((Action)action.property);
     }
 
     @Override
@@ -124,10 +124,10 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     private boolean isRecursive;
     // пока исходим из того что рекурсивными могут быть только abstract'ы
     @Override
-    protected void markRecursions(ImSet<ListCaseActionProperty> recursiveActions) {
-        ActionProperty<T> execAction = action.property;
-        if(execAction instanceof ListCaseActionProperty && recursiveActions.contains((ListCaseActionProperty)execAction)) {
-            assert ((ListCaseActionProperty) execAction).isAbstract();
+    protected void markRecursions(ImSet<ListCaseAction> recursiveActions) {
+        Action<T> execAction = action.property;
+        if(execAction instanceof ListCaseAction && recursiveActions.contains((ListCaseAction)execAction)) {
+            assert ((ListCaseAction) execAction).isAbstract();
             isRecursive = true;
         } else
             super.markRecursions(recursiveActions);    //To change body of overridden methods use File | Settings | File Templates.

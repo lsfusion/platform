@@ -9,14 +9,14 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.physics.dev.integration.external.to.file.client.MkdirClientAction;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class MkdirActionProperty extends ScriptingActionProperty {
+public class MkdirActionProperty extends ScriptingAction {
     private final ClassPropertyInterface directoryInterface;
     private final ClassPropertyInterface isClientInterface;
 

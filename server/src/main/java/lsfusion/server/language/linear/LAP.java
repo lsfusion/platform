@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
@@ -34,13 +34,13 @@ import lsfusion.server.logics.action.ExecutionEnvironment;
 import java.sql.SQLException;
 import java.util.List;
 
-public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
+public class LAP<T extends PropertyInterface> extends LP<T, Action<T>> {
 
-    public LAP(ActionProperty<T> property) {
+    public LAP(Action<T> property) {
         super(property);
     }
 
-    public LAP(ActionProperty<T> property, ImOrderSet<T> listInterfaces) {
+    public LAP(Action<T> property, ImOrderSet<T> listInterfaces) {
         super(property, listInterfaces);
     }
 

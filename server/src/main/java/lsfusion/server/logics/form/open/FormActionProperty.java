@@ -11,7 +11,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -21,7 +21,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
-public abstract class FormActionProperty<O extends ObjectSelector> extends SystemExplicitActionProperty {
+public abstract class FormActionProperty<O extends ObjectSelector> extends SystemExplicitAction {
 
     public final FormSelector<O> form;
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;

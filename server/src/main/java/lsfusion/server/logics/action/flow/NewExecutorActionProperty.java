@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class NewExecutorActionProperty extends AroundAspectActionProperty {
+public class NewExecutorActionProperty extends AroundAspectAction {
     ScheduledExecutorService executor;
     private final CalcPropertyInterfaceImplement threadsProp;
 

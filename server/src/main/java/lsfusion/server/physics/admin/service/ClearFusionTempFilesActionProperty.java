@@ -2,15 +2,15 @@ package lsfusion.server.physics.admin.service;
 
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Calendar;
 
-public class ClearFusionTempFilesActionProperty extends ScriptingActionProperty {
+public class ClearFusionTempFilesActionProperty extends ScriptingAction {
 
     public ClearFusionTempFilesActionProperty(ServiceLogicsModule LM) {
         super(LM);

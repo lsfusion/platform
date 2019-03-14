@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityStartLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
@@ -30,7 +30,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class ListActionProperty extends ListCaseActionProperty {
+public class ListActionProperty extends ListCaseAction {
 
     private Object actions;
     public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
@@ -177,7 +177,7 @@ public class ListActionProperty extends ListCaseActionProperty {
         boolean lookingForChange = true;
         ImList<ActionPropertyMapImplement<?, PropertyInterface>> actions = getActions();
         for(int i = actions.size() - 1; i>= 0; i--) {
-            ActionProperty<?> listAction = actions.get(i).property;
+            Action<?> listAction = actions.get(i).property;
             
             if(lookingForChangeFlow && (listAction.hasFlow(ChangeFlowType.BREAK) || listAction.hasFlow(ChangeFlowType.RETURN)))
                 return false;

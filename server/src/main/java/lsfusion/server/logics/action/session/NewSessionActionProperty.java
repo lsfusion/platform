@@ -5,7 +5,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.flow.AroundAspectActionProperty;
+import lsfusion.server.logics.action.flow.AroundAspectAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
@@ -22,7 +22,7 @@ import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;
 
-public class NewSessionActionProperty extends AroundAspectActionProperty {
+public class NewSessionActionProperty extends AroundAspectAction {
     private final FunctionSet<SessionDataProperty> migrateSessionProperties; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
     private final boolean isNested;
     private final boolean singleApply;

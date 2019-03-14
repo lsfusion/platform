@@ -5,13 +5,13 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetPausableLogUserActionProperty extends ScriptingActionProperty {
+public class SetPausableLogUserActionProperty extends ScriptingAction {
 
     public SetPausableLogUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

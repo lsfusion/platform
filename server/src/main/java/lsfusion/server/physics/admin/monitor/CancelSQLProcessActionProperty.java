@@ -6,13 +6,13 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CancelSQLProcessActionProperty extends ScriptingActionProperty {
+public class CancelSQLProcessActionProperty extends ScriptingAction {
     private final ClassPropertyInterface integerInterface;
 
     public CancelSQLProcessActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

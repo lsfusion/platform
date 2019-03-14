@@ -5,13 +5,13 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public class CheckIndicesActionProperty extends ScriptingActionProperty {
+public class CheckIndicesActionProperty extends ScriptingAction {
     public CheckIndicesActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }

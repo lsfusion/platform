@@ -2,13 +2,13 @@ package lsfusion.server.physics.admin.service;
 
 import com.google.common.base.Throwables;
 import lsfusion.server.Settings;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
-public class UpdateSettingActionProperty extends ScriptingActionProperty {
+public class UpdateSettingActionProperty extends ScriptingAction {
     private final ClassPropertyInterface settingInterface;
     private final ClassPropertyInterface userRoleInterface;
     private final ClassPropertyInterface forceCloneInterface; // optimization

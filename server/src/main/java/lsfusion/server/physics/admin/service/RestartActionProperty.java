@@ -1,13 +1,13 @@
 package lsfusion.server.physics.admin.service;
 
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-public class RestartActionProperty extends ScriptingActionProperty {
+public class RestartActionProperty extends ScriptingAction {
     public RestartActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }

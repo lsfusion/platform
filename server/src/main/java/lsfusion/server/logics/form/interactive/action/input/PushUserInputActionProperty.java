@@ -9,12 +9,12 @@ import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.flow.AroundAspectActionProperty;
+import lsfusion.server.logics.action.flow.AroundAspectAction;
 import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.sql.SQLException;
 
-public class PushUserInputActionProperty extends AroundAspectActionProperty {
+public class PushUserInputActionProperty extends AroundAspectAction {
 
     private final CalcPropertyInterfaceImplement<PropertyInterface> push;
 

@@ -6,13 +6,13 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CopyFullQuerySQLProcessActionProperty extends ScriptingActionProperty {
+public class CopyFullQuerySQLProcessActionProperty extends ScriptingAction {
     private final ClassPropertyInterface integerInterface;
 
     public CopyFullQuerySQLProcessActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

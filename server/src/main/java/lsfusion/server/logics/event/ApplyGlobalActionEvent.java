@@ -1,14 +1,14 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 
 public class ApplyGlobalActionEvent extends ApplyGlobalEvent implements ApplyActionEvent {
     
-    public final ActionProperty<?> action;
+    public final Action<?> action;
 
-    public ApplyGlobalActionEvent(ActionProperty action) {
+    public ApplyGlobalActionEvent(Action action) {
         this.action = action;
 
         assert action.getSessionEnv(SystemEvent.APPLY)!=null;

@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 
@@ -20,7 +20,7 @@ import java.util.HashSet;
 import static lsfusion.server.physics.admin.profiler.Profiler.profileForms;
 import static lsfusion.server.physics.admin.profiler.Profiler.profileUsers;
 
-public class StartProfilerActionProperty extends ScriptingActionProperty {
+public class StartProfilerActionProperty extends ScriptingAction {
     public StartProfilerActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }

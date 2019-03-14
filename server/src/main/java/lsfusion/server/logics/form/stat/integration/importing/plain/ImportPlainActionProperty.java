@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -17,7 +18,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.integration.hierarchy.ImportData;
 import lsfusion.server.logics.form.stat.integration.importing.FormImportData;
-import lsfusion.server.logics.form.open.stat.ImportActionProperty;
 import lsfusion.server.logics.form.stat.integration.plain.PlainConstants;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -27,7 +27,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> extends ImportActionProperty {
+public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> extends ImportAction {
 
     protected final ImRevMap<GroupObjectEntity, PropertyInterface> fileInterfaces;
 

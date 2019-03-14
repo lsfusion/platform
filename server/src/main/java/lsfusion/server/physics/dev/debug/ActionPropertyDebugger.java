@@ -19,7 +19,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ExecutionStack;
@@ -115,11 +115,11 @@ public class ActionPropertyDebugger implements DebuggerService {
         firstInLineDelegates.add(debugInfo.getDebuggerModuleLine(), debugInfo);
     }
 
-    public synchronized <P extends PropertyInterface> void setNewDebugStack(ActionProperty<P> property) {
+    public synchronized <P extends PropertyInterface> void setNewDebugStack(Action<P> property) {
         property.setNewDebugStack(true);
     }
 
-    public synchronized <P extends PropertyInterface> void addParamInfo(ActionProperty<P> property, Map<String, P> paramsToInterfaces, Map<String, String> paramsToClassFQN) {
+    public synchronized <P extends PropertyInterface> void addParamInfo(Action<P> property, Map<String, P> paramsToInterfaces, Map<String, String> paramsToClassFQN) {
         ParamDebugInfo<P> paramInfo = new ParamDebugInfo<>(MapFact.fromJavaRevMap(paramsToInterfaces), MapFact.fromJavaMap(paramsToClassFQN));
 
         property.setParamInfo(paramInfo);
@@ -221,7 +221,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         return info.getDebuggerMethodName(isDebugFirstInLine(info));
     }
 
-    public <P extends PropertyInterface> FlowResult delegate(ActionProperty<P> action, ExecutionContext<P> context) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> FlowResult delegate(Action<P> action, ExecutionContext<P> context) throws SQLException, SQLHandledException {
         ActionDebugInfo debugInfo = action.getDebugInfo();
 
         if (debugInfo == null || !isEnabled()) {
@@ -238,7 +238,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         }
 
         try {
-            Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), ActionProperty.class, ExecutionContext.class);
+            Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), Action.class, ExecutionContext.class);
             FlowResult delegateResult = (FlowResult) commonExecuteDelegate(delegatesHolderClass, method, action, context);
             if (debugInfo.delegationType == IN_DELEGATE) {
                 return delegateResult;
@@ -301,20 +301,20 @@ public class ActionPropertyDebugger implements DebuggerService {
         }
     }
     
-    private Object commonExecuteDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
+    private Object commonExecuteDelegate(Class<?> clazz, Method method, Action action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
         return method.invoke(clazz, action, context);
     }
     
     public static ThreadLocal<Boolean> watchHack = new ThreadLocal<>();
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
-    private Object evalAction(ActionProperty action, ExecutionContext context, String namespace, String require, String priorities, String statements)
+    private Object evalAction(Action action, ExecutionContext context, String namespace, String require, String priorities, String statements)
             throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         return evalAction(context, namespace, require, priorities, "{" + StringEscapeUtils.unescapeJava(statements) + "}", null);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
-    private Object eval(ActionProperty action, ExecutionContext<?> context, String namespace, String require, String priorities, String expression)
+    private Object eval(Action action, ExecutionContext<?> context, String namespace, String require, String priorities, String expression)
         throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
 //        context.showStack();

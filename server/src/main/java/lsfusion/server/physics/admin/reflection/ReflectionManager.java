@@ -7,7 +7,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.LongClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -478,7 +478,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     private boolean needsToBeSynchronized(ActionOrProperty property) {
-        return property.isNamed() && (property instanceof ActionProperty || !((Property)property).isEmpty(AlgType.syncType));
+        return property.isNamed() && (property instanceof Action || !((Property)property).isEmpty(AlgType.syncType));
     }
 
     public void synchronizePropertyEntities() {
@@ -510,7 +510,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             List<List<Object>> dataProperty = new ArrayList<>();
             for (ActionOrProperty property : businessLogics.getOrderProperties()) {
                 if (needsToBeSynchronized(property)) {
-                    if((property instanceof ActionProperty) != actions)
+                    if((property instanceof Action) != actions)
                         continue;
                     
                     String returnClass = null;
@@ -592,7 +592,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<List<Object>> dataParent = new ArrayList<>();
         for (ActionOrProperty property : businessLogics.getOrderProperties()) {
             if (needsToBeSynchronized(property)) {
-                if((property instanceof ActionProperty) != actions)
+                if((property instanceof Action) != actions)
                     continue;
                 dataParent.add(asList(property.getCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
             }

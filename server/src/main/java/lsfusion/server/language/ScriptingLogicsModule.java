@@ -25,9 +25,10 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ActionSettings;
-import lsfusion.server.logics.action.ExplicitActionProperty;
+import lsfusion.server.logics.action.ExplicitAction;
+import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.*;
@@ -91,7 +92,6 @@ import lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod;
 import lsfusion.server.physics.dev.integration.external.to.file.ReadActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteActionProperty;
 import lsfusion.server.logics.action.flow.BreakActionProperty;
-import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.action.flow.ReturnActionProperty;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.logics.property.set.AggregateGroupProperty;
@@ -782,13 +782,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.NONAME, value, params);
     }
 
-    public LAP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+    public LAP addScriptedAbstractActionProp(ListCaseAction.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
         }
         LAP<?> result;
-        if (type == ListCaseActionProperty.AbstractType.LIST) {
+        if (type == ListCaseAction.AbstractType.LIST) {
             result = addAbstractListAProp(isChecked, isLast, params);
         } else {
             result = addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
@@ -843,8 +843,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void addImplementationToAbstractAction(String actionName, LAP abstractAction, List<ResolveClassSet> signature, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkAbstractAction(abstractAction, actionName);
-        ListCaseActionProperty.AbstractType type = ((ListCaseActionProperty)abstractAction.property).getAbstractType();
-        checks.checkAbstractTypes(type == ListCaseActionProperty.AbstractType.CASE, isCase);
+        ListCaseAction.AbstractType type = ((ListCaseAction)abstractAction.property).getAbstractType();
+        checks.checkAbstractTypes(type == ListCaseAction.AbstractType.CASE, isCase);
 
         try {
             abstractAction.addOperand(isCase, signature, getVersion(), params.toArray());
@@ -1535,18 +1535,18 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAP addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            ActionProperty instance;
+            Action instance;
             if (classes == null || classes.isEmpty()) {
-                instance = (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this);
+                instance = (Action) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this);
             } else {
                 ValueClass[] classList = new ValueClass[classes.size()];
                 for (int i = 0; i < classes.size(); i++) {
                     classList[i] = findClass(classes.get(i));
                 }
-                instance = (ActionProperty) Class.forName(javaClassName).getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList);
+                instance = (Action) Class.forName(javaClassName).getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList);
             }
-            if (instance instanceof ExplicitActionProperty && allowNullValue) {
-                ((ExplicitActionProperty) instance).allowNullValue = true;
+            if (instance instanceof ExplicitAction && allowNullValue) {
+                ((ExplicitAction) instance).allowNullValue = true;
             }
             return baseLM.addAProp(null, instance);
         } catch (ClassNotFoundException e) {
@@ -1591,9 +1591,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             sc.cook(javaClass);
             Class<?> executeClass = sc.getClassLoader().loadClass("ExecuteActionProperty");
 
-            ActionProperty instance = (ActionProperty) executeClass.getConstructor(ScriptingLogicsModule.class).newInstance(this);
-            if (instance instanceof ExplicitActionProperty && allowNullValue) {
-                ((ExplicitActionProperty) instance).allowNullValue = true;
+            Action instance = (Action) executeClass.getConstructor(ScriptingLogicsModule.class).newInstance(this);
+            if (instance instanceof ExplicitAction && allowNullValue) {
+                ((ExplicitAction) instance).allowNullValue = true;
             }
             return baseLM.addAProp(null, instance);
         } catch (Exception e) {
@@ -3771,7 +3771,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedGlobalEvent(LAPWithParams event, Event baseEvent, boolean single, ActionOrPropertyUsage showDep) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkEventNoParameters(event.getLP());
-        ActionProperty action = event.getLP().property;
+        Action action = event.getLP().property;
         if(showDep!=null)
             action.showDep = findLPByActionOrPropertyUsage(showDep).property;
         addBaseEvent(action, baseEvent, false, single);
@@ -4161,15 +4161,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static void setDebugInfo(LAPWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate) {
         //noinspection unchecked
         LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.getLP();
-        ActionProperty property = lAction.property;
+        Action property = lAction.property;
         setDebugInfo(needToCreateDelegate, startPoint, endPoint, modifyContext, property);
     }
 
-    public static void setDebugInfo(Boolean needToCreateDelegate, DebugInfo.DebugPoint point, ActionProperty property) {
+    public static void setDebugInfo(Boolean needToCreateDelegate, DebugInfo.DebugPoint point, Action property) {
         setDebugInfo(needToCreateDelegate, point, point, false, property);
     }
 
-    private static void setDebugInfo(Boolean needToCreateDelegate, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, ActionProperty property) {
+    private static void setDebugInfo(Boolean needToCreateDelegate, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Action property) {
         ActionDelegationType delegationType = property.getDelegationType(modifyContext);
 
         if(needToCreateDelegate == null)
@@ -4192,7 +4192,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             //noinspection unchecked
             LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.getLP();
 
-            ActionProperty property = lAction.property;
+            Action property = lAction.property;
 
             debugger.setNewDebugStack(property);
         }
@@ -4211,7 +4211,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             //noinspection unchecked
             LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.getLP();
 
-            ActionProperty property = lAction.property;
+            Action property = lAction.property;
 
             Map<String, PropertyInterface> paramsToInterfaces = new HashMap<>();
             Map<String, String> paramsToClassFQN = new HashMap<>();

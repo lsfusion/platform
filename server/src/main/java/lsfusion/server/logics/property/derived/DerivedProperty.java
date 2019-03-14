@@ -12,8 +12,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
-import lsfusion.server.logics.action.ActionProperty;
-import lsfusion.server.logics.action.change.SetActionProperty;
+import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.change.ChangeClassAction;
+import lsfusion.server.logics.action.change.SetAction;
 import lsfusion.server.logics.action.implement.ActionPropertyImplement;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.*;
@@ -39,8 +40,7 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.change.AddObjectActionProperty;
-import lsfusion.server.logics.action.change.ChangeClassActionProperty;
+import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.action.session.LocalNestedType;
@@ -142,7 +142,7 @@ public class DerivedProperty {
         // создаем свойство - перемаппим интерфейсы
         ImRevMap<T,PropertyInterface> joinMap = usedInterfaces.mapRevValues(ActionOrProperty.genInterface); // строим карту
         ImRevMap<PropertyInterface, T> revJoinMap = joinMap.reverse();
-        JoinActionProperty<L> joinProperty = new JoinActionProperty<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
+        JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
                 new ActionPropertyImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));
         return new ActionPropertyMapImplement<>(joinProperty, revJoinMap);
     }
@@ -755,13 +755,13 @@ public class DerivedProperty {
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, CalcPropertyMapImplement<?, L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ActionProperty actionProperty = CaseActionProperty.createIf(LocalizedString.NONAME, false, listInterfaces, where, action, elseAction);
+        Action actionProperty = CaseActionProperty.createIf(LocalizedString.NONAME, false, listInterfaces, where, action, elseAction);
         return actionProperty.getImplement(listInterfaces);
     }
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createCaseAction(ImSet<L> innerInterfaces, boolean isExclusive, ImList<ActionCase<L>> cases) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ActionProperty actionProperty = new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
+        Action actionProperty = new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
         return actionProperty.getImplement(listInterfaces);
     }
 
@@ -817,7 +817,7 @@ public class DerivedProperty {
     }
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
-        ForActionProperty<L> actionProperty = new ForActionProperty<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
+        ForAction<L> actionProperty = new ForAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
         return actionProperty.getMapImplement();
     }
 
@@ -831,7 +831,7 @@ public class DerivedProperty {
         return createSetAction(innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> writeToProp, CalcPropertyInterfaceImplement<L> writeFrom) {
-        SetActionProperty<P, W, L> actionProperty = new SetActionProperty<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, whereProp, writeToProp, writeFrom);
+        SetAction<P, W, L> actionProperty = new SetAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, whereProp, writeToProp, writeFrom);
         return actionProperty.getMapImplement();
     }
 
@@ -839,7 +839,7 @@ public class DerivedProperty {
         return createAddAction(cls, innerInterfaces, context.toOrderSet(), whereProp, resultProp, orders, ordersNotNull, autoSet);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> resultProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
-        AddObjectActionProperty<W, L> actionProperty = new AddObjectActionProperty<>(cls, innerInterfaces, mapInterfaces, whereProp, resultProp, orders, ordersNotNull, autoSet);
+        AddObjectAction<W, L> actionProperty = new AddObjectAction<>(cls, innerInterfaces, mapInterfaces, whereProp, resultProp, orders, ordersNotNull, autoSet);
         return actionProperty.getMapImplement();
     }
 
@@ -847,7 +847,7 @@ public class DerivedProperty {
         return createChangeClassAction(cls, forceDialog, innerInterfaces, context.toOrderSet(), whereProp, changeInterface, baseClass);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
-        ChangeClassActionProperty<W, L> actionProperty = new ChangeClassActionProperty<>(cls, forceDialog, innerInterfaces, mapInterfaces, changeInterface, whereProp, baseClass);
+        ChangeClassAction<W, L> actionProperty = new ChangeClassAction<>(cls, forceDialog, innerInterfaces, mapInterfaces, changeInterface, whereProp, baseClass);
         return actionProperty.getMapImplement();
     }
 
@@ -865,10 +865,10 @@ public class DerivedProperty {
             if(!whereInterfaces.containsAll(getUsedInterfaces(writeFrom))) { // если не все ключи есть, придется докинуть or
                 if(writeFrom instanceof CalcPropertyMapImplement) {
                     whereInterfaces = innerInterfaces.merge(whereInterfaces);
-                    where = (CalcPropertyMapImplement<W, I>) SetActionProperty.getFullProperty(whereInterfaces, where, writeTo, writeFrom);
+                    where = (CalcPropertyMapImplement<W, I>) SetAction.getFullProperty(whereInterfaces, where, writeTo, writeFrom);
                 } else { // по сути оптимизация, чтобы or не тянуть
                     whereInterfaces = whereInterfaces.merge((I) writeFrom);
-                    where  = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, SetActionProperty.getValueClassProperty(writeTo, writeFrom));
+                    where  = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, SetAction.getValueClassProperty(writeTo, writeFrom));
                 }
             }
 

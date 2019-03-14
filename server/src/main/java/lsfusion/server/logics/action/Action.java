@@ -52,7 +52,7 @@ import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.action.change.GroupChangeActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.action.flow.ListCaseActionProperty;
+import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.base.stack.StackMessage;
@@ -62,7 +62,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public abstract class ActionProperty<P extends PropertyInterface> extends ActionOrProperty<P> {
+public abstract class Action<P extends PropertyInterface> extends ActionOrProperty<P> {
     //просто для быстрого доступа
     private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
 
@@ -78,7 +78,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
         this.debugLocals = debugLocals;
     }
 
-    public ActionProperty(LocalizedString caption, ImOrderSet<P> interfaces) {
+    public Action(LocalizedString caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
 
         drawOptions.addProcessor(new DefaultProcessor() {
@@ -147,13 +147,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     @IdentityStartLazy // только компиляция, построение лексикографики
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
         MMap<Property, Boolean> result = MapFact.mMap(addValue);
-        for(ActionProperty<?> dependAction : getDependActions())
+        for(Action<?> dependAction : getDependActions())
             result.addAll(dependAction.getChangeExtProps());
         return result.immutable();
     }
 
-    protected void markRecursions(ImSet<ListCaseActionProperty> recursiveActions) {
-        for(ActionProperty action : getDependActions())
+    protected void markRecursions(ImSet<ListCaseAction> recursiveActions) {
+        for(Action action : getDependActions())
             action.markRecursions(recursiveActions);
     }
 
@@ -168,7 +168,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     protected ImMap<Property, Boolean> aspectUsedExtProps() {
         MMap<Property, Boolean> result = MapFact.mMap(addValue);
-        for(ActionProperty<?> dependAction : getDependActions())
+        for(Action<?> dependAction : getDependActions())
             result.addAll(dependAction.getUsedExtProps());
         return result.immutable();
     }
@@ -210,7 +210,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
 
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public boolean hasFlow(ChangeFlowType type) {
-        for(ActionProperty<?> dependAction : getDependActions())
+        for(Action<?> dependAction : getDependActions())
             if(dependAction.hasFlow(type))
                 return true;
         return false;
@@ -237,7 +237,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
         return mResult.immutable();
     }
 
-    public abstract ImSet<ActionProperty> getDependActions();
+    public abstract ImSet<Action> getDependActions();
     
     @IdentityLazy
     private ImSet<Pair<String, Integer>> getInnerDebugActions() {
@@ -250,7 +250,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
 
     protected ImSet<Pair<String, Integer>> getRecInnerDebugActions() {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
-        for (ActionProperty actionProperty : getDependActions()) {
+        for (Action actionProperty : getDependActions()) {
             result.addAll(actionProperty.getInnerDebugActions());
         }
         return result.immutable();

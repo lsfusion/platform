@@ -14,19 +14,19 @@ import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.SystemActionProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
-public abstract class ExternalActionProperty extends SystemActionProperty {
+public abstract class ExternalAction extends SystemAction {
 
     protected ImOrderSet<PropertyInterface> paramInterfaces;
     protected ImMap<PropertyInterface, Type> paramTypes;
@@ -41,7 +41,7 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
         return "qxprm" + prmID + "nx";
     }
 
-    public ExternalActionProperty(int exParams, ImList<Type> params, ImList<LCP> targetPropList) {
+    public ExternalAction(int exParams, ImList<Type> params, ImList<LCP> targetPropList) {
         super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + exParams, new GetIndex<PropertyInterface>() {
             @Override
             public PropertyInterface getMapValue(int i) {

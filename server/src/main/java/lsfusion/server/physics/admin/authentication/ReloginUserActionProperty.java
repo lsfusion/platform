@@ -8,7 +8,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 
@@ -16,7 +16,7 @@ import java.sql.SQLException;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public class ReloginUserActionProperty extends ScriptingActionProperty {
+public class ReloginUserActionProperty extends ScriptingAction {
 
     public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

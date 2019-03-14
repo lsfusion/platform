@@ -17,6 +17,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -41,7 +42,6 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.SystemActionProperty;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.session.*;
@@ -50,11 +50,11 @@ import lsfusion.server.base.stack.StackProgress;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public abstract class ImportActionProperty extends SystemActionProperty {
+public abstract class ImportAction extends SystemAction {
     protected FormEntity formEntity;
     protected String charset;
 
-    public ImportActionProperty(int paramsCount, FormEntity formEntity, String charset) {
+    public ImportAction(int paramsCount, FormEntity formEntity, String charset) {
         super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, new GetIndex<PropertyInterface>() {
             @Override
             public PropertyInterface getMapValue(int i) {
@@ -196,7 +196,7 @@ public abstract class ImportActionProperty extends SystemActionProperty {
     private void writeData(final ExecutionContext context, final ImSet<ObjectEntity> keySet, final ImSet<CalcPropertyObjectEntity> properties, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data) throws SQLException, SQLHandledException {
         writeData(data, new DataWriter<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>>() {
             public void writeBatch(ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data, ProgressBar progress) throws SQLException, SQLHandledException {
-                ImportActionProperty.this.writeBatch(keySet, properties, data, context, progress);
+                ImportAction.this.writeBatch(keySet, properties, data, context, progress);
             }
         });
     }

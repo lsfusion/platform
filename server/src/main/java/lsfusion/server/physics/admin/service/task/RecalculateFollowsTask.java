@@ -4,7 +4,7 @@ import lsfusion.interop.exception.ApplyCanceledException;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.action.session.DataSession;
 import org.antlr.runtime.RecognitionException;
@@ -13,20 +13,20 @@ import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
-public class RecalculateFollowsTask extends GroupGraphTask<ActionProperty> {
+public class RecalculateFollowsTask extends GroupGraphTask<Action> {
 
     @Override
-    protected Graph<ActionProperty> getGraph(DataSession session, BusinessLogics BL) {
+    protected Graph<Action> getGraph(DataSession session, BusinessLogics BL) {
         return BL.getRecalculateFollowsGraph();
     }
 
     @Override
-    public String getTaskCaption(ActionProperty element) {
+    public String getTaskCaption(Action element) {
         return "Recalculate Follows";
     }
 
     @Override
-    protected void runInnerTask(ActionProperty element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(Action element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
         assert element.hasResolve();
 
         try {
@@ -40,12 +40,12 @@ public class RecalculateFollowsTask extends GroupGraphTask<ActionProperty> {
     }
 
     @Override
-    protected String getElementCaption(ActionProperty element) {
+    protected String getElementCaption(Action element) {
         return element.getSID();
     }
 
     @Override
-    protected String getErrorsDescription(ActionProperty element) {
+    protected String getErrorsDescription(Action element) {
         return "";
     }
 }

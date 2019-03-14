@@ -2,26 +2,26 @@ package lsfusion.server.logics.form.struct.property;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.instance.property.ActionPropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.Instantiable;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, ActionProperty<P>> implements Instantiable<ActionPropertyObjectInstance<P>> {
+public class ActionPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, Action<P>> implements Instantiable<ActionPropertyObjectInstance<P>> {
 
     public ActionPropertyObjectEntity() {
         //нужен для десериализации
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, ImRevMap<P, ObjectEntity> mapping) {
+    public ActionPropertyObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping) {
         this(property, mapping, null, null);
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public ActionPropertyObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         super(property, mapping, creationScript, creationPath);
     }
 

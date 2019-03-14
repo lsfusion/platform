@@ -12,10 +12,10 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.action.flow.KeepContextActionProperty;
+import lsfusion.server.logics.action.flow.KeepContextAction;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
@@ -25,14 +25,14 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class RequestActionProperty extends KeepContextActionProperty {
+public class RequestAction extends KeepContextAction {
     
     private final ActionPropertyMapImplement<?, PropertyInterface> requestAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> doAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> elseAction;
 
-    public <I extends PropertyInterface> RequestActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> requestAction,
-                                                               ActionPropertyMapImplement<?, I> doAction, ActionPropertyMapImplement<?, I> elseAction) {
+    public <I extends PropertyInterface> RequestAction(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> requestAction,
+                                                       ActionPropertyMapImplement<?, I> doAction, ActionPropertyMapImplement<?, I> elseAction) {
         super(caption, innerInterfaces.size());
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -62,10 +62,10 @@ public class RequestActionProperty extends KeepContextActionProperty {
     }
 
 
-    public ImSet<ActionProperty> getDependActions() {
+    public ImSet<Action> getDependActions() {
         return elseAction != null ?
-                SetFact.<ActionProperty>toSet(requestAction.property, doAction.property, elseAction.property) :
-                SetFact.<ActionProperty>toSet(requestAction.property, doAction.property);
+                SetFact.<Action>toSet(requestAction.property, doAction.property, elseAction.property) :
+                SetFact.<Action>toSet(requestAction.property, doAction.property);
     }
 
     @Override

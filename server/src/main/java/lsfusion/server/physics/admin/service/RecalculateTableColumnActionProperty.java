@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.service;
 
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -10,7 +11,6 @@ import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ import java.util.Iterator;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public class RecalculateTableColumnActionProperty extends ScriptingActionProperty {
+public class RecalculateTableColumnActionProperty extends ScriptingAction {
 
     private final ClassPropertyInterface tableColumnInterface;
 

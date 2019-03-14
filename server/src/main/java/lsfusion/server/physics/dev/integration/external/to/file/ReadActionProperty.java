@@ -7,6 +7,7 @@ import lsfusion.base.file.ReadClientAction;
 import lsfusion.base.file.ReadUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.Settings;
+import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.classes.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -16,11 +17,10 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 
-public class ReadActionProperty extends SystemExplicitActionProperty {
+public class ReadActionProperty extends SystemExplicitAction {
     private final ExtraReadProcessor extraReadProcessor;
     private final LCP<?> targetProp;
     private final boolean clientAction;

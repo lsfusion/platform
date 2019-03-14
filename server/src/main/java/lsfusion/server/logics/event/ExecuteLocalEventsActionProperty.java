@@ -1,17 +1,17 @@
 package lsfusion.server.logics.event;
 
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 
-public class ExecuteLocalEventsActionProperty extends ScriptingActionProperty {
+public class ExecuteLocalEventsActionProperty extends ScriptingAction {
 
     public ExecuteLocalEventsActionProperty(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

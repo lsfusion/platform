@@ -6,7 +6,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
@@ -16,7 +16,7 @@ import java.net.URLDecoder;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class RichTextToStringActionProperty extends ScriptingActionProperty {
+public class RichTextToStringActionProperty extends ScriptingAction {
     private final ClassPropertyInterface richTextInterface;
 
     public RichTextToStringActionProperty(UtilsLogicsModule LM, ValueClass... classes) {

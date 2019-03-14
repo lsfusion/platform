@@ -8,14 +8,14 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
 import lsfusion.server.base.task.TaskRunner;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public abstract class MultiThreadActionProperty extends ScriptingActionProperty {
+public abstract class MultiThreadActionProperty extends ScriptingAction {
     private ClassPropertyInterface threadCountInterface;
     private ClassPropertyInterface propertyTimeoutInterface;
 

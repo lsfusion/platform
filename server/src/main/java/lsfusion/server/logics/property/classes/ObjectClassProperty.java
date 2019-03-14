@@ -19,7 +19,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.change.ChangeClassActionProperty;
+import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.event.ChangeEvent;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -103,7 +103,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         if(editActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
-        return ChangeClassActionProperty.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));
+        return ChangeClassAction.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));
     }
 
     @Override

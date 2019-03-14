@@ -3,17 +3,17 @@ package lsfusion.server.logics.form.struct.property;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.linear.LAP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, ActionProperty<P>> {
+public class ActionPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, Action<P>> {
 
-    public ActionPropertyClassImplement(ActionProperty<P> property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
+    public ActionPropertyClassImplement(Action<P> property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
         super(property, classes, interfaces);
     }
 
-    public ActionPropertyClassImplement(ActionProperty<P> property, ImRevMap<P, ValueClassWrapper> mapping) {
+    public ActionPropertyClassImplement(Action<P> property, ImRevMap<P, ValueClassWrapper> mapping) {
         super(property, mapping);
     }
 

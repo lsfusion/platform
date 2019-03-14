@@ -1,6 +1,7 @@
 package lsfusion.server.language;
 
 import lsfusion.server.classes.*;
+import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -26,7 +27,6 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.language.ScriptingLogicsModule.GroupingType;
 import lsfusion.server.language.ScriptingLogicsModule.LCPWithParams;
@@ -496,7 +496,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkAbstractAction(LAP action, String actionName) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(action.property instanceof ListCaseActionProperty && ((ListCaseActionProperty)action.property).isAbstract())) {
+        if (!(action.property instanceof ListCaseAction && ((ListCaseAction)action.property).isAbstract())) {
             errLog.emitNotAbstractActionError(parser, actionName);
         }
     }

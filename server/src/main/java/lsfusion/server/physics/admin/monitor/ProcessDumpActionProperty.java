@@ -24,7 +24,7 @@ import lsfusion.server.data.type.CustomReader;
 import lsfusion.server.data.type.PGObjectReader;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.remote.RemoteLoggerAspect;
@@ -42,7 +42,7 @@ import java.util.Map;
 import static lsfusion.base.BaseUtils.trimToEmpty;
 import static lsfusion.base.BaseUtils.trimToNull;
 
-public abstract class ProcessDumpActionProperty extends ScriptingActionProperty {
+public abstract class ProcessDumpActionProperty extends ScriptingAction {
 
     public ProcessDumpActionProperty(ScriptingLogicsModule LM) {
         super(LM);

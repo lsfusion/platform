@@ -5,6 +5,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.base.file.WriteUtils;
+import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.classes.FileClass;
 import lsfusion.server.logics.classes.StaticFormatFileClass;
 import lsfusion.server.logics.classes.StringClass;
@@ -14,11 +15,10 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 
-public class WriteActionProperty extends SystemExplicitActionProperty {
+public class WriteActionProperty extends SystemExplicitAction {
     private final Type sourcePropertyType;
     private boolean clientAction;
     private boolean dialog;

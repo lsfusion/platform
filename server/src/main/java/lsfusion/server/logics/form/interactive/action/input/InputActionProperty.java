@@ -2,11 +2,11 @@ package lsfusion.server.logics.form.interactive.action.input;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.ExecutionContext;
 import java.sql.SQLException;
 
 // можно было бы Input и Form унаследовать от ABSTRACT, но так как наследование зависит от опции INPUT в Form это не совсем корректно
-public class InputActionProperty extends SystemExplicitActionProperty {
+public class InputActionProperty extends SystemExplicitAction {
 
     private final DataClass dataClass;
     private final LCP<?> targetProp;

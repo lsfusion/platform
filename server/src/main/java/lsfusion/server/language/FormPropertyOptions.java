@@ -3,12 +3,12 @@ package lsfusion.server.language;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.ActionProperty;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -200,14 +200,14 @@ public class FormPropertyOptions {
 
     public void addContextMenuEditAction(LocalizedString caption, ActionPropertyObjectEntity action) {
         if (action != null) {
-            ActionProperty property = (ActionProperty) action.property;
+            Action property = (Action) action.property;
 
             addEditAction(property.getSID(), action);
             addContextMenuBinding(property.getSID(), getContextMenuCaption(caption, property));
         }
     }
 
-    public static LocalizedString getContextMenuCaption(LocalizedString caption, ActionProperty property) {
+    public static LocalizedString getContextMenuCaption(LocalizedString caption, Action property) {
         if (caption == null || isRedundantString(caption.getSourceString())) {
             caption = property.caption;
         }

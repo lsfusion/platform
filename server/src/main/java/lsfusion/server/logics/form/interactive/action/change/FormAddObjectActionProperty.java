@@ -10,12 +10,12 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.change.AddObjectActionProperty;
+import lsfusion.server.logics.action.change.AddObjectAction;
 
 import java.sql.SQLException;
 
 // именно наследованием, чтобы getSimpleAdd, дизайны и т.п. подтянулись
-public class FormAddObjectActionProperty extends AddObjectActionProperty<PropertyInterface, PropertyInterface> {
+public class FormAddObjectActionProperty extends AddObjectAction<PropertyInterface, PropertyInterface> {
     
     private final ObjectEntity objectEntity;
 

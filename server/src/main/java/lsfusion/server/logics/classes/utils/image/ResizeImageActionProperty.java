@@ -2,11 +2,11 @@ package lsfusion.server.logics.classes.utils.image;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import net.coobird.thumbnailator.Thumbnails;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ResizeImageActionProperty extends ScriptingActionProperty {
+public class ResizeImageActionProperty extends ScriptingAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface scaleInterface;
 

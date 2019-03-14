@@ -5,10 +5,10 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.Settings;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
-public class GenerateJNLPActionProperty extends ScriptingActionProperty {
+public class GenerateJNLPActionProperty extends ScriptingAction {
     private static final String DEFAULT_INIT_HEAP_SIZE = "32m";
     private static final String DEFAULT_MAX_HEAP_SIZE = "800m";
     private static final String DEFAULT_MIN_HEAP_FREE_RATIO = "30";

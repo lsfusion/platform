@@ -9,7 +9,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.io.*;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class UserLogsActionProperty extends ScriptingActionProperty {
+public class UserLogsActionProperty extends ScriptingAction {
 
     public UserLogsActionProperty(SystemEventsLogicsModule LM) {
         super(LM);

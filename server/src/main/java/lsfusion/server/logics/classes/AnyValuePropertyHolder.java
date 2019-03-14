@@ -15,11 +15,11 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LCP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.link.*;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 
 import java.sql.SQLException;
@@ -267,7 +267,7 @@ public class AnyValuePropertyHolder {
         return getLCP(valueType).readClasses(env, keys);
     }
 
-    private static ObjectValue getFirstChangeProp(ImOrderSet<SessionDataProperty> props, ActionProperty<?> action, Result<SessionDataProperty> readedProperty) {
+    private static ObjectValue getFirstChangeProp(ImOrderSet<SessionDataProperty> props, Action<?> action, Result<SessionDataProperty> readedProperty) {
         ImOrderSet<SessionDataProperty> changedProps = SetFact.filterOrderFn(props, action.getChangeExtProps().keys());
         if(changedProps.isEmpty())
             changedProps = props;
@@ -276,7 +276,7 @@ public class AnyValuePropertyHolder {
         return NullValue.instance;
     }
     
-    public ObjectValue readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty, ActionProperty<?> action) throws SQLException, SQLHandledException { // return, not drop first value
+    public ObjectValue readFirstNotNull(ExecutionEnvironment env, Result<SessionDataProperty> readedProperty, Action<?> action) throws SQLException, SQLHandledException { // return, not drop first value
         DataSession session = env.getSession();
 
         ImOrderSet<SessionDataProperty> props = getProps();

@@ -3,23 +3,23 @@ package lsfusion.server.logics.action.implement;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ActionPropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
-    public ActionProperty<P> property;
+    public Action<P> property;
     public ImMap<P, T> mapping;
 
     public String toString() {
         return property.toString();
     }
 
-    public ActionPropertyImplement(ActionProperty<P> property, ImMap<P, T> mapping) {
+    public ActionPropertyImplement(Action<P> property, ImMap<P, T> mapping) {
         this.property = property;
         this.mapping = mapping;
     }
 
-    public ActionPropertyImplement(ActionProperty<P> property) {
+    public ActionPropertyImplement(Action<P> property) {
         this.property = property;
         mapping = MapFact.EMPTY();
     }

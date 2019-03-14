@@ -18,7 +18,7 @@ import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.toCaption;
 
-public class ConfirmActionProperty extends MessageActionProperty {
+public class ConfirmActionProperty extends MessageAction {
     
     private final boolean yesNo;
     private final LCP targetProp;

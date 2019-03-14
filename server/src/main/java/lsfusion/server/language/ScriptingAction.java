@@ -8,14 +8,14 @@ import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.ExplicitActionProperty;
+import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 
 import java.sql.SQLException;
 
 // !!! ONLY ACTIONS CREATED WITH INTERNAL OPERATOR !!!!
-public abstract class ScriptingActionProperty extends ExplicitActionProperty {
+public abstract class ScriptingAction extends ExplicitAction {
     protected ScriptingLogicsModule LM;
     
     protected LCP<?> is(ValueClass valueClass) {
@@ -26,7 +26,7 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
         return LM.object(valueClass);
     }
 
-    public ScriptingActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public ScriptingAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(classes);
         this.LM = LM;
     }

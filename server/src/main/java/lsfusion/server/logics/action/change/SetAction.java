@@ -12,12 +12,12 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.action.flow.ExtendContextActionProperty;
+import lsfusion.server.logics.action.flow.ExtendContextAction;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.action.flow.ForActionProperty;
+import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -39,7 +39,7 @@ import java.sql.SQLException;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.createSetAction;
 
-public class SetActionProperty<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
+public class SetAction<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
 
     private CalcPropertyInterfaceImplement<I> writeFrom;
     protected final CalcPropertyMapImplement<P, I> writeTo; // assert что здесь + в mapInterfaces полный набор ключей
@@ -58,10 +58,10 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
         return super.hasFlow(type);
     }
 
-    public SetActionProperty(LocalizedString caption,
-                             ImSet<I> innerInterfaces,
-                             ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<P, I> writeTo,
-                             CalcPropertyInterfaceImplement<I> writeFrom) {
+    public SetAction(LocalizedString caption,
+                     ImSet<I> innerInterfaces,
+                     ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<P, I> writeTo,
+                     CalcPropertyInterfaceImplement<I> writeFrom) {
         super(caption, innerInterfaces, mapInterfaces);
 
         this.writeTo = writeTo;
@@ -73,7 +73,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
         finalizeInit();
     }
 
-    public ImSet<ActionProperty> getDependActions() {
+    public ImSet<Action> getDependActions() {
         return SetFact.EMPTY();
     }
 
@@ -164,7 +164,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
-        return ForActionProperty.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<I, PropertyInterface>() {
+        return ForAction.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<I, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
                 return createSetAction(context, writeTo.map(mapInnerInterfaces), writeFrom.map(mapInnerInterfaces), where, orders, ordersNotNull);
             }

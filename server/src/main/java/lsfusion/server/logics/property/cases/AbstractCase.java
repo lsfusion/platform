@@ -16,7 +16,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
-import lsfusion.server.logics.action.flow.ListCaseActionProperty;
+import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -346,7 +346,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
         if(lp instanceof LCP)
             return ((LCP) lp).property instanceof CaseUnionProperty && ((CaseUnionProperty)((LCP) lp).property).isAbstract() && ((CaseUnionProperty)((LCP) lp).property).getAbstractType() == CaseUnionProperty.Type.MULTI;
         else
-            return ((LAP) lp).property instanceof CaseActionProperty && ((CaseActionProperty)((LAP) lp).property).isAbstract() && ((CaseActionProperty)((LAP) lp).property).getAbstractType() == ListCaseActionProperty.AbstractType.MULTI;
+            return ((LAP) lp).property instanceof CaseActionProperty && ((CaseActionProperty)((LAP) lp).property).isAbstract() && ((CaseActionProperty)((LAP) lp).property).getAbstractType() == ListCaseAction.AbstractType.MULTI;
     }
     
     private static boolean match(List<ResolveClassSet> absSignature, List<ResolveClassSet> concSignature) {

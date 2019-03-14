@@ -5,11 +5,11 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 
-public class MaximizeFormActionProperty extends ScriptingActionProperty {
+public class MaximizeFormActionProperty extends ScriptingAction {
 
     public MaximizeFormActionProperty(SecurityLogicsModule LM) {
         super(LM);

@@ -18,11 +18,11 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 
-public class SeekScriptingActionProperty extends ScriptingActionProperty {
+public class SeekScriptingActionProperty extends ScriptingAction {
 
     public SeekScriptingActionProperty(BaseLogicsModule lm, ValueClass... classes) {
         super(lm, classes);

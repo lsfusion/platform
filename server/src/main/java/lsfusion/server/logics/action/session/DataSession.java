@@ -30,7 +30,7 @@ import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.stack.*;
 import lsfusion.server.classes.*;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
@@ -402,11 +402,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public DataObject applyObject = null;
     
-    private final ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents;
+    private final ImOrderMap<Action, SessionEnvEvent> sessionEvents;
 
-    private ImOrderSet<ActionProperty> activeSessionEvents;
+    private ImOrderSet<Action> activeSessionEvents;
     @ManualLazy
-    private ImOrderSet<ActionProperty> getActiveSessionEvents() {
+    private ImOrderSet<Action> getActiveSessionEvents() {
         if(activeSessionEvents == null)
             activeSessionEvents = filterOrderEnv(sessionEvents);
         return activeSessionEvents;
@@ -420,14 +420,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private ImSet<OldProperty> getSessionEventOldDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         if(sessionEventOldDepends==null) {
             MSet<OldProperty> mResult = SetFact.mSet();
-            for(ActionProperty<?> action : getActiveSessionEvents())
+            for(Action<?> action : getActiveSessionEvents())
                 mResult.addAll(action.getSessionEventOldDepends());
             sessionEventOldDepends = mResult.immutable();
         }
         return sessionEventOldDepends;
     }
 
-    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -987,7 +987,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             updateSessionEventNotChangedOld(env); // важно после по идее чтобы правильный modifier обновился, а то так абы кто обновится 
             
             try {
-                for(ActionProperty<?> action : getActiveSessionEvents()) {
+                for(Action<?> action : getActiveSessionEvents()) {
                     executeSessionEvent(env, stack, action);
                     if(!isInSessionEvent())
                         return;
@@ -1010,14 +1010,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @LogTime
     @StackMessage("{message.local.event.exec}")
     @ThisMessage(profile = false)
-    private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+    private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage Action<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction || !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
 
         action.execute(env, stack);
     }
 
-    private void executeGlobalActionEvent(ExecutionEnvironment env, ExecutionStack stack, ActionProperty<?> action) throws SQLException, SQLHandledException {
+    private void executeGlobalActionEvent(ExecutionEnvironment env, ExecutionStack stack, Action<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction)
             return;
         boolean hasChanges = false;
@@ -1037,7 +1037,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @LogTime
     @StackMessage("{message.global.event.exec}")
     @ThisMessage (profile = false)
-    private void executeGlobalActionEventWithChanges(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+    private void executeGlobalActionEventWithChanges(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage Action<?> action) throws SQLException, SQLHandledException {
         action.execute(env, stack);
     }
 
@@ -1072,7 +1072,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private OverrideSessionModifier resolveModifier = null;
 
-    public <T extends PropertyInterface> void resolve(ActionProperty<?> action, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public <T extends PropertyInterface> void resolve(Action<?> action, ExecutionStack stack) throws SQLException, SQLHandledException {
         IncrementChangeProps changes = new IncrementChangeProps();
         for(SessionProperty sessionCalcProperty : action.getSessionCalcDepends(false))
             if(sessionCalcProperty instanceof ChangedProperty) {
@@ -1599,7 +1599,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     boolean flush = false;
 
     private FunctionSet<Property> neededProps = null;
-    private void startPendingSingles(ActionProperty action) throws SQLException {
+    private void startPendingSingles(Action action) throws SQLException {
         assert isInTransaction();
 
         if(!action.singleApply)

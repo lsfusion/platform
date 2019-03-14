@@ -3,19 +3,19 @@ package lsfusion.server.physics.admin.backup;
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class DeleteBackupActionProperty extends ScriptingActionProperty {
+public class DeleteBackupActionProperty extends ScriptingAction {
     private final ClassPropertyInterface backupInterface;
 
     public DeleteBackupActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

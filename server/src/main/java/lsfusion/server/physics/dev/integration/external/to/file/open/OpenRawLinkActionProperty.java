@@ -10,14 +10,14 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import org.apache.commons.httpclient.util.URIUtil;
 
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class OpenRawLinkActionProperty extends ScriptingActionProperty {
+public class OpenRawLinkActionProperty extends ScriptingAction {
     private final ClassPropertyInterface sourceInterface;
 
     public OpenRawLinkActionProperty(BaseLogicsModule LM, ValueClass... classes) {
