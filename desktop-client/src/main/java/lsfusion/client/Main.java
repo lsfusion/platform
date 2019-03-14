@@ -1,6 +1,7 @@
 package lsfusion.client;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
@@ -10,15 +11,15 @@ import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
-import lsfusion.interop.navigator.ClientSettings;
-import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.logics.RemoteLogicsInterface;
-import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
 import lsfusion.interop.action.ReportPath;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.event.ICleanListener;
+import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import org.apache.log4j.Logger;
@@ -39,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.security.AccessController;
@@ -49,9 +51,9 @@ import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.DateConverter.*;
+import static lsfusion.base.remote.RMIUtils.initRMI;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
-import static lsfusion.base.remote.RMIUtils.initRMI;
 
 public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
@@ -269,7 +271,7 @@ public class Main {
 
     public static JSONObject getServerSettings(RemoteLogicsInterface remoteLogics) throws RemoteException {
         ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, LoginAction.getSessionInfo(), "Service.getServerSettings[]", new ExternalRequest());
-        return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes()));
+        return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
     }
 
     private static void setupTimePreferences(String userTimeZone, Integer twoDigitYearStart) throws RemoteException {
