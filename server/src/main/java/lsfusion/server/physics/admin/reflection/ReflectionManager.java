@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.LongClass;

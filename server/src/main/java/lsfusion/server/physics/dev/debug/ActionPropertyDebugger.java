@@ -24,7 +24,7 @@ import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;

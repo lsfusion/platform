@@ -47,9 +47,9 @@ import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.NullValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.interactive.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
 import lsfusion.server.logics.form.interactive.change.MFormChanges;

@@ -1,10 +1,8 @@
 package lsfusion.server.physics.dev.debug;
 
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 
 import java.util.List;
-import java.util.Map;
 
 public class ActionWatchEntry {
     

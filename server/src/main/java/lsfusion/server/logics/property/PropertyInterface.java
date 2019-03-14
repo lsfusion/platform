@@ -18,7 +18,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.infer.ExClassSet;

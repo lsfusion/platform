@@ -28,8 +28,6 @@ import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 

@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;

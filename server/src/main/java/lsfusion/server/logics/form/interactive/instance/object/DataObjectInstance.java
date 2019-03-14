@@ -9,9 +9,9 @@ import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.NullValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 
 import java.sql.SQLException;

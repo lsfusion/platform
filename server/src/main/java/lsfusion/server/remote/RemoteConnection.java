@@ -11,7 +11,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.exec.DBManager;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.logics.navigator.*;

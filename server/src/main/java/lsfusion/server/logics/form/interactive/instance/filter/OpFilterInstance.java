@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

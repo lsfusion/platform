@@ -7,7 +7,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

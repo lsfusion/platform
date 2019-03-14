@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes;
 
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.logics.classes.sets.ObjectClassSet;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 
 public interface ConcreteObjectClass extends ConcreteClass,ObjectClass,ObjectClassSet {
 

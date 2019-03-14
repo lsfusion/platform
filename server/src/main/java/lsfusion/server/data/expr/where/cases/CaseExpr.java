@@ -30,8 +30,8 @@ import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.NullValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.ObjectClassField;
 
 public class CaseExpr extends Expr {

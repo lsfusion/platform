@@ -15,7 +15,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLRunnable;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 

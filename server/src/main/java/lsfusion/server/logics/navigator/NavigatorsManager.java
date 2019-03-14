@@ -12,6 +12,7 @@ import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.*;
 import lsfusion.server.base.lifecycle.LifecycleEvent;

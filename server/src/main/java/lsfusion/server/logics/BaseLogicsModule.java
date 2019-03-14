@@ -12,6 +12,7 @@ import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLCallable;

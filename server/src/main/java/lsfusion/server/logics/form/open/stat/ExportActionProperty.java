@@ -12,7 +12,7 @@ import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.FormDataManager;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;

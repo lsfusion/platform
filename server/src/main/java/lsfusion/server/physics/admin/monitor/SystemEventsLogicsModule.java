@@ -6,7 +6,7 @@ import lsfusion.base.Pair;
 import lsfusion.interop.exception.*;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.classes.AbstractCustomClass;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;

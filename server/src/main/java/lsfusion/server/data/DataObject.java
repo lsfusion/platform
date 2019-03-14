@@ -1,4 +1,4 @@
-package lsfusion.server.logics;
+package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -15,8 +15,6 @@ import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.classes.*;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;
@@ -251,7 +249,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return getExpr().equals(((DataObject) o).getExpr());
     }
 
-    protected int hash(HashValues hashValues) {
+    public int hash(HashValues hashValues) {
         return hashValues.hash(getExpr());
     }
 

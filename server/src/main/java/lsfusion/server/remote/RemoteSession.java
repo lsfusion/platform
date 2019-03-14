@@ -22,7 +22,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.ChangesController;
 import lsfusion.server.logics.navigator.FormController;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.ActionProperty;

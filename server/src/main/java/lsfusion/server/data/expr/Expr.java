@@ -41,8 +41,8 @@ import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.ObjectClassField;
 

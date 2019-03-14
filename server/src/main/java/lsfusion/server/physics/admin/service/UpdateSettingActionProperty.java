@@ -5,7 +5,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;

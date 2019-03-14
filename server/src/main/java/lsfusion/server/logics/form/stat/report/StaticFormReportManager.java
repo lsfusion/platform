@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.stat.report;
 
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.action.ExecutionContext;

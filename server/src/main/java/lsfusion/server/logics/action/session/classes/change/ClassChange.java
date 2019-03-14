@@ -17,8 +17,8 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 
 import java.sql.SQLException;
 

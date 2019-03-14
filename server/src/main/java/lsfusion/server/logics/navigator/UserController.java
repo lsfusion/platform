@@ -2,7 +2,7 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 
 import java.sql.SQLException;
 

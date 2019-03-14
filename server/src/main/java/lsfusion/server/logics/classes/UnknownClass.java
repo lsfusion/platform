@@ -9,8 +9,8 @@ import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.NullValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.sets.*;
 import lsfusion.server.logics.property.ActionProperty;
 
