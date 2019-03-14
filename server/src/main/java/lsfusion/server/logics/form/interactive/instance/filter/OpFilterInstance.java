@@ -3,8 +3,11 @@ package lsfusion.server.logics.form.interactive.instance.filter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.action.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -13,10 +16,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
-import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.ExecutionEnvironment;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;

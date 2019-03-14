@@ -1,10 +1,10 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.Result;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.query.Stat;

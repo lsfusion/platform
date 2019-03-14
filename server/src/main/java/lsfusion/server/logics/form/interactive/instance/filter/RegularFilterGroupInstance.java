@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.instance.filter;
 
-import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 
 import java.io.Serializable;
 import java.util.ArrayList;

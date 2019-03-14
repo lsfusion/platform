@@ -1,17 +1,18 @@
 package lsfusion.server.logics.form.open.stat;
 
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.stat.FormStaticType;
-import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.classes.StaticFormatFileClass;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.classes.StaticFormatFileClass;
 import lsfusion.server.logics.form.open.FormActionProperty;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -19,10 +20,9 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 

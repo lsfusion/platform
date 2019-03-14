@@ -1,6 +1,7 @@
 package lsfusion.server.data;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -12,14 +13,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.*;
-import lsfusion.server.caches.*;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.classes.*;
-import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.classes.sets.ObjectClassSet;
-import lsfusion.server.logics.classes.sets.OrClassSet;
-import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.cases.MCaseList;
@@ -30,8 +24,8 @@ import lsfusion.server.data.expr.where.pull.AddPullWheres;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -42,11 +36,17 @@ import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.sets.ObjectClassSet;
+import lsfusion.server.logics.classes.sets.OrClassSet;
+import lsfusion.server.logics.classes.sets.OrObjectClassSet;
+import lsfusion.server.physics.exec.table.ImplementTable;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {

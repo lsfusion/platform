@@ -4,11 +4,11 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.StringClass;
 
 public class LikeWhere extends BinaryWhere<LikeWhere> {
 

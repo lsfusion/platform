@@ -6,7 +6,10 @@ import net.iryndin.jdbf.core.MemoRecord;
 import net.iryndin.jdbf.util.BitUtils;
 import net.iryndin.jdbf.util.JdbfUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Reader of memo files (tested of *.FPT files - Visual FoxPro)

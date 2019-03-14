@@ -5,12 +5,12 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;

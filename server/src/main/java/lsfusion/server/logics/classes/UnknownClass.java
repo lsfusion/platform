@@ -1,18 +1,17 @@
 package lsfusion.server.logics.classes;
 
-import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.classes.sets.*;
 import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.data.NullValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.NullValue;
-import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.classes.sets.*;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.classes.sets.*;
 
 public class UnknownClass extends ImmutableObject implements FormulaClass, ConcreteObjectClass {
 

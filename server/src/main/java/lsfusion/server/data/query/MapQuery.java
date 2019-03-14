@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.ParamExpr;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -17,6 +16,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.classes.BaseClass;
 
 public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
 

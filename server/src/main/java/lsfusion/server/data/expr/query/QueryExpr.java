@@ -1,17 +1,14 @@
 package lsfusion.server.data.expr.query;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.*;
-import lsfusion.server.caches.*;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.pull.StatPullWheres;
@@ -23,6 +20,8 @@ import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.DataClass;
 
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
 public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J extends QueryJoin<?, ?, ?, ?>,

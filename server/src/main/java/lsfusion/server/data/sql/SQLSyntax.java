@@ -11,7 +11,10 @@ import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
 
-import java.sql.*;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 
 public interface SQLSyntax {
 

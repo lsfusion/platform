@@ -3,11 +3,11 @@ package lsfusion.server.logics.form.stat.report;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.form.stat.FormDataInterface;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.form.stat.FormDataInterface;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.sql.SQLException;
 

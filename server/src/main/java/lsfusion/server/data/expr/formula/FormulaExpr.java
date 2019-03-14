@@ -1,33 +1,38 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.UnknownClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
-import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.query.stat.FormulaJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.UnknownClass;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface {
     public final static String MIN2 = "(prm1+prm2-ABS(prm1-prm2))/2"; // пока так сделаем min и проверку на infinite

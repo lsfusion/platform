@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.logics.LogicsModule;
 
 public class ModuleEqualLAFinder extends ModuleEqualLAPFinder<LA<?>> {
     @Override

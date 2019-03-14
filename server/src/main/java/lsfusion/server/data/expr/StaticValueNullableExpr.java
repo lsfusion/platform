@@ -1,12 +1,11 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;
@@ -16,6 +15,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.TypeObject;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 // по факту не nullable, но тут есть архитектурный нюанс, если не возвращать NotNull непонятно как класс заведомо определенный делать
 // можно конечно смешать каким-то образом с StaticClassExpr, но не совсем понятно как это будет работать (тот же IsClassExpr все же возвращает конкретный класс)

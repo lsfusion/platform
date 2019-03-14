@@ -1,15 +1,18 @@
 package lsfusion.server.data;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.CompiledQuery;
+import lsfusion.server.data.query.EnsureTypeEnvironment;
+import lsfusion.server.data.query.MaterializedQuery;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;

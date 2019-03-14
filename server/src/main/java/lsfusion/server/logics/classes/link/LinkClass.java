@@ -1,10 +1,10 @@
 package lsfusion.server.logics.classes.link;
 
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;

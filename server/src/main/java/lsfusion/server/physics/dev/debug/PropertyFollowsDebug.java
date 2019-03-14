@@ -1,7 +1,5 @@
 package lsfusion.server.physics.dev.debug;
 
-import lsfusion.server.physics.dev.debug.DebugInfo;
-
 public class PropertyFollowsDebug {
     public final boolean isTrue;
     public final DebugInfo.DebugPoint debugPoint;

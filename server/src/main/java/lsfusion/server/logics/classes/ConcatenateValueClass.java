@@ -1,14 +1,14 @@
 package lsfusion.server.logics.classes;
 
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -2,15 +2,15 @@ package lsfusion.server.logics.form.interactive.dialogedit;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LP;
-import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 
 public abstract class BaseClassFormEntity extends FormEntity {
 

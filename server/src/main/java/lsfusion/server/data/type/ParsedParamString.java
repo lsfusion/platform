@@ -1,8 +1,8 @@
 package lsfusion.server.data.type;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.ParsedStatement;
 import lsfusion.server.data.sql.SQLSyntax;
 

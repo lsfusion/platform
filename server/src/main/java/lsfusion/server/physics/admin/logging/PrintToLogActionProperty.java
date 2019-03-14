@@ -2,10 +2,10 @@ package lsfusion.server.physics.admin.logging;
 
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.language.ScriptingAction;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.UtilsLogicsModule;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.util.Iterator;
 

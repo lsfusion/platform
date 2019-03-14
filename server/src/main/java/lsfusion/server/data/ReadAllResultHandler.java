@@ -1,10 +1,10 @@
 package lsfusion.server.data;
 
-import lsfusion.base.lambda.Provider;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
+import lsfusion.base.lambda.Provider;
 
 public class ReadAllResultHandler<K, V> implements ResultHandler<K, V>, Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> {
 

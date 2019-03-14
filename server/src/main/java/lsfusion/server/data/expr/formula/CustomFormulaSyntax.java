@@ -2,7 +2,6 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.sql.SQLSyntax;
 
 public class CustomFormulaSyntax {
     

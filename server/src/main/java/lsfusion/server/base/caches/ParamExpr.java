@@ -1,20 +1,23 @@
 package lsfusion.server.base.caches;
 
-import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.base.Result;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.comb.map.GlobalInteger;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.stat.*;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.query.stat.Cost;
+import lsfusion.server.data.query.stat.InnerBaseJoin;
+import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 
 public abstract class ParamExpr extends VariableSingleClassExpr implements InnerBaseJoin<Object> {

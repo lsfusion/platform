@@ -1,10 +1,10 @@
 package lsfusion.server.logics.form.interactive.dialogedit;
 
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.sql.SQLException;
 

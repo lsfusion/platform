@@ -1,7 +1,6 @@
 package lsfusion.server.base.caches;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -10,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
+import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.server.base.caches.hash.HashCodeValues;
 import lsfusion.server.base.caches.hash.HashMapValues;
 import lsfusion.server.base.caches.hash.HashValues;

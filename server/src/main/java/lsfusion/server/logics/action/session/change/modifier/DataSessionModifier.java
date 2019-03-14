@@ -1,8 +1,8 @@
 package lsfusion.server.logics.action.session.change.modifier;
 
-import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.session.change.ModifyChange;

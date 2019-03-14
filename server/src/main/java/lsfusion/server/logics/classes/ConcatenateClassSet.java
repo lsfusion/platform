@@ -1,14 +1,14 @@
 package lsfusion.server.logics.classes;
 
-import lsfusion.base.comb.ArrayCombinations;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.comb.ArrayCombinations;
+import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.OrClassSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.classes.sets.ResolveConcatenateClassSet;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.type.ConcatenateType;
-import lsfusion.server.data.type.Type;
 
 import java.util.Arrays;
 

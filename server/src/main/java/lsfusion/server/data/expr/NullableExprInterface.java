@@ -2,7 +2,6 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 

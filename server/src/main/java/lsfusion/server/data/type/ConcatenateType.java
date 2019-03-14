@@ -1,7 +1,5 @@
 package lsfusion.server.data.type;
 
-import lsfusion.interop.form.property.ExtInt;
-import lsfusion.base.comb.ListCombinations;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -9,10 +7,8 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcatenateClassSet;
-import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.base.comb.ListCombinations;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -23,6 +19,10 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.ConcatenateClassSet;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
 
 import java.io.DataOutputStream;

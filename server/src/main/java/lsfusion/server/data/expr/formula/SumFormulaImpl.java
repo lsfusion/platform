@@ -2,14 +2,14 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.data.expr.formula.conversion.*;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.StringClass;
 
 public class SumFormulaImpl extends ArithmeticFormulaImpl {
     public final static CompoundTypeConversion sumConversion = new CompoundTypeConversion(

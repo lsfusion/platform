@@ -1,7 +1,7 @@
 package lsfusion.server.logics.event;
 
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.property.Property;
 
 public class ApplyUpdatePrevEvent implements ApplySingleEvent {
     public final OldProperty property;

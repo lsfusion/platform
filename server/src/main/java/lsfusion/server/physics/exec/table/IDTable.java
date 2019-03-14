@@ -9,9 +9,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.IntegerClass;
-import lsfusion.server.logics.classes.SystemClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.PropStat;
@@ -20,8 +17,10 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.IntegerClass;
+import lsfusion.server.logics.classes.SystemClass;
 import lsfusion.server.physics.exec.DBManager;
-import lsfusion.server.data.DataObject;
 
 import java.sql.SQLException;
 

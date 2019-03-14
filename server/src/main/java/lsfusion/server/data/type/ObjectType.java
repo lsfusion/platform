@@ -1,18 +1,13 @@
 package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.LongClass;
-import lsfusion.server.logics.classes.ObjectValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -26,10 +21,15 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
-import lsfusion.server.logics.property.classes.ObjectClassField;
+import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.LongClass;
+import lsfusion.server.logics.classes.ObjectValueClassSet;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.CustomDbfRecord;
+import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.json.JSONException;
 

@@ -2,8 +2,8 @@ package lsfusion.server.logics.action.init;
 
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ListCaseAction;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.init.GroupPropertiesTask;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class FinalizeActionAbstractTask extends GroupPropertiesTask {
     public String getCaption() {

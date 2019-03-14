@@ -1,16 +1,19 @@
 package lsfusion.server.data.expr.query;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.data.*;
+import lsfusion.server.data.Field;
+import lsfusion.server.data.KeyField;
+import lsfusion.server.data.NamedTable;
+import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.query.NotMaterializable;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.classes.DataClass;
 
 public class RecursiveTable extends NamedTable implements NotMaterializable {
 

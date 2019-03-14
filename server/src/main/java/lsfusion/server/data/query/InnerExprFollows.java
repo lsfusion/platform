@@ -1,9 +1,9 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.OuterContext;

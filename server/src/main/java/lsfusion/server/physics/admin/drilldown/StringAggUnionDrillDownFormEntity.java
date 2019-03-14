@@ -2,8 +2,8 @@ package lsfusion.server.physics.admin.drilldown;
 
 import lsfusion.server.data.expr.StringAggUnionProperty;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StringAggUnionDrillDownFormEntity<I extends PropertyInterface> extends UnionDrillDownFormEntity<StringAggUnionProperty.Interface, StringAggUnionProperty> {
 

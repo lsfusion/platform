@@ -1,12 +1,11 @@
 package lsfusion.server.logics.classes.sets;
 
-import lsfusion.server.classes.*;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 import lsfusion.server.logics.classes.ConcatenateClassSet;
 import lsfusion.server.logics.classes.ConcatenateValueClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 
 import java.util.Arrays;
 

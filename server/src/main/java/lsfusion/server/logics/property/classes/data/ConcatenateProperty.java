@@ -1,24 +1,24 @@
 package lsfusion.server.logics.property.classes.data;
 
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.classes.sets.ResolveConcatenateClassSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.expr.ConcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Iterator;
 

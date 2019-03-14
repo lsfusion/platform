@@ -1,19 +1,19 @@
 package lsfusion.server.logics.form.interactive.action.lifecycle;
 
-import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.classes.ColorClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.classes.ColorClass;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.awt.*;
 import java.sql.SQLException;

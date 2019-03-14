@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.interactive.serialization;
 
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 
 public class ServerContext {
     public final BusinessLogics BL;

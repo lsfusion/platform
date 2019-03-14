@@ -1,18 +1,21 @@
 package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.*;
+import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.ParsedParamString;
+import lsfusion.server.data.type.ParsedString;
+import lsfusion.server.data.type.Type;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.stat.integration.importing.hierarchy.json;
 
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.ReflectionUtils;
+import lsfusion.base.file.RawFileData;
 import org.apache.commons.io.input.BOMInputStream;
 import org.json.JSONArray;
 import org.json.JSONException;

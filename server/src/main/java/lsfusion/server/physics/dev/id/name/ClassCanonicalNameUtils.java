@@ -1,8 +1,6 @@
 package lsfusion.server.physics.dev.id.name;
 
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.classes.*;
-import lsfusion.server.classes.link.*;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.link.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;

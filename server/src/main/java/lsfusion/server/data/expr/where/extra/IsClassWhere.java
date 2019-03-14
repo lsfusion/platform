@@ -1,19 +1,16 @@
 package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.classes.*;
-import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
@@ -28,8 +25,10 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.property.classes.IsClassField;
 
 public class IsClassWhere extends DataWhere {
 

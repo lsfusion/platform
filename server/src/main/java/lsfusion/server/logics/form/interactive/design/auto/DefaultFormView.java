@@ -5,11 +5,12 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerFactory;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormContainerSet;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -24,14 +25,16 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyGroupCont
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
 

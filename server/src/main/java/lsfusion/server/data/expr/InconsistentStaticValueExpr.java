@@ -1,13 +1,12 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.ConcreteObjectClass;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.query.PropStat;
@@ -23,6 +22,7 @@ import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.ConcreteObjectClass;
 
 // вообще надо по хорошему через множественное наследование связать с ValueExpr, но т.к. это локальный case пока делать не будем
 // класс нужен так как classExpr работает только с VariableClassExpr

@@ -2,9 +2,9 @@ package lsfusion.server.data;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.StaticNullableExpr;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 // эмулируем ключ равный значению, используется в нескольких не принципиальных эвристиках
 public class StaticParamNullableExpr extends StaticNullableExpr {

@@ -1,7 +1,6 @@
 package lsfusion.server.data.query.innerjoins;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -9,13 +8,17 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.stat.*;
+import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 

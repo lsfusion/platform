@@ -2,7 +2,6 @@ package lsfusion.server.data.where.classes;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -11,14 +10,11 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.ParamExpr;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -32,6 +28,10 @@ import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Equal;
 import lsfusion.server.data.where.EqualMap;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.ValueClassSet;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere>, OuterContext<ClassExprWhere>, KeyType {
 

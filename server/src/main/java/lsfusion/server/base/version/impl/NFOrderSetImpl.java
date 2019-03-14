@@ -4,10 +4,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.base.version.impl.changes.NFOrderSetChange;
 import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.changes.NFMove;
+import lsfusion.server.base.version.impl.changes.NFOrderSetChange;
 import lsfusion.server.base.version.impl.changes.NFRemoveAll;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 

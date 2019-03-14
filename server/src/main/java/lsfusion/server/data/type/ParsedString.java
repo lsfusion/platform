@@ -1,7 +1,7 @@
 package lsfusion.server.data.type;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.mutability.TwinImmutableObject;
 
 public class ParsedString extends TwinImmutableObject {
 

@@ -1,6 +1,9 @@
 package lsfusion.server.data;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -21,7 +24,6 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.ValuesContext;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.base.caches.hash.HashValues;
-import lsfusion.server.classes.*;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -41,12 +43,12 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.StringParseInterface;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.physics.exec.DBManager;
-import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.change.ClassChanges;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;

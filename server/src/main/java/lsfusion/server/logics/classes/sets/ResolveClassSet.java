@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.sets;
 
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.ValueClass;
 
 // множество классов, от AndClassSet и OrClassSet, тем что abstract'ы не считаются конкретными, нет множества конкретных классов и т.п.
 // используется в resolve'инге и выводе типов

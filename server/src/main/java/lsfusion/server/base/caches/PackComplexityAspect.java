@@ -1,13 +1,13 @@
 package lsfusion.server.base.caches;
 
 import lsfusion.base.ReflectionUtils;
+import lsfusion.server.Settings;
+import lsfusion.server.data.query.IQuery;
+import lsfusion.server.data.query.Query;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import lsfusion.server.Settings;
-import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.Query;
 
 @Aspect
 public class PackComplexityAspect {

@@ -1,7 +1,6 @@
 package lsfusion.server.logics.init;
 
 import lsfusion.server.base.task.Task;
-import lsfusion.server.logics.init.BLTask;
 
 import java.util.Set;
 

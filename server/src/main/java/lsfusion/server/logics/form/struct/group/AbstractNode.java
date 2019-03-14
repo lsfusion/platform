@@ -1,16 +1,19 @@
 package lsfusion.server.logics.form.struct.group;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.server.base.version.NFFact;
-import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
+import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
+import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public abstract class AbstractNode extends ImmutableObject {
 

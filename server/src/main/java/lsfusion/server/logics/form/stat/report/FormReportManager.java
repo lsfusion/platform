@@ -9,10 +9,10 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.form.user.FormUserPreferences;
+import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
+import lsfusion.interop.form.user.FormUserPreferences;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
@@ -21,8 +21,8 @@ import lsfusion.server.logics.form.stat.*;
 import lsfusion.server.logics.form.stat.report.design.ReportDesignGenerator;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -41,7 +41,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public abstract class FormReportManager extends FormDataManager {

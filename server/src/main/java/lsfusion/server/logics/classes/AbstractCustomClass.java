@@ -3,8 +3,8 @@ package lsfusion.server.logics.classes;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class AbstractCustomClass extends CustomClass {
     

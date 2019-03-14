@@ -1,10 +1,11 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.data.expr.formula.conversion.*;
+import lsfusion.server.data.expr.formula.conversion.AbstractConversionSource;
+import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.DataClass;
 
 public class SubtractFormulaImpl extends ArithmeticFormulaImpl {
 

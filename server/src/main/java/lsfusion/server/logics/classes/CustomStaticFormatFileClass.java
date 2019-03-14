@@ -1,8 +1,8 @@
 package lsfusion.server.logics.classes;
 
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 

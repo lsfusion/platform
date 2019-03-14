@@ -1,9 +1,9 @@
 package lsfusion.server.logics.property.infer;
 
-import lsfusion.base.dnf.AddIntersectSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.dnf.AddIntersectSet;
 
 //
 public class NotNull<T> extends AddIntersectSet<ImSet<T>, NotNull<T>> {

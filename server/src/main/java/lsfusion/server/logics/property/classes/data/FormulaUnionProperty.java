@@ -8,13 +8,13 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.UnionProperty;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class FormulaUnionProperty extends UnionProperty {
 

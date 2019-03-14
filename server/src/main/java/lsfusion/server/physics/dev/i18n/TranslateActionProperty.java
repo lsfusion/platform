@@ -1,14 +1,14 @@
 package lsfusion.server.physics.dev.i18n;
 
-import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

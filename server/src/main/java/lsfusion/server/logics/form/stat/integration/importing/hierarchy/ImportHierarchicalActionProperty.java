@@ -1,17 +1,17 @@
 package lsfusion.server.logics.form.stat.integration.importing.hierarchy;
 
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;
 import lsfusion.server.logics.form.stat.integration.importing.FormImportData;
-import lsfusion.server.logics.form.open.stat.ImportAction;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

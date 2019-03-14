@@ -3,19 +3,19 @@ package lsfusion.server.logics.form.interactive.action.lifecycle;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.language.ScriptingAction;
-import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.awt.*;
 

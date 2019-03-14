@@ -4,10 +4,10 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.CustomClass;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.Instantiable;
+import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

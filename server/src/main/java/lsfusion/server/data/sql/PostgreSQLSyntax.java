@@ -1,8 +1,8 @@
 package lsfusion.server.data.sql;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.Log4jWriter;

@@ -6,12 +6,12 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
+import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.classes.data.FormulaUnionProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.StringAggUnionDrillDownFormEntity;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.classes.data.FormulaUnionProperty;
 
 public class StringAggUnionProperty extends FormulaUnionProperty {
 

@@ -1,13 +1,8 @@
 package lsfusion.server.logics.action.session.classes.change;
 
-import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.logics.action.session.change.ModifyResult;
-import lsfusion.server.logics.action.session.table.SessionTableUsage;
-import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcreteObjectClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -17,8 +12,11 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.action.session.change.ModifyResult;
+import lsfusion.server.logics.action.session.table.SessionTableUsage;
+import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
+import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.ConcreteObjectClass;
 
 import java.sql.SQLException;
 

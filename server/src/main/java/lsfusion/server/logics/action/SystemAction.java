@@ -3,11 +3,11 @@ package lsfusion.server.logics.action;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class SystemAction extends BaseAction<PropertyInterface> {
 

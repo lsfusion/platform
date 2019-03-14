@@ -1,13 +1,13 @@
 package lsfusion.server.language;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.base.lambda.set.FullFunctionSet;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang.StringUtils;

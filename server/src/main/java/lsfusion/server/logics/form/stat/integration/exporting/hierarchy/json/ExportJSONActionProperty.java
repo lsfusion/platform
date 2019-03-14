@@ -7,9 +7,9 @@ import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.logics.form.stat.integration.exporting.hierarchy.ExportHierarchicalActionProperty;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.stat.integration.hierarchy.json.JSONNode;
 import lsfusion.server.logics.form.stat.integration.importing.hierarchy.json.JSONReader;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.json.JSONException;
 import org.json.JSONObject;
 

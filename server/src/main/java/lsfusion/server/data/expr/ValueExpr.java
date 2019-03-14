@@ -1,17 +1,18 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.file.FileData;
-import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.base.file.RawFileData;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.comb.map.GlobalObject;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.classes.*;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;
@@ -21,8 +22,6 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.*;
 
 import java.math.BigInteger;

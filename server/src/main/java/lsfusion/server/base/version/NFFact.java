@@ -5,8 +5,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.base.version.impl.*;
 import lsfusion.server.base.version.interfaces.*;
-import lsfusion.server.logics.mutables.impl.*;
-import lsfusion.server.logics.mutables.interfaces.*;
 
 import java.util.List;
 import java.util.Map;

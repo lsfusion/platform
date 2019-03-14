@@ -1,10 +1,10 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.expr.formula.conversion.ConversionSource;
 import lsfusion.server.data.expr.formula.conversion.TypeConversion;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.DataClass;
 
 public abstract class ArithmeticFormulaImpl extends AbstractFormulaImpl implements FormulaJoinImpl {
     protected final ConversionSource conversionSource;

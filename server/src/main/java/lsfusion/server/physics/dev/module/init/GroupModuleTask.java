@@ -9,7 +9,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.init.BLGroupSingleTask;
 import org.antlr.runtime.RecognitionException;
 
-import java.util.*;
+import java.util.List;
 
 public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
 

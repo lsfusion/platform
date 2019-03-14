@@ -7,15 +7,16 @@ import lsfusion.server.Settings;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.event.PrevScope;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.OldDrillDownFormEntity;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class OldProperty<T extends PropertyInterface> extends SessionProperty<T> {
 

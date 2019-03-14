@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.infer;
 
-import lsfusion.base.*;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;

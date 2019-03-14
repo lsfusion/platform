@@ -1,12 +1,5 @@
 package lsfusion.server.base.caches;
 
-import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -21,6 +14,14 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyQueryType;
+import lsfusion.server.logics.property.infer.CalcType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 @Aspect
 public class WrapComplexityAspect {

@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.reflection;
 
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -9,7 +10,6 @@ import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.env.CurrentFormFormulaProperty;
-import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 

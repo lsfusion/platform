@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.interactive.change;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.logics.property.Property;
 
 public class ChangedData {
