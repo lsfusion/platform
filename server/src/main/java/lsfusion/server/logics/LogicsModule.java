@@ -65,6 +65,7 @@ import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.set.*;
@@ -140,7 +141,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
-import static lsfusion.server.logics.property.PropertyUtils.*;
+import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
 
@@ -1894,7 +1895,7 @@ public abstract class LogicsModule {
     }
 
     public void addIndex(ImOrderSet<String> keyNames, Object... params) {
-        ImList<CalcPropertyObjectInterfaceImplement<String>> index = PropertyUtils.readObjectImplements(keyNames, params);
+        ImList<CalcPropertyObjectInterfaceImplement<String>> index = ActionOrPropertyUtils.readObjectImplements(keyNames, params);
         ThreadLocalContext.getDbManager().addIndex(index);
     }
 

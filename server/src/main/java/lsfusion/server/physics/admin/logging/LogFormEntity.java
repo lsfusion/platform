@@ -21,8 +21,8 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
 
-import static lsfusion.server.logics.property.PropertyUtils.mapCalcImplement;
-import static lsfusion.server.logics.property.PropertyUtils.readCalcImplements;
+import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.mapCalcImplement;
+import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
 /// Common usage:
 /// LP<?> property - logging property

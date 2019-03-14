@@ -15,7 +15,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.event.Event;
-import lsfusion.server.logics.property.PropertyUtils;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
@@ -90,7 +90,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {
-        ImList<PropertyInterfaceImplement<T>> readImplements = PropertyUtils.readImplements(listInterfaces, params);
+        ImList<PropertyInterfaceImplement<T>> readImplements = ActionOrPropertyUtils.readImplements(listInterfaces, params);
         ActionPropertyMapImplement<?, PropertyInterface> actImpl = (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(0);
         if (property instanceof ListActionProperty) {
             ((ListActionProperty) property).addAction(actImpl, version);

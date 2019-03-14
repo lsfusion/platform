@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.oraction;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
@@ -17,6 +17,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
@@ -24,7 +25,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PropertyUtils {
+public class ActionOrPropertyUtils {
     public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces) {
         return getValueClasses(dataProperties, mapInterfaces, true);
     }
