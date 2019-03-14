@@ -51,6 +51,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
+    @Deprecated
     public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
 
     private final MAddMap<Long, SecurityPolicy> policies = MapFact.mAddOverrideMap();

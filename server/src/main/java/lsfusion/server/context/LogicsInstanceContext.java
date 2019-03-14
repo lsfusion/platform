@@ -1,7 +1,15 @@
 package lsfusion.server.context;
 
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ManageSessionType;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.filter.ContextFilter;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
@@ -9,8 +17,10 @@ import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.server.ServerLoggers.systemLogger;
@@ -27,10 +37,6 @@ public class LogicsInstanceContext extends AbstractContext {
     @Override
     public LogicsInstance getLogicsInstance() {
         return logicsInstance;
-    }
-
-    public SecurityPolicy getSecurityPolicy() {
-        return SecurityManager.serverSecurityPolicy;
     }
 
     public FocusListener getFocusListener() {
@@ -90,5 +96,17 @@ public class LogicsInstanceContext extends AbstractContext {
     @Override
     public boolean canBeProcessed() {
         return true;
+    }
+
+    // used in some deprecated actions
+    @Deprecated
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        assert false;
+        return new FormInstance(formEntity, getLogicsInstance(),
+                session,
+                SecurityManager.serverSecurityPolicy, getFocusListener(), getClassListener(),
+                mapObjects, stack, isModal,
+                noCancel, manageSession,
+                checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly, getLocale());
     }
 }
