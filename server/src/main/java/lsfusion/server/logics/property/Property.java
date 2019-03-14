@@ -37,7 +37,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.group.AbstractPropertyNode;
+import lsfusion.server.logics.form.struct.group.AbstractPropertyNode;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;

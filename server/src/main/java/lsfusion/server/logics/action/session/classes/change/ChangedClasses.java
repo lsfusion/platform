@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassDataProperty;
+import lsfusion.server.logics.property.classes.ClassDataProperty;
 
 import java.util.Map;
 

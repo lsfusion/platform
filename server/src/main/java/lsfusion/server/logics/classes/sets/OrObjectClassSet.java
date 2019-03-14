@@ -19,7 +19,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.Comparator;

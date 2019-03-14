@@ -11,7 +11,7 @@ import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 
-public class NullValueProperty extends FormulaProperty<PropertyInterface>{
+public class NullValueProperty extends FormulaProperty<PropertyInterface> {
 
     private NullValueProperty() {
         super(LocalizedString.create("Значение NULL"), SetFact.<PropertyInterface>EMPTYORDER());

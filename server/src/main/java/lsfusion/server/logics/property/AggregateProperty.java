@@ -28,6 +28,7 @@ import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;

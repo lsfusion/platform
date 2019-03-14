@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.derived;
+package lsfusion.server.logics.property.set;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;

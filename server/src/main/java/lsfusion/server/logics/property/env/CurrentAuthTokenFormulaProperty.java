@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.env;
 
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.data.SQLSession;

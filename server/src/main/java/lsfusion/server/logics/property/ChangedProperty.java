@@ -27,6 +27,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.admin.drilldown.ChangedDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.event.ApplyCalcEvent;

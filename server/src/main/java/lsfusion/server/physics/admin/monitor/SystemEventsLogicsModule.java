@@ -14,7 +14,7 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CurrentConnectionFormulaProperty;
+import lsfusion.server.logics.property.env.CurrentConnectionFormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;

@@ -16,7 +16,7 @@ import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.physics.exec.table.FullTablesInterface;
 import lsfusion.server.physics.exec.table.ImplementTable;
 

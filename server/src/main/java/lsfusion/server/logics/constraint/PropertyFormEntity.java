@@ -17,7 +17,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 
 public class PropertyFormEntity extends FormEntity {
 

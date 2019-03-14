@@ -8,7 +8,7 @@ import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CurrentFormFormulaProperty;
+import lsfusion.server.logics.property.env.CurrentFormFormulaProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;

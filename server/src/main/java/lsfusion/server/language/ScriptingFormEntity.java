@@ -42,7 +42,7 @@ import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 
 import javax.swing.*;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -21,6 +21,7 @@ import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.physics.admin.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
@@ -30,7 +31,6 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
-import lsfusion.server.logics.property.cases.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;

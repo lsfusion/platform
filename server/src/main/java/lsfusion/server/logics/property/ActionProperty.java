@@ -30,6 +30,8 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;

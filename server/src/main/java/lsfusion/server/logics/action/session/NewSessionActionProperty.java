@@ -11,9 +11,9 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 

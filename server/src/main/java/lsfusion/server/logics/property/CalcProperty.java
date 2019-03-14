@@ -55,6 +55,8 @@ import lsfusion.server.logics.event.ApplyCalcEvent;
 import lsfusion.server.logics.event.ApplyStoredEvent;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -1480,7 +1482,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean canBeGlobalChanged() { // есть не Local'ы changed
         return canBeChanged(true);
     }
-    protected boolean canBeHeurChanged(boolean global) {
+    public boolean canBeHeurChanged(boolean global) {
         return false;
     }
     private boolean canBeChanged(boolean global) {

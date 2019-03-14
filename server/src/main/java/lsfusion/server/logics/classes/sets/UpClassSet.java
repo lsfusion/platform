@@ -10,7 +10,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 
 // не ExtraIntSetWhere потому как intersect несколько, а не один элемент возвращает

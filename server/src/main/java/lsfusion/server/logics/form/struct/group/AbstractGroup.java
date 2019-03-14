@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.group;
+package lsfusion.server.logics.form.struct.group;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;

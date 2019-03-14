@@ -69,7 +69,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.event.SystemEvent;
 	import lsfusion.server.logics.property.Event;
 	import lsfusion.server.logics.action.flow.ListCaseActionProperty;
-	import lsfusion.server.logics.property.CaseUnionProperty;
+	import lsfusion.server.logics.property.cases.CaseUnionProperty;
 	import lsfusion.server.logics.property.IncrementType;
 	import lsfusion.server.data.expr.formula.SQLSyntaxType;
     import lsfusion.server.logics.event.ChangeEvent;

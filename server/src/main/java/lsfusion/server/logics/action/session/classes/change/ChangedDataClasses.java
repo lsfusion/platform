@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.logics.classes.ConcreteObjectClass;
 import lsfusion.server.logics.classes.CustomClass;
-import lsfusion.server.logics.property.ClassDataProperty;
+import lsfusion.server.logics.property.classes.ClassDataProperty;
 
 public class ChangedDataClasses {
 

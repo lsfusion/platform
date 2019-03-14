@@ -35,6 +35,7 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.FormulaProperty;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.session.*;
 import org.apache.log4j.Logger;

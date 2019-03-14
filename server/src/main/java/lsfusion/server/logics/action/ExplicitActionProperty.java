@@ -10,7 +10,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.IsClassProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.language.ScriptingActionProperty;

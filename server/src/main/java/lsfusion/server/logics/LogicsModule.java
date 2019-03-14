@@ -51,6 +51,11 @@ import lsfusion.server.logics.form.interactive.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.open.stat.PrintActionProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.classes.*;
+import lsfusion.server.logics.property.set.AggregateGroupProperty;
+import lsfusion.server.logics.property.set.CycleGroupProperty;
+import lsfusion.server.logics.property.set.SumGroupProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
@@ -102,13 +107,14 @@ import lsfusion.server.logics.form.stat.integration.importing.plain.xls.ImportXL
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.derived.*;
-import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
+import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
@@ -124,7 +130,7 @@ import static lsfusion.server.logics.property.PropertyUtils.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
 
-
+// modules logics in theory should be in dev.module.package but in this class it's more about logics, than about modularity
 public abstract class LogicsModule {
     protected static final Logger logger = Logger.getLogger(LogicsModule.class);
 

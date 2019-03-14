@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.group;
+package lsfusion.server.logics.form.struct.group;
 
 public abstract class AbstractPropertyNode extends AbstractNode {
 

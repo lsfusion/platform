@@ -8,7 +8,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.IsClassProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

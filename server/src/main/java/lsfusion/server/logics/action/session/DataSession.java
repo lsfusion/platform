@@ -72,6 +72,8 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.navigator.*;
+import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.ClassDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

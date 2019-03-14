@@ -10,7 +10,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 
 import java.sql.SQLException;
 

@@ -38,7 +38,7 @@ import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.action.session.DataSession;

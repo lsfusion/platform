@@ -22,6 +22,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.admin.drilldown.DataDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;

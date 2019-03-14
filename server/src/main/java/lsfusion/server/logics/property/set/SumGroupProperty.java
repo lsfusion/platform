@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.set;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -10,6 +10,9 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.AddGroupProperty;
+import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
