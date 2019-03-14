@@ -66,7 +66,7 @@ public class FormulaUnionExpr extends UnionExpr {
             }});
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 31*formula.hashCode() * 31 + hashOuter(exprs, hashContext);
     }
 

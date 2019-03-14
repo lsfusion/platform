@@ -1902,8 +1902,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public boolean isNotNull(AlgInfoType algType) { // обозначает что при null одном из параметров всегда возвращается null значение
         return isNotNull(interfaces, algType);
     }
-        
-    protected boolean calcNotNull(ImSet<T> checkInterfaces, CalcInfoType calcType) {
+
+    public boolean calcNotNull(ImSet<T> checkInterfaces, CalcInfoType calcType) {
         return true;
     }
 
@@ -1921,7 +1921,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return algType.isEmpty(this);
     }
 
-    protected boolean calcEmpty(CalcInfoType calcType) {
+    public boolean calcEmpty(CalcInfoType calcType) {
         return false;
     }
 

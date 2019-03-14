@@ -17,7 +17,7 @@ public class CurrentEnvironmentExpr extends StaticNullableExpr {
         return paramString.equals(((CurrentEnvironmentExpr) obj).paramString);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return paramString.hashCode();
     }
 

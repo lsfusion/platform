@@ -101,7 +101,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
     }
 
     @Override
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return hash.values.hash(this);
     }
 

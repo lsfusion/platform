@@ -124,7 +124,7 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
             });
     }
 
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return 31 * (31 * (classWhere.hashOuter(hash) * 31 + classNotWhere.hashOuter(hash)) + hashComps(hash, equals)) + hashComps(hash, greaters);
     }
 

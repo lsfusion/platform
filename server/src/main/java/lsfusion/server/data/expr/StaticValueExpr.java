@@ -50,7 +50,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         return this;
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return object.hashCode() * 31 + objectClass.hashCode() + 6;
     }
 

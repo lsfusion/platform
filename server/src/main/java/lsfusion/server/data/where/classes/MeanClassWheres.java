@@ -73,7 +73,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
             return true;
         }
 
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             return AbstractOuterContext.hashMapOuter(BaseUtils.<ImMap<MeanClassWhere, Where>>immutableCast(MeanClassWheres.this), hash);
         }
 

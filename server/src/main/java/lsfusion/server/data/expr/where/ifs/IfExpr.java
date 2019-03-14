@@ -159,7 +159,7 @@ public class IfExpr extends Expr {
         return ifWhere.equals(((IfExpr)o).ifWhere) && trueExpr.equals(((IfExpr)o).trueExpr) && falseExpr.equals(((IfExpr) o).falseExpr);
     }
 
-    protected int hash(HashContext hashContext) { // порядок высот / общий
+    public int hash(HashContext hashContext) { // порядок высот / общий
         return 31 * (31 * ifWhere.hashOuter(hashContext) + trueExpr.hashOuter(hashContext)) + falseExpr.hashOuter(hashContext);
     }
 

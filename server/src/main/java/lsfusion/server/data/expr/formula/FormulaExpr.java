@@ -231,7 +231,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         return exprs.equals(((FormulaExpr) o).exprs) && formula.equals(((FormulaExpr) o).formula);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 31 * hashOuter(exprs, hashContext) + formula.hashCode();
     }
 

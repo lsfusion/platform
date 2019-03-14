@@ -84,7 +84,7 @@ public class SessionRows extends SessionData<SessionRows> {
     protected boolean isComplex() {
         return true;
     }
-    protected int hash(HashValues hashValues) {
+    public int hash(HashValues hashValues) {
         int hash = 0;
         for(int i=0,size=rows.size();i<size;i++)
             hash += MapValuesIterable.hash(rows.getKey(i),hashValues) ^ MapValuesIterable.hash(rows.getValue(i),hashValues);

@@ -87,7 +87,7 @@ public class NullExpr extends Expr {
         return true;
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 132;
     }
 

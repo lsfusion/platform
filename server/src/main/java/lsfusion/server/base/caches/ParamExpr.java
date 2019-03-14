@@ -45,7 +45,7 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
         return System.identityHashCode(this);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return hashContext.keys.hash(this);
     }
 

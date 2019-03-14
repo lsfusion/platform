@@ -28,7 +28,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return SetFact.<OuterContext>singleton(baseExpr);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return baseExpr.hashOuter(hashContext);
     }
 

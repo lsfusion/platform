@@ -44,7 +44,7 @@ public class LastJoin extends QueryJoin<KeyExpr, LastJoin.Query, LastJoin, LastJ
         protected boolean isComplex() {
             return true;
         }
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return 31 * (31 * super.hash(hashContext) + costPerStat.hashCode()) + costMax.hashCode();
         }
 

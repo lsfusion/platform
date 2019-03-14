@@ -108,7 +108,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return struct;
     }
 
-    protected int hash(HashValues hash) {
+    public int hash(HashValues hash) {
         return MapValuesIterable.hash(changes, hash);
     }
 

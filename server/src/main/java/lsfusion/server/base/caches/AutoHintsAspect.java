@@ -361,7 +361,7 @@ public class AutoHintsAspect {
             return values.equals(((PrereadHint) o).values) && property.equals(((PrereadHint) o).property);
         }
 
-        protected int hash(HashValues hash) {
+        public int hash(HashValues hash) {
             return 31 * property.hashCode() + AbstractOuterContext.hashOuter(values, new HashContext(HashCodeKeys.instance, hash));
         }
 
@@ -387,7 +387,7 @@ public class AutoHintsAspect {
             return SetFact.EMPTY();
         }
 
-        protected int hash(HashValues hash) {
+        public int hash(HashValues hash) {
             return 31 * property.hashCode() + (lowstat ? 1 : 0);
         }
 

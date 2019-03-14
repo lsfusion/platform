@@ -307,7 +307,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             return new ClassExprWhere(ClassExprWhere.this, translator.translateVariable(keySet().toRevMap())).getOuter();
         }
 
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             int result = 0;
             for(And<VariableSingleClassExpr> andWhere : wheres)
                 result += AbstractOuterContext.hashKeysOuter(andWhere, hash);

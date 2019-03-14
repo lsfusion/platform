@@ -170,7 +170,7 @@ public class CaseExpr extends Expr {
     protected boolean isComplex() {
         return true;
     }
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return cases.hashOuter(hashContext) + 5;
     }
 

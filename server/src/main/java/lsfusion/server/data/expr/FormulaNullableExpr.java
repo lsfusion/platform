@@ -93,7 +93,7 @@ public class FormulaNullableExpr extends StaticClassNullableExpr implements Form
         return exprs.equals(((FormulaNullableExpr) o).exprs) && formula.equals(((FormulaNullableExpr) o).formula);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 31 * hashOuter(exprs, hashContext) + formula.hashCode();
     }
 

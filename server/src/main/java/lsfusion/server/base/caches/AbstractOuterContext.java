@@ -226,7 +226,7 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         }
 
         @Override
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             return outerContext.hashOuter(hash);
         }
 
@@ -252,7 +252,7 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
             throw new UnsupportedOperationException();
         }
 
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             return AbstractOuterContext.hashOuter(contexts, hash);
         }
 

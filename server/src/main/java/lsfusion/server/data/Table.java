@@ -510,7 +510,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return new Join(joinImplement);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return hashCode();
     }
 
@@ -740,7 +740,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         protected boolean isComplex() {
             return true;
         }
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return Table.this.hashOuter(hashContext)*31 + AbstractSourceJoin.hashOuter(joins, hashContext);
         }
 
@@ -906,7 +906,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             protected boolean isComplex() {
                 return true;
             }
-            protected int hash(HashContext hashContext) {
+            public int hash(HashContext hashContext) {
                 return Join.this.hashOuter(hashContext)*31+property.hashCode();
             }
 

@@ -137,7 +137,7 @@ import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtil
 
 public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
-    protected final static Logger sqlLogger = ServerLoggers.sqlLogger;
+    public final static Logger sqlLogger = ServerLoggers.sqlLogger;
     protected final static Logger startLogger = ServerLoggers.startLogger;
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
@@ -734,7 +734,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
+    public void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
         securityManager.initAdminUser();
         securityManager.initSecret();
     }
@@ -1732,8 +1732,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             }
         return formatMessageList(messageList);
     }
-    
-    protected String formatMessageList(List<String> messageList) {
+
+    public String formatMessageList(List<String> messageList) {
         if(messageList.isEmpty())
             return null;
         else {

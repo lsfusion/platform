@@ -56,7 +56,7 @@ public class InconsistentStaticValueExpr extends VariableSingleClassExpr impleme
     }
 
     @Override
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return hash.values.hash(this);
     }
 

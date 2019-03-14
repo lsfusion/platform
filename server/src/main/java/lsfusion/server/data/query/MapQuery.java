@@ -130,7 +130,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return mapValues.translateValues(query.getInnerValues());
     }
 
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return getQuery().hash(hash);
     }
 

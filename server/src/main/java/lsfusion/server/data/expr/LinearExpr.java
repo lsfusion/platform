@@ -46,7 +46,7 @@ public class LinearExpr extends UnionExpr {
         return map.equals(((LinearExpr)obj).map);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return map.hashOuter(hashContext) * 5;
     }
 

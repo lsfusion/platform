@@ -366,7 +366,7 @@ public class MapCacheAspect {
         protected boolean isComplex() {
             return true;
         }
-        protected int hash(HashValues hashValues) {
+        public int hash(HashValues hashValues) {
             int hash = 0;
             for(int i=0,size=values.size();i<size;i++)
                 hash += values.getKey(i).hashCode() ^ values.getValue(i).hashOuter(HashContext.create(HashCodeKeys.instance, hashValues));
@@ -680,7 +680,7 @@ public class MapCacheAspect {
             return true;
         }
 
-        protected int hash(HashValues hash) {
+        public int hash(HashValues hash) {
             return 31 * usedChanges.hashValues(hash) + properties.hashCode();
         }
 

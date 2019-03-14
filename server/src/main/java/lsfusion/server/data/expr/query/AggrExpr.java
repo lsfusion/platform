@@ -47,7 +47,7 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             return exprs.equals(((Query)o).exprs) && orders.equals(((Query)o).orders)  && ordersNotNull == ((Query)o).ordersNotNull && type.equals(((Query) o).type);
         }
 
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return (31 * (AbstractOuterContext.hashOuter(exprs, hashContext) * 31 + AbstractOuterContext.hashOuter(orders, hashContext)) * 31 + type.hashCode()) + (ordersNotNull ? 1 : 0);
         }
 

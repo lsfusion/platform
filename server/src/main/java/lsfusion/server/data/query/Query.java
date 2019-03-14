@@ -665,7 +665,7 @@ public class Query<K,V> extends IQuery<K,V> {
             return true;
         }
 
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             return thisObj.where.hashOuter(hash) * 31 + AbstractSourceJoin.hashOuter(thisObj.properties.values(), hash);
         }
         public boolean equalsInner(MultiParamsContext object) {

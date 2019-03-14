@@ -226,7 +226,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return expr.isClass(getObjectSet(), type.isInconsistent());
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return expr.hashOuter(hashContext) + type.hashCode();
     }
 

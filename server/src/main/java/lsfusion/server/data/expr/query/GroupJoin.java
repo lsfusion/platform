@@ -46,7 +46,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         protected boolean isComplex() {
             return true;
         }
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return (31 * (31 * super.hash(hashContext) + hashKeysOuter(keyTypes, hashContext)) + where.hashOuter(hashContext))* 31 + joins.hashOuter(hashContext);
         }
 

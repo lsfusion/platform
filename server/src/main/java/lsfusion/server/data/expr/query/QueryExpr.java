@@ -200,7 +200,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     protected boolean isComplex() {
         return true;
     }
-    protected int hash(final HashContext hashContext) {
+    public int hash(final HashContext hashContext) {
         return new QueryInnerHashContext<K, I, J, T, IC>((T) this) {
             protected int hashOuterExpr(BaseExpr outerExpr) {
                 return outerExpr.hashOuter(hashContext);

@@ -99,7 +99,7 @@ public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {
     // КОМПИЛЯЦИЯ / КЭШИРОВАНИЕ
 
     @Override
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         assert false;
         return expr.hashOuter(hash);
     }

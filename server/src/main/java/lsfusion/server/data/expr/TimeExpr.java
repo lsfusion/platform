@@ -24,7 +24,7 @@ public class TimeExpr extends StaticExpr<DataClass> {
         return time.equals(((TimeExpr)obj).time);
     }
 
-    protected int hash(HashContext hashContext) {
+    public int hash(HashContext hashContext) {
         return 6543 + time.hashCode();
     }
 

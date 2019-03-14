@@ -65,7 +65,7 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
             return new Node<>(translator.translateMap(mapExprs), keyEqual.translateOuter(translator), joins.translateOuter(translator));
         }
 
-        protected int hash(HashContext hash) {
+        public int hash(HashContext hash) {
             return 31 * (31 * AbstractOuterContext.hashMapOuter(mapExprs, hash) + keyEqual.hashOuter(hash)) + joins.hashOuter(hash);
         }
 
@@ -146,7 +146,7 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
     }
 
     @Override
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return AbstractOuterContext.hashOuter(nodes, hash);
     }
 

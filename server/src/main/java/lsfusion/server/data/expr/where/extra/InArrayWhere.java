@@ -31,7 +31,7 @@ public class InArrayWhere extends BinaryWhere<InArrayWhere> {
     }
 
     @Override
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return operator1.hashOuter(hash) * 31 + operator2.hashOuter(hash) + 15;
     }
 

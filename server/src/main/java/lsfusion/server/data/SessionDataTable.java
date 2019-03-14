@@ -78,7 +78,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     protected boolean isComplex() {
         return true;
     }
-    protected int hash(HashValues hashValues) {
+    public int hash(HashValues hashValues) {
         int hash = table.hashValues(hashValues);
         hash += 31 * (MapValuesIterable.hash(keyValues, hashValues) ^ MapValuesIterable.hash(propertyValues, hashValues));
         return hash;

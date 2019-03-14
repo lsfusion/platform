@@ -45,7 +45,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
             return follows.equals(((Query) o).follows);
         }
 
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return follows.hashOuter(hashContext);
         }
 

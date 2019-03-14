@@ -17,7 +17,7 @@ public abstract class AbstractInnerHashContext extends AbstractHashContext<HashV
         return aspectHash(hashValues);
     }
 
-    protected int hash(HashValues hashValues) {
+    public int hash(HashValues hashValues) {
         return getComponents(hashValues).hash;
     }
 

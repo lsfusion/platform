@@ -35,7 +35,7 @@ public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatK
         return new StatKeysJoin<>(StatKeys.translateOuter(stat, translator));
     }
 
-    protected int hash(HashContext hash) {
+    public int hash(HashContext hash) {
         return StatKeys.hashOuter(stat, hash);
     }
 

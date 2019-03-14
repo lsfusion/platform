@@ -47,7 +47,7 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
         protected boolean isComplex() {
             return true;
         }
-        protected int hash(HashContext hashContext) {
+        public int hash(HashContext hashContext) {
             return (31 * super.hash(hashContext) + hashOuter(partitions, hashContext)) * 31 + where.hashOuter(hashContext);
         }
 
