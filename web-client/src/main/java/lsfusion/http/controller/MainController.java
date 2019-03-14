@@ -1,10 +1,11 @@
 package lsfusion.http.controller;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.ServerMessages;
+import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.http.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class MainController {
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous())) {
             return "redirect:/main"; // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
         }
         
