@@ -20,7 +20,7 @@ import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyFormEntity;
+import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
@@ -35,11 +35,14 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.form.interactive.action.FormAddObjectActionProperty;
+import lsfusion.server.logics.form.interactive.action.change.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.physics.dev.id.name.AbstractPropertyNameParser;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.exec.table.TableFactory;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import org.antlr.runtime.RecognitionException;
@@ -51,7 +54,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Iterables.size;
-import static lsfusion.server.logics.PropertyCanonicalNameUtils.objValuePrefix;
+import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.objValuePrefix;
 
 public class BaseLogicsModule extends ScriptingLogicsModule {
     // classes
@@ -168,7 +171,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     // счетчик идентификаторов
     private static final IDGenerator idGenerator = new DefaultIDGenerator();
 
-    private DBNamingPolicy DBNamingPolicy;
+    private lsfusion.server.physics.dev.id.name.DBNamingPolicy DBNamingPolicy;
     
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL

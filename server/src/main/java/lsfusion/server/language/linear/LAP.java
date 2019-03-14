@@ -11,7 +11,7 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.PropertyUtils;
+import lsfusion.server.logics.property.PropertyUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;

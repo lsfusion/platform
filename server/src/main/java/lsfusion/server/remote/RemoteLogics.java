@@ -16,10 +16,11 @@ import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.navigator.NavigatorsManager;
 import lsfusion.server.logics.navigator.RemoteNavigator;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LifecycleListener;
-import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.logics.*;
 import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
@@ -42,7 +43,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     protected RestartManager restartManager;
     
-    protected lsfusion.server.logics.SecurityManager securityManager;
+    protected SecurityManager securityManager;
 
     protected DBManager dbManager;
 

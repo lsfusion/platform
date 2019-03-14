@@ -3,7 +3,6 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import org.apache.log4j.Logger;

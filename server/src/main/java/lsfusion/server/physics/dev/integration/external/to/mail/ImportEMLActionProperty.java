@@ -15,7 +15,6 @@ import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;

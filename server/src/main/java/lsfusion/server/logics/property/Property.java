@@ -28,6 +28,7 @@ import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -39,6 +40,9 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.group.AbstractPropertyNode;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
 import javax.swing.*;
 import java.awt.*;

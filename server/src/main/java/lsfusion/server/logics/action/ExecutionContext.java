@@ -44,11 +44,13 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.navigator.NavigatorsManager;
+import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.remote.RMIManager;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;

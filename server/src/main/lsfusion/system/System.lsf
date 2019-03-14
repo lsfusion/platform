@@ -55,15 +55,15 @@ lsfStackTraceCaughtException = DATA LOCAL TEXT();
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
-formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.FormApplyActionProperty' ();
-formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.FormCancelActionProperty' ();
-formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.EditReportActionProperty' ();
-formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.DropActionProperty' ();
-formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.RefreshActionProperty' ();
-formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.OkActionProperty' ();
-formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.CloseActionProperty' ();
+formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyActionProperty' ();
+formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelActionProperty' ();
+formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.EditReportActionProperty' ();
+formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.DropActionProperty' ();
+formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.RefreshActionProperty' ();
+formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkActionProperty' ();
+formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseActionProperty' ();
 
-seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
+seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekScriptingActionProperty' (Object);
 
 sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepActionProperty' (LONG);
 
@@ -316,7 +316,7 @@ END
 @applicationForm(migrationData, '{navigator.migration}');
 
 networkPath '{system.network.path}' = DATA LOCAL NESTED VARSTRING[500] ();
-loadNetworkPath '{system.load.network.path}'  INTERNAL  'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
+loadNetworkPath '{system.load.network.path}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.input.LoadLinkActionProperty' ();
 FORM networkPathForm '{system.form.network.path.form}'
     PROPERTIES() networkPath, loadNetworkPath;
 

@@ -11,7 +11,7 @@ import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFFact;

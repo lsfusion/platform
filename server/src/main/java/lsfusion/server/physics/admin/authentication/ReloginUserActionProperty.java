@@ -5,7 +5,6 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.UserChangedClientAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;

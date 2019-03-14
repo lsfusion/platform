@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.ClassCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 
 public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements ResolveClassSet {
     public ResolveUpClassSet(CustomClass[] customClasses) {

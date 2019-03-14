@@ -2,7 +2,7 @@ package lsfusion.server.physics.admin.authentication.policy;
 
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.SecurityLogicsModule;
+import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;

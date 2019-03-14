@@ -34,7 +34,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.form.auto.ClassFormEntity;
+import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.*;
 import lsfusion.server.logics.form.interactive.change.*;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;

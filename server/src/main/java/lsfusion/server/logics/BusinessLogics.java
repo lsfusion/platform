@@ -22,6 +22,7 @@ import lsfusion.interop.exception.ApplyCanceledException;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -43,6 +44,8 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.logics.classes.utils.time.TimeLogicsModule;
+import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.navigator.LogInfo;
@@ -56,7 +59,14 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.base.lifecycle.LifecycleAdapter;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
+import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
+import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
+import lsfusion.server.physics.admin.authentication.SecurityManager;
+import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
+import lsfusion.server.physics.admin.scheduler.Scheduler;
+import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
+import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LAP;
@@ -65,12 +75,13 @@ import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.event.SessionEnvEvent;
-import lsfusion.server.logics.event.SystemEvent;
 import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.physics.dev.id.name.*;
 import lsfusion.server.physics.dev.id.resolve.*;
+import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
+import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.physics.exec.table.MapKeysTable;
@@ -102,8 +113,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCanonicalName;
-import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCompoundName;
+import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
+import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
 public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
@@ -1751,7 +1762,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public void checkForDuplicateElements() {
-        new DuplicateSystemElementsChecker(modules.all()).check();
+        new DuplicateElementsChecker(modules.all()).check();
     }
     
     public DBManager getDbManager() {

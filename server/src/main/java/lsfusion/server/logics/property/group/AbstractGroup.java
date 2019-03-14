@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.context.ThreadLocalContext;
-import lsfusion.server.logics.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;

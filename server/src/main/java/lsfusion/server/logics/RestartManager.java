@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.navigator.NavigatorsManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

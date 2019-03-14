@@ -7,7 +7,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.RMIManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

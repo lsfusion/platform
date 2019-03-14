@@ -1,7 +1,7 @@
 package lsfusion.server.language;
 
 import lsfusion.base.Pair;
-import lsfusion.server.logics.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

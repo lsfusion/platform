@@ -1,7 +1,7 @@
 package lsfusion.server.base.stack;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.server.logics.ScriptParsingException;
+import lsfusion.server.language.ScriptParsingException;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;

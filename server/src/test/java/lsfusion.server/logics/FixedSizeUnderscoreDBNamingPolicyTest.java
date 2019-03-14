@@ -1,5 +1,7 @@
 package lsfusion.server.logics;
 
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
+import lsfusion.server.physics.dev.id.name.FixedSizeUnderscoreDBNamingPolicy;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

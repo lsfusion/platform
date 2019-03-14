@@ -10,7 +10,7 @@ import lsfusion.server.base.context.*;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import lsfusion.server.base.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;

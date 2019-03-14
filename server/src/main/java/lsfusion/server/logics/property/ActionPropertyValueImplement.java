@@ -6,7 +6,7 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.ApplyActionEvent;
+import lsfusion.server.logics.event.ApplyActionEvent;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.action.ExecutionEnvironment;

@@ -6,8 +6,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.Scheduler;
-import lsfusion.server.logics.SchedulerLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;

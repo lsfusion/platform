@@ -28,7 +28,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;

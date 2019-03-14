@@ -13,7 +13,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.logics.navigator.*;
 import lsfusion.server.logics.action.session.DataSession;
 
