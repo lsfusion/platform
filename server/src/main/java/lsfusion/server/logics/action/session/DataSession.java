@@ -30,6 +30,7 @@ import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.stack.*;
 import lsfusion.server.classes.*;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.data.PrereadRows;
@@ -86,7 +87,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.ClassDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.physics.exec.table.IDTable;
@@ -386,7 +386,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public final BaseClass baseClass;
     public final ConcreteCustomClass sessionClass;
-    public final LCP<?> currentSession;
+    public final LP<?> currentSession;
 
     // для отладки
     public static boolean reCalculateAggr = false;
@@ -427,7 +427,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return sessionEventOldDepends;
     }
 
-    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession, ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 

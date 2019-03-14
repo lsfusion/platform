@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.ExportPlainActionProperty;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.ExportPlainWriter;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ public class ExportXLSActionProperty<O extends ObjectSelector> extends ExportPla
     private boolean xlsx;
     private boolean noHeader;
 
-    public ExportXLSActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset, boolean xlsx, boolean noHeader) {
+    public ExportXLSActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, String charset, boolean xlsx, boolean noHeader) {
         super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
         this.xlsx = xlsx;
         this.noHeader = noHeader;

@@ -1,11 +1,11 @@
 package lsfusion.server.physics.dev.i18n;
 
 import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -37,8 +37,8 @@ public class TranslateDictionaryActionProperty extends ScriptingAction {
             if (dictionaryObject != null && termObject != null) {
 
                 Boolean insensitive = findProperty("insensitive[Dictionary]").read(context.getSession(), dictionaryObject) != null;
-                LCP insensitiveLP = findProperty("insensitiveTranslationDictionaryEntry[Dictionary,VARSTRING[50]]");
-                LCP sensitiveLP = findProperty("translationDictionaryEntry[Dictionary,VARSTRING[50]]");
+                LP insensitiveLP = findProperty("insensitiveTranslationDictionaryEntry[Dictionary,VARSTRING[50]]");
+                LP sensitiveLP = findProperty("translationDictionaryEntry[Dictionary,VARSTRING[50]]");
 
                 String source = (String) termObject.object;
                 if (insensitive)

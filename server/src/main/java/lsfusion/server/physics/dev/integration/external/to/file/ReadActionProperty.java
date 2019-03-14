@@ -7,13 +7,13 @@ import lsfusion.base.file.ReadClientAction;
 import lsfusion.base.file.ReadUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.Settings;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.classes.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -22,11 +22,11 @@ import java.sql.SQLException;
 
 public class ReadActionProperty extends SystemExplicitAction {
     private final ExtraReadProcessor extraReadProcessor;
-    private final LCP<?> targetProp;
+    private final LP<?> targetProp;
     private final boolean clientAction;
     private final boolean dialog;
 
-    public ReadActionProperty(ValueClass sourceProp, LCP<?> targetProp, boolean clientAction, boolean dialog) {
+    public ReadActionProperty(ValueClass sourceProp, LP<?> targetProp, boolean clientAction, boolean dialog) {
         super(sourceProp);
         this.extraReadProcessor = new ExtraReadProcessor();
         this.targetProp = targetProp;

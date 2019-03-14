@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.lifecycle;
 
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.ColorClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -7,7 +8,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -19,9 +19,9 @@ import java.awt.*;
 import java.sql.SQLException;
 
 public class FormApplyActionProperty extends FormFlowActionProperty {
-    private static LCP showIf = createShowIfProperty(new Property[]{FormEntity.manageSession}, new boolean[]{false});
+    private static LP showIf = createShowIfProperty(new Property[]{FormEntity.manageSession}, new boolean[]{false});
 
-    static LCP applyBackground = new LCP(
+    static LP applyBackground = new LP(
             DerivedProperty.createAnd(
                     DerivedProperty.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance),
                     DataSession.isDataChanged.getImplement()
@@ -52,7 +52,7 @@ public class FormApplyActionProperty extends FormFlowActionProperty {
     }
 
     @Override
-    protected LCP getShowIf() {
+    protected LP getShowIf() {
         return showIf;
     }
 

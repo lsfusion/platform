@@ -6,7 +6,7 @@ import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -15,14 +15,14 @@ import java.sql.SQLException;
 
 public class IsActiveFormActionProperty extends SystemExplicitAction {
 
-    private LCP<?> isActiveFormProperty;
+    private LP<?> isActiveFormProperty;
     private FormEntity requestedForm;
 
     public ImMap<Property, Boolean> aspectChangeExtProps() {
         return getChangeProps(isActiveFormProperty.property);
     }
 
-    public IsActiveFormActionProperty(LocalizedString caption, FormEntity form, LCP isActiveFormProperty) {
+    public IsActiveFormActionProperty(LocalizedString caption, FormEntity form, LP isActiveFormProperty) {
         super(caption);
         this.requestedForm = form;
         this.isActiveFormProperty = isActiveFormProperty;

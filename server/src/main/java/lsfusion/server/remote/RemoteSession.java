@@ -14,6 +14,7 @@ import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.base.context.ExecutionStack;
@@ -25,7 +26,6 @@ import lsfusion.server.logics.navigator.ChangesController;
 import lsfusion.server.logics.navigator.FormController;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
@@ -160,17 +160,17 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     private ExternalResponse readResult(String[] returnNames, Action<?> property) throws SQLException, SQLHandledException, IOException {
         List<Object> returns = new ArrayList<>();
 
-        LCP[] returnProps;
+        LP[] returnProps;
         if (returnNames.length > 0) {
-            returnProps = new LCP[returnNames.length];
+            returnProps = new LP[returnNames.length];
             for (int i = 0; i < returnNames.length; i++) {
                 String returnName = returnNames[i];
-                LCP returnProperty = businessLogics.findPropertyByCompoundName(returnName);
+                LP returnProperty = businessLogics.findPropertyByCompoundName(returnName);
                 if (returnProperty == null)
                     throw new RuntimeException(String.format("Return property %s was not found", returnName));
                 returnProps[i] = returnProperty;
             }
-            for (LCP<?> returnProp : returnProps)
+            for (LP<?> returnProp : returnProps)
                 returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property));
         } else {
             Result<SessionDataProperty> resultProp = new Result<>(); 

@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.open.FormActionProperty;
@@ -33,7 +34,6 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 
@@ -43,7 +43,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
 
     // INPUT
     private final ImList<O> inputObjects;
-    private final ImList<LCP> inputProps;    
+    private final ImList<LP> inputProps;    
     private final ImList<Boolean> inputNulls;
 
     private final boolean syncType;
@@ -79,7 +79,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
     public FormInteractiveActionProperty(LocalizedString caption,
                                          FormSelector<O> form,
                                          final ImList<O> objectsToSet, final ImList<Boolean> nulls,
-                                         ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls,
+                                         ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls,
                                          ImList<O> contextObjects, ImList<Property> contextProperties,
                                          ManageSessionType manageSession,
                                          Boolean noCancel,

@@ -16,7 +16,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
 
@@ -71,7 +71,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
                 addMapping = mapProperty.mapping.join(mapObjects);
             } else {
                 ObjectEntity object = mapObjects.get((P)property);
-                LCP<M> objValueProp = LM.getObjValueProp(this, object);
+                LP<M> objValueProp = LM.getObjValueProp(this, object);
                 addProperty = objValueProp.property;
                 addMapping = objValueProp.getRevMap(object);
             }

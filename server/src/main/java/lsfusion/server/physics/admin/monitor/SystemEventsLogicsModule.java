@@ -4,6 +4,7 @@ import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.interop.exception.*;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.data.DataObject;
@@ -13,7 +14,6 @@ import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.env.CurrentConnectionFormulaProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -45,59 +45,59 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass connectionStatus;
     public ConcreteCustomClass session;
 
-    public LCP computerConnection;
-    public LCP remoteAddressConnection;
-    public LCP userConnection;
-    public LCP userLoginConnection;
-    public LCP osVersionConnection;
-    public LCP processorConnection;
-    public LCP architectureConnection;
-    public LCP coresConnection;
-    public LCP physicalMemoryConnection;
-    public LCP totalMemoryConnection;
-    public LCP maximumMemoryConnection;
-    public LCP freeMemoryConnection;
-    public LCP javaVersionConnection;
-    public LCP is64JavaConnection;
-    public LCP screenSizeConnection;
-    public LCP<PropertyInterface> connectionStatusConnection;
-    public LCP connectTimeConnection;
-    public LCP launchConnection;
+    public LP computerConnection;
+    public LP remoteAddressConnection;
+    public LP userConnection;
+    public LP userLoginConnection;
+    public LP osVersionConnection;
+    public LP processorConnection;
+    public LP architectureConnection;
+    public LP coresConnection;
+    public LP physicalMemoryConnection;
+    public LP totalMemoryConnection;
+    public LP maximumMemoryConnection;
+    public LP freeMemoryConnection;
+    public LP javaVersionConnection;
+    public LP is64JavaConnection;
+    public LP screenSizeConnection;
+    public LP<PropertyInterface> connectionStatusConnection;
+    public LP connectTimeConnection;
+    public LP launchConnection;
 
-    public LCP currentConnection;
+    public LP currentConnection;
 
-    public LCP currentLaunch;
-    public LCP computerLaunch;
-    public LCP timeLaunch;
-    public LCP revisionLaunch;
+    public LP currentLaunch;
+    public LP computerLaunch;
+    public LP timeLaunch;
+    public LP revisionLaunch;
 
-    public LCP messageException;
-    public LCP dateException;
-    public LCP erTraceException;
-    public LCP lsfTraceException;
-    public LCP typeException;
-    public LCP clientClientException;
-    public LCP loginClientException;
+    public LP messageException;
+    public LP dateException;
+    public LP erTraceException;
+    public LP lsfTraceException;
+    public LP typeException;
+    public LP clientClientException;
+    public LP loginClientException;
 
-    private LCP reqIdHandledException;
-    private LCP countNonFatalHandledException;
-    private LCP abandonedNonFatalHandledException;
+    private LP reqIdHandledException;
+    private LP countNonFatalHandledException;
+    private LP abandonedNonFatalHandledException;
 
-    public LCP connectionFormCount;
+    public LP connectionFormCount;
 
-    public LCP<?> currentSession;
-    public LCP connectionSession;
-    public LCP formSession;
-    public LCP quantityAddedClassesSession;
-    public LCP quantityRemovedClassesSession;
-    public LCP quantityChangedClassesSession;
-    public LCP changesSession;
+    public LP<?> currentSession;
+    public LP connectionSession;
+    public LP formSession;
+    public LP quantityAddedClassesSession;
+    public LP quantityRemovedClassesSession;
+    public LP quantityChangedClassesSession;
+    public LP changesSession;
 
-    public LCP pingComputerDateTimeFromDateTimeTo;
-    public LCP minTotalMemoryComputerDateTimeFromDateTimeTo;
-    public LCP maxTotalMemoryComputerDateTimeFromDateTimeTo;
-    public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;
-    public LCP maxUsedMemoryComputerDateTimeFromDateTimeTo;
+    public LP pingComputerDateTimeFromDateTimeTo;
+    public LP minTotalMemoryComputerDateTimeFromDateTimeTo;
+    public LP maxTotalMemoryComputerDateTimeFromDateTimeTo;
+    public LP minUsedMemoryComputerDateTimeFromDateTimeTo;
+    public LP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/system/SystemEvents.lsf"), "/system/SystemEvents.lsf", baseLM, BL);
@@ -123,7 +123,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        currentConnection = addProperty(null, new LCP<>(new CurrentConnectionFormulaProperty(connection)));
+        currentConnection = addProperty(null, new LP<>(new CurrentConnectionFormulaProperty(connection)));
         makePropertyPublic(currentConnection, "currentConnection", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();
@@ -144,7 +144,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         javaVersionConnection = findProperty("javaVersion[Connection]");
         is64JavaConnection = findProperty("is64Java[Connection]");
         screenSizeConnection = findProperty("screenSize[Connection]");
-        connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatus[Connection]");
+        connectionStatusConnection = (LP<PropertyInterface>) findProperty("connectionStatus[Connection]");
 
         connectTimeConnection = findProperty("connectTime[Connection]");
         launchConnection = findProperty("launch[Connection]");

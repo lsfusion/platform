@@ -23,6 +23,7 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.context.ThreadLocalContext;
@@ -52,7 +53,6 @@ import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -644,17 +644,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImOrderSet<ObjectEntity> objects) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LP<P> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyObject(property, property.getRevMap(objects));
     }
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LP<P> property) {
         return addPropertyObject(property, MapFact.<P, ObjectEntity>EMPTYREV());
     }
     public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LA<P> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyObject(property, property.getRevMap(objects));
     }
 
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImRevMap<P, ObjectEntity> objects) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LP<P> property, ImRevMap<P, ObjectEntity> objects) {
         return new CalcPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
     public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LA<P> property, ImRevMap<P, ObjectEntity> objects) {
@@ -751,7 +751,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return hintsIncrementTable.getSet();
     }
 
-    public void addHintsIncrementTable(Version version, LCP... props) {
+    public void addHintsIncrementTable(Version version, LP... props) {
         for (LAP prop : props) {
             hintsIncrementTable.add((Property) prop.property, version);
         }
@@ -769,13 +769,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return hintsNoUpdate.getSet();
     }
 
-    public void addHintsNoUpdate(Version version, LCP... props) {
-        for (LCP prop : props) {
+    public void addHintsNoUpdate(Version version, LP... props) {
+        for (LP prop : props) {
             addHintsNoUpdate(prop, version);
         }
     }
 
-    protected void addHintsNoUpdate(LCP prop, Version version) {
+    protected void addHintsNoUpdate(LP prop, Version version) {
         addHintsNoUpdate((Property) prop.property, version);
     }
 

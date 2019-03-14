@@ -1,12 +1,12 @@
 package lsfusion.server.physics.dev.integration.external.to.mail;
 
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -18,29 +18,29 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass notification;
 
-    public LCP nameAccount;
-    public LCP passwordAccount;
-    public LCP disableAccount;
+    public LP nameAccount;
+    public LP passwordAccount;
+    public LP disableAccount;
 
-    public LCP smtpHostAccount;
-    public LCP smtpPortAccount;
+    public LP smtpHostAccount;
+    public LP smtpPortAccount;
 
-    public LCP nameEncryptedConnectionTypeAccount;
+    public LP nameEncryptedConnectionTypeAccount;
 
-    public LCP fromAddressAccount;
-    public LCP inboxAccount;
+    public LP fromAddressAccount;
+    public LP inboxAccount;
 
-    public LCP emailSent;
+    public LP emailSent;
 
-    public LCP receiveHostAccount;
-    public LCP receivePortAccount;
+    public LP receiveHostAccount;
+    public LP receivePortAccount;
 
-    public LCP nameReceiveAccountTypeAccount;
+    public LP nameReceiveAccountTypeAccount;
 
-    public LCP deleteMessagesAccount;
-    public LCP lastDaysAccount;
-    public LCP maxMessagesAccount;
-    public LCP unpackAccount;
+    public LP deleteMessagesAccount;
+    public LP lastDaysAccount;
+    public LP maxMessagesAccount;
+    public LP unpackAccount;
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(EmailLogicsModule.class.getResourceAsStream("/system/Email.lsf"), "/system/Email.lsf", baseLM, BL);

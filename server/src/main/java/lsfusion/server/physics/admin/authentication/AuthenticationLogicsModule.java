@@ -2,6 +2,7 @@ package lsfusion.server.physics.admin.authentication;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.data.DataObject;
@@ -10,7 +11,6 @@ import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.env.CurrentAuthTokenFormulaProperty;
 import lsfusion.server.logics.property.env.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.env.CurrentUserFormulaProperty;
@@ -30,58 +30,58 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass customUser;
 
-    public LCP firstNameContact;
-    public LCP lastNameContact;
-    public LCP emailContact;
-    public LCP contactEmail;
+    public LP firstNameContact;
+    public LP lastNameContact;
+    public LP emailContact;
+    public LP contactEmail;
 
-    public LCP isLockedCustomUser;
-    public LCP isLockedLogin;
-    public LCP<?> loginCustomUser;
-    public LCP customUserLogin;
-    public LCP customUserUpcaseLogin;
-    public LCP sha256PasswordCustomUser;
-    public LCP calculatedHash;
-    public LCP lastActivityCustomUser;
-    public LCP lastComputerCustomUser;
-    public LCP currentUser;
-    public LCP currentUserName;
-    public LCP nameContact;
-    public LCP currentUserAllowExcessAllocatedBytes;
-    public LCP allowExcessAllocatedBytes;
+    public LP isLockedCustomUser;
+    public LP isLockedLogin;
+    public LP<?> loginCustomUser;
+    public LP customUserLogin;
+    public LP customUserUpcaseLogin;
+    public LP sha256PasswordCustomUser;
+    public LP calculatedHash;
+    public LP lastActivityCustomUser;
+    public LP lastComputerCustomUser;
+    public LP currentUser;
+    public LP currentUserName;
+    public LP nameContact;
+    public LP currentUserAllowExcessAllocatedBytes;
+    public LP allowExcessAllocatedBytes;
 
-    public LCP currentAuthToken;
-    public LCP secret;
+    public LP currentAuthToken;
+    public LP secret;
 
-    public LCP hostnameComputer;
-    public LCP computerHostname;
-    public LCP currentComputer;
-    public LCP hostnameCurrentComputer;
+    public LP hostnameComputer;
+    public LP computerHostname;
+    public LP currentComputer;
+    public LP hostnameCurrentComputer;
 
-    public LCP minHashLength;
-    public LCP useLDAP;
-    public LCP serverLDAP;
-    public LCP portLDAP;
-    public LCP baseDNLDAP;
-    public LCP userDNSuffixLDAP;
+    public LP minHashLength;
+    public LP useLDAP;
+    public LP serverLDAP;
+    public LP portLDAP;
+    public LP baseDNLDAP;
+    public LP userDNSuffixLDAP;
 
-    public LCP useBusyDialog;
-    public LCP useRequestTimeout;
+    public LP useBusyDialog;
+    public LP useRequestTimeout;
 
-    public LCP language;
-    public LCP country;
-    public LCP timeZone;
-    public LCP twoDigitYearStart;
+    public LP language;
+    public LP country;
+    public LP timeZone;
+    public LP twoDigitYearStart;
     
-    public LCP clientLanguage;
-    public LCP clientCountry;
+    public LP clientLanguage;
+    public LP clientCountry;
 
-    public LCP defaultLanguage;
-    public LCP defaultCountry;
-    public LCP defaultTimeZone;
-    public LCP defaultTwoDigitYearStart;
+    public LP defaultLanguage;
+    public LP defaultCountry;
+    public LP defaultTimeZone;
+    public LP defaultTwoDigitYearStart;
     
-    public LCP userFontSize;
+    public LP userFontSize;
     
     public LA deliveredNotificationAction;
     
@@ -104,11 +104,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initMainLogic() throws RecognitionException {
         // Текущий пользователь
-        currentUser = addProperty(null, new LCP<>(new CurrentUserFormulaProperty(user)));
+        currentUser = addProperty(null, new LP<>(new CurrentUserFormulaProperty(user)));
         makePropertyPublic(currentUser, "currentUser", new ArrayList<ResolveClassSet>());
-        currentComputer = addProperty(null, new LCP<>(new CurrentComputerFormulaProperty(computer)));
+        currentComputer = addProperty(null, new LP<>(new CurrentComputerFormulaProperty(computer)));
         makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
-        currentAuthToken = addProperty(null, new LCP<>(new CurrentAuthTokenFormulaProperty()));
+        currentAuthToken = addProperty(null, new LP<>(new CurrentAuthTokenFormulaProperty()));
         makePropertyPublic(currentAuthToken, "currentAuthToken", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();

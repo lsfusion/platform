@@ -15,12 +15,12 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.sets.*;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
@@ -202,7 +202,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return names;
     }
 
-    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
+    public Map<DataObject, String> fillIDs(DataSession session, LP name, LP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
         Map<DataObject, String> modifiedCaptions = new HashMap<>();
 
         // Получаем старые sid и name

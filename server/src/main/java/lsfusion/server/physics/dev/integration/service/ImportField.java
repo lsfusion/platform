@@ -1,11 +1,11 @@
 package lsfusion.server.physics.dev.integration.service;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
@@ -22,7 +22,7 @@ public class ImportField implements ImportFieldInterface, ImportKeyInterface {
         this.fieldClass = fieldClass;
     }
 
-    public ImportField(LCP property) {
+    public ImportField(LP property) {
         this((Property<?>) property.property);
     }
 

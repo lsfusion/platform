@@ -1,13 +1,13 @@
 package lsfusion.server.physics.admin.reflection;
 
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.env.CurrentFormFormulaProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.physics.exec.table.ImplementTable;
@@ -34,146 +34,146 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass action;
     public ConcreteCustomClass groupObject;
     
-    public LCP captionPropertyGroup;
-    public LCP captionNavigatorElement;
-    public LCP parentPropertyGroup;
-    public LCP numberPropertyGroup;
-    public LCP SIDPropertyGroup;
-    public LCP propertyGroupSID;
+    public LP captionPropertyGroup;
+    public LP captionNavigatorElement;
+    public LP parentPropertyGroup;
+    public LP numberPropertyGroup;
+    public LP SIDPropertyGroup;
+    public LP propertyGroupSID;
 
-    public LCP parentProperty;
-    public LCP numberProperty;
-    public LCP dbNameProperty;
-    public LCP canonicalNameActionOrProperty;
-    public LCP canonicalNameAction;
-    public LCP canonicalNameProperty;
-    public LCP loggableProperty;
-    public LCP userLoggableProperty;
-    public LCP storedProperty;
-    public LCP isSetNotNullProperty;
-    public LCP signatureProperty;
-    public LCP returnProperty;
-    public LCP classProperty;
-    public LCP complexityProperty;
-    public LCP captionProperty;
-    public LCP tableSIDProperty;
-    public LCP annotationProperty;
-    public LCP statsProperty;
-    public LCP overStatsProperty;
-    public LCP maxStatsProperty;
-    public LCP propertyCanonicalName;
-    public LCP actionCanonicalName;
-    public LCP propertyTableSID;
-    public LCP quantityProperty;
-    public LCP quantityTopProperty;
-    public LCP notNullQuantityProperty;
-    public LCP lastRecalculateProperty;
-    public LCP hasNotNullQuantity;
+    public LP parentProperty;
+    public LP numberProperty;
+    public LP dbNameProperty;
+    public LP canonicalNameActionOrProperty;
+    public LP canonicalNameAction;
+    public LP canonicalNameProperty;
+    public LP loggableProperty;
+    public LP userLoggableProperty;
+    public LP storedProperty;
+    public LP isSetNotNullProperty;
+    public LP signatureProperty;
+    public LP returnProperty;
+    public LP classProperty;
+    public LP complexityProperty;
+    public LP captionProperty;
+    public LP tableSIDProperty;
+    public LP annotationProperty;
+    public LP statsProperty;
+    public LP overStatsProperty;
+    public LP maxStatsProperty;
+    public LP propertyCanonicalName;
+    public LP actionCanonicalName;
+    public LP propertyTableSID;
+    public LP quantityProperty;
+    public LP quantityTopProperty;
+    public LP notNullQuantityProperty;
+    public LP lastRecalculateProperty;
+    public LP hasNotNullQuantity;
 
-    public LCP numberNavigatorElement;
+    public LP numberNavigatorElement;
     
     // temporary for migration
     public ImplementTable navigatorElementTable;
 
-    public LCP navigatorElementCanonicalName;
-    public LCP canonicalNameNavigatorElement;
-    public LCP formCanonicalName;
-    public LCP formByCanonicalName;
+    public LP navigatorElementCanonicalName;
+    public LP canonicalNameNavigatorElement;
+    public LP formCanonicalName;
+    public LP formByCanonicalName;
 
-    public LCP parentNavigatorElement;
-    public LCP formNavigatorAction; 
-    public LCP actionNavigatorAction; 
+    public LP parentNavigatorElement;
+    public LP formNavigatorAction; 
+    public LP actionNavigatorAction; 
     
-    public LCP formCaption;
-    public LCP isForm;
-    public LCP isNavigatorAction;
-    public LCP isNavigatorForm;
-    public LCP isNavigatorFolder;
+    public LP formCaption;
+    public LP isForm;
+    public LP isNavigatorAction;
+    public LP isNavigatorForm;
+    public LP isNavigatorFolder;
 
-    public LCP sidGroupObject;
-    public LCP formGroupObject;
-    public LCP groupObjectSIDFormNameGroupObject;
+    public LP sidGroupObject;
+    public LP formGroupObject;
+    public LP groupObjectSIDFormNameGroupObject;
 
-    public LCP sidPropertyDraw;
-    public LCP captionPropertyDraw;
-    public LCP formPropertyDraw;
-    public LCP groupObjectPropertyDraw;
-    public LCP propertyDrawByFormNameAndPropertyDrawSid;
+    public LP sidPropertyDraw;
+    public LP captionPropertyDraw;
+    public LP formPropertyDraw;
+    public LP groupObjectPropertyDraw;
+    public LP propertyDrawByFormNameAndPropertyDrawSid;
 
-    public LCP showPropertyDraw;
-    public LCP showPropertyDrawCustomUser;
+    public LP showPropertyDraw;
+    public LP showPropertyDrawCustomUser;
     
-    public LCP nameShowPropertyDraw;
-    public LCP nameShowPropertyDrawCustomUser;
+    public LP nameShowPropertyDraw;
+    public LP nameShowPropertyDrawCustomUser;
 
-    public LCP columnCaptionPropertyDrawCustomUser;
-    public LCP columnCaptionPropertyDraw;
-    public LCP columnPatternPropertyDrawCustomUser;
-    public LCP columnPatternPropertyDraw;
-    public LCP columnWidthPropertyDrawCustomUser;
-    public LCP columnWidthPropertyDraw;
-    public LCP columnOrderPropertyDrawCustomUser;
-    public LCP columnOrderPropertyDraw;
-    public LCP columnSortPropertyDrawCustomUser;
-    public LCP columnSortPropertyDraw;
-    public LCP columnAscendingSortPropertyDrawCustomUser;
-    public LCP columnAscendingSortPropertyDraw;
-    public LCP hasUserPreferencesGroupObject;
-    public LCP hasUserPreferencesGroupObjectCustomUser;
-    public LCP hasUserPreferencesOverrideGroupObjectCustomUser;
-    public LCP fontSizeGroupObject;
-    public LCP fontSizeGroupObjectCustomUser;
-    public LCP isFontBoldGroupObject;
-    public LCP isFontBoldGroupObjectCustomUser;
-    public LCP isFontItalicGroupObject;
-    public LCP isFontItalicGroupObjectCustomUser;
-    public LCP pageSizeGroupObject;
-    public LCP pageSizeGroupObjectCustomUser;
-    public LCP headerHeightGroupObject;
-    public LCP headerHeightGroupObjectCustomUser;
+    public LP columnCaptionPropertyDrawCustomUser;
+    public LP columnCaptionPropertyDraw;
+    public LP columnPatternPropertyDrawCustomUser;
+    public LP columnPatternPropertyDraw;
+    public LP columnWidthPropertyDrawCustomUser;
+    public LP columnWidthPropertyDraw;
+    public LP columnOrderPropertyDrawCustomUser;
+    public LP columnOrderPropertyDraw;
+    public LP columnSortPropertyDrawCustomUser;
+    public LP columnSortPropertyDraw;
+    public LP columnAscendingSortPropertyDrawCustomUser;
+    public LP columnAscendingSortPropertyDraw;
+    public LP hasUserPreferencesGroupObject;
+    public LP hasUserPreferencesGroupObjectCustomUser;
+    public LP hasUserPreferencesOverrideGroupObjectCustomUser;
+    public LP fontSizeGroupObject;
+    public LP fontSizeGroupObjectCustomUser;
+    public LP isFontBoldGroupObject;
+    public LP isFontBoldGroupObjectCustomUser;
+    public LP isFontItalicGroupObject;
+    public LP isFontItalicGroupObjectCustomUser;
+    public LP pageSizeGroupObject;
+    public LP pageSizeGroupObjectCustomUser;
+    public LP headerHeightGroupObject;
+    public LP headerHeightGroupObjectCustomUser;
     
-    public LCP nameFormGrouping;
-    public LCP itemQuantityFormGrouping;
-    public LCP groupObjectFormGrouping;
-    public LCP formGroupingNameFormGroupingGroupObject;
-    public LCP groupOrderFormGroupingPropertyDraw;
-    public LCP sumFormGroupingPropertyDraw;
-    public LCP maxFormGroupingPropertyDraw;
-    public LCP pivotFormGroupingPropertyDraw;
+    public LP nameFormGrouping;
+    public LP itemQuantityFormGrouping;
+    public LP groupObjectFormGrouping;
+    public LP formGroupingNameFormGroupingGroupObject;
+    public LP groupOrderFormGroupingPropertyDraw;
+    public LP sumFormGroupingPropertyDraw;
+    public LP maxFormGroupingPropertyDraw;
+    public LP pivotFormGroupingPropertyDraw;
     
-    public LCP sidTable;
-    public LCP tableSID;
-    public LCP rowsTable;
-    public LCP tableTableKey;
-    public LCP sidTableKey;
-    public LCP tableKeySID;
-    public LCP classTableKey;
-    public LCP classSIDTableKey;
-    public LCP nameTableKey;
-    public LCP quantityTableKey;
-    public LCP quantityTopTableKey;
-    public LCP overQuantityTableKey;
-    public LCP tableTableColumn;
-    public LCP propertyTableColumn;
-    public LCP sidTableColumn;
-    public LCP longSIDTableColumn;
-    public LCP tableColumnLongSID;
-    public LCP tableColumnSID;
+    public LP sidTable;
+    public LP tableSID;
+    public LP rowsTable;
+    public LP tableTableKey;
+    public LP sidTableKey;
+    public LP tableKeySID;
+    public LP classTableKey;
+    public LP classSIDTableKey;
+    public LP nameTableKey;
+    public LP quantityTableKey;
+    public LP quantityTopTableKey;
+    public LP overQuantityTableKey;
+    public LP tableTableColumn;
+    public LP propertyTableColumn;
+    public LP sidTableColumn;
+    public LP longSIDTableColumn;
+    public LP tableColumnLongSID;
+    public LP tableColumnSID;
 
-    public LCP overQuantityTableColumn;
-    public LCP notNullQuantityTableColumn;
-    public LCP notRecalculateTableColumn;
+    public LP overQuantityTableColumn;
+    public LP notNullQuantityTableColumn;
+    public LP notRecalculateTableColumn;
     public LA recalculateAggregationTableColumn;
 
-    public LCP notRecalculateSID;
-    public LCP notRecalculateStatsSID;
+    public LP notRecalculateSID;
+    public LP notRecalculateStatsSID;
 
-    public LCP<?> sidTableDropColumn;
-    public LCP<?> sidDropColumn;
-    public LCP dropColumnSID;
+    public LP<?> sidTableDropColumn;
+    public LP<?> sidDropColumn;
+    public LP dropColumnSID;
 
-    public LCP timeDropColumn;
-    public LCP revisionDropColumn;
+    public LP timeDropColumn;
+    public LP revisionDropColumn;
     public LA dropDropColumn;
 
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
@@ -192,7 +192,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
     public final LogicalClass propertyIsSetNotNullValueClass = LogicalClass.instance;
 
-    public LCP currentForm;
+    public LP currentForm;
 
     public ReflectionLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ReflectionLogicsModule.class.getResourceAsStream("/system/Reflection.lsf"), "/system/Reflection.lsf", baseLM, BL);
@@ -220,7 +220,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        currentForm = addProperty(null, new LCP<>(new CurrentFormFormulaProperty(form)));
+        currentForm = addProperty(null, new LP<>(new CurrentFormFormulaProperty(form)));
         makePropertyPublic(currentForm, "currentForm", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();

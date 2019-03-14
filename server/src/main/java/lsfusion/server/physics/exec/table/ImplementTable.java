@@ -33,7 +33,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -476,7 +476,7 @@ public class ImplementTable extends DBTable { // последний интерф
         return count == null ? Math.min(total, 1) : (useCoefficient ? (int) Math.min(total, (count / topCoefficient) + 1) : count);
     }
 
-    private DataObject safeReadClasses(DataSession session, LCP lcp, DataObject... objects) throws SQLException, SQLHandledException {
+    private DataObject safeReadClasses(DataSession session, LP lcp, DataObject... objects) throws SQLException, SQLHandledException {
         ObjectValue value = lcp.readClasses(session, objects);
         if(value instanceof DataObject)
             return (DataObject) value;

@@ -45,13 +45,13 @@ import java.util.List;
 
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
-public class LCP<T extends PropertyInterface> extends LAP<T, Property<T>> {
+public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
 
-    public LCP(Property<T> property) {
+    public LP(Property<T> property) {
         super(property);
     }
 
-    public LCP(Property<T> property, ImOrderSet<T> listInterfaces) {
+    public LP(Property<T> property, ImOrderSet<T> listInterfaces) {
         super(property, listInterfaces);
     }
 
@@ -209,8 +209,8 @@ public class LCP<T extends PropertyInterface> extends LAP<T, Property<T>> {
 
     private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
         if (property.getLogValueProperty() == null) {
-            LCP logValueProperty = ownerModule.addLProp(systemEventsLM, this);
-            LCP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this);
+            LP logValueProperty = ownerModule.addLProp(systemEventsLM, this);
+            LP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this);
             
             property.setLogValueProperty(logValueProperty);
             property.setLogWhereProperty(ownerModule.addLWhereProp(logValueProperty, logDropProperty));
@@ -224,7 +224,7 @@ public class LCP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         }
     }
 
-    public <D extends PropertyInterface> void setEventChange(LCP<D> valueProperty, int whereNum, Object... params) {
+    public <D extends PropertyInterface> void setEventChange(LP<D> valueProperty, int whereNum, Object... params) {
 
         ImList<PropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
 
@@ -287,8 +287,8 @@ public class LCP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         return property.getInterfaceClasses(listInterfaces, classType);
     }
 
-    public LCP<T> getOld() {
-        return new LCP<>(property.getOld(PrevScope.DB), listInterfaces);
+    public LP<T> getOld() {
+        return new LP<>(property.getOld(PrevScope.DB), listInterfaces);
     }
     
     public ResolveClassSet getResolveClassSet(List<ResolveClassSet> classes) {

@@ -1,22 +1,22 @@
 package lsfusion.server.physics.dev.id.resolve;
 
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 
-public class ModuleEqualLCPFinder extends ModuleEqualLAPFinder<LCP<?>> {
+public class ModuleEqualLPFinder extends ModuleEqualLAPFinder<LP<?>> {
     protected final boolean findLocals;
 
-    public ModuleEqualLCPFinder(boolean findLocals) {
+    public ModuleEqualLPFinder(boolean findLocals) {
         this.findLocals = findLocals;
     }
 
     @Override
-    public boolean isFiltered(LCP<?> property) {
+    public boolean isFiltered(LP<?> property) {
         return (!findLocals && property.property.isLocal());
     }
 
     @Override
-    protected Iterable<LCP<?>> getSourceList(LogicsModule module, String name) {
+    protected Iterable<LP<?>> getSourceList(LogicsModule module, String name) {
         return module.getNamedProperties(name);
     }
 }

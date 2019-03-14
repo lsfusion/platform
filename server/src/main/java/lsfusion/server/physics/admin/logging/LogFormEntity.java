@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.property.CalcPropertyClassImplement;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -17,7 +18,6 @@ import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
 
@@ -36,12 +36,12 @@ public class LogFormEntity extends FormEntity {
     SystemEventsLogicsModule systemEventsLM;
     ImOrderSet<ObjectEntity> entities;
     ObjectEntity objSession;
-    LCP<?> logValueProperty;
-    LCP<?> logWhereProperty;
-    LCP<?> property;
+    LP<?> logValueProperty;
+    LP<?> logWhereProperty;
+    LP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logValueProperty, LCP<?> logWhereProperty, SystemEventsLogicsModule systemEventsLM) {
+    public LogFormEntity(String canonicalName, LocalizedString caption, LP<?> property, LP<?> logValueProperty, LP<?> logWhereProperty, SystemEventsLogicsModule systemEventsLM) {
         super(canonicalName, caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
@@ -106,7 +106,7 @@ public class LogFormEntity extends FormEntity {
                 int paramCnt = logValueProperty.property.interfaces.size();
                 ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 
-                LCP lpMainProp = new LCP(calcImpl.property);
+                LP lpMainProp = new LP(calcImpl.property);
 
                 Object[] params = new Object[paramCnt + 1];
                 params[0] = logValueProperty;
@@ -116,7 +116,7 @@ public class LogFormEntity extends FormEntity {
                 JoinProperty<?> jProp = new JoinProperty(impl.property.caption,
                         listInterfaces, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
                 jProp.drawOptions.inheritDrawOptions(impl.property.drawOptions);
-                LCP<?> ljProp = new LCP<>(jProp, listInterfaces);
+                LP<?> ljProp = new LP<>(jProp, listInterfaces);
                 addPropertyDraw(ljProp, version, entities);
             }
         }
@@ -128,7 +128,7 @@ public class LogFormEntity extends FormEntity {
         finalizeInit(version);
     }
 
-    private static ValueClass[] getValueClassesList(LCP<?> property) {
+    private static ValueClass[] getValueClassesList(LP<?> property) {
         ImMap<PropertyInterface, ValueClass> interfaces = (ImMap<PropertyInterface, ValueClass>) property.property.getInterfaceClasses(ClassType.logPolicy);
         ValueClass[] classes = new ValueClass[interfaces.size()];
         int index = 0;

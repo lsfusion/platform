@@ -37,7 +37,7 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -171,7 +171,7 @@ public class ScriptingFormEntity {
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
-                        LCP property = findLCPByPropertyUsage(pUsage, groupObj);
+                        LP property = findLCPByPropertyUsage(pUsage, groupObj);
                         propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects()));
                     }
                 }
@@ -184,7 +184,7 @@ public class ScriptingFormEntity {
         form.addTreeGroupObject(treeGroup, neighbour, isRightNeighbour, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
-    private LCP findLCPByPropertyUsage(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLCPByPropertyUsage(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
         if (property.classNames != null) {
             return LM.findLCPByPropertyUsage(property);
         } else {
@@ -531,7 +531,7 @@ public class ScriptingFormEntity {
     }
 
     private <P extends PropertyInterface, C extends PropertyInterface> CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity<P> groundProperty, boolean back) {
-        LCP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
+        LP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
         PropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
         PropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
                 new PropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
@@ -563,10 +563,10 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<LCP> properties, List<ImOrderSet<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFilters(List<LP> properties, List<ImOrderSet<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            LCP property = properties.get(i);
+            LP property = properties.get(i);
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mappings.get(i));
             checkPropertyParameters(property, mappingObjects);
 
@@ -575,7 +575,7 @@ public class ScriptingFormEntity {
     }
 
     public void addScriptedHints(boolean isHintNoUpdate, List<ScriptingLogicsModule.PropertyUsage> propUsages, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        LCP[] properties = new LCP[propUsages.size()];
+        LP[] properties = new LP[propUsages.size()];
         for (int i = 0; i < propUsages.size(); i++) {
             properties[i] = LM.findLCPByPropertyUsage(propUsages.get(i));
         }
@@ -620,7 +620,7 @@ public class ScriptingFormEntity {
             }
 
             ImOrderSet<String> mapping = info.mapping;
-            LCP<?> property = info.property;
+            LP<?> property = info.property;
 
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mapping);
             checkPropertyParameters(property, mappingObjects);
@@ -653,7 +653,7 @@ public class ScriptingFormEntity {
 
     public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormCalcPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
-        return form.addPropertyObject((LCP)prop.property, prop.mapping);
+        return form.addPropertyObject((LP)prop.property, prop.mapping);
     }
 
     public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
@@ -708,11 +708,11 @@ public class ScriptingFormEntity {
     public static class RegularFilterInfo {
         LocalizedString caption;
         String keystroke;
-        LCP property;
+        LP property;
         ImOrderSet<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String keystroke, LCP property, ImOrderSet<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keystroke, LP property, ImOrderSet<String> mapping, boolean isDefault) {
             this.caption = caption;
             this.keystroke = keystroke;
             this.property = property;

@@ -27,7 +27,7 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -348,7 +348,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         ImOrderMap<String, String> paramsWithClasses = stack.getAllParamsWithClassesInStack().toOrderMap();
         ImMap<String, ObjectValue> paramsWithValues = stack.getAllParamsWithValuesInStack();
 
-        ImSet<Pair<LCP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
+        ImSet<Pair<LP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
 
         ExecutionContext<PropertyInterface> watchContext = context.override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
 
@@ -387,7 +387,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LCP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {

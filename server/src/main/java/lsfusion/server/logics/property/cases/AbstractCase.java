@@ -8,10 +8,10 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.logics.property.*;
@@ -342,8 +342,8 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
 
     // оптимизация
     public static <P extends PropertyInterface, BP extends ActionOrProperty<P>, L extends LAP<P, BP>, AP extends BP> boolean preFillImplicitCases(L lp) {
-        if(lp instanceof LCP)
-            return ((LCP) lp).property instanceof CaseUnionProperty && ((CaseUnionProperty)((LCP) lp).property).isAbstract() && ((CaseUnionProperty)((LCP) lp).property).getAbstractType() == CaseUnionProperty.Type.MULTI;
+        if(lp instanceof LP)
+            return ((LP) lp).property instanceof CaseUnionProperty && ((CaseUnionProperty)((LP) lp).property).isAbstract() && ((CaseUnionProperty)((LP) lp).property).getAbstractType() == CaseUnionProperty.Type.MULTI;
         else
             return ((LA) lp).property instanceof CaseActionProperty && ((CaseActionProperty)((LA) lp).property).isAbstract() && ((CaseActionProperty)((LA) lp).property).getAbstractType() == ListCaseAction.AbstractType.MULTI;
     }
@@ -374,10 +374,10 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             return;
         
         // слишком много функциональщины если делать по аналогии с finalize по сравнению с количеством кода        
-        if(absLP instanceof LCP) {
-            LCP<UnionProperty.Interface> absLCP = (LCP) absLP;
-            if (impLP instanceof LCP) {
-                LCP<I> impLCP = (LCP) impLP;
+        if(absLP instanceof LP) {
+            LP<UnionProperty.Interface> absLCP = (LP) absLP;
+            if (impLP instanceof LP) {
+                LP<I> impLCP = (LP) impLP;
                 
 //                CaseUnionProperty caseProp = (CaseUnionProperty) absLCP.property;
 //                boolean found = hasProp(impLCP, caseProp);
@@ -413,7 +413,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
         }
     }
 
-//    private static <I extends PropertyInterface> boolean hasProp(LCP<I> impLCP, CaseUnionProperty caseProp) {
+//    private static <I extends PropertyInterface> boolean hasProp(LP<I> impLCP, CaseUnionProperty caseProp) {
 //        ImList<ExplicitCalcCase<UnionProperty.Interface>> tstCases = caseProp.getTestCases();
 //        if(tstCases != null) {
 //            for (ExplicitCalcCase<UnionProperty.Interface> explCase : tstCases) {

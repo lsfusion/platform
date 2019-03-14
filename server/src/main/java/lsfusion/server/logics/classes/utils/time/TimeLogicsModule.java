@@ -1,12 +1,12 @@
 package lsfusion.server.logics.classes.utils.time;
 
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.Time;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
@@ -19,22 +19,22 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass month;
     public ConcreteCustomClass DOW;
 
-    public LCP currentDateTime;
-    public LCP toTime;
-    public LCP currentTime;
-    public LCP currentMinute;
-    public LCP currentHour;
-    public LCP currentEpoch;
+    public LP currentDateTime;
+    public LP toTime;
+    public LP currentTime;
+    public LP currentMinute;
+    public LP currentHour;
+    public LP currentEpoch;
 
-    public LCP extractYear;
-    public LCP currentDate;
-    public LCP currentMonth;
+    public LP extractYear;
+    public LP currentDate;
+    public LP currentMonth;
 
-    public LCP toDate;
-    public LCP sumDate;
-    public LCP subtractDate;
+    public LP toDate;
+    public LP sumDate;
+    public LP subtractDate;
 
-    public LCP numberDOW;
+    public LP numberDOW;
 
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(TimeLogicsModule.class.getResourceAsStream("/system/Time.lsf"), "/system/Time.lsf", baseLM, BL);

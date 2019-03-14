@@ -31,6 +31,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
@@ -83,7 +84,6 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -519,8 +519,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 classSet = tableClass.getUpSet();
 
             ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.create(classSet.toString(), false), classSet);
-            LCP<ClassPropertyInterface> lp = new LCP<>(dataProperty);
-            LM.addProperty(null, new LCP<>(dataProperty));
+            LP<ClassPropertyInterface> lp = new LP<>(dataProperty);
+            LM.addProperty(null, new LP<>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
             // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
             dataProperty.markStored(LM.tableFactory, new MapKeysTable<>(table, MapFact.singletonRev(dataProperty.interfaces.single(), table.keys.single())));
@@ -623,7 +623,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         } catch (Exception ignored) {
         }
 
-        LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
+        LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
         ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
@@ -637,7 +637,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             if (changes.containsKey(canonicalName)) {
                 canonicalName = changes.get(canonicalName);
             }
-            LCP<?> lcp = null;
+            LP<?> lcp = null;
             try {
                 lcp = findProperty(canonicalName);
             } catch (Exception ignored) {
@@ -664,7 +664,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private void setNotNullProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         
-        LCP isProperty = LM.is(reflectionLM.property);
+        LP isProperty = LM.is(reflectionLM.property);
         ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
@@ -673,7 +673,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LCP<?> prop = findProperty(values.get("CNProperty").toString().trim());
+            LP<?> prop = findProperty(values.get("CNProperty").toString().trim());
             if(prop != null) {
                 prop.property.reflectionNotNull = true;
                 LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
@@ -765,8 +765,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return getActionOrderProperties().getSet();
     }
 
-    public Iterable<LCP<?>> getNamedProperties() {
-        List<Iterable<LCP<?>>> namedProperties = new ArrayList<>();
+    public Iterable<LP<?>> getNamedProperties() {
+        List<Iterable<LP<?>>> namedProperties = new ArrayList<>();
         for (LogicsModule module : modules.all()) {
             namedProperties.add(module.getNamedProperties());
         }
@@ -776,7 +776,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @IdentityLazy
     public ImOrderSet<Property> getAutoSetProperties() {
         MOrderExclSet<Property> mResult = SetFact.mOrderExclSet();
-        for (LCP<?> lp : getNamedProperties()) {
+        for (LP<?> lp : getNamedProperties()) {
             if (lp.property.autoset)
                 mResult.exclAdd(lp.property);
         }
@@ -1739,7 +1739,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public LAP findSafeProperty(String canonicalName) {
-        LCP lp = null;
+        LP lp = null;
         try {
             lp = findProperty(canonicalName);
         } catch (Exception e) {
@@ -1754,8 +1754,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return property;
     }
     
-    public LCP<?> findProperty(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLCPFinder(false));
+    public LP<?> findProperty(String canonicalName) {
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLPFinder(false));
     }
     
     public LA<?> findAction(String canonicalName) {
@@ -1766,8 +1766,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLAFinder());
     }
     
-    public LCP<?> findPropertyByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLCPFinder());
+    public LP<?> findPropertyByCompoundName(String compoundName) {
+        return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLPFinder());
     }
 
     public CustomClass findClassByCompoundName(String compoundName) {

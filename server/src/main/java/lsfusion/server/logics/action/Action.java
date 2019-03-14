@@ -17,6 +17,7 @@ import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
@@ -47,7 +48,6 @@ import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.action.change.GroupChangeActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -69,12 +69,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
 
-    private ImSet<Pair<LCP, List<ResolveClassSet>>> debugLocals;// только для list action
+    private ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals;// только для list action
     
     public boolean hasDebugLocals() {
         return debugLocals != null && !debugLocals.isEmpty();
     }
-    public void setDebugLocals(ImSet<Pair<LCP, List<ResolveClassSet>>> debugLocals) {
+    public void setDebugLocals(ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals) {
         this.debugLocals = debugLocals;
     }
 

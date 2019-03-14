@@ -5,7 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExplicitAction;
@@ -18,11 +18,11 @@ import java.sql.SQLException;
 public abstract class ScriptingAction extends ExplicitAction {
     protected ScriptingLogicsModule LM;
     
-    protected LCP<?> is(ValueClass valueClass) {
+    protected LP<?> is(ValueClass valueClass) {
         return LM.is(valueClass);
     }
 
-    protected LCP<?> object(ValueClass valueClass) {
+    protected LP<?> object(ValueClass valueClass) {
         return LM.object(valueClass);
     }
 
@@ -31,12 +31,12 @@ public abstract class ScriptingAction extends ExplicitAction {
         this.LM = LM;
     }
 
-    protected LCP<?> findProperty(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected LP<?> findProperty(String name) throws ScriptingErrorLog.SemanticErrorException {
         return LM.findProperty(name);
     }
 
-    protected LCP<?>[] findProperties(String... names) throws ScriptingErrorLog.SemanticErrorException {
-        LCP<?>[] result = new LCP[names.length];
+    protected LP<?>[] findProperties(String... names) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?>[] result = new LP[names.length];
         for (int i = 0; i < names.length; i++) {
             result[i] = findProperty(names[i]);
         }

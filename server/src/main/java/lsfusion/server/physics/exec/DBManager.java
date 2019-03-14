@@ -53,7 +53,7 @@ import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -360,7 +360,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return tableStats;
     }
 
-    private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
+    private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LP sIDProp, LP statsProp, final LP notNullProp) throws SQLException, SQLHandledException {
         QueryBuilder<String, String> query = new QueryBuilder<>(SetFact.toSet("key"));
         Expr sidToObject = sIDProp.getExpr(query.getMapExprs().singleValue());
         query.and(sidToObject.getWhere());
@@ -983,7 +983,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // потом надо сделать соответствующий механизм для Formula
         ScriptingLogicsModule module = businessLogics.getModule("Country");
         if(module != null) {
-            LCP<?> lp = module.findProperty("isDayOff[Country,DATE]");
+            LP<?> lp = module.findProperty("isDayOff[Country,DATE]");
 
             Properties props = new Properties();
             props.put("dayoff.tablename", lp.property.mapTable.table.getName(sql.syntax));
@@ -1400,8 +1400,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
 
         ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
-        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
-        LCP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
+        LP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
+        LP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
         ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(oldCanonicalNameField));
 
         try {
@@ -1832,13 +1832,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         
         Set<String> logProperties = new HashSet<>();
         
-        for (LCP<?> lp : businessLogics.getNamedProperties()) {
+        for (LP<?> lp : businessLogics.getNamedProperties()) {
             if (lp.property.getName().startsWith(PropertyCanonicalNameUtils.logPropPrefix)) {
                 logProperties.add(lp.property.getCanonicalName());
             }
         }
         
-        for (LCP<?> lp : businessLogics.getNamedProperties()) {
+        for (LP<?> lp : businessLogics.getNamedProperties()) {
             if (lp.property.isFull(ClassType.useInsteadOfAssert.getCalc().getAlgInfo())) {
                 String logPropCN = LogicsModule.getLogPropertyCN(lp, "System", businessLogics.systemEventsLM);
                 if (logProperties.contains(logPropCN)) {

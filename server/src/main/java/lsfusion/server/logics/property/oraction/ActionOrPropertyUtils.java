@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.*;
 
@@ -191,7 +191,7 @@ public class ActionOrPropertyUtils {
         return new ActionImplement<>(property.property, getMapping(property, propImpl));
     }
 
-    public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapCalcImplement(LCP<T> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
+    public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapCalcImplement(LP<T> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
         return new PropertyImplement<>(property.property, getMapping(property, propImpl));
     }
 
