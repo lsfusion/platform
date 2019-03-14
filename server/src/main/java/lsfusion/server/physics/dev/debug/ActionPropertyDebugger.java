@@ -19,6 +19,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -26,7 +27,6 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -342,8 +342,8 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         ExecutionContext<PropertyInterface> watchContext = context.override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
 
-        Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
-        LAP<PropertyInterface> evalAction = evalResult.first;
+        Pair<LA<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
+        LA<PropertyInterface> evalAction = evalResult.first;
         boolean forExHack = evalResult.second; // hack для выяснения есть расширение контекста или нет (чтобы знать пустой список или null светить)
 
         final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
@@ -377,7 +377,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LCP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LCP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {
@@ -406,7 +406,7 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         String evalPropName = module.getNamespace() + "." + "evalStub";
 
-        return new Pair<>((LAP<PropertyInterface>) module.findAction(evalPropName), forExHack);
+        return new Pair<>((LA<PropertyInterface>) module.findAction(evalPropName), forExHack);
     }
 
     private static ActionWatchEntry getWatchEntry(ImMap<String, ObjectValue> row, String valueName) {

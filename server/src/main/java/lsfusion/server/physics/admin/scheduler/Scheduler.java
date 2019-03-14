@@ -24,7 +24,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.MonitorServer;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.session.DataSession;
@@ -275,9 +275,9 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     orderProperty = defaultOrder;
                     defaultOrder++;
                 }
-                LAP lap = script == null ? BL.findAction(canonicalName.trim()) : BL.schedulerLM.evalScript;
-                if(lap != null)
-                    propertySIDMap.put(orderProperty, new ScheduledTaskDetail(lap, script, ignoreExceptions, timeout, params));
+                LA LA = script == null ? BL.findAction(canonicalName.trim()) : BL.schedulerLM.evalScript;
+                if(LA != null)
+                    propertySIDMap.put(orderProperty, new ScheduledTaskDetail(LA, script, ignoreExceptions, timeout, params));
             }
         }
         Set<String> daysOfWeek = daysOfWeekScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfWeekScheduledTask.split(",| ")));
@@ -503,13 +503,13 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 String applyResult;
 
                 try (DataSession mainSession = createSession()) {
-                    if (detail.script != null) // if lap is evalScript 
+                    if (detail.script != null) // if LA is evalScript 
                         BL.schedulerLM.scriptText.change(detail.script, mainSession);
-                    ImOrderSet<ClassPropertyInterface> interfaces = detail.lap.listInterfaces;
+                    ImOrderSet<ClassPropertyInterface> interfaces = detail.LA.listInterfaces;
                     if (interfaces.isEmpty()) 
-                        detail.lap.execute(mainSession, stack);
+                        detail.LA.execute(mainSession, stack);
                     else if (detail.params.isEmpty()) 
-                        detail.lap.execute(mainSession, stack, NullValue.instance);
+                        detail.LA.execute(mainSession, stack, NullValue.instance);
                     else {
                         List<ObjectValue> parsedParameters = new ArrayList<>();
                         for (int i = 0; i < interfaces.size(); i++) {
@@ -522,7 +522,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                             }
                             parsedParameters.add(parsedParameter);
                         }
-                        detail.lap.execute(mainSession, stack, parsedParameters.toArray(new ObjectValue[parsedParameters.size()]));
+                        detail.LA.execute(mainSession, stack, parsedParameters.toArray(new ObjectValue[parsedParameters.size()]));
                     }
 
                     schedulerLogger.info("Task " + taskCaption + " before apply");
@@ -612,18 +612,18 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     }
 
     private class ScheduledTaskDetail {
-        public LAP lap;
+        public LA LA;
         public String script;
         public boolean ignoreExceptions;
         public Integer timeout;
         public List<String> params;
         
         public String getCaption() {
-            return (script == null ? (localize(lap.property.caption) + " (" + lap.property.getSID() + ")") : (" " + BaseUtils.truncate(script, 191)));
+            return (script == null ? (localize(LA.property.caption) + " (" + LA.property.getSID() + ")") : (" " + BaseUtils.truncate(script, 191)));
         }
 
-        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, List<String> params) {
-            this.lap = lap;
+        public ScheduledTaskDetail(LA LA, String script, boolean ignoreExceptions, Integer timeout, List<String> params) {
+            this.LA = LA;
             this.script = script;
             this.ignoreExceptions = ignoreExceptions;
             this.timeout = timeout;

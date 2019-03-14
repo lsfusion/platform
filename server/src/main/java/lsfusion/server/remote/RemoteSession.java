@@ -13,6 +13,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.base.context.ExecutionStack;
@@ -24,7 +25,6 @@ import lsfusion.server.logics.navigator.ChangesController;
 import lsfusion.server.logics.navigator.FormController;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -58,7 +58,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         ExternalResponse result;
         try {
             if(action != null) {
-                LAP property = businessLogics.findActionByCompoundName(action);
+                LA property = businessLogics.findActionByCompoundName(action);
                 if (property != null) {
                     result = executeExternal(property, request);
                 } else {
@@ -80,7 +80,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             try {
                 Charset charset = Charset.forName(request.charsetName);
                 String script = StringClass.text.parseHTTP(paramScript, charset);
-                LAP<?> runAction = businessLogics.evaluateRun(script, action);
+                LA<?> runAction = businessLogics.evaluateRun(script, action);
                 if(runAction != null) {
                     result = executeExternal(runAction, request);
                 } else {
@@ -96,7 +96,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return result;
     }
 
-    private ExternalResponse executeExternal(LAP<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
+    private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
         checkEnableApi(property);
 
         writeRequestInfo(dataSession, property.property, request);
@@ -106,7 +106,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return readResult(request.returnNames, property.property);
     }
 
-    private void checkEnableApi(LAP<?> property) {
+    private void checkEnableApi(LA<?> property) {
         boolean forceAPI = false;
         String annotation = property.property.annotation;
         if(annotation != null) {

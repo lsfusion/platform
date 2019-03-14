@@ -4,7 +4,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
@@ -55,7 +55,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP currentUserTransactTimeout;
     public LCP transactTimeoutUser;
 
-    public LAP copyAccess;    
+    public LA copyAccess;    
 
     public FormEntity propertyPolicyForm;
     public FormEntity actionPolicyForm;

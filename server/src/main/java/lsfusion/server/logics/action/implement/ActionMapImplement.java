@@ -19,7 +19,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -64,8 +64,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return property.getWhereProperty(true).map(mapping);
     }
 
-    public LAP<P> createLP(ImOrderSet<T> listInterfaces) {
-        return new LAP<>(property, listInterfaces.mapOrder(mapping.reverse()));
+    public LA<P> createLP(ImOrderSet<T> listInterfaces) {
+        return new LA<>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 
     public FlowResult execute(ExecutionContext<T> context) throws SQLException, SQLHandledException {

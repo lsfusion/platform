@@ -5,7 +5,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
@@ -82,8 +82,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         unpackAccount = findProperty("unpack[Account]");
     }
 
-    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params) {
-        return addProperty(group, new LAP<>(new SendEmailActionProperty(caption, params)));
+    public LA<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params) {
+        return addProperty(group, new LA<>(new SendEmailActionProperty(caption, params)));
     }
 
 }

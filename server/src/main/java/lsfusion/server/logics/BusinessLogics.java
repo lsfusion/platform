@@ -30,6 +30,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
@@ -82,7 +83,6 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.NFLazy;
@@ -251,7 +251,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
     @IdentityLazy
-    public LAP<?> evaluateRun(String script, boolean action) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException  {
+    public LA<?> evaluateRun(String script, boolean action) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException  {
         ScriptingLogicsModule module = EvalUtils.evaluate(this, script, action);
         String runName = module.getName() + ".run";
         return module.findAction(runName);
@@ -700,7 +700,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @NFLazy
-    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, ActionOrProperty property, boolean actions) {
+    public void setupPropertyPolicyForms(LA<?> setupPolicyForPropByCN, ActionOrProperty property, boolean actions) {
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
             
@@ -708,11 +708,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
             // базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = (actions ? PropertyCanonicalNameUtils.policyPropPrefix : PropertyCanonicalNameUtils.policyActionPrefix) + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
-            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
+            LA<?> setupPolicyLA = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
-            Action setupPolicyAction = setupPolicyLAP.property;
-            LM.makeActionPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
+            Action setupPolicyAction = setupPolicyLA.property;
+            LM.makeActionPublic(setupPolicyLA, setupPolicyActionName, new ArrayList<ResolveClassSet>());
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
         }
@@ -1758,12 +1758,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLCPFinder(false));
     }
     
-    public LAP<?> findAction(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLAPFinder());
+    public LA<?> findAction(String canonicalName) {
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLAFinder());
     }
     
-    public LAP<?> findActionByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLAPFinder());
+    public LA<?> findActionByCompoundName(String compoundName) {
+        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLAFinder());
     }
     
     public LCP<?> findPropertyByCompoundName(String compoundName) {

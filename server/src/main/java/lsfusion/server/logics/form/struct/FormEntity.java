@@ -21,6 +21,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.interfaces.*;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.context.ThreadLocalContext;
@@ -50,7 +51,6 @@ import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.FindIndex;
@@ -196,8 +196,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
-        LAP<PropertyInterface> formOk = baseLM.getFormOk();
-        LAP<PropertyInterface> formClose = baseLM.getFormClose();
+        LA<PropertyInterface> formOk = baseLM.getFormOk();
+        LA<PropertyInterface> formClose = baseLM.getFormClose();
 
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEditReport(), version);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
@@ -650,14 +650,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property) {
         return addPropertyObject(property, MapFact.<P, ObjectEntity>EMPTYREV());
     }
-    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ImOrderSet<ObjectEntity> objects) {
+    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LA<P> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyObject(property, property.getRevMap(objects));
     }
 
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImRevMap<P, ObjectEntity> objects) {
         return new CalcPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
-    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ImRevMap<P, ObjectEntity> objects) {
+    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LA<P> property, ImRevMap<P, ObjectEntity> objects) {
         return new ActionPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
     

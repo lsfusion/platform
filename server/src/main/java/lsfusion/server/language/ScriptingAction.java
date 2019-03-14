@@ -4,7 +4,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -48,7 +48,7 @@ public abstract class ScriptingAction extends ExplicitAction {
         executeCustom(context);
     }
 
-    protected LAP<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected LA<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {
         return LM.findAction(name);
     }
 

@@ -47,7 +47,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.debug.ClassDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFDefault;
@@ -383,7 +383,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return result;
         }
         
-        protected abstract LAP<?> getPolyAction(BaseLogicsModule LM);
+        protected abstract LA<?> getPolyAction(BaseLogicsModule LM);
 
         // если есть хоть один child poly form или реализация в полиморфного метода
         protected boolean hasImplementation(BaseLogicsModule LM) {
@@ -471,7 +471,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         @Override
-        protected LAP<?> getPolyAction(BaseLogicsModule LM) {
+        protected LA<?> getPolyAction(BaseLogicsModule LM) {
             throw new UnsupportedOperationException();
         }
 
@@ -489,7 +489,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         @Override
-        protected LAP<?> getPolyAction(BaseLogicsModule LM) {
+        protected LA<?> getPolyAction(BaseLogicsModule LM) {
             return LM.getPolyEdit();
         }
 

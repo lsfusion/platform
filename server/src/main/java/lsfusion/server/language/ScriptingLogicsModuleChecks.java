@@ -1,6 +1,7 @@
 package lsfusion.server.language;
 
 import lsfusion.server.classes.*;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -22,7 +23,6 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
@@ -70,7 +70,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkAction(LAP lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAction(LA lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
         if (lp == null) {
             errLog.emitActionNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
         }
@@ -169,7 +169,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkDuplicateAction(String propName, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
-        checkDuplicateElement(propName, "action", new ModuleEqualLAPFinder(), signature);
+        checkDuplicateElement(propName, "action", new ModuleEqualLAFinder(), signature);
     }
 
     private <E, P> void checkDuplicateElement(String elementName, String type, ModuleFinder<E, P> finder, P param) throws ScriptingErrorLog.SemanticErrorException {
@@ -344,7 +344,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkNavigatorAction(LAP<?> property) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkNavigatorAction(LA<?> property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.listInterfaces.size() > 0) {
             errLog.emitWrongNavigatorActionError(parser);
         }
@@ -495,7 +495,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkAbstractAction(LAP action, String actionName) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAbstractAction(LA action, String actionName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(action.property instanceof ListCaseAction && ((ListCaseAction)action.property).isAbstract())) {
             errLog.emitNotAbstractActionError(parser, actionName);
         }

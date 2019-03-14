@@ -1,9 +1,9 @@
 package lsfusion.server.physics.admin.service;
 
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.env.IsServerRestartingFormulaProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -14,26 +14,26 @@ import java.util.ArrayList;
 
 public class ServiceLogicsModule extends ScriptingLogicsModule {
 
-    private LAP checkAggregationsAction;
-    private LAP recalculateAction;
-    private LAP recalculateFollowsAction;
-    private LAP analyzeDBAction;
-    private LAP packAction;
-    private LAP serviceDBAction;
+    private LA checkAggregationsAction;
+    private LA recalculateAction;
+    private LA recalculateFollowsAction;
+    private LA analyzeDBAction;
+    private LA packAction;
+    private LA serviceDBAction;
 
-    public LAP makeProcessDumpAction;
+    public LA makeProcessDumpAction;
 
     public LCP isServerRestarting;
-    public LAP restartServerAction;
-    public LAP runGarbageCollector;
-    public LAP cancelRestartServerAction;
+    public LA restartServerAction;
+    public LA runGarbageCollector;
+    public LA cancelRestartServerAction;
 
     public LCP singleTransaction;
 
-    public LAP recalculateMultiThreadAction;
-    public LAP recalculateClassesMultiThreadAction;
-    public LAP recalculateFollowsMultiThreadAction;
-    public LAP recalculateStatsMultiThreadAction;
+    public LA recalculateMultiThreadAction;
+    public LA recalculateClassesMultiThreadAction;
+    public LA recalculateFollowsMultiThreadAction;
+    public LA recalculateStatsMultiThreadAction;
 
     public LCP overrideSelectedRowBackgroundColor;
     public LCP overrideSelectedRowBorderColor;

@@ -1,14 +1,14 @@
 package lsfusion.server.physics.dev.id.resolve;
 
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
-public class ModuleAbstractLAPFinder extends ModuleAbstractLPFinder<LAP<?>> {
+public class ModuleAbstractLAFinder extends ModuleAbstractLPFinder<LA<?>> {
     @Override
-    protected Iterable<LAP<?>> getSourceList(LogicsModule module, String name) {
+    protected Iterable<LA<?>> getSourceList(LogicsModule module, String name) {
         return module.getNamedActions(name);
     }    
 

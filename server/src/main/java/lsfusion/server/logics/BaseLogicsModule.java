@@ -13,6 +13,7 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -41,7 +42,6 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.WatchActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
@@ -107,17 +107,17 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LCP minus;
 
-    private LAP watch;
+    private LA watch;
 
-    public LAP sleep;
-    public LAP applyOnlyWithoutRecalc;
-    public LAP applyAll;
+    public LA sleep;
+    public LA applyOnlyWithoutRecalc;
+    public LA applyAll;
 
-    public LAP delete;
+    public LA delete;
 
-    public LAP<?> apply;
+    public LA<?> apply;
     public LCP<?> canceled;
-    public LAP<?> onStarted;
+    public LA<?> onStarted;
 
     public LCP statusHttp;
     
@@ -135,11 +135,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP javaStackTraceCaughtException;
     public LCP lsfStackTraceCaughtException;
 
-    public LAP<?> empty;
+    public LA<?> empty;
 
-    public LAP flowBreak;
-    public LAP flowReturn;
-    public LAP<?> cancel;
+    public LA flowBreak;
+    public LA flowReturn;
+    public LA<?> cancel;
     
     public LCP<?> sessionOwners;
 
@@ -201,7 +201,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     // need to implement next methods this way, because they are used in super.initMainLogic, and can not be initialized before super.initMainLogic
 
     @IdentityLazy
-    public LAP getFormEditReport() {
+    public LA getFormEditReport() {
         try {
             return findAction("formEditReport[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -211,7 +211,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP getFormDrop() {
+    public LA getFormDrop() {
         try {
             return findAction("formDrop[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -221,7 +221,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP getFormRefresh() {
+    public LA getFormRefresh() {
         try {
             return findAction("formRefresh[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -231,7 +231,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP getFormApply() {
+    public LA getFormApply() {
         try {
             return findAction("formApply[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -241,7 +241,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP getFormCancel() {
+    public LA getFormCancel() {
         try {
             return findAction("formCancel[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -251,7 +251,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP getFormOk() {
+    public LA getFormOk() {
         try {
             return findAction("formOk[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -261,7 +261,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP getFormClose() {
+    public LA getFormClose() {
         try {
             return findAction("formClose[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -271,7 +271,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP<?> getPolyEdit() {
+    public LA<?> getPolyEdit() {
         try {
             return findAction("edit[Object]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -280,7 +280,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP<?> getFormEdit() {
+    public LA<?> getFormEdit() {
         try {
             return findAction("formEdit[Object]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -289,7 +289,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP<?> getPolyDelete() {
+    public LA<?> getPolyDelete() {
         try {
             return findAction("delete[Object]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -298,7 +298,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP<?> getFormDelete() {
+    public LA<?> getFormDelete() {
         try {
             return findAction("formDelete[Object]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -325,7 +325,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP<?> getEmpty() {
+    public LA<?> getEmpty() {
         try {
             return findAction("empty[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -334,7 +334,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LAP<?> getEmptyObject() {
+    public LA<?> getEmptyObject() {
         try {
             return findAction("empty[Object]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -397,7 +397,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         vnull = addProperty(null, new LCP<>(NullValueProperty.instance));
 
         if(ActionPropertyDebugger.getInstance().isEnabled()) {
-            watch = addProperty(null, new LAP<>(WatchActionProperty.instance));
+            watch = addProperty(null, new LA<>(WatchActionProperty.instance));
             makeActionPublic(watch, "watch");
         }
 
@@ -745,11 +745,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass explicitClass) {
+    public LA getAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass explicitClass) {
         CustomClass cls = explicitClass;
         if(explicitClass == null)
             cls = (CustomClass)obj.baseClass;
-        LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
+        LA result = addAProp(new FormAddObjectActionProperty(cls, obj));
         
         setAddActionOptions(result, obj);
         
@@ -761,8 +761,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getFormNavigatorAction(FormEntity form) {
-        LAP<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.<ObjectEntity>EMPTYORDER(), false, WindowFormType.DOCKED, true);
+    public LA getFormNavigatorAction(FormEntity form) {
+        LA<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.<ObjectEntity>EMPTYORDER(), false, WindowFormType.DOCKED, true);
 
         String contextPrefix = getFormPrefix(form);
         String name = "_NAVIGATORFORM" + contextPrefix;
@@ -773,8 +773,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope) {
-        LAP<?> result = addAddFormAction(cls, contextObject, scope);
+    public LA getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope) {
+        LA<?> result = addAddFormAction(cls, contextObject, scope);
         // issue #47 Потенциальное совпадение канонических имен различных свойств
         String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
         String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls);
@@ -785,8 +785,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope) {
-        LAP<?> result = addEditFormAction(scope, cls);
+    public LA getEditFormAction(CustomClass cls, FormSessionScope scope) {
+        LA<?> result = addEditFormAction(scope, cls);
         // issue #47 Потенциальное совпадение канонических имен различных свойств
         String name = "_EDITFORM" + scope + getClassPrefix(cls);
         makeActionPublic(result, name, cls.getResolveSet());
@@ -795,8 +795,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getDeleteAction(CustomClass cls, FormSessionScope scope) {
-        LAP res = addDeleteAction(cls, scope);
+    public LA getDeleteAction(CustomClass cls, FormSessionScope scope) {
+        LA res = addDeleteAction(cls, scope);
 
         String name = "_DELETE" + (scope == FormSessionScope.OLDSESSION ? "SESSION" : (scope == FormSessionScope.NESTEDSESSION ? scope : ""));
         makeActionPublic(res, name, cls.getResolveSet());

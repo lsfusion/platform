@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.struct.property;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -17,8 +17,8 @@ public class ActionPropertyClassImplement<P extends PropertyInterface> extends P
         super(property, mapping);
     }
 
-    public LAP<P> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
-        return new LAP<>(property, listInterfaces.mapOrder(mapping.reverse()));
+    public LA<P> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
+        return new LA<>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 
     public ActionPropertyClassImplement<P> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap) {

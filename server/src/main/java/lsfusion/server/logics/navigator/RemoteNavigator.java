@@ -25,6 +25,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
@@ -41,7 +42,6 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.remote.*;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;
@@ -479,7 +479,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
-        final LAP<?> action;
+        final LA<?> action;
         if (isNavigatorAction) {
             final NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
 
@@ -491,7 +491,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 
-            action = new LAP(((NavigatorAction) element).getAction());
+            action = new LA(((NavigatorAction) element).getAction());
         } else {
             action = businessLogics.findAction(canonicalName);
         }

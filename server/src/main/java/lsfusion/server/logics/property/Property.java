@@ -21,6 +21,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
@@ -80,7 +81,6 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.physics.dev.debug.CalcPropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -2004,7 +2004,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     private boolean loggable;
 
-    public LAP logFormProperty;
+    public LA logFormProperty;
 
     public void setLoggable(boolean loggable) {
         this.loggable = loggable;
@@ -2014,11 +2014,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return loggable;
     }
 
-    public void setLogFormProperty(LAP logFormProperty) {
+    public void setLogFormProperty(LA logFormProperty) {
         this.logFormProperty = logFormProperty;
     }
 
-    public LAP getLogFormProperty() {
+    public LA getLogFormProperty() {
         return logFormProperty;
     }
     

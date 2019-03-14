@@ -33,13 +33,13 @@ import lsfusion.server.logics.action.ExecutionEnvironment;
 import java.sql.SQLException;
 import java.util.List;
 
-public class LAP<T extends PropertyInterface> extends LP<T, Action<T>> {
+public class LA<T extends PropertyInterface> extends LP<T, Action<T>> {
 
-    public LAP(Action<T> property) {
+    public LA(Action<T> property) {
         super(property);
     }
 
-    public LAP(Action<T> property, ImOrderSet<T> listInterfaces) {
+    public LA(Action<T> property, ImOrderSet<T> listInterfaces) {
         super(property, listInterfaces);
     }
 
