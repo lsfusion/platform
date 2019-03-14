@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.migration;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.*;
 import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;

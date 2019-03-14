@@ -7,7 +7,7 @@ import lsfusion.interop.action.ThreadDumpClientAction;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

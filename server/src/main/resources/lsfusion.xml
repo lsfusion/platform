@@ -701,7 +701,7 @@
     <util:list id="customObjects"/>
 
     <!-- Remoting -->
-    <bean id="rmiManager" class="lsfusion.server.remote.RMIManager">
+    <bean id="rmiManager" class="lsfusion.server.base.remote.RMIManager">
         <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
@@ -709,7 +709,7 @@
         <property name="exportName" value="${rmi.exportName:}"/>
     </bean>
 
-    <bean id="remoteLogics" class="lsfusion.server.remote.RemoteLogics">
+    <bean id="remoteLogics" class="lsfusion.server.logics.remote.RemoteLogics">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="navigatorsManager" ref="navigatorsManager"/>
@@ -719,7 +719,7 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="remoteLogicsLoader" class="lsfusion.server.remote.RemoteLogicsLoader">
+    <bean id="remoteLogicsLoader" class="lsfusion.server.logics.remote.RemoteLogicsLoader">
         <property name="rmiManager" ref="rmiManager"/>
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>
@@ -731,7 +731,7 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="externalHttpServer" class="lsfusion.server.physics.dev.integration.external.from.ExternalHttpServer">
+    <bean id="externalHttpServer" class="lsfusion.server.physics.dev.integration.external.from.http.ExternalHttpServer">
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>

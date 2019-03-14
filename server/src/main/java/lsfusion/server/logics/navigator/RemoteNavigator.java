@@ -1,7 +1,5 @@
 package lsfusion.server.logics.navigator;
 
-// навигатор работает с абстрактной BL
-
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -19,7 +17,7 @@ import lsfusion.interop.exception.AuthenticationException;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.server.EnvStackRunnable;
+import lsfusion.server.logics.action.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
@@ -40,9 +38,18 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.base.remote.context.RemoteContextAspect;
+import lsfusion.server.base.remote.ui.RemotePausableInvocation;
+import lsfusion.server.physics.admin.authentication.remote.RemoteConnection;
+import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;
+import lsfusion.server.logics.navigator.controller.ChangesController;
+import lsfusion.server.logics.navigator.controller.ClassCache;
+import lsfusion.server.logics.navigator.controller.ClientCallBackController;
+import lsfusion.server.logics.navigator.controller.FormController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.remote.*;
+import lsfusion.server.physics.admin.logging.RemoteLoggerAspect;
+import lsfusion.server.physics.admin.logging.UserActivity;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -59,8 +66,7 @@ import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
 
-// приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
-
+// it would be better if there was NavigatorInstance (just like FormInstance and LogicsInstance), but for now will leave it this way
 public class RemoteNavigator extends RemoteConnection implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
     protected final static Logger logger = ServerLoggers.systemLogger;
 

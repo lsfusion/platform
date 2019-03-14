@@ -7,7 +7,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.server.Settings;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;

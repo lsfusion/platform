@@ -3,7 +3,7 @@ package lsfusion.server.physics.admin.monitor;
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.CopyToClipboardClientAction;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;

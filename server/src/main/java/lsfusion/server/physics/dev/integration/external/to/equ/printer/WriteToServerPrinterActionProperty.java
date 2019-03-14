@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.integration.external.to.equ.printer;
 import com.google.common.base.Throwables;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.ExecutionContext;

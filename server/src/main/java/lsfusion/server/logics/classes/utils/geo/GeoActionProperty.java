@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes.utils.geo;
 
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.ExecutionContext;

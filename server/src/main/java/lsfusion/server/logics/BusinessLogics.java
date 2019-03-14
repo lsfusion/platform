@@ -75,7 +75,7 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.stat.report.FormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
-import lsfusion.server.logics.navigator.LogInfo;
+import lsfusion.server.physics.admin.logging.LogInfo;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.RemoteNavigator;
 import lsfusion.server.logics.navigator.window.AbstractWindow;

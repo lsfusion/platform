@@ -23,7 +23,7 @@ import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

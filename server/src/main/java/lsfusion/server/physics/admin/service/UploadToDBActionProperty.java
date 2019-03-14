@@ -6,7 +6,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.PostgreDataAdapter;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

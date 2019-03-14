@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.logging;
 
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;

@@ -4,7 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.*;
 import lsfusion.server.data.type.ParseInterface;
-import lsfusion.server.logics.navigator.SQLSessionContextProvider;
+import lsfusion.server.logics.navigator.controller.SQLSessionContextProvider;
 
 import java.sql.SQLException;
 import java.sql.Statement;

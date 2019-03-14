@@ -2,8 +2,8 @@ package lsfusion.server.base.context;
 
 import lsfusion.server.base.lifecycle.EventServer;
 import lsfusion.server.base.lifecycle.MonitorServer;
-import lsfusion.server.remote.ContextAwarePendingRemoteObject;
-import lsfusion.server.remote.RmiServer;
+import lsfusion.server.base.remote.context.ContextAwarePendingRemoteObject;
+import lsfusion.server.base.remote.RmiServer;
 
 public class EventThreadInfo implements ThreadInfo {
 
