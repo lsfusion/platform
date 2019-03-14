@@ -139,10 +139,6 @@
                     <artifactId>commons-net</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.jcraft</groupId>
-                    <artifactId>jsch</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>commons-httpclient</groupId>
                     <artifactId>commons-httpclient</artifactId>
                 </exclusion>
