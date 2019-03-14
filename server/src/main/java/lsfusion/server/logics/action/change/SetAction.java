@@ -18,7 +18,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.ExtendContextAction;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ForAction;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
@@ -161,11 +161,11 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         return null;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForAction.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<I, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
+            public ActionMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
                 return createSetAction(context, writeTo.map(mapInnerInterfaces), writeFrom.map(mapInnerInterfaces), where, orders, ordersNotNull);
             }
         });

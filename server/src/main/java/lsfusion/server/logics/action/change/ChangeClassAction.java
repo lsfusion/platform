@@ -10,7 +10,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.ExtendContextAction;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.SQLHandledException;
@@ -206,11 +206,11 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
         return null;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForAction.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<I, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
+            public ActionMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
                 return createChangeClassAction(context, mapInnerInterfaces.get(changeInterface), valueClass, forceDialog, where, baseClass, orders, ordersNotNull);
             }
         });

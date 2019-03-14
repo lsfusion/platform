@@ -10,7 +10,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -281,7 +281,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         Property<T> aggProp = implement.property;
 
         if (aggProp instanceof AndFormulaProperty) {
@@ -291,7 +291,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                     return element != andProperty.objectInterface;
                 }
             }).values();
-            ActionPropertyMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEditAction(editActionSID, filterProperty);
+            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEditAction(editActionSID, filterProperty);
             if (implementEdit != null) {
                 return DerivedProperty.createIfAction(
                         interfaces,
@@ -304,7 +304,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if (implement.mapping.size() == 1 && !implementChange) {
             if (editActionSID.equals(ServerResponse.CHANGE_WYS)) {
-                ActionPropertyMapImplement<?, Interface> changeActionImplement = getEditAction(ServerResponse.CHANGE);
+                ActionMapImplement<?, Interface> changeActionImplement = getEditAction(ServerResponse.CHANGE);
                 if(changeActionImplement==null)
                     return null;
 
@@ -408,7 +408,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public ActionPropertyMapImplement<?, Interface> getSetNotNullAction(boolean notNull) {
+    public ActionMapImplement<?, Interface> getSetNotNullAction(boolean notNull) {
         ImRevMap<T,Interface> identityMap = PropertyInterface.getIdentityMap(implement.mapping);
         if(identityMap == null)
             return super.getSetNotNullAction(notNull);

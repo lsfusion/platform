@@ -29,23 +29,23 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class ActionPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements lsfusion.server.logics.property.oraction.PropertyInterfaceImplement {
+public class ActionMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements lsfusion.server.logics.property.oraction.PropertyInterfaceImplement {
 
     public Action<P> property;
     public ImRevMap<P, T> mapping;
 
-    public ActionPropertyMapImplement(Action<P> property) {
+    public ActionMapImplement(Action<P> property) {
         this.property = property;
         mapping = MapFact.EMPTYREV();
     }
 
-    public ActionPropertyMapImplement(Action<P> property, ImRevMap<P, T> mapping) {
+    public ActionMapImplement(Action<P> property, ImRevMap<P, T> mapping) {
         this.property = property;
         this.mapping = mapping;
     }
 
-    public <K extends PropertyInterface> ActionPropertyMapImplement<P, K> map(ImRevMap<T, K> remap) {
-        return new ActionPropertyMapImplement<>(property, mapping.join(remap));
+    public <K extends PropertyInterface> ActionMapImplement<P, K> map(ImRevMap<T, K> remap) {
+        return new ActionMapImplement<>(property, mapping.join(remap));
     }
 
     public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, PropertyMapImplement<L, T> where, Event event, boolean resolve, DebugInfo.DebugPoint debugInfo) {
@@ -79,10 +79,10 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return null;
     }
 
-    public ImList<ActionPropertyMapImplement<?, T>> getList() {
+    public ImList<ActionMapImplement<?, T>> getList() {
         return DerivedProperty.mapActionImplements(mapping, property.getList());
     }
-/*    public ActionPropertyMapImplement<?, T> compile() {
+/*    public ActionMapImplement<?, T> compile() {
         return property.compile().map(mapping);
     }*/
     public boolean hasPushFor(ImSet<T> context, boolean ordersNotNull) {
@@ -91,7 +91,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     public Property getPushWhere(ImSet<T> context, boolean ordersNotNull) {
         return property.getPushWhere(mapping, context, ordersNotNull);
     }
-    public ActionPropertyMapImplement<?, T> pushFor(ImSet<T> context, PropertyMapImplement<?, T> where, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public ActionMapImplement<?, T> pushFor(ImSet<T> context, PropertyMapImplement<?, T> where, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         return property.pushFor(mapping, context, where, orders, ordersNotNull);
     }
     public boolean hasFlow(ChangeFlowType... types) {
@@ -105,8 +105,8 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return property.getParseOldDepends();
     }
 
-    public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapValues, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
-        return new ActionPropertyValueImplement<>(property, mapping.join(mapValues), mapObjects != null ? mapping.innerJoin(mapObjects) : null, formInstance);
+    public ActionValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapValues, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
+        return new ActionValueImplement<>(property, mapping.join(mapValues), mapObjects != null ? mapping.innerJoin(mapObjects) : null, formInstance);
     }
 
     public Graph<ActionCase<T>> mapAbstractGraph() {
@@ -123,10 +123,10 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     }
 
     public boolean equalsMap(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement object) {
-        if(!(object instanceof ActionPropertyMapImplement))
+        if(!(object instanceof ActionMapImplement))
             return false;
 
-        ActionPropertyMapImplement<?, T> mapProp = (ActionPropertyMapImplement<?, T>) object;
+        ActionMapImplement<?, T> mapProp = (ActionMapImplement<?, T>) object;
         return property.equals(mapProp.property) && mapping.equals(mapProp.mapping);
     }
 

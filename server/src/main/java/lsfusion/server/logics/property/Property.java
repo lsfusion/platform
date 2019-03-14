@@ -24,7 +24,7 @@ import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -1431,7 +1431,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
         if(action && !Settings.get().isDisableWhenCalcDo()) {
-            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(interfaces, getImplement(), valueImplement);
+            ActionMapImplement<?, T> setAction = DerivedProperty.createSetAction(interfaces, getImplement(), valueImplement);
             lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<PropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false, null);
             return;
         }
@@ -1450,7 +1450,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, ExecutionStack stack, boolean notNull, boolean check) throws SQLException, SQLHandledException {
         if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
-            ActionPropertyMapImplement<?, T> action = getSetNotNullAction(notNull);
+            ActionMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
                 action.execute(new ExecutionContext<>(values, env, stack));
         }
@@ -1468,7 +1468,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return null;
     }
 
-    public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
+    public ActionMapImplement<?, T> getSetNotNullAction(boolean notNull) {
         if(notNull) {
             ObjectValue defaultValue = getDefaultDataObject();
             if(defaultValue != null) {
@@ -1529,7 +1529,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty) {
         ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
         if(interfaceClasses.size() < interfaces.size()) // не все классы есть
             return null;

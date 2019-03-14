@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
@@ -26,7 +26,7 @@ public class NewExecutorActionProperty extends AroundAspectAction {
     private final PropertyInterfaceImplement threadsProp;
 
     public <I extends PropertyInterface> NewExecutorActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                                   ActionPropertyMapImplement<?, I> action,
+                                                                   ActionMapImplement<?, I> action,
                                                                    PropertyInterfaceImplement threadsProp) {
         super(caption, innerInterfaces, action);
 

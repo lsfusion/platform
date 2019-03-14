@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.KeepContextAction;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -27,12 +27,12 @@ import java.sql.SQLException;
 
 public class RequestAction extends KeepContextAction {
     
-    private final ActionPropertyMapImplement<?, PropertyInterface> requestAction;
-    private final ActionPropertyMapImplement<?, PropertyInterface> doAction;
-    private final ActionPropertyMapImplement<?, PropertyInterface> elseAction;
+    private final ActionMapImplement<?, PropertyInterface> requestAction;
+    private final ActionMapImplement<?, PropertyInterface> doAction;
+    private final ActionMapImplement<?, PropertyInterface> elseAction;
 
-    public <I extends PropertyInterface> RequestAction(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> requestAction,
-                                                       ActionPropertyMapImplement<?, I> doAction, ActionPropertyMapImplement<?, I> elseAction) {
+    public <I extends PropertyInterface> RequestAction(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionMapImplement<?, I> requestAction,
+                                                       ActionMapImplement<?, I> doAction, ActionMapImplement<?, I> elseAction) {
         super(caption, innerInterfaces.size());
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -46,16 +46,16 @@ public class RequestAction extends KeepContextAction {
     @IdentityInstanceLazy
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
 
-        MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
+        MList<ActionMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         actions.add(requestAction);
         actions.add(doAction);
         if(elseAction != null)
             actions.add(elseAction);
 
         ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres =
-                ((ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
-                            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+                ((ImList<ActionMapImplement<?, PropertyInterface>>)actions).mapListValues(
+                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>() {
+                            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
                                 return value.mapCalcWhereProperty();
                             }});
         return DerivedProperty.createUnion(interfaces, listWheres);

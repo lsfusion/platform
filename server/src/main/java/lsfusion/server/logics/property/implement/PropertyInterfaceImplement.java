@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLHandledException;
@@ -48,7 +48,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
-    ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty);
+    ActionMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty);
 
     boolean mapHasAlotKeys();
     int mapEstComplexity();

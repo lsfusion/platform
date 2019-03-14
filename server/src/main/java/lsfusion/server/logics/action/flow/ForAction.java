@@ -15,7 +15,7 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.change.ChangeClassAction;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClasses;
@@ -58,8 +58,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     private final PropertyMapImplement<?, I> ifProp; // calculate
     private final ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final boolean ordersNotNull;
-    private final ActionPropertyMapImplement<?, I> action; // action
-    private final ActionPropertyMapImplement<?, I> elseAction; // action
+    private final ActionMapImplement<?, I> action; // action
+    private final ActionMapImplement<?, I> elseAction; // action
     private final boolean recursive;
 
     private final I addObject;
@@ -69,7 +69,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     private final ImSet<I> noInline; // из extend interfaces
     private final boolean forceInline;
    
-    public ForAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<?, I> ifProp, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean autoSet, boolean recursive, ImSet<I> noInline, boolean forceInline) {
+    public ForAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, PropertyMapImplement<?, I> ifProp, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionMapImplement<?, I> action, ActionMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean autoSet, boolean recursive, ImSet<I> noInline, boolean forceInline) {
        super(caption, innerInterfaces, mapInterfaces);
 
         assert !recursive || (addObject == null && elseAction == null);
@@ -210,7 +210,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         return execute(context, action, newValues, mapInterfaces);
     }
 
-    private static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException, SQLHandledException {
+    private static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException, SQLHandledException {
         return implement.property.execute(
                 context.override(
                         implement.mapping.join(keys),
@@ -287,7 +287,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public ActionPropertyMapImplement<?, I> compileExtend() { // проталкивание FOR'ов
+    public ActionMapImplement<?, I> compileExtend() { // проталкивание FOR'ов
 
         if(recursive)
             return null;
@@ -306,7 +306,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             assert !noInline.intersect(context);
             assert orders.isEmpty(); // см. проверку сверху
 
-            MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
+            MList<ActionMapImplement<?, I>> mResult = ListFact.mList();
             ImSet<I> extNoInline = context.addExcl(noInline);
 
             PropertyMapImplement<?, I> noInlineIfProp = ifProp;
@@ -321,7 +321,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             // затем сделать GROUP ANY TRUE IF с группировкой по noInline интерфейсам, затем
             PropertyMapImplement<?, I> groupNoInline = DerivedProperty.createAnyGProp(noInlineIfProp, noInlineInterfaces);
             // по нему уже сгруппировать FOR noInline интерфейсам с опцией Inline.NO, а внутри FOR по материализованному условию где noInline уже будут внешними интерфейсами
-            ActionPropertyMapImplement<?, I> cleanAction = createForAction(innerInterfaces, extNoInline, noInlineIfProp, MapFact.<PropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
+            ActionMapImplement<?, I> cleanAction = createForAction(innerInterfaces, extNoInline, noInlineIfProp, MapFact.<PropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
                     action, null, addObject, addClass, autoSet, recursive, SetFact.<I>EMPTY(), forceInline);
             mResult.add(createForAction(extNoInline, context, groupNoInline, MapFact.<PropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
                     cleanAction, elseAction, false, noInline, false));
@@ -334,10 +334,10 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
         if (addObject != null) { // "компиляция" NEW
             // сначала проверим если первый в списке CHANGE CLASS, тогда заберем его в FOR
-            ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
+            ImList<ActionMapImplement<?, I>> list = action.getList();
 
             if (list.size() > 0) {
-                ActionPropertyMapImplement<?, I> first = list.get(0);
+                ActionMapImplement<?, I> first = list.get(0);
                 if (first.mapping.size() == 1 && first.mapping.singleValue().equals(addObject) && first.property instanceof ChangeClassAction) {
                     ChangeClassAction changeClassProperty = (ChangeClassAction) first.property;
                     if (changeClassProperty.valueClass instanceof CustomClass && changeClassProperty.where == null) // удаление не интересует
@@ -351,7 +351,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         if(addObject != null) {
             MSet<SessionDataProperty> mLocals = SetFact.mSet();
             PropertyMapImplement<?, I> result = DerivedProperty.createForDataProp(getExtendClasses(), addClass, mLocals);
-            return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
+            return DerivedProperty.createListAction(context, ListFact.<ActionMapImplement<?, I>>toList(
                     DerivedProperty.createAddAction(addClass, innerInterfaces.removeIncl(addObject), context, ifProp, result, orders, ordersNotNull, autoSet),
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
                             addObject, result, Compare.EQUALS), MapFact.<PropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)), mLocals.immutable());
@@ -361,7 +361,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
             return null;
 
-        ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
+        ImList<ActionMapImplement<?, I>> list = action.getList();
 
         ImSet<Property>[] listChangeProps = new ImSet[list.size()];
         ImSet<Property>[] listUsedProps = new ImSet[list.size()];
@@ -372,10 +372,10 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
         // ищем сначала "вытаскиваемые" (changeProps не зависят от usedProps и т.д)
         final MSet<Property> mPushChangedProps = SetFact.mSet();
-        MList<ActionPropertyMapImplement<?, I>> mCanBePushed = ListFact.mFilter(list);
-        MList<ActionPropertyMapImplement<?, I>> mRest = ListFact.mFilter(list);
+        MList<ActionMapImplement<?, I>> mCanBePushed = ListFact.mFilter(list);
+        MList<ActionMapImplement<?, I>> mRest = ListFact.mFilter(list);
         for (int i = 0; i < list.size(); i++) {
-            ActionPropertyMapImplement<?, I> itemAction = list.get(i);
+            ActionMapImplement<?, I> itemAction = list.get(i);
 
             if (itemAction.hasPushFor(context, ordersNotNull)) {
                 MSet<Property> mSiblingChangeProps = SetFact.mSet();
@@ -404,13 +404,13 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                 mRest.add(itemAction);
         }
         ImSet<Property> pushChangedProps = mPushChangedProps.immutable();
-        ImList<ActionPropertyMapImplement<?, I>> canBePushed = ListFact.imFilter(mCanBePushed, list);
-        ImList<ActionPropertyMapImplement<?, I>> rest = ListFact.imFilter(mRest, list);
+        ImList<ActionMapImplement<?, I>> canBePushed = ListFact.imFilter(mCanBePushed, list);
+        ImList<ActionMapImplement<?, I>> rest = ListFact.imFilter(mRest, list);
 
         if (canBePushed.size() == 0)
             return null;
 
-        MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
+        MList<ActionMapImplement<?, I>> mResult = ListFact.mList();
         MSet<SessionDataProperty> mLocals = SetFact.mSet();
 
         PropertyMapImplement<?, I> pushProp = ifProp;
@@ -426,7 +426,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         }
 
         // "вытаскиваемым" проталкиваем where + order и добавляем в начало
-        for (ActionPropertyMapImplement<?, I> property : canBePushed)
+        for (ActionMapImplement<?, I> property : canBePushed)
             mResult.add(property.pushFor(context, pushProp, orders, ordersNotNull));
 
         // добавляем оставшиеся, с for'ом компилируя внутренние элементы
@@ -453,11 +453,11 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         return getPushWhere(ifProp);
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, new PushFor<I, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
+            public ActionMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
                 return createForAction(context, where, orders.mergeOrder(mapImplements(ForAction.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, autoSet, false, noInline.mapRev(mapInnerInterfaces), forceInline);
             }
         });
@@ -483,10 +483,10 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     public interface PushFor<PI extends PropertyInterface, I extends PropertyInterface> {
-        ActionPropertyMapImplement<?, I> push(ImSet<I> context, PropertyMapImplement<?, I> where, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ImRevMap<PI, I> mapInnerInterfaces);
+        ActionMapImplement<?, I> push(ImSet<I> context, PropertyMapImplement<?, I> where, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ImRevMap<PI, I> mapInnerInterfaces);
     }
 
-    public static <T extends PropertyInterface, I extends PropertyInterface, W extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(
+    public static <T extends PropertyInterface, I extends PropertyInterface, W extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(
             ImSet<I> innerInterfaces, PropertyInterfaceImplement<I> forProp, ImRevMap<PropertyInterface, I> mapInterfaces, ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push,
             ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, PushFor<I, PropertyInterface> pushFor) {
         assert !ordersNotNull; // в противном случае придется еще с orders'ов собирать интерфейсы

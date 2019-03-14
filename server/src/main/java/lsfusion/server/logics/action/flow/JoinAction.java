@@ -9,8 +9,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyImplement;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -28,9 +28,9 @@ import java.sql.SQLException;
 
 public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
-    public final ActionPropertyImplement<T, PropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
+    public final ActionImplement<T, PropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, PropertyInterfaceImplement<I>> implement) {
+    public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionImplement<T, PropertyInterfaceImplement<I>> implement) {
         super(caption, listInterfaces.size());
 
         action = DerivedProperty.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
@@ -109,7 +109,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
+    public ImList<ActionMapImplement<?, PropertyInterface>> getList() {
         // если все интерфейсы однозначны и нет return'ов - inlin'им
         if(isRecursive || action.property.hasFlow(ChangeFlowType.RETURN))
             return super.getList();

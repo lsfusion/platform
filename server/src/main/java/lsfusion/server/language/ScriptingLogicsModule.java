@@ -29,7 +29,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ActionSettings;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -1242,14 +1242,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setScriptedEditAction(LP property, String actionType, LAPWithParams action) {
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
-        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
+        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         property.property.setEditAction(actionType, actionImplements.get(0));
     }
 
     public void setScriptedContextMenuAction(LP property, LocalizedString contextMenuCaption, LAPWithParams action) {
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
-        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
+        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
+        ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
 
         String actionSID = actionImplement.property.getSID();
         property.property.setContextMenuAction(actionSID, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.property));
@@ -1258,8 +1258,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setScriptedKeyPressAction(LP property, String key, LAPWithParams action) {
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
-        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
+        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
+        ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
 
         String actionSID = actionImplement.property.getSID();
         property.property.setKeyAction(KeyStroke.getKeyStroke(key), actionSID);
@@ -3789,7 +3789,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP<PropertyInterface> mainActionLP = (LAP<PropertyInterface>) mainProp;
 
         List<Object> params = getParamsPlainList(Collections.singletonList(actionProp));
-        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(mainActionLP.listInterfaces, params.toArray());
+        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(mainActionLP.listInterfaces, params.toArray());
         addAspectEvent(mainActionLP.property, actionImplements.get(0), before);
     }
 

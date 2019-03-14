@@ -38,7 +38,7 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExplicitAction;
@@ -339,7 +339,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                 return editAction;
         }
         
-        ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
+        ActionMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
         if(editActionImplement != null)
             return editActionImplement.mapObjects(propertyObject.mapping);
 

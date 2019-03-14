@@ -22,7 +22,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.event.LinkType;
@@ -257,11 +257,11 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
     @Override
-    public ActionPropertyMapImplement<?, ClassPropertyInterface> getSetNotNullAction(boolean notNull) {
+    public ActionMapImplement<?, ClassPropertyInterface> getSetNotNullAction(boolean notNull) {
         ValueClass valueClass = getInterfaceClass();
         if(valueClass instanceof ConcreteCustomClass) {
             Action<PropertyInterface> changeClassAction = (notNull ? (ConcreteCustomClass) valueClass : ((ConcreteCustomClass) valueClass).getBaseClass().unknown).getChangeClassAction();
-            return new ActionPropertyMapImplement<>(changeClassAction, MapFact.singletonRev(changeClassAction.interfaces.single(), interfaces.single()));
+            return new ActionMapImplement<>(changeClassAction, MapFact.singletonRev(changeClassAction.interfaces.single(), interfaces.single()));
         }
         return null;
     }

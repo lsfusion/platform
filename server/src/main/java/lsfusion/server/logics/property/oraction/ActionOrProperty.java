@@ -22,6 +22,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.LogicalClass;
@@ -39,7 +40,6 @@ import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
@@ -267,24 +267,24 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     @NFLazy
-    public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
+    public void setEditAction(String editActionSID, ActionMapImplement<?, T> editActionImplement) {
         if (editActions == null || editActions instanceof EmptyRevMap) {
             editActions = MapFact.mMap(MapFact.override());
         }
-        ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
+        ((MMap<String, ActionMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
     }
 
     @LongMutable
-    private ImMap<String, ActionPropertyMapImplement<?, T>> getEditActions() {
-        return (ImMap<String, ActionPropertyMapImplement<?, T>>)(editActions == null ? MapFact.EMPTY() : editActions);
+    private ImMap<String, ActionMapImplement<?, T>> getEditActions() {
+        return (ImMap<String, ActionMapImplement<?, T>>)(editActions == null ? MapFact.EMPTY() : editActions);
     }
 
-    public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID) {
+    public ActionMapImplement<?, T> getEditAction(String editActionSID) {
         return getEditAction(editActionSID, null);
     }
 
-    public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID, Property filterProperty) {
-        ActionPropertyMapImplement<?, T> editAction = getEditActions().get(editActionSID);
+    public ActionMapImplement<?, T> getEditAction(String editActionSID, Property filterProperty) {
+        ActionMapImplement<?, T> editAction = getEditActions().get(editActionSID);
         if (editAction != null) {
             return editAction;
         }
@@ -297,7 +297,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return getDefaultEditAction(editActionSID, filterProperty);
     }
 
-    public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty);
+    public abstract ActionMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty);
 
     public boolean checkEquals() {
         return this instanceof Property;

@@ -14,7 +14,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
@@ -47,7 +47,7 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createForA
 
 public class CaseActionProperty extends ListCaseAction {
 
-    public static <I extends PropertyInterface> Action createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, PropertyInterfaceImplement<I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public static <I extends PropertyInterface> Action createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, PropertyInterfaceImplement<I> ifProp, ActionMapImplement<?, I> trueAction, ActionMapImplement<?, I> falseAction) {
         assert trueAction != null;
         if(not) // просто not'им if
             ifProp = DerivedProperty.createNot(ifProp);
@@ -59,7 +59,7 @@ public class CaseActionProperty extends ListCaseAction {
         return new CaseActionProperty(caption, false, innerInterfaces, mCases.immutableList());
     }
 
-    public void addCase(PropertyMapImplement<?, PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
+    public void addCase(PropertyMapImplement<?, PropertyInterface> where, ActionMapImplement<?, PropertyInterface> action, Version version) {
         assert type == AbstractType.CASE;
 
         ExplicitActionCase<PropertyInterface> aCase = new ExplicitActionCase<>(where, action);
@@ -70,7 +70,7 @@ public class CaseActionProperty extends ListCaseAction {
 
     private Object cases;
 
-    public void addImplicitCase(ActionPropertyMapImplement<?, PropertyInterface> aCase, List<ResolveClassSet> signature, boolean sameNamespace, Version version) {
+    public void addImplicitCase(ActionMapImplement<?, PropertyInterface> aCase, List<ResolveClassSet> signature, boolean sameNamespace, Version version) {
         addAbstractCase(new ImplicitActionCase(aCase, signature, sameNamespace), version);        
     }
 
@@ -78,7 +78,7 @@ public class CaseActionProperty extends ListCaseAction {
         NFListImpl.add(isLast, (NFList<AbstractActionCase<PropertyInterface>>) cases, aCase, version);
     }
 
-    public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action, List<ResolveClassSet> signature, Version version) {
+    public void addOperand(ActionMapImplement<?,PropertyInterface> action, List<ResolveClassSet> signature, Version version) {
         assert isAbstract();
 
         PropertyMapImplement<?, PropertyInterface> where =  action.mapWhereProperty();
@@ -96,10 +96,10 @@ public class CaseActionProperty extends ListCaseAction {
         return ((ImList<ActionCase<PropertyInterface>>)cases);
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(LocalizedString caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new GetValue<ActionCase<I>, ActionPropertyMapImplement>() {
+    public <I extends PropertyInterface> CaseActionProperty(LocalizedString caption, boolean isExclusive, ImList<ActionMapImplement> impls, ImOrderSet<I> innerInterfaces) {
+        this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new GetValue<ActionCase<I>, ActionMapImplement>() {
             @Override
-            public ActionCase<I> getMapValue(ActionPropertyMapImplement value) {
+            public ActionCase<I> getMapValue(ActionMapImplement value) {
                 return new ActionCase<>((PropertyMapImplement) value.mapWhereProperty().mapClassProperty(), value);
             }
         }));
@@ -133,9 +133,9 @@ public class CaseActionProperty extends ListCaseAction {
         return DerivedProperty.createUnion(interfaces, isExclusive, listWheres);
     }
 
-    protected ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions() {
-        return getCases().mapListValues(new GetValue<ActionPropertyMapImplement<?, PropertyInterface>, ActionCase<PropertyInterface>>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
+    protected ImList<ActionMapImplement<?, PropertyInterface>> getListActions() {
+        return getCases().mapListValues(new GetValue<ActionMapImplement<?, PropertyInterface>, ActionCase<PropertyInterface>>() {
+            public ActionMapImplement<?, PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
                 return value.implement;
             }});
     }
@@ -220,12 +220,12 @@ public class CaseActionProperty extends ListCaseAction {
         return ForAction.getPushWhere(getCases().single().where);
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         final ActionCase<PropertyInterface> singleCase = getCases().single();
         return ForAction.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<PropertyInterface, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
+            public ActionMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
                 return createForAction(context, where, orders, ordersNotNull, singleCase.implement.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
             }
         });
@@ -253,8 +253,8 @@ public class CaseActionProperty extends ListCaseAction {
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type type = null;
-        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actions = getListActions();
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+        ImList<ActionMapImplement<?, PropertyInterface>> actions = getListActions();
+        for (ActionMapImplement<?, PropertyInterface> action : actions) {
             Type actionRequestType = action.property.getSimpleRequestInputType(optimistic, inRequest);
             if (!optimistic && actionRequestType == null) {
                 return null;
@@ -281,7 +281,7 @@ public class CaseActionProperty extends ListCaseAction {
             return null;
 
         OrObjectClassSet result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
             CustomClass simpleAdd = action.property.getSimpleAdd();
             if(simpleAdd==null) // значит есть case который не добавляет
                 return null;
@@ -300,7 +300,7 @@ public class CaseActionProperty extends ListCaseAction {
 
         if(isExclusive || !Settings.get().isDisableSimpleAddRemoveInNonExclCase()) {
             PropertyInterface result = null;
-            for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
+            for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
                 PropertyInterface simpleDelete = action.mapSimpleDelete();
                 if (simpleDelete != null && (result == null || BaseUtils.hashEquals(result, simpleDelete)))
                     result = simpleDelete;
@@ -320,16 +320,16 @@ public class CaseActionProperty extends ListCaseAction {
     public class IfActionProperty extends KeepContextActionProperty {
 
     private final PropertyMapImplement<?, PropertyInterface> ifProp;
-    private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
-    private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
+    private final ActionMapImplement<?, PropertyInterface> trueAction;
+    private final ActionMapImplement<?, PropertyInterface> falseAction;
 
-    public <I extends PropertyInterface> IfActionProperty(String sID, LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, PropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public <I extends PropertyInterface> IfActionProperty(String sID, LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, PropertyMapImplement<?, I> ifProp, ActionMapImplement<?, I> trueAction, ActionMapImplement<?, I> falseAction) {
         super(sID, caption, innerInterfaces.size());
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.ifProp = ifProp.map(mapInterfaces);
-        ActionPropertyMapImplement<?, PropertyInterface> mapTrue = trueAction.map(mapInterfaces);
-        ActionPropertyMapImplement<?, PropertyInterface> mapFalse = falseAction != null ? falseAction.map(mapInterfaces) : null;
+        ActionMapImplement<?, PropertyInterface> mapTrue = trueAction.map(mapInterfaces);
+        ActionMapImplement<?, PropertyInterface> mapFalse = falseAction != null ? falseAction.map(mapInterfaces) : null;
         if (!not) {
             this.trueAction = mapTrue;
             this.falseAction = mapFalse;
@@ -416,11 +416,11 @@ public class CaseActionProperty extends ListCaseAction {
         return ifProp.property;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForActionProperty.pushFor(interfaces, ifProp, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<PropertyInterface, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
+            public ActionMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
                 return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
             }
         });

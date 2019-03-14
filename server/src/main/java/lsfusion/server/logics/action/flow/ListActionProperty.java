@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -33,21 +33,21 @@ import java.sql.SQLException;
 public class ListActionProperty extends ListCaseAction {
 
     private Object actions;
-    public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
+    public void addAction(ActionMapImplement<?, PropertyInterface> action, Version version) {
         assert action != null;
-        NFListImpl.add(isLast, (NFList<ActionPropertyMapImplement<?, PropertyInterface>>) actions, action, version);
+        NFListImpl.add(isLast, (NFList<ActionMapImplement<?, PropertyInterface>>) actions, action, version);
 
         addWhereOperand(action, null, version);
     }
 
-    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getActions() {
-        return (ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions;
+    public ImList<ActionMapImplement<?, PropertyInterface>> getActions() {
+        return (ImList<ActionMapImplement<?, PropertyInterface>>)actions;
     }
 
     private final ImSet<SessionDataProperty> localsInScope;
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> ListActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions, ImSet<SessionDataProperty> localsInScope)  {
+    public <I extends PropertyInterface> ListActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ImList<ActionMapImplement<?, I>> actions, ImSet<SessionDataProperty> localsInScope)  {
         super(caption, false, innerInterfaces);
 
         this.actions = DerivedProperty.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
@@ -66,14 +66,14 @@ public class ListActionProperty extends ListCaseAction {
 
     public PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
 
-        ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
-            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>() {
+            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
                 return value.mapCalcWhereProperty();
             }});
         return DerivedProperty.createUnion(interfaces, listWheres);
     }
 
-    protected ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions() {
+    protected ImList<ActionMapImplement<?, PropertyInterface>> getListActions() {
         return getActions();
     }
 
@@ -81,7 +81,7 @@ public class ListActionProperty extends ListCaseAction {
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
 
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
+        for (ActionMapImplement<?, PropertyInterface> action : getActions()) {
             FlowResult actionResult = action.execute(context);
             if (actionResult != FlowResult.FINISH) {
                 result =  actionResult;
@@ -98,13 +98,13 @@ public class ListActionProperty extends ListCaseAction {
     protected void finalizeAbstractInit() {
         super.finalizeAbstractInit();
         
-        actions = ((NFList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).getList();
+        actions = ((NFList<ActionMapImplement<?, PropertyInterface>>)actions).getList();
     }
 
     @Override
-    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
-        MList<ActionPropertyMapImplement<?, PropertyInterface>> mResult = ListFact.mList();
-        for(ActionPropertyMapImplement<?, PropertyInterface> action : getActions())
+    public ImList<ActionMapImplement<?, PropertyInterface>> getList() {
+        MList<ActionMapImplement<?, PropertyInterface>> mResult = ListFact.mList();
+        for(ActionMapImplement<?, PropertyInterface> action : getActions())
             mResult.addAll(action.getList());
         return mResult.immutableList();
     }
@@ -112,7 +112,7 @@ public class ListActionProperty extends ListCaseAction {
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type type = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
             Type actionRequestType = action.property.getSimpleRequestInputType(optimistic, inRequest);
             if (actionRequestType != null) {
                 if (type == null) {
@@ -131,7 +131,7 @@ public class ListActionProperty extends ListCaseAction {
     @Override
     public CustomClass getSimpleAdd() {
         CustomClass result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
             CustomClass simpleAdd = action.property.getSimpleAdd();
             if (simpleAdd != null) {
                 if (result == null) {
@@ -147,7 +147,7 @@ public class ListActionProperty extends ListCaseAction {
     @Override
     public PropertyInterface getSimpleDelete() {
         PropertyInterface result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
+        for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
             PropertyInterface simpleDelete = action.mapSimpleDelete();
             if (simpleDelete != null) {
                 if (result == null) {
@@ -175,7 +175,7 @@ public class ListActionProperty extends ListCaseAction {
     public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
         boolean lookingForChangeFlow = false;
         boolean lookingForChange = true;
-        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actions = getActions();
+        ImList<ActionMapImplement<?, PropertyInterface>> actions = getActions();
         for(int i = actions.size() - 1; i>= 0; i--) {
             Action<?> listAction = actions.get(i).property;
             

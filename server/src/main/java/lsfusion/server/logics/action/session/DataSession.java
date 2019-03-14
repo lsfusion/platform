@@ -34,7 +34,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
-import lsfusion.server.logics.action.implement.ActionPropertyValueImplement;
+import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
 import lsfusion.server.logics.action.session.change.increment.IncrementTableProps;
@@ -1043,7 +1043,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     @LogTime
     @ThisMessage (profile = false)
-    private void executeActionInTransaction(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionPropertyValueImplement<?> action) throws SQLException, SQLHandledException {
+    private void executeActionInTransaction(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionValueImplement<?> action) throws SQLException, SQLHandledException {
         action.execute(env, stack);
     }
 
@@ -1051,10 +1051,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @Cancelable
     private boolean executeApplyEvent(BusinessLogics BL, ExecutionStack stack, ApplyEvent event, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
         if(event instanceof ApplyActionEvent) {
-            startPendingSingles(event instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) event).property : ((ApplyGlobalActionEvent) event).action);
+            startPendingSingles(event instanceof ActionValueImplement ? ((ActionValueImplement) event).property : ((ApplyGlobalActionEvent) event).action);
 
-            if(event instanceof ActionPropertyValueImplement)
-                executeActionInTransaction(this, stack, (ActionPropertyValueImplement)event);
+            if(event instanceof ActionValueImplement)
+                executeActionInTransaction(this, stack, (ActionValueImplement)event);
             else
                 executeGlobalActionEvent(this, stack, ((ApplyGlobalActionEvent) event).action);
 
@@ -1361,7 +1361,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), sessionEventFormEnv);
+        boolean result = apply(BL, stack, interaction, SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), sessionEventFormEnv);
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1732,8 +1732,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private FunctionSet<SessionDataProperty> recursiveUsed = SetFact.EMPTY();
-    private List<ActionPropertyValueImplement> recursiveActions = ListFact.mAddRemoveList();
-    public void addRecursion(ActionPropertyValueImplement action, FunctionSet<SessionDataProperty> sessionUsed, boolean singleApply) {
+    private List<ActionValueImplement> recursiveActions = ListFact.mAddRemoveList();
+    public void addRecursion(ActionValueImplement action, FunctionSet<SessionDataProperty> sessionUsed, boolean singleApply) {
         action.property.singleApply = singleApply; // жестко конечно, но пока так
         recursiveActions.add(action);
         recursiveUsed = BaseUtils.merge(recursiveUsed, sessionUsed);
@@ -1748,27 +1748,27 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     
     // inner / external server calls (not recommended)
     public void apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        apply(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
+        apply(BL, stack, null, SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     // inner / external server calls
     public String applyMessage(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return applyMessage(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
+        return applyMessage(BL, stack, null, SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     // inner / external server calls
     public void applyException(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        applyException(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
+        applyException(BL, stack, null, SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     @AssertSynchronized
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
             return true;
 
         if(isInTransaction()) {
             ServerLoggers.assertLog(false, "NESTED APPLY");
-            for(ActionPropertyValueImplement applyAction : applyActions)
+            for(ActionValueImplement applyAction : applyActions)
                 applyAction.execute(this, stack);
             return true;
         }
@@ -1895,7 +1895,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean transactApply(BusinessLogics BL, ExecutionStack stack,
                                   UserInteraction interaction,
                                   Map<String, Integer> attemptCountMap, int autoAttemptCount,
-                                  ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
+                                  ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
         long startTimeStamp = getTimestamp(); 
         transactionStartTimestamp = startTimeStamp;
@@ -2127,7 +2127,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private boolean recursiveApply(ImOrderSet<ActionValueImplement> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<ApplyEvent> execActions = SetFact.addOrderExcl(actions, BL.getApplyEvents(this));
         for (int i = 0, size = execActions.size(); i < size; i++) {
@@ -2178,7 +2178,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         if(recursiveActions.size() > 0) {
-            ImOrderSet<ActionPropertyValueImplement> execRecursiveActions = SetFact.fromJavaOrderSet(recursiveActions);
+            ImOrderSet<ActionValueImplement> execRecursiveActions = SetFact.fromJavaOrderSet(recursiveActions);
 
             recursiveUsed = SetFact.EMPTY();
             recursiveActions.clear();
