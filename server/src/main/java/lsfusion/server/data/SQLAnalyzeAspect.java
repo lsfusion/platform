@@ -1,7 +1,7 @@
 package lsfusion.server.data;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
 import lsfusion.server.data.type.ParseInterface;
 import org.aspectj.lang.ProceedingJoinPoint;

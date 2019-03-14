@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.base.stack.ExecutionStackAspect;

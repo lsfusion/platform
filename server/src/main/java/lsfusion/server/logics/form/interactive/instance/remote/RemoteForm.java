@@ -21,7 +21,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.interop.form.user.*;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.context.EExecutionStackCallable;
 import lsfusion.server.base.context.EExecutionStackRunnable;
 import lsfusion.server.base.context.ExecutionStack;

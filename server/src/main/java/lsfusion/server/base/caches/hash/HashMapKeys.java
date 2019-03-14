@@ -3,8 +3,8 @@ package lsfusion.server.base.caches.hash;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.server.Settings;
-import lsfusion.server.base.caches.ParamExpr;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.translator.MapTranslate;
 

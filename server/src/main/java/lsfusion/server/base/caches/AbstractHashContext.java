@@ -3,7 +3,7 @@ package lsfusion.server.base.caches;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.hash.HashCodeKeys;
 import lsfusion.server.base.caches.hash.HashCodeValues;
 import lsfusion.server.base.caches.hash.HashContext;

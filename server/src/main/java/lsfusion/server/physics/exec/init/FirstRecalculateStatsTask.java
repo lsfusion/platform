@@ -1,7 +1,7 @@
 package lsfusion.server.physics.exec.init;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.SystemProperties;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.init.SimpleBLTask;

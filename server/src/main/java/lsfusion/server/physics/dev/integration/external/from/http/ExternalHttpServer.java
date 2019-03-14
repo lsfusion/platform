@@ -10,7 +10,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.SessionInfo;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.MonitorServer;

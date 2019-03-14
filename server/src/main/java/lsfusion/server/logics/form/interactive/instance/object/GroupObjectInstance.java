@@ -14,7 +14,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.interop.form.user.Order;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.ThreadLocalContext;

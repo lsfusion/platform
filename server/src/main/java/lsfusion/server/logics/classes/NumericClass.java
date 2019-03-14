@@ -4,7 +4,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.version.NFStaticLazy;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;

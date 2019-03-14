@@ -11,6 +11,7 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.base.caches.hash.HashObject;
 import lsfusion.server.data.Value;
+import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.translator.MapObject;
 
 // assert что T instanceof AbstractTranslateContext но заколебешься его протаскивать

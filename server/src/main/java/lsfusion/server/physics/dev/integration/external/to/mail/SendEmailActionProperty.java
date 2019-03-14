@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;

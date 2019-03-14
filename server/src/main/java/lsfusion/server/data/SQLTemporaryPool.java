@@ -6,8 +6,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.data.expr.query.Stat;
 

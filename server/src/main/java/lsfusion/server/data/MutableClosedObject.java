@@ -1,7 +1,7 @@
 package lsfusion.server.data;
 
 import lsfusion.base.mutability.MutableObject;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 
 import java.sql.SQLException;
 

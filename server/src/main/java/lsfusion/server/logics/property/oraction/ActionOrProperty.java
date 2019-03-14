@@ -20,7 +20,7 @@ import lsfusion.base.comb.ListPermutations;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;

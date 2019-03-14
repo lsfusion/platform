@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.DataType;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;

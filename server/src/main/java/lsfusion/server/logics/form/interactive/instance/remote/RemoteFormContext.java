@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.physics.admin.logging.LogInfo;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.base.remote.ui.RemoteUIContext;
 
 import java.util.Locale;

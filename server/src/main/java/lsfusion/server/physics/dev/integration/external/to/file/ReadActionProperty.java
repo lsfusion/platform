@@ -6,7 +6,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.ReadClientAction;
 import lsfusion.base.file.ReadUtils;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.linear.LP;

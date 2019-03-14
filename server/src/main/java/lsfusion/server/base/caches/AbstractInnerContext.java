@@ -10,6 +10,7 @@ import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.*;
 import lsfusion.server.data.Value;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapTranslator;
 import lsfusion.server.data.translator.MapValuesTranslate;

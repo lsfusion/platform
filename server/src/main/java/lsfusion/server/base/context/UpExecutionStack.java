@@ -6,7 +6,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.Processor;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.linear.LP;

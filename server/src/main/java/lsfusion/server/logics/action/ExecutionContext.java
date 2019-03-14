@@ -11,7 +11,7 @@ import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.SameThreadExecutionStack;
 import lsfusion.server.base.context.ThreadLocalContext;
@@ -56,7 +56,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.SecurityManager;
+import lsfusion.server.physics.admin.authentication.security.SecurityManager;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.base.remote.RMIManager;
 

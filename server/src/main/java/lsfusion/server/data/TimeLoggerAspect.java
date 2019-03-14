@@ -3,7 +3,7 @@ package lsfusion.server.data;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.stack.AspectStackItem;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -12,7 +12,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.reflect.Method;
 
-import static lsfusion.server.ServerLoggers.systemLogger;
+import static lsfusion.server.physics.admin.logging.ServerLoggers.systemLogger;
 
 @Aspect
 public class TimeLoggerAspect {

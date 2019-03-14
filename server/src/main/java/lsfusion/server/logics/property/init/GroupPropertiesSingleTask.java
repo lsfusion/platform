@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.init;
 
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.Context;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.ThreadLocalContext;

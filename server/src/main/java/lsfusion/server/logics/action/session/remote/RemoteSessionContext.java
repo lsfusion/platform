@@ -6,7 +6,7 @@ import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.physics.admin.authentication.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.remote.RemoteConnectionContext;
 
-import static lsfusion.server.ServerLoggers.systemLogger;
+import static lsfusion.server.physics.admin.logging.ServerLoggers.systemLogger;
 
 public class RemoteSessionContext extends RemoteConnectionContext {
 

@@ -8,7 +8,7 @@ import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.user.UserInputResult;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.AbstractContext;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.DataObject;
@@ -29,7 +29,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

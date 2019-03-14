@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.OuterContext;
-import lsfusion.server.base.caches.ParamExpr;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;

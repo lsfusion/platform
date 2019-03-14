@@ -1,6 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.base.task.PublicTask;

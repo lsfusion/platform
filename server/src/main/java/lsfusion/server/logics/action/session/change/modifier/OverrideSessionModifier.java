@@ -9,7 +9,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.ValuesContext;
 import lsfusion.server.data.OperationOwner;

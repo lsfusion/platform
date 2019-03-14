@@ -13,6 +13,7 @@ import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.expr.query.GroupExprJoinsWhere;
 import lsfusion.server.data.expr.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.query.Stat;

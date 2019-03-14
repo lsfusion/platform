@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.stack.ThrowableWithStack;
 

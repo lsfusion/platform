@@ -2,8 +2,8 @@ package lsfusion.server.base;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.Context;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;

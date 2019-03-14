@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.hash.HashContext;

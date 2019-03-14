@@ -10,7 +10,7 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.interop.form.stat.report.ReportGenerator;
-import lsfusion.server.SystemProperties;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.linear.LP;

@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.EnsureTypeEnvironment;

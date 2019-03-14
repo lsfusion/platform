@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;

@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.server.ServerLoggers;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 
 public abstract class OperationOwner {
     

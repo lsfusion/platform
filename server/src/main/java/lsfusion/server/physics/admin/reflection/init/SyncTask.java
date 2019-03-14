@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.reflection.init;
 
-import lsfusion.server.SystemProperties;
+import lsfusion.server.physics.admin.SystemProperties;
 import org.apache.log4j.Logger;
 
 public abstract class SyncTask extends ReflectionTask {

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.init;
 
-import lsfusion.server.Settings;
-import lsfusion.server.SystemProperties;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 import static lsfusion.base.BaseUtils.systemLogger;

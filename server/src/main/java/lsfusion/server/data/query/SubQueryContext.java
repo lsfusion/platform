@@ -1,7 +1,7 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.Settings;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 
 public class SubQueryContext extends TwinImmutableObject {

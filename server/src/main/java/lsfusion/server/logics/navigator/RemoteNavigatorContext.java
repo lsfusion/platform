@@ -22,7 +22,7 @@ import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.logging.LogInfo;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.authentication.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.remote.RemoteConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;

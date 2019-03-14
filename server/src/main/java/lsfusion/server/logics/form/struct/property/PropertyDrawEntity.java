@@ -42,8 +42,8 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.physics.admin.authentication.policy.ViewPropertySecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.authentication.security.policy.ViewPropertySecurityPolicy;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
