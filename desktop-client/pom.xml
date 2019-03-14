@@ -131,10 +131,6 @@
                     <artifactId>httpmime</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.jfree</groupId>
-                    <artifactId>jcommon</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.olap4j</groupId>
                     <artifactId>olap4j</artifactId>
                 </exclusion>
