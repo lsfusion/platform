@@ -57,8 +57,8 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.base.caches.ManualLazy;
@@ -372,7 +372,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
-            ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
+            ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
             for(int i = 0, size = props.size(); i<size; i++)
                 mEnvironmentIncrementSources.exclAdd((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
         }
@@ -2227,12 +2227,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new FormData(mResult.immutableOrder());
     }
 
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getEditContextFilters(ClassFormEntity editForm, CalcPropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getEditContextFilters(ClassFormEntity editForm, PropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
         return getContextFilters(editForm.object, implement, selectionGroupObject, pullProps);
     }
 
     // pullProps чтобы запретить hint'ить
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getContextFilters(ObjectEntity filterObject, CalcPropertyValueImplement<P> propValues, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getContextFilters(ObjectEntity filterObject, PropertyValueImplement<P> propValues, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
         Property<P> implementProperty = propValues.property;
 
         MSet<ContextFilter> mContextFilters = SetFact.mSet();
@@ -2245,7 +2245,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (FilterEntity filterEntity : entity.getFixedFilters()) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
-                for (CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
+                for (PropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
                     OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((Property) filterImplement.property).getOnChangeProperty((Property) propValues.property);
                     mPullProps.add(onChangeProperty);
                     mContextFilters.add(onChangeProperty.getContextFilter((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject));
@@ -2291,7 +2291,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         };
     }
 
-    public DialogRequest createObjectEditorDialogRequest(final CalcPropertyValueImplement propertyValues, final ExecutionStack stack) throws SQLException {
+    public DialogRequest createObjectEditorDialogRequest(final PropertyValueImplement propertyValues, final ExecutionStack stack) throws SQLException {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2314,7 +2314,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         };
     }
 
-    public DialogRequest createChangeEditorDialogRequest(final CalcPropertyValueImplement propertyValues,
+    public DialogRequest createChangeEditorDialogRequest(final PropertyValueImplement propertyValues,
                                                          final GroupObjectInstance groupObject,
                                                          final Property filterProperty,
                                                          final ExecutionStack stack) throws SQLException {

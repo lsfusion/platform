@@ -32,13 +32,13 @@ import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -531,9 +531,9 @@ public class ScriptingFormEntity {
 
     private <P extends PropertyInterface, C extends PropertyInterface> CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity<P> groundProperty, boolean back) {
         LCP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
-        CalcPropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
-        CalcPropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
-                new CalcPropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
+        PropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
+        PropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
+                new PropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
         return new CalcPropertyObjectEntity(
                 mapImpl.property,
                 mapImpl.mapping.join(groundProperty.mapping));

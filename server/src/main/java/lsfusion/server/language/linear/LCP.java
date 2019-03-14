@@ -20,9 +20,9 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.logging.LogFormEntity;
@@ -226,32 +226,32 @@ public class LCP<T extends PropertyInterface> extends LP<T, Property<T>> {
 
     public <D extends PropertyInterface> void setEventChange(LCP<D> valueProperty, int whereNum, Object... params) {
 
-        ImList<CalcPropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
+        ImList<PropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
 
         property.setEventChange(LogicsModule.mapCalcListImplement(valueProperty, listInterfaces),
-                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(0, whereNum)),
-                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(whereNum, defImplements.size())).getCol());
+                BaseUtils.<ImList<PropertyMapImplement<?, T>>>immutableCast(defImplements.subList(0, whereNum)),
+                BaseUtils.<ImList<PropertyMapImplement<?, T>>>immutableCast(defImplements.subList(whereNum, defImplements.size())).getCol());
     }
 
     public <D extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, Object... params) {
-        ImList<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
-        property.setEventChange(lm, action, listImplements.get(0), (CalcPropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
+        ImList<PropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
+        property.setEventChange(lm, action, listImplements.get(0), (PropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {
-        ImList<CalcPropertyInterfaceImplement<T>> readImplements = readCalcImplements(listInterfaces, params);
-        CalcPropertyInterfaceImplement<UnionProperty.Interface> operand = (CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(0);
+        ImList<PropertyInterfaceImplement<T>> readImplements = readCalcImplements(listInterfaces, params);
+        PropertyInterfaceImplement<UnionProperty.Interface> operand = (PropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(0);
         if(hasWhen)
-            ((CaseUnionProperty)property).addCase((CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(1), operand, version);
+            ((CaseUnionProperty)property).addCase((PropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(1), operand, version);
         else {
 //            if(((CaseUnionProperty) property).getAbstractType() == CaseUnionProperty.Type.MULTI) {
 //                AbstractCase.cntexpl = AbstractCase.cntexpl + 1;
-//                if(operand instanceof CalcPropertyMapImplement) {
-//                    if(BaseUtils.nullEquals(((CalcPropertyMapImplement)operand).property.getName(), property.getName()))
+//                if(operand instanceof PropertyMapImplement) {
+//                    if(BaseUtils.nullEquals(((PropertyMapImplement)operand).property.getName(), property.getName()))
 //                        AbstractCase.cntexplname = AbstractCase.cntexplname + 1;
 //                }
 //            }
-            ((CaseUnionProperty) property).addOperand((CalcPropertyMapImplement<?, UnionProperty.Interface>) operand, signature, version);
+            ((CaseUnionProperty) property).addOperand((PropertyMapImplement<?, UnionProperty.Interface>) operand, signature, version);
         }
     }
 
@@ -267,11 +267,11 @@ public class LCP<T extends PropertyInterface> extends LP<T, Property<T>> {
         return property.getExpr(getMap(exprs));
     }
 
-    public <U> CalcPropertyImplement<T, U> getMapping(U... mapping) {
-        return new CalcPropertyImplement<>(property, getMap(mapping));
+    public <U> PropertyImplement<T, U> getMapping(U... mapping) {
+        return new PropertyImplement<>(property, getMap(mapping));
     }
-    public <U extends PropertyInterface> CalcPropertyMapImplement<T, U> getImplement(U... mapping) {
-        return new CalcPropertyMapImplement<>(property, getRevMap(mapping));
+    public <U extends PropertyInterface> PropertyMapImplement<T, U> getImplement(U... mapping) {
+        return new PropertyMapImplement<>(property, getRevMap(mapping));
     }
 
     public PropertyChange<T> getChange(Expr expr, Where where, KeyExpr... keys) {

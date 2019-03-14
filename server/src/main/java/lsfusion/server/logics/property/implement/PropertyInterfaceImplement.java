@@ -29,13 +29,12 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 
 import java.sql.SQLException;
 
-public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> extends PropertyInterfaceImplement<P> {
+public interface PropertyInterfaceImplement<P extends PropertyInterface> extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement {
 
-    <T extends PropertyInterface> CalcPropertyInterfaceImplement<T> map(ImRevMap<P, T> map);
+    <T extends PropertyInterface> PropertyInterfaceImplement<T> map(ImRevMap<P, T> map);
 
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere);
@@ -60,7 +59,7 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges);
     DataChanges mapJoinDataChanges(PropertyChange<P> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges);
 
-    void fill(MSet<P> interfaces, MSet<CalcPropertyMapImplement<?, P>> properties);
+    void fill(MSet<P> interfaces, MSet<PropertyMapImplement<?, P>> properties);
     ImCol<P> getInterfaces();
 
     Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType);

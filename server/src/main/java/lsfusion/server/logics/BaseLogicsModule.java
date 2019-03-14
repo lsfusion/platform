@@ -35,7 +35,7 @@ import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
@@ -621,7 +621,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     protected <P extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
-        CalcPropertyRevImplement<P, Integer> implement = (CalcPropertyRevImplement<P, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+        PropertyRevImplement<P, Integer> implement = (PropertyRevImplement<P, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 

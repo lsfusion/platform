@@ -2,12 +2,12 @@ package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionCase<P extends PropertyInterface> extends Case<P, CalcPropertyInterfaceImplement<P>, ActionPropertyMapImplement<?, P>> {
+public class ActionCase<P extends PropertyInterface> extends Case<P, PropertyInterfaceImplement<P>, ActionPropertyMapImplement<?, P>> {
 
-    public ActionCase(CalcPropertyInterfaceImplement<P> where, ActionPropertyMapImplement<?, P> action) {
+    public ActionCase(PropertyInterfaceImplement<P> where, ActionPropertyMapImplement<?, P> action) {
         super(where, action);
     }
 

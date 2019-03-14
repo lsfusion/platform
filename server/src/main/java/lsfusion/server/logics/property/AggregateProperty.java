@@ -29,7 +29,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.classes.IsClassField;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.DBManager;
@@ -48,13 +48,13 @@ import java.sql.Timestamp;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
-    protected static void fillDepends(MSet<Property> depends, ImCol<? extends CalcPropertyInterfaceImplement> propImplements) {
-        for(CalcPropertyInterfaceImplement propImplement : propImplements)
+    protected static void fillDepends(MSet<Property> depends, ImCol<? extends PropertyInterfaceImplement> propImplements) {
+        for(PropertyInterfaceImplement propImplement : propImplements)
             propImplement.mapFillDepends(depends);
     }
 
 
-    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<CalcPropertyInterfaceImplement<I>> used, final boolean isSelect, final ExClassSet commonValue, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, InferType inferType) {
+    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<PropertyInterfaceImplement<I>> used, final boolean isSelect, final ExClassSet commonValue, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, InferType inferType) {
         ImList<ExClassSet> valueClasses = ListFact.toList(used.size(), new GetIndex<ExClassSet>() {
             public ExClassSet getMapValue(int i) {
                 return isSelect && i == 0 ? commonValue : ExClassSet.notNull(commonValue);
@@ -62,12 +62,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return inferInnerInterfaceClasses(used, orders, ordersNotNull, skipNotNull, valueClasses, inferType);
     }
 
-    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<CalcPropertyInterfaceImplement<I>> used, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, ImList<ExClassSet> valueClasses, InferType inferType) {
+    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<PropertyInterfaceImplement<I>> used, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, ImList<ExClassSet> valueClasses, InferType inferType) {
         return op(used.addList(orders.keyOrderSet()), valueClasses.addList(ListFact.toList(ExClassSet.NULL, orders.size())),
                 used.size() + (ordersNotNull ? orders.size() : 0), skipNotNull, inferType, false);
     }
 
-    protected <I extends PropertyInterface> ExClassSet inferInnerValueClass(ImList<CalcPropertyInterfaceImplement<I>> used, ImMap<I, ExClassSet> inferred, AggrType aggrType, InferType inferType) {
+    protected <I extends PropertyInterface> ExClassSet inferInnerValueClass(ImList<PropertyInterfaceImplement<I>> used, ImMap<I, ExClassSet> inferred, AggrType aggrType, InferType inferType) {
         ExClassSet valueClass = used.get(aggrType.getMainIndex()).mapInferValueClass(inferred, inferType);
         if(aggrType.isSelect())
             return valueClass;

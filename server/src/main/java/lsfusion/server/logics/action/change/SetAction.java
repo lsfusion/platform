@@ -24,8 +24,8 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.ValueProperty;
@@ -41,11 +41,11 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createSetA
 
 public class SetAction<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
 
-    private CalcPropertyInterfaceImplement<I> writeFrom;
-    protected final CalcPropertyMapImplement<P, I> writeTo; // assert что здесь + в mapInterfaces полный набор ключей
-    protected final CalcPropertyMapImplement<?, I> where;
+    private PropertyInterfaceImplement<I> writeFrom;
+    protected final PropertyMapImplement<P, I> writeTo; // assert что здесь + в mapInterfaces полный набор ключей
+    protected final PropertyMapImplement<?, I> where;
     
-    public static boolean hasFlow(CalcPropertyMapImplement<?,?> writeTo, ChangeFlowType type) {
+    public static boolean hasFlow(PropertyMapImplement<?,?> writeTo, ChangeFlowType type) {
         if(type.isChange() && writeTo.property.canBeGlobalChanged())
             return true;             
         return false;
@@ -60,8 +60,8 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
 
     public SetAction(LocalizedString caption,
                      ImSet<I> innerInterfaces,
-                     ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<P, I> writeTo,
-                     CalcPropertyInterfaceImplement<I> writeFrom) {
+                     ImOrderSet<I> mapInterfaces, PropertyMapImplement<?, I> where, PropertyMapImplement<P, I> writeTo,
+                     PropertyInterfaceImplement<I> writeFrom) {
         super(caption, innerInterfaces, mapInterfaces);
 
         this.writeTo = writeTo;
@@ -93,12 +93,12 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if((where == null || where.property instanceof ValueProperty) && writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(mapInterfaces.valuesSet())
-                && !(writeFrom instanceof CalcPropertyMapImplement && Property.depends(((CalcPropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
+                && !(writeFrom instanceof PropertyMapImplement && Property.depends(((PropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
             session.dropChanges((SessionDataProperty) writeTo.property);
 
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
         ImSet<I> extInterfaces = innerInterfaces.remove(mapInterfaces.valuesSet());
-        CalcPropertyMapImplement<?, I> changeWhere = (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces) && !(writeTo.property instanceof SessionDataProperty)) ?
+        PropertyMapImplement<?, I> changeWhere = (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces) && !(writeTo.property instanceof SessionDataProperty)) ?
                 (where == null ? DerivedProperty.<I>createTrue() : where) : getFullProperty();
 
         Where exprWhere = changeWhere.mapExpr(innerExprs, context.getModifier()).getWhere();
@@ -129,25 +129,25 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         return FlowResult.FINISH;
     }
 
-    public static <I extends PropertyInterface> CalcPropertyMapImplement<?, I> getFullProperty(ImSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<?, I> writeTo, CalcPropertyInterfaceImplement<I> writeFrom) {
-        CalcPropertyMapImplement<?, I> result = DerivedProperty.createUnion(innerInterfaces, // проверяем на is WriteClass (можно было бы еще на интерфейсы проверить но пока нет смысла)
+    public static <I extends PropertyInterface> PropertyMapImplement<?, I> getFullProperty(ImSet<I> innerInterfaces, PropertyMapImplement<?, I> where, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom) {
+        PropertyMapImplement<?, I> result = DerivedProperty.createUnion(innerInterfaces, // проверяем на is WriteClass (можно было бы еще на интерфейсы проверить но пока нет смысла)
                 DerivedProperty.createNotNull(writeTo), getValueClassProperty(writeTo, writeFrom));
         if(where!=null)
             result = DerivedProperty.createAnd(innerInterfaces, where, result);
         return result;
     }
 
-    public static <I extends PropertyInterface> CalcPropertyMapImplement<?, I> getValueClassProperty(CalcPropertyMapImplement<?, I> writeTo, CalcPropertyInterfaceImplement<I> writeFrom) {
+    public static <I extends PropertyInterface> PropertyMapImplement<?, I> getValueClassProperty(PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom) {
         return DerivedProperty.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(ClassType.wherePolicy), "value").
                 mapImplement(MapFact.singleton("value", writeFrom)));
     }
 
     @IdentityInstanceLazy
-    private CalcPropertyMapImplement<?, I> getFullProperty() {
+    private PropertyMapImplement<?, I> getFullProperty() {
         return getFullProperty(innerInterfaces, where, writeTo, writeFrom);
     }
 
-    protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
+    protected PropertyMapImplement<?, I> calcGroupWhereProperty() {
         return getFullProperty();
     }
 
@@ -161,11 +161,11 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         return null;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForAction.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<I, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
+            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
                 return createSetAction(context, writeTo.map(mapInnerInterfaces), writeFrom.map(mapInnerInterfaces), where, orders, ordersNotNull);
             }
         });

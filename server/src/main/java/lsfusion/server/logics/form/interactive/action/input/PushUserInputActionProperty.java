@@ -6,7 +6,7 @@ import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.flow.AroundAspectAction;
@@ -16,10 +16,10 @@ import java.sql.SQLException;
 
 public class PushUserInputActionProperty extends AroundAspectAction {
 
-    private final CalcPropertyInterfaceImplement<PropertyInterface> push;
+    private final PropertyInterfaceImplement<PropertyInterface> push;
 
     // по аналогии с If
-    public <I extends PropertyInterface> PushUserInputActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
+    public <I extends PropertyInterface> PushUserInputActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, PropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();

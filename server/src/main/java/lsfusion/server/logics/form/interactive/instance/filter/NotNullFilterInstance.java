@@ -17,7 +17,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -55,7 +55,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
+    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
         if(checkChange && Property.depends((Property<?>) property.property, toChange))
             return BaseUtils.immutableCast(Collections.singleton(property.getValueImplement()));
         return super.getResolveChangeProperties(toChange);

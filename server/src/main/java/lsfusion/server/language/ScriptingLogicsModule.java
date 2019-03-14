@@ -66,7 +66,7 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrPropertySettings;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -1739,7 +1739,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses);
         SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;
 
-        ImList<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
+        ImList<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
 
         int i = 0;
         

@@ -6,19 +6,19 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.StringAggUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.classes.data.FormulaUnionProperty;
 
 public class StringAggUnionProperty extends FormulaUnionProperty {
 
     private final String separator;
-    private final ImList<CalcPropertyInterfaceImplement<Interface>> operands;
+    private final ImList<PropertyInterfaceImplement<Interface>> operands;
 
-    public StringAggUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, String separator) {
+    public StringAggUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<PropertyInterfaceImplement<Interface>> operands, String separator) {
         super(caption, interfaces);
         this.separator = separator;
         this.operands = operands;
@@ -32,7 +32,7 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     @Override
-    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<PropertyInterfaceImplement<Interface>> getOperands() {
         return operands.getCol();
     }
 

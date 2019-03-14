@@ -22,7 +22,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -39,8 +39,8 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return new CalcPropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
-    public CalcPropertyValueImplement<P> getValueImplement() {
-        return new CalcPropertyValueImplement<>(property, getInterfaceDataObjects());
+    public PropertyValueImplement<P> getValueImplement() {
+        return new PropertyValueImplement<>(property, getInterfaceDataObjects());
     }
 
     public Object read(FormInstance formInstance) throws SQLException, SQLHandledException {

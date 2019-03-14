@@ -25,8 +25,8 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
@@ -49,7 +49,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
      public final boolean forceDialog; // если класс конкретный и имеет потомков
      private final BaseClass baseClass;
     
-     public final CalcPropertyMapImplement<T, I> where;
+     public final PropertyMapImplement<T, I> where;
      private final I changeInterface;
 
      // когда класс с которого или на который меняется не известен
@@ -97,8 +97,8 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     }
 
     @Override
-    protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
-        CalcPropertyMapImplement<?, I> result = IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
+    protected PropertyMapImplement<?, I> calcGroupWhereProperty() {
+        PropertyMapImplement<?, I> result = IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
         if(where!=null)
             result = DerivedProperty.createAnd(innerInterfaces, where, result);
         return result;
@@ -109,7 +109,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
         return new ChangeClassAction<>(valueClass, forceDialog, SetFact.singleton(propInterface), SetFact.singletonOrder(propInterface), propInterface, null, baseClass);
     }
 
-    public ChangeClassAction(ObjectClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, I changeInterface, CalcPropertyMapImplement<T, I> where, BaseClass baseClass) {
+    public ChangeClassAction(ObjectClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, I changeInterface, PropertyMapImplement<T, I> where, BaseClass baseClass) {
          super(LocalizedString.create(
                  valueClass instanceof UnknownClass ? "{logics.delete}" : "{logics.property.actions.changeclass}"), innerInterfaces, mapInterfaces);
 
@@ -206,11 +206,11 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
         return null;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForAction.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<I, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
+            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
                 return createChangeClassAction(context, mapInnerInterfaces.get(changeInterface), valueClass, forceDialog, where, baseClass, orders, ordersNotNull);
             }
         });

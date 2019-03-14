@@ -1,18 +1,18 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.util.List;
 
 public class ExplicitCalcCase<P extends PropertyInterface> extends AbstractCalcCase<P> {
 
-    public ExplicitCalcCase(CalcPropertyInterfaceImplement<P> where, CalcPropertyInterfaceImplement<P> implement) {
+    public ExplicitCalcCase(PropertyInterfaceImplement<P> where, PropertyInterfaceImplement<P> implement) {
         this(where, implement, null);
     }
 
-    public ExplicitCalcCase(CalcPropertyInterfaceImplement<P> where, CalcPropertyInterfaceImplement<P> implement, List<ResolveClassSet> signature) {
+    public ExplicitCalcCase(PropertyInterfaceImplement<P> where, PropertyInterfaceImplement<P> implement, List<ResolveClassSet> signature) {
         super(where, implement, signature);
     }
 

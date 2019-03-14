@@ -9,8 +9,8 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
@@ -34,14 +34,14 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
         
         operandProperties = new ArrayList<>();
 
-        ImCol<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands = property.getOperands();
+        ImCol<PropertyInterfaceImplement<UnionProperty.Interface>> operands = property.getOperands();
 
         for (int i = 0; i < operands.size(); ++i) {
-            CalcPropertyInterfaceImplement<UnionProperty.Interface> intImpl = operands.get(i);
-            if (intImpl instanceof CalcPropertyMapImplement) {
+            PropertyInterfaceImplement<UnionProperty.Interface> intImpl = operands.get(i);
+            if (intImpl instanceof PropertyMapImplement) {
 
                 //добавляем фильтр для этого объекта и соотв. свойства
-                CalcPropertyMapImplement<PropertyInterface, UnionProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, UnionProperty.Interface>) intImpl;
+                PropertyMapImplement<PropertyInterface, UnionProperty.Interface> mapImplement = (PropertyMapImplement<PropertyInterface, UnionProperty.Interface>) intImpl;
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity

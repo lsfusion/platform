@@ -16,27 +16,27 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class CalcPropertyRevImplement<P extends PropertyInterface, T> implements CalcPropertyObjectInterfaceImplement<T> {
+public class PropertyRevImplement<P extends PropertyInterface, T> implements PropertyObjectInterfaceImplement<T> {
     
     public final Property<P> property;
     public final ImRevMap<P, T> mapping;
 
-    public CalcPropertyRevImplement(Property<P> property, ImRevMap<P, T> mapping) {
+    public PropertyRevImplement(Property<P> property, ImRevMap<P, T> mapping) {
         this.property = property;
         this.mapping = mapping;
         assert BaseUtils.hashEquals(property.interfaces, mapping.keys());
     }
 
-    public static <P extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<P, T> mapPropertyImplement(CalcPropertyRevImplement<P, T> implement) {
-        return new CalcPropertyMapImplement<>(implement.property, implement.mapping);
+    public static <P extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<P, T> mapPropertyImplement(PropertyRevImplement<P, T> implement) {
+        return new PropertyMapImplement<>(implement.property, implement.mapping);
     }
 
-    public <L extends PropertyInterface> CalcPropertyMapImplement<P, L> mapPropertyImplement(ImRevMap<T, L> mapImplement) {
-        return new CalcPropertyMapImplement<>(property, mapping.join(mapImplement));
+    public <L extends PropertyInterface> PropertyMapImplement<P, L> mapPropertyImplement(ImRevMap<T, L> mapImplement) {
+        return new PropertyMapImplement<>(property, mapping.join(mapImplement));
     }
 
-    public <L> CalcPropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
-        return new CalcPropertyImplement<>(property, mapping.join(mapImplement));
+    public <L> PropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
+        return new PropertyImplement<>(property, mapping.join(mapImplement));
     }
 
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {

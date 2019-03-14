@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -18,13 +18,13 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class SumGroupProperty<I extends PropertyInterface> extends AddGroupProperty<I> {
 
-    public SumGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
+    public SumGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property) {
         super(caption, innerInterfaces, groupInterfaces, property);
 
         finalizeInit();
     }
 
-    public SumGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
+    public SumGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImList<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property) {
         super(caption, innerInterfaces, groupInterfaces, property);
 
         finalizeInit();
@@ -37,8 +37,8 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     // такая же помошь компилятору как и при getExpr в GroupProperty
     private Where getGroupKeys(PropertyChange<Interface<I>> propertyChange, Result<ImRevMap<I, KeyExpr>> mapKeys, Result<ImMap<I, Expr>> mapValueKeys) {
-        ImMap<CalcPropertyInterfaceImplement<I>, Expr> changeValues = propertyChange.getMapExprs().mapKeys(new GetValue<CalcPropertyInterfaceImplement<I>, Interface<I>>() {
-            public CalcPropertyInterfaceImplement<I> getMapValue(Interface<I> value) {
+        ImMap<PropertyInterfaceImplement<I>, Expr> changeValues = propertyChange.getMapExprs().mapKeys(new GetValue<PropertyInterfaceImplement<I>, Interface<I>>() {
+            public PropertyInterfaceImplement<I> getMapValue(Interface<I> value) {
                 return value.implement;
             }});
 

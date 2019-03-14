@@ -7,7 +7,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class CalcClassType extends CalcType implements AlgType {
@@ -40,7 +40,7 @@ public class CalcClassType extends CalcType implements AlgType {
         property.calcCheckExclusiveness(caseInfo, intersect, intersectInfo, map, this, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, PropertyInterfaceImplement<T> value, String abstractInfo) {
         property.calcCheckContainsAll(caseInfo, intersect, map, this, value, abstractInfo);
     }
 

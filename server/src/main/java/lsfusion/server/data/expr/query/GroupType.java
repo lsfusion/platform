@@ -18,7 +18,7 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.GroupProperty;
 import lsfusion.server.logics.property.set.MaxGroupProperty;
@@ -51,7 +51,7 @@ public enum GroupType implements AggrType {
         return ANY;
     }
 
-    public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
+    public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, ImSet<? extends PropertyInterfaceImplement<T>> interfaces) {
         switch (this) {
             case MAX:
                 return new MaxGroupProperty<>(caption, innerInterfaces, interfaces, property, false);

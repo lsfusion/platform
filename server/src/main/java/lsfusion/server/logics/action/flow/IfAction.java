@@ -10,8 +10,8 @@ import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
@@ -23,11 +23,11 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createForA
 
 public class IfAction extends KeepContextAction {
 
-    private final CalcPropertyInterfaceImplement<PropertyInterface> ifProp;
+    private final PropertyInterfaceImplement<PropertyInterface> ifProp;
     private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
 
-    public <I extends PropertyInterface> IfAction(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public <I extends PropertyInterface> IfAction(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, PropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         super(caption, innerInterfaces.size());
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -46,7 +46,7 @@ public class IfAction extends KeepContextAction {
     }
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+    public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return DerivedProperty.createIfElseUProp(interfaces, ifProp,
                 trueAction != null ? trueAction.mapCalcWhereProperty() : null,
                 falseAction !=null ? falseAction.mapCalcWhereProperty() : null);
@@ -129,11 +129,11 @@ public class IfAction extends KeepContextAction {
         return ForAction.getPushWhere(ifProp);
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForAction.pushFor(interfaces, ifProp, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<PropertyInterface, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
+            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
                 return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
             }
         });

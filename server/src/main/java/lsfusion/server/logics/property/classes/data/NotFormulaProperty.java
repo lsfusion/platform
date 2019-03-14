@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.implement.CalcPropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -27,8 +27,8 @@ public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
         return ValueExpr.get(joinImplement.singleValue().getWhere().not());
     }
     
-    public <T> CalcPropertyImplement<PropertyInterface , T> getImplement(T map) {
-        return new CalcPropertyImplement<>(this, MapFact.singleton(interfaces.single(), map));
+    public <T> PropertyImplement<PropertyInterface , T> getImplement(T map) {
+        return new PropertyImplement<>(this, MapFact.singleton(interfaces.single(), map));
     }
 
     @Override

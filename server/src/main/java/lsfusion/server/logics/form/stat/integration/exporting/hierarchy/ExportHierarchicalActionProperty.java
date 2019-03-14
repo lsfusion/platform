@@ -16,7 +16,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;
@@ -27,8 +27,8 @@ import java.sql.SQLException;
 
 public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O extends ObjectSelector> extends ExportActionProperty<O> {
 
-    private CalcPropertyInterfaceImplement<ClassPropertyInterface> rootProperty;
-    private CalcPropertyInterfaceImplement<ClassPropertyInterface> tagProperty;
+    private PropertyInterfaceImplement<ClassPropertyInterface> rootProperty;
+    private PropertyInterfaceImplement<ClassPropertyInterface> tagProperty;
 
     protected final LCP<?> exportFile; // nullable
 

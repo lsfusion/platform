@@ -15,7 +15,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -39,11 +39,11 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
     }
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+    public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return IsClassProperty.getMapProperty(mapInterfaces.innerJoin( // по аналогии с группировкой (а точнее вместо) такая "эвристика"
                 calcGroupWhereProperty().mapInterfaceClasses(ClassType.wherePolicy)));
     }
-    protected abstract CalcPropertyMapImplement<?, I> calcGroupWhereProperty();
+    protected abstract PropertyMapImplement<?, I> calcGroupWhereProperty();
 
     public ActionPropertyMapImplement<PropertyInterface, I> getMapImplement() {
         return new ActionPropertyMapImplement<>(this, mapInterfaces);

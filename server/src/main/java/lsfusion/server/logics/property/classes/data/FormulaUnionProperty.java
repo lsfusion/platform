@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -24,9 +24,9 @@ public abstract class FormulaUnionProperty extends UnionProperty {
 
     @Override
     protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        ImCol<Expr> exprs = getOperands().mapColValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() {
+        ImCol<Expr> exprs = getOperands().mapColValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() {
             @Override
-            public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
+            public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
                 return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }
         });

@@ -16,9 +16,9 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -45,7 +45,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
             detailsProperties = new ArrayList<>();
             Version version = LM.getVersion();
 
-            ImMap<I, CalcPropertyInterfaceImplement<JoinProperty.Interface>> implMapping = property.implement.mapping;
+            ImMap<I, PropertyInterfaceImplement<JoinProperty.Interface>> implMapping = property.implement.mapping;
             ImMap<I, ValueClass> implClasses = implProperty.getInterfaceClasses(ClassType.drillDownPolicy);
     
             MRevMap<I, ObjectEntity> mImplObjects = MapFact.mRevMap();
@@ -53,7 +53,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     
             for (int i = 0; i < implMapping.size(); ++i) {
                 I iFace = implMapping.getKey(i);
-                CalcPropertyInterfaceImplement<JoinProperty.Interface> intImpl = implMapping.getValue(i);
+                PropertyInterfaceImplement<JoinProperty.Interface> intImpl = implMapping.getValue(i);
                 ObjectEntity innerObject = null;
                 if (intImpl instanceof JoinProperty.Interface) {
                     JoinProperty.Interface intImplement = (JoinProperty.Interface) intImpl;
@@ -65,11 +65,11 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                     innerObject.groupTo.setPanelClassView();
     
                     PropertyInterface innerInterface = new PropertyInterface();
-                    CalcPropertyRevImplement filterProp = DerivedProperty.createCompare(intImpl, innerInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(interfaceObjects, innerInterface, innerObject));
+                    PropertyRevImplement filterProp = DerivedProperty.createCompare(intImpl, innerInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(interfaceObjects, innerInterface, innerObject));
                     addFixedFilter(new FilterEntity(addPropertyObject(filterProp)), version);
                     
-                    if(intImpl instanceof CalcPropertyMapImplement) {
-                        CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface>) intImpl;
+                    if(intImpl instanceof PropertyMapImplement) {
+                        PropertyMapImplement<PropertyInterface, JoinProperty.Interface> mapImplement = (PropertyMapImplement<PropertyInterface, JoinProperty.Interface>) intImpl;
                         ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
                         //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                         if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasNFChild(mapImplement.property, version)) {

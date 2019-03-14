@@ -40,8 +40,8 @@ import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.ObjectClassProperty;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -189,14 +189,14 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             result.addAll(element.getChangeProps().toMap(false));
         return result.immutable();
     }
-    protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(CalcPropertyInterfaceImplement<T>... props) {
-        return getUsedProps(SetFact.<CalcPropertyInterfaceImplement<T>>EMPTY(), props);
+    protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(PropertyInterfaceImplement<T>... props) {
+        return getUsedProps(SetFact.<PropertyInterfaceImplement<T>>EMPTY(), props);
     }
-    protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(ImCol<? extends CalcPropertyInterfaceImplement<T>> col, CalcPropertyInterfaceImplement<T>... props) {
+    protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(ImCol<? extends PropertyInterfaceImplement<T>> col, PropertyInterfaceImplement<T>... props) {
         MSet<Property> mResult = SetFact.mSet();
-        for(CalcPropertyInterfaceImplement<T> element : col)
+        for(PropertyInterfaceImplement<T> element : col)
             element.mapFillDepends(mResult);
-        for(CalcPropertyInterfaceImplement<T> element : props)
+        for(PropertyInterfaceImplement<T> element : props)
             element.mapFillDepends(mResult);
         return mResult.immutable().toMap(false);
     }
@@ -285,7 +285,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @IdentityLazy
-    public CalcPropertyMapImplement<?, P> getWhereProperty() {
+    public PropertyMapImplement<?, P> getWhereProperty() {
         return getWhereProperty(false);
     }
     
@@ -295,7 +295,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         }
     }; 
             
-    private CalcPropertyMapImplement<?, P> calcClassWhereProperty() {
+    private PropertyMapImplement<?, P> calcClassWhereProperty() {
         ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(interfaces, getExplicitInterfaces(), new Callable<ImMap<P, ValueClass>>() {
             public ImMap<P, ValueClass> call() throws Exception {
                 return calcWhereInterfaceClasses();
@@ -315,7 +315,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @StackMessage("{logics.property.actions.flow.calc.where}")
     @ThisMessage
-    public CalcPropertyMapImplement<?, P> getWhereProperty(boolean recursive) {
+    public PropertyMapImplement<?, P> getWhereProperty(boolean recursive) {
         ActionWhereType actionWhere = AlgType.actionWhere;
         if(actionWhere != ActionWhereType.CALC && (!recursive || actionWhere == ActionWhereType.CLASS))
             return calcClassWhereProperty();
@@ -323,7 +323,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             return calcWhereProperty();
     }
     
-    public abstract CalcPropertyMapImplement<?, P> calcWhereProperty();
+    public abstract PropertyMapImplement<?, P> calcWhereProperty();
 
     @Override
     protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
@@ -579,7 +579,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         throw new RuntimeException("should not be");
     }
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?,T> pushFor(ImRevMap<P, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> where, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?,T> pushFor(ImRevMap<P, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> where, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         throw new RuntimeException("should not be");
     }
 

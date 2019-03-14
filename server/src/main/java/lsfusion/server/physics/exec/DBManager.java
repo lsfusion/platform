@@ -47,9 +47,9 @@ import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.navigator.*;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyObjectImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyObjectInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyObjectImplement;
+import lsfusion.server.logics.property.implement.PropertyObjectInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
@@ -136,7 +136,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
-    private final Map<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> indexes = new HashMap<>();
+    private final Map<ImList<PropertyObjectInterfaceImplement<String>>, Boolean> indexes = new HashMap<>();
 
     private String defaultUserLanguage;
     private String defaultUserCountry;
@@ -2043,18 +2043,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     @NFLazy
-    public <Z extends PropertyInterface> void addIndex(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
-        CalcPropertyRevImplement<Z, String> propertyImplement = (CalcPropertyRevImplement<Z, String>) findProperty(index);
+    public <Z extends PropertyInterface> void addIndex(ImList<PropertyObjectInterfaceImplement<String>> index) {
+        PropertyRevImplement<Z, String> propertyImplement = (PropertyRevImplement<Z, String>) findProperty(index);
         if(propertyImplement != null) {
             indexes.put(index, propertyImplement.property.getType() instanceof DataClass);
             propertyImplement.property.markIndexed(propertyImplement.mapping, index);
         }
     }
 
-    private static CalcPropertyRevImplement<?, String> findProperty(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
-        for (CalcPropertyObjectInterfaceImplement<String> lp : index) {
-            if(lp instanceof CalcPropertyRevImplement) {
-                return (CalcPropertyRevImplement<?, String>) lp;
+    private static PropertyRevImplement<?, String> findProperty(ImList<PropertyObjectInterfaceImplement<String>> index) {
+        for (PropertyObjectInterfaceImplement<String> lp : index) {
+            if(lp instanceof PropertyRevImplement) {
+                return (PropertyRevImplement<?, String>) lp;
             }
         }
         return null;
@@ -2296,14 +2296,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             res.put(table, new HashMap<List<Field>, Boolean>());
         }
 
-        for (Map.Entry<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> index : indexes.entrySet()) {
-            ImList<CalcPropertyObjectInterfaceImplement<String>> indexFields = index.getKey();
+        for (Map.Entry<ImList<PropertyObjectInterfaceImplement<String>>, Boolean> index : indexes.entrySet()) {
+            ImList<PropertyObjectInterfaceImplement<String>> indexFields = index.getKey();
 
             if (indexFields.isEmpty()) {
                 throw new RuntimeException(localize("{logics.policy.forbidden.to.create.empty.indexes}"));
             }
 
-            CalcPropertyRevImplement<P, String> basePropertyImplement = (CalcPropertyRevImplement<P, String>) findProperty(indexFields);
+            PropertyRevImplement<P, String> basePropertyImplement = (PropertyRevImplement<P, String>) findProperty(indexFields);
             assert basePropertyImplement != null; // исходя из логики addIndex
 
             Property<P> baseProperty = basePropertyImplement.property;
@@ -2316,10 +2316,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             List<Field> tableIndex = new ArrayList<>();
 
-            for (CalcPropertyObjectInterfaceImplement<String> indexField : indexFields) {
+            for (PropertyObjectInterfaceImplement<String> indexField : indexFields) {
                 Field field;
-                if(indexField instanceof CalcPropertyRevImplement) {
-                    CalcPropertyRevImplement<P, String> propertyImplement = (CalcPropertyRevImplement<P, String>)indexField;
+                if(indexField instanceof PropertyRevImplement) {
+                    PropertyRevImplement<P, String> propertyImplement = (PropertyRevImplement<P, String>)indexField;
                     Property<P> property = propertyImplement.property;
 
                     if (!property.isStored())
@@ -2334,7 +2334,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         throw new RuntimeException(localize(LocalizedString.createFormatted("{logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings}", baseProperty, property, baseMapKeys, mapKeys)));
                     field = property.field;
                 } else {
-                    field = baseMapKeys.get(((CalcPropertyObjectImplement<String>)indexField).object);
+                    field = baseMapKeys.get(((PropertyObjectImplement<String>)indexField).object);
                 }
                 tableIndex.add(field);
             }

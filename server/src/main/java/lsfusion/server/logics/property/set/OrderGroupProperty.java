@@ -7,7 +7,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -15,8 +15,8 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class OrderGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
 
-    private final ImList<CalcPropertyInterfaceImplement<I>> props;
-    public ImList<CalcPropertyInterfaceImplement<I>> getProps() {
+    private final ImList<PropertyInterfaceImplement<I>> props;
+    public ImList<PropertyInterfaceImplement<I>> getProps() {
         return props;
     }
 
@@ -25,9 +25,9 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return groupType;
     }
 
-    private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders;
+    private final ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders;
     private final boolean ordersNotNull;
-    public ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
+    public ImOrderMap<PropertyInterfaceImplement<I>, Boolean> getOrders() {
         return orders;
     }
 
@@ -35,7 +35,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return ordersNotNull;
     }
 
-    public OrderGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, ImList<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public OrderGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, ImList<PropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         super(caption, innerInterfaces, groupInterfaces);
         this.props = props;
         this.groupType = groupType;

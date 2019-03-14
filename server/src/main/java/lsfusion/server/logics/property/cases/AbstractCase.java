@@ -21,17 +21,16 @@ import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
 
 import java.util.*;
 
-public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>, M extends PropertyInterfaceImplement<P>> {
+public abstract class AbstractCase<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> {
     
     public final W where;    
     public final M implement;
@@ -53,31 +52,31 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
     }
 
 
-    private static <P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>,
-            M extends PropertyInterfaceImplement<P>, A extends AbstractCase<P, W, M>> List<ResolveClassSet> getSignature(A aCase) {
+    private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
+            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, A extends AbstractCase<P, W, M>> List<ResolveClassSet> getSignature(A aCase) {
         return aCase.signature;
     }
 
-    private static <P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>,
-            M extends PropertyInterfaceImplement<P>, A extends AbstractCase<P, W, M>> ClassWhere<P> getClasses(A aCase) {
-        return ((CalcPropertyMapImplement<?, P>) aCase.where).mapClassWhere(ClassType.casePolicy);
+    private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
+            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, A extends AbstractCase<P, W, M>> ClassWhere<P> getClasses(A aCase) {
+        return ((PropertyMapImplement<?, P>) aCase.where).mapClassWhere(ClassType.casePolicy);
     }
 
-    private static <P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>,
-            M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>> ClassWhere<P> getClasses(F aCase) {
-        return ((CalcPropertyMapImplement<?, P>) aCase.where).mapClassWhere(ClassType.casePolicy);
+    private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
+            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> ClassWhere<P> getClasses(F aCase) {
+        return ((PropertyMapImplement<?, P>) aCase.where).mapClassWhere(ClassType.casePolicy);
     }
     
-    private interface AbstractWrapper<P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>,
-            M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>> {
+    private interface AbstractWrapper<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
+            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> {
         
         F proceedSet(ImSet<F> elements);
 
         F proceedList(ImList<F> elements);
     }
     
-    public static <P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>, 
-            M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, GetValue<F, A> translator, final AbstractWrapper<P, W, M, F> wrapper, final GetValue<Graph<F>, M> abstractReader, boolean areClassCases, boolean explicitExclusive) {
+    public static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, 
+            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, GetValue<F, A> translator, final AbstractWrapper<P, W, M, F> wrapper, final GetValue<Graph<F>, M> abstractReader, boolean areClassCases, boolean explicitExclusive) {
         ImList<A> list = cases.getList();
         if(!areClassCases || explicitExclusive) { // если не делать explicitExclusive вместо ошибки, начинает работать как если бы exclusive'а не было и платформа сама бы выбирала (впрочем обратная ветка уже работает стабильно)
             return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
@@ -282,8 +281,8 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
         return 0;
     }
 
-    private static <P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>,
-            M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>> CalcPropertyMapImplement<?, P> createUnionWhere(ImSet<P> interfaces, ImList<F> aCase, boolean isExclusive) {
+    private static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>,
+            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> PropertyMapImplement<?, P> createUnionWhere(ImSet<P> interfaces, ImList<F> aCase, boolean isExclusive) {
         
         // собираем where и делаем их or
         return DerivedProperty.createUnion(interfaces, aCase.mapListValues(new GetValue<W, F>() {
@@ -306,7 +305,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             public ActionCase<P> getMapValue(AbstractActionCase<P> value) {
                 return new ActionCase<>(value);
             }
-        }, new AbstractWrapper<P, CalcPropertyInterfaceImplement<P>, ActionPropertyMapImplement<?, P>, ActionCase<P>>() {
+        }, new AbstractWrapper<P, PropertyInterfaceImplement<P>, ActionPropertyMapImplement<?, P>, ActionCase<P>>() {
             public ActionCase<P> proceedSet(ImSet<ActionCase<P>> elements) {
                 return createInnerActionCase(interfaces, elements.toList(), true);
             }
@@ -326,7 +325,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             public CalcCase<P> getMapValue(AbstractCalcCase<P> value) {
                 return new CalcCase<>(value);
             }
-        }, new AbstractWrapper<P, CalcPropertyInterfaceImplement<P>, CalcPropertyInterfaceImplement<P>, CalcCase<P>>() {
+        }, new AbstractWrapper<P, PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>, CalcCase<P>>() {
             public CalcCase<P> proceedSet(ImSet<CalcCase<P>> elements) {
                 return createInnerCalcCase(interfaces, elements.toList(), true);
             }
@@ -334,8 +333,8 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             public CalcCase<P> proceedList(ImList<CalcCase<P>> elements) {
                 return createInnerCalcCase(interfaces, elements, false);
             }
-        }, new GetValue<Graph<CalcCase<P>>, CalcPropertyInterfaceImplement<P>>() {
-            public Graph<CalcCase<P>> getMapValue(CalcPropertyInterfaceImplement<P> value) {
+        }, new GetValue<Graph<CalcCase<P>>, PropertyInterfaceImplement<P>>() {
+            public Graph<CalcCase<P>> getMapValue(PropertyInterfaceImplement<P> value) {
                 return value.mapAbstractGraph();
             }
         }, areClassCases, explicitExclusiveness);
@@ -401,7 +400,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
 //                    }
 //                }
                 
-                CalcPropertyMapImplement<I, UnionProperty.Interface> mapAbsImp = impLCP.getImplement(absLCP.listInterfaces.toArray(new UnionProperty.Interface[absLCP.listInterfaces.size()]));
+                PropertyMapImplement<I, UnionProperty.Interface> mapAbsImp = impLCP.getImplement(absLCP.listInterfaces.toArray(new UnionProperty.Interface[absLCP.listInterfaces.size()]));
                 ((CaseUnionProperty) absLCP.property).addImplicitCase(mapAbsImp, impSignature, sameNamespace, impVersion);
             }
         } else {
@@ -418,21 +417,21 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
 //        ImList<ExplicitCalcCase<UnionProperty.Interface>> tstCases = caseProp.getTestCases();
 //        if(tstCases != null) {
 //            for (ExplicitCalcCase<UnionProperty.Interface> explCase : tstCases) {
-//                if (explCase.implement instanceof CalcPropertyMapImplement) {
-//                    if (((CalcPropertyMapImplement) explCase.implement).property.equals(impLCP.property))
+//                if (explCase.implement instanceof PropertyMapImplement) {
+//                    if (((PropertyMapImplement) explCase.implement).property.equals(impLCP.property))
 //                        return true;
 //
-//                    if (((CalcPropertyMapImplement) explCase.implement).property instanceof CaseUnionProperty && hasProp(impLCP, (CaseUnionProperty) ((CalcPropertyMapImplement) explCase.implement).property))
+//                    if (((PropertyMapImplement) explCase.implement).property instanceof CaseUnionProperty && hasProp(impLCP, (CaseUnionProperty) ((PropertyMapImplement) explCase.implement).property))
 //                        return true;
 //                }
 //            }
 //        } else {
 //            for (CalcCase<UnionProperty.Interface> explCase : caseProp.getCases()) {
-//                if (explCase.implement instanceof CalcPropertyMapImplement) {
-//                    if (((CalcPropertyMapImplement) explCase.implement).property.equals(impLCP.property))
+//                if (explCase.implement instanceof PropertyMapImplement) {
+//                    if (((PropertyMapImplement) explCase.implement).property.equals(impLCP.property))
 //                        return true;
 //
-//                    if (((CalcPropertyMapImplement) explCase.implement).property instanceof CaseUnionProperty && hasProp(impLCP, (CaseUnionProperty) ((CalcPropertyMapImplement) explCase.implement).property))
+//                    if (((PropertyMapImplement) explCase.implement).property instanceof CaseUnionProperty && hasProp(impLCP, (CaseUnionProperty) ((PropertyMapImplement) explCase.implement).property))
 //                        return true;
 //                }
 //            }

@@ -22,12 +22,12 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -38,7 +38,7 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 import java.sql.SQLException;
 
-public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements CalcPropertyInterfaceImplement<P>, Comparable<P> {
+public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>, Comparable<P> {
 
     public PropertyInterface() {
         this(-1);
@@ -48,9 +48,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         super(ID, "PropInt" + ID);
     }
 
-    public static <T, P extends PropertyInterface> ImRevMap<T, P> getIdentityMap(ImMap<T, CalcPropertyInterfaceImplement<P>> mapping) {
+    public static <T, P extends PropertyInterface> ImRevMap<T, P> getIdentityMap(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
         MAddSet<PropertyInterface> checked = SetFact.mAddSet();
-        for(CalcPropertyInterfaceImplement<P> propImplement : mapping.valueIt())
+        for(PropertyInterfaceImplement<P> propImplement : mapping.valueIt())
             if(!(propImplement instanceof PropertyInterface && !checked.add((PropertyInterface) propImplement)))
                 return null;
         return BaseUtils.immutableCast(mapping.toRevExclMap());
@@ -113,7 +113,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return DataChanges.EMPTY;
     }
 
-    public void fill(MSet<P> interfaces, MSet<CalcPropertyMapImplement<?, P>> properties) {
+    public void fill(MSet<P> interfaces, MSet<PropertyMapImplement<?, P>> properties) {
         interfaces.add((P) this);
     }
 
@@ -121,7 +121,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return SetFact.singleton((P) this);
     }
 
-    public <K extends PropertyInterface> CalcPropertyInterfaceImplement<K> map(ImRevMap<P, K> remap) {
+    public <K extends PropertyInterface> PropertyInterfaceImplement<K> map(ImRevMap<P, K> remap) {
         return remap.get((P)this);
     }
 
@@ -168,7 +168,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return null;
     }
 
-    public boolean equalsMap(PropertyInterfaceImplement<P> object) {
+    public boolean equalsMap(lsfusion.server.logics.property.oraction.PropertyInterfaceImplement object) {
         return equals(object);
     }
 

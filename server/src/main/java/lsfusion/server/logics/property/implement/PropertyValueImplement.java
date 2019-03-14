@@ -16,9 +16,9 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class CalcPropertyValueImplement<P extends PropertyInterface> extends CalcPropertyImplement<P, DataObject> {
+public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<P, DataObject> {
 
-    public CalcPropertyValueImplement(Property<P> property, ImMap<P, DataObject> mapping) {
+    public PropertyValueImplement(Property<P> property, ImMap<P, DataObject> mapping) {
         super(property, mapping);
     }
 

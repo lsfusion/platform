@@ -23,8 +23,8 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
@@ -36,7 +36,7 @@ import java.sql.SQLException;
 
 public class DefaultChangeActionProperty<P extends PropertyInterface> extends SystemExplicitAction {
 
-    private final CalcPropertyMapImplement<P, ClassPropertyInterface> implement;
+    private final PropertyMapImplement<P, ClassPropertyInterface> implement;
     private final String editActionSID;
     private final Property filterProperty;
 
@@ -47,7 +47,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         assert filterProperty==null || filterProperty.interfaces.size()==1;
         assert listInterfaces.size() == property.interfaces.size();
 
-        this.implement = new CalcPropertyMapImplement<>(property, getMapInterfaces(listInterfaces).reverse());
+        this.implement = new PropertyMapImplement<>(property, getMapInterfaces(listInterfaces).reverse());
         this.editActionSID = editActionSID;
         this.filterProperty = filterProperty;
     }
@@ -89,7 +89,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         Modifier modifier = context.getModifier();
         final FormInstance formInstance = context.getFormFlowInstance();
 
-        final CalcPropertyValueImplement<P> propertyValues = implement.mapValues(keys);
+        final PropertyValueImplement<P> propertyValues = implement.mapValues(keys);
 
         Type changeType = getImplementType();
         

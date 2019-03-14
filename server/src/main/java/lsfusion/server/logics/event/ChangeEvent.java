@@ -17,8 +17,8 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ChangeEvent<C extends PropertyInterface> {
@@ -26,15 +26,15 @@ public class ChangeEvent<C extends PropertyInterface> {
     public static final PrevScope scope = PrevScope.DB;
 
     protected final Property<C> writeTo; // что меняем
-    public final CalcPropertyMapImplement<? extends PropertyInterface, C> where;
+    public final PropertyMapImplement<? extends PropertyInterface, C> where;
 
-    public final CalcPropertyInterfaceImplement<C> writeFrom;
+    public final PropertyInterfaceImplement<C> writeFrom;
 
     public Property<?> getWhere() {
         return where.property;
     }
 
-    public ChangeEvent(Property<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where) {
+    public ChangeEvent(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where) {
         assert ((Property)where.property).noDB();
         this.writeTo = writeTo;
         this.where = where;

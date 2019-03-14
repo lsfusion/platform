@@ -29,8 +29,8 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
@@ -72,7 +72,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
 
     // CONTEXT
     private final ImList<O> contextObjects;
-    private final ImList<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>> contextPropertyImplements;
+    private final ImList<PropertyMapImplement<PropertyInterface, ClassPropertyInterface>> contextPropertyImplements;
     private final boolean readOnly;
     private final boolean checkOnOk;
 
@@ -103,8 +103,8 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         this.noCancel = noCancel;
 
         this.contextObjects = contextObjects;
-        this.contextPropertyImplements = contextProperties.mapListValues(new GetValue<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>, Property>() {
-            public CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> getMapValue(Property value) {
+        this.contextPropertyImplements = contextProperties.mapListValues(new GetValue<PropertyMapImplement<PropertyInterface, ClassPropertyInterface>, Property>() {
+            public PropertyMapImplement<PropertyInterface, ClassPropertyInterface> getMapValue(Property value) {
                 return value.getImplement(
                         getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
                 );
@@ -163,9 +163,9 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         ImList<ObjectEntity> resolvedContextObjects = contextObjects.mapList(mapResolvedObjects);
         for(int i=0,size=resolvedContextObjects.size();i<size;i++) {
             ObjectEntity contextObject = resolvedContextObjects.get(i);
-            CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement = contextPropertyImplements.get(i);
+            PropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement = contextPropertyImplements.get(i);
             
-            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapObjectValues(context.getKeys());
+            final PropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapObjectValues(context.getKeys());
             assert propertyValues != null; // extraNotNull - true
             final FormInstance thisFormInstance = context.getFormInstance(false, true);
             mContextFilters.addAll(thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps));

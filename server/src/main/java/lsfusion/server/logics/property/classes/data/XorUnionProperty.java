@@ -13,8 +13,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.XorUnionDrillDownFormEntity;
@@ -29,23 +29,23 @@ import lsfusion.server.logics.action.session.change.StructChanges;
 
 public class XorUnionProperty extends IncrementUnionProperty {
 
-    public XorUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands) {
+    public XorUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<PropertyInterfaceImplement<Interface>> operands) {
         super(caption, interfaces);
         this.operands = operands;
 
         finalizeInit();
     }
 
-    private final ImList<CalcPropertyInterfaceImplement<Interface>> operands; // list нужен чтобы порядок редактирования был
+    private final ImList<PropertyInterfaceImplement<Interface>> operands; // list нужен чтобы порядок редактирования был
 
-    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<PropertyInterfaceImplement<Interface>> getOperands() {
         return operands.getCol();
     }
 
     @Override
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        ImList<Expr> operandExprs = operands.mapListValues(new GetValue<Expr, CalcPropertyInterfaceImplement<Interface>>() {
-            public Expr getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
+        ImList<Expr> operandExprs = operands.mapListValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() {
+            public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
                 return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }});
 
@@ -57,8 +57,8 @@ public class XorUnionProperty extends IncrementUnionProperty {
 
     @Override
     protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
-        ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues(new GetValue<Pair<Expr, Where>, CalcPropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
-            public Pair<Expr, Where> getMapValue(CalcPropertyInterfaceImplement<Interface> key) {
+        ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues(new GetValue<Pair<Expr, Where>, PropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
+            public Pair<Expr, Where> getMapValue(PropertyInterfaceImplement<Interface> key) {
                 WhereBuilder changedOperandWhere = new WhereBuilder();
                 return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
             }
@@ -66,7 +66,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
 
         Where resultWhere = prevExpr.getWhere();
         for(int i=0,size=operands.size();i<size;i++) {
-            CalcPropertyInterfaceImplement<Interface> operand = operands.get(i);
+            PropertyInterfaceImplement<Interface> operand = operands.get(i);
             Pair<Expr, Where> operandExpr = operandExprs.get(i);
             Where prevOperandWhere = operand.mapExpr(joinImplement).getWhere();
             resultWhere = resultWhere.xor(operandExpr.first.getWhere().xor(prevOperandWhere).and(operandExpr.second));
@@ -84,15 +84,15 @@ public class XorUnionProperty extends IncrementUnionProperty {
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public ImSet<DataProperty> getChangeProps() {
         MSet<DataProperty> result = SetFact.mSet();
-        for(CalcPropertyInterfaceImplement<Interface> operand : operands)
+        for(PropertyInterfaceImplement<Interface> operand : operands)
             result.addAll(operand.mapChangeProps());
         return result.immutable();
     }
 
     @Override
     public boolean canBeHeurChanged(boolean global) {
-        for(CalcPropertyInterfaceImplement<Interface> operand : operands) // считаем where сиблингов и потом ими xor'им change
-            if(operand instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) operand).property.canBeHeurChanged(global))
+        for(PropertyInterfaceImplement<Interface> operand : operands) // считаем where сиблингов и потом ими xor'им change
+            if(operand instanceof PropertyMapImplement && ((PropertyMapImplement) operand).property.canBeHeurChanged(global))
                 return true;
         return false;
     }
@@ -100,9 +100,9 @@ public class XorUnionProperty extends IncrementUnionProperty {
     @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         DataChanges result = DataChanges.EMPTY;
-        for(CalcPropertyInterfaceImplement<Interface> operand : operands.reverseList()) {
+        for(PropertyInterfaceImplement<Interface> operand : operands.reverseList()) {
             Where siblingWhere = Where.FALSE;
-            for(CalcPropertyInterfaceImplement<Interface> siblingOperand : operands) // считаем where сиблингов и потом ими xor'им change
+            for(PropertyInterfaceImplement<Interface> siblingOperand : operands) // считаем where сиблингов и потом ими xor'им change
                 if(siblingOperand!=operand)
                     siblingWhere = siblingWhere.xor(siblingOperand.mapExpr(change.getMapExprs(), propChanges).getWhere());
             WhereBuilder operandWhere = new WhereBuilder();

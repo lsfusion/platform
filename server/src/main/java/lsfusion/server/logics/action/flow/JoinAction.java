@@ -15,8 +15,8 @@ import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.debug.WatchActionProperty;
@@ -28,9 +28,9 @@ import java.sql.SQLException;
 
 public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
-    public final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
+    public final ActionPropertyImplement<T, PropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
+    public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, PropertyInterfaceImplement<I>> implement) {
         super(caption, listInterfaces.size());
 
         action = DerivedProperty.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
@@ -64,7 +64,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     public PropertyInterface getSimpleDelete() {
         if(!isRecursive) { // recursion guard
             T simpleRemove = action.property.getSimpleDelete();
-            CalcPropertyInterfaceImplement<PropertyInterface> mapRemove;
+            PropertyInterfaceImplement<PropertyInterface> mapRemove;
             if (simpleRemove != null && ((mapRemove = action.mapping.get(simpleRemove)) instanceof PropertyInterface))
                 return (PropertyInterface) mapRemove;
         }
@@ -95,7 +95,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     @Override
     public ImMap<Property, Boolean> aspectUsedExtProps() {
         MSet<Property> used = SetFact.mSet();
-        for(CalcPropertyInterfaceImplement<PropertyInterface> value : action.mapping.valueIt())
+        for(PropertyInterfaceImplement<PropertyInterface> value : action.mapping.valueIt())
             value.mapFillDepends(used);
         ImMap<Property, Boolean> result = used.immutable().toMap(false);
         if(!isRecursive)
@@ -104,7 +104,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() { // тут на recursive не смо
+    public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() { // тут на recursive не смо
         return DerivedProperty.createJoin(action.property.getWhereProperty(true).mapImplement(action.mapping));
     }
 

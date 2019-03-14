@@ -39,7 +39,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.struct.property.*;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.env.IsDebugFormulaProperty;
-import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
@@ -661,7 +661,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new ActionPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
     
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcPropertyRevImplement<P, ObjectEntity> impl) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(PropertyRevImplement<P, ObjectEntity> impl) {
         return addPropertyObject(impl.property, impl.mapping);
     }
     public <P extends PropertyInterface> CalcPropertyObjectEntity<P> addPropertyObject(Property<P> property, ImRevMap<P, ObjectEntity> objects) {

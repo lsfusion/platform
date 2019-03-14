@@ -13,8 +13,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -37,15 +37,15 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
 public class SendEmailActionProperty extends SystemExplicitAction {
     private final static Logger logger = ServerLoggers.mailLogger;
 
-    private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount;
-    private CalcPropertyInterfaceImplement<ClassPropertyInterface> subject;
+    private PropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount;
+    private PropertyInterfaceImplement<ClassPropertyInterface> subject;
 
-    private List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<>();
+    private List<PropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<>();
     private List<Message.RecipientType> recipientTypes = new ArrayList<>();
 
-    private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
-    private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
-    private final List<CalcPropertyInterfaceImplement> inlineFiles = new ArrayList<>();
+    private final List<PropertyInterfaceImplement> attachFileNames = new ArrayList<>();
+    private final List<PropertyInterfaceImplement> attachFiles = new ArrayList<>();
+    private final List<PropertyInterfaceImplement> inlineFiles = new ArrayList<>();
 
     public SendEmailActionProperty(LocalizedString caption, ValueClass[] classes) {
         super(caption, classes);
@@ -59,25 +59,25 @@ public class SendEmailActionProperty extends SystemExplicitAction {
         return true;
     }
 
-    public void setFromAddressAccount(CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount) {
+    public void setFromAddressAccount(PropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount) {
         this.fromAddressAccount = fromAddressAccount;
     }
 
-    public void setSubject(CalcPropertyInterfaceImplement<ClassPropertyInterface> subject) {
+    public void setSubject(PropertyInterfaceImplement<ClassPropertyInterface> subject) {
         this.subject = subject;
     }
 
-    public <R extends PropertyInterface> void addRecipient(CalcPropertyInterfaceImplement<ClassPropertyInterface> recipient, Message.RecipientType type) {
+    public <R extends PropertyInterface> void addRecipient(PropertyInterfaceImplement<ClassPropertyInterface> recipient, Message.RecipientType type) {
         recipients.add(recipient);
         recipientTypes.add(type);
     }
 
-    public void addAttachmentFile(CalcPropertyInterfaceImplement fileName, CalcPropertyInterfaceImplement file) {
+    public void addAttachmentFile(PropertyInterfaceImplement fileName, PropertyInterfaceImplement file) {
         attachFileNames.add(fileName);
         attachFiles.add(file);
     }
 
-    public void addInlineFile(CalcPropertyInterfaceImplement file) {
+    public void addInlineFile(PropertyInterfaceImplement file) {
         inlineFiles.add(file);
     }
 
@@ -139,7 +139,7 @@ public class SendEmailActionProperty extends SystemExplicitAction {
 
         Map<String, Message.RecipientType> recipientEmails = new HashMap<>();
         for (int i = 0; i < recipients.size(); ++i) {
-            CalcPropertyInterfaceImplement<ClassPropertyInterface> recipient = recipients.get(i);
+            PropertyInterfaceImplement<ClassPropertyInterface> recipient = recipients.get(i);
             Message.RecipientType recipientType = recipientTypes.get(i);
 
             String recipientEmailList = (String) recipient.read(context, context.getKeys());
@@ -166,7 +166,7 @@ public class SendEmailActionProperty extends SystemExplicitAction {
     private void proceedFiles(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<String> customInlines) throws SQLException, SQLHandledException {
         for (int i = 0; i < attachFileNames.size(); i++) {
             String name;
-            CalcPropertyInterfaceImplement attachFileNameProp = attachFileNames.get(i);
+            PropertyInterfaceImplement attachFileNameProp = attachFileNames.get(i);
             if (attachFileNameProp != null) {
                  name = (String) attachFileNameProp.read(context, context.getKeys());
             } else {
@@ -190,7 +190,7 @@ public class SendEmailActionProperty extends SystemExplicitAction {
             }
         }
 
-        for (CalcPropertyInterfaceImplement inlineFile : this.inlineFiles) {
+        for (PropertyInterfaceImplement inlineFile : this.inlineFiles) {
             ObjectValue inlineObject = inlineFile.readClasses(context, context.getKeys());
             if (inlineObject instanceof DataObject) {
                 Object inlineValue = inlineObject.getValue();

@@ -5,21 +5,21 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public abstract class Compared<T extends PropertyInterface> {
 
-    public final CalcPropertyInterfaceImplement<T> first;
-    public final CalcPropertyInterfaceImplement<T> second;
+    public final PropertyInterfaceImplement<T> first;
+    public final PropertyInterfaceImplement<T> second;
 
-    protected Compared(CalcPropertyInterfaceImplement<T> first, CalcPropertyInterfaceImplement<T> second) {
+    protected Compared(PropertyInterfaceImplement<T> first, PropertyInterfaceImplement<T> second) {
         this.first = first;
         this.second = second;
     }
 
-    public abstract ExClassSet resolveInferred(CalcPropertyInterfaceImplement<T> operand, ImMap<T, ExClassSet> inferred, InferType inferType);
-    public abstract Inferred<T> inferResolved(CalcPropertyInterfaceImplement<T> operand, ExClassSet classSet, InferType inferType);
+    public abstract ExClassSet resolveInferred(PropertyInterfaceImplement<T> operand, ImMap<T, ExClassSet> inferred, InferType inferType);
+    public abstract Inferred<T> inferResolved(PropertyInterfaceImplement<T> operand, ExClassSet classSet, InferType inferType);
 
     @Override
     public boolean equals(Object o) {
@@ -36,7 +36,7 @@ public abstract class Compared<T extends PropertyInterface> {
         return first.hashCode() + second.hashCode();
     }
     
-    protected abstract <P extends PropertyInterface> Compared<P> create(CalcPropertyInterfaceImplement<P> first, CalcPropertyInterfaceImplement<P> second);
+    protected abstract <P extends PropertyInterface> Compared<P> create(PropertyInterfaceImplement<P> first, PropertyInterfaceImplement<P> second);
     
     public <P extends PropertyInterface> Compared<P> remap(ImRevMap<T, P> mapping) {
         return create(first.map(mapping), second.map(mapping));
