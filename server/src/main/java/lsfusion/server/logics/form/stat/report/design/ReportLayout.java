@@ -1,7 +1,10 @@
 package lsfusion.server.logics.form.stat.report.design;
 
 import net.sf.jasperreports.engine.JRBand;
-import net.sf.jasperreports.engine.design.*;
+import net.sf.jasperreports.engine.design.JRDesignBand;
+import net.sf.jasperreports.engine.design.JRDesignSection;
+import net.sf.jasperreports.engine.design.JRDesignTextField;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.type.SplitTypeEnum;
 
 import java.util.ArrayList;

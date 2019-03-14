@@ -11,21 +11,22 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
-import lsfusion.server.physics.admin.drilldown.XorUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.property.IncrementUnionProperty;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.infer.CalcType;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.XorUnionDrillDownFormEntity;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class XorUnionProperty extends IncrementUnionProperty {
 

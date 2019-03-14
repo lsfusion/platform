@@ -1,23 +1,23 @@
 package lsfusion.server.logics.navigator;
 
-import lsfusion.base.file.IOUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.file.IOUtils;
 import lsfusion.base.serialization.SerializationUtil;
 import lsfusion.interop.navigator.WindowType;
-import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.base.context.ThreadLocalContext;
-import lsfusion.server.logics.navigator.window.NavigatorWindow;
-import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
-import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.navigator.window.NavigatorWindow;
+import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
+import lsfusion.server.physics.dev.debug.DebugInfo;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import javax.swing.*;
 import java.io.DataOutputStream;

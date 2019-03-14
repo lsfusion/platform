@@ -4,6 +4,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.stack.StackMessage;
+import lsfusion.server.base.stack.ThisMessage;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -11,7 +13,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.action.session.*;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -20,9 +22,6 @@ import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.session.*;
-import lsfusion.server.base.stack.StackMessage;
-import lsfusion.server.base.stack.ThisMessage;
 
 import java.sql.SQLException;
 

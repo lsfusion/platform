@@ -1,7 +1,6 @@
 package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
@@ -13,6 +12,7 @@ import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.ConcreteClass;
 
 public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExpr implements StaticExprInterface {
 

@@ -2,15 +2,15 @@ package lsfusion.server.physics.admin.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.ObjectValue;
 import lsfusion.server.base.ThreadUtils;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingAction;
-import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
 import lsfusion.server.base.task.TaskRunner;
+import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
 
 import java.sql.SQLException;
 import java.util.Iterator;

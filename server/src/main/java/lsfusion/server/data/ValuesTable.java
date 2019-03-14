@@ -1,10 +1,10 @@
 package lsfusion.server.data;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;

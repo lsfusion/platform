@@ -2,9 +2,9 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.DoubleClass;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.logics.classes.DoubleClass;
 
 public class RandomExpr extends StaticExpr<DoubleClass> {
 

@@ -1,16 +1,13 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.ConcatenateClassSet;
-import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
@@ -21,12 +18,15 @@ import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.stat.FormulaJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.ConcatenateClassSet;
+import lsfusion.server.logics.classes.ValueClassSet;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public class ConcatenateExpr extends VariableClassExpr {

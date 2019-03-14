@@ -1,17 +1,17 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.lambda.set.SFunctionSet;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;

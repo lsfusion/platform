@@ -7,14 +7,12 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

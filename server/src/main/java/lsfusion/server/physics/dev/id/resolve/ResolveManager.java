@@ -1,17 +1,17 @@
 package lsfusion.server.physics.dev.id.resolve;
 
+import lsfusion.server.language.MetaCodeFragment;
 import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
-import lsfusion.server.language.MetaCodeFragment;
 import lsfusion.server.physics.exec.table.ImplementTable;
 
 import java.util.List;

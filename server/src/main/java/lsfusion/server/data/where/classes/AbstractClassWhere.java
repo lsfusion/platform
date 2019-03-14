@@ -1,9 +1,6 @@
 package lsfusion.server.data.where.classes;
 
-import lsfusion.base.comb.ArrayCombinations;
-import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.dnf.ExtraMapSetWhere;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.WrapMap;
@@ -16,7 +13,12 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.comb.ArrayCombinations;
+import lsfusion.base.dnf.ExtraMapSetWhere;
+import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ObjectValueClassSet;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;
@@ -24,8 +26,6 @@ import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.OrClassSet;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.logics.classes.sets.ResolveUpClassSet;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.infer.ExClassSet;
 
 

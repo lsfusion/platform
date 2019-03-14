@@ -1,11 +1,11 @@
 package lsfusion.server.logics.form.stat.integration.importing.plain.dbf;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.integration.importing.plain.ImportPlainIterator;

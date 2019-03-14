@@ -12,18 +12,18 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.TreeGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionOrPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

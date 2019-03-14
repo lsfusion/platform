@@ -1,12 +1,12 @@
 package lsfusion.server.physics.admin.authentication;
 
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

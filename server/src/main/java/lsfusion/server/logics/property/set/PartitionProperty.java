@@ -16,15 +16,17 @@ import lsfusion.server.data.expr.query.PartitionExpr;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.JoinProperty;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrementProperty<PartitionProperty.Interface<T>> {
 

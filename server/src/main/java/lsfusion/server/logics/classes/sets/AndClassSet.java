@@ -1,9 +1,9 @@
 package lsfusion.server.logics.classes.sets;
 
 import lsfusion.base.lambda.ArrayInstancer;
-import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.ValueClassSet;
 
 // по сути на Or
 public interface AndClassSet {

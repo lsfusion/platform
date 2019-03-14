@@ -1,10 +1,10 @@
 package lsfusion.server.data;
 
-import lsfusion.base.serialization.BinarySerializable;
-import lsfusion.base.lambda.set.SFunctionSet;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.base.serialization.BinarySerializable;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;

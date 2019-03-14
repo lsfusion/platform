@@ -1,11 +1,11 @@
 package lsfusion.server.physics.admin.authentication.policy;
 
-import lsfusion.server.language.ScriptingAction;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 
 import java.sql.SQLException;
 

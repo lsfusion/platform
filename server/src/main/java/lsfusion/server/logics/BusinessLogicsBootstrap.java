@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
@@ -14,8 +15,6 @@ import java.io.InputStream;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class BusinessLogicsBootstrap {
     private static final Logger logger = ServerLoggers.startLogger;

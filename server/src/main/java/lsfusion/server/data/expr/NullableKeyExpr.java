@@ -1,11 +1,11 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.server.base.caches.ParamExpr;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.NotNullWhere;

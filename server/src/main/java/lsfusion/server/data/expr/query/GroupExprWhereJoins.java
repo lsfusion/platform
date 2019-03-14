@@ -2,7 +2,6 @@ package lsfusion.server.data.expr.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -10,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.hash.HashContext;

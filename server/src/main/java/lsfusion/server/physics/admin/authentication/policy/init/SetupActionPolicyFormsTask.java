@@ -1,8 +1,8 @@
 package lsfusion.server.physics.admin.authentication.policy.init;
 
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class SetupActionPolicyFormsTask extends SetupActionOrPropertyPolicyFormsTask {

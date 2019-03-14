@@ -2,8 +2,8 @@ package lsfusion.server.logics.init;
 
 import lsfusion.server.base.task.GroupSingleSplitTask;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.physics.exec.DBManager;
 
 import java.sql.SQLException;
 

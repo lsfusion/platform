@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.LogicsModule;
 
 public class ModuleEqualLPFinder extends ModuleEqualLAPFinder<LP<?>> {
     protected final boolean findLocals;

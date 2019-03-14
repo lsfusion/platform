@@ -5,11 +5,11 @@ import lsfusion.interop.form.layout.AbstractGroupObject;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
+import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
-import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

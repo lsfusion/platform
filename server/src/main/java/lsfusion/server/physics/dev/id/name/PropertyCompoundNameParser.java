@@ -1,22 +1,20 @@
 package lsfusion.server.physics.dev.id.name;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils.ParseException;
-import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static lsfusion.server.physics.dev.id.name.CompoundNameUtils.DELIMITER;
 import static lsfusion.server.physics.dev.id.name.CompoundNameUtils.checkForCorrectness;
-import static lsfusion.server.physics.dev.id.name.PropertyCompoundNameUtils.UNKNOWNCLASS;
-import static lsfusion.server.physics.dev.id.name.PropertyCompoundNameUtils.signatureLBracket;
-import static lsfusion.server.physics.dev.id.name.PropertyCompoundNameUtils.signatureRBracket;
+import static lsfusion.server.physics.dev.id.name.PropertyCompoundNameUtils.*;
 
 // Под compoundName мы в данном случае понимам любую форму обращения к свойству из скрипта
 // В compoundName может быть не указана сигнатура и/или пространство имен

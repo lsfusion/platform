@@ -1,7 +1,7 @@
 package lsfusion.server.base.version;
 
-import lsfusion.server.base.version.interfaces.NFMapList;
 import lsfusion.server.base.version.interfaces.NFList;
+import lsfusion.server.base.version.interfaces.NFMapList;
 
 import java.util.Collections;
 import java.util.Iterator;

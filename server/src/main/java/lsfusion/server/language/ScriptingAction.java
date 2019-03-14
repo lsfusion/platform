@@ -1,16 +1,16 @@
 package lsfusion.server.language;
 
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.debug.ActionDelegationType;
 
 import java.sql.SQLException;
 

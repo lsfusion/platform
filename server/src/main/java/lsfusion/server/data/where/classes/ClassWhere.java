@@ -8,14 +8,14 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 

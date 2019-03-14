@@ -1,21 +1,21 @@
 package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
+import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.CustomDbfRecord;
+import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;

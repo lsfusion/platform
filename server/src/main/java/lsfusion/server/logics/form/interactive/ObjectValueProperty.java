@@ -4,14 +4,15 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectActionProperty;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.NoIncrementProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -19,7 +20,6 @@ import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
 

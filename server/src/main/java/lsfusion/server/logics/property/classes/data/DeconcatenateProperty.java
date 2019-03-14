@@ -2,17 +2,17 @@ package lsfusion.server.logics.property.classes.data;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.expr.DeconcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty.Interface> {
     

@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.Settings;
-import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.classes.IsClassField;

@@ -1,6 +1,8 @@
 package lsfusion.server.logics.action.session.change.modifier;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
@@ -13,17 +15,13 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.ValuesContext;
+import lsfusion.server.data.*;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.session.UpdateResult;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

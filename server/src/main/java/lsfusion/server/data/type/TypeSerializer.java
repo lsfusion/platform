@@ -1,12 +1,10 @@
 package lsfusion.server.data.type;
 
-import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.form.property.DataType;
-import lsfusion.server.classes.*;
-import lsfusion.server.classes.link.*;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.link.*;
 import lsfusion.server.physics.exec.DBManager;

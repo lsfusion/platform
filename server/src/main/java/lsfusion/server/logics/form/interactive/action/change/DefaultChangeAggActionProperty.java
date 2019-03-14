@@ -2,11 +2,7 @@ package lsfusion.server.logics.form.interactive.action.change;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.CustomClass;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -14,13 +10,18 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.flow.AroundAspectAction;
+import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.JoinProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.flow.AroundAspectAction;
-import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.sql.SQLException;
 

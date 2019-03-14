@@ -1,7 +1,6 @@
 package lsfusion.server.physics.exec.table;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -11,15 +10,15 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.classes.*;
-import lsfusion.server.data.*;
-import lsfusion.server.logics.classes.*;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.data.*;
+import lsfusion.server.logics.classes.*;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;

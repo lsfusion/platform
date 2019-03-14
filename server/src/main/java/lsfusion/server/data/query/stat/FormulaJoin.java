@@ -1,7 +1,7 @@
 package lsfusion.server.data.query.stat;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.BaseExpr;
 
 public class FormulaJoin<K> extends CalculateJoin<K> {

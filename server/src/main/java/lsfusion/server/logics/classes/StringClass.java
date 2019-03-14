@@ -2,15 +2,15 @@ package lsfusion.server.logics.classes;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

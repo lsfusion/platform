@@ -2,20 +2,16 @@ package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.lambda.Processor;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.lambda.Processor;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.AbstractValuesContext;
 import lsfusion.server.base.caches.InnerContext;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -30,6 +26,10 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
+import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 import java.sql.SQLException;
 

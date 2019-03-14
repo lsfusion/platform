@@ -1,15 +1,15 @@
 package lsfusion.server.language;
 
+import lsfusion.server.base.version.Version;
+import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.object.GroupObjectView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.base.version.Version;
-import lsfusion.server.language.proxy.ViewProxyUtil;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.util.List;
 

@@ -4,7 +4,10 @@ import lsfusion.base.file.RawFileData;
 import net.iryndin.jdbf.core.DbfMetadata;
 import net.iryndin.jdbf.util.DbfMetadataUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 public class CustomDbfReader implements Closeable {

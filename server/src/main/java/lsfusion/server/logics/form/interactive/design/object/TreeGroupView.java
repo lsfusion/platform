@@ -2,16 +2,16 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.form.layout.AbstractTreeGroup;
 import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
+import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
+import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
-import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

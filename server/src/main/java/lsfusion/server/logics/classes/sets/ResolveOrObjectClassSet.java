@@ -1,14 +1,14 @@
 package lsfusion.server.logics.classes.sets;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 
 // по большому счету только для class data props

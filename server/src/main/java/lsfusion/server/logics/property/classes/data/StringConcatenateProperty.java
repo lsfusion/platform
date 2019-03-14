@@ -2,14 +2,13 @@ package lsfusion.server.logics.property.classes.data;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
+import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
-import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StringConcatenateProperty extends FormulaImplProperty {
 

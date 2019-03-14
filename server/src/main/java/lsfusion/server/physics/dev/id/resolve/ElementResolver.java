@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
 

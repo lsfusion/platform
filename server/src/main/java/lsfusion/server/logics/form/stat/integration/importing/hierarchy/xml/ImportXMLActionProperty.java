@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.stat.integration.importing.hierarchy.xml;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.stat.integration.hierarchy.xml.XMLNode;
 import lsfusion.server.logics.form.stat.integration.importing.hierarchy.ImportHierarchicalActionProperty;
+import lsfusion.server.logics.form.struct.FormEntity;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;

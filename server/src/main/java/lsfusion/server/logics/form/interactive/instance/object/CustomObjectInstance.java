@@ -1,20 +1,19 @@
 package lsfusion.server.logics.form.interactive.instance.object;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.*;
-import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.form.interactive.change.ChangedData;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.ObjectType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.session.change.SessionChanges;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.form.interactive.change.ChangedData;
+import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;

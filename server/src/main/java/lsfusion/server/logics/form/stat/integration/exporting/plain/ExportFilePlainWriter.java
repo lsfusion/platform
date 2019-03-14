@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.stat.integration.exporting.plain;
 
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.Type;
 
 import java.io.File;

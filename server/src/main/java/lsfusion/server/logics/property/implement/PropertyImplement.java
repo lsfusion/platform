@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.implement;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;

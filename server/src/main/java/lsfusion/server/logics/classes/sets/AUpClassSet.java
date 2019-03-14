@@ -1,10 +1,10 @@
 package lsfusion.server.logics.classes.sets;
 
-import lsfusion.base.dnf.ExtraMultiIntersectSetWhere;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.base.dnf.ExtraMultiIntersectSetWhere;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.CustomClass;
 
 import java.util.Arrays;
 

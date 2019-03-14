@@ -15,20 +15,16 @@ grammar LsfLogics;
 	import lsfusion.interop.form.stat.report.FormPrintType;
 	import lsfusion.interop.form.ModalityType;
 	import lsfusion.interop.form.WindowFormType;
-	import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
+    import lsfusion.server.base.version.Version;
+    import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+    import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
 	import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 	import lsfusion.server.data.expr.query.PartitionType;
 	import lsfusion.server.form.entity.*;
 	import lsfusion.server.logics.navigator.NavigatorElement;
 	import lsfusion.server.logics.form.interactive.design.ComponentView;
 	import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-	import ResolveClassSet;
-	import DataClass;
-	import CustomClass;
-	import ValueClass;
-	import LocalNestedType;
 	import lsfusion.server.physics.dev.i18n.LocalizedString;
-	import Version;
 	import lsfusion.server.language.linear.LAP;
 	import lsfusion.server.language.linear.LA;
 	import lsfusion.server.language.linear.LP;
@@ -68,7 +64,6 @@ grammar LsfLogics;
 	import lsfusion.server.logics.action.flow.Inline;
 	import lsfusion.server.logics.event.SystemEvent;
 	import lsfusion.server.logics.event.Event;
-	import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 	import lsfusion.server.logics.property.cases.CaseUnionProperty;
 	import lsfusion.server.logics.action.session.changed.IncrementType;
 	import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -435,7 +430,7 @@ reportFilesDeclaration
 reportPath
 @init {
 	GroupObjectEntity groupObject = null;
-	CalcPropertyObjectEntity property = null;
+	PropertyObjectEntity property = null;
 }
 @after {
 	if (inMainParseState()) {
@@ -450,7 +445,7 @@ reportPath
 
 reportDeclaration
 @init {
-	CalcPropertyObjectEntity property = null;
+	PropertyObjectEntity property = null;
 }
 @after {
 	if (inMainParseState()) {
@@ -624,7 +619,7 @@ formExtKey
 	:	'EXTKEY'
 	;
 
-formSubReport returns [CalcPropertyObjectEntity pathProperty]
+formSubReport returns [PropertyObjectEntity pathProperty]
 	:	'SUBREPORT' (prop=formCalcPropertyObject { pathProperty = $prop.property; })?
 	;
 
@@ -811,16 +806,16 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 		)*
 	;
 
-formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
+formCalcPropertyObject returns [PropertyObjectEntity property = null]
 	:   fd = formDesignOrFormCalcPropertyObject[null] { $property = $fd.property; }	
 	;
 
-designCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
+designCalcPropertyObject returns [PropertyObjectEntity property = null]
 	:   fd = formDesignOrFormCalcPropertyObject[$designStatement::design] { $property = $fd.property; }
 	;
 
 // may be used in design
-formDesignOrFormCalcPropertyObject[ScriptingFormView design] returns [CalcPropertyObjectEntity property = null]
+formDesignOrFormCalcPropertyObject[ScriptingFormView design] returns [PropertyObjectEntity property = null]
 @init {
     AbstractFormCalcPropertyUsage propUsage = null;
 }
@@ -837,7 +832,7 @@ formDesignOrFormCalcPropertyObject[ScriptingFormView design] returns [CalcProper
 		}
 	;
 
-formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
+formActionPropertyObject returns [ActionObjectEntity action = null]
 @init {
     AbstractFormActionPropertyUsage propUsage = null;
     ImOrderSet<String> mapping = null;
@@ -991,7 +986,7 @@ formHintsList
 
 formEventsList
 @init {
-	List<ActionPropertyObjectEntity> actions = new ArrayList<>();
+	List<ActionObjectEntity> actions = new ArrayList<>();
 	List<Object> types = new ArrayList<>();
 }
 @after {
@@ -1005,7 +1000,7 @@ formEventsList
 	;
 
 
-formEventDeclaration returns [ActionPropertyObjectEntity action, Object type]
+formEventDeclaration returns [ActionObjectEntity action, Object type]
 @init {
     Boolean before = null;
 }

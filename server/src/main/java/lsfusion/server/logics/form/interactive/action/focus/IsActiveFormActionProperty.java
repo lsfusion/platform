@@ -2,14 +2,14 @@ package lsfusion.server.logics.form.interactive.action.focus;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.action.SystemExplicitAction;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LP;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.SystemExplicitAction;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 

@@ -1,8 +1,5 @@
 package lsfusion.server.base.task;
 
-import lsfusion.server.base.task.ProgramTask;
-import lsfusion.server.base.task.Task;
-
 import java.util.Set;
 
 public abstract class SingleProgramTask extends ProgramTask {

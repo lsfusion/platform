@@ -2,9 +2,9 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 public abstract class VariableSingleClassExpr extends SingleClassExpr {
 

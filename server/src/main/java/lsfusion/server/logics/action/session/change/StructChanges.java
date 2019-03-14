@@ -1,7 +1,6 @@
 package lsfusion.server.logics.action.session.change;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -11,8 +10,9 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.server.logics.property.Property;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.property.Property;
 
 public class StructChanges extends TwinImmutableObject {
 

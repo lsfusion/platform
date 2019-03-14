@@ -4,8 +4,8 @@ import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.OverrideSessionModifier;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

@@ -1,8 +1,8 @@
 package lsfusion.server.data.query.innerjoins;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.where.Where;
 

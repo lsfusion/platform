@@ -4,7 +4,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import org.apache.xpath.NodeSet;
 
 public class ListComp<T> implements NodeListComp<T> {
     public final ImList<NodeSetComp<T>> comps;

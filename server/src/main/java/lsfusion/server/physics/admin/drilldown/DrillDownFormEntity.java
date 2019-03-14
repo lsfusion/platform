@@ -7,20 +7,20 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
-import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
-import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class DrillDownFormEntity<I extends PropertyInterface, P extends Property<I>> extends FormEntity {
     protected final P property;

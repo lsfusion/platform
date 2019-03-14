@@ -16,6 +16,11 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.action.session.change.DataChanges;
+import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
@@ -23,11 +28,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.session.change.DataChanges;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.action.session.change.StructChanges;
 
 public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyInterface> extends MaxGroupProperty<I> {
 

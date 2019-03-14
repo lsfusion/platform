@@ -2,9 +2,9 @@ package lsfusion.server.logics.classes;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.where.classes.AbstractClassWhere;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.OrClassSet;
-import lsfusion.server.data.where.classes.AbstractClassWhere;
 
 // в общем случае вместо ConcatenateClassSet может быть просто AndClassSet, но так как Object'ы и DataClass'ы по другому обрабатываются то здесь так
 public class OrConcatenateClass extends AbstractClassWhere<Integer,OrConcatenateClass> implements OrClassSet {

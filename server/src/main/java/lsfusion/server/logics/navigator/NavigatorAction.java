@@ -1,8 +1,8 @@
 package lsfusion.server.logics.navigator;
 
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.Action;
 
 public class NavigatorAction extends NavigatorElement {
     private final Action action;

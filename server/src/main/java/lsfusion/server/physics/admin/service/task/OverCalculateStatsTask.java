@@ -6,9 +6,9 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.physics.exec.table.ImplementTable;
-import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
+import lsfusion.server.physics.exec.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

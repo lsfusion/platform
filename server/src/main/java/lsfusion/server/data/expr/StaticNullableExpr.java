@@ -1,7 +1,6 @@
 package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
@@ -9,11 +8,12 @@ import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.ValueJoin;
-import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 public abstract class StaticNullableExpr extends NullableExpr implements StaticExprInterface {
 

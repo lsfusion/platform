@@ -6,12 +6,12 @@ import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.base.context.ThreadLocalContext;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

@@ -1,19 +1,18 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.classes.*;
 import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.logics.classes.StaticClass;

@@ -1,9 +1,9 @@
 package lsfusion.server.physics.admin.authentication;
 
-import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
 
 import java.sql.SQLException;
 

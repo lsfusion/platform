@@ -5,9 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.Type;
 
 public abstract class PartitionToken {
 

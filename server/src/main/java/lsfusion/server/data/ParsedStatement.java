@@ -1,7 +1,6 @@
 package lsfusion.server.data;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.data.query.StaticExecuteEnvironment;
 
 import java.sql.PreparedStatement;
 

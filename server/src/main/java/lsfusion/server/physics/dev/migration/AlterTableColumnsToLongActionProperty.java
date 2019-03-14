@@ -1,14 +1,13 @@
 package lsfusion.server.physics.dev.migration;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.exec.table.ImplementTable;
 
 import java.sql.SQLException;

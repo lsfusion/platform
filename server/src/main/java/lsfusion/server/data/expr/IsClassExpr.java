@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -16,9 +17,6 @@ import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.base.caches.TwinLazy;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.classes.*;
-import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
@@ -31,11 +29,13 @@ import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {

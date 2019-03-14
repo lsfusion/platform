@@ -7,8 +7,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 

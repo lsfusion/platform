@@ -2,8 +2,6 @@ package lsfusion.server.data.where;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.StaticExpr;
-import lsfusion.server.data.expr.ValueExpr;
 
 public class Equal {
     public final BaseExpr[] exprs;

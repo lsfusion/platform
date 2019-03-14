@@ -3,12 +3,12 @@ package lsfusion.server.data.expr;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.ParamExpr;
-import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.classes.sets.OrClassSet;
 import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.ValueClassSet;
+import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.sets.OrClassSet;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public abstract class SingleClassExpr extends VariableClassExpr {

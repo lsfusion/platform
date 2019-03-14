@@ -3,13 +3,13 @@ package lsfusion.server.data.expr;
 import lsfusion.base.col.WrapMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.data.expr.formula.AbstractFormulaImpl;
 import lsfusion.server.data.expr.formula.ListExprType;
+import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.IntegralClass;
 
 public class LinearOperandMap extends WrapMap<Expr,Integer> {
 

@@ -1,6 +1,5 @@
 package lsfusion.server.data;
 
-import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.query.stat.Cost;

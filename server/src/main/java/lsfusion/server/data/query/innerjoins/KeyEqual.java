@@ -2,7 +2,6 @@ package lsfusion.server.data.query.innerjoins;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -10,8 +9,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.*;
-import lsfusion.server.caches.*;
 import lsfusion.server.base.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;

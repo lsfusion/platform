@@ -1,9 +1,9 @@
 package lsfusion.server.data;
 
-import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.IntegerClass;
 
 import java.io.DataInputStream;
 import java.io.IOException;

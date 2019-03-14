@@ -2,12 +2,12 @@ package lsfusion.server.physics.exec.table;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.logics.classes.SystemClass;
 import lsfusion.server.data.DBTable;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.logics.classes.SystemClass;
 
 public class EmptyTable extends DBTable {
     public static final EmptyTable instance = new EmptyTable();

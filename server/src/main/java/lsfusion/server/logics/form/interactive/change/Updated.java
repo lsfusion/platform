@@ -3,9 +3,9 @@ package lsfusion.server.logics.form.interactive.change;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 

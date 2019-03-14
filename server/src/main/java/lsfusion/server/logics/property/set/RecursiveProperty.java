@@ -11,24 +11,26 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.RecursiveExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.classes.IntegralClass;
+import lsfusion.server.logics.property.ComplexIncrementProperty;
+import lsfusion.server.logics.property.JoinProperty;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 
 public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncrementProperty<RecursiveProperty.Interface> {

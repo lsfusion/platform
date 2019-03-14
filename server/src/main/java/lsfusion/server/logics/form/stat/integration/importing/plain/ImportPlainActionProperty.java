@@ -1,25 +1,25 @@
 package lsfusion.server.logics.form.stat.integration.importing.plain;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.classes.IntegerClass;
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.logics.form.open.stat.ImportAction;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.integration.hierarchy.ImportData;
 import lsfusion.server.logics.form.stat.integration.importing.FormImportData;
 import lsfusion.server.logics.form.stat.integration.plain.PlainConstants;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.io.IOException;

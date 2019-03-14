@@ -1,6 +1,5 @@
 package lsfusion.server.data;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -8,12 +7,13 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.ValueClass;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

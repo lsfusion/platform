@@ -3,12 +3,11 @@ package lsfusion.server.data.expr;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.classes.*;
-import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public abstract class StaticClassExpr extends BaseExpr implements StaticClassExprInterface {

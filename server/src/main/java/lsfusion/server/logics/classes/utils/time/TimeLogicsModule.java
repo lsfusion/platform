@@ -1,13 +1,13 @@
 package lsfusion.server.logics.classes.utils.time;
 
+import lsfusion.server.data.Time;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.data.Time;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

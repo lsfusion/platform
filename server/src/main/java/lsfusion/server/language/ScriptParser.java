@@ -4,9 +4,9 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.server.LsfLogicsLexer;
 import lsfusion.server.LsfLogicsParser;
+import lsfusion.server.base.stack.ExecutionStackAspect;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.base.stack.ExecutionStackAspect;
 import org.antlr.runtime.*;
 
 import java.util.ArrayList;

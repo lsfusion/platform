@@ -1,15 +1,15 @@
 package lsfusion.server.language;
 
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -12,11 +12,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.*;
 

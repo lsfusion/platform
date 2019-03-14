@@ -1,11 +1,11 @@
 package lsfusion.server.data.where;
 
-import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.lambda.ArrayInstancer;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.BaseExpr;
@@ -15,8 +15,8 @@ import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 

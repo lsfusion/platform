@@ -1,9 +1,9 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 

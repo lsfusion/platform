@@ -12,7 +12,6 @@ import lsfusion.server.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.ParamExpr;
-import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
@@ -30,6 +29,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.sets.AndClassSet;
 
 
 public abstract class BaseExpr extends Expr {

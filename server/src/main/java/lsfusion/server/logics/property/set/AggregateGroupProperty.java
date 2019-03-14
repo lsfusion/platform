@@ -13,13 +13,13 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 // связь один к одному
 public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGroupProperty<T ,PropertyInterface> {

@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.i18n;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.LocalizeUtils;
+import lsfusion.base.ResourceUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;

@@ -5,10 +5,10 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.physics.exec.DBManager;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

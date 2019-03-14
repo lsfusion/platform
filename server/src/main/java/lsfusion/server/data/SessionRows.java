@@ -1,6 +1,8 @@
 package lsfusion.server.data;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -18,7 +20,6 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.InnerContext;
 import lsfusion.server.base.caches.MapValuesIterable;
 import lsfusion.server.base.caches.hash.HashValues;
-import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
@@ -29,9 +30,9 @@ import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
+import lsfusion.server.logics.classes.*;
 
 import java.sql.SQLException;
 

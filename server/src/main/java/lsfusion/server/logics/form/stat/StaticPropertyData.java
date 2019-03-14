@@ -2,10 +2,12 @@ package lsfusion.server.logics.form.stat;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;

@@ -1,14 +1,14 @@
 package lsfusion.server.data.expr.where.ifs;
 
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.hash.HashContext;
-import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.ValueClassSet;
+import lsfusion.server.data.NullValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
@@ -20,14 +20,14 @@ import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.NullValue;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public class NullExpr extends Expr {

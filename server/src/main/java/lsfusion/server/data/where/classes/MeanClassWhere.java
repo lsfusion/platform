@@ -1,11 +1,11 @@
 package lsfusion.server.data.where.classes;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.OuterContext;
 import lsfusion.server.base.caches.TranslateContext;

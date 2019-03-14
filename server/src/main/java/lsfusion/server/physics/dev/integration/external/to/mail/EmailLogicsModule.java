@@ -1,15 +1,15 @@
 package lsfusion.server.physics.dev.integration.external.to.mail;
 
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LA;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
-import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

@@ -1,14 +1,14 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.struct.FormEntity;
 
 public class SessionEnvEvent extends TwinImmutableObject {
 

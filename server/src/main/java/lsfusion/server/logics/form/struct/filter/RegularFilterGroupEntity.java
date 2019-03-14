@@ -4,13 +4,13 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 public class RegularFilterGroupEntity extends IdentityObject {
 
