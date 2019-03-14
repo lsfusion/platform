@@ -29,6 +29,7 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;

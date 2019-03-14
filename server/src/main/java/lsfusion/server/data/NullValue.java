@@ -1,4 +1,4 @@
-package lsfusion.server.logics;
+package lsfusion.server.data;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;

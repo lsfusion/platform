@@ -9,7 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.VariableClassExpr;
 import lsfusion.server.data.expr.VariableSingleClassExpr;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 
 public interface MapTranslate extends MapObject {
 

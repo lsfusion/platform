@@ -9,7 +9,7 @@ import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.ScriptingActionProperty;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;

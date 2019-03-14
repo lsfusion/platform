@@ -7,7 +7,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.SessionDataProperty;

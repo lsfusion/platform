@@ -21,8 +21,8 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.*;
 
 import java.math.BigInteger;

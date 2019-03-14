@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;

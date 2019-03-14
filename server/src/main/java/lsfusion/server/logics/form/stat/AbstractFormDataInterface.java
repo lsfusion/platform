@@ -15,7 +15,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 
 import java.sql.SQLException;
 

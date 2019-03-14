@@ -9,8 +9,8 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 

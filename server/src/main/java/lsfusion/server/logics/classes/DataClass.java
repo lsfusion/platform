@@ -27,7 +27,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.instance.object.DataObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;

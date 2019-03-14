@@ -1,7 +1,7 @@
 package lsfusion.server.language;
 
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;

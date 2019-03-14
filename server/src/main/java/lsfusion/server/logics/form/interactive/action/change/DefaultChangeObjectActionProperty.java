@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInsta
 import lsfusion.server.logics.form.interactive.instance.object.DataObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;

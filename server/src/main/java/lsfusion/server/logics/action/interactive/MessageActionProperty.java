@@ -3,7 +3,7 @@ package lsfusion.server.logics.action.interactive;
 import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

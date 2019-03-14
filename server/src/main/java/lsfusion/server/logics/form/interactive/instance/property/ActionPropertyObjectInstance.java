@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.instance.property;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ActionPropertyValueImplement;
 import lsfusion.server.base.context.ExecutionStack;

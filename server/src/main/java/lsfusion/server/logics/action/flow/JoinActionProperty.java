@@ -11,7 +11,7 @@ import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.debug.WatchActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

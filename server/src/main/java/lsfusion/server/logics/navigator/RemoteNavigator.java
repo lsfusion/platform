@@ -23,6 +23,8 @@ import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.CustomClass;

@@ -10,7 +10,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.action.flow.CaseActionProperty;

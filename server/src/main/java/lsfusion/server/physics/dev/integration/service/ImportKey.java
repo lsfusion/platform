@@ -19,7 +19,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyImplement;
 import lsfusion.server.logics.property.PropertyInterface;

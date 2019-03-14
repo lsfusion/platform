@@ -15,6 +15,8 @@ import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;

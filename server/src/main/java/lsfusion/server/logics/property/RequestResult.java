@@ -3,7 +3,7 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LCP;
 
 public class RequestResult {

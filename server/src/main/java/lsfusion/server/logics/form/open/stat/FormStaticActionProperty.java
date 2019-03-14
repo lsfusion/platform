@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.form.stat.FormStaticType;
 import lsfusion.server.logics.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.form.open.FormActionProperty;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;

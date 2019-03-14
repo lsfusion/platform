@@ -30,8 +30,8 @@ import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInsta
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogFormEntity;
 import lsfusion.server.logics.form.interactive.dialogedit.EditFormEntity;

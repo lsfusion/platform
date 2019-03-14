@@ -7,7 +7,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.action.session.DataSession;
 
