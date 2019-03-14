@@ -46,7 +46,7 @@ import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.navigator.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.mutables.NFLazy;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;

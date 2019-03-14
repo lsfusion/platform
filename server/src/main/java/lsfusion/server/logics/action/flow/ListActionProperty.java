@@ -16,10 +16,10 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.impl.NFListImpl;
-import lsfusion.server.logics.mutables.interfaces.NFList;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.impl.NFListImpl;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 

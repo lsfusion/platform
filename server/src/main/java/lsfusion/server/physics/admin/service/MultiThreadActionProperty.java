@@ -11,7 +11,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.TaskRunner;
+import lsfusion.server.base.task.TaskRunner;
 
 import java.sql.SQLException;
 import java.util.Iterator;

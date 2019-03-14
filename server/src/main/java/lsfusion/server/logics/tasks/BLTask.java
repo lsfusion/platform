@@ -1,5 +1,6 @@
 package lsfusion.server.logics.tasks;
 
+import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.action.session.DataSession;

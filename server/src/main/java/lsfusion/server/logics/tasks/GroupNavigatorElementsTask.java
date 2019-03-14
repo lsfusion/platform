@@ -2,12 +2,11 @@ package lsfusion.server.logics.tasks;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.navigator.NavigatorElement;
-import lsfusion.server.logics.BusinessLogics;
 
-public abstract class GroupNavigatorElementsTask extends GroupSingleSplitTask<NavigatorElement> {
+public abstract class GroupNavigatorElementsTask extends BLGroupSingleSplitTask<NavigatorElement> {
 
     @Override
-    protected ImSet<NavigatorElement> getObjects(BusinessLogics BL) {
-        return BL.getNavigatorElements();
+    protected ImSet<NavigatorElement> getObjects() {
+        return getBL().getNavigatorElements();
     }
 }

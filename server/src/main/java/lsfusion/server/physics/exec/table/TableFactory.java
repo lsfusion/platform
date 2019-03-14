@@ -17,10 +17,10 @@ import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.NFLazy;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
