@@ -41,7 +41,6 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyUtils;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -750,7 +749,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
 
         public void setDefaultCompare(String defaultCompare) {
-            this.defaultCompare = PropertyUtils.stringToCompare(defaultCompare);
+            this.defaultCompare = ActionOrPropertyUtils.stringToCompare(defaultCompare);
         }
 
         public void setDefaultCompare(Compare defaultCompare) {

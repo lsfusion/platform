@@ -128,7 +128,7 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.property.PropertyUtils.*;
+import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 import static lsfusion.server.language.AlignmentUtils.*;
 
 public class ScriptingLogicsModule extends LogicsModule {

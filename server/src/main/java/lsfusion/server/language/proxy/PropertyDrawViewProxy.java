@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.logics.classes.TimeClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.property.PropertyUtils;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -65,7 +65,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setDefaultCompare(String defaultCompare) {
-        target.defaultCompare = PropertyUtils.stringToCompare(defaultCompare);
+        target.defaultCompare = ActionOrPropertyUtils.stringToCompare(defaultCompare);
     }
 
     public void setValueSize(Dimension size) {

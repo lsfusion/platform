@@ -43,7 +43,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
-import static lsfusion.server.logics.property.PropertyUtils.readCalcImplements;
+import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
 public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
 
