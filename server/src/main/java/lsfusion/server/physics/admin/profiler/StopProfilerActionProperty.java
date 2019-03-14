@@ -24,7 +24,7 @@ import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.Property;
@@ -54,7 +54,7 @@ public class StopProfilerActionProperty extends ScriptingAction {
     private LCP maxTime;
     private LCP squaresSum;
 
-    private LAP<?> writeProfilerBatch;
+    private LA<?> writeProfilerBatch;
 
     private String basePOStaticCaption;
 

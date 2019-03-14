@@ -14,6 +14,7 @@ import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.classes.ColorClass;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -35,7 +36,6 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
@@ -658,7 +658,7 @@ public class ScriptingFormEntity {
 
     public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
-        return form.addPropertyObject((LAP)prop.property, prop.mapping);
+        return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
 
     public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, Version version) throws ScriptingErrorLog.SemanticErrorException {

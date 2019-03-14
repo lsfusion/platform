@@ -6,10 +6,10 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
@@ -345,7 +345,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
         if(lp instanceof LCP)
             return ((LCP) lp).property instanceof CaseUnionProperty && ((CaseUnionProperty)((LCP) lp).property).isAbstract() && ((CaseUnionProperty)((LCP) lp).property).getAbstractType() == CaseUnionProperty.Type.MULTI;
         else
-            return ((LAP) lp).property instanceof CaseActionProperty && ((CaseActionProperty)((LAP) lp).property).isAbstract() && ((CaseActionProperty)((LAP) lp).property).getAbstractType() == ListCaseAction.AbstractType.MULTI;
+            return ((LA) lp).property instanceof CaseActionProperty && ((CaseActionProperty)((LA) lp).property).isAbstract() && ((CaseActionProperty)((LA) lp).property).getAbstractType() == ListCaseAction.AbstractType.MULTI;
     }
     
     private static boolean match(List<ResolveClassSet> absSignature, List<ResolveClassSet> concSignature) {
@@ -404,11 +404,11 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
                 ((CaseUnionProperty) absLCP.property).addImplicitCase(mapAbsImp, impSignature, sameNamespace, impVersion);
             }
         } else {
-            LAP<PropertyInterface> absLAP = (LAP) absLP;
-            if (impLP instanceof LAP) {
-                LAP<I> impLAP = (LAP) impLP;
-                ActionMapImplement<I, PropertyInterface> mapAbsImp = impLAP.getImplement(absLAP.listInterfaces.toArray(new PropertyInterface[absLAP.listInterfaces.size()]));
-                ((CaseActionProperty) absLAP.property).addImplicitCase(mapAbsImp, impSignature, sameNamespace, impVersion);
+            LA<PropertyInterface> absLA = (LA) absLP;
+            if (impLP instanceof LA) {
+                LA<I> impLA = (LA) impLP;
+                ActionMapImplement<I, PropertyInterface> mapAbsImp = impLA.getImplement(absLA.listInterfaces.toArray(new PropertyInterface[absLA.listInterfaces.size()]));
+                ((CaseActionProperty) absLA.property).addImplicitCase(mapAbsImp, impSignature, sameNamespace, impVersion);
             }
         }
     }

@@ -2,17 +2,17 @@ package lsfusion.server.physics.admin.authentication.policy.init;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.init.GroupPropertiesTask;
 
 public abstract class SetupActionOrPropertyPolicyFormsTask extends GroupPropertiesTask {
     
-    protected LAP<?> setupPolicyByCN;
+    protected LA<?> setupPolicyByCN;
 
     protected abstract FormEntity getForm();
     protected abstract LCP getCanonicalName();
@@ -26,7 +26,7 @@ public abstract class SetupActionOrPropertyPolicyFormsTask extends GroupProperti
         BusinessLogics BL = getBL();
         FormEntity formEntity = getForm();
         ObjectEntity obj = formEntity.getObject("p");
-        LAP<?> setupPolicyForm = BL.LM.addMFAProp(LocalizedString.NONAME, formEntity, SetFact.singletonOrder(obj), true);
+        LA<?> setupPolicyForm = BL.LM.addMFAProp(LocalizedString.NONAME, formEntity, SetFact.singletonOrder(obj), true);
         setupPolicyByCN = BL.LM.addJoinAProp(setupPolicyForm, getCanonicalName(), 1);
         return true;
     }

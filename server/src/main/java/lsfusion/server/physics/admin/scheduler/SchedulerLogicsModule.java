@@ -1,9 +1,9 @@
 package lsfusion.server.physics.admin.scheduler;
 
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
@@ -48,9 +48,9 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP dateScheduledClientTaskLog;
 
     public LCP scriptText;
-    public LAP evalScript;
+    public LA evalScript;
     
-    public LAP copyAction;
+    public LA copyAction;
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SchedulerLogicsModule.class.getResourceAsStream("/system/Scheduler.lsf"), "/system/Scheduler.lsf", baseLM, BL);

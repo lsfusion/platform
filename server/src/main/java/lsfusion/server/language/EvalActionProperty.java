@@ -5,10 +5,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.infer.ClassType;
@@ -54,7 +54,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         String script = getScript(context);
 
         try {
-            LAP<?> runAction = context.getBL().evaluateRun(script, action);
+            LA<?> runAction = context.getBL().evaluateRun(script, action);
             if (runAction != null)
                 runAction.execute(context, getParams(context));
         } catch (EvalUtils.EvaluationException | RecognitionException e) {

@@ -1,5 +1,6 @@
 package lsfusion.server.physics.dev.id.resolve;
 
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -8,7 +9,6 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.language.MetaCodeFragment;
@@ -26,10 +26,10 @@ public class ResolveManager {
     private ElementResolver<LCP<?>, List<ResolveClassSet>> directLocalsResolver;
     private ElementResolver<LCP<?>, List<ResolveClassSet>> indirectLocalsResolver;
 
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> directLAPResolver;
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> abstractLAPResolver;
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> abstractNotEqualLAPResolver;
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> indirectLAPResolver;
+    private ElementResolver<LA<?>, List<ResolveClassSet>> directLAPResolver;
+    private ElementResolver<LA<?>, List<ResolveClassSet>> abstractLAPResolver;
+    private ElementResolver<LA<?>, List<ResolveClassSet>> abstractNotEqualLAPResolver;
+    private ElementResolver<LA<?>, List<ResolveClassSet>> indirectLAPResolver;
     
     private ElementResolver<AbstractGroup, ?> groupResolver;
     private ElementResolver<NavigatorElement, ?> navigatorResolver;
@@ -53,10 +53,10 @@ public class ResolveManager {
         directLocalsResolver = new LPResolver<>(LM, new ModuleDirectLocalsFinder(), true, false);
         indirectLocalsResolver = new LPResolver<>(LM, new ModuleIndirectLocalsFinder(), false, false);
         
-        directLAPResolver = new LPResolver<>(LM, new ModuleLAPFinder(), true, false);
-        abstractLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAPFinder(), true, false);
-        abstractNotEqualLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAPFinder(), true, true);
-        indirectLAPResolver = new LPResolver<>(LM, new ModuleIndirectLAPFinder(), false, false);
+        directLAPResolver = new LPResolver<>(LM, new ModuleLAFinder(), true, false);
+        abstractLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAFinder(), true, false);
+        abstractNotEqualLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAFinder(), true, true);
+        indirectLAPResolver = new LPResolver<>(LM, new ModuleIndirectLAFinder(), false, false);
         
         groupResolver = new ElementResolver<>(LM, new ModuleGroupFinder());
         navigatorResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder());
@@ -98,15 +98,15 @@ public class ResolveManager {
         return getAbstractLCPResolver(prioritizeNotEquals).resolve(compoundName, params);    
     } 
 
-    public LAP<?> findAction(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LAP<?> property = directLAPResolver.resolve(compoundName, params);
+    public LA<?> findAction(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LA<?> property = directLAPResolver.resolve(compoundName, params);
         if (property == null) {
             property = indirectLAPResolver.resolve(compoundName, params);
         }
         return property;
     }
     
-    public LAP<?> findAbstractAction(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+    public LA<?> findAbstractAction(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
         return getAbstractLAPResolver(prioritizeNotEquals).resolve(compoundName, params);    
     } 
     
@@ -146,7 +146,7 @@ public class ResolveManager {
         }
     }
 
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> getAbstractLAPResolver(boolean prioritizeNotEquals) {
+    private ElementResolver<LA<?>, List<ResolveClassSet>> getAbstractLAPResolver(boolean prioritizeNotEquals) {
         if (prioritizeNotEquals) {
             return abstractNotEqualLAPResolver;
         } else {

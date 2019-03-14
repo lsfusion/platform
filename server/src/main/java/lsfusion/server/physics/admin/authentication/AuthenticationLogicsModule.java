@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.authentication;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.data.DataObject;
@@ -9,7 +10,6 @@ import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.env.CurrentAuthTokenFormulaProperty;
 import lsfusion.server.logics.property.env.CurrentComputerFormulaProperty;
@@ -83,9 +83,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     
     public LCP userFontSize;
     
-    public LAP deliveredNotificationAction;
+    public LA deliveredNotificationAction;
     
-    public LAP<?> syncUsers;
+    public LA<?> syncUsers;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(AuthenticationLogicsModule.class.getResourceAsStream("/system/Authentication.lsf"), "/system/Authentication.lsf", baseLM, BL);

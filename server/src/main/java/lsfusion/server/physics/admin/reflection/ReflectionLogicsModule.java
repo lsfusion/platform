@@ -1,12 +1,12 @@
 package lsfusion.server.physics.admin.reflection;
 
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.env.CurrentFormFormulaProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -163,7 +163,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP overQuantityTableColumn;
     public LCP notNullQuantityTableColumn;
     public LCP notRecalculateTableColumn;
-    public LAP recalculateAggregationTableColumn;
+    public LA recalculateAggregationTableColumn;
 
     public LCP notRecalculateSID;
     public LCP notRecalculateStatsSID;
@@ -174,7 +174,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP timeDropColumn;
     public LCP revisionDropColumn;
-    public LAP dropDropColumn;
+    public LA dropDropColumn;
 
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
     public final StringClass navigatorElementCanonicalNameClass = StringClass.getv(100);

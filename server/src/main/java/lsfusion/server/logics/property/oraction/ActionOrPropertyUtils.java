@@ -10,11 +10,11 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.language.linear.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
@@ -24,14 +24,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ActionOrPropertyUtils {
-    public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces) {
+    public static ValueClass[] getValueClasses(LA<?>[] dataProperties, int[][] mapInterfaces) {
         return getValueClasses(dataProperties, mapInterfaces, true);
     }
 
-    public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
+    public static ValueClass[] getValueClasses(LA<?>[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
         Map<Integer, ValueClass> mapClasses = new HashMap<>(); // deprecated этот метод скоро уйдет
         for (int i = 0; i < dataProperties.length; ++i) {
-            LAP<?> dataProperty = dataProperties[i];
+            LA<?> dataProperty = dataProperties[i];
 
             if (dataProperty.listInterfaces.size() == 0) // специально для vnull сделано
                 continue;
@@ -187,7 +187,7 @@ public class ActionOrPropertyUtils {
         }
     }
 
-    public static <P extends PropertyInterface> ActionImplement<P, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
+    public static <P extends PropertyInterface> ActionImplement<P, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapActionImplement(LA<P> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
         return new ActionImplement<>(property.property, getMapping(property, propImpl));
     }
 
