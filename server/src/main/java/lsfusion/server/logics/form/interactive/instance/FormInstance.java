@@ -29,6 +29,7 @@ import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
 import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.action.session.change.modifier.OverridePropSourceSessionModifier;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;

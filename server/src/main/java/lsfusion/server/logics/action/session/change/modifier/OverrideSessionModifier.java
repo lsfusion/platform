@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action.session.change.modifier;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
@@ -16,13 +16,14 @@ import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.session.change.increment.IncrementProps;
 import lsfusion.server.logics.action.session.change.ModifyChange;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;

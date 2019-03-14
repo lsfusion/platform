@@ -1,7 +1,12 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action.session.changed;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class SessionCalcProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
@@ -10,7 +15,7 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
     public final PrevScope scope;
 
     public SessionCalcProperty(LocalizedString caption, CalcProperty<T> property, PrevScope scope) {
-        super(caption, property.getOrderInterfaces());
+        super(caption, property.getFriendlyOrderInterfaces());
         this.property = property;
         this.scope = scope;
     }

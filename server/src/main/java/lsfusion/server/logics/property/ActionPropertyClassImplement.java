@@ -3,6 +3,7 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.linear.LAP;
+import lsfusion.server.logics.form.struct.ValueClassWrapper;
 
 public class ActionPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, ActionProperty<P>> {
 

@@ -25,7 +25,6 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.OverrideSessionModifier;
 import lsfusion.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;

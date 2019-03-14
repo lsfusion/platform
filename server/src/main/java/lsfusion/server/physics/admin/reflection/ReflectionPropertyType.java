@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.physics.admin.reflection;
 
 public enum ReflectionPropertyType {
     CANONICAL_NAME

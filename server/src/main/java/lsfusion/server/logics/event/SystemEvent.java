@@ -1,7 +1,6 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.base.mutability.ImmutableObject;
-import lsfusion.server.logics.property.PrevScope;
 
 public class SystemEvent extends ImmutableObject implements BaseEvent {
     

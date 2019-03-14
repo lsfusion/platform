@@ -17,6 +17,7 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.classes.sets.ResolveUpClassSet;
