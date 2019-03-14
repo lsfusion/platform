@@ -339,7 +339,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return obj;
     }
 
-    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormPropertyUsage pDrawUsage, Result<Pair<ActionOrProperty, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
+    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormActionOrPropertyUsage pDrawUsage, Result<Pair<ActionOrProperty, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
         assert !(pDrawUsage instanceof FormPredefinedUsage);
         LAP<?, ?> property;
         ImOrderSet<String> mapping;
@@ -4369,13 +4369,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public interface AbstractFormPropertyUsage {
+    public interface AbstractFormActionOrPropertyUsage {
     }
 
-    public static abstract class FormPropertyUsage implements AbstractFormPropertyUsage {
+    public static abstract class BaseFormActionOrPropertyUsage implements AbstractFormActionOrPropertyUsage {
         public List<String> mapping;
 
-        public FormPropertyUsage(List<String> mapping) {
+        public BaseFormActionOrPropertyUsage(List<String> mapping) {
             this.mapping = mapping;
         }
         
@@ -4384,13 +4384,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public interface AbstractFormCalcPropertyUsage extends AbstractFormPropertyUsage { // lcp or calc
+    public interface AbstractFormPropertyUsage extends AbstractFormActionOrPropertyUsage { // lcp or calc
     }
 
-    public interface AbstractFormActionPropertyUsage extends AbstractFormPropertyUsage { // LA or calc
+    public interface AbstractFormActionUsage extends AbstractFormActionOrPropertyUsage { // LA or calc
     }
 
-    public static abstract class FormLAPUsage<L extends LAP> implements AbstractFormPropertyUsage {
+    public static abstract class FormLAPUsage<L extends LAP> implements AbstractFormActionOrPropertyUsage {
         public final L lp;
         public final List<ResolveClassSet> signature;
         public final ImOrderSet<String> mapping;
@@ -4405,7 +4405,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class FormLPUsage extends FormLAPUsage<LP> implements AbstractFormCalcPropertyUsage {
+    public static class FormLPUsage extends FormLAPUsage<LP> implements AbstractFormPropertyUsage {
         public FormLPUsage(LP lp, ImOrderSet<String> mapping) {
             super(lp, mapping);
         }
@@ -4415,7 +4415,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class FormLAUsage extends FormLAPUsage<LA> implements AbstractFormActionPropertyUsage {
+    public static class FormLAUsage extends FormLAPUsage<LA> implements AbstractFormActionUsage {
         public FormLAUsage(LA lp, ImOrderSet<String> mapping) {
             super(lp, mapping);
         }
@@ -4457,7 +4457,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class FormPredefinedUsage extends FormPropertyUsage {
+    public static class FormPredefinedUsage extends BaseFormActionOrPropertyUsage {
         public final PropertyUsage property;
 
         public FormPredefinedUsage(PropertyUsage property, List<String> mapping) {
@@ -4466,7 +4466,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     
-    public abstract static class FormActionOrPropertyUsage<U extends ActionOrPropertyUsage> extends FormPropertyUsage {
+    public abstract static class FormActionOrPropertyUsage<U extends ActionOrPropertyUsage> extends BaseFormActionOrPropertyUsage {
         public final U usage;
 
         public FormActionOrPropertyUsage(U usage, List<String> mapping) {
@@ -4475,11 +4475,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class FormCalcPropertyUsage extends FormActionOrPropertyUsage implements AbstractFormCalcPropertyUsage {
-        public FormCalcPropertyUsage(PropertyUsage property, List<String> mapping) {
+    public static class FormPropertyUsage extends FormActionOrPropertyUsage implements AbstractFormPropertyUsage {
+        public FormPropertyUsage(PropertyUsage property, List<String> mapping) {
             this(new CalcPropertyUsage(property), mapping);
         }
-        public FormCalcPropertyUsage(CalcPropertyUsage property, List<String> mapping) {
+        public FormPropertyUsage(CalcPropertyUsage property, List<String> mapping) {
             super(property, mapping);
         }
     }
@@ -4490,11 +4490,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class FormActionPropertyUsage extends FormActionOrPropertyUsage implements AbstractFormActionPropertyUsage {
-        public FormActionPropertyUsage(PropertyUsage property, List<String> mapping) {
+    public static class FormActionUsage extends FormActionOrPropertyUsage implements AbstractFormActionUsage {
+        public FormActionUsage(PropertyUsage property, List<String> mapping) {
             this(new ActionPropertyUsage(property), mapping);
         }
-        public FormActionPropertyUsage(ActionPropertyUsage property, List<String> mapping) {
+        public FormActionUsage(ActionPropertyUsage property, List<String> mapping) {
             super(property, mapping);
         }
     }
@@ -4515,7 +4515,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         public FormActionOrPropertyUsage createFormUsage(List<String> mapping) {
-            return new FormCalcPropertyUsage(this, mapping);
+            return new FormPropertyUsage(this, mapping);
         }
     }
 
@@ -4536,7 +4536,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         @Override
         public FormActionOrPropertyUsage createFormUsage(List<String> mapping) {
-            return new FormActionPropertyUsage(this, mapping);
+            return new FormActionUsage(this, mapping);
         }
     }
 
