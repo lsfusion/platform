@@ -3,7 +3,7 @@ package lsfusion.server.base.stack;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.physics.admin.profiler.ActionProfileObject;
 import lsfusion.server.physics.admin.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;

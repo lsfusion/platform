@@ -19,6 +19,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.base.context.ExecutionStack;
@@ -149,7 +150,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             "package " + DELEGATES_HOLDER_CLASS_PACKAGE + ";\n" +
             "\n" +
             "import lsfusion.server.data.SQLHandledException;\n" +
-            "import lsfusion.server.logics.property.ActionProperty;\n" +
+            "import lsfusion.server.logics.action.ActionProperty;\n" +
             "import lsfusion.server.logics.property.CalcProperty;\n" +
             "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
             "import lsfusion.server.logics.property.data.DataProperty;\n" +

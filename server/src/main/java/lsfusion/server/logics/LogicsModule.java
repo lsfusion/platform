@@ -20,9 +20,12 @@ import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.change.AddObjectActionProperty;
 import lsfusion.server.logics.action.change.ChangeClassActionProperty;
 import lsfusion.server.logics.action.change.SetActionProperty;
+import lsfusion.server.logics.action.implement.ActionPropertyImplement;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.interactive.ConfirmActionProperty;
 import lsfusion.server.logics.action.interactive.MessageActionProperty;
 import lsfusion.server.logics.action.session.ApplyActionProperty;
@@ -60,6 +63,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.set.*;
@@ -1644,8 +1648,8 @@ public abstract class LogicsModule {
 
     // ------------------- DRILLDOWN ----------------- //
 
-    public void setupDrillDownProperty(Property property, boolean isLightStart) {
-        if (property instanceof CalcProperty && ((CalcProperty) property).supportsDrillDown()) {
+    public void setupDrillDownProperty(CalcProperty property, boolean isLightStart) {
+        if (property.supportsDrillDown()) {
             LAP<?> drillDownFormProperty = isLightStart ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);
             ActionProperty formProperty = drillDownFormProperty.property;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);

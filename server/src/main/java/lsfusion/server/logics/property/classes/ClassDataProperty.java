@@ -21,6 +21,8 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.infer.CalcClassType;
+import lsfusion.server.logics.property.infer.CalcType;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.action.session.change.PropertyChanges;

@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CalcType;
+import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.IncrementUnionProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.SumUnionDrillDownFormEntity;

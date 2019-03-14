@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.init;
 
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 
 public class CheckAbstractTask extends GroupPropertiesTask {
 

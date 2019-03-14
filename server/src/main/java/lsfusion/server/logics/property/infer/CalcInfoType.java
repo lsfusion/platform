@@ -1,7 +1,8 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.infer;
 
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.infer.AlgInfoType;
 import lsfusion.server.logics.property.infer.CalcClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

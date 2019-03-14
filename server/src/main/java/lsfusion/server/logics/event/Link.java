@@ -1,7 +1,7 @@
 package lsfusion.server.logics.event;
 
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 
 public class Link extends TwinImmutableObject {
 

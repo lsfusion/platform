@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -26,7 +27,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.infer.CalcClassType;
+import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
@@ -39,9 +40,6 @@ import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -162,7 +160,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected boolean canBeHeurChanged(boolean global) {
+    public boolean canBeHeurChanged(boolean global) {
         for(CalcCase<Interface> operand : getCases()) // считаем where сиблингов и потом ими xor'им change
             if(operand.implement instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) operand.implement).property.canBeHeurChanged(global))
                 return true;

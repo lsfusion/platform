@@ -12,7 +12,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.sets.*;
-import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.action.ActionProperty;
 
 public class UnknownClass extends ImmutableObject implements FormulaClass, ConcreteObjectClass {
 

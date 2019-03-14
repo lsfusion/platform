@@ -36,7 +36,7 @@ import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;

@@ -30,6 +30,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.*;
@@ -67,6 +68,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
@@ -76,6 +78,7 @@ import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.admin.scheduler.Scheduler;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -166,6 +169,84 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public BusinessLogics() {
         super(LOGICS_ORDER);
+    }
+
+    public static int compareChangeExtProps(Property p1, Property p2) {
+        // если p1 не DataProperty
+        String c1 = p1.getChangeExtSID();
+        String c2 = p2.getChangeExtSID();
+
+        if(c1 == null && c2 == null)
+            return compareDeepProps(p1, p2);
+
+        if(c1 == null)
+            return 1;
+
+        if(c2 == null)
+            return -1;
+
+        int result = c1.compareTo(c2);
+        if(result != 0)
+            return result;
+
+        return compareDeepProps(p1, p2);
+    }
+
+    public static int compareDeepProps(Property p1, Property p2) {
+//           return Integer.compare(p1.hashCode(), p2.hashCode());
+
+        String className1 = p1.getClass().getName(); 
+        String className2 = p2.getClass().getName(); 
+
+        int result = className1.compareTo(className2);
+        if(result != 0)
+            return result;
+
+        DebugInfo debugInfo1 = p1.getDebugInfo();
+        DebugInfo debugInfo2 = p2.getDebugInfo();
+        
+        if((debugInfo1 == null) != (debugInfo2 == null))
+            return Boolean.compare(debugInfo1 == null, debugInfo2 == null);
+        
+        if(debugInfo1 != null) {
+            DebugInfo.DebugPoint point1 = debugInfo1.getPoint();
+            DebugInfo.DebugPoint point2 = debugInfo2.getPoint();
+            
+            result = point1.moduleName.compareTo(point2.moduleName);
+            if(result != 0)
+                return result;
+            
+            result = Integer.compare(point1.line, point2.line);
+            if(result != 0)
+                return result;
+
+            result = Integer.compare(point1.offset, point2.offset);
+            if(result != 0)
+                return result;
+        }
+
+        String caption1 = p1.caption != null ? p1.caption.getSourceString() : "";
+        String caption2 = p2.caption != null ? p2.caption.getSourceString() : "";
+        result = caption1.compareTo(caption2);
+        if(result != 0)
+            return result;
+
+        ImList<CalcProperty> depends1 = p1 instanceof ActionProperty ? ((ActionProperty<?>) p1).getSortedUsedProps() : ((CalcProperty<?>)p1).getSortedDepends(); 
+        ImList<CalcProperty> depends2 = p2 instanceof ActionProperty ? ((ActionProperty<?>) p2).getSortedUsedProps() : ((CalcProperty<?>)p2).getSortedDepends();
+        result = Integer.compare(depends1.size(), depends2.size());
+        if(result != 0)
+            return result;
+
+        for(int i=0,size=depends1.size();i<size;i++) {
+            CalcProperty dp1 = depends1.get(i);
+            CalcProperty dp2 = depends2.get(i);
+
+            result = propComparator().compare(dp1, dp2); 
+            if(result != 0)
+                return result;
+        }
+
+        return Integer.compare(p1.hashCode(), p2.hashCode());
     }
 
     // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
@@ -456,12 +537,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void initClassAggrProps() {
         MOrderExclSet<CalcProperty> queue = SetFact.mOrderExclSet();
 
-        for(Property property : getProperties())
-            if(property instanceof CalcProperty) {
-                CalcProperty calcProperty = (CalcProperty) property;
-                if(calcProperty.isAggr())
-                    queue.exclAdd(calcProperty);
-            }
+        for(CalcProperty calcProperty : getCalcProperties()) {
+            if(calcProperty.isAggr())
+                queue.exclAdd(calcProperty);
+        }
 
         MAddExclMap<CustomClass, MSet<CalcProperty>> classAggrProps = MapFact.mAddExclMap();
             
@@ -540,7 +619,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         
         Integer maxStatsProperty = null;
         try {
-            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, CalcProperty.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
         } catch (Exception ignored) {
         }
 
@@ -573,7 +652,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public Integer getStatsProperty (Property property) {
+    public Integer getStatsProperty (CalcProperty property) {
         Integer statsProperty = null;
         if (property instanceof AggregateProperty) {
             StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
@@ -605,14 +684,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private void finishLogInit() {
         // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
         // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь
-        for (Property property : getOrderProperties()) {
+        for (CalcProperty property : getCalcProperties()) {
             finishLogInit(property);
         }
     }
 
-    public <P extends PropertyInterface> void finishLogInit(Property property) {
-        if (property instanceof CalcProperty && ((CalcProperty)property).isLoggable()) {
-            ActionProperty<P> logActionProperty = (ActionProperty<P>) ((CalcProperty)property).getLogFormProperty().property;
+    public <P extends PropertyInterface> void finishLogInit(CalcProperty property) {
+        if (property.isLoggable()) {
+            ActionProperty<P> logActionProperty = (ActionProperty<P>) property.getLogFormProperty().property;
 
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), logActionProperty.caption);
@@ -660,6 +739,30 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public ImSet<Property> getProperties() {
         return getOrderProperties().getSet();
+    }
+
+    public ImOrderSet<CalcProperty> getCalcOrderProperties() {
+        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<Property>() {
+            public boolean contains(Property element) {
+                return element instanceof CalcProperty;
+            }
+        }));
+    }
+
+    public ImSet<CalcProperty> getCalcProperties() {
+        return getCalcOrderProperties().getSet();
+    }
+
+    public ImOrderSet<ActionProperty> getActionOrderProperties() {
+        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<Property>() {
+            public boolean contains(Property element) {
+                return element instanceof ActionProperty;
+            }
+        }));
+    }
+
+    public ImSet<ActionProperty> getActionProperties() {
+        return getActionOrderProperties().getSet();
     }
 
     public Iterable<LCP<?>> getNamedProperties() {
@@ -820,8 +923,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
-        for (Property property : getOrderProperties()) {
-            if (property instanceof ActionProperty && !((ActionProperty) property).getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+        for (ActionProperty property : getActionOrderProperties()) {
+            if (!property.getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
                     change.getKey(i).addActionChangeProp(new Pair<ActionProperty<?>, LinkType>((ActionProperty<?>) property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
@@ -830,8 +933,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private void dropActionChangeProps() { // для экономии памяти - симметричное удаление ссылок
-        for (Property property : getOrderProperties()) {
-            if (property instanceof ActionProperty && !((ActionProperty) property).getEvents().isEmpty()) {
+        for (ActionProperty property : getActionOrderProperties()) {
+            if (!property.getEvents().isEmpty()) {
                 ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++)
                     change.getKey(i).dropActionChangeProps();
@@ -867,7 +970,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             String c1 = o1.getCanonicalName();
             String c2 = o2.getCanonicalName();
             if(c1 == null && c2 == null) {
-                return ActionProperty.compareChangeExtProps(o1, o2);
+                return compareChangeExtProps(o1, o2);
             }
 
             if(c1 == null)
@@ -1372,7 +1475,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public AggregateProperty getAggregateStoredProperty(String propertyCanonicalName) {
-        for (Property property : getStoredProperties()) {
+        for (CalcProperty property : getStoredProperties()) {
             if (property instanceof AggregateProperty && propertyCanonicalName.equals(property.getCanonicalName()))
                 return (AggregateProperty) property;
         }
@@ -1381,7 +1484,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public List<AggregateProperty> getRecalculateAggregateStoredProperties(DataSession session, boolean ignoreCheck) throws SQLException, SQLHandledException {
         List<AggregateProperty> result = new ArrayList<>();
-        for (Property property : getStoredProperties())
+        for (CalcProperty property : getStoredProperties())
             if (property instanceof AggregateProperty) {
                 boolean recalculate = ignoreCheck || reflectionLM.disableAggregationsTableColumn.read(session, reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.getDBName()))) == null;
                 if(recalculate)

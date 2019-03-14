@@ -25,7 +25,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;

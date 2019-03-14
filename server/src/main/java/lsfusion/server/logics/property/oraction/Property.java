@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.oraction;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
@@ -39,9 +39,11 @@ import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.PropertyUtils;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFLazy;
@@ -164,12 +166,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     public ImOrderSet<T> getFriendlyOrderInterfaces() { 
         return orderInterfaces; 
     }
-
-    public static Modifier defaultModifier = new Modifier() {
-        public PropertyChanges getPropertyChanges() {
-            return PropertyChanges.EMPTY;
-        }
-    };
 
     public Type getInterfaceType(T propertyInterface) {
         return getInterfaceType(propertyInterface, ClassType.materializeChangePolicy);

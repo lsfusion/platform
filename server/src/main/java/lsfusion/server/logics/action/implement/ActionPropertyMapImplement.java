@@ -1,9 +1,10 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action.implement;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.event.Event;
@@ -13,6 +14,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

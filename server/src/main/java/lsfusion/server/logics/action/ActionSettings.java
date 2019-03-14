@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action;
 
 import lsfusion.server.logics.property.oraction.ActionOrPropertySettings;
 

@@ -31,6 +31,7 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.DataDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
@@ -133,7 +134,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    protected boolean canBeHeurChanged(boolean global) {
+    public boolean canBeHeurChanged(boolean global) {
         if(global)
             return !(this instanceof SessionDataProperty);
         return true;

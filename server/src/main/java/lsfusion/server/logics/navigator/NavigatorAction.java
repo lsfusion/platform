@@ -2,7 +2,7 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.action.ActionProperty;
 
 public class NavigatorAction extends NavigatorElement {
     private final ActionProperty action;

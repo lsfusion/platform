@@ -31,7 +31,7 @@ public class PackComplexityAspect {
         return result;
     }
 /*
-    @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(java.util.Map,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(* lsfusion.server.logics.property.oraction.Property.getJoinExpr(java.util.Map,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         if(changedWhere==null)

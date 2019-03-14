@@ -1,9 +1,10 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action.implement;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.event.ApplyActionEvent;

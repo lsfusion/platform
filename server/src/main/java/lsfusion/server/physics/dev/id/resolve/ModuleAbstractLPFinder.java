@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.id.resolve;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 
 import java.util.List;
 

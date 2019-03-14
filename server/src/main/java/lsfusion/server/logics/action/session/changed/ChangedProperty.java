@@ -30,15 +30,13 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.infer.CalcClassType;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.ChangedDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;

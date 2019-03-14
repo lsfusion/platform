@@ -15,6 +15,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.XorUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
