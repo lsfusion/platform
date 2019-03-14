@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.id.resolve;
 
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
@@ -86,7 +86,7 @@ public class BusinessLogicsResolvingUtils {
         }
     }
 
-    public static <L extends LP<?,?>> L findPropertyByCanonicalName(BusinessLogics BL, String canonicalName, ModuleEqualLPFinder<L> finder) {
+    public static <L extends LAP<?,?>> L findPropertyByCanonicalName(BusinessLogics BL, String canonicalName, ModuleEqualLAPFinder<L> finder) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(BL, canonicalName);
         List<FoundItem<L>> foundElements = findProperties(BL, parser.getNamespace(), parser.getName(),
                 parser.getSignature(), finder);
@@ -94,20 +94,20 @@ public class BusinessLogicsResolvingUtils {
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
     
-    public static <L extends LP<?,?>> L findLPByCompoundName(BusinessLogics BL, String compoundName, ModuleLPFinder<L> moduleLPFinder) {
+    public static <L extends LAP<?,?>> L findLAPByCompoundName(BusinessLogics BL, String compoundName, ModuleLAPFinder<L> moduleLAPFinder) {
         PropertyCompoundNameParser parser = new PropertyCompoundNameParser(BL, compoundName);
-        return findLP(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName, moduleLPFinder);
+        return findLAP(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName, moduleLAPFinder);
     }
     
-    private static <L extends LP<?, ?>> L findLP(BusinessLogics BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName, ModuleLPFinder<L> moduleLPFinder) {
+    private static <L extends LAP<?, ?>> L findLAP(BusinessLogics BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName, ModuleLAPFinder<L> moduleLAPFinder) {
         Collection<String> namespaces = getPropertyConsideredNamespaces(BL, namespace);
 
         List<FoundItem<L>> foundItems = new ArrayList<>();
         for (String namespaceName : namespaces) {
-            foundItems.addAll(findProperties(BL, namespaceName, name, signature, moduleLPFinder));
+            foundItems.addAll(findProperties(BL, namespaceName, name, signature, moduleLAPFinder));
         }
 
-        List<FoundItem<L>> filteredResult = NamespaceLPFinder.filterFoundProperties(foundItems);
+        List<FoundItem<L>> filteredResult = NamespaceLAPFinder.filterFoundProperties(foundItems);
         return findElementResult(sourceName, filteredResult);
     }
     
@@ -119,10 +119,10 @@ public class BusinessLogicsResolvingUtils {
         }
     }
     
-    private static <L extends LP<?, ?>> List<FoundItem<L>> findProperties(BusinessLogics BL, String namespace, String name, 
-                                                            List<ResolveClassSet> classes, 
-                                                            ModulePropertyOrActionFinder<L> finder) {
-        NamespaceLPFinder<L> nsFinder = new NamespaceLPFinder<L>(finder, BL.getNamespaceModules(namespace));
+    private static <L extends LAP<?, ?>> List<FoundItem<L>> findProperties(BusinessLogics BL, String namespace, String name,
+                                                                           List<ResolveClassSet> classes,
+                                                                           ModulePropertyOrActionFinder<L> finder) {
+        NamespaceLAPFinder<L> nsFinder = new NamespaceLAPFinder<L>(finder, BL.getNamespaceModules(namespace));
         return nsFinder.findInNamespace(namespace, name, classes);
     }
 }

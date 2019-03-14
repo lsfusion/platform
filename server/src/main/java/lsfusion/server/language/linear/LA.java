@@ -33,7 +33,7 @@ import lsfusion.server.logics.action.ExecutionEnvironment;
 import java.sql.SQLException;
 import java.util.List;
 
-public class LA<T extends PropertyInterface> extends LP<T, Action<T>> {
+public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
 
     public LA(Action<T> property) {
         super(property);
@@ -75,11 +75,11 @@ public class LA<T extends PropertyInterface> extends LP<T, Action<T>> {
         return new ActionMapImplement<>(property, getRevMap(mapping));
     }
 
-    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, ActionOrProperty<P>> mainProperty, LocalizedString contextMenuCaption) {
+    public <P extends PropertyInterface> void addToContextMenuFor(LAP<P, ActionOrProperty<P>> mainProperty, LocalizedString contextMenuCaption) {
         mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
     }
 
-    public <P extends PropertyInterface> void setAsEditActionFor(String actionSID, LP<P, ActionOrProperty<P>> mainProperty) {
+    public <P extends PropertyInterface> void setAsEditActionFor(String actionSID, LAP<P, ActionOrProperty<P>> mainProperty) {
         assert listInterfaces.size() <= mainProperty.listInterfaces.size();
 
         //мэпим входы по порядку, у этого экшна входов может быть меньше

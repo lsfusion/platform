@@ -1,13 +1,13 @@
 package lsfusion.server.physics.dev.id.resolve;
 
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LP;
 
 import java.util.List;
 
 // Находит идентичные по имени и сигнатуре свойства.   
-public abstract class ModuleEqualLPFinder<L extends LP<?, ?>> extends ModulePropertyOrActionFinder<L> {
+public abstract class ModuleEqualLAPFinder<L extends LAP<?, ?>> extends ModulePropertyOrActionFinder<L> {
     public abstract boolean isFiltered(L property);
     
     @Override

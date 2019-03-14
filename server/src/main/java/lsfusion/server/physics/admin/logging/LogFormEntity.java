@@ -25,8 +25,8 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.map
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
 /// Common usage:
-/// LP<?> property - logging property
-/// LP<?> logValueProperty = addLProp(property);
+/// LAP<?> property - logging property
+/// LAP<?> logValueProperty = addLProp(property);
 /// ...
 /// LogFormEntity logForm = new LogFormEntity("FormSID", "FormCaption", property, logValueProperty, SomeBusinessLogics.this);
 /// addPropertyDraw(addMFAProp("Caption", logForm, logForm.params), paramObjectEntities);

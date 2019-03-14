@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.id.resolve;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LCP;
 
-public class ModuleEqualLCPFinder extends ModuleEqualLPFinder<LCP<?>> {
+public class ModuleEqualLCPFinder extends ModuleEqualLAPFinder<LCP<?>> {
     protected final boolean findLocals;
 
     public ModuleEqualLCPFinder(boolean findLocals) {

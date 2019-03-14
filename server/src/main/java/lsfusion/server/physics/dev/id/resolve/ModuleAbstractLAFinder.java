@@ -6,7 +6,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
-public class ModuleAbstractLAFinder extends ModuleAbstractLPFinder<LA<?>> {
+public class ModuleAbstractLAFinder extends ModuleAbstractLAPFinder<LA<?>> {
     @Override
     protected Iterable<LA<?>> getSourceList(LogicsModule module, String name) {
         return module.getNamedActions(name);

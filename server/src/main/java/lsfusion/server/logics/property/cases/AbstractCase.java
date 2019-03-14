@@ -7,11 +7,11 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.logics.property.*;
@@ -341,7 +341,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
     }
 
     // оптимизация
-    public static <P extends PropertyInterface, BP extends ActionOrProperty<P>, L extends LP<P, BP>, AP extends BP> boolean preFillImplicitCases(L lp) {
+    public static <P extends PropertyInterface, BP extends ActionOrProperty<P>, L extends LAP<P, BP>, AP extends BP> boolean preFillImplicitCases(L lp) {
         if(lp instanceof LCP)
             return ((LCP) lp).property instanceof CaseUnionProperty && ((CaseUnionProperty)((LCP) lp).property).isAbstract() && ((CaseUnionProperty)((LCP) lp).property).getAbstractType() == CaseUnionProperty.Type.MULTI;
         else
@@ -363,8 +363,8 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
 
 //    public static int cntsame = 0;
     
-    //    public static <P extends PropertyInterface, BP extends Property<P>, L extends LP<P, BP>, AP extends BP> 
-    public static <I extends PropertyInterface> void fillImplicitCases(LP absLP, LP impLP, List<ResolveClassSet> absSignature, List<ResolveClassSet> impSignature, boolean sameNamespace, Version impVersion) {        
+    //    public static <P extends PropertyInterface, BP extends Property<P>, L extends LAP<P, BP>, AP extends BP> 
+    public static <I extends PropertyInterface> void fillImplicitCases(LAP absLP, LAP impLP, List<ResolveClassSet> absSignature, List<ResolveClassSet> impSignature, boolean sameNamespace, Version impVersion) {        
         assert preFillImplicitCases(absLP);
 
         if (absLP == impLP)

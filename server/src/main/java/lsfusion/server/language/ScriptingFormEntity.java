@@ -15,6 +15,7 @@ import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.classes.ColorClass;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -37,7 +38,6 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -315,7 +315,7 @@ public class ScriptingFormEntity {
 
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
             
-            LP property = null;
+            LAP property = null;
             ImOrderSet<ObjectEntity> objects = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
                 ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
@@ -354,8 +354,8 @@ public class ScriptingFormEntity {
                 property = prop.property;
                 objects = prop.mapping;
 
-                if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.FormLPUsage) {
-                    property = LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.FormLPUsage) pDrawUsage));
+                if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.FormLAPUsage) {
+                    property = LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.FormLAPUsage) pDrawUsage));
                 }
             }
 
@@ -410,7 +410,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    private <P extends PropertyInterface> void checkPropertyParameters(LP<P, ?> property, ImOrderSet<ObjectEntity> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    private <P extends PropertyInterface> void checkPropertyParameters(LAP<P, ?> property, ImOrderSet<ObjectEntity> mapping) throws ScriptingErrorLog.SemanticErrorException {
         ImMap<P, AndClassSet> map = property.listInterfaces.mapList(mapping).mapValues(new GetValue<AndClassSet, ObjectEntity>() {
             public AndClassSet getMapValue(ObjectEntity value) {
                 return value.getAndClassSet();

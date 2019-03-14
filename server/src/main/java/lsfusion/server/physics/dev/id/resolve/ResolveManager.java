@@ -46,17 +46,17 @@ public class ResolveManager {
     }
 
     private void initializeResolvers() {
-        directLCPResolver = new LPResolver<>(LM, new ModuleLCPFinder(), true, false);
-        abstractLCPResolver = new LPResolver<>(LM, new ModuleAbstractLCPFinder(), true, false);
-        abstractNotEqualLCPResolver = new LPResolver<>(LM, new ModuleAbstractLCPFinder(), true, true);
-        indirectLCPResolver = new LPResolver<>(LM, new ModuleIndirectLCPFinder(), false, false);
-        directLocalsResolver = new LPResolver<>(LM, new ModuleDirectLocalsFinder(), true, false);
-        indirectLocalsResolver = new LPResolver<>(LM, new ModuleIndirectLocalsFinder(), false, false);
+        directLCPResolver = new LAPResolver<>(LM, new ModuleLCPFinder(), true, false);
+        abstractLCPResolver = new LAPResolver<>(LM, new ModuleAbstractLCPFinder(), true, false);
+        abstractNotEqualLCPResolver = new LAPResolver<>(LM, new ModuleAbstractLCPFinder(), true, true);
+        indirectLCPResolver = new LAPResolver<>(LM, new ModuleIndirectLCPFinder(), false, false);
+        directLocalsResolver = new LAPResolver<>(LM, new ModuleDirectLocalsFinder(), true, false);
+        indirectLocalsResolver = new LAPResolver<>(LM, new ModuleIndirectLocalsFinder(), false, false);
         
-        directLAPResolver = new LPResolver<>(LM, new ModuleLAFinder(), true, false);
-        abstractLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAFinder(), true, false);
-        abstractNotEqualLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAFinder(), true, true);
-        indirectLAPResolver = new LPResolver<>(LM, new ModuleIndirectLAFinder(), false, false);
+        directLAPResolver = new LAPResolver<>(LM, new ModuleLAFinder(), true, false);
+        abstractLAPResolver = new LAPResolver<>(LM, new ModuleAbstractLAFinder(), true, false);
+        abstractNotEqualLAPResolver = new LAPResolver<>(LM, new ModuleAbstractLAFinder(), true, true);
+        indirectLAPResolver = new LAPResolver<>(LM, new ModuleIndirectLAFinder(), false, false);
         
         groupResolver = new ElementResolver<>(LM, new ModuleGroupFinder());
         navigatorResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder());

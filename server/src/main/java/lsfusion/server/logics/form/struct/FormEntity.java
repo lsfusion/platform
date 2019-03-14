@@ -22,6 +22,7 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.context.ThreadLocalContext;
@@ -52,7 +53,6 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -535,20 +535,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return classSubsets;
     }
 
-    public PropertyDrawEntity addPropertyDraw(LP property, Version version, ObjectEntity object) {
+    public PropertyDrawEntity addPropertyDraw(LAP property, Version version, ObjectEntity object) {
         return addPropertyDraw(property, version, SetFact.singletonOrder(object));
     }
-    public PropertyDrawEntity addPropertyDraw(LP property, Version version) {
+    public PropertyDrawEntity addPropertyDraw(LAP property, Version version) {
         return addPropertyDraw(property, version, SetFact.<ObjectEntity>EMPTYORDER());
     }
 
-    public void addPropertyDraw(LP[] properties, Version version, ObjectEntity object) {
-        for (LP property : properties) {
+    public void addPropertyDraw(LAP[] properties, Version version, ObjectEntity object) {
+        for (LAP property : properties) {
             addPropertyDraw(property, version, object);
         }
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, Version version, ImOrderSet<ObjectEntity> objects) {
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, Version version, ImOrderSet<ObjectEntity> objects) {
         return addPropertyDraw(property.createObjectEntity(objects), null, property.listInterfaces, version);
     }
 
@@ -752,7 +752,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void addHintsIncrementTable(Version version, LCP... props) {
-        for (LP prop : props) {
+        for (LAP prop : props) {
             hintsIncrementTable.add((Property) prop.property, version);
         }
     }
