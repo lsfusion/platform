@@ -2,7 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

@@ -58,7 +58,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.SecurityManager;
 import lsfusion.server.physics.exec.DBManager;
-import lsfusion.server.remote.RMIManager;
+import lsfusion.server.base.remote.RMIManager;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -662,12 +662,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly);
     }
 
+    @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession());
-    }
-
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, mapObjects, session, false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, null, null, false);
+        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, null, null, false);
     }
 
     public SQLSyntax getDbSyntax() {

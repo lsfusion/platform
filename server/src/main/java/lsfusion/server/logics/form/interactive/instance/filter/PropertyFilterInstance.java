@@ -20,7 +20,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;
 
 import java.io.DataInputStream;
 import java.io.IOException;

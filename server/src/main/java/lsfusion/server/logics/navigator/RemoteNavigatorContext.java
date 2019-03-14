@@ -20,12 +20,13 @@ import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.physics.admin.logging.LogInfo;
 import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.physics.admin.authentication.policy.SecurityPolicy;
-import lsfusion.server.remote.RemoteConnection;
-import lsfusion.server.remote.RemoteConnectionContext;
-import lsfusion.server.remote.RemoteForm;
-import lsfusion.server.remote.RemoteUIContext;
+import lsfusion.server.physics.admin.authentication.remote.RemoteConnection;
+import lsfusion.server.physics.admin.authentication.remote.RemoteConnectionContext;
+import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;
+import lsfusion.server.base.remote.ui.RemoteUIContext;
 
 import java.sql.SQLException;
 import java.util.Locale;

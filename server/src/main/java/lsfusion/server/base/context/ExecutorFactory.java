@@ -5,8 +5,8 @@ import lsfusion.server.base.lifecycle.MonitorServer;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.remote.ContextAwarePendingRemoteObject;
-import lsfusion.server.remote.RmiServer;
+import lsfusion.server.base.remote.context.ContextAwarePendingRemoteObject;
+import lsfusion.server.base.remote.RmiServer;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.*;

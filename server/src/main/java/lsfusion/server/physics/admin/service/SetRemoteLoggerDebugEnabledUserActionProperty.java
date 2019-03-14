@@ -1,11 +1,11 @@
 package lsfusion.server.physics.admin.service;
 
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.remote.RemoteLoggerAspect;
+import lsfusion.server.physics.admin.logging.RemoteLoggerAspect;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

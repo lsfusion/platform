@@ -19,6 +19,7 @@ public class InteractiveFormReportManager extends FormReportManager {
     }
 
     // backward compatibility
+    @Deprecated
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences preferences) throws SQLException, SQLHandledException {
         return new InteractiveFormReportManager(((InteractiveFormReportInterface)reportInterface).getForm(), groupId, preferences).getReportData(toExcel ? FormPrintType.XLS : FormPrintType.PRINT);
     }

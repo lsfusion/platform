@@ -75,7 +75,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.navigator.*;
+import lsfusion.server.logics.navigator.controller.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

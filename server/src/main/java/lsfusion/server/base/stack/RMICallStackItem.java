@@ -2,7 +2,7 @@ package lsfusion.server.base.stack;
 
 import lsfusion.server.physics.admin.profiler.Profiler;
 import lsfusion.server.physics.admin.profiler.RMICallProfileObject;
-import lsfusion.server.remote.ContextAwarePendingRemoteObject;
+import lsfusion.server.base.remote.context.ContextAwarePendingRemoteObject;
 import org.aspectj.lang.ProceedingJoinPoint;
 
 public class RMICallStackItem extends ExecutionStackItem {
