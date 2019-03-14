@@ -171,7 +171,7 @@ public class ScriptingFormEntity {
                 List<PropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (ScriptingLogicsModule.NamedPropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
-                        LP property = findLCPByPropertyUsage(pUsage, groupObj);
+                        LP property = findLPByPropertyUsage(pUsage, groupObj);
                         propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects()));
                     }
                 }
@@ -184,9 +184,9 @@ public class ScriptingFormEntity {
         form.addTreeGroupObject(treeGroup, neighbour, isRightNeighbour, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
-    private LP findLCPByPropertyUsage(ScriptingLogicsModule.NamedPropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLPByPropertyUsage(ScriptingLogicsModule.NamedPropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
         if (property.classNames != null) {
-            return LM.findLCPByPropertyUsage(property);
+            return LM.findLPByPropertyUsage(property);
         } else {
             List<ResolveClassSet> classSets = new ArrayList<>();
             for (ObjectEntity obj : group.getOrderObjects()) {
@@ -576,7 +576,7 @@ public class ScriptingFormEntity {
     public void addScriptedHints(boolean isHintNoUpdate, List<ScriptingLogicsModule.NamedPropertyUsage> propUsages, Version version) throws ScriptingErrorLog.SemanticErrorException {
         LP[] properties = new LP[propUsages.size()];
         for (int i = 0; i < propUsages.size(); i++) {
-            properties[i] = LM.findLCPByPropertyUsage(propUsages.get(i));
+            properties[i] = LM.findLPByPropertyUsage(propUsages.get(i));
         }
 
         if (isHintNoUpdate) {
