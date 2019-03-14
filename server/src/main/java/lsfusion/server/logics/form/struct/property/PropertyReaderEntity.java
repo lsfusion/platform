@@ -15,7 +15,7 @@ public interface PropertyReaderEntity extends ProfiledObject {
     
     String getSID(); // ID в рамках Type
     
-    CalcPropertyObjectEntity getPropertyObjectEntity();
+    PropertyObjectEntity getPropertyObjectEntity();
 
     String getReportSID();
     

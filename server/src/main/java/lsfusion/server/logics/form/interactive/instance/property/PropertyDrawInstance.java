@@ -16,7 +16,7 @@ import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -26,8 +26,8 @@ import java.sql.SQLException;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
-    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
-        ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionId, checkReadOnly, securityPolicies);
+    public ActionObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> editAction = entity.getEditAction(actionId, checkReadOnly, securityPolicies);
         if(editAction!=null)
             return instanceFactory.getInstance(editAction);
         return null;
@@ -44,11 +44,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public OrderInstance getOrder() {
-        return (CalcPropertyObjectInstance) getValueProperty();
+        return (PropertyObjectInstance) getValueProperty();
     }
     
     public boolean isCalcProperty() {
-        return getValueProperty() instanceof CalcPropertyObjectInstance;
+        return getValueProperty() instanceof PropertyObjectInstance;
     }
 
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
@@ -78,12 +78,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
-    public final CalcPropertyObjectInstance<?> propertyCaption;
-    public final CalcPropertyObjectInstance<?> propertyShowIf;
-    public final CalcPropertyObjectInstance<?> propertyReadOnly;
-    public final CalcPropertyObjectInstance<?> propertyFooter;
-    public final CalcPropertyObjectInstance<?> propertyBackground;
-    public final CalcPropertyObjectInstance<?> propertyForeground;
+    public final PropertyObjectInstance<?> propertyCaption;
+    public final PropertyObjectInstance<?> propertyShowIf;
+    public final PropertyObjectInstance<?> propertyReadOnly;
+    public final PropertyObjectInstance<?> propertyFooter;
+    public final PropertyObjectInstance<?> propertyBackground;
+    public final PropertyObjectInstance<?> propertyForeground;
 
     // извращенное множественное наследование
     public CaptionReaderInstance captionReader = new CaptionReaderInstance();
@@ -99,12 +99,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
                                 ActionOrPropertyObjectInstance<?, ?> propertyObject,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
-                                CalcPropertyObjectInstance<?> propertyCaption,
-                                CalcPropertyObjectInstance<?> propertyShowIf,
-                                CalcPropertyObjectInstance<?> propertyReadOnly,
-                                CalcPropertyObjectInstance<?> propertyFooter,
-                                CalcPropertyObjectInstance<?> propertyBackground,
-                                CalcPropertyObjectInstance<?> propertyForeground) {
+                                PropertyObjectInstance<?> propertyCaption,
+                                PropertyObjectInstance<?> propertyShowIf,
+                                PropertyObjectInstance<?> propertyReadOnly,
+                                PropertyObjectInstance<?> propertyFooter,
+                                PropertyObjectInstance<?> propertyBackground,
+                                PropertyObjectInstance<?> propertyForeground) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
@@ -117,11 +117,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         this.propertyForeground = propertyForeground;
     }
 
-    public CalcPropertyObjectInstance getPropertyObjectInstance() {
+    public PropertyObjectInstance getPropertyObjectInstance() {
         return getDrawInstance();
     }
 
-    public CalcPropertyObjectInstance<?> getDrawInstance() {
+    public PropertyObjectInstance<?> getDrawInstance() {
         return getValueProperty().getDrawProperty();
     }
 
@@ -149,8 +149,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // заглушка чтобы на сервере ничего не читать
     public class HiddenReaderInstance implements PropertyReaderInstance {
 
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
-            return new CalcPropertyObjectInstance<>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
+        public PropertyObjectInstance getPropertyObjectInstance() {
+            return new PropertyObjectInstance<>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
         }
 
         public byte getTypeID() {
@@ -169,7 +169,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public class ShowIfReaderInstance implements PropertyReaderInstance {
 
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyShowIf;
         }
 
@@ -192,7 +192,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class CaptionReaderInstance implements PropertyReaderInstance {
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyCaption;
         }
 
@@ -216,7 +216,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class FooterReaderInstance implements PropertyReaderInstance {
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyFooter;
         }
 
@@ -240,7 +240,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class ReadOnlyReaderInstance implements PropertyReaderInstance {
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyReadOnly;
         }
 
@@ -264,7 +264,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class BackgroundReaderInstance implements PropertyReaderInstance {
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyBackground;
         }
 
@@ -288,7 +288,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class ForegroundReaderInstance implements PropertyReaderInstance {
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyForeground;
         }
 

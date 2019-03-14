@@ -6,7 +6,7 @@ import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.base.context.ThreadLocalContext;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -32,7 +32,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public int columns = 4;
     
-    public CalcPropertyObjectEntity<?> showIf;
+    public PropertyObjectEntity<?> showIf;
 
     public ContainerView() {
     }
@@ -111,11 +111,11 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.columns = columns;
     }
 
-    public CalcPropertyObjectEntity<?> getShowIf() {
+    public PropertyObjectEntity<?> getShowIf() {
         return showIf;
     }
 
-    public void setShowIf(CalcPropertyObjectEntity<?> showIf) {
+    public void setShowIf(PropertyObjectEntity<?> showIf) {
         this.showIf = showIf;
     }
 

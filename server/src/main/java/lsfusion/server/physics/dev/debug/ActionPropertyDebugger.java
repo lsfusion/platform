@@ -184,7 +184,7 @@ public class ActionPropertyDebugger implements DebuggerService {
                         "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
                         "        " + body + "\n" +
                         "    }\n";
-            } else if (info instanceof CalcPropertyDebugInfo) {
+            } else if (info instanceof PropertyDebugInfo) {
                 sourceString +=
                         "    public static void " + methodName + "(DataSession session, Property property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {\n" +
                         "        session.changePropertyImpl((DataProperty) property, change);\n" +
@@ -270,7 +270,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     }
 
     public void delegate(DataSession dataSession, DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
-        CalcPropertyDebugInfo debugInfo = property.getDebugInfo();
+        PropertyDebugInfo debugInfo = property.getDebugInfo();
 
         if (debugInfo == null || !isEnabled()) {
             throw new IllegalStateException("Shouldn't happen: debug isn't enabled");

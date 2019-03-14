@@ -9,7 +9,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -24,31 +24,31 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 
-public class CalcPropertyObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Property<P>> implements OrderEntity<CalcPropertyObjectInstance<P>> {
+public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Property<P>> implements OrderEntity<PropertyObjectInstance<P>> {
 
-    public CalcPropertyObjectEntity() {
+    public PropertyObjectEntity() {
         //нужен для десериализации
     }
 
-    public CalcPropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping) {
+    public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping) {
         super(property, mapping, null, null);
     }
 
-    public CalcPropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public PropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         super(property, mapping, creationScript, creationPath);
     }
 
     @Override
-    public CalcPropertyObjectInstance<P> getInstance(InstanceFactory instanceFactory) {
+    public PropertyObjectInstance<P> getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
     }
 
-    public CalcPropertyObjectInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectInstance newObject, final InstanceFactory instanceFactory) {
+    public PropertyObjectInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectInstance newObject, final InstanceFactory instanceFactory) {
         ImMap<P, PropertyObjectInterfaceInstance> nmapping = mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, ObjectEntity>() {
             public PropertyObjectInterfaceInstance getMapValue(ObjectEntity value) {
                 return value.getRemappedInstance(oldObject, newObject, instanceFactory);
             }});
-        return new CalcPropertyObjectInstance<>(property, nmapping);
+        return new PropertyObjectInstance<>(property, nmapping);
     }
 
     @Override

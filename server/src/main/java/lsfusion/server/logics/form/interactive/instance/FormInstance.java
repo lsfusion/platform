@@ -53,7 +53,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -124,18 +124,18 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 
 public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
-    private final static GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
-            new GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance>() {
+    private final static GetKey<PropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
+            new GetKey<PropertyObjectInstance<?>, PropertyReaderInstance>() {
                 @Override
-                public CalcPropertyObjectInstance<?> getMapValue(PropertyReaderInstance key) {
+                public PropertyObjectInstance<?> getMapValue(PropertyReaderInstance key) {
                     return key.getPropertyObjectInstance();
                 }
             };
 
-    private final GetKey<CalcPropertyObjectInstance<?>, ContainerView> GET_CONTAINER_SHOWIF =
-            new GetKey<CalcPropertyObjectInstance<?>, ContainerView>() {
+    private final GetKey<PropertyObjectInstance<?>, ContainerView> GET_CONTAINER_SHOWIF =
+            new GetKey<PropertyObjectInstance<?>, ContainerView>() {
                 @Override
-                public CalcPropertyObjectInstance<?> getMapValue(ContainerView key) {
+                public PropertyObjectInstance<?> getMapValue(ContainerView key) {
                     return containerShowIfs.get(key);
                 }
             };
@@ -158,7 +158,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public final ImList<PropertyDrawInstance> properties;
     
-    public final ImMap<ContainerView, CalcPropertyObjectInstance<?>> containerShowIfs;
+    public final ImMap<ContainerView, PropertyObjectInstance<?>> containerShowIfs;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Map<PropertyDrawInstance, Boolean> isInInterface = new HashMap<>();
@@ -254,7 +254,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         properties = mProperties.immutableList();
 
-        MExclMap<ContainerView, CalcPropertyObjectInstance<?>> mContainerShowIfs = MapFact.mExclMap();
+        MExclMap<ContainerView, PropertyObjectInstance<?>> mContainerShowIfs = MapFact.mExclMap();
         fillContainerShowIfs(mContainerShowIfs, entity.getRichDesign().mainContainer);
         containerShowIfs = mContainerShowIfs.immutable();
 
@@ -436,7 +436,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return false;
     }
 
-    private void fillContainerShowIfs(MExclMap<ContainerView, CalcPropertyObjectInstance<?>> mContainerShowIfs, ContainerView container) {
+    private void fillContainerShowIfs(MExclMap<ContainerView, PropertyObjectInstance<?>> mContainerShowIfs, ContainerView container) {
         if (container.showIf != null) {
             mContainerShowIfs.exclAdd(container, instanceFactory.getInstance(container.showIf));
         }
@@ -996,7 +996,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImSet<SecurityPolicy> securityPolicies = SetFact.singleton(securityPolicy);
         if(showReadOnly)
             securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);        
-        ActionPropertyObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicies);
+        ActionObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicies);
         if(editAction == null) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
@@ -1012,7 +1012,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
         }
-        final ActionPropertyObjectInstance remappedEditAction = editAction.getRemappedPropertyObject(keys);
+        final ActionObjectInstance remappedEditAction = editAction.getRemappedPropertyObject(keys);
         BL.LM.pushRequestedValue(pushChange, pushChangeType, this, new SQLCallable<FlowResult>() {
             public FlowResult call() throws SQLException, SQLHandledException {
                 return remappedEditAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this);
@@ -1460,8 +1460,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean hasEventActions() {
-        ImMap<Object, ImList<ActionPropertyObjectEntity<?>>> eventActions = entity.getEventActions();
-        for(ImList<ActionPropertyObjectEntity<?>> list : eventActions.valueIt())
+        ImMap<Object, ImList<ActionObjectEntity<?>>> eventActions = entity.getEventActions();
+        for(ImList<ActionObjectEntity<?>> list : eventActions.valueIt())
             if(list.size() > 0)
                 return true;
         return false;
@@ -1501,11 +1501,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     // кэш на изменение
-    protected Set<CalcPropertyObjectInstance> isReallyChanged = new HashSet<>();
-    public boolean containsChange(CalcPropertyObjectInstance instance) {
+    protected Set<PropertyObjectInstance> isReallyChanged = new HashSet<>();
+    public boolean containsChange(PropertyObjectInstance instance) {
         return isReallyChanged.contains(instance);
     }
-    public void addChange(CalcPropertyObjectInstance instance) {
+    public void addChange(PropertyObjectInstance instance) {
         isReallyChanged.add(instance);
     }
 
@@ -1734,7 +1734,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return updated.objectUpdated(groupObjects);
     }
 
-    private boolean propertyUpdated(CalcPropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
+    private boolean propertyUpdated(PropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
         return objectUpdated(updated, groupObjects)
                 || groupUpdated(groupObjects, UPDATED_KEYS)
                 || dataUpdated(updated, changedProps, hidden, groupObjects);
@@ -1789,7 +1789,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             @ParamMessage ImOrderSet<T> keysSet,
             MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
             ImSet<GroupObjectInstance> keyGroupObjects,
-            GetKey<CalcPropertyObjectInstance<?>, T> getPropertyObject
+            GetKey<PropertyObjectInstance<?>, T> getPropertyObject
     ) throws SQLException, SQLHandledException {
         
         QueryBuilder<ObjectInstance, T> selectProps = new QueryBuilder<>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
@@ -2016,7 +2016,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             int containerShowIfCount = containerShowIfs.size();
             for (int i = 0; i < containerShowIfCount; ++i) {
                 ContainerView container = containerShowIfs.getKey(i);
-                CalcPropertyObjectInstance<?> showIf = containerShowIfs.getValue(i);
+                PropertyObjectInstance<?> showIf = containerShowIfs.getValue(i);
                 if (refresh || propertyUpdated(showIf, groupObjectKeys, changedProps, false)) {
                     changedContainersShowIfs.exclAdd(container);
                 }
@@ -2120,7 +2120,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader,
+    private void fillChangedReader(PropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader,
                                    ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read,
                                    MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties,
                                    ChangedData changedProps) throws SQLException, SQLHandledException {
@@ -2276,7 +2276,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return mFixedFilters.immutable();
     }
 
-    public Object read(CalcPropertyObjectInstance<?> property) throws SQLException, SQLHandledException {
+    public Object read(PropertyObjectInstance<?> property) throws SQLException, SQLHandledException {
         return property.read(this);
     }
 
@@ -2424,10 +2424,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private ImOrderSet<ActionValueImplement> getEvents(Object eventObject) {
         MOrderExclSet<ActionValueImplement> mResult = SetFact.mOrderExclSet();
-        Iterable<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
+        Iterable<ActionObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
-            for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
-                ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
+            for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
+                ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
                 if (autoInstance.isInInterface(null) && securityPolicy.property.change.checkPermission(autoAction.property)) { // для проверки null'ов и политики безопасности
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }

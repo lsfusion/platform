@@ -11,7 +11,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.action.ExecutionContext;
 
@@ -34,7 +34,7 @@ public class StaticFormReportInterface extends StaticFormDataInterface implement
     }
 
     @Override
-    public Object read(CalcPropertyObjectEntity reportPathProp) throws SQLException, SQLHandledException {
+    public Object read(PropertyObjectEntity reportPathProp) throws SQLException, SQLHandledException {
         return reportPathProp.read(context.getEnv(), mapObjects);
     }
 

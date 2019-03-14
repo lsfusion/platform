@@ -14,7 +14,7 @@ import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
@@ -32,15 +32,15 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
 
     private final boolean checkChange;
 
-    public NotNullFilterInstance(CalcPropertyObjectInstance<P> property) {
+    public NotNullFilterInstance(PropertyObjectInstance<P> property) {
         this(property, false);
     }
 
-    public NotNullFilterInstance(CalcPropertyObjectInstance<P> property, boolean checkChange) {
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean checkChange) {
         this(property, checkChange, false);
     }
 
-    public NotNullFilterInstance(CalcPropertyObjectInstance<P> property, boolean checkChange, boolean resolveAdd) {
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean checkChange, boolean resolveAdd) {
         super(property, resolveAdd);
         this.checkChange = checkChange;
     }

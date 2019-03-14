@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.struct.property.CalcPropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
@@ -101,8 +101,8 @@ public class LogFormEntity extends FormEntity {
                 systemEventsLM.baseLM.getRecognizeGroup().getProperties(property.property.getValueClass(ClassType.logPolicy), version);
 
         for (ActionOrPropertyClassImplement impl : recognizePropImpls) {
-            if(impl instanceof CalcPropertyClassImplement) {
-                CalcPropertyClassImplement<?> calcImpl = ((CalcPropertyClassImplement)impl);
+            if(impl instanceof PropertyClassImplement) {
+                PropertyClassImplement<?> calcImpl = ((PropertyClassImplement)impl);
                 int paramCnt = logValueProperty.property.interfaces.size();
                 ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 

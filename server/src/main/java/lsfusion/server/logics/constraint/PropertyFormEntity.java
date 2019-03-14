@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
@@ -53,7 +53,7 @@ public class PropertyFormEntity extends FormEntity {
 //            addPropertyDraw(LM.objectValue, false, object);
 //        }
 
-        addFixedFilter(new FilterEntity<>(new CalcPropertyObjectEntity<>(property, mapObjects)), version);
+        addFixedFilter(new FilterEntity<>(new PropertyObjectEntity<>(property, mapObjects)), version);
 
         finalizeInit(version);
     }

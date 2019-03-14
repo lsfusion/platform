@@ -13,7 +13,7 @@ import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInst
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
@@ -22,22 +22,22 @@ import java.sql.SQLException;
 public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance> {
 
     public boolean checkChange;    
-    private CalcPropertyObjectEntity<P> property;
+    private PropertyObjectEntity<P> property;
     public boolean resolveAdd;
 
     // нельзя удалять - используется при сериализации
     public FilterEntity() {
     }
 
-    public FilterEntity(CalcPropertyObjectEntity<P> property) {
+    public FilterEntity(PropertyObjectEntity<P> property) {
         this(property, false, false);
     }
 
-    public FilterEntity(CalcPropertyObjectEntity<P> property, boolean resolveAdd) {
+    public FilterEntity(PropertyObjectEntity<P> property, boolean resolveAdd) {
         this(property, false, resolveAdd);
     }
 
-    public FilterEntity(CalcPropertyObjectEntity<P> property, boolean checkChange, boolean resolveAdd) {
+    public FilterEntity(PropertyObjectEntity<P> property, boolean checkChange, boolean resolveAdd) {
         this.property = property;
         this.resolveAdd = resolveAdd;
         this.checkChange = checkChange;
@@ -47,7 +47,7 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
         return new NotNullFilterInstance<>(instanceFactory.getInstance(property), checkChange, resolveAdd);
     }
 
-    public CalcPropertyObjectEntity<P> getImportProperty() {
+    public PropertyObjectEntity<P> getImportProperty() {
         return property;
     }
     public ContextFilter getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {

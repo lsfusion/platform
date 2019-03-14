@@ -29,7 +29,7 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -131,7 +131,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             for (FormEntity formEntity : businessLogics.getAllForms()) {
                 for(PropertyDrawEntity propertyDraw : formEntity.getPropertyDrawsIt()) {
                     for(String changeEvent : changeEvents) {
-                        ActionPropertyObjectEntity<?> editAction = propertyDraw.getEditAction(changeEvent);
+                        ActionObjectEntity<?> editAction = propertyDraw.getEditAction(changeEvent);
                         if (editAction != null && editAction.property.ignoreReadOnlyPolicy()) {
                             readOnlyPolicy.property.change.permit(editAction.property); // permits editAction if it doesn't change anything
                         } else {
@@ -141,8 +141,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         }
                     }
                 }
-                for(ImList<ActionPropertyObjectEntity<?>> eventActions : formEntity.getEventActions().valueIt()) {
-                    for(ActionPropertyObjectEntity<?> eventAction : eventActions) {
+                for(ImList<ActionObjectEntity<?>> eventActions : formEntity.getEventActions().valueIt()) {
+                    for(ActionObjectEntity<?> eventAction : eventActions) {
                         if (eventAction != null && eventAction.property.ignoreReadOnlyPolicy()) {
                             readOnlyPolicy.property.change.permit(eventAction.property); // permits eventAction if it doesn't change anything
                         }

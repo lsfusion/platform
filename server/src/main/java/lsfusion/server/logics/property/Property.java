@@ -60,7 +60,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.struct.property.CalcPropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
@@ -80,7 +80,7 @@ import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
-import lsfusion.server.physics.dev.debug.CalcPropertyDebugInfo;
+import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -1560,7 +1560,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     protected ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
-        return new CalcPropertyClassImplement<>(this, classes, mapping);
+        return new PropertyClassImplement<>(this, classes, mapping);
     }
 
     private LP logValueProperty;
@@ -1976,13 +1976,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         sql.updateRecords(env == null ? new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global) : new ModifyQuery(mapTable.table, query, env, TableOwner.global));
     }
 
-    public void setDebugInfo(CalcPropertyDebugInfo debugInfo) {
+    public void setDebugInfo(PropertyDebugInfo debugInfo) {
         this.debugInfo = debugInfo;
     }
 
     @Override
-    public CalcPropertyDebugInfo getDebugInfo() {
-        return (CalcPropertyDebugInfo) debugInfo;
+    public PropertyDebugInfo getDebugInfo() {
+        return (PropertyDebugInfo) debugInfo;
     }
 
     public void printDepends(boolean events, String tab) {

@@ -19,8 +19,8 @@ import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -211,7 +211,7 @@ public class PropertyDrawView extends ComponentView {
         }
     }
 
-    private Class getPropertyClass(CalcPropertyObjectEntity<?> property) {
+    private Class getPropertyClass(PropertyObjectEntity<?> property) {
         ReportDrawField field = new ReportDrawField("", "", charWidth);
         property.property.getType().fillReportDrawField(field);
         return field.valueClass;
@@ -330,8 +330,8 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        if(debug instanceof CalcPropertyObjectEntity)
-            ((CalcPropertyObjectEntity<?>)debug).property.getValueClass(ClassType.formPolicy).serialize(outStream);
+        if(debug instanceof PropertyObjectEntity)
+            ((PropertyObjectEntity<?>)debug).property.getValueClass(ClassType.formPolicy).serialize(outStream);
         else
             outStream.writeByte(DataType.ACTION);
 
@@ -373,7 +373,7 @@ public class PropertyDrawView extends ComponentView {
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             LocalizedString caption = contextMenuBindings.getValue(i);
-            ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionSID, context.securityPolicy);
+            ActionObjectEntity<?> editAction = entity.getEditAction(actionSID, context.securityPolicy);
             if (editAction != null && context.securityPolicy.property.view.checkPermission(editAction.property)) {
                 contextMenuItems.put(actionSID, caption);
             }

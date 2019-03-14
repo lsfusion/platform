@@ -64,7 +64,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private String mouseBinding;
     private Map<KeyStroke, String> keyBindings;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
-    private Map<String, ActionPropertyObjectEntity<?>> editActions;
+    private Map<String, ActionObjectEntity<?>> editActions;
 
     public boolean optimisticAsync;
 
@@ -85,12 +85,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private boolean finalizedColumnGroupObjects;
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
-    public CalcPropertyObjectEntity<?> propertyCaption;
-    public CalcPropertyObjectEntity<?> propertyShowIf;
-    public CalcPropertyObjectEntity<?> propertyReadOnly;
-    public CalcPropertyObjectEntity<?> propertyFooter;
-    public CalcPropertyObjectEntity<?> propertyBackground;
-    public CalcPropertyObjectEntity<?> propertyForeground;
+    public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyShowIf;
+    public PropertyObjectEntity<?> propertyReadOnly;
+    public PropertyObjectEntity<?> propertyFooter;
+    public PropertyObjectEntity<?> propertyBackground;
+    public PropertyObjectEntity<?> propertyForeground;
 
     public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
 
@@ -158,7 +158,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public CalcPropertyObjectEntity getPropertyObjectEntity() {
+        public PropertyObjectEntity getPropertyObjectEntity() {
             return PropertyDrawEntity.this.propertyCaption;
         }
 
@@ -196,7 +196,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public CalcPropertyObjectEntity getPropertyObjectEntity() {
+        public PropertyObjectEntity getPropertyObjectEntity() {
             return PropertyDrawEntity.this.propertyFooter;
         }
 
@@ -234,7 +234,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public CalcPropertyObjectEntity getPropertyObjectEntity() {
+        public PropertyObjectEntity getPropertyObjectEntity() {
             return PropertyDrawEntity.this.propertyShowIf;
         }
 
@@ -265,7 +265,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     
     public boolean isCalcProperty() {
-        return getValueProperty() instanceof CalcPropertyObjectEntity;
+        return getValueProperty() instanceof PropertyObjectEntity;
     }
 
     public OrderEntity<?> getOrder() {
@@ -274,7 +274,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public DataClass getRequestInputType(String actionSID, SecurityPolicy policy, boolean optimistic) {
         if (isCalcProperty()) { // optimization
-            ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, policy);
+            ActionObjectEntity<?> changeAction = getEditAction(actionSID, policy);
 
             if (changeAction != null) {
                 return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
@@ -284,7 +284,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, SecurityPolicy policy) {
-        ActionPropertyObjectEntity<A> changeAction = (ActionPropertyObjectEntity<A>) getEditAction(CHANGE, policy);
+        ActionObjectEntity<A> changeAction = (ActionObjectEntity<A>) getEditAction(CHANGE, policy);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
         return null;
@@ -314,7 +314,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return true;
     }
 
-    public ActionPropertyObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy) {
+    public ActionObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy) {
         try {
             return getEditAction(actionId, null, securityPolicy != null ? SetFact.singleton(securityPolicy) : SetFact.<SecurityPolicy>EMPTY());
         } catch (SQLException | SQLHandledException e) {
@@ -323,8 +323,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     }
     
-    public ActionPropertyObjectEntity<?> getEditAction(String actionId, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
-        ActionPropertyObjectEntity<?> editAction = getEditAction(actionId);
+    public ActionObjectEntity<?> getEditAction(String actionId, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> editAction = getEditAction(actionId);
 
         if (editAction != null && !checkPermission(editAction.property, actionId, checkReadOnly, securityPolicies))
             return null;
@@ -332,9 +332,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return editAction;
     }
 
-    public ActionPropertyObjectEntity<?> getEditAction(String actionId) {
+    public ActionObjectEntity<?> getEditAction(String actionId) {
         if (editActions != null) {
-            ActionPropertyObjectEntity editAction = editActions.get(actionId);
+            ActionObjectEntity editAction = editActions.get(actionId);
             if (editAction != null)
                 return editAction;
         }
@@ -345,7 +345,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         // default implementations for group change and change wys
         if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
-            ActionPropertyObjectEntity<?> editAction = getEditAction(CHANGE);
+            ActionObjectEntity<?> editAction = getEditAction(CHANGE);
             if (editAction != null) {
                 if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
                     return editAction.getGroupChange();
@@ -359,13 +359,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public ActionPropertyObjectEntity<?> getSelectorAction(FormEntity entity, Version version) {
+    public ActionObjectEntity<?> getSelectorAction(FormEntity entity, Version version) {
         GroupObjectEntity groupObject = getNFToDraw(entity, version);
         if(groupObject != null) {
             for (ObjectEntity objectInstance : getObjectInstances().filter(groupObject.getObjects())) {
                 if (objectInstance.baseClass instanceof CustomClass) {
                     ExplicitAction dialogAction = objectInstance.getChangeAction();
-                    return new ActionPropertyObjectEntity<>(dialogAction, MapFact.singletonRev(dialogAction.interfaces.single(), objectInstance));
+                    return new ActionObjectEntity<>(dialogAction, MapFact.singletonRev(dialogAction.interfaces.single(), objectInstance));
                 }
             }
         }
@@ -398,7 +398,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
+    public void setEditAction(String actionSID, ActionObjectEntity<?> editAction) {
         if(editActions==null) {
             editActions = new HashMap<>();
         }
@@ -472,24 +472,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).exclAdd(columnGroupObject);
     }
 
-    public void setPropertyCaption(CalcPropertyObjectEntity propertyCaption) {
+    public void setPropertyCaption(PropertyObjectEntity propertyCaption) {
         this.propertyCaption = propertyCaption;
     }
 
-    public void setPropertyCaptionAndShowIf(CalcPropertyObjectEntity propertyCaptionAsShowIf) {
+    public void setPropertyCaptionAndShowIf(PropertyObjectEntity propertyCaptionAsShowIf) {
         this.propertyCaption = propertyCaptionAsShowIf;
         this.propertyShowIf = propertyCaptionAsShowIf;
     }
 
-    public void setPropertyFooter(CalcPropertyObjectEntity propertyFooter) {
+    public void setPropertyFooter(PropertyObjectEntity propertyFooter) {
         this.propertyFooter = propertyFooter;
     }
 
-    public void setPropertyBackground(CalcPropertyObjectEntity propertyBackground) {
+    public void setPropertyBackground(PropertyObjectEntity propertyBackground) {
         this.propertyBackground = propertyBackground;
     }
 
-    public void setPropertyForeground(CalcPropertyObjectEntity propertyForeground) {
+    public void setPropertyForeground(PropertyObjectEntity propertyForeground) {
         this.propertyForeground = propertyForeground;
     }
 
@@ -637,8 +637,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return integrationSID;
     }
     
-    public CalcPropertyObjectEntity getImportProperty() {
-        return (CalcPropertyObjectEntity) propertyObject;
+    public PropertyObjectEntity getImportProperty() {
+        return (PropertyObjectEntity) propertyObject;
     }
 
     // for getExpr, getType purposes
@@ -646,12 +646,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return propertyObject;
     }
 
-    public CalcPropertyObjectEntity<?> getCalcValueProperty() {
-        return (CalcPropertyObjectEntity) getValueProperty();
+    public PropertyObjectEntity<?> getCalcValueProperty() {
+        return (PropertyObjectEntity) getValueProperty();
     }
 
     @Override
-    public CalcPropertyObjectEntity getPropertyObjectEntity() {
+    public PropertyObjectEntity getPropertyObjectEntity() {
         return getCalcValueProperty();
     }
 

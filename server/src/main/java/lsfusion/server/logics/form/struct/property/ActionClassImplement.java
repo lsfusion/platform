@@ -7,13 +7,13 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class ActionPropertyClassImplement<P extends PropertyInterface> extends ActionOrPropertyClassImplement<P, Action<P>> {
+public class ActionClassImplement<P extends PropertyInterface> extends ActionOrPropertyClassImplement<P, Action<P>> {
 
-    public ActionPropertyClassImplement(Action<P> property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
+    public ActionClassImplement(Action<P> property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
         super(property, classes, interfaces);
     }
 
-    public ActionPropertyClassImplement(Action<P> property, ImRevMap<P, ValueClassWrapper> mapping) {
+    public ActionClassImplement(Action<P> property, ImRevMap<P, ValueClassWrapper> mapping) {
         super(property, mapping);
     }
 
@@ -21,7 +21,7 @@ public class ActionPropertyClassImplement<P extends PropertyInterface> extends A
         return new LA<>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 
-    public ActionPropertyClassImplement<P> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap) {
-        return new ActionPropertyClassImplement<P>(property, mapping.join(remap));
+    public ActionClassImplement<P> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap) {
+        return new ActionClassImplement<P>(property, mapping.join(remap));
     }
 }

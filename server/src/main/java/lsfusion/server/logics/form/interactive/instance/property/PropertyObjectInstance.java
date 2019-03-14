@@ -29,14 +29,14 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 
-public class CalcPropertyObjectInstance<P extends PropertyInterface> extends ActionOrPropertyObjectInstance<P, Property<P>> implements OrderInstance {
+public class PropertyObjectInstance<P extends PropertyInterface> extends ActionOrPropertyObjectInstance<P, Property<P>> implements OrderInstance {
 
-    public CalcPropertyObjectInstance(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
+    public PropertyObjectInstance(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);
     }
 
-    public CalcPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return new CalcPropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
+    public PropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+        return new PropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
     public PropertyValueImplement<P> getValueImplement() {
@@ -47,7 +47,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Act
         return property.read(formInstance, getInterfaceObjectValues());
     }
 
-    public CalcPropertyObjectInstance getDrawProperty() {
+    public PropertyObjectInstance getDrawProperty() {
         return this;
     }
 

@@ -56,7 +56,7 @@ import lsfusion.server.logics.form.interactive.change.MFormChanges;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.interactive.UpdateType;
@@ -82,8 +82,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return new SeekOrderObjects(false, getGroupObjectValue());
     }
 
-    public final CalcPropertyObjectInstance propertyBackground;
-    public final CalcPropertyObjectInstance propertyForeground;
+    public final PropertyObjectInstance propertyBackground;
+    public final PropertyObjectInstance propertyForeground;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
@@ -141,7 +141,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, ImMap<ObjectInstance, CalcPropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
+    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
         this.entity = entity;
 
@@ -493,7 +493,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return mResult.immutable();
     }
 
-    public final ImMap<ObjectInstance, CalcPropertyObjectInstance> parent;
+    public final ImMap<ObjectInstance, PropertyObjectInstance> parent;
 
     // поиски по свойствам\объектам
     public SeekObjects userSeeks = null;
@@ -583,8 +583,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             expandWhere = Where.TRUE;
 
         if (parent != null) {
-            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx(new GetExValue<Expr, CalcPropertyObjectInstance, SQLException, SQLHandledException>() {
-                public Expr getMapValue(CalcPropertyObjectInstance value) throws SQLException, SQLHandledException {
+            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx(new GetExValue<Expr, PropertyObjectInstance, SQLException, SQLHandledException>() {
+                public Expr getMapValue(PropertyObjectInstance value) throws SQLException, SQLHandledException {
                     return value.getExpr(mapKeys, modifier);
                 }
             });
@@ -623,8 +623,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         Where subGroupWhere = Where.TRUE;
 
         if (parent != null) {
-            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx(new GetExValue<Expr, CalcPropertyObjectInstance, SQLException, SQLHandledException>() {
-                public Expr getMapValue(CalcPropertyObjectInstance value) throws SQLException, SQLHandledException {
+            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx(new GetExValue<Expr, PropertyObjectInstance, SQLException, SQLHandledException>() {
+                public Expr getMapValue(PropertyObjectInstance value) throws SQLException, SQLHandledException {
                     return value.getExpr(mapKeys, modifier);
                 }
             });
@@ -863,13 +863,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 if(!updateKeys && (updated & UPDATED_EXPANDS) != 0)
                     updateKeys = true;
                 if(!updateKeys) {
-                    for(CalcPropertyObjectInstance parentProp : parent.valueIt()) {
+                    for(PropertyObjectInstance parentProp : parent.valueIt()) {
                         if (parentProp.objectUpdated(sThis)) {
                             updateKeys = true;
                             break;
                         }
                     }
-                    for(CalcPropertyObjectInstance parentProp : parent.valueIt()) {
+                    for(PropertyObjectInstance parentProp : parent.valueIt()) {
                         if (parentProp.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
                             updateKeys = true;
                             break;
@@ -1261,7 +1261,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyBackground;
         }
 
@@ -1285,7 +1285,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public class RowForegroundReaderInstance implements PropertyReaderInstance {
-        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getPropertyObjectInstance() {
             return propertyForeground;
         }
 

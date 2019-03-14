@@ -9,7 +9,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -113,7 +113,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
                         return value.getInterface(mapValues, valueObject.getInstance(factory));
                     }});
                 return new NotFilterInstance(new NotNullFilterInstance<>(
-                        new CalcPropertyObjectInstance<>(MaxChangeProperty.this, interfaceImplement)));
+                        new PropertyObjectInstance<>(MaxChangeProperty.this, interfaceImplement)));
             }
         };
     }

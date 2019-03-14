@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.stat.*;
 import lsfusion.server.logics.form.stat.report.design.ReportDesignGenerator;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import net.sf.jasperreports.engine.JRException;
@@ -249,7 +249,7 @@ public abstract class FormReportManager extends FormDataManager {
         }
     }
 
-    private String getCustomReportPropFileName(CalcPropertyObjectEntity reportPathProp, String reportPrefix) throws SQLException, SQLHandledException {
+    private String getCustomReportPropFileName(PropertyObjectEntity reportPathProp, String reportPrefix) throws SQLException, SQLHandledException {
         if (reportPathProp != null) {
             String reportPath = (String) reportInterface.read(reportPathProp);
             if (reportPath != null) {

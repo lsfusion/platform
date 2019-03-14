@@ -16,7 +16,7 @@ import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.stat.integration.hierarchy.ImportData;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -34,9 +34,9 @@ public class FormImportData implements ImportData {
         session = context.getSession();
     }
 
-    private final MExclMap<CalcPropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> properties = MapFact.mExclMap();
+    private final MExclMap<PropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> properties = MapFact.mExclMap();
     
-    public final ImMap<CalcPropertyObjectEntity, ImMap<ImMap<ObjectEntity, Object>, Object>> result() {
+    public final ImMap<PropertyObjectEntity, ImMap<ImMap<ObjectEntity, Object>, Object>> result() {
         return MapFact.immutableMapMap(properties);
     }
     
@@ -47,7 +47,7 @@ public class FormImportData implements ImportData {
         ImSet<FilterEntity> groupFilters = groupFixedFilters.get(group);
         if(groupFilters != null) {
             for(FilterEntity<?> filter : groupFilters) {
-                CalcPropertyObjectEntity<?> importProperty = filter.getImportProperty();
+                PropertyObjectEntity<?> importProperty = filter.getImportProperty();
                 addProperty(importProperty, upKeyValues, ((DataClass)importProperty.property.getType()).getDefaultValue(), isExclusive);
             }
         }
@@ -57,12 +57,12 @@ public class FormImportData implements ImportData {
         addProperty(entity.getImportProperty(), upKeyValues, value, isExclusive);
     }
 
-    public void addProperty(CalcPropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
+    public void addProperty(PropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
         ImMap<ObjectEntity, Object> paramObjects = upKeyValues.filterIncl(entity.getObjectInstances());
         addProperty(entity, isExclusive).add(paramObjects, value);
     }
 
-    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(CalcPropertyObjectEntity<?> entity, boolean isExclusive) {
+    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(PropertyObjectEntity<?> entity, boolean isExclusive) {
         MMap<ImMap<ObjectEntity, Object>, Object> propertyValues = properties.get(entity);
         if(propertyValues == null) {
             propertyValues = MapFact.mMap(isExclusive);

@@ -23,7 +23,7 @@ import lsfusion.server.logics.form.stat.integration.hierarchy.ParseNode;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.CompareEntity;
-import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.action.session.DataSession;
@@ -271,7 +271,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                 // reading property values
                 ImMap<ImSet<ObjectEntity>, ImSet<SDP>> groupObjectProps = columnGroupObjectProps.getValue(g).group(new BaseUtils.Group<ImSet<ObjectEntity>, SDP>() {
                     public ImSet<ObjectEntity> group(SDP key) {
-                        return ((CalcPropertyObjectEntity<?>) key.getPropertyObjectEntity()).getObjectInstances().filter(allObjects.getSet()); // because of the value groups
+                        return ((PropertyObjectEntity<?>) key.getPropertyObjectEntity()).getObjectInstances().filter(allObjects.getSet()); // because of the value groups
                     }
                 });                
                 for(int i=0,size=groupObjectProps.size();i<size;i++) {

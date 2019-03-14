@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -146,7 +146,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
                         return value.getInterface(mapOnValues, mapToValues, valueObject.getInstance(factory));
                     }});
                 return new NotNullFilterInstance<>(
-                        new CalcPropertyObjectInstance<>(OnChangeProperty.this, interfaceImplement));
+                        new PropertyObjectInstance<>(OnChangeProperty.this, interfaceImplement));
             }
         };
 

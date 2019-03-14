@@ -1,10 +1,10 @@
 package lsfusion.server.logics.form.interactive.change;
 
-import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 
 public interface ReallyChanged {
     
-    boolean containsChange(CalcPropertyObjectInstance instance);
+    boolean containsChange(PropertyObjectInstance instance);
 
-    void addChange(CalcPropertyObjectInstance instance);
+    void addChange(PropertyObjectInstance instance);
 }

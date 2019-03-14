@@ -30,7 +30,7 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.struct.property.ActionPropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.ActionClassImplement;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -268,7 +268,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     private ImSet<Pair<String, Integer>> getChangePropsLocations() {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
         for (Property property : getChangeProps()) {
-            CalcPropertyDebugInfo debugInfo = property.getDebugInfo();
+            PropertyDebugInfo debugInfo = property.getDebugInfo();
             if (debugInfo != null && debugInfo.needToCreateDelegate()) {
                 result.add(debugInfo.getDebuggerModuleLine());
             }
@@ -522,8 +522,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return null;
     }
 
-    protected ActionPropertyClassImplement<P> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> mapping) {
-        return new ActionPropertyClassImplement<>(this, classes, mapping);
+    protected ActionClassImplement<P> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> mapping) {
+        return new ActionClassImplement<>(this, classes, mapping);
     }
 
     @IdentityStrongLazy // STRONG because of using in security policy
