@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -17,7 +17,6 @@ import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionCalcProperty;
@@ -35,6 +34,8 @@ import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.ObjectClassProperty;
@@ -43,6 +44,7 @@ import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
@@ -53,7 +55,6 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.physics.dev.debug.*;
-import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.base.stack.StackMessage;
 import lsfusion.server.base.stack.ThisMessage;
 
@@ -114,84 +115,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public void setParamInfo(ParamDebugInfo<P> paramInfo) {
         this.paramInfo = paramInfo;
-    }
-
-    public static int compareChangeExtProps(Property p1, Property p2) {
-        // если p1 не DataProperty
-        String c1 = p1.getChangeExtSID();
-        String c2 = p2.getChangeExtSID();
-
-        if(c1 == null && c2 == null)
-            return compareDeepProps(p1, p2);
-
-        if(c1 == null)
-            return 1;
-
-        if(c2 == null)
-            return -1;
-
-        int result = c1.compareTo(c2);
-        if(result != 0)
-            return result;
-
-        return compareDeepProps(p1, p2);
-    }
-    
-    public static int compareDeepProps(Property p1, Property p2) {
-//           return Integer.compare(p1.hashCode(), p2.hashCode());
-
-        String className1 = p1.getClass().getName(); 
-        String className2 = p2.getClass().getName(); 
-
-        int result = className1.compareTo(className2);
-        if(result != 0)
-            return result;
-
-        DebugInfo debugInfo1 = p1.getDebugInfo();
-        DebugInfo debugInfo2 = p2.getDebugInfo();
-        
-        if((debugInfo1 == null) != (debugInfo2 == null))
-            return Boolean.compare(debugInfo1 == null, debugInfo2 == null);
-        
-        if(debugInfo1 != null) {
-            DebugInfo.DebugPoint point1 = debugInfo1.getPoint();
-            DebugInfo.DebugPoint point2 = debugInfo2.getPoint();
-            
-            result = point1.moduleName.compareTo(point2.moduleName);
-            if(result != 0)
-                return result;
-            
-            result = Integer.compare(point1.line, point2.line);
-            if(result != 0)
-                return result;
-
-            result = Integer.compare(point1.offset, point2.offset);
-            if(result != 0)
-                return result;
-        }
-
-        String caption1 = p1.caption != null ? p1.caption.getSourceString() : "";
-        String caption2 = p2.caption != null ? p2.caption.getSourceString() : "";
-        result = caption1.compareTo(caption2);
-        if(result != 0)
-            return result;
-
-        ImList<CalcProperty> depends1 = p1 instanceof ActionProperty ? ((ActionProperty<?>) p1).getSortedUsedProps() : ((CalcProperty<?>)p1).getSortedDepends(); 
-        ImList<CalcProperty> depends2 = p2 instanceof ActionProperty ? ((ActionProperty<?>) p2).getSortedUsedProps() : ((CalcProperty<?>)p2).getSortedDepends();
-        result = Integer.compare(depends1.size(), depends2.size());
-        if(result != 0)
-            return result;
-
-        for(int i=0,size=depends1.size();i<size;i++) {
-            CalcProperty dp1 = depends1.get(i);
-            CalcProperty dp2 = depends2.get(i);
-
-            result = BusinessLogics.propComparator().compare(dp1, dp2); 
-            if(result != 0)
-                return result;
-        }
-
-        return Integer.compare(p1.hashCode(), p2.hashCode());
     }
 
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)

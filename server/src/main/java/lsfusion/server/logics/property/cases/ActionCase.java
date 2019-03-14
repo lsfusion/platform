@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.property.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

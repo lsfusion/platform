@@ -535,7 +535,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, Property.defaultModifier, null, null, null).getOuterKeys());
+        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, CalcProperty.defaultModifier, null, null, null).getOuterKeys());
 
         return immutableCast(objects.filterFn(new SFunctionSet<ObjectInstance>() {
             public boolean contains(ObjectInstance object) { // если DataObject и нету ключей

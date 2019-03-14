@@ -11,7 +11,7 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcType;
+import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

@@ -40,6 +40,7 @@ import lsfusion.server.logics.form.struct.property.*;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.env.IsDebugFormulaProperty;
 import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.data.ObjectValue;

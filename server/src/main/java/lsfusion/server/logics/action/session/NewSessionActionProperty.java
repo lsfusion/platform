@@ -8,6 +8,7 @@ import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.AroundAspectActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;

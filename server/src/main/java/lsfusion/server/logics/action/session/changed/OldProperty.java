@@ -9,15 +9,12 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.infer.CalcClassType;
+import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.OldDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {

@@ -3,7 +3,7 @@ package lsfusion.server.physics.admin.authentication.policy.init;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 
 public class SetupPropertyPolicyFormsTask extends SetupActionOrPropertyPolicyFormsTask {
 

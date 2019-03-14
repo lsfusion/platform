@@ -77,7 +77,7 @@ grammar LsfLogics;
 	import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 	import lsfusion.server.physics.dev.debug.DebugInfo;
 	import lsfusion.server.logics.property.PropertySettings;
-	import lsfusion.server.logics.property.ActionSettings;
+	import lsfusion.server.logics.action.ActionSettings;
 	import lsfusion.server.logics.property.oraction.ActionOrPropertySettings;
 	import javax.mail.Message;
 

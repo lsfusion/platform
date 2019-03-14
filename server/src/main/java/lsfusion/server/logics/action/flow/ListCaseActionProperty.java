@@ -4,6 +4,8 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;

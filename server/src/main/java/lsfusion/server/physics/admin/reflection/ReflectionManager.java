@@ -7,6 +7,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.LongClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -30,6 +31,7 @@ import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.integration.service.*;
 import lsfusion.server.physics.exec.DBManager;
@@ -536,7 +538,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), ThreadLocalContext.localize(property.caption), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
+                            returnClass, classProperty, complexityProperty, tableSID, property.annotation, 
+                            (Settings.get().isDisableSyncStatProps() || !(property instanceof CalcProperty) ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty((CalcProperty)property))));
                 }
             }
 

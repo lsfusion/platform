@@ -16,11 +16,10 @@ import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.link.*;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;
-import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 
 import java.sql.SQLException;

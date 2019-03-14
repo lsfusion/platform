@@ -1,9 +1,4 @@
-package lsfusion.server.logics.property;
-
-import lsfusion.server.logics.property.infer.AlgInfoType;
-import lsfusion.server.logics.property.infer.AlgType;
-import lsfusion.server.logics.property.infer.CalcClassType;
-import lsfusion.server.logics.property.infer.InferType;
+package lsfusion.server.logics.property.infer;
 
 public class CalcType {
     private final String caption;

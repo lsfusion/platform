@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.init;
 
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 
 public class FinalizePropsTask extends GroupPropertiesTask {
     public String getCaption() {

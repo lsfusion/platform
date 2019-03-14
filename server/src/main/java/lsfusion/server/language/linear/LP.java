@@ -11,7 +11,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import javax.swing.*;

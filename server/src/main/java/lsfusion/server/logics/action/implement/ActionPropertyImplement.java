@@ -1,8 +1,9 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.action.implement;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ActionPropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {

@@ -18,6 +18,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.GroupDrillDownFormEntity;

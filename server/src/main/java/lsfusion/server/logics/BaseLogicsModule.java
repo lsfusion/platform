@@ -21,6 +21,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.form.interactive.ObjectValueProperty;
+import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.constraint.PropertyFormEntity;

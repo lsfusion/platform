@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.integration.exporting.StaticExportData;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.FormDataManager;

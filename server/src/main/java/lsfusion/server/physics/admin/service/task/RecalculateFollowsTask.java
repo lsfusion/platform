@@ -4,7 +4,7 @@ import lsfusion.interop.exception.ApplyCanceledException;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.action.session.DataSession;
 import org.antlr.runtime.RecognitionException;

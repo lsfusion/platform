@@ -8,7 +8,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 

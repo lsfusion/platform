@@ -2,8 +2,7 @@ package lsfusion.server.logics.property.init;
 
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.init.GroupPropertiesTask;
+import lsfusion.server.logics.property.oraction.Property;
 
 import static lsfusion.base.BaseUtils.systemLogger;
 

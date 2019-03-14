@@ -21,8 +21,10 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
+import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -69,6 +71,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.derived.ChangeProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.oraction.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -100,6 +103,12 @@ import java.util.concurrent.Callable;
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
+
+    public static Modifier defaultModifier = new Modifier() {
+        public PropertyChanges getPropertyChanges() {
+            return PropertyChanges.EMPTY;
+        }
+    };
 
     public String getTableDebugInfo(String operation) {
         return getClass() + "," + debugInfo + "-" + operation;
@@ -1501,7 +1510,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return canBeHeurChanged(global); // в ОЧЕНЬ не большом количестве случаев отличается (а разница в производительности огромная), можно было бы для SecurityManager сделать отдельную ветку (там критична скорость), но пока особого смысла нет, так как разница не большая 
         
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        Modifier modifier = Property.defaultModifier;
+        Modifier modifier = defaultModifier;
         try {
             Expr changeExpr = getChangeExpr(); // нижнее условие по аналогии с DataProperty
             Where classWhere = getClassProperty().mapExpr(mapKeys, modifier).getWhere();
@@ -1948,7 +1957,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @IdentityStartLazy
     public long getComplexity() {
         try {
-            return getExpr(getMapKeys(), Property.defaultModifier).getComplexity(false);
+            return getExpr(getMapKeys(), defaultModifier).getComplexity(false);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

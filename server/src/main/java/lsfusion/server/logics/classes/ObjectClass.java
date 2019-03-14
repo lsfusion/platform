@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes;
 
-import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.action.ActionProperty;
 
 public interface ObjectClass extends RemoteClass {
 

@@ -5,6 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
+import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.change.PropertyChange;
