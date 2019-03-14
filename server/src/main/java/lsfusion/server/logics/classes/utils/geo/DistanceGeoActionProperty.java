@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.json.JSONArray;

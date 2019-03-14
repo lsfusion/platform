@@ -16,7 +16,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
 import javax.mail.*;

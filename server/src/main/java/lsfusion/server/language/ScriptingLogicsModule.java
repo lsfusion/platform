@@ -55,7 +55,13 @@ import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.window.*;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.data.StoredDataProperty;
+import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
@@ -69,6 +75,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBFActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod;
 import lsfusion.server.physics.dev.integration.external.to.file.ReadActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteActionProperty;
 import lsfusion.server.logics.action.flow.BreakActionProperty;
@@ -1541,7 +1548,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             script = code.substring(1, code.length() - 1); //remove brackets
 
             String javaClass = "import lsfusion.server.data.SQLHandledException;\n" +
-                    "import lsfusion.server.logics.property.ClassPropertyInterface;\n" +
+                    "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
                     "import lsfusion.server.logics.action.ExecutionContext;\n" +
                     "import lsfusion.server.language.ScriptingActionProperty;\n" +
                     "import lsfusion.server.language.ScriptingLogicsModule;\n" +

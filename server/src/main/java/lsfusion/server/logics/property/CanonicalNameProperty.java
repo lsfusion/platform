@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.classes.data.FormulaProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.session.change.PropertyChanges;

@@ -9,8 +9,8 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.DataProperty;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 
 public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInterface, DataProperty> {

@@ -24,6 +24,9 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 
 import java.sql.SQLException;
 

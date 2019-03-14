@@ -32,7 +32,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public class CaseExpr extends Expr {
 

@@ -27,7 +27,7 @@ import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public class IfExpr extends Expr {
 

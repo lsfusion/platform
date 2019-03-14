@@ -32,6 +32,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassField;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;

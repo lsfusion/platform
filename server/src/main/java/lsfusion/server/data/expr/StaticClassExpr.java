@@ -9,7 +9,7 @@ import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public abstract class StaticClassExpr extends BaseExpr implements StaticClassExprInterface {
 

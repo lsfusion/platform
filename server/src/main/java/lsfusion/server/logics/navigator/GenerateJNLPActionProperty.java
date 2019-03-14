@@ -11,7 +11,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
 import java.net.URLDecoder;

@@ -28,6 +28,8 @@ import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
+import lsfusion.server.logics.property.infer.AlgType;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.integration.service.*;
 import lsfusion.server.physics.exec.DBManager;

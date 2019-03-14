@@ -28,6 +28,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;
 

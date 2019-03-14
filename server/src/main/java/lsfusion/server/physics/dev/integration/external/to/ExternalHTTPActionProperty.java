@@ -25,6 +25,7 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
+import lsfusion.server.logics.property.infer.ClassType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -43,7 +44,7 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.logics.property.ExternalHttpMethod.PUT;
+import static lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod.PUT;
 
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private ExternalHttpMethod method;

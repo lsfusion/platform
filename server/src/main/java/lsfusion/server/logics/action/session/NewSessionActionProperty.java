@@ -12,6 +12,8 @@ import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 

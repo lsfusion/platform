@@ -5,7 +5,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.IsServerRestartingFormulaProperty;
+import lsfusion.server.logics.property.env.IsServerRestartingFormulaProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 

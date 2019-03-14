@@ -26,6 +26,8 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;

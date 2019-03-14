@@ -8,7 +8,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.logics.action.session.DataSession;

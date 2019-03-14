@@ -9,6 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectActionProperty;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;

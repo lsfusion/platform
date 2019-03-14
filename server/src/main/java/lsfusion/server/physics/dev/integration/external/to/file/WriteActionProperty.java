@@ -12,7 +12,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
 

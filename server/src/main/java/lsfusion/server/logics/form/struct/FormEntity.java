@@ -36,6 +36,8 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.env.IsDebugFormulaProperty;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;

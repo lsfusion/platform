@@ -57,6 +57,11 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.ObjectClassProperty;
+import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -70,10 +75,6 @@ import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAction
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferInfoType;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.physics.exec.table.MapKeysTable;
@@ -1184,7 +1185,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return true;
     }
 
-    protected abstract ClassWhere<Object> calcClassValueWhere(CalcClassType calcType);
+    public abstract ClassWhere<Object> calcClassValueWhere(CalcClassType calcType);
 
     private static final Checker<ExClassSet> checker = new Checker<ExClassSet>() {
         public boolean checkEquals(ExClassSet expl, ExClassSet calc) {

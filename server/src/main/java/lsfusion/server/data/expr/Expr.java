@@ -44,7 +44,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 
 import java.sql.SQLException;
 

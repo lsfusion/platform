@@ -5,7 +5,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;

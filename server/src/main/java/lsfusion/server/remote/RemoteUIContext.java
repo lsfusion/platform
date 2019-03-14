@@ -26,8 +26,8 @@ import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.DialogRequest;
-import lsfusion.server.logics.property.PullChangeProperty;
+import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
+import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.io.ByteArrayOutputStream;

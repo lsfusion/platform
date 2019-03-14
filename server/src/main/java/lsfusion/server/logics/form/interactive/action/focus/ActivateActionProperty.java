@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
 import java.sql.SQLException;

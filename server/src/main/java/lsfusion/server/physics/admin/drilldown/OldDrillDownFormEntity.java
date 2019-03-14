@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.OldProperty;
 
 public class OldDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInterface, OldProperty<ClassPropertyInterface>> {

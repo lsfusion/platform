@@ -22,6 +22,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;

@@ -25,7 +25,7 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.MonitorServer;
 import lsfusion.server.language.linear.LAP;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;

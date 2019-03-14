@@ -6,7 +6,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;

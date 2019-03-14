@@ -2,6 +2,8 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.logics.property.infer.AlgInfoType;
+import lsfusion.server.logics.property.infer.CalcClassType;
 
 // вычисление empty, full, notnull, классов
 public class CalcInfoType extends CalcClassType implements AlgInfoType {

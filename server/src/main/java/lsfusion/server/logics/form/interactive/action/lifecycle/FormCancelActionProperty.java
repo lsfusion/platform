@@ -6,7 +6,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.DataSession;

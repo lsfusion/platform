@@ -6,7 +6,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
 import java.sql.SQLException;

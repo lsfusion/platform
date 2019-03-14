@@ -17,9 +17,9 @@ import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.ExecutionEnvironment;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.DataProperty;
-import lsfusion.server.logics.property.SessionDataProperty;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 
 import java.sql.SQLException;
 
