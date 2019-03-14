@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.struct.property;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -36,5 +36,5 @@ public abstract class PropertyClassImplement<P extends PropertyInterface, T exte
         return property.hashCode() * 31 + mapping.hashCode();
     }
     
-    public abstract LP<P, ?> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev);
+    public abstract LAP<P, ?> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev);
 }

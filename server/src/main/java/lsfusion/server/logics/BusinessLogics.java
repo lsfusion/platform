@@ -84,7 +84,7 @@ import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
@@ -812,13 +812,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
     
     private static class NamedDecl {
-        public final LP prop;
+        public final LAP prop;
         public final String namespace;
         public final boolean defaultNamespace;
         public final List<ResolveClassSet> signature;
         public final Version version;
 
-        public NamedDecl(LP prop, String namespace, boolean defaultNamespace, List<ResolveClassSet> signature, Version version) {
+        public NamedDecl(LAP prop, String namespace, boolean defaultNamespace, List<ResolveClassSet> signature, Version version) {
             this.prop = prop;
             this.namespace = namespace;
             this.defaultNamespace = defaultNamespace;
@@ -832,7 +832,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         for (Map.Entry<String, List<LogicsModule>> namespaceToModule : namespaceToModules.entrySet()) {
             String namespace = namespaceToModule.getKey();
             for (LogicsModule module : namespaceToModule.getValue()) {
-                for (LP<?, ?> property : Iterables.concat(module.getNamedProperties(), module.getNamedActions())) {
+                for (LAP<?, ?> property : Iterables.concat(module.getNamedProperties(), module.getNamedActions())) {
                     String propertyName = property.property.getName();
                     
                     if (result.get(propertyName) == null) {
@@ -1738,7 +1738,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public LP findSafeProperty(String canonicalName) {
+    public LAP findSafeProperty(String canonicalName) {
         LCP lp = null;
         try {
             lp = findProperty(canonicalName);
@@ -1747,8 +1747,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return lp;
     }
 
-    public LP<?,?> findPropertyElseAction(String canonicalName) {
-        LP<?,?> property = findProperty(canonicalName);
+    public LAP<?,?> findPropertyElseAction(String canonicalName) {
+        LAP<?,?> property = findProperty(canonicalName);
         if(property == null)
             property = findAction(canonicalName);
         return property;
@@ -1763,11 +1763,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
     
     public LA<?> findActionByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLAFinder());
+        return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLAFinder());
     }
     
     public LCP<?> findPropertyByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLCPFinder());
+        return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLCPFinder());
     }
 
     public CustomClass findClassByCompoundName(String compoundName) {

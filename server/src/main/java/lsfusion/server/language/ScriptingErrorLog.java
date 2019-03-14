@@ -2,7 +2,7 @@ package lsfusion.server.language;
 
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
@@ -251,7 +251,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("static object '%s' not found (class '%s' is abstract)", objectName, className));
     }
 
-    public void emitParamCountError(ScriptParser parser, LP property, int paramCount) throws SemanticErrorException {
+    public void emitParamCountError(ScriptParser parser, LAP property, int paramCount) throws SemanticErrorException {
         int interfacesCount = property.property.interfaces.size();
         emitParamCountError(parser, interfacesCount, paramCount);
     }
@@ -469,9 +469,9 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, msg);
     }
 
-    public void emitAmbiguousPropertyNameError(ScriptParser parser, List<FoundItem<LP<?, ?>>> foundItems, String name) throws SemanticErrorException {
+    public void emitAmbiguousPropertyNameError(ScriptParser parser, List<FoundItem<LAP<?, ?>>> foundItems, String name) throws SemanticErrorException {
         StringBuilder msg = new StringBuilder(String.format("ambiguous name '%s', was found in modules:", name));
-        for (FoundItem<LP<?, ?>> item : foundItems) {
+        for (FoundItem<LAP<?, ?>> item : foundItems) {
             msg.append("\n\t").append(item.toString());                
         }
         emitSimpleError(parser, msg.toString());

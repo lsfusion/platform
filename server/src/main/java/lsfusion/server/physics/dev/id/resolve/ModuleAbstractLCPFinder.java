@@ -6,7 +6,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
-public class ModuleAbstractLCPFinder extends ModuleAbstractLPFinder<LCP<?>> {
+public class ModuleAbstractLCPFinder extends ModuleAbstractLAPFinder<LCP<?>> {
     
     @Override
     protected boolean isAbstract(ActionOrProperty property) {

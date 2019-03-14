@@ -2,6 +2,7 @@ package lsfusion.server.language;
 
 import lsfusion.server.classes.*;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -21,7 +22,6 @@ import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
@@ -121,7 +121,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkParamCount(LP mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkParamCount(LAP mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.property.interfaces.size() != paramCount) {
             errLog.emitParamCountError(parser, mainProp, paramCount);
         }
@@ -277,7 +277,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkNamedParams(LP property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkNamedParams(LAP property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property.interfaces.size() != namedParams.size() && !namedParams.isEmpty()) {
             errLog.emitNamedParamsError(parser);
         }
@@ -376,7 +376,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkSessionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkSessionProperty(LAP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property.property instanceof SessionDataProperty)) {
             errLog.emitNotSessionOrLocalPropertyError(parser);
         }
@@ -475,7 +475,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkPartitionUngroupConsistence(LP ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkPartitionUngroupConsistence(LAP ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (ungroupProp != null && ungroupProp.property.interfaces.size() != groupPropCnt) {
             errLog.emitUngroupParamsCntPartitionError(parser, groupPropCnt);
         }
@@ -521,7 +521,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkEventNoParameters(LP property) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkEventNoParameters(LAP property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property.interfaces.size() > 0) {
             errLog.emitEventNoParametersError(parser);
         }
@@ -558,7 +558,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkImplementIsNotMain(LP mainProp, LP implProp) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkImplementIsNotMain(LAP mainProp, LAP implProp) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp == implProp) {
             errLog.emitRecursiveImplementError(parser);
         }

@@ -96,7 +96,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;
@@ -180,7 +180,7 @@ public abstract class LogicsModule {
     private final Map<LCP<?>, LocalPropertyData> locals = new HashMap<>();
 
 
-    protected final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
+    protected final Map<LAP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
     
 
     protected Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<>();
@@ -243,7 +243,7 @@ public abstract class LogicsModule {
         return classes.values();
     }
     
-    private <T extends LP<?, ?>> Iterable<T> createEmptyIfNull(Collection<T> col) {
+    private <T extends LAP<?, ?>> Iterable<T> createEmptyIfNull(Collection<T> col) {
         if (col == null) {
             return Collections.emptyList();
         } else {
@@ -251,7 +251,7 @@ public abstract class LogicsModule {
         }
     }
     
-    protected void addModuleLP(LP<?, ?> lp) {
+    protected void addModuleLP(LAP<?, ?> lp) {
         String name = null;
         assert getNamespace().equals(lp.property.getNamespace());
         if (lp instanceof LA) {
@@ -264,7 +264,7 @@ public abstract class LogicsModule {
         assert name != null;
     }
 
-    private <T extends LP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp, String name) {
+    private <T extends LAP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp, String name) {
         if (!moduleMap.containsKey(name)) {
             moduleMap.put(name, new ArrayList<T>());
         }
@@ -272,7 +272,7 @@ public abstract class LogicsModule {
     }
 
     @NFLazy
-    protected <P extends PropertyInterface, T extends LP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
+    protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamingPolicy());
         propClasses.put(lp, signature);
         addModuleLP(lp);
@@ -968,7 +968,7 @@ public abstract class LogicsModule {
 
     // ------------------- Input ----------------- //
 
-    protected LP addInputAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass, LCP<?> targetProp, Object... params) {
+    protected LAP addInputAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass, LCP<?> targetProp, Object... params) {
         return addJoinAProp(group, caption, addInputAProp(dataClass, targetProp != null ? targetProp.property : null), params);
     }
     @IdentityStrongLazy
@@ -1876,7 +1876,7 @@ public abstract class LogicsModule {
         }
     }
 
-    protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, T lp) {
+    protected <T extends LAP<?, ?>> T addProperty(AbstractGroup group, T lp) {
         addPropertyToGroup(lp.property, group);
         return lp;
     }
@@ -2135,7 +2135,7 @@ public abstract class LogicsModule {
         return new PropertyMapImplement<>(property.property, getMapping(property, mapList));
     }
 
-    private static <P extends PropertyInterface, T extends PropertyInterface> ImRevMap<P, T> getMapping(LP<P, ?> property, final ImOrderSet<T> mapList) {
+    private static <P extends PropertyInterface, T extends PropertyInterface> ImRevMap<P, T> getMapping(LAP<P, ?> property, final ImOrderSet<T> mapList) {
         return property.getRevMap(mapList);
     }
 
@@ -2300,7 +2300,7 @@ public abstract class LogicsModule {
         this.namespacePriority = namespacePriority;
     }
 
-    public List<ResolveClassSet> getParamClasses(LP<?, ?> lp) {
+    public List<ResolveClassSet> getParamClasses(LAP<?, ?> lp) {
         List<ResolveClassSet> paramClasses;
         if (lp instanceof LCP && locals.containsKey(lp)) {
             paramClasses = locals.get(lp).signature;

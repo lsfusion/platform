@@ -18,6 +18,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -34,7 +35,6 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.action.session.DataSession;
@@ -484,7 +484,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             for (ImMap<String, Object> valueMap : propValues) {
                 String cn = ((String) valueMap.get("cn")).trim();
                 try {
-                    LP<?, ?> prop = businessLogics.findPropertyElseAction(cn);
+                    LAP<?, ?> prop = businessLogics.findPropertyElseAction(cn);
                     if (prop != null) {
                         if (valueMap.get("forbidView") != null)
                             policy.property.view.deny(prop);

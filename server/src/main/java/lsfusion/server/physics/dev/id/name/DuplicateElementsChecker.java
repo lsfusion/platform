@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import lsfusion.server.physics.exec.table.ImplementTable;
 
@@ -84,7 +84,7 @@ public class DuplicateElementsChecker {
         }
     }
 
-    private abstract class DuplicatePropertyOrActionChecker<T extends LP<?, ?>> extends Checker<T> {
+    private abstract class DuplicatePropertyOrActionChecker<T extends LAP<?, ?>> extends Checker<T> {
         public DuplicatePropertyOrActionChecker(String textName) {
             super(textName);
         }

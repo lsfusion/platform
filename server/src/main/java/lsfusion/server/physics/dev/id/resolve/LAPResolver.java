@@ -1,19 +1,19 @@
 package lsfusion.server.physics.dev.id.resolve;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class LPResolver<L extends LP<?, ?>> extends ElementResolver<L, List<ResolveClassSet>> {
+public class LAPResolver<L extends LAP<?, ?>> extends ElementResolver<L, List<ResolveClassSet>> {
     private final boolean filter;
     private final boolean prioritizeNotEquals;
 
-    public LPResolver(LogicsModule startModule, ModuleFinder<L, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
+    public LAPResolver(LogicsModule startModule, ModuleFinder<L, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
         super(startModule, finder);
         this.filter = filter;
         this.prioritizeNotEquals = prioritizeNotEquals;
@@ -32,7 +32,7 @@ public class LPResolver<L extends LP<?, ?>> extends ElementResolver<L, List<Reso
                 if (prioritizeNotEquals) {
                     result = prioritizeNotEquals(result, param);
                 }
-                result = NamespaceLPFinder.filterFoundProperties(result);
+                result = NamespaceLAPFinder.filterFoundProperties(result);
             }
             if (result.size() > 1) {
                 throw new ResolvingErrors.ResolvingAmbiguousPropertyError(result, name);

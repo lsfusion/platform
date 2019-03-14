@@ -17,19 +17,19 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import javax.swing.*;
 import java.util.List;
 
-public abstract class LP<T extends PropertyInterface, P extends ActionOrProperty<T>> {
+public abstract class LAP<T extends PropertyInterface, P extends ActionOrProperty<T>> {
 
     public P property;
     public ImOrderSet<T> listInterfaces;
     private String creationScript = null;
     private String creationPath = null;
 
-    public LP(P property) {
+    public LAP(P property) {
         this.property = property;
         listInterfaces = property.getFriendlyOrderInterfaces();
     }
 
-    public LP(P property, ImOrderSet<T> listInterfaces) {
+    public LAP(P property, ImOrderSet<T> listInterfaces) {
         this.property = property;
         this.listInterfaces = listInterfaces;
         assert property.interfaces.size() == listInterfaces.size();
@@ -79,18 +79,18 @@ public abstract class LP<T extends PropertyInterface, P extends ActionOrProperty
     }
 
     /*
-    public <L extends PropertyInterface> void follows(LP<L> lp, int... mapping) {
+    public <L extends PropertyInterface> void follows(LAP<L> lp, int... mapping) {
         Map<L, T> mapInterfaces = new HashMap<L, T>();
         for(int i=0;i<lp.listInterfaces.size();i++)
             mapInterfaces.put(lp.listInterfaces.get(i), listInterfaces.get(mapping[i]-1));
         property.addFollows(new PropertyMapImplement<L, T>(lp.property, mapInterfaces));
     }
 
-    public void followed(LP... lps) {
+    public void followed(LAP... lps) {
         int[] mapping = new int[listInterfaces.size()];
         for(int i=0;i<mapping.length;i++)
             mapping[i] = i+1;
-        for(LP lp : lps)
+        for(LAP lp : lps)
             lp.follows(this, mapping);
     }
     */

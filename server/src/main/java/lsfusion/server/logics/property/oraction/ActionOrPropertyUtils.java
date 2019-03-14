@@ -11,12 +11,12 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.*;
 
@@ -72,23 +72,23 @@ public class ActionOrPropertyUtils {
         return classes;
     }
 
-    public static Object[] getParams(LP prop) {
+    public static Object[] getParams(LAP prop) {
         Object[] params  = new Object[prop.listInterfaces.size()];
         for(int i=0;i<prop.listInterfaces.size();i++)
             params[i] = (i+1);
         return params;
     }
 
-    public static Integer[] getIntParams(LP prop) {
+    public static Integer[] getIntParams(LAP prop) {
         Integer[] params  = new Integer[prop.listInterfaces.size()];
         for(int i=0;i<prop.listInterfaces.size();i++)
             params[i] = (i+1);
         return params;
     }
 
-    public static Object[] getUParams(LP[] props) {
+    public static Object[] getUParams(LAP[] props) {
         Object[] result = new Object[0];
-        for (LP prop : props)
+        for (LAP prop : props)
             result = BaseUtils.add(result, directLI(prop));
         return result;
     }
@@ -100,7 +100,7 @@ public class ActionOrPropertyUtils {
         return result;
     }
 
-    public static Object[] directLI(LP prop) {
+    public static Object[] directLI(LAP prop) {
         return BaseUtils.add(prop, getParams(prop));
     }
 
@@ -111,7 +111,7 @@ public class ActionOrPropertyUtils {
             if (params[i] instanceof Integer)
                 mResult.add(new LII((Integer) params[i]));
             else {
-                LMI impl = new LMI((LP) params[i]);
+                LMI impl = new LMI((LAP) params[i]);
                 for (int j = 0; j < impl.mapInt.length; j++)
                     impl.mapInt[j] = (Integer) params[i + j + 1];
                 i += impl.mapInt.length;
@@ -195,7 +195,7 @@ public class ActionOrPropertyUtils {
         return new PropertyImplement<>(property.property, getMapping(property, propImpl));
     }
 
-    private static <T extends PropertyInterface, P extends PropertyInterface> ImMap<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> getMapping(LP<T, ?> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
+    private static <T extends PropertyInterface, P extends PropertyInterface> ImMap<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> getMapping(LAP<T, ?> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
         return property.listInterfaces.mapList(propImpl);
     }
 
@@ -245,10 +245,10 @@ public class ActionOrPropertyUtils {
     }
 
     static class LMI<P extends PropertyInterface> extends LI {
-        LP<P, ?> lp;
+        LAP<P, ?> lp;
         int[] mapInt;
 
-        LMI(LP<P, ?> lp) {
+        LMI(LAP<P, ?> lp) {
             this.lp = lp;
             this.mapInt = new int[lp.listInterfaces.size()];
         }
