@@ -79,6 +79,7 @@ public class GenerateJNLPActionProperty extends ScriptingActionProperty {
                     .replace("${jnlp.vmargs}", memoryLimitVMArgs != null ? URLDecoder.decode(memoryLimitVMArgs, "utf-8") : (!isRedundantString(vmargs) ? vmargs : ""));
 
             findProperty("headersTo[TEXT]").change("attachment; filename=\"client.jnlp\"", context, new DataObject("Content-Disposition", StringClass.text));
+            findProperty("headersTo[TEXT]").change("", context, new DataObject("Cache-Control", StringClass.text)); // with Cache-Control 'no-cache, no-store' application won't install
             findProperty("exportFile[]").change(new FileData(new RawFileData(jnlpString.getBytes()), "jnlp"), context);
         } catch (Exception e) {
             Throwables.propagate(e);
