@@ -304,11 +304,11 @@ public class ScriptingFormEntity {
         return scope;
     }
 
-    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
         
         for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
-            ScriptingLogicsModule.AbstractFormPropertyUsage pDrawUsage = properties.get(i);
+            ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
             LocalizedString caption = captions.get(i);
 
@@ -647,16 +647,16 @@ public class ScriptingFormEntity {
         }
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractFormCalcPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
         return addCalcPropertyObject(LM, form, property);
     }
 
-    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormCalcPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LP)prop.property, prop.mapping);
     }
 
-    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
