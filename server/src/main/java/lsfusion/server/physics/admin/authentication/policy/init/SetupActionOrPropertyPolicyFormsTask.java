@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.init.GroupPropertiesTask;
 
 public abstract class SetupActionOrPropertyPolicyFormsTask extends GroupPropertiesTask {
@@ -15,7 +15,7 @@ public abstract class SetupActionOrPropertyPolicyFormsTask extends GroupProperti
     protected LA<?> setupPolicyByCN;
 
     protected abstract FormEntity getForm();
-    protected abstract LCP getCanonicalName();
+    protected abstract LP getCanonicalName();
     
     @Override
     protected boolean prerun() {

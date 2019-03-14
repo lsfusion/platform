@@ -1,11 +1,11 @@
 package lsfusion.server.physics.dev.id.name;
 
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import lsfusion.server.physics.exec.table.ImplementTable;
@@ -95,13 +95,13 @@ public class DuplicateElementsChecker {
         }
     }
 
-    private class DuplicatePropertyChecker extends DuplicatePropertyOrActionChecker<LCP<?>> {
+    private class DuplicatePropertyChecker extends DuplicatePropertyOrActionChecker<LP<?>> {
         public DuplicatePropertyChecker() {
             super("property");
         }
 
         @Override
-        public Iterable<LCP<?>> getElements(LogicsModule module) {
+        public Iterable<LP<?>> getElements(LogicsModule module) {
             return module.getNamedProperties();
         }
     }

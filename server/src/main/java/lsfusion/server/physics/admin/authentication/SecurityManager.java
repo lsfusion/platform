@@ -19,6 +19,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -34,7 +35,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.action.session.DataSession;
@@ -235,7 +235,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     private String secret = null;
     public void initSecret() throws SQLException, SQLHandledException {
         try(DataSession session = createSession()) {
-            LCP secretLCP = authenticationLM.secret;
+            LP secretLCP = authenticationLM.secret;
             String secretKey = (String) secretLCP.read(session);
             if(secretKey == null) {
                 secretKey = BaseUtils.generatePassword(32, false, false);

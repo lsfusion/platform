@@ -5,6 +5,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -18,7 +19,6 @@ import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;
 import lsfusion.server.logics.form.stat.integration.hierarchy.ParseNode;
 
@@ -30,14 +30,14 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
     private PropertyInterfaceImplement<ClassPropertyInterface> rootProperty;
     private PropertyInterfaceImplement<ClassPropertyInterface> tagProperty;
 
-    protected final LCP<?> exportFile; // nullable
+    protected final LP<?> exportFile; // nullable
 
     public ExportHierarchicalActionProperty(LocalizedString caption,
                                             FormSelector<O> form,
                                             ImList<O> objectsToSet,
                                             ImList<Boolean> nulls,
                                             FormIntegrationType staticType,
-                                            LCP exportFile,
+                                            LP exportFile,
                                             String charset,
                                             Property root,
                                             Property tag) {

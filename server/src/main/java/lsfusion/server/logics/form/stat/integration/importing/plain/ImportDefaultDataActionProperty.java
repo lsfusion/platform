@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.stat.integration.importing.plain;
 
 public class ImportDefaultDataActionProperty {
 
-//    public ImportDefaultDataActionProperty(List<String> ids, ImList<LCP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
+//    public ImportDefaultDataActionProperty(List<String> ids, ImList<LP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
 //        super(1, ids, properties, nulls, baseLM);
 //    }
 //

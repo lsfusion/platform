@@ -4,7 +4,7 @@ import lsfusion.interop.action.RunEditReportClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -12,7 +12,7 @@ import lsfusion.server.logics.action.ExecutionContext;
 import java.sql.SQLException;
 
 public class EditReportActionProperty extends ReportClientActionProperty {
-    private static LCP showIf = createShowIfProperty(new Property[] {FormEntity.isDebug, FormEntity.isFloat}, new boolean[] {false, true});
+    private static LP showIf = createShowIfProperty(new Property[] {FormEntity.isDebug, FormEntity.isFloat}, new boolean[] {false, true});
 
     public EditReportActionProperty(BaseLogicsModule lm) {
         super(lm, false);
@@ -23,7 +23,7 @@ public class EditReportActionProperty extends ReportClientActionProperty {
     }
 
     @Override
-    protected LCP getShowIf() {
+    protected LP getShowIf() {
         return showIf;
     }
 }

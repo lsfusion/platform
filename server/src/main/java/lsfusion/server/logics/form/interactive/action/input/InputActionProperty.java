@@ -8,7 +8,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -19,14 +19,14 @@ import java.sql.SQLException;
 public class InputActionProperty extends SystemExplicitAction {
 
     private final DataClass dataClass;
-    private final LCP<?> targetProp;
+    private final LP<?> targetProp;
             
     //  используется только для событий поэтому по идее не надо, так как в событиях user activity быть не может
 //    public ImMap<Property, Boolean> aspectChangeExtProps() {
 //        return getChangeProps(requestCanceledProperty.property, requestedPropertySet.getLCP(dataClass).property);
 //    }
 
-    public InputActionProperty(LocalizedString caption, DataClass dataClass, LCP targetProp) {
+    public InputActionProperty(LocalizedString caption, DataClass dataClass, LP targetProp) {
         super(caption, dataClass);
 
         this.dataClass = dataClass;

@@ -25,7 +25,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.ScriptingAction;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -110,7 +110,7 @@ public class CustomRestoreActionProperty extends ScriptingAction {
             QueryBuilder<Object, Object> tableColumnQuery = new QueryBuilder<>(tableColumnKeys);
 
             String[] exportNames = new String[]{"sidTableColumn", "canonicalNameTableColumn", "replaceOnlyNullTableColumn"};
-            LCP[] exportProperties = findProperties("sid[TableColumn]", "canonicalName[TableColumn]", "replaceOnlyNull[TableColumn]");
+            LP[] exportProperties = findProperties("sid[TableColumn]", "canonicalName[TableColumn]", "replaceOnlyNull[TableColumn]");
             for (int j = 0; j < exportProperties.length; j++) {
                 tableColumnQuery.addProperty(exportNames[j], exportProperties[j].getExpr(context.getModifier(), tableColumnExpr));
             }
@@ -122,7 +122,7 @@ public class CustomRestoreActionProperty extends ScriptingAction {
             for (ImMap<Object, Object> columnEntry : tableColumnResult.values()) {
                 String sidTableColumn = trimToNull((String) columnEntry.get("sidTableColumn"));
                 String canonicalNameTableColumn = trimToNull((String) columnEntry.get("canonicalNameTableColumn"));
-                LCP lpProperty = context.getBL().findProperty(canonicalNameTableColumn);
+                LP lpProperty = context.getBL().findProperty(canonicalNameTableColumn);
                 if(lpProperty != null && lpProperty.property instanceof StoredDataProperty) {
                     CustomRestoreTable table = tables.get(sidTable);
                     if (table == null)
@@ -170,8 +170,8 @@ public class CustomRestoreActionProperty extends ScriptingAction {
 
                 if(!keys.isEmpty() || !columns.isEmpty()) {
                     //step1: props, mRows
-                    final ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(table.lpProperties);
-                    MExclMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
+                    final ImOrderSet<LP> props = SetFact.fromJavaOrderSet(table.lpProperties);
+                    MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows = MapFact.mExclMap();
 
                     for (int i = 0; i < columns.size(); i++) {
                         List<Object> keysEntry = keys.get(i);
@@ -189,8 +189,8 @@ public class CustomRestoreActionProperty extends ScriptingAction {
                             keysMap = keysMap.addExcl(new KeyField("key" + k, valueClass instanceof CustomClass ? LongClass.instance : (Type) valueClass), keyObject);
                         }
 
-                        mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                            public ObjectValue getMapValue(LCP prop) {
+                        mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
+                            public ObjectValue getMapValue(LP prop) {
                                 try {
                                     Object object = columnsEntry.get(props.indexOf(prop));
                                     if (object == null) return NullValue.instance;
@@ -232,22 +232,22 @@ public class CustomRestoreActionProperty extends ScriptingAction {
         }
     }
 
-    private void writeRows(ExecutionContext context, ImOrderSet<LCP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> mRows,
-                             List<Object> keys, Set<String> replaceOnlyNullSet)
+    private void writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
+                           List<Object> keys, Set<String> replaceOnlyNullSet)
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         ImOrderSet<KeyField> keySet = SetFact.EMPTYORDER();
         for(int i = 0; i < keys.size(); i++) {
             keySet = keySet.addOrderExcl(new KeyField("key" + i, getKeyType(keys.get(i))));
         }
-        SessionTableUsage<KeyField, LCP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
+        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
             public Type getType(KeyField key) {
                 return key.type;
             }
-        }, new Type.Getter<LCP>() {
+        }, new Type.Getter<LP>() {
             @Override
-            public Type getType(LCP key) {
-                return ((LCP<?>)key).property.getType();
+            public Type getType(LP key) {
+                return ((LP<?>)key).property.getType();
             }
         });
         DataSession session = context.getSession();
@@ -256,9 +256,9 @@ public class CustomRestoreActionProperty extends ScriptingAction {
         importTable.writeRows(sql, mRows.immutable(), owner);
 
         ImRevMap<KeyField, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<LCP> importJoin = importTable.join(mapKeys);
+        Join<LP> importJoin = importTable.join(mapKeys);
         try {
-            for (LCP<?> lcp : props) {
+            for (LP<?> lcp : props) {
                 ImMap<Object, Object> values = MapFact.EMPTY();
                 for (int i = 0; i < mapKeys.values().size(); i++) {
                     values = values.addExcl(lcp.listInterfaces.get(i), mapKeys.values().get(i));

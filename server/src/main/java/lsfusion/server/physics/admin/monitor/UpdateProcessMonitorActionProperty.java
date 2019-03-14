@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.DateTimeClass;
 import lsfusion.server.logics.classes.LongClass;
 import lsfusion.server.logics.classes.StringClass;
@@ -29,7 +30,6 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.base.ThreadUtils;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -100,12 +100,12 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
             sqlProcesses = sqlProcesses.filter(javaProcesses.keys());
         }
 
-        ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "stackTraceJavaProcess[VARSTRING[10]]", "nameJavaProcess[VARSTRING[10]]",
+        ImOrderSet<LP> propsJava = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "stackTraceJavaProcess[VARSTRING[10]]", "nameJavaProcess[VARSTRING[10]]",
                 "statusJavaProcess[VARSTRING[10]]", "lockNameJavaProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]",
                 "nameComputerJavaProcess[VARSTRING[10]]", "nameUserJavaProcess[VARSTRING[10]]", "lsfStackTraceProcess[VARSTRING[10]]",
                 "threadAllocatedBytesProcess[VARSTRING[10]]", "lastThreadAllocatedBytesProcess[VARSTRING[10]]"));
 
-        ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]",
+        ImOrderSet<LP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]",
                 "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]",
                 "dateTimeSQLProcess[VARSTRING[10]]", "isActiveSQLProcess[VARSTRING[10]]", "inTransactionSQLProcess[VARSTRING[10]]",
                 "startTransactionSQLProcess[VARSTRING[10]]", "attemptCountSQLProcess[VARSTRING[10]]", "statusSQLProcess[VARSTRING[10]]",
@@ -121,23 +121,23 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
 
     }
 
-    private GetValue<ObjectValue, LCP> getJavaMapValueGetter(final JavaProcess javaProcessValue, final String idThread) {
-        return new GetValue<ObjectValue, LCP>() {
-            public ObjectValue getMapValue(LCP prop) {
+    private GetValue<ObjectValue, LP> getJavaMapValueGetter(final JavaProcess javaProcessValue, final String idThread) {
+        return new GetValue<ObjectValue, LP>() {
+            public ObjectValue getMapValue(LP prop) {
                 return getJavaMapValue(prop, javaProcessValue, idThread);
             }
         };
     }
 
-    private GetValue<ObjectValue, LCP> getSQLMapValueGetter(final SQLProcess sqlProcessValue, final String idThread) {
-        return new GetValue<ObjectValue, LCP>() {
-            public ObjectValue getMapValue(LCP prop) {
+    private GetValue<ObjectValue, LP> getSQLMapValueGetter(final SQLProcess sqlProcessValue, final String idThread) {
+        return new GetValue<ObjectValue, LP>() {
+            public ObjectValue getMapValue(LP prop) {
                 return getSQLMapValue(prop, sqlProcessValue, idThread);
             }
         };
     }
 
-    private ObjectValue getJavaMapValue(LCP<?> prop, JavaProcess javaProcess, String idThread) {
+    private ObjectValue getJavaMapValue(LP<?> prop, JavaProcess javaProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
@@ -168,7 +168,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         }
     }
 
-    private ObjectValue getSQLMapValue(LCP<?> prop, SQLProcess sqlProcess, String idThread) {
+    private ObjectValue getSQLMapValue(LP<?> prop, SQLProcess sqlProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
@@ -221,24 +221,24 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         }
     }
 
-    private int writeRowsJava(ExecutionContext context, final ImOrderSet<LCP> props, ImMap<String, JavaProcess> processes) throws SQLException, SQLHandledException {
+    private int writeRowsJava(ExecutionContext context, final ImOrderSet<LP> props, ImMap<String, JavaProcess> processes) throws SQLException, SQLHandledException {
 
-        ImMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> rows;
+        ImMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> rows;
 
         rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
             public ImMap<String, DataObject> getMapValue(String value) {
                 return MapFact.singleton("key", new DataObject(value, StringClass.get(10)));
             }
-        }, new GetKeyValue<ImMap<LCP, ObjectValue>, String, JavaProcess>() {
-            public ImMap<LCP, ObjectValue> getMapValue(String key, JavaProcess value) {
+        }, new GetKeyValue<ImMap<LP, ObjectValue>, String, JavaProcess>() {
+            public ImMap<LP, ObjectValue> getMapValue(String key, JavaProcess value) {
                 return props.getSet().mapValues(getJavaMapValueGetter(value, key));
             }
         });
 
-        SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LCP>() {
+        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LP>() {
             @Override
-            public Type getType(LCP key) {
-                return ((LCP<?>)key).property.getType();
+            public Type getType(LP key) {
+                return ((LP<?>)key).property.getType();
             }
         });
         OperationOwner owner = context.getSession().getOwner();
@@ -246,10 +246,10 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         importTable.writeRows(sql, rows, owner);
 
         ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<LCP> importJoin = importTable.join(mapKeys);
+        Join<LP> importJoin = importTable.join(mapKeys);
         Where where = importJoin.getWhere();
         try {
-            for (LCP lcp : props) {
+            for (LP lcp : props) {
                 PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
                 context.getEnv().change((Property) lcp.property, propChange);
             }
@@ -259,24 +259,24 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         return rows.size();
     }
 
-    private int writeRowsSQL(ExecutionContext context, final ImOrderSet<LCP> props, ImMap<String, SQLProcess> processes) throws SQLException, SQLHandledException {
+    private int writeRowsSQL(ExecutionContext context, final ImOrderSet<LP> props, ImMap<String, SQLProcess> processes) throws SQLException, SQLHandledException {
 
-        ImMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> rows;
+        ImMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> rows;
 
         rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
             public ImMap<String, DataObject> getMapValue(String value) {
                 return MapFact.singleton("key", new DataObject(value, StringClass.get(10)));
             }
-        }, new GetKeyValue<ImMap<LCP, ObjectValue>, String, SQLProcess>() {
-            public ImMap<LCP, ObjectValue> getMapValue(String key, SQLProcess value) {
+        }, new GetKeyValue<ImMap<LP, ObjectValue>, String, SQLProcess>() {
+            public ImMap<LP, ObjectValue> getMapValue(String key, SQLProcess value) {
                 return props.getSet().mapValues(getSQLMapValueGetter(value, key));
             }
         });
 
-        SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LCP>() {
+        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LP>() {
             @Override
-            public Type getType(LCP key) {
-                return ((LCP<?>)key).property.getType();
+            public Type getType(LP key) {
+                return ((LP<?>)key).property.getType();
             }
         });
         OperationOwner owner = context.getSession().getOwner();
@@ -284,10 +284,10 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         importTable.writeRows(sql, rows, owner);
 
         ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<LCP> importJoin = importTable.join(mapKeys);
+        Join<LP> importJoin = importTable.join(mapKeys);
         Where where = importJoin.getWhere();
         try {
-            for (LCP lcp : props) {
+            for (LP lcp : props) {
                 PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
                 context.getEnv().change((Property) lcp.property, propChange);
             }
@@ -297,7 +297,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         return rows.size();
     }
 
-    private ImOrderSet<LCP> getProps(LCP<?>[] properties) {
-        return SetFact.fromJavaOrderSet(new ArrayList<LCP>(Arrays.asList(properties))).addOrderExcl(LM.baseLM.importedString);
+    private ImOrderSet<LP> getProps(LP<?>[] properties) {
+        return SetFact.fromJavaOrderSet(new ArrayList<LP>(Arrays.asList(properties))).addOrderExcl(LM.baseLM.importedString);
     }
 }

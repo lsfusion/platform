@@ -1,12 +1,12 @@
 package lsfusion.server.physics.dev.id.resolve;
 
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
-public class ModuleAbstractLCPFinder extends ModuleAbstractLAPFinder<LCP<?>> {
+public class ModuleAbstractLPFinder extends ModuleAbstractLAPFinder<LP<?>> {
     
     @Override
     protected boolean isAbstract(ActionOrProperty property) {
@@ -15,7 +15,7 @@ public class ModuleAbstractLCPFinder extends ModuleAbstractLAPFinder<LCP<?>> {
     }
 
     @Override
-    protected Iterable<LCP<?>> getSourceList(LogicsModule module, String name) {
+    protected Iterable<LP<?>> getSourceList(LogicsModule module, String name) {
         return module.getNamedProperties(name);
     }
 }

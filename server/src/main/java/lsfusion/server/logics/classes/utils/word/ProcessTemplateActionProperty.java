@@ -14,7 +14,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingAction;
@@ -63,7 +63,7 @@ public class ProcessTemplateActionProperty extends ScriptingAction {
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
                     String[] templateEntryNames = new String[]{"objValue", "key", "value", "type", "firstRow", "columnSeparator", "rowSeparator"};
-                    LCP[] templateEntryProperties = findProperties("objValue[TemplateEntry]", "key[TemplateEntry]", "value[TemplateEntry]", "idType[TemplateEntry]",
+                    LP[] templateEntryProperties = findProperties("objValue[TemplateEntry]", "key[TemplateEntry]", "value[TemplateEntry]", "idType[TemplateEntry]",
                             "firstRow[TemplateEntry]", "columnSeparator[TemplateEntry]", "rowSeparator[TemplateEntry]");
                     for (int i = 0; i < templateEntryProperties.length; i++) {
                         templateEntryQuery.addProperty(templateEntryNames[i], templateEntryProperties[i].getExpr(context.getModifier(), templateEntryExpr));

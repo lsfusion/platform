@@ -22,6 +22,7 @@ import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
@@ -81,7 +82,6 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.physics.dev.debug.CalcPropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
@@ -1563,22 +1563,22 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new CalcPropertyClassImplement<>(this, classes, mapping);
     }
 
-    private LCP logValueProperty;
-    private LCP logWhereProperty;
+    private LP logValueProperty;
+    private LP logWhereProperty;
 
-    public LCP getLogValueProperty() {
+    public LP getLogValueProperty() {
         return logValueProperty;
     }
 
-    public void setLogValueProperty(LCP logValueProperty) {
+    public void setLogValueProperty(LP logValueProperty) {
         this.logValueProperty = logValueProperty;
     }
 
-    public LCP getLogWhereProperty() {
+    public LP getLogWhereProperty() {
         return logWhereProperty;
     }
 
-    public void setLogWhereProperty(LCP logWhereProperty) {
+    public void setLogWhereProperty(LP logWhereProperty) {
         this.logWhereProperty = logWhereProperty;
     }
 

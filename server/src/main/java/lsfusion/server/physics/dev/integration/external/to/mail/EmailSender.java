@@ -7,7 +7,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.base.context.ThreadLocalContext;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.session.DataSession;
@@ -154,7 +154,7 @@ public class EmailSender {
             attachFile(mp, attachment);
 
         message.setContent(mp);
-        final LCP emailSent = context.getBL().emailLM.emailSent;
+        final LP emailSent = context.getBL().emailLM.emailSent;
 
         ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
         executor.submit(new Runnable() {
@@ -291,7 +291,7 @@ public class EmailSender {
         } finally {
             try {
                 if (context != null) {
-                    LCP emailSent = context.getBL().emailLM.findProperty("emailSent[]");
+                    LP emailSent = context.getBL().emailLM.findProperty("emailSent[]");
                     if(emailSent != null)
                         emailSent.change(send ? true : null, context.getSession());
                 }

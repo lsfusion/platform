@@ -25,7 +25,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -46,13 +46,13 @@ import java.util.Map;
 import static lsfusion.server.physics.admin.profiler.Profiler.profileData;
 
 public class StopProfilerActionProperty extends ScriptingAction {
-    private LCP totalTime;
-    private LCP totalSQLTime;
-    private LCP totalUserInteractionTime;
-    private LCP callCount;
-    private LCP minTime;
-    private LCP maxTime;
-    private LCP squaresSum;
+    private LP totalTime;
+    private LP totalSQLTime;
+    private LP totalUserInteractionTime;
+    private LP callCount;
+    private LP minTime;
+    private LP maxTime;
+    private LP squaresSum;
 
     private LA<?> writeProfilerBatch;
 
@@ -92,13 +92,13 @@ public class StopProfilerActionProperty extends ScriptingAction {
         final ImOrderSet<KeyField> keys = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(new KeyField("po1", StringClass.text),
                 new KeyField("po2", StringClass.text), new KeyField("user", LongClass.instance), new KeyField("form", StringClass.getv(100)))));
 
-        ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(totalTime, totalSQLTime, 
+        ImOrderSet<LP> props = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(totalTime, totalSQLTime, 
                 totalUserInteractionTime, callCount, minTime, maxTime, squaresSum)));
 
         MMap<ImMap<KeyField, DataObject>, ProfileValue> mPremap = newPremap();
-        GetValue<ImMap<LCP, ObjectValue>, ProfileValue> mapProfileValue = new GetValue<ImMap<LCP, ObjectValue>, ProfileValue>() {
+        GetValue<ImMap<LP, ObjectValue>, ProfileValue> mapProfileValue = new GetValue<ImMap<LP, ObjectValue>, ProfileValue>() {
             @Override
-            public ImMap<LCP, ObjectValue> getMapValue(ProfileValue profileValue) {
+            public ImMap<LP, ObjectValue> getMapValue(ProfileValue profileValue) {
                 return MapFact.toMap(
                         totalTime, (ObjectValue) new DataObject(profileValue.totalTime, LongClass.instance),
                         totalSQLTime, new DataObject(profileValue.totalSQLTime, LongClass.instance),
@@ -150,16 +150,16 @@ public class StopProfilerActionProperty extends ScriptingAction {
     }
 
     @StackProgress
-    private void writeBatch(final ImOrderSet<KeyField> keys, ImOrderSet<LCP> props, ImMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
-        SessionTableUsage<KeyField, LCP> importTable = new SessionTableUsage<>("stopprof", keys, props, new Type.Getter<KeyField>() {
+    private void writeBatch(final ImOrderSet<KeyField> keys, ImOrderSet<LP> props, ImMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
+        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage<>("stopprof", keys, props, new Type.Getter<KeyField>() {
             @Override
             public Type getType(KeyField key) {
                 return key.type;
             }
-        }, new Type.Getter<LCP>() {
+        }, new Type.Getter<LP>() {
             @Override
-            public Type getType(LCP key) {
-                return ((LCP<?>)key).property.getType();
+            public Type getType(LP key) {
+                return ((LP<?>)key).property.getType();
             }
         });
 
@@ -170,9 +170,9 @@ public class StopProfilerActionProperty extends ScriptingAction {
         importTable.writeRows(sql, data, owner);
 
         final ImRevMap<KeyField, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<LCP> importJoin = importTable.join(mapKeys);
+        Join<LP> importJoin = importTable.join(mapKeys);
         try {
-            for (LCP<?> lcp : importTable.getValues()) {
+            for (LP<?> lcp : importTable.getValues()) {
                 PropertyChange propChange = new PropertyChange<>(lcp.listInterfaces.mapSet(keys).join(mapKeys), importJoin.getExpr(lcp), importJoin.getWhere());
                 context.getEnv().change((Property) lcp.property, propChange);
             }

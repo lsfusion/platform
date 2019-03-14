@@ -21,6 +21,7 @@ import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
@@ -94,7 +95,6 @@ import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
@@ -165,7 +165,7 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule baseLM;
 
-    protected Map<String, List<LCP<?>>> namedProperties = new HashMap<>();
+    protected Map<String, List<LP<?>>> namedProperties = new HashMap<>();
     protected Map<String, List<LA<?>>> namedActions = new HashMap<>();
     
     protected final Map<String, AbstractGroup> groups = new HashMap<>();
@@ -177,7 +177,7 @@ public abstract class LogicsModule {
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
     private final Set<FormEntity> unnamedForms = new HashSet<>();
-    private final Map<LCP<?>, LocalPropertyData> locals = new HashMap<>();
+    private final Map<LP<?>, LocalPropertyData> locals = new HashMap<>();
 
 
     protected final Map<LAP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
@@ -223,7 +223,7 @@ public abstract class LogicsModule {
         return result;
     }
 
-    public Iterable<LCP<?>> getNamedProperties() {
+    public Iterable<LP<?>> getNamedProperties() {
         return Iterables.concat(namedProperties.values());
     }
 
@@ -231,7 +231,7 @@ public abstract class LogicsModule {
         return Iterables.concat(namedActions.values());
     }
 
-    public Iterable<LCP<?>> getNamedProperties(String name) {
+    public Iterable<LP<?>> getNamedProperties(String name) {
         return createEmptyIfNull(namedProperties.get(name));
     }
 
@@ -257,9 +257,9 @@ public abstract class LogicsModule {
         if (lp instanceof LA) {
             name = ((LA<?>)lp).property.getName();
             putLPToMap(namedActions, (LA) lp, name);
-        } else if (lp instanceof LCP) {
-            name = ((LCP<?>)lp).property.getName();
-            putLPToMap(namedProperties, (LCP)lp, name);
+        } else if (lp instanceof LP) {
+            name = ((LP<?>)lp).property.getName();
+            putLPToMap(namedProperties, (LP)lp, name);
         }
         assert name != null;
     }
@@ -278,7 +278,7 @@ public abstract class LogicsModule {
         addModuleLP(lp);
     }
 
-    protected void makePropertyPublic(LCP<?> lp, String name, ResolveClassSet... signature) {
+    protected void makePropertyPublic(LP<?> lp, String name, ResolveClassSet... signature) {
         makePropertyPublic(lp, name, Arrays.asList(signature));
     }
     
@@ -286,7 +286,7 @@ public abstract class LogicsModule {
         makeActionPublic(lp, name, Arrays.asList(signature));
     }
 
-    protected <P extends PropertyInterface> void makePropertyPublic(LCP<P> lp, String name, List<ResolveClassSet> signature) {
+    protected <P extends PropertyInterface> void makePropertyPublic(LP<P> lp, String name, List<ResolveClassSet> signature) {
         makeActionOrPropertyPublic(lp, name, signature);
     }
     
@@ -457,7 +457,7 @@ public abstract class LogicsModule {
         // создаем IS
         ImList<ValueClass> listClasses = ListFact.toList(classes);
         PropertyRevImplement<?, Integer> mapProperty = IsClassProperty.getProperty(listClasses.toIndexedMap()); // тут конечно стремновато из кэша брать, так как остальные гарантируют создание
-        LCP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
+        LP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
 //        addProperty(null, lcp);
 
         // делаем public, persistent
@@ -476,34 +476,34 @@ public abstract class LogicsModule {
 
     // ------------------- DATA ----------------- //
 
-    protected LCP addDProp(LocalizedString caption, ValueClass value, ValueClass... params) {
+    protected LP addDProp(LocalizedString caption, ValueClass value, ValueClass... params) {
         StoredDataProperty dataProperty = new StoredDataProperty(caption, params, value);
-        LCP lp = addProperty(null, new LCP<>(dataProperty));
+        LP lp = addProperty(null, new LP<>(dataProperty));
         return lp;
     }
 
     // ------------------- Loggable ----------------- //
 
-    protected <D extends PropertyInterface> LCP addDCProp(LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LP addDCProp(LocalizedString caption, int whereNum, LP<D> derivedProp, Object... params) {
         Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
-        LCP derDataProp = addProperty(null, new LCP<>(dataProperty));
+        LP derDataProp = addProperty(null, new LP<>(dataProperty));
 
         derDataProp.setEventChange(derivedProp, whereNum, params);
         return derDataProp;
     }
 
-    protected <D extends PropertyInterface> LCP addLogProp(LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LP addLogProp(LocalizedString caption, int whereNum, LP<D> derivedProp, Object... params) {
         Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, LogicalClass.instance);
-        return addProperty(null, new LCP<>(dataProperty));
+        return addProperty(null, new LP<>(dataProperty));
     }
 
-    private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, int whereNum, Object[] params) {
+    private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LP<D> derivedProp, int whereNum, Object[] params) {
         // придется создавать Join свойство чтобы считать его класс
         int dersize = getIntNum(params);
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(dersize);
@@ -523,7 +523,7 @@ public abstract class LogicsModule {
 
         JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<>(LocalizedString.NONAME, listInterfaces,
                 new PropertyImplement<>(andProperty, mapImplement));
-        LCP<JoinProperty.Interface> listProperty = new LCP<>(joinProperty, listInterfaces);
+        LP<JoinProperty.Interface> listProperty = new LP<>(joinProperty, listInterfaces);
 
         // получаем классы
         ValueClass[] commonClasses = listProperty.getInterfaceClasses(ClassType.logPolicy); // есть и другие obsolete использования
@@ -533,17 +533,17 @@ public abstract class LogicsModule {
 
     // ------------------- Scripted DATA ----------------- //
 
-    protected LCP addSDProp(LocalizedString caption, boolean isLocalScope, ValueClass value, LocalNestedType nestedType, ValueClass... params) {
+    protected LP addSDProp(LocalizedString caption, boolean isLocalScope, ValueClass value, LocalNestedType nestedType, ValueClass... params) {
         return addSDProp(null, false, caption, isLocalScope, value, nestedType, params);
     }
 
-    protected LCP addSDProp(AbstractGroup group, boolean persistent, LocalizedString caption, boolean isLocalScope, ValueClass value, LocalNestedType nestedType, ValueClass... params) {
+    protected LP addSDProp(AbstractGroup group, boolean persistent, LocalizedString caption, boolean isLocalScope, ValueClass value, LocalNestedType nestedType, ValueClass... params) {
         SessionDataProperty prop = new SessionDataProperty(caption, params, value);
         if (isLocalScope) {
             prop.setLocal(true);
         }
         prop.nestedType = nestedType;
-        return addProperty(group, new LCP<>(prop));
+        return addProperty(group, new LP<>(prop));
     }
 
     // ------------------- Form actions ----------------- //
@@ -575,15 +575,15 @@ public abstract class LogicsModule {
         return addIFAProp(null, caption, form, objectsToSet, ListFact.toList(false, objectsToSet.size()), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, syncType, windowType, forbidDuplicate, false, false);
     }
     protected <O extends ObjectSelector> LA addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
-        return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<Property>EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
+        return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<Property>EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
     }
-    protected <O extends ObjectSelector> LA addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<Property> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+    protected <O extends ObjectSelector> LA addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<Property> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addProperty(group, new LA<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
-    protected <O extends ObjectSelector> LA<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, Property printerProperty, LCP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, Property passwordProperty, LCP targetProp, boolean removeNullsAndDuplicates) {
+    protected <O extends ObjectSelector> LA<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, Property printerProperty, LP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, Property passwordProperty, LP targetProp, boolean removeNullsAndDuplicates) {
         return addProperty(group, new LA<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNullsAndDuplicates)));
     }
-    protected <O extends ObjectSelector> LA addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, Property root, Property tag, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
+    protected <O extends ObjectSelector> LA addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, Property root, Property tag, LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles) {
         ExportActionProperty<O> exportAction;
         switch(staticType) {
             case XML:
@@ -685,7 +685,7 @@ public abstract class LogicsModule {
 
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders,
-                                        LCP singleExportFile, boolean conditional, Property root, Property tag, String separator,
+                                        LP singleExportFile, boolean conditional, Property root, Property tag, String separator,
                                         boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         int extraParamsCount = (root != null ? 1 : 0) + (tag != null ? 1 : 0);
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
@@ -702,7 +702,7 @@ public abstract class LogicsModule {
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
         
-        ImMap<GroupObjectEntity, LCP> exportFiles = MapFact.EMPTY();
+        ImMap<GroupObjectEntity, LP> exportFiles = MapFact.EMPTY();
         if(type.isPlain()) {
             exportFiles = MapFact.singleton(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject, singleExportFile);
             singleExportFile = null;
@@ -712,7 +712,7 @@ public abstract class LogicsModule {
         return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, root, tag, singleExportFile, exportFiles);
     }
 
-    protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LCP<?> whereLCP, String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+    protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LP<?> whereLCP, String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 
@@ -903,15 +903,15 @@ public abstract class LogicsModule {
         return addSessionScopeAProp(null, sessionScope, action);
     }
     protected LA addSessionScopeAProp(AbstractGroup group, FormSessionScope sessionScope, LA action) {
-        return addSessionScopeAProp(group, sessionScope, action, SetFact.<LCP>EMPTY());
+        return addSessionScopeAProp(group, sessionScope, action, SetFact.<LP>EMPTY());
     }
-    protected LA addSessionScopeAProp(FormSessionScope sessionScope, LA action, ImCol<LCP> nestedProps) {
+    protected LA addSessionScopeAProp(FormSessionScope sessionScope, LA action, ImCol<LP> nestedProps) {
         return addSessionScopeAProp(null, sessionScope, action, nestedProps);
     }
-    protected LA addSessionScopeAProp(AbstractGroup group, FormSessionScope sessionScope, LA action, ImCol<LCP> nestedProps) {
+    protected LA addSessionScopeAProp(AbstractGroup group, FormSessionScope sessionScope, LA action, ImCol<LP> nestedProps) {
         if(sessionScope.isNewSession()) {
-            action = addNewSessionAProp(null, action, sessionScope.isNestedSession(), false, false, nestedProps.mapMergeSetValues(new GetValue<SessionDataProperty, LCP>() {
-                public SessionDataProperty getMapValue(LCP value) {
+            action = addNewSessionAProp(null, action, sessionScope.isNestedSession(), false, false, nestedProps.mapMergeSetValues(new GetValue<SessionDataProperty, LP>() {
+                public SessionDataProperty getMapValue(LP value) {
                     return (SessionDataProperty) value.property;
                 }
             }));
@@ -968,104 +968,104 @@ public abstract class LogicsModule {
 
     // ------------------- Input ----------------- //
 
-    protected LAP addInputAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass, LCP<?> targetProp, Object... params) {
+    protected LAP addInputAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass, LP<?> targetProp, Object... params) {
         return addJoinAProp(group, caption, addInputAProp(dataClass, targetProp != null ? targetProp.property : null), params);
     }
     @IdentityStrongLazy
-    protected LA addInputAProp(DataClass dataClass, Property targetProp) { // так как у LCP нет 
-        return addProperty(null, new LA(new InputActionProperty(LocalizedString.create("Input"), dataClass, targetProp != null ? new LCP(targetProp) : null)));
+    protected LA addInputAProp(DataClass dataClass, Property targetProp) { // так как у LP нет 
+        return addProperty(null, new LA(new InputActionProperty(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null)));
     }
 
     // ------------------- Constant ----------------- //
 
-    protected <T extends PropertyInterface> LCP addUnsafeCProp(DataClass valueClass, Object value) {
+    protected <T extends PropertyInterface> LP addUnsafeCProp(DataClass valueClass, Object value) {
         ValueProperty.checkLocalizedString(value, valueClass);
         return baseLM.addCProp(valueClass, valueClass instanceof StringClass ? value : valueClass.read(value));
     }
 
-    protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
+    protected <T extends PropertyInterface> LP addCProp(StaticClass valueClass, Object value) {
         return baseLM.addCProp(valueClass, value);
     }
 
     // ------------------- Random ----------------- //
 
-    protected LCP addRMProp(LocalizedString caption) {
-        return addProperty(null, new LCP<>(new RandomFormulaProperty(caption)));
+    protected LP addRMProp(LocalizedString caption) {
+        return addProperty(null, new LP<>(new RandomFormulaProperty(caption)));
     }
 
     // ------------------- FORMULA ----------------- //
 
-    protected LCP addSFProp(String formula, int paramCount) {
+    protected LP addSFProp(String formula, int paramCount) {
         return addSFProp(formula, null, paramCount);
     }
 
-    protected LCP addSFProp(CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
+    protected LP addSFProp(CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
         return addSFProp(formula, null, paramCount, hasNotNull);
     }
 
-    protected LCP addSFProp(String formula, DataClass value, int paramCount) {
+    protected LP addSFProp(String formula, DataClass value, int paramCount) {
         return addSFProp(new CustomFormulaSyntax(formula), value, paramCount, false);
     }
     
-    protected LCP addSFProp(CustomFormulaSyntax formula, DataClass value, int paramCount, boolean hasNotNull) {
-        return addProperty(null, new LCP<>(new StringFormulaProperty(value, formula, paramCount, hasNotNull)));
+    protected LP addSFProp(CustomFormulaSyntax formula, DataClass value, int paramCount, boolean hasNotNull) {
+        return addProperty(null, new LP<>(new StringFormulaProperty(value, formula, paramCount, hasNotNull)));
     }
 
     // ------------------- Операции сравнения ----------------- //
 
-    protected LCP addCFProp(Compare compare) {
-        return addProperty(null, new LCP<>(new CompareFormulaProperty(compare)));
+    protected LP addCFProp(Compare compare) {
+        return addProperty(null, new LP<>(new CompareFormulaProperty(compare)));
     }
 
     // ------------------- Алгебраические операции ----------------- //
 
-    protected LCP addSumProp() {
-        return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("sum"), 2, new SumFormulaImpl())));
+    protected LP addSumProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("sum"), 2, new SumFormulaImpl())));
     }
 
-    protected LCP addMultProp() {
-        return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("multiply"), 2, new MultiplyFormulaImpl())));
+    protected LP addMultProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("multiply"), 2, new MultiplyFormulaImpl())));
     }
 
-    protected LCP addSubtractProp() {
-        return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("subtract"), 2, new SubtractFormulaImpl())));
+    protected LP addSubtractProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("subtract"), 2, new SubtractFormulaImpl())));
     }
 
-    protected LCP addDivideProp() {
-        return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, new DivideFormulaImpl())));
+    protected LP addDivideProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, new DivideFormulaImpl())));
     }
 
     // ------------------- cast ----------------- //
 
-    protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
+    protected <P extends PropertyInterface> LP addCastProp(DataClass castClass) {
         return baseLM.addCastProp(castClass);
     }
 
     // ------------------- Операции со строками ----------------- //
 
-    protected <P extends PropertyInterface> LCP addSProp(int intNum) {
+    protected <P extends PropertyInterface> LP addSProp(int intNum) {
         return addSProp(intNum, " ");
     }
 
-    protected <P extends PropertyInterface> LCP addSProp(int intNum, String separator) {
-        return addProperty(null, new LCP<>(new StringConcatenateProperty(LocalizedString.create("{logics.join}"), intNum, separator)));
+    protected <P extends PropertyInterface> LP addSProp(int intNum, String separator) {
+        return addProperty(null, new LP<>(new StringConcatenateProperty(LocalizedString.create("{logics.join}"), intNum, separator)));
     }
 
-    protected <P extends PropertyInterface> LCP addInsensitiveSProp(int intNum) {
+    protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum) {
         return addInsensitiveSProp(intNum, " ");
     }
 
-    protected <P extends PropertyInterface> LCP addInsensitiveSProp(int intNum, String separator) {
-        return addProperty(null, new LCP<>(new StringConcatenateProperty(LocalizedString.create("{logics.join}"), intNum, separator, true)));
+    protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum, String separator) {
+        return addProperty(null, new LP<>(new StringConcatenateProperty(LocalizedString.create("{logics.join}"), intNum, separator, true)));
     }
 
     // ------------------- AND ----------------- //
 
-    protected LCP addAFProp(boolean... nots) {
+    protected LP addAFProp(boolean... nots) {
         return addAFProp(null, nots);
     }
 
-    protected LCP addAFProp(AbstractGroup group, boolean... nots) {
+    protected LP addAFProp(AbstractGroup group, boolean... nots) {
         ImOrderSet<PropertyInterface> interfaces = genInterfaces(nots.length + 1);
         MList<Boolean> mList = ListFact.mList(nots.length);
         boolean wasNot = false;
@@ -1076,29 +1076,29 @@ public abstract class LogicsModule {
         if(wasNot)
             return mapLProp(group, false, DerivedProperty.createAnd(interfaces, mList.immutableList()), interfaces);
         else
-            return addProperty(group, new LCP<>(new AndFormulaProperty(nots.length)));
+            return addProperty(group, new LP<>(new AndFormulaProperty(nots.length)));
     }
 
     // ------------------- concat ----------------- //
 
-    protected LCP addCCProp(int paramCount) {
-        return addProperty(null, new LCP<>(new ConcatenateProperty(paramCount)));
+    protected LP addCCProp(int paramCount) {
+        return addProperty(null, new LP<>(new ConcatenateProperty(paramCount)));
     }
 
-    protected LCP addDCCProp(int paramIndex) {
-        return addProperty(null, new LCP<>(new DeconcatenateProperty(paramIndex, baseLM.baseClass)));
+    protected LP addDCCProp(int paramIndex) {
+        return addProperty(null, new LP<>(new DeconcatenateProperty(paramIndex, baseLM.baseClass)));
     }
 
     // ------------------- JOIN (продолжение) ----------------- //
 
-    public LCP addJProp(LCP mainProp, Object... params) {
+    public LP addJProp(LP mainProp, Object... params) {
         return addJProp( false, mainProp, params);
     }
 
-    protected LCP addJProp(boolean user, LCP mainProp, Object... params) {
+    protected LP addJProp(boolean user, LP mainProp, Object... params) {
         return addJProp(user, 0, mainProp, params);
     }
-    protected LCP addJProp(boolean user, int removeLast, LCP<?> mainProp, Object... params) {
+    protected LP addJProp(boolean user, int removeLast, LP<?> mainProp, Object... params) {
 
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<JoinProperty.Interface>> listImplements = readCalcImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params);
@@ -1108,34 +1108,34 @@ public abstract class LogicsModule {
         for(Property andProp : mainProp.property.getAndProperties())
             property.drawOptions.inheritDrawOptions(andProp.drawOptions);
 
-        return addProperty(null, new LCP<>(property, listInterfaces));
+        return addProperty(null, new LP<>(property, listInterfaces));
     }
 
     // ------------------- mapLProp ----------------- //
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, ImOrderSet<P> listInterfaces) {
-        return addProperty(group, new LCP<>(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, ImOrderSet<P> listInterfaces) {
+        return addProperty(group, new LP<>(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
     }
 
-    protected <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, LCP<P> property) {
+    protected <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, LP<P> property) {
         return mapLProp(group, persistent, implement, property.listInterfaces);
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLGProp(AbstractGroup group, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
         return mapLGProp(group, false, implement, listImplements);
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLGProp(AbstractGroup group, boolean persistent, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
-        return addProperty(group, new LCP<>(implement.property, listImplements.toOrderExclSet().mapOrder(implement.mapping.toRevExclMap().reverse())));
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
+        return addProperty(group, new LP<>(implement.property, listImplements.toOrderExclSet().mapOrder(implement.mapping.toRevExclMap().reverse())));
     }
 
-    private <P extends PropertyInterface> LCP mapLGProp(AbstractGroup group, boolean persistent, GroupProperty property, ImList<PropertyInterfaceImplement<P>> listImplements) {
+    private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, GroupProperty property, ImList<PropertyInterfaceImplement<P>> listImplements) {
         return mapLGProp(group, persistent, new PropertyImplement<GroupProperty.Interface<P>, PropertyInterfaceImplement<P>>(property, property.getMapInterfaces()), listImplements);
     }
 
     // ------------------- Order property ----------------- //
 
-    protected <P extends PropertyInterface> LCP addOProp(AbstractGroup group, boolean persistent, LocalizedString caption, PartitionType partitionType, boolean ascending, boolean ordersNotNull, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, boolean persistent, LocalizedString caption, PartitionType partitionType, boolean ascending, boolean ordersNotNull, boolean includeLast, int partNum, Object... params) {
         ImOrderSet<PropertyInterface> interfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(interfaces, params);
 
@@ -1146,7 +1146,7 @@ public abstract class LogicsModule {
         return mapLProp(group, persistent, DerivedProperty.createOProp(caption, partitionType, interfaces.getSet(), mainProp, partitions, orders, ordersNotNull, includeLast), interfaces);
     }
 
-    protected <P extends PropertyInterface> LCP addRProp(AbstractGroup group, boolean persistent, LocalizedString caption, Cycle cycle, ImList<Integer> resInterfaces, ImRevMap<Integer, Integer> mapPrev, Object... params) {
+    protected <P extends PropertyInterface> LP addRProp(AbstractGroup group, boolean persistent, LocalizedString caption, Cycle cycle, ImList<Integer> resInterfaces, ImRevMap<Integer, Integer> mapPrev, Object... params) {
         int innerCount = getIntNum(params);
         final ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(innerCount);
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplement = readCalcImplements(innerInterfaces, params);
@@ -1179,7 +1179,7 @@ public abstract class LogicsModule {
         if(cycle==Cycle.NO)
             addConstraint(property.getConstrainedProperty(), false);
 
-        LCP result = new LCP<>(property, interfaces);
+        LP result = new LP<>(property, interfaces);
 //        if (convertToLogical)
 //            return addJProp(group, name, false, caption, baseLM.notZero, directLI(addProperty(null, persistent, result)));
 //        else
@@ -1188,7 +1188,7 @@ public abstract class LogicsModule {
 
     // ------------------- Ungroup property ----------------- //
 
-    protected <L extends PropertyInterface> LCP addUGProp(AbstractGroup group, boolean persistent, boolean over, LocalizedString caption, int intCount, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
+    protected <L extends PropertyInterface> LP addUGProp(AbstractGroup group, boolean persistent, boolean over, LocalizedString caption, int intCount, boolean ascending, boolean ordersNotNull, LP<L> ungroup, Object... params) {
         int partNum = ungroup.listInterfaces.size();
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         final ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
@@ -1203,7 +1203,7 @@ public abstract class LogicsModule {
                 new PropertyImplement<>(ungroup.property, groupImplement), orders, ordersNotNull, restriction, over), innerInterfaces);
     }
 
-    protected <L extends PropertyInterface> LCP addPGProp(AbstractGroup group, boolean persistent, int roundlen, boolean roundfirst, LocalizedString caption, int intCount, List<ResolveClassSet> explicitInnerClasses, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
+    protected <L extends PropertyInterface> LP addPGProp(AbstractGroup group, boolean persistent, int roundlen, boolean roundfirst, LocalizedString caption, int intCount, List<ResolveClassSet> explicitInnerClasses, boolean ascending, boolean ordersNotNull, LP<L> ungroup, Object... params) {
         int partNum = ungroup.listInterfaces.size();
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         final ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
@@ -1284,12 +1284,12 @@ public abstract class LogicsModule {
 
     // ------------------- GROUP SUM ----------------- //
 
-    protected LCP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, LocalizedString caption, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    protected LP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, LocalizedString caption, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         return addSGProp(group, persistent, notZero, caption, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
 
-    protected <T extends PropertyInterface> LCP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, LocalizedString caption, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> implement) {
+    protected <T extends PropertyInterface> LP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, LocalizedString caption, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> implement) {
         ImList<PropertyInterfaceImplement<T>> listImplements = implement.subList(1, implement.size());
         SumGroupProperty<T> property = new SumGroupProperty<>(caption, innerInterfaces.getSet(), listImplements, implement.get(0));
         property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
@@ -1299,11 +1299,11 @@ public abstract class LogicsModule {
 
     // ------------------- Override property ----------------- //
 
-    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, boolean persist, LocalizedString caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    public <T extends PropertyInterface> LP addOGProp(AbstractGroup group, boolean persist, LocalizedString caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         return addOGProp(group, persist, caption, type, numOrders, ordersNotNull, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
-    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, boolean persist, LocalizedString caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+    public <T extends PropertyInterface> LP addOGProp(AbstractGroup group, boolean persist, LocalizedString caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
         int numExprs = type.numExprs();
         ImList<PropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
         ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(numExprs, numExprs + numOrders).toOrderSet().toOrderMap(descending);
@@ -1316,17 +1316,17 @@ public abstract class LogicsModule {
 
     // ------------------- GROUP MAX ----------------- //
 
-    protected LCP addMGProp(AbstractGroup group, boolean persist, LocalizedString caption, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    protected LP addMGProp(AbstractGroup group, boolean persist, LocalizedString caption, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         return addMGProp(group, persist, new LocalizedString[]{caption}, 1, min, interfaces, explicitInnerClasses, params)[0];
     }
 
-    protected LCP[] addMGProp(AbstractGroup group, boolean persist, LocalizedString[] captions, int exprs, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    protected LP[] addMGProp(AbstractGroup group, boolean persist, LocalizedString[] captions, int exprs, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         return addMGProp(group, persist, captions, exprs, min, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
 
-    protected <T extends PropertyInterface> LCP[] addMGProp(AbstractGroup group, boolean persist, LocalizedString[] captions, int exprs, boolean min, ImOrderSet<T> listInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
-        LCP[] result = new LCP[exprs];
+    protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, LocalizedString[] captions, int exprs, boolean min, ImOrderSet<T> listInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+        LP[] result = new LP[exprs];
 
         MSet<Property> mOverridePersist = SetFact.mSet();
 
@@ -1342,9 +1342,9 @@ public abstract class LogicsModule {
         if (persist) {
             if (overridePersist.size() > 0) {
                 for (Property property : overridePersist)
-                    addProperty(null, new LCP(property));
+                    addProperty(null, new LP(property));
             } else
-                for (LCP lcp : result) addPersistent(lcp);
+                for (LP lcp : result) addPersistent(lcp);
         }
 
         return result;
@@ -1352,12 +1352,12 @@ public abstract class LogicsModule {
 
     // ------------------- CGProperty ----------------- //
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LCP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, LCP<PropertyInterface> dataProp, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, LP<PropertyInterface> dataProp, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         return addCGProp(group, checkChange, persistent, caption, dataProp, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LCP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, LCP<P> dataProp, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, LP<P> dataProp, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
         CycleGroupProperty<T, P> property = new CycleGroupProperty<>(caption, innerInterfaces.getSet(), listImplements.subList(1, listImplements.size()).getCol(), listImplements.get(0), dataProp == null ? null : dataProp.property);
         property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
@@ -1371,12 +1371,12 @@ public abstract class LogicsModule {
 
     // ------------------- GROUP AGGR ----------------- //
 
-    protected LCP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... props) {
+    protected LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... props) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         return addAGProp(group, checkChange, persistent, caption, noConstraint, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, props));
     }
 
-    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LCP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
         T aggrInterface = (T) listImplements.get(0);
         PropertyInterfaceImplement<T> whereProp = listImplements.get(1);
         ImList<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(2, listImplements.size());
@@ -1387,7 +1387,7 @@ public abstract class LogicsModule {
     }
 
     // чисто для generics
-    private <T extends PropertyInterface<T>> LCP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T> property, ImList<PropertyInterfaceImplement<T>> listImplements) {
+    private <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T> property, ImList<PropertyInterfaceImplement<T>> listImplements) {
         // нужно добавить ограничение на уникальность
         if(!noConstraint)
             addConstraint(property.getConstrainedProperty(), checkChange);
@@ -1397,11 +1397,11 @@ public abstract class LogicsModule {
 
     // ------------------- UNION ----------------- //
 
-    protected LCP addUProp(AbstractGroup group, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
+    protected LP addUProp(AbstractGroup group, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
         return addUProp(group, false, caption, unionType, null, coeffs, params);
     }
 
-    protected LCP addUProp(AbstractGroup group, boolean persistent, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
+    protected LP addUProp(AbstractGroup group, boolean persistent, LocalizedString caption, Union unionType, String separator, int[] coeffs, Object... params) {
 
         assert (unionType==Union.SUM)==(coeffs!=null);
         assert (unionType==Union.STRING_AGG)==(separator !=null);
@@ -1442,16 +1442,16 @@ public abstract class LogicsModule {
                 break;
         }
 
-        return addProperty(group, new LCP<>(property, listInterfaces));
+        return addProperty(group, new LP<>(property, listInterfaces));
     }
 
-    protected LCP addAUProp(AbstractGroup group, boolean persistent, boolean isExclusive, boolean isChecked, boolean isLast, CaseUnionProperty.Type type, LocalizedString caption, ValueClass valueClass, ValueClass... interfaces) {
+    protected LP addAUProp(AbstractGroup group, boolean persistent, boolean isExclusive, boolean isChecked, boolean isLast, CaseUnionProperty.Type type, LocalizedString caption, ValueClass valueClass, ValueClass... interfaces) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.length);
-        return addProperty(group, new LCP<>(
+        return addProperty(group, new LP<>(
                 new CaseUnionProperty(isExclusive, isChecked, isLast, type, caption, listInterfaces, valueClass, listInterfaces.mapList(ListFact.toList(interfaces))), listInterfaces));
     }
 
-    protected LCP addCaseUProp(AbstractGroup group, boolean persistent, LocalizedString caption, boolean isExclusive, Object... params) {
+    protected LP addCaseUProp(AbstractGroup group, boolean persistent, LocalizedString caption, boolean isExclusive, Object... params) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(getIntNum(params));
         MList<CalcCase<UnionProperty.Interface>> mListCases = ListFact.mList();
         ImList<PropertyMapImplement<?,UnionProperty.Interface>> mapImplements = (ImList<PropertyMapImplement<?, UnionProperty.Interface>>) (ImList<?>) readCalcImplements(listInterfaces, params);
@@ -1460,7 +1460,7 @@ public abstract class LogicsModule {
         if (mapImplements.size() % 2 != 0)
             mListCases.add(new CalcCase<>(new PropertyMapImplement<PropertyInterface, UnionProperty.Interface>((Property<PropertyInterface>) baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
 
-        return addProperty(group, new LCP<>(new CaseUnionProperty(caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
+        return addProperty(group, new LP<>(new CaseUnionProperty(caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
     }
 
     public static List<ResolveClassSet> getSignatureForLogProperty(List<ResolveClassSet> basePropSignature, SystemEventsLogicsModule systemEventsLM) {
@@ -1469,7 +1469,7 @@ public abstract class LogicsModule {
         return signature;
     }
     
-    public static List<ResolveClassSet> getSignatureForLogProperty(LCP lp, SystemEventsLogicsModule systemEventsLM) {
+    public static List<ResolveClassSet> getSignatureForLogProperty(LP lp, SystemEventsLogicsModule systemEventsLM) {
         List<ResolveClassSet> signature = new ArrayList<>();
         for (ValueClass cls : lp.getInterfaceClasses(ClassType.logPolicy)) {
             signature.add(cls.getResolveSet());
@@ -1477,7 +1477,7 @@ public abstract class LogicsModule {
         return getSignatureForLogProperty(signature, systemEventsLM);    
     } 
 
-    public static String getLogPropertyCN(LCP<?> lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {
+    public static String getLogPropertyCN(LP<?> lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {
         String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
         String name = getLogPropertyName(namespace, lp.property.getName());
 
@@ -1485,7 +1485,7 @@ public abstract class LogicsModule {
         return PropertyCanonicalNameUtils.createName(logNamespace, name, signature);
     }
 
-    private static String getLogPropertyName(LCP<?> lp, boolean drop) {
+    private static String getLogPropertyName(LP<?> lp, boolean drop) {
         String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
         return getLogPropertyName(namespace, lp.property.getName(), drop);
     }
@@ -1506,29 +1506,29 @@ public abstract class LogicsModule {
     // ------------------- Loggable ----------------- //
     // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #48),
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
-    public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
+    public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp) {
         assert lp.property.isNamed();
         String name = getLogPropertyName(lp, false);
         
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         
-        LCP result = addDCProp(LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
+        LP result = addDCProp(LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
 
         makePropertyPublic(result, name, signature);
         ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
         return result;
     }
 
-    public LCP addLDropProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
+    public LP addLDropProp(SystemEventsLogicsModule systemEventsLM, LP lp) {
         String name = getLogPropertyName(lp, true);
 
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
 
-        LCP equalsProperty = addJProp(baseLM.equals2, 1, systemEventsLM.currentSession);
-        LCP logDropProperty = addLogProp(LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
+        LP equalsProperty = addJProp(baseLM.equals2, 1, systemEventsLM.currentSession);
+        LP logDropProperty = addLogProp(LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
 
-        LCP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
-        LCP whereProperty = addJProp(baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
+        LP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
+        LP whereProperty = addJProp(baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
 
         Object[] params = directLI(baseLM.vtrue);
         if (whereProperty != null) {
@@ -1542,18 +1542,18 @@ public abstract class LogicsModule {
         return logDropProperty;
     }
 
-    private LCP toLogical(LCP property) {
+    private LP toLogical(LP property) {
         return addJProp(baseLM.and1, add(baseLM.vtrue, directLI(property)));
     }
 
-    private LCP convertToLogical(LCP property) {
+    private LP convertToLogical(LP property) {
         if (!isLogical(property)) {
             property = toLogical(property);
         }
         return property;
     }
 
-    protected boolean isLogical(LCP<?> property) {
+    protected boolean isLogical(LP<?> property) {
         if(property == null)
             return false;
 
@@ -1561,18 +1561,18 @@ public abstract class LogicsModule {
         return type != null && type.equals(LogicalClass.instance);
     }
 
-    public LCP addLWhereProp(LCP logValueProperty, LCP logDropProperty) {
+    public LP addLWhereProp(LP logValueProperty, LP logDropProperty) {
         return addUProp(null, LocalizedString.NONAME, Union.OVERRIDE, null, null, add(directLI(convertToLogical(logValueProperty)), directLI(logDropProperty)));
                 
     }
 
     // ------------------- CONCAT ----------------- //
 
-    protected LCP addSFUProp(int intNum, String separator) {
+    protected LP addSFUProp(int intNum, String separator) {
         return addSFUProp(separator, intNum);
     }
 
-    protected LCP addSFUProp(String separator, int intNum) {
+    protected LP addSFUProp(String separator, int intNum) {
         return addUProp(null, false, LocalizedString.create("{logics.join}"), Union.STRING_AGG, separator, null, getUParams(intNum));
     }
 
@@ -1608,17 +1608,17 @@ public abstract class LogicsModule {
     // ------------------- CONFIRM ----------------- //
 
 
-    protected LA addConfirmAProp(String title, boolean yesNo, LCP targetProp, Object... params) {
+    protected LA addConfirmAProp(String title, boolean yesNo, LP targetProp, Object... params) {
         return addConfirmAProp(null, LocalizedString.NONAME, title, yesNo, targetProp, params);
     }
 
-    protected LA addConfirmAProp(AbstractGroup group, LocalizedString caption, String title, boolean yesNo, LCP<?> targetProp, Object... params) {
+    protected LA addConfirmAProp(AbstractGroup group, LocalizedString caption, String title, boolean yesNo, LP<?> targetProp, Object... params) {
         return addJoinAProp(group, caption, addConfirmAProp(title, yesNo, targetProp != null ? targetProp.property : null), params);
     }
 
     @IdentityStrongLazy
     protected LA addConfirmAProp(String title, boolean yesNo, Property property) {
-        return addProperty(null, new LA(new ConfirmActionProperty(LocalizedString.create("Confirm"), title, yesNo, property != null ? new LCP(property) : null)));
+        return addProperty(null, new LA(new ConfirmActionProperty(LocalizedString.create("Confirm"), title, yesNo, property != null ? new LP(property) : null)));
     }
 
     // ------------------- Async Update Action ----------------- //
@@ -1642,7 +1642,7 @@ public abstract class LogicsModule {
 
     // ------------------- EVAL ----------------- //
 
-    public LA addEvalAProp(LCP<?> scriptSource, List<LCP<?>> params, boolean action) {
+    public LA addEvalAProp(LP<?> scriptSource, List<LP<?>> params, boolean action) {
         return addAProp(null, new EvalActionProperty(LocalizedString.NONAME, scriptSource, params, action));
     }
 
@@ -1657,11 +1657,11 @@ public abstract class LogicsModule {
         }
     }
     
-    public LA addDrillDownAProp(LCP<?> property) {
+    public LA addDrillDownAProp(LP<?> property) {
         return addDDAProp(property);
     }
 
-    public LA<?> addDDAProp(LCP property) {
+    public LA<?> addDDAProp(LP property) {
         assert property.property.getReflectionOrderInterfaces().equals(property.listInterfaces);
         if (property.property instanceof Property && ((Property) property.property).supportsDrillDown())
             return addDDAProp((Property) property.property);
@@ -1702,13 +1702,13 @@ public abstract class LogicsModule {
         return baseLM.getAddedObjectProperty();
     }
 
-    public LCP getIsActiveFormProperty() {
+    public LP getIsActiveFormProperty() {
         return baseLM.getIsActiveFormProperty();
     }
 
     // ---------------------- VALUE ---------------------- //
 
-    public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         return baseLM.getObjValueProp(formEntity, obj);
     }
 
@@ -1790,7 +1790,7 @@ public abstract class LogicsModule {
 //                                    addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm
 //                            addedProperty)); // FORM EDIT class OBJECT prm
 //
-//        LCP formResultProperty = baseLM.getFormResultProperty();
+//        LP formResultProperty = baseLM.getFormResultProperty();
 //        result = addListAProp(LocalizedString.create("{logics.add}"), result,
 //                addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
 //                        (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.getEmpty()), // THEN (contextObject != null) SEEK exf.o prm
@@ -1853,12 +1853,12 @@ public abstract class LogicsModule {
         return addProperty(group, new LA(prop));
     }
 
-    public LCP addProp(Property<? extends PropertyInterface> prop) {
+    public LP addProp(Property<? extends PropertyInterface> prop) {
         return addProp(null, prop);
     }
 
-    public LCP addProp(AbstractGroup group, Property<? extends PropertyInterface> prop) {
-        return addProperty(group, new LCP(prop));
+    public LP addProp(AbstractGroup group, Property<? extends PropertyInterface> prop) {
+        return addProperty(group, new LP(prop));
     }
 
     protected void addPropertyToGroup(ActionOrProperty<?> property, AbstractGroup group) {
@@ -1875,7 +1875,7 @@ public abstract class LogicsModule {
         return lp;
     }
 
-    public void addIndex(LCP lp) {
+    public void addIndex(LP lp) {
         ImOrderSet<String> keyNames = SetFact.toOrderExclSet(lp.listInterfaces.size(), new GetIndex<String>() {
             public String getMapValue(int i) {
                 return "key"+i;
@@ -1884,7 +1884,7 @@ public abstract class LogicsModule {
     }
 
     public void addIndex(Property property) {
-        addIndex(new LCP(property));
+        addIndex(new LP(property));
     }
 
     public void addIndex(ImOrderSet<String> keyNames, Object... params) {
@@ -1892,11 +1892,11 @@ public abstract class LogicsModule {
         ThreadLocalContext.getDbManager().addIndex(index);
     }
 
-    protected void addPersistent(LCP lp) {
+    protected void addPersistent(LP lp) {
         addPersistent((AggregateProperty) lp.property, null);
     }
 
-    protected void addPersistent(LCP lp, ImplementTable table) {
+    protected void addPersistent(LP lp, ImplementTable table) {
         addPersistent((AggregateProperty) lp.property, table);
     }
 
@@ -1909,22 +1909,22 @@ public abstract class LogicsModule {
 
     // нужен так как иначе начинает sID расширять
 
-    public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp, PrevScope scope) {
+    public <T extends PropertyInterface> LP<T> addOldProp(LP<T> lp, PrevScope scope) {
         return baseLM.addOldProp(lp, scope);
     }
 
-    public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type, PrevScope scope) {
+    public <T extends PropertyInterface> LP<T> addCHProp(LP<T> lp, IncrementType type, PrevScope scope) {
         return baseLM.addCHProp(lp, type, scope);
     }
 
-    public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
+    public <T extends PropertyInterface> LP addClassProp(LP<T> lp) {
         return baseLM.addClassProp(lp);
     }
 
     @IdentityStrongLazy // для ID
-    public LCP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
+    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
         PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
-        return addProperty(null, new LCP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
+        return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
     
     protected LA addOSAProp(ObjectEntity object, UpdateType type, Object... params) {
@@ -1975,11 +1975,11 @@ public abstract class LogicsModule {
         addConstraint(addProp(property), messageProperty == null ? null : addProp(messageProperty), checkChange, debugPoint);
     }
 
-    public void addConstraint(LCP<?> lp, LCP<?> messageLP, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
+    public void addConstraint(LP<?> lp, LP<?> messageLP, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
         addConstraint(lp, messageLP, (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
     }
 
-    protected void addConstraint(LCP<?> lp, LCP<?> messageLP, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
+    protected void addConstraint(LP<?> lp, LP<?> messageLP, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
         if(!(lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
         // assert что lp уже в списке properties
@@ -2068,11 +2068,11 @@ public abstract class LogicsModule {
             action.addAfterAspect(aspect);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LCP<T> first, LCP<L> second, Integer... mapping) {
+    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, Integer... mapping) {
         follows(first, null, ListFact.toList(new PropertyFollowsDebug(true, null), new PropertyFollowsDebug(false, null)), Event.APPLY, second, mapping);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(final LCP<T> first, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event, LCP<L> second, final Integer... mapping) {
+    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(final LP<T> first, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event, LP<L> second, final Integer... mapping) {
         addFollows(first.property, new PropertyMapImplement<>(second.property, second.getRevMap(first.listInterfaces, mapping)), debugPoint, options, event);
     }
 
@@ -2114,18 +2114,18 @@ public abstract class LogicsModule {
         addConstraint(constraint, false, debugPoint);
     }
 
-    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, ImList<PropertyFollowsDebug> resolve) {
+    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, ImList<PropertyFollowsDebug> resolve) {
         setNotNull(lp, null, Event.APPLY, resolve);
     }
 
-    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, DebugInfo.DebugPoint debugPoint, Event event, ImList<PropertyFollowsDebug> resolve) {
+    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, DebugInfo.DebugPoint debugPoint, Event event, ImList<PropertyFollowsDebug> resolve) {
         setNotNull(lp.property, debugPoint, resolve, event);
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<P, T> mapActionListImplement(LA<P> property, ImOrderSet<T> mapList) {
         return new ActionMapImplement<>(property.property, getMapping(property, mapList));
     }
-    public static <P extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<P, T> mapCalcListImplement(LCP<P> property, ImOrderSet<T> mapList) {
+    public static <P extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<P, T> mapCalcListImplement(LP<P> property, ImOrderSet<T> mapList) {
         return new PropertyMapImplement<>(property.property, getMapping(property, mapList));
     }
 
@@ -2133,25 +2133,25 @@ public abstract class LogicsModule {
         return property.getRevMap(mapList);
     }
 
-    protected void makeUserLoggable(SystemEventsLogicsModule systemEventsLM, LCP... lps) {
-        for (LCP lp : lps)
+    protected void makeUserLoggable(SystemEventsLogicsModule systemEventsLM, LP... lps) {
+        for (LP lp : lps)
             lp.makeUserLoggable(this, systemEventsLM);
     }
 
-    public LCP not() {
+    public LP not() {
         return baseLM.not();
     }
 
     // получает свойство is
-    public LCP<?> is(ValueClass valueClass) {
+    public LP<?> is(ValueClass valueClass) {
         return baseLM.is(valueClass);
     }
 
-    public LCP object(ValueClass valueClass) {
+    public LP object(ValueClass valueClass) {
         return baseLM.object(valueClass);
     }
 
-    protected LCP and(boolean... nots) {
+    protected LP and(boolean... nots) {
         return addAFProp(nots);
     }
 
@@ -2295,7 +2295,7 @@ public abstract class LogicsModule {
 
     public List<ResolveClassSet> getParamClasses(LAP<?, ?> lp) {
         List<ResolveClassSet> paramClasses;
-        if (lp instanceof LCP && locals.containsKey(lp)) {
+        if (lp instanceof LP && locals.containsKey(lp)) {
             paramClasses = locals.get(lp).signature;
         } else {
             paramClasses = propClasses.get(lp);
@@ -2312,7 +2312,7 @@ public abstract class LogicsModule {
         return new RegularFilterGroupEntity(id, getVersion());
     }
 
-    public void addFormHintsIncrementTable(FormEntity form, LCP... lps) {
+    public void addFormHintsIncrementTable(FormEntity form, LP... lps) {
         form.addHintsIncrementTable(getVersion(), lps);
     }
 
@@ -2362,30 +2362,30 @@ public abstract class LogicsModule {
         }
     }
 
-    protected <P extends PropertyInterface> void addLocal(LCP<P> lcp, LocalPropertyData data) {
+    protected <P extends PropertyInterface> void addLocal(LP<P> lcp, LocalPropertyData data) {
         locals.put(lcp, data);
         lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces, baseLM.getDBNamingPolicy());
     }
 
-    protected void removeLocal(LCP<?> lcp) {
+    protected void removeLocal(LP<?> lcp) {
         assert locals.containsKey(lcp);
         locals.remove(lcp);
     }
 
-    public List<ResolveClassSet> getLocalSignature(LCP<?> lcp) {
+    public List<ResolveClassSet> getLocalSignature(LP<?> lcp) {
         assert locals.containsKey(lcp);
         return locals.get(lcp).signature;
     }
 
-    public Map<LCP<?>, LocalPropertyData> getLocals() {
+    public Map<LP<?>, LocalPropertyData> getLocals() {
         return locals;
     }
 
-    public LCP<?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+    public LP<?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
         return resolveManager.findProperty(compoundName, params);
     }
 
-    public LCP<?> resolveAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+    public LP<?> resolveAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
         return resolveManager.findAbstractProperty(compoundName, params, prioritizeNotEquals);
     }
 

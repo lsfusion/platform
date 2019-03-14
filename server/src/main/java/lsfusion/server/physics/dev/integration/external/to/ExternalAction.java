@@ -14,10 +14,10 @@ import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -30,7 +30,7 @@ public abstract class ExternalAction extends SystemAction {
 
     protected ImOrderSet<PropertyInterface> paramInterfaces;
     protected ImMap<PropertyInterface, Type> paramTypes;
-    protected ImList<LCP> targetPropList;
+    protected ImList<LP> targetPropList;
 
     protected static String getTransformedText(ExecutionContext<PropertyInterface> context, PropertyInterface param) {
         return ScriptingLogicsModule.transformFormulaText((String)context.getKeyObject(param), getParamName("$1"));
@@ -41,7 +41,7 @@ public abstract class ExternalAction extends SystemAction {
         return "qxprm" + prmID + "nx";
     }
 
-    public ExternalAction(int exParams, ImList<Type> params, ImList<LCP> targetPropList) {
+    public ExternalAction(int exParams, ImList<Type> params, ImList<LP> targetPropList) {
         super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + exParams, new GetIndex<PropertyInterface>() {
             @Override
             public PropertyInterface getMapValue(int i) {
@@ -100,10 +100,10 @@ public abstract class ExternalAction extends SystemAction {
         return connectionString;
     }
 
-    public static ImMap<Property, Boolean> getChangeExtProps(ImList<LCP> props) {
-        return props.mapListValues(new GetValue<Property, LCP>() {
-            public Property getMapValue(LCP value) {
-                return ((LCP<?>)value).property;
+    public static ImMap<Property, Boolean> getChangeExtProps(ImList<LP> props) {
+        return props.mapListValues(new GetValue<Property, LP>() {
+            public Property getMapValue(LP value) {
+                return ((LP<?>)value).property;
             }}).toOrderSet().getSet().toMap(false);
     }
     @Override

@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;
 import lsfusion.server.base.context.ThreadLocalContext;
@@ -22,7 +23,6 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.classes.ObjectClassField;
 import lsfusion.server.logics.property.classes.ObjectClassProperty;
@@ -105,7 +105,7 @@ public class BaseClass extends AbstractCustomClass {
         ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, version);
     }
 
-    public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
+    public void fillIDs(DataSession session, LP staticCaption, LP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<>();
         Set<Long> usedIds = new HashSet<>();
 

@@ -12,7 +12,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -62,7 +62,7 @@ public class ProcessTemplateActionProperty extends ScriptingAction {
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
 
                     String[] names = new String[]{"key", "value", "isTable", "rowSeparator", "isNumeric", "format"};
-                    LCP[] properties = findProperties("key[TemplateEntry]", "value[TemplateEntry]", "isTable[TemplateEntry]",
+                    LP[] properties = findProperties("key[TemplateEntry]", "value[TemplateEntry]", "isTable[TemplateEntry]",
                             "rowSeparator[TemplateEntry]", "isNumeric[TemplateEntry]", "format[TemplateEntry]");
                     for (int j = 0; j < properties.length; j++) {
                         templateEntryQuery.addProperty(names[j], properties[j].getExpr(context.getModifier(), templateEntryExpr));

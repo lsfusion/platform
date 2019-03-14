@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -19,7 +20,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
@@ -51,13 +51,13 @@ public class ExternalHTTPActionProperty extends ExternalAction {
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
-    private LCP<?> headersProperty;
-    private LCP<?> cookiesProperty;
-    private LCP headersToProperty;
-    private LCP cookiesToProperty;
+    private LP<?> headersProperty;
+    private LP<?> cookiesProperty;
+    private LP headersToProperty;
+    private LP cookiesToProperty;
 
-    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList,
-                                      LCP headersProperty, LCP cookiesProperty, LCP headersToProperty, LCP cookiesToProperty, boolean hasBodyUrl) {
+    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
+                                      LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
         super(hasBodyUrl ? 2 : 1, params, targetPropList);
 
         this.method = method;
@@ -239,9 +239,9 @@ public class ExternalHTTPActionProperty extends ExternalAction {
         return objectValues;
     }
 
-    public static void fillResults(ExecutionContext context, ImList<LCP> targetPropList, ImList<Object> results, Charset charset) throws ParseException, SQLException, SQLHandledException {
+    public static void fillResults(ExecutionContext context, ImList<LP> targetPropList, ImList<Object> results, Charset charset) throws ParseException, SQLException, SQLHandledException {
         for(int i = 0, size = targetPropList.size(); i < size; i++) {
-            LCP<?> targetProp = targetPropList.get(i);
+            LP<?> targetProp = targetPropList.get(i);
 
             Object value = null;;
             if (i < results.size()) // для недостающих записываем null
@@ -251,7 +251,7 @@ public class ExternalHTTPActionProperty extends ExternalAction {
         }
     }
 
-    public static ImMap<String, String> readPropertyValues(ExecutionEnvironment env, LCP<?> property) throws SQLException, SQLHandledException {
+    public static ImMap<String, String> readPropertyValues(ExecutionEnvironment env, LP<?> property) throws SQLException, SQLHandledException {
         return BaseUtils.immutableCast(property.readAll(env).mapKeys(new GetValue<String, ImList<Object>>() {
             public String getMapValue(ImList<Object> value) {
                 return (String) value.single();
@@ -259,7 +259,7 @@ public class ExternalHTTPActionProperty extends ExternalAction {
         }));
     }
 
-    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, LCP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
         Property<P> prop = property.property;
         P name = property.listInterfaces.get(0);
 

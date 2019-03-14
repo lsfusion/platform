@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.backup;
 
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,7 +10,7 @@ import java.util.Set;
 public class CustomRestoreTable {
     Set<String> replaceOnlyNullSet;
     List<String> sqlProperties;
-    List<LCP> lpProperties;
+    List<LP> lpProperties;
     List<String> keys;
     List<String> classKeys;
     boolean restoreObjects;

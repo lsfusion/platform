@@ -6,10 +6,10 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.action.ExecutionContext;
@@ -21,12 +21,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class EvalActionProperty<P extends PropertyInterface> extends SystemExplicitAction {
-    private final LCP<P> source;
-    private final List<LCP<P>> params;
+    private final LP<P> source;
+    private final List<LP<P>> params;
     private final ImMap<P, ClassPropertyInterface> mapSource;
     private boolean action;
 
-    public EvalActionProperty(LocalizedString caption, LCP<P> source, List<LCP<P>> params, boolean action) {
+    public EvalActionProperty(LocalizedString caption, LP<P> source, List<LP<P>> params, boolean action) {
         super(caption, source.getInterfaceClasses(ClassType.aroundPolicy));
         mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;
@@ -42,7 +42,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     private ObjectValue[] getParams(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue[] result = new ObjectValue[params.size()];
         for(int i = 0; i < params.size(); i++) {
-            LCP<P> param = params.get(i);
+            LP<P> param = params.get(i);
             ImMap<P, ? extends ObjectValue> paramToData = param.listInterfaces.mapSet(getOrderInterfaces()).join(context.getKeys());
             result[i] = param.readClasses(context, (DataObject[]) param.listInterfaces.mapList(paramToData).toArray(new DataObject[param.listInterfaces.size()]));
         }

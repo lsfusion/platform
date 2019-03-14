@@ -11,7 +11,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.language.ScriptingAction;
@@ -32,7 +32,7 @@ public abstract class FormToolbarActionProperty extends ScriptingAction {
     public FormToolbarActionProperty(ScriptingLogicsModule lm, final boolean showCaption) {
         super(lm);
 
-        final LCP propertyCaption = getShowIf();
+        final LP propertyCaption = getShowIf();
         drawOptions.addProcessor(new DefaultProcessor() {
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                 if (propertyCaption != null) {
@@ -51,7 +51,7 @@ public abstract class FormToolbarActionProperty extends ScriptingAction {
         return null;
     }
 
-    protected LCP getShowIf() {
+    protected LP getShowIf() {
         return null;
     }
 
@@ -61,7 +61,7 @@ public abstract class FormToolbarActionProperty extends ScriptingAction {
         return enableIf == null ? super.getWhereProperty(recursive) : enableIf.getImplement();
     }
 
-    static LCP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {
+    static LP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {
         assert showIfs != null && showIfNots != null && showIfs.length == showIfNots.length;
 
         MList<PropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(showIfs.length);
@@ -73,7 +73,7 @@ public abstract class FormToolbarActionProperty extends ScriptingAction {
         }
 
         PropertyMapImplement showIfImplement = createAnd(SetFact.<PropertyInterface>EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
-        return new LCP(showIfImplement.property);
+        return new LP(showIfImplement.property);
     }
 
     @Override

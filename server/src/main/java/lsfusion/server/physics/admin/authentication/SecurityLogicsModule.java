@@ -1,11 +1,11 @@
 package lsfusion.server.physics.admin.authentication;
 
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
@@ -17,43 +17,43 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
     
-    protected LCP<?> idPolicy;
-    protected LCP<?> policyId;
-    protected LCP<?> namePolicy;
-    public LCP descriptionPolicy;
-    public LCP orderUserPolicy;
+    protected LP<?> idPolicy;
+    protected LP<?> policyId;
+    protected LP<?> namePolicy;
+    public LP descriptionPolicy;
+    public LP orderUserPolicy;
 
-    public LCP forbidDuplicateFormsCustomUser;
-    public LCP permitViewAllPropertyUser;
-    public LCP forbidChangeAllPropertyRole;
-    public LCP forbidViewAllPropertyUser;
-    public LCP permitChangeAllPropertyUser;
-    public LCP forbidViewUserProperty;
-    public LCP forbidChangeUserProperty;
+    public LP forbidDuplicateFormsCustomUser;
+    public LP permitViewAllPropertyUser;
+    public LP forbidChangeAllPropertyRole;
+    public LP forbidViewAllPropertyUser;
+    public LP permitChangeAllPropertyUser;
+    public LP forbidViewUserProperty;
+    public LP forbidChangeUserProperty;
 
-    public LCP forbidViewAllSetupPolicies;
-    public LCP forbidChangeAllSetupPolicies;
+    public LP forbidViewAllSetupPolicies;
+    public LP forbidChangeAllSetupPolicies;
 
-    public LCP permitNavigatorElement;
-    public LCP forbidNavigatorElement;
+    public LP permitNavigatorElement;
+    public LP forbidNavigatorElement;
 
-    public LCP forbidAllFormsUser;
-    public LCP permitAllFormsUser;
-    public LCP permitUserNavigatorElement;
-    public LCP forbidUserNavigatorElement;
+    public LP forbidAllFormsUser;
+    public LP permitAllFormsUser;
+    public LP permitUserNavigatorElement;
+    public LP forbidUserNavigatorElement;
 
-    public LCP cachePropertyPolicyUser;
+    public LP cachePropertyPolicyUser;
 
-    public LCP sidUserRole;
-    public LCP userRoleSID;
-    public LCP nameUserRole;
-    public LCP mainRoleCustomUser;
-    public LCP hasUserRole;
+    public LP sidUserRole;
+    public LP userRoleSID;
+    public LP nameUserRole;
+    public LP mainRoleCustomUser;
+    public LP hasUserRole;
 
-    public LCP currentUserMainRoleName;
-    public LCP nameMainRoleUser;
-    public LCP currentUserTransactTimeout;
-    public LCP transactTimeoutUser;
+    public LP currentUserMainRoleName;
+    public LP nameMainRoleUser;
+    public LP currentUserTransactTimeout;
+    public LP transactTimeoutUser;
 
     public LA copyAccess;    
 

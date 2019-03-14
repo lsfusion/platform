@@ -1,10 +1,10 @@
 package lsfusion.server.physics.admin.service;
 
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.env.IsServerRestartingFormulaProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
@@ -23,26 +23,26 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     public LA makeProcessDumpAction;
 
-    public LCP isServerRestarting;
+    public LP isServerRestarting;
     public LA restartServerAction;
     public LA runGarbageCollector;
     public LA cancelRestartServerAction;
 
-    public LCP singleTransaction;
+    public LP singleTransaction;
 
     public LA recalculateMultiThreadAction;
     public LA recalculateClassesMultiThreadAction;
     public LA recalculateFollowsMultiThreadAction;
     public LA recalculateStatsMultiThreadAction;
 
-    public LCP overrideSelectedRowBackgroundColor;
-    public LCP overrideSelectedRowBorderColor;
-    public LCP overrideSelectedCellBackgroundColor;
-    public LCP overrideFocusedCellBackgroundColor;
-    public LCP overrideFocusedCellBorderColor;
+    public LP overrideSelectedRowBackgroundColor;
+    public LP overrideSelectedRowBorderColor;
+    public LP overrideSelectedCellBackgroundColor;
+    public LP overrideFocusedCellBackgroundColor;
+    public LP overrideFocusedCellBorderColor;
 
-    public LCP nameSetting;
-    public LCP overBaseValueSettingUserRole;
+    public LP nameSetting;
+    public LP overBaseValueSettingUserRole;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/system/Service.lsf"), "/system/Service.lsf", baseLM, BL);
@@ -50,7 +50,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        isServerRestarting = addProperty(null, new LCP<>(new IsServerRestartingFormulaProperty()));
+        isServerRestarting = addProperty(null, new LP<>(new IsServerRestartingFormulaProperty()));
         makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<ResolveClassSet>());
         super.initMainLogic();
         // Управление сервером базы данных

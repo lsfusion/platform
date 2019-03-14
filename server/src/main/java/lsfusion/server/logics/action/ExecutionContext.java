@@ -13,6 +13,7 @@ import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
@@ -53,7 +54,6 @@ import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.SecurityManager;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.remote.RMIManager;
@@ -119,8 +119,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return result.addExcl(super.getAllParamsWithValuesInStack());
         }
 
-        public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
-            ImSet<Pair<LCP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+        public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
+            ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
 
             if(locals != null)
                 result = result.addExcl(locals);
@@ -170,7 +170,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     // debug info 
     private ImRevMap<String, P> paramsToInterfaces;
     private ImMap<String, String> paramsToFQN;
-    private ImSet<Pair<LCP, List<ResolveClassSet>>> locals;
+    private ImSet<Pair<LP, List<ResolveClassSet>>> locals;
     private boolean newDebugStack;
     private Processor<ImMap<String, ObjectValue>> watcher;
     
@@ -208,7 +208,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this.paramsToInterfaces = paramsToInterfaces;
     }
 
-    public void setLocals(ImSet<Pair<LCP, List<ResolveClassSet>>> locals) {
+    public void setLocals(ImSet<Pair<LP, List<ResolveClassSet>>> locals) {
         this.locals = locals;
     }
     
@@ -262,8 +262,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return result;
     }
 
-    public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
-        ImSet<Pair<LCP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
+        ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
         
         if(locals != null)
             result = result.addExcl(locals);

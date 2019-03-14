@@ -9,6 +9,7 @@ import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.action.ReportPath;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.form.stat.report.PrintMessageData;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
@@ -22,7 +23,6 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.stat.StaticFormDataManager;
 import lsfusion.server.logics.form.stat.report.StaticFormReportManager;
@@ -35,15 +35,15 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     private PropertyInterfaceImplement<ClassPropertyInterface> printerProperty;
     private PropertyInterfaceImplement<ClassPropertyInterface> passwordProperty;
 
-    private final LCP formPageCount;
+    private final LP formPageCount;
 
     private final boolean syncType; // static interactive
     
     private final boolean removeNullsAndDuplicates; // print message
 
-    private final LCP sheetNameProperty;
+    private final LP sheetNameProperty;
 
-    protected final LCP<?> exportFile; // nullable
+    protected final LP<?> exportFile; // nullable
 
     public PrintActionProperty(LocalizedString caption,
                                FormSelector<O> form,
@@ -53,10 +53,10 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                boolean syncType,
                                Integer top,
                                Property password,
-                               LCP sheetNameProperty,
-                               LCP exportFile,
+                               LP sheetNameProperty,
+                               LP exportFile,
                                Property printer,
-                               LCP formPageCount, boolean removeNullsAndDuplicates) {
+                               LP formPageCount, boolean removeNullsAndDuplicates) {
         super(caption, form, objectsToSet, nulls, staticType, top, password, printer);
 
         this.formPageCount = formPageCount;

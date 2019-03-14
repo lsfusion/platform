@@ -14,6 +14,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -42,7 +43,6 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.WatchActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -84,28 +84,28 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public AbstractGroup recognizeGroup;
     
     // properties
-    public LCP groeq2;
-    public LCP lsoeq2;
-    public LCP greater2, less2;
-    public LCP object1, and1, andNot1;
-    public LCP equals2, diff2;
-    public LCP like2;
-    public LCP sum;
-    public LCP subtract;
-    public LCP multiply;
-    public LCP divide;
+    public LP groeq2;
+    public LP lsoeq2;
+    public LP greater2, less2;
+    public LP object1, and1, andNot1;
+    public LP equals2, diff2;
+    public LP like2;
+    public LP sum;
+    public LP subtract;
+    public LP multiply;
+    public LP divide;
 
-//    public LCP string2SP, istring2SP, string3SP, istring3SP, string4SP, istring4SP, string5SP, istring5SP;
-//    public LCP string2, istring2, string3, istring3;
-//    public LCP string5CM;
-//    public LCP ustring2CM, ustring2SP, ustring3SP, ustring4SP, ustring5SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
-//    public LCP ustring2CR;
+//    public LP string2SP, istring2SP, string3SP, istring3SP, string4SP, istring4SP, string5SP, istring5SP;
+//    public LP string2, istring2, string3, istring3;
+//    public LP string5CM;
+//    public LP ustring2CM, ustring2SP, ustring3SP, ustring4SP, ustring5SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
+//    public LP ustring2CR;
 
-    public LCP vtrue;
-    public LCP vzero;
-    public LCP vnull;
+    public LP vtrue;
+    public LP vzero;
+    public LP vnull;
 
-    public LCP minus;
+    public LP minus;
 
     private LA watch;
 
@@ -116,24 +116,24 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LA delete;
 
     public LA<?> apply;
-    public LCP<?> canceled;
+    public LP<?> canceled;
     public LA<?> onStarted;
 
-    public LCP statusHttp;
+    public LP statusHttp;
     
-    public LCP<?> headers;
-    public LCP<?> cookies;
-    public LCP<?> headersTo;
-    public LCP<?> cookiesTo;
-    public LCP<?> url;
-    public LCP<?> query;
-    public LCP<?> host;
-    public LCP<?> port;
-    public LCP<?> exportName;
+    public LP<?> headers;
+    public LP<?> cookies;
+    public LP<?> headersTo;
+    public LP<?> cookiesTo;
+    public LP<?> url;
+    public LP<?> query;
+    public LP<?> host;
+    public LP<?> port;
+    public LP<?> exportName;
 
-    public LCP messageCaughtException;
-    public LCP javaStackTraceCaughtException;
-    public LCP lsfStackTraceCaughtException;
+    public LP messageCaughtException;
+    public LP javaStackTraceCaughtException;
+    public LP lsfStackTraceCaughtException;
 
     public LA<?> empty;
 
@@ -141,40 +141,40 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LA flowReturn;
     public LA<?> cancel;
     
-    public LCP<?> sessionOwners;
+    public LP<?> sessionOwners;
 
-    public LCP objectClass;
-    public LCP random;
-    public LCP objectClassName;
-    public LCP staticName;
-    public LCP staticCaption;
-    public LCP statCustomObjectClass; 
+    public LP objectClass;
+    public LP random;
+    public LP objectClassName;
+    public LP staticName;
+    public LP staticCaption;
+    public LP statCustomObjectClass; 
 
-    private LCP addedObject;
-    private LCP applyCanceled;
-    private LCP requestCanceled;
-    private LCP requestPushed;
-    private LCP isActiveForm;
-    public LCP formPageCount;
-    public LCP exportFile;
-    public LCP importFile;
-    public LCP readFile;
+    private LP addedObject;
+    private LP applyCanceled;
+    private LP requestCanceled;
+    private LP requestPushed;
+    private LP isActiveForm;
+    public LP formPageCount;
+    public LP exportFile;
+    public LP importFile;
+    public LP readFile;
 
-    public LCP getExtension;
+    public LP getExtension;
 
-    public LCP<?> imported;
-    public LCP importedString;
+    public LP<?> imported;
+    public LP importedString;
 
-    public LCP isServer;
+    public LP isServer;
 
-    public LCP defaultBackgroundColor;
-    public LCP defaultOverrideBackgroundColor;
-    public LCP defaultForegroundColor;
-    public LCP defaultOverrideForegroundColor;
+    public LP defaultBackgroundColor;
+    public LP defaultOverrideBackgroundColor;
+    public LP defaultForegroundColor;
+    public LP defaultOverrideForegroundColor;
 
-    public LCP reportRowHeight, reportCharWidth, reportToStretch;
+    public LP reportRowHeight, reportCharWidth, reportToStretch;
 
-    public LCP networkPath;
+    public LP networkPath;
 
     public AbstractGroup privateGroup;
 
@@ -307,7 +307,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LCP<?> getCanceled() {
+    public LP<?> getCanceled() {
         try {
             return findProperty("canceled[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -316,7 +316,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LCP<?> getApplyMessage() {
+    public LP<?> getApplyMessage() {
         try {
             return findProperty("applyMessage[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -394,7 +394,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0.0);
-        vnull = addProperty(null, new LCP<>(NullValueProperty.instance));
+        vnull = addProperty(null, new LP<>(NullValueProperty.instance));
 
         if(ActionPropertyDebugger.getInstance().isEnabled()) {
             watch = addProperty(null, new LA<>(WatchActionProperty.instance));
@@ -475,7 +475,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     private void initNativeProperties() {
-        objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
+        objectClass = addProperty(null, new LP<>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
         random = addRMProp(LocalizedString.create("Random"));
         makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
@@ -501,8 +501,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     private void addClassDataPropsToGroup() {
-        for (List<LCP<?>> propList : namedProperties.values()) {
-            for (LCP<?> lcp : propList) {
+        for (List<LP<?>> propList : namedProperties.values()) {
+            for (LP<?> lcp : propList) {
                 if (lcp.property instanceof ClassDataProperty) {
                     addProperty(null, lcp);
                 }
@@ -601,34 +601,34 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public LCP is(ValueClass valueClass) {
-        return addProperty(null, new LCP<>(valueClass.getProperty()));
+    public LP is(ValueClass valueClass) {
+        return addProperty(null, new LP<>(valueClass.getProperty()));
     }
     @Override
     @IdentityStrongLazy
-    public LCP object(ValueClass valueClass) {
-        LCP lcp = addJProp(and1, 1, is(valueClass), 1);
+    public LP object(ValueClass valueClass) {
+        LP lcp = addJProp(and1, 1, is(valueClass), 1);
         ((JoinProperty)lcp.property).objectPropertyClass = valueClass;
         return lcp;
     }
 
     @Override
     @IdentityStrongLazy
-    public LCP not() {
-        return addProperty(null, new LCP<>(NotFormulaProperty.instance));
+    public LP not() {
+        return addProperty(null, new LP<>(NotFormulaProperty.instance));
     }
 
     @Override
     @IdentityStrongLazy
-    protected <P extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
+    protected <P extends PropertyInterface> LP addCProp(StaticClass valueClass, Object value) {
         PropertyRevImplement<P, Integer> implement = (PropertyRevImplement<P, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
-        return addProperty(null, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+        return addProperty(null, new LP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override
     @IdentityStrongLazy
-    protected LCP addCastProp(DataClass castClass) {
-        return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
+    protected LP addCastProp(DataClass castClass) {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
 
     @Override
@@ -689,53 +689,53 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 );
     }
 
-    protected LCP<?> getLCPByUniqueName(String name) {
-        Iterable<LCP<?>> result = getNamedProperties(name);
+    protected LP<?> getLCPByUniqueName(String name) {
+        Iterable<LP<?>> result = getNamedProperties(name);
         assert size(result) == 1;
         return result.iterator().next();
     }
 
-    public LCP getApplyCanceledProperty() {
+    public LP getApplyCanceledProperty() {
         return applyCanceled;
     }
 
-    public LCP getRequestCanceledProperty() {
+    public LP getRequestCanceledProperty() {
         return requestCanceled;
     }
 
-    private LCP getRequestPushedProperty() {
+    private LP getRequestPushedProperty() {
         return requestPushed;
     }
 
     @Override
-    public LCP getIsActiveFormProperty() {
+    public LP getIsActiveFormProperty() {
         return isActiveForm;
     }
 
     @Override
     @IdentityStrongLazy
-    public <P extends PropertyInterface> LCP<P> addOldProp(LCP<P> lp, PrevScope scope) {
-        return addProperty(null, new LCP<>(lp.property.getOld(scope), lp.listInterfaces));
+    public <P extends PropertyInterface> LP<P> addOldProp(LP<P> lp, PrevScope scope) {
+        return addProperty(null, new LP<>(lp.property.getOld(scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
-    public <P extends PropertyInterface> LCP<P> addCHProp(LCP<P> lp, IncrementType type, PrevScope scope) {
+    public <P extends PropertyInterface> LP<P> addCHProp(LP<P> lp, IncrementType type, PrevScope scope) {
         addOldProp(lp, scope); // регистрируем старое значение в списке свойств
-        return addProperty(null, new LCP<>(lp.property.getChanged(type, scope), lp.listInterfaces));
+        return addProperty(null, new LP<>(lp.property.getChanged(type, scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
-    public <P extends PropertyInterface> LCP addClassProp(LCP<P> lp) {
+    public <P extends PropertyInterface> LP addClassProp(LP<P> lp) {
         return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
     }
 
     @Override
     @IdentityStrongLazy
-    public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+    public LP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         ValueClass cls = obj.baseClass;
-        LCP result = addProp(new ObjectValueProperty(cls, obj));
+        LP result = addProp(new ObjectValueProperty(cls, obj));
         if (formEntity.getCanonicalName() != null && !obj.noClasses()) {
             String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID(); // issue #47
             makePropertyPublic(result, name, cls.getResolveSet());
@@ -827,7 +827,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     public <R> R pushPopRequestValue(boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        LCP requestPushed = getRequestPushedProperty();
+        LP requestPushed = getRequestPushedProperty();
         Object prevValue = requestPushed.read(env);
         requestPushed.change(push ? true : null, env);
         try {
@@ -868,7 +868,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
     
     public void writeRequested(ImList<RequestResult> requestResults, ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        LCP<?> requestCanceledProperty = getRequestCanceledProperty();
+        LP<?> requestCanceledProperty = getRequestCanceledProperty();
         if (requestResults == null) {
             requestCanceledProperty.change(true, env);
         } else {

@@ -14,13 +14,13 @@ import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 
 import java.io.IOException;
 
 public class ExportDBFActionProperty<O extends ObjectSelector> extends ExportPlainActionProperty<O> {
 
-    public ExportDBFActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
+    public ExportDBFActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, String charset) {
         super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset != null ? charset : ExternalUtils.defaultDBFCharset);
     }
 

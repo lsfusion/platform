@@ -17,7 +17,7 @@ import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -32,7 +32,7 @@ public class ExternalDBActionProperty extends ExternalAction {
     private PropertyInterface connectionString;
     private PropertyInterface exec;
 
-    public ExternalDBActionProperty(ImList<Type> params, ImList<LCP> targetPropList) {
+    public ExternalDBActionProperty(ImList<Type> params, ImList<LP> targetPropList) {
         super(2, params, targetPropList); // строка подключения, команда + параметры
 
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();

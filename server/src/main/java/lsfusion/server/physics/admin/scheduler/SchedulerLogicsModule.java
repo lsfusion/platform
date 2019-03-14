@@ -1,10 +1,10 @@
 package lsfusion.server.physics.admin.scheduler;
 
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
@@ -16,38 +16,38 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass scheduledTaskLog;
     public ConcreteCustomClass scheduledClientTaskLog;
 
-    public LCP nameScheduledTask;
-    public LCP runAtStartScheduledTask;
-    public LCP startDateScheduledTask;
-    public LCP timeFromScheduledTask;
-    public LCP timeToScheduledTask;
-    public LCP periodScheduledTask;
-    public LCP schedulerStartTypeScheduledTask;
-    public LCP activeScheduledTask;
-    public LCP daysOfWeekScheduledTask;
-    public LCP daysOfMonthScheduledTask;
-    public LCP ignoreExceptionsScheduledTaskDetail;
-    public LCP activeScheduledTaskDetail;
-    public LCP orderScheduledTaskDetail;
-    public LCP scriptScheduledTaskDetail;
-    public LCP timeoutScheduledTaskDetail;
-    public LCP parameterScheduledTaskDetail;
-    public LCP scheduledTaskScheduledTaskDetail;
+    public LP nameScheduledTask;
+    public LP runAtStartScheduledTask;
+    public LP startDateScheduledTask;
+    public LP timeFromScheduledTask;
+    public LP timeToScheduledTask;
+    public LP periodScheduledTask;
+    public LP schedulerStartTypeScheduledTask;
+    public LP activeScheduledTask;
+    public LP daysOfWeekScheduledTask;
+    public LP daysOfMonthScheduledTask;
+    public LP ignoreExceptionsScheduledTaskDetail;
+    public LP activeScheduledTaskDetail;
+    public LP orderScheduledTaskDetail;
+    public LP scriptScheduledTaskDetail;
+    public LP timeoutScheduledTaskDetail;
+    public LP parameterScheduledTaskDetail;
+    public LP scheduledTaskScheduledTaskDetail;
 
-    public LCP canonicalNameActionScheduledTaskDetail;
+    public LP canonicalNameActionScheduledTaskDetail;
     
-    public LCP resultScheduledTaskLog;
-    public LCP exceptionOccurredScheduledTaskLog;
-    public LCP propertyScheduledTaskLog;
-    public LCP dateScheduledTaskLog;
-    public LCP scheduledTaskScheduledTaskLog;
-    public LCP scheduledTaskLogScheduledClientTaskLog;
-    public LCP messageScheduledClientTaskLog;
-    public LCP lsfStackScheduledClientTaskLog;
-    public LCP failedScheduledClientTaskLog;
-    public LCP dateScheduledClientTaskLog;
+    public LP resultScheduledTaskLog;
+    public LP exceptionOccurredScheduledTaskLog;
+    public LP propertyScheduledTaskLog;
+    public LP dateScheduledTaskLog;
+    public LP scheduledTaskScheduledTaskLog;
+    public LP scheduledTaskLogScheduledClientTaskLog;
+    public LP messageScheduledClientTaskLog;
+    public LP lsfStackScheduledClientTaskLog;
+    public LP failedScheduledClientTaskLog;
+    public LP dateScheduledClientTaskLog;
 
-    public LCP scriptText;
+    public LP scriptText;
     public LA evalScript;
     
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {

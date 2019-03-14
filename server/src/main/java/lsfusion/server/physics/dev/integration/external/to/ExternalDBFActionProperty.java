@@ -9,7 +9,7 @@ import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -34,7 +34,7 @@ public class ExternalDBFActionProperty extends ExternalAction {
 
     private String charset;
 
-    public ExternalDBFActionProperty(ImList<Type> params, String charset, ImList<LCP> targetPropList) {
+    public ExternalDBFActionProperty(ImList<Type> params, String charset, ImList<LP> targetPropList) {
         super(1, params, targetPropList);
 
         this.connectionString = getOrderInterfaces().get(0);

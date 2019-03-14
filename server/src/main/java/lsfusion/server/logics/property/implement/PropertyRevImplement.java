@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.Property;
@@ -55,7 +55,7 @@ public class PropertyRevImplement<P extends PropertyInterface, T> implements Pro
         return property.toString() + " {" + mapping + "}";
     }
 
-    public LCP createLP(ImOrderSet<T> listInterfaces) {
-        return new LCP<>(property, listInterfaces.mapOrder(mapping.reverse()));
+    public LP createLP(ImOrderSet<T> listInterfaces) {
+        return new LP<>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 }

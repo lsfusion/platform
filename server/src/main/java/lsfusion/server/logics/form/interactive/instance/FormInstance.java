@@ -24,6 +24,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.user.*;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
@@ -88,7 +89,6 @@ import lsfusion.server.logics.form.stat.report.StaticFormReportManager;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.*;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
@@ -1403,7 +1403,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
         ExecutionEnvironment env = getSession();
-        LCP<?> sessionOwners = BL.LM.sessionOwners;
+        LP<?> sessionOwners = BL.LM.sessionOwners;
         int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(env), 0);
         int newOwners = prevOwners + (set ? 1 : -1);
         sessionOwners.change(newOwners == 0 ? null : newOwners, env);

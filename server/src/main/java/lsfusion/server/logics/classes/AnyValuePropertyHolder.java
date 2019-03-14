@@ -14,7 +14,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.link.*;
@@ -25,50 +25,50 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import java.sql.SQLException;
 
 public class AnyValuePropertyHolder {
-    private final LCP objectProperty;
-    private final LCP stringProperty;
-    private final LCP varStringProperty;
-    private final LCP textProperty;
-    private final LCP intProperty;
-    private final LCP longProperty;
-    private final LCP doubleProperty;
-    private final LCP numericProperty;
-    private final LCP yearProperty;
-    private final LCP dateTimeProperty;
-    private final LCP logicalProperty;
-    private final LCP dateProperty;
-    private final LCP timeProperty;
-    private final LCP colorProperty;
-    private final LCP wordFileProperty;
-    private final LCP imageFileProperty;
-    private final LCP pdfFileProperty;
-    private final LCP rawFileProperty;
-    private final LCP customFileProperty;
-    private final LCP excelFileProperty;
-    private final LCP csvFileProperty;
-    private final LCP htmlFileProperty;
-    private final LCP jsonFileProperty;
-    private final LCP xmlFileProperty;
-    private final LCP tableFileProperty;
-    private final LCP wordLinkProperty;
-    private final LCP imageLinkProperty;
-    private final LCP pdfLinkProperty;
-    private final LCP rawLinkProperty;
-    private final LCP customLinkProperty;
-    private final LCP excelLinkProperty;
-    private final LCP csvLinkProperty;
-    private final LCP htmlLinkProperty;
-    private final LCP jsonLinkProperty;
-    private final LCP xmlLinkProperty;
-    private final LCP tableLinkProperty;
+    private final LP objectProperty;
+    private final LP stringProperty;
+    private final LP varStringProperty;
+    private final LP textProperty;
+    private final LP intProperty;
+    private final LP longProperty;
+    private final LP doubleProperty;
+    private final LP numericProperty;
+    private final LP yearProperty;
+    private final LP dateTimeProperty;
+    private final LP logicalProperty;
+    private final LP dateProperty;
+    private final LP timeProperty;
+    private final LP colorProperty;
+    private final LP wordFileProperty;
+    private final LP imageFileProperty;
+    private final LP pdfFileProperty;
+    private final LP rawFileProperty;
+    private final LP customFileProperty;
+    private final LP excelFileProperty;
+    private final LP csvFileProperty;
+    private final LP htmlFileProperty;
+    private final LP jsonFileProperty;
+    private final LP xmlFileProperty;
+    private final LP tableFileProperty;
+    private final LP wordLinkProperty;
+    private final LP imageLinkProperty;
+    private final LP pdfLinkProperty;
+    private final LP rawLinkProperty;
+    private final LP customLinkProperty;
+    private final LP excelLinkProperty;
+    private final LP csvLinkProperty;
+    private final LP htmlLinkProperty;
+    private final LP jsonLinkProperty;
+    private final LP xmlLinkProperty;
+    private final LP tableLinkProperty;
 
-    public AnyValuePropertyHolder(LCP<?> objectProperty, LCP<?> stringProperty, LCP<?> varStringProperty, LCP<?> textProperty, LCP<?> intProperty, LCP<?> longProperty, LCP<?> doubleProperty, LCP<?> numericProperty, LCP<?> yearProperty,
-                                  LCP<?> dateTimeProperty, LCP<?> logicalProperty, LCP<?> dateProperty, LCP<?> timeProperty, LCP<?> colorProperty, LCP<?> wordFileProperty, LCP<?> imageFileProperty,
-                                  LCP<?> pdfFileProperty, LCP<?> rawFileProperty, LCP<?> customFileProperty, LCP<?> excelFileProperty, 
-                                  LCP<?> csvFileProperty, LCP<?> htmlFileProperty, LCP<?> jsonFileProperty, LCP<?> xmlFileProperty, LCP<?> tableFileProperty,
-                                  LCP<?> wordLinkProperty, LCP<?> imageLinkProperty, LCP<?> pdfLinkProperty, LCP<?> rawLinkProperty, 
-                                  LCP<?> customLinkProperty, LCP<?> excelLinkProperty, LCP<?> csvLinkProperty, 
-                                  LCP<?> htmlLinkProperty, LCP<?> jsonLinkProperty, LCP<?> xmlLinkProperty, LCP<?> tableLinkProperty) {
+    public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> varStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
+                                  LP<?> dateTimeProperty, LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
+                                  LP<?> pdfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
+                                  LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
+                                  LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> rawLinkProperty,
+                                  LP<?> customLinkProperty, LP<?> excelLinkProperty, LP<?> csvLinkProperty,
+                                  LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && varStringProperty.property.getType().getCompatible(StringClass.get(1))!=null
@@ -145,7 +145,7 @@ public class AnyValuePropertyHolder {
         this.tableLinkProperty = tableLinkProperty;
     }
 
-    public LCP<?> getLCP(Type valueType) {
+    public LP<?> getLCP(Type valueType) {
         if (valueType instanceof ObjectType) {
             return objectProperty;
         } else if (valueType instanceof StringClass) {
@@ -244,8 +244,8 @@ public class AnyValuePropertyHolder {
                 csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
                 logicalProperty, colorProperty, objectProperty 
-        ).mapOrderSetValues(new GetValue<SessionDataProperty, LCP>() {
-            public SessionDataProperty getMapValue(LCP value) {
+        ).mapOrderSetValues(new GetValue<SessionDataProperty, LP>() {
+            public SessionDataProperty getMapValue(LP value) {
                 return (SessionDataProperty) value.property;
             }
         });

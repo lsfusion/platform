@@ -8,7 +8,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 
@@ -26,7 +26,7 @@ public abstract class BaseClassFormEntity extends FormEntity {
         ImList<PropertyClassImplement> idProps = LM.getRecognizeGroup().getProperties(cls, version);
         if(idProps.isEmpty()) {
             // we need at least one prop (otherwise there will be no grid in dialog)
-            LCP objValueProp = LM.getObjValueProp(this, object);
+            LP objValueProp = LM.getObjValueProp(this, object);
             PropertyDrawEntity objectValue = addPropertyDraw(objValueProp, version, object);
             objectValue.setEditType(PropertyEditType.READONLY);
         }

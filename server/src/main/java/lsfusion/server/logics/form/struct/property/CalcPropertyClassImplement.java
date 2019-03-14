@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.struct.property;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.property.Property;
@@ -18,11 +18,11 @@ public class CalcPropertyClassImplement<P extends PropertyInterface> extends Pro
         super(property, mapping);
     }
 
-    public LCP createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
+    public LP createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
         Property<P> createProp = property;
         if(prev && property.noOld())
             createProp = createProp.getOld(PrevScope.DB); 
-        return new LCP<>(createProp, listInterfaces.mapOrder(mapping.reverse()));
+        return new LP<>(createProp, listInterfaces.mapOrder(mapping.reverse()));
     }
 
     public CalcPropertyClassImplement<P> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap) {

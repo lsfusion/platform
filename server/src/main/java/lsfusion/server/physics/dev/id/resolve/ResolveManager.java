@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.id.resolve;
 
 import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -9,7 +10,6 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.language.MetaCodeFragment;
 import lsfusion.server.physics.exec.table.ImplementTable;
@@ -19,12 +19,12 @@ import java.util.List;
 public class ResolveManager {
     public LogicsModule LM;
     
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> directLCPResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> abstractLCPResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> abstractNotEqualLCPResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> indirectLCPResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> directLocalsResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> indirectLocalsResolver;
+    private ElementResolver<LP<?>, List<ResolveClassSet>> directLCPResolver;
+    private ElementResolver<LP<?>, List<ResolveClassSet>> abstractLCPResolver;
+    private ElementResolver<LP<?>, List<ResolveClassSet>> abstractNotEqualLCPResolver;
+    private ElementResolver<LP<?>, List<ResolveClassSet>> indirectLCPResolver;
+    private ElementResolver<LP<?>, List<ResolveClassSet>> directLocalsResolver;
+    private ElementResolver<LP<?>, List<ResolveClassSet>> indirectLocalsResolver;
 
     private ElementResolver<LA<?>, List<ResolveClassSet>> directLAPResolver;
     private ElementResolver<LA<?>, List<ResolveClassSet>> abstractLAPResolver;
@@ -46,10 +46,10 @@ public class ResolveManager {
     }
 
     private void initializeResolvers() {
-        directLCPResolver = new LAPResolver<>(LM, new ModuleLCPFinder(), true, false);
-        abstractLCPResolver = new LAPResolver<>(LM, new ModuleAbstractLCPFinder(), true, false);
-        abstractNotEqualLCPResolver = new LAPResolver<>(LM, new ModuleAbstractLCPFinder(), true, true);
-        indirectLCPResolver = new LAPResolver<>(LM, new ModuleIndirectLCPFinder(), false, false);
+        directLCPResolver = new LAPResolver<>(LM, new ModuleLPFinder(), true, false);
+        abstractLCPResolver = new LAPResolver<>(LM, new ModuleAbstractLPFinder(), true, false);
+        abstractNotEqualLCPResolver = new LAPResolver<>(LM, new ModuleAbstractLPFinder(), true, true);
+        indirectLCPResolver = new LAPResolver<>(LM, new ModuleIndirectLPFinder(), false, false);
         directLocalsResolver = new LAPResolver<>(LM, new ModuleDirectLocalsFinder(), true, false);
         indirectLocalsResolver = new LAPResolver<>(LM, new ModuleIndirectLocalsFinder(), false, false);
         
@@ -67,8 +67,8 @@ public class ResolveManager {
         metaCodeFragmentResolver = new ElementResolver<>(LM, new ModuleMetaCodeFragmentFinder());
     }
     
-    public LCP<?> findProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LCP<?> property = null;
+    public LP<?> findProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LP<?> property = null;
         if (!CompoundNameUtils.hasNamespace(compoundName)) {
             property = findLocalProperty(compoundName, params);
         }
@@ -78,23 +78,23 @@ public class ResolveManager {
         return property;
     }
     
-    private LCP<?> findLocalProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LCP<?> property = directLocalsResolver.resolve(name, params);
+    private LP<?> findLocalProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LP<?> property = directLocalsResolver.resolve(name, params);
         if (property == null) {
             property = indirectLocalsResolver.resolve(name, params);
         }
         return property;
     }
 
-    private LCP<?> findGlobalProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LCP<?> property = directLCPResolver.resolve(compoundName, params);
+    private LP<?> findGlobalProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LP<?> property = directLCPResolver.resolve(compoundName, params);
         if (property == null) {
             property = indirectLCPResolver.resolve(compoundName, params);
         }
         return property;
     }
     
-    public LCP<?> findAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+    public LP<?> findAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
         return getAbstractLCPResolver(prioritizeNotEquals).resolve(compoundName, params);    
     } 
 
@@ -138,7 +138,7 @@ public class ResolveManager {
         return tableResolver.resolve(compoundName);
     }
 
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> getAbstractLCPResolver(boolean prioritizeNotEquals) {
+    private ElementResolver<LP<?>, List<ResolveClassSet>> getAbstractLCPResolver(boolean prioritizeNotEquals) {
         if (prioritizeNotEquals) {
             return abstractNotEqualLCPResolver;
         } else {

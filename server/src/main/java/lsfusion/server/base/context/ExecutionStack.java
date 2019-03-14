@@ -4,10 +4,10 @@ import lsfusion.base.Pair;
 import lsfusion.base.lambda.Processor;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
@@ -19,7 +19,7 @@ public interface ExecutionStack {
 
     ImMap<String, ObjectValue> getAllParamsWithValuesInStack();
 
-    ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack();
+    ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack();
 
     Processor<ImMap<String, ObjectValue>> getWatcher();
 

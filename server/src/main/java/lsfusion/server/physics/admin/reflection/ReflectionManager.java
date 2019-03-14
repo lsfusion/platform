@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
@@ -25,7 +26,6 @@ import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
@@ -128,7 +128,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         synchronizeNavigatorElements(reflectionLM.navigatorAction, true, reflectionLM.isNavigatorAction);
     }
 
-    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, boolean actions, LCP deleteLP) {
+    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, boolean actions, LP deleteLP) {
         startLogger.info("synchronizeNavigatorElements collecting data started");
         
         ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
@@ -502,8 +502,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField statsPropertyField = new ImportField(ValueExpr.COUNTCLASS);
 
         ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
-        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
-        LCP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
+        LP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
+        LP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
         ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(canonicalNamePropertyField));
 
         try {
@@ -600,7 +600,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Parents integration service started");
         ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
-        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
+        LP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
         ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(canonicalNamePropertyField));
         ImportKey<?> keyParent = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(parentSidField));
         List<ImportProperty<?>> properties = new ArrayList<>();

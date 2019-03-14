@@ -7,10 +7,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 
@@ -38,7 +38,7 @@ public abstract class UpExecutionStack implements ExecutionStack {
         return MapFact.EMPTY();
     }
 
-    public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
+    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
         if(upStack != null)
             return upStack.getAllLocalsInStack();
         return SetFact.EMPTY();

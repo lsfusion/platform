@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.language.linear.LCP;
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
@@ -34,7 +34,7 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
-    public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
+    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
         return SetFact.EMPTY();
     }
 

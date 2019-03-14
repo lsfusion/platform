@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.authentication.policy.init;
 
+import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
@@ -17,7 +17,7 @@ public class SetupPropertyPolicyFormsTask extends SetupActionOrPropertyPolicyFor
     }
 
     @Override
-    protected LCP getCanonicalName() {
+    protected LP getCanonicalName() {
         return getBL().reflectionLM.propertyCanonicalName;
     }
 
