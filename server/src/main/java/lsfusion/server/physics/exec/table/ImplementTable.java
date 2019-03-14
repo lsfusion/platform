@@ -31,7 +31,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ReflectionLogicsModule;
+import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;

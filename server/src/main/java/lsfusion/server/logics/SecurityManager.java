@@ -36,6 +36,8 @@ import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
+import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

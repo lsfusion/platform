@@ -3,7 +3,7 @@ package lsfusion.server.language;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.language.resolving.NamespaceElementFinder.FoundItem;
+import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;

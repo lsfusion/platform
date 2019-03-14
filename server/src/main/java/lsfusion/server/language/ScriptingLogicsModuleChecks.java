@@ -11,7 +11,6 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
-import lsfusion.server.language.resolving.*;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -25,6 +24,7 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.language.ScriptingLogicsModule.GroupingType;
 import lsfusion.server.language.ScriptingLogicsModule.LCPWithParams;
 import lsfusion.server.language.ScriptingLogicsModule.TypedParameter;
+import lsfusion.server.physics.dev.id.resolve.*;
 import lsfusion.server.physics.exec.table.ImplementTable;
 
 import java.util.HashSet;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static lsfusion.server.language.resolving.SignatureMatcher.isClassesSoftCompatible;
+import static lsfusion.server.physics.dev.id.resolve.SignatureMatcher.isClassesSoftCompatible;
 
 public class ScriptingLogicsModuleChecks {
     private ScriptingLogicsModule LM;

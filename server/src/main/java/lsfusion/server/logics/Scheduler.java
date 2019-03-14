@@ -26,6 +26,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.base.stack.ExecutionStackAspect;
+import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

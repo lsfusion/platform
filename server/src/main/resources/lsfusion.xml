@@ -144,7 +144,7 @@
     <!--</bean>-->
 
 
-    <bean id="dbManager" class="lsfusion.server.logics.DBManager">
+    <bean id="dbManager" class="lsfusion.server.physics.exec.DBManager">
         <property name="adapter" ref="dataAdapter"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="restartManager" ref="restartManager"/>
@@ -158,7 +158,7 @@
         <property name="defaultUserCountry" value="${user.defaultCountry:#{null}}"/>
     </bean>
 
-    <bean id="reflectionManager" class="lsfusion.server.logics.ReflectionManager">
+    <bean id="reflectionManager" class="lsfusion.server.physics.admin.reflection.ReflectionManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
         
@@ -207,7 +207,7 @@
 
     <!-- Задачи инициализации логики -->
 
-    <bean id="createModulesTask" class="lsfusion.server.logics.tasks.impl.simple.CreateModulesTask">
+    <bean id="createModulesTask" class="lsfusion.server.physics.dev.module.init.CreateModulesTask">
         <property name="dependencies">
             <set>
             </set>
@@ -215,7 +215,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initLocalizerTask" class="lsfusion.server.logics.tasks.impl.simple.InitLocalizerTask">
+    <bean id="initLocalizerTask" class="lsfusion.server.physics.dev.i18n.init.InitLocalizerTask">
         <property name="dependencies">
             <set>
             </set>
@@ -223,7 +223,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initModuleDependenciesTask" class="lsfusion.server.logics.tasks.impl.InitModuleDependenciesTask">
+    <bean id="initModuleDependenciesTask" class="lsfusion.server.physics.dev.module.init.InitModuleDependenciesTask">
         <property name="dependencies">
             <set>
                 <ref bean="createModulesTask"/>
@@ -233,7 +233,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initModuleOrderTask" class="lsfusion.server.logics.tasks.impl.InitModuleOrderTask">
+    <bean id="initModuleOrderTask" class="lsfusion.server.physics.dev.module.init.InitModuleOrderTask">
         <property name="dependencies">
             <set>
                 <ref bean="initModuleDependenciesTask"/>
@@ -242,7 +242,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initMetaAndClassesTask" class="lsfusion.server.logics.tasks.impl.InitMetaAndClassesTask">
+    <bean id="initMetaAndClassesTask" class="lsfusion.server.logics.init.InitMetaAndClassesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initModuleOrderTask"/> <!-- потому как parser не thread safe, поэтому initModuleRestTask -->
@@ -251,7 +251,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initObjectClassTask" class="lsfusion.server.logics.tasks.impl.InitObjectClassTask">
+    <bean id="initObjectClassTask" class="lsfusion.server.logics.classes.init.InitObjectClassTask">
         <property name="dependencies">
             <set>
                 <ref bean="initMetaAndClassesTask"/>
@@ -260,7 +260,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initTablesTask" class="lsfusion.server.logics.tasks.impl.InitTablesTask">
+    <bean id="initTablesTask" class="lsfusion.server.physics.exec.init.InitTablesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initObjectClassTask"/> <!-- нужны все классы, в том числе reflection -->
@@ -269,7 +269,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initClassDataPropsTask" class="lsfusion.server.logics.tasks.impl.InitClassDataPropsTask">
+    <bean id="initClassDataPropsTask" class="lsfusion.server.logics.classes.init.InitClassDataPropsTask">
         <property name="dependencies">
             <set>
                 <ref bean="initTablesTask"/> <!-- нужны таблицы, чтобы знать куда раскладывать признаки классов -->
@@ -278,7 +278,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initFullTablesTask" class="lsfusion.server.logics.tasks.impl.InitFullSingleTablesTask">
+    <bean id="initFullTablesTask" class="lsfusion.server.physics.exec.init.InitFullSingleTablesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initClassDataPropsTask"/> <!-- нужны все классы, в том числе reflection -->
@@ -287,7 +287,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initMainLogicTask" class="lsfusion.server.logics.tasks.impl.InitMainLogicTask">
+    <bean id="initMainLogicTask" class="lsfusion.server.logics.init.InitMainLogicTask">
         <property name="dependencies">
             <set>
                 <ref bean="initFullTablesTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
@@ -296,7 +296,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
     
-    <bean id="checkDuplicateSystemElements" class="lsfusion.server.logics.tasks.impl.simple.CheckDuplicateSystemElementsTask">
+    <bean id="checkDuplicateSystemElements" class="lsfusion.server.logics.init.CheckDuplicateSystemElementsTask">
         <property name="dependencies">
             <set>
                 <ref bean="initMainLogicTask"/> 
@@ -305,7 +305,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
     
-    <bean id="fillImplicitCasesTask" class="lsfusion.server.logics.tasks.impl.simple.FillImplicitCasesTask">
+    <bean id="fillImplicitCasesTask" class="lsfusion.server.logics.property.init.FillImplicitCasesTask">
         <property name="dependencies">
             <set>
                 <ref bean="checkDuplicateSystemElements"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
@@ -314,7 +314,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeCalcAbstractTask" class="lsfusion.server.logics.tasks.impl.FinalizeCalcAbstractTask">
+    <bean id="finalizeCalcAbstractTask" class="lsfusion.server.logics.property.init.FinalizeCalcAbstractTask">
         <property name="dependencies">
             <set>
                 <ref bean="fillImplicitCasesTask"/>
@@ -323,7 +323,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeActionAbstractTask" class="lsfusion.server.logics.tasks.impl.FinalizeActionAbstractTask">
+    <bean id="finalizeActionAbstractTask" class="lsfusion.server.logics.action.init.FinalizeActionAbstractTask">
         <property name="dependencies">
             <set>
                 <ref bean="fillImplicitCasesTask"/>
@@ -332,7 +332,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="markRecursionsTask" class="lsfusion.server.logics.tasks.impl.MarkRecursionsTask">
+    <bean id="markRecursionsTask" class="lsfusion.server.logics.property.init.MarkRecursionsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeActionAbstractTask"/>
@@ -342,7 +342,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="checkAbstractTask" class="lsfusion.server.logics.tasks.impl.CheckAbstractTask">
+    <bean id="checkAbstractTask" class="lsfusion.server.logics.property.init.CheckAbstractTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeCalcAbstractTask"/>
@@ -351,7 +351,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initClassAggrPropsTask" class="lsfusion.server.logics.tasks.impl.InitClassAggrPropsTask">
+    <bean id="initClassAggrPropsTask" class="lsfusion.server.logics.classes.init.InitClassAggrPropsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeCalcAbstractTask"/>
@@ -370,7 +370,7 @@
         </property>
     </bean>
 
-    <bean id="initReflectionEventsTask" class="lsfusion.server.logics.tasks.impl.simple.InitReflectionEventsTask">
+    <bean id="initReflectionEventsTask" class="lsfusion.server.physics.admin.reflection.init.InitReflectionEventsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -379,7 +379,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initClassDataIndicesTask" class="lsfusion.server.logics.tasks.impl.simple.InitClassDataIndicesTask">
+    <bean id="initClassDataIndicesTask" class="lsfusion.server.logics.classes.init.InitClassDataIndicesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/>  <!-- чисто для хака initStats -->
@@ -388,7 +388,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finishLogInitTask" class="lsfusion.server.logics.tasks.impl.FinishLogInitTask">
+    <bean id="finishLogInitTask" class="lsfusion.server.physics.admin.logging.init.FinishLogInitTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как логи - часть reflection'а-->
@@ -397,7 +397,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="setupDrillDownTask" class="lsfusion.server.logics.tasks.impl.SetupDrillDownTask">
+    <bean id="setupDrillDownTask" class="lsfusion.server.logics.form.auto.drilldown.init.SetupDrillDownTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -406,7 +406,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="setupPropertyPolicyFormsTask" class="lsfusion.server.logics.tasks.impl.SetupPropertyPolicyFormsTask">
+    <bean id="setupPropertyPolicyFormsTask" class="lsfusion.server.physics.admin.authentication.policy.init.SetupPropertyPolicyFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -415,7 +415,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="setupActionPolicyFormsTask" class="lsfusion.server.logics.tasks.impl.SetupActionPolicyFormsTask">
+    <bean id="setupActionPolicyFormsTask" class="lsfusion.server.physics.admin.authentication.policy.init.SetupActionPolicyFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="setupDrillDownTask"/> <!-- т.к. нужна возможность настройки policy и для drilldown action'ов -->
@@ -424,7 +424,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="showDependenciesTask" class="lsfusion.server.logics.tasks.impl.simple.ShowDependenciesTask">
+    <bean id="showDependenciesTask" class="lsfusion.server.logics.property.init.ShowDependenciesTask">
         <property name="dependencies">
             <set>
                 <ref bean="setupDrillDownTask"/>
@@ -433,7 +433,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="getPropertyListTask" class="lsfusion.server.logics.tasks.impl.GetPropertyListTask">
+    <bean id="getPropertyListTask" class="lsfusion.server.logics.event.init.GetPropertyListTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как в этом задании добавляются события -->
@@ -443,7 +443,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizePropsTask" class="lsfusion.server.logics.tasks.impl.FinalizePropsTask">
+    <bean id="finalizePropsTask" class="lsfusion.server.logics.property.init.FinalizePropsTask">
         <property name="dependencies">
             <set>
                 <!-- должно быть после всего, что может поменять editAction, contextMenu, etc.-->
@@ -456,7 +456,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeNavigatorElementsTask" class="lsfusion.server.logics.tasks.impl.FinalizeNavigatorElementsTask">
+    <bean id="finalizeNavigatorElementsTask" class="lsfusion.server.logics.navigator.init.FinalizeNavigatorElementsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -465,7 +465,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeFormsTask" class="lsfusion.server.logics.tasks.impl.FinalizeFormsTask">
+    <bean id="finalizeFormsTask" class="lsfusion.server.logics.form.init.FinalizeFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="setupDrillDownTask"/> <!-- drilldown forms-->
@@ -475,7 +475,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
     
-    <bean id="initIndicesTask" class="lsfusion.server.logics.tasks.impl.InitIndicesTask">
+    <bean id="initIndicesTask" class="lsfusion.server.physics.exec.init.InitIndicesTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -484,7 +484,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initDebugTask" class="lsfusion.server.logics.tasks.impl.simple.InitActionDebuggerTask">
+    <bean id="initDebugTask" class="lsfusion.server.physics.dev.debug.init.InitActionDebuggerTask">
         <property name="dependencies">
             <set>
                 <ref bean="checkAbstractTask"/>
@@ -510,7 +510,7 @@
     
     <!-- Задачи инициализации reflection manager'а -->
 
-    <bean id="executeOnStartedTask" class="lsfusion.server.logics.tasks.impl.ExecuteOnStartedTask">
+    <bean id="executeOnStartedTask" class="lsfusion.server.logics.init.ExecuteOnStartedTask">
         <property name="dependencies">
             <set>
                 <ref bean="logLaunchTask"/>
@@ -519,7 +519,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncTablesTask" class="lsfusion.server.logics.tasks.impl.SyncTablesTask">
+    <bean id="syncTablesTask" class="lsfusion.server.physics.admin.reflection.init.SyncTablesTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncPropertyEntitiesTask"/>
@@ -528,7 +528,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncPropertyEntitiesTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyEntitiesTask">
+    <bean id="syncPropertyEntitiesTask" class="lsfusion.server.physics.admin.reflection.init.SyncPropertyEntitiesTask">
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
@@ -537,7 +537,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncPropertyParentsTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyParentsTask">
+    <bean id="syncPropertyParentsTask" class="lsfusion.server.physics.admin.reflection.init.SyncPropertyParentsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncPropertyEntitiesTask"/>
@@ -547,7 +547,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncPropertyDrawsTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyDrawsTask">
+    <bean id="syncPropertyDrawsTask" class="lsfusion.server.physics.admin.reflection.init.SyncPropertyDrawsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
@@ -557,7 +557,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncParentsTask" class="lsfusion.server.logics.tasks.impl.SyncParentsTask">
+    <bean id="syncParentsTask" class="lsfusion.server.physics.admin.reflection.init.SyncParentsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
@@ -566,7 +566,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncNavigatorElementsTask" class="lsfusion.server.logics.tasks.impl.SyncNavigatorElementsTask">
+    <bean id="syncNavigatorElementsTask" class="lsfusion.server.physics.admin.reflection.init.SyncNavigatorElementsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncPropertyEntitiesTask"/> <!--> так как ссылка на живой объект, а не varstring, вообще конечно нужны action'ы но они пока вместе синхронизируются <-->
@@ -577,7 +577,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncFormsTask" class="lsfusion.server.logics.tasks.impl.SyncFormsTask">
+    <bean id="syncFormsTask" class="lsfusion.server.physics.admin.reflection.init.SyncFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
@@ -586,7 +586,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
     
-    <bean id="syncGroupPropertiesTask" class="lsfusion.server.logics.tasks.impl.SyncGroupPropertiesTask">
+    <bean id="syncGroupPropertiesTask" class="lsfusion.server.physics.admin.reflection.init.SyncGroupPropertiesTask">
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
@@ -595,7 +595,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncGroupObjectsTask" class="lsfusion.server.logics.tasks.impl.SyncGroupObjectsTask">
+    <bean id="syncGroupObjectsTask" class="lsfusion.server.physics.admin.reflection.init.SyncGroupObjectsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
@@ -604,7 +604,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="resetConnectionStatusTask" class="lsfusion.server.logics.tasks.impl.ResetConnectionStatusTask">
+    <bean id="resetConnectionStatusTask" class="lsfusion.server.physics.admin.monitor.init.ResetConnectionStatusTask">
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
@@ -613,7 +613,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="logLaunchTask" class="lsfusion.server.logics.tasks.impl.LogLaunchTask">
+    <bean id="logLaunchTask" class="lsfusion.server.physics.admin.logging.init.LogLaunchTask">
         <property name="dependencies">
             <set>
             </set>
@@ -622,7 +622,7 @@
     </bean>
 
     <!-- Не имеет отношения к reflection manager'у, но желательно чтобы выполнялся после export'а remote объекта -->
-    <bean id="prereadCachesTask" class="lsfusion.server.logics.tasks.impl.simple.PrereadCachesTask">
+    <bean id="prereadCachesTask" class="lsfusion.server.logics.init.PrereadCachesTask">
         <property name="dependencies">
             <set>
             </set>
@@ -630,7 +630,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="prereadPropertyCachesTask" class="lsfusion.server.logics.tasks.impl.PrereadPropertyCachesTask">
+    <bean id="prereadPropertyCachesTask" class="lsfusion.server.logics.property.init.PrereadPropertyCachesTask">
         <property name="dependencies">
             <set>
             </set>
@@ -638,7 +638,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="firstRecalculateStatsTask" class="lsfusion.server.logics.tasks.impl.FirstRecalculateStatsTask">
+    <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.init.FirstRecalculateStatsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncTablesTask"/>
@@ -674,7 +674,7 @@
         </property>
     </bean>
 
-    <bean id="writeModulesHashTask" class="lsfusion.server.logics.tasks.impl.simple.WriteModulesHashTask">
+    <bean id="writeModulesHashTask" class="lsfusion.server.logics.init.WriteModulesHashTask">
         <property name="dependencies">
             <set>
             </set>

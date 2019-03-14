@@ -29,6 +29,7 @@ import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RmiServer;

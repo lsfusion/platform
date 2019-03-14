@@ -41,7 +41,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.StringParseInterface;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.DBManager;
+import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.classes.*;

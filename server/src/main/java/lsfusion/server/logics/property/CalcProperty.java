@@ -69,6 +69,7 @@ import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferInfoType;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.physics.exec.table.MapKeysTable;
 import lsfusion.server.physics.exec.table.TableFactory;

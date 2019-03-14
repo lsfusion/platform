@@ -21,6 +21,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.physics.exec.DBManager;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;

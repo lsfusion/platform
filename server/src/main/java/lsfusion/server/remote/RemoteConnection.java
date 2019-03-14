@@ -10,7 +10,7 @@ import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DBManager;
+import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.SecurityManager;
