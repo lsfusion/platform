@@ -361,7 +361,7 @@
     </bean>
 
 
-    <bean id="finalizeTask" class="lsfusion.server.logics.tasks.GroupTask">
+    <bean id="finalizeTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeCalcAbstractTask"/>
@@ -500,7 +500,7 @@
     </bean>
 
     <!-- Самый верхний task -->
-    <bean id="initBLTask" class="lsfusion.server.logics.tasks.GroupTask">
+    <bean id="initBLTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
                 <ref bean="initDebugTask"/>
@@ -654,7 +654,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initReflectionTask" class="lsfusion.server.logics.tasks.GroupTask">
+    <bean id="initReflectionTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncTablesTask"/>

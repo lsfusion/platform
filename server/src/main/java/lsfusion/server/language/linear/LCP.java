@@ -24,7 +24,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;

@@ -3,9 +3,9 @@ package lsfusion.server.logics.form.interactive.design.filter;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;

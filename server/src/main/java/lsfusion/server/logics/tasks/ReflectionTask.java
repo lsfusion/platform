@@ -1,5 +1,7 @@
 package lsfusion.server.logics.tasks;
 
+import lsfusion.server.base.task.PublicTask;
+import lsfusion.server.base.task.Task;
 import lsfusion.server.logics.ReflectionManager;
 
 import java.util.Set;

@@ -18,9 +18,9 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.classes.sets.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.interfaces.NFSet;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.session.DataSession;
 

@@ -4,7 +4,7 @@ import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.base.version.Version;
 
 public class EditFormEntity extends BaseClassFormEntity {
 

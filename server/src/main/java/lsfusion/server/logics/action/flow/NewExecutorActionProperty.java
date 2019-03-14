@@ -9,7 +9,7 @@ import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.tasks.TaskRunner;
+import lsfusion.server.base.task.TaskRunner;
 
 import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;

@@ -28,7 +28,7 @@ grammar LsfLogics;
 	import ValueClass;
 	import LocalNestedType;
 	import lsfusion.server.physics.dev.i18n.LocalizedString;
-	import lsfusion.server.logics.mutables.Version;
+	import Version;
 	import lsfusion.server.language.linear.LP;
 	import lsfusion.server.language.linear.LAP;
 	import lsfusion.server.language.linear.LCP;

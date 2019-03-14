@@ -10,7 +10,7 @@ import org.antlr.runtime.RecognitionException;
 
 import java.util.*;
 
-public abstract class GroupModuleTask extends GroupSingleTask<LogicsModule> {
+public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
 
     protected abstract boolean isGraph();
 

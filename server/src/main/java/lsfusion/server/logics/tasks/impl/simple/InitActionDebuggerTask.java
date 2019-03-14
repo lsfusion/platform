@@ -4,10 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.logics.tasks.GroupSplitTask;
+import lsfusion.server.base.task.GroupSplitTask;
 import lsfusion.server.physics.dev.debug.DebuggerService;
 import lsfusion.server.physics.dev.debug.LocalhostClientSocketFactory;
 import org.apache.log4j.Logger;
@@ -39,7 +38,7 @@ public class InitActionDebuggerTask extends GroupSplitTask<String> {
     }
 
     @Override
-    protected ImSet<String> getObjects(BusinessLogics BL) {
+    protected ImSet<String> getObjects() {
         return groupDelegates.keys();
     }
 

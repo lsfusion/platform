@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.base.version.Version;
 
 public class AbstractCustomClass extends CustomClass {
     

@@ -17,7 +17,7 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 

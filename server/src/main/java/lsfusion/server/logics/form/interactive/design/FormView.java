@@ -26,12 +26,12 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.SIDHandler;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.interfaces.NFOrderMap;
-import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
-import lsfusion.server.logics.mutables.interfaces.NFSet;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.SIDHandler;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFOrderMap;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.interactive.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 

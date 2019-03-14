@@ -4,6 +4,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.base.context.Context;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.data.SQLHandledException;
 import org.antlr.runtime.RecognitionException;
 
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
-public abstract class GroupPropertiesSingleTask<T> extends GroupSingleTask<T> {
+public abstract class GroupPropertiesSingleTask<T> extends BLGroupSingleTask<T> {
     Context threadLocalContext;
 
     private List<String> currentTasks = Collections.synchronizedList(new ArrayList<String>());

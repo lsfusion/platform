@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyGroupCont
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 

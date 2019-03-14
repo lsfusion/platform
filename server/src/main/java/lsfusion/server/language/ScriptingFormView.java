@@ -8,7 +8,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.language.proxy.ViewProxyUtil;
 
 import java.util.List;

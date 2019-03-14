@@ -36,7 +36,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;

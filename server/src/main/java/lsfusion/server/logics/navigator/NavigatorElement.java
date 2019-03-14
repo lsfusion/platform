@@ -14,10 +14,10 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
-import lsfusion.server.logics.mutables.interfaces.NFProperty;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.base.version.interfaces.NFProperty;
 
 import javax.swing.*;
 import java.io.DataOutputStream;
