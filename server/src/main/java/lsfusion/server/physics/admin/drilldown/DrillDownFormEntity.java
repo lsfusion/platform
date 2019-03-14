@@ -18,11 +18,11 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProperty<I>> extends FormEntity {
+public class DrillDownFormEntity<I extends PropertyInterface, P extends Property<I>> extends FormEntity {
     protected final P property;
     protected final LogicsModule LM;
 

@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.NoIncrementProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -39,7 +39,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     }
 
     @Override
-    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<Property> depends, boolean events) {
         if(!noClasses())
             depends.add(getInterfaceClassProperty().property);
     }
@@ -58,7 +58,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         return new DefaultChangeObjectActionProperty(getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
     }
 

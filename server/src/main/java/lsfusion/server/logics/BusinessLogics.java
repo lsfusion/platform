@@ -231,15 +231,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         if(result != 0)
             return result;
 
-        ImList<CalcProperty> depends1 = p1 instanceof ActionProperty ? ((ActionProperty<?>) p1).getSortedUsedProps() : ((CalcProperty<?>)p1).getSortedDepends(); 
-        ImList<CalcProperty> depends2 = p2 instanceof ActionProperty ? ((ActionProperty<?>) p2).getSortedUsedProps() : ((CalcProperty<?>)p2).getSortedDepends();
+        ImList<Property> depends1 = p1 instanceof ActionProperty ? ((ActionProperty<?>) p1).getSortedUsedProps() : ((Property<?>)p1).getSortedDepends(); 
+        ImList<Property> depends2 = p2 instanceof ActionProperty ? ((ActionProperty<?>) p2).getSortedUsedProps() : ((Property<?>)p2).getSortedDepends();
         result = Integer.compare(depends1.size(), depends2.size());
         if(result != 0)
             return result;
 
         for(int i=0,size=depends1.size();i<size;i++) {
-            CalcProperty dp1 = depends1.get(i);
-            CalcProperty dp2 = depends2.get(i);
+            Property dp1 = depends1.get(i);
+            Property dp2 = depends2.get(i);
 
             result = propComparator().compare(dp1, dp2); 
             if(result != 0)
@@ -301,7 +301,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void cleanCaches() {
         startLruCache = null;
         MapCacheAspect.cleanClassCaches();
-        CalcProperty.cleanPropCaches();
+        Property.cleanPropCaches();
 
         startLogger.info("Obsolete caches were successfully cleaned");
     }
@@ -535,23 +535,23 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     // если добавлять CONSTRAINT SETCHANGED не забыть задание в графе запусков перетащить
     public void initClassAggrProps() {
-        MOrderExclSet<CalcProperty> queue = SetFact.mOrderExclSet();
+        MOrderExclSet<Property> queue = SetFact.mOrderExclSet();
 
-        for(CalcProperty calcProperty : getCalcProperties()) {
+        for(Property calcProperty : getCalcProperties()) {
             if(calcProperty.isAggr())
                 queue.exclAdd(calcProperty);
         }
 
-        MAddExclMap<CustomClass, MSet<CalcProperty>> classAggrProps = MapFact.mAddExclMap();
+        MAddExclMap<CustomClass, MSet<Property>> classAggrProps = MapFact.mAddExclMap();
             
         for(int i=0,size=queue.size();i<size;i++) {
-            CalcProperty<?> property = queue.get(i);
+            Property<?> property = queue.get(i);
             ImMap<?, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.materializeChangePolicy);
             if(interfaceClasses.size() == 1) {
                 ValueClass valueClass = interfaceClasses.singleValue();
                 if(valueClass instanceof CustomClass) {
                     CustomClass customClass = (CustomClass) valueClass;
-                    MSet<CalcProperty> mAggrProps = classAggrProps.get(customClass);
+                    MSet<Property> mAggrProps = classAggrProps.get(customClass);
                     if(mAggrProps == null) {
                         mAggrProps = SetFact.mSet();
                         classAggrProps.exclAdd(customClass, mAggrProps);
@@ -561,7 +561,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             }
            
             // все implement'ы тоже помечаем как aggr
-            for(CalcProperty implement : property.getImplements())
+            for(Property implement : property.getImplements())
                 if(!queue.contains(implement)) {
                     queue.exclAdd(implement);
                     size++;
@@ -619,7 +619,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         
         Integer maxStatsProperty = null;
         try {
-            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, CalcProperty.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
         } catch (Exception ignored) {
         }
 
@@ -652,7 +652,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public Integer getStatsProperty (CalcProperty property) {
+    public Integer getStatsProperty (Property property) {
         Integer statsProperty = null;
         if (property instanceof AggregateProperty) {
             StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
@@ -684,12 +684,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private void finishLogInit() {
         // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
         // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь
-        for (CalcProperty property : getCalcProperties()) {
+        for (Property property : getCalcProperties()) {
             finishLogInit(property);
         }
     }
 
-    public <P extends PropertyInterface> void finishLogInit(CalcProperty property) {
+    public <P extends PropertyInterface> void finishLogInit(Property property) {
         if (property.isLoggable()) {
             ActionProperty<P> logActionProperty = (ActionProperty<P>) property.getLogFormProperty().property;
 
@@ -741,15 +741,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return getOrderProperties().getSet();
     }
 
-    public ImOrderSet<CalcProperty> getCalcOrderProperties() {
+    public ImOrderSet<Property> getCalcOrderProperties() {
         return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
             public boolean contains(ActionOrProperty element) {
-                return element instanceof CalcProperty;
+                return element instanceof Property;
             }
         }));
     }
 
-    public ImSet<CalcProperty> getCalcProperties() {
+    public ImSet<Property> getCalcProperties() {
         return getCalcOrderProperties().getSet();
     }
 
@@ -774,8 +774,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImOrderSet<CalcProperty> getAutoSetProperties() {
-        MOrderExclSet<CalcProperty> mResult = SetFact.mOrderExclSet();
+    public ImOrderSet<Property> getAutoSetProperties() {
+        MOrderExclSet<Property> mResult = SetFact.mOrderExclSet();
         for (LCP<?> lp : getNamedProperties()) {
             if (lp.property.autoset)
                 mResult.exclAdd(lp.property);
@@ -799,7 +799,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
 
-        for (CalcProperty<P> property : getAutoSetProperties()) {
+        for (Property<P> property : getAutoSetProperties()) {
             ValueClass interfaceClass = property.getInterfaceClasses(ClassType.autoSetPolicy).singleValue();
             ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
             if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
@@ -925,7 +925,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
         for (ActionProperty property : getActionOrderProperties()) {
             if (!property.getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
-                ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
+                ImMap<Property, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
                     change.getKey(i).addActionChangeProp(new Pair<ActionProperty<?>, LinkType>((ActionProperty<?>) property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
@@ -935,7 +935,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private void dropActionChangeProps() { // для экономии памяти - симметричное удаление ссылок
         for (ActionProperty property : getActionOrderProperties()) {
             if (!property.getEvents().isEmpty()) {
-                ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
+                ImMap<Property, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++)
                     change.getKey(i).dropActionChangeProps();
             }
@@ -983,7 +983,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             return c1.compareTo(c2);
         }
     };
-    public static Comparator<CalcProperty> propComparator() {
+    public static Comparator<Property> propComparator() {
         return BaseUtils.immutableCast(actionOrPropComparator);
     }
     public final static Comparator<Link> linkComparator = new Comparator<Link>() {
@@ -1246,14 +1246,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return false;
     }
 
-    private static boolean findCalcDependency(CalcProperty<?> property, CalcProperty<?> with, HSet<CalcProperty> proceeded, Stack<CalcProperty> path) {
+    private static boolean findCalcDependency(Property<?> property, Property<?> with, HSet<Property> proceeded, Stack<Property> path) {
         if (property.equals(with))
             return true;
 
         if (proceeded.add(property))
             return false;
 
-        for (CalcProperty link : property.getDepends()) {
+        for (Property link : property.getDepends()) {
             path.push(link);
             if (findCalcDependency(link, with, proceeded, path))
                 return true;
@@ -1270,9 +1270,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    private static String outCalcDependency(String direction, CalcProperty property, Stack<CalcProperty> path) {
+    private static String outCalcDependency(String direction, Property property, Stack<Property> path) {
         String result = direction + " : " + property;
-        for (CalcProperty link : path)
+        for (Property link : path)
             result += " " + link;
         return result;
     }
@@ -1291,8 +1291,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         property2 = checkJoinProperty(property2);
 
         String result = findEventDependency(property1, property2, desiredType);
-        if(property1 instanceof CalcProperty && property2 instanceof CalcProperty)
-            result += findCalcDependency((CalcProperty)property1, (CalcProperty)property2);
+        if(property1 instanceof Property && property2 instanceof Property)
+            result += findCalcDependency((Property)property1, (Property)property2);
 
         return result;
     }
@@ -1314,15 +1314,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    public static String findCalcDependency(CalcProperty<?> property1, CalcProperty<?> property2) {
+    public static String findCalcDependency(Property<?> property1, Property<?> property2) {
         String result = "";
 
-        Stack<CalcProperty> forward = new Stack<>();
-        if (findCalcDependency(property1, property2, new HSet<CalcProperty>(), forward))
+        Stack<Property> forward = new Stack<>();
+        if (findCalcDependency(property1, property2, new HSet<Property>(), forward))
             result += outCalcDependency("FORWARD CALC (" + forward.size() + ")", property1, forward) + '\n';
 
-        Stack<CalcProperty> backward = new Stack<>();
-        if (findCalcDependency(property2, property1, new HSet<CalcProperty>(), backward))
+        Stack<Property> backward = new Stack<>();
+        if (findCalcDependency(property2, property1, new HSet<Property>(), backward))
             result += outCalcDependency("BACKWARD CALC (" + backward.size() + ")", property2, backward) + '\n';
 
         if (result.isEmpty())
@@ -1446,8 +1446,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         for(ActionOrProperty property : result) {
             property.dropLinks();
-            if(property instanceof CalcProperty)
-                ((CalcProperty)property).dropActionChangeProps();
+            if(property instanceof Property)
+                ((Property)property).dropActionChangeProps();
         }
         return new Pair<>(result, graph);
     }
@@ -1475,7 +1475,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public AggregateProperty getAggregateStoredProperty(String propertyCanonicalName) {
-        for (CalcProperty property : getStoredProperties()) {
+        for (Property property : getStoredProperties()) {
             if (property instanceof AggregateProperty && propertyCanonicalName.equals(property.getCanonicalName()))
                 return (AggregateProperty) property;
         }
@@ -1484,7 +1484,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public List<AggregateProperty> getRecalculateAggregateStoredProperties(DataSession session, boolean ignoreCheck) throws SQLException, SQLHandledException {
         List<AggregateProperty> result = new ArrayList<>();
-        for (CalcProperty property : getStoredProperties())
+        for (Property property : getStoredProperties())
             if (property instanceof AggregateProperty) {
                 boolean recalculate = ignoreCheck || reflectionLM.notRecalculateTableColumn.read(session, reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.getDBName()))) == null;
                 if(recalculate)
@@ -1493,9 +1493,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return result;
     }
 
-    public ImOrderSet<CalcProperty> getStoredDataProperties(final DataSession dataSession) {
-        return BaseUtils.immutableCast(getStoredProperties().filterOrder(new SFunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty property) {
+    public ImOrderSet<Property> getStoredDataProperties(final DataSession dataSession) {
+        return BaseUtils.immutableCast(getStoredProperties().filterOrder(new SFunctionSet<Property>() {
+            public boolean contains(Property property) {
                 boolean recalculate;
                 try {
                     recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
@@ -1508,10 +1508,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImOrderSet<CalcProperty> getStoredProperties() {
+    public ImOrderSet<Property> getStoredProperties() {
         return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<ActionOrProperty>() {
             public boolean contains(ActionOrProperty property) {
-                return property instanceof CalcProperty && ((CalcProperty) property).isStored();
+                return property instanceof Property && ((Property) property).isStored();
             }
         }));
     }
@@ -1540,9 +1540,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImSet<CalcProperty> getDataChangeEvents() {
+    public ImSet<Property> getDataChangeEvents() {
         ImOrderSet<ActionOrProperty> propertyList = getPropertyList();
-        MSet<CalcProperty> mResult = SetFact.mSetMax(propertyList.size());
+        MSet<Property> mResult = SetFact.mSetMax(propertyList.size());
         for (int i=0,size=propertyList.size();i<size;i++) {
             ActionOrProperty property = propertyList.get(i);
             if (property instanceof DataProperty && ((DataProperty) property).event != null)
@@ -1568,8 +1568,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return session.filterOrderEnv(getApplyEvents(session.applyFilter));
     }
     
-    private static ImSet<CalcProperty> getSingleApplyDepends(CalcProperty<?> fill, Result<Boolean> canBeOutOfDepends, ApplySingleEvent event) {
-        ImSet<CalcProperty> depends = fill.getDepends(false);// вычисляемые события отдельно отрабатываются (собственно обрабатываются как обычные события)
+    private static ImSet<Property> getSingleApplyDepends(Property<?> fill, Result<Boolean> canBeOutOfDepends, ApplySingleEvent event) {
+        ImSet<Property> depends = fill.getDepends(false);// вычисляемые события отдельно отрабатываются (собственно обрабатываются как обычные события)
 
         if (fill instanceof DataProperty) { // отдельно обрабатывается так как в getDepends передается false (так как в локальных событиях удаление это скорее вычисляемое событие, а в глобальных - императивное, приходится делать такой хак)
              assert depends.isEmpty();
@@ -1589,7 +1589,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return depends;
     }
 
-    private static void fillSingleApplyDependFrom(CalcProperty<?> prop, ApplySingleEvent applied, SessionEnvEvent appliedSet, MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mapDepends, boolean canBeOutOfDepends) {
+    private static void fillSingleApplyDependFrom(Property<?> prop, ApplySingleEvent applied, SessionEnvEvent appliedSet, MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mapDepends, boolean canBeOutOfDepends) {
         ApplyCalcEvent applyEvent = prop.getApplyEvent();
         if (applyEvent != null && !applyEvent.equals(applied)) {
             MOrderMap<ApplySingleEvent, SessionEnvEvent> fillDepends = mapDepends.get(applyEvent);
@@ -1602,7 +1602,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 fillDepends.add(applied, appliedSet);
         } else {
             Result<Boolean> rCanBeOutOfDepends = new Result<>(canBeOutOfDepends);
-            for (CalcProperty depend : getSingleApplyDepends(prop, rCanBeOutOfDepends, applied))
+            for (Property depend : getSingleApplyDepends(prop, rCanBeOutOfDepends, applied))
                 fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends, rCanBeOutOfDepends.result);
         }
     }
@@ -1654,21 +1654,21 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public List<CalcProperty> getCheckConstrainedProperties() {
-        List<CalcProperty> result = new ArrayList<>();
+    public List<Property> getCheckConstrainedProperties() {
+        List<Property> result = new ArrayList<>();
         for (ActionOrProperty property : getPropertyList()) {
-            if (property instanceof CalcProperty && ((CalcProperty) property).checkChange != CalcProperty.CheckType.CHECK_NO) {
-                result.add((CalcProperty) property);
+            if (property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO) {
+                result.add((Property) property);
             }
         }
         return result;
     }
 
-    public List<CalcProperty> getCheckConstrainedProperties(CalcProperty<?> changingProp) {
-        List<CalcProperty> result = new ArrayList<>();
-        for (CalcProperty property : getCheckConstrainedProperties()) {
-            if (property.checkChange == CalcProperty.CheckType.CHECK_ALL ||
-                    property.checkChange == CalcProperty.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)) {
+    public List<Property> getCheckConstrainedProperties(Property<?> changingProp) {
+        List<Property> result = new ArrayList<>();
+        for (Property property : getCheckConstrainedProperties()) {
+            if (property.checkChange == Property.CheckType.CHECK_ALL ||
+                    property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)) {
                 result.add(property);
             }
         }
@@ -1818,18 +1818,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         String result = "";
 
         result += ThreadLocalContext.localize("\n{logics.info.by.tables}\n\n");
-        ImOrderSet<CalcProperty> storedProperties = getStoredProperties();
-        for (Map.Entry<ImplementTable, Collection<CalcProperty>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, CalcProperty>() {
-            public ImplementTable group(CalcProperty key) {
+        ImOrderSet<Property> storedProperties = getStoredProperties();
+        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, Property>() {
+            public ImplementTable group(Property key) {
                 return key.mapTable.table;
             }
         }, storedProperties).entrySet()) {
             result += groupTable.getKey().outputKeys() + '\n';
-            for (CalcProperty property : groupTable.getValue())
+            for (Property property : groupTable.getValue())
                 result += '\t' + property.outputStored(false) + '\n';
         }
         result += ThreadLocalContext.localize("\n{logics.info.by.properties}\n\n");
-        for (CalcProperty property : storedProperties)
+        for (Property property : storedProperties)
             result += property.outputStored(true) + '\n';
         System.out.println(result);
     }

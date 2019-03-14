@@ -46,12 +46,12 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         return super.aspectChangeExtProps().replaceValues(true);
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
         return super.aspectUsedExtProps().replaceValues(true);
     }
 

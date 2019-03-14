@@ -73,18 +73,18 @@ public class AutoHintsAspect {
     public static class AutoHintImplement<P extends PropertyInterface> extends AbstractInnerContext<AutoHintImplement<P>> {
         private final PropertyChanges usedChanges;
         private final ImMap<P, Expr> joinImplement;
-        private final ImMap<CalcProperty, Byte> usedHints;
-        private final ImMap<CalcProperty, ValuesContext> usedPrereads;
+        private final ImMap<Property, Byte> usedHints;
+        private final ImMap<Property, ValuesContext> usedPrereads;
 
-        public AutoHintImplement(CalcProperty<P> property, ImMap<P, Expr> joinImplement, SessionModifier modifier) throws SQLException, SQLHandledException {
+        public AutoHintImplement(Property<P> property, ImMap<P, Expr> joinImplement, SessionModifier modifier) throws SQLException, SQLHandledException {
             usedChanges = property.getUsedChanges(modifier.getPropertyChanges());
             this.joinImplement = joinImplement;
 
-            ImSet<CalcProperty> depends = property.getRecDepends();
-            ImFilterValueMap<CalcProperty,Byte> mvUsedHints = depends.mapFilterValues();
-            ImFilterValueMap<CalcProperty,ValuesContext> mvUsedPrereads = depends.mapFilterValues();
+            ImSet<Property> depends = property.getRecDepends();
+            ImFilterValueMap<Property,Byte> mvUsedHints = depends.mapFilterValues();
+            ImFilterValueMap<Property,ValuesContext> mvUsedPrereads = depends.mapFilterValues();
             for(int i=0,size=depends.size();i<size;i++) {
-                CalcProperty dependProperty = depends.get(i);
+                Property dependProperty = depends.get(i);
 
                 byte result = 0;
                 if(dependProperty.isFull(AlgType.hintType) && modifier.allowHintIncrement(dependProperty)) {
@@ -144,7 +144,7 @@ public class AutoHintsAspect {
         }
     }
 
-    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, Modifier modifier) throws Throwable {
+    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, Property<P> property, ImMap<P, Expr> joinImplement, Modifier modifier) throws Throwable {
         if(!Settings.get().isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             SessionModifier sessionModifier = (SessionModifier) modifier;
 
@@ -171,7 +171,7 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
     }
 
-    private <P extends PropertyInterface> Object proceedCached(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, SessionModifier sessionModifier, Result<Hint> resultHint) throws Throwable {
+    private <P extends PropertyInterface> Object proceedCached(ProceedingJoinPoint thisJoinPoint, Property<P> property, ImMap<P, Expr> joinImplement, SessionModifier sessionModifier, Result<Hint> resultHint) throws Throwable {
         if(Settings.get().isDisableAutoHintCaches())
             return proceed(thisJoinPoint, sessionModifier, resultHint);
 
@@ -228,26 +228,26 @@ public class AutoHintsAspect {
         }
     }
 
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getExpr(lsfusion.base.col.interfaces.immutable.ImMap, Modifier, lsfusion.server.data.where.WhereBuilder)) && target(property) && args(map, modifier, changedWhere)")
-    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap map, Modifier modifier, WhereBuilder changedWhere) throws Throwable {
+    @Around("execution(* lsfusion.server.logics.property.Property.getExpr(lsfusion.base.col.interfaces.immutable.ImMap, Modifier, lsfusion.server.data.where.WhereBuilder)) && target(property) && args(map, modifier, changedWhere)")
+    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap map, Modifier modifier, WhereBuilder changedWhere) throws Throwable {
         return callAutoHint(thisJoinPoint, property, map, modifier);
     }
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getIncrementChange(Modifier)) && target(property) && args(modifier)")
-    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Modifier modifier) throws Throwable {
+    @Around("execution(* lsfusion.server.logics.property.Property.getIncrementChange(Modifier)) && target(property) && args(modifier)")
+    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
         return callAutoHint(thisJoinPoint, property, null, modifier);
     }
 
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getQuery(lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(calcType, propChanges, queryType, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
+    @Around("execution(* lsfusion.server.logics.property.Property.getQuery(lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(calcType, propChanges, queryType, interfaceValues)")
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
         return getQuery(thisJoinPoint, property, calcType, propChanges, queryType, interfaceValues);
     }
 
-    private static boolean hintHasChanges(Where changed, CalcProperty property, PropertyChanges propChanges) {
+    private static boolean hintHasChanges(Where changed, Property property, PropertyChanges propChanges) {
         if(changed!=null)
             return !changed.isFalse();
         return property.hasChanges(propChanges);
     }
-    private static Object getQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
+    private static Object getQuery(ProceedingJoinPoint thisJoinPoint, Property property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
         assert property.isNotNull(calcType.getAlgInfo());
         
         if(!property.isFull(calcType.getAlgInfo()) || !calcType.isExpr())
@@ -290,7 +290,7 @@ public class AutoHintsAspect {
                             long maxCountUsed = catchHint.getMaxCountUsed(property);
                             // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный
                             long limit = BaseUtils.max(maxCountUsed, baseLimit) * complexity * complexity / limitComplexity / limitComplexity; // возможно надо будет все же экспоненту сделать 
-                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE).getRows().lessEquals(new Stat(limit))) { // тут может быть проблема с интервалами (см. CalcProperty.allowHintIncrement)
+                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE).getRows().lessEquals(new Stat(limit))) { // тут может быть проблема с интервалами (см. Property.allowHintIncrement)
                                 throw new HintException(new IncrementHint(property, true));
                             }
                             if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {
@@ -308,9 +308,9 @@ public class AutoHintsAspect {
 
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
 
         if(!property.isFull(calcType.getAlgInfo()) || !calcType.isExpr())
@@ -319,14 +319,14 @@ public class AutoHintsAspect {
         SessionModifier catchHint = catchAutoHint.get();
 
         ImMap<PropertyInterface, Expr> joinValues;
-        if(catchHint!=null && catchHint.allowPrereadValues(property, joinValues = CalcProperty.getJoinValues(joinExprs))) {
+        if(catchHint!=null && catchHint.allowPrereadValues(property, joinValues = Property.getJoinValues(joinExprs))) {
             throw new HintException(new PrereadHint(property, joinValues));
         }
 
         if(catchHint == null || !catchHint.allowHintIncrement(property)) // неправильно так как может быть не changed
             return thisJoinPoint.proceed();
 
-        WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);
+        WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
         Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere});
 
         long complexity = BaseUtils.max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
@@ -339,9 +339,9 @@ public class AutoHintsAspect {
 
     public static class PrereadHint extends Hint<PrereadHint> {
 
-        public final CalcProperty<PropertyInterface> property;
+        public final Property<PropertyInterface> property;
         public final ImMap<PropertyInterface, Expr> values;
-        public PrereadHint(CalcProperty property, ImMap<PropertyInterface, Expr> values) {
+        public PrereadHint(Property property, ImMap<PropertyInterface, Expr> values) {
             this.property = property;
             this.values = values;
         }
@@ -369,9 +369,9 @@ public class AutoHintsAspect {
 
     public static class IncrementHint extends Hint<IncrementHint> {
 
-        public final CalcProperty property;
+        public final Property property;
         public final boolean lowstat;
-        public IncrementHint(CalcProperty property, boolean lowstat) {
+        public IncrementHint(Property property, boolean lowstat) {
             this.property = property;
             this.lowstat = lowstat;
         }

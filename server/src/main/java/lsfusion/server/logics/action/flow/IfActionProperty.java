@@ -64,8 +64,8 @@ public class IfActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        MSet<CalcProperty> used = SetFact.mSet();
+    public ImMap<Property, Boolean> aspectUsedExtProps() {
+        MSet<Property> used = SetFact.mSet();
         ifProp.mapFillDepends(used);
         return used.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
@@ -124,7 +124,7 @@ public class IfActionProperty extends KeepContextActionProperty {
         return falseAction == null; // нужно разбивать на if true и if false, потом реализуем
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
         return ForActionProperty.getPushWhere(ifProp);
     }

@@ -68,12 +68,12 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     @IdentityInstanceLazy
-    public CalcProperty getConstrainedProperty() {
+    public Property getConstrainedProperty() {
         assert cycle == Cycle.NO;
         assert !isLogical();
 
         IntegralClass<?> integralClass = (IntegralClass)getType();
-        CalcProperty constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
+        Property constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
         constraint.caption = LocalizedString.createFormatted("{logics.property.cycle.detected}", caption);
         return constraint;
     }
@@ -186,7 +186,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     @Override
-    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<Property> depends, boolean events) {
         initial.mapFillDepends(depends);
         step.mapFillDepends(depends);
     }

@@ -20,31 +20,31 @@ public class CalcClassType extends CalcType implements AlgType {
         super(caption);
     }
 
-    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property) {
+    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property) {
         return property.calcClassValueWhere(this);
     }
 
-    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property, ExClassSet valueClasses) {
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property, ExClassSet valueClasses) {
         return property.calcInterfaceClasses(this);
     }
 
-    public <P extends PropertyInterface> ValueClass getValueClass(CalcProperty<P> property) {
+    public <P extends PropertyInterface> ValueClass getValueClass(Property<P> property) {
         return property.calcValueClass(this);
     }
 
-    public <P extends PropertyInterface> boolean isInInterface(CalcProperty<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+    public <P extends PropertyInterface> boolean isInInterface(Property<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
         return property.calcIsInInterface(interfaceClasses, isAny, this);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caseInfo, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(Property<T> property, String caseInfo, Property<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
         property.calcCheckExclusiveness(caseInfo, intersect, intersectInfo, map, this, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
         property.calcCheckContainsAll(caseInfo, intersect, map, this, value, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(CalcProperty<T> property, ImList<CalcProperty<P>> intersects, ImList<ImRevMap<P, T>> maps) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(Property<T> property, ImList<Property<P>> intersects, ImList<ImRevMap<P, T>> maps) {
         property.calcCheckAllImplementations(intersects, maps, this);
     }
 

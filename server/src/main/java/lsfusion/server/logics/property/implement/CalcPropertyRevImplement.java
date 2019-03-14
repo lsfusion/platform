@@ -10,7 +10,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -18,10 +18,10 @@ import java.sql.SQLException;
 
 public class CalcPropertyRevImplement<P extends PropertyInterface, T> implements CalcPropertyObjectInterfaceImplement<T> {
     
-    public final CalcProperty<P> property;
+    public final Property<P> property;
     public final ImRevMap<P, T> mapping;
 
-    public CalcPropertyRevImplement(CalcProperty<P> property, ImRevMap<P, T> mapping) {
+    public CalcPropertyRevImplement(Property<P> property, ImRevMap<P, T> mapping) {
         this.property = property;
         this.mapping = mapping;
         assert BaseUtils.hashEquals(property.interfaces, mapping.keys());

@@ -17,9 +17,9 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -54,17 +54,17 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+    protected ImMap<Property, Boolean> aspectUsedExtProps() {
         FormEntity formEntity = form.getStaticForm();
         if(formEntity != null) {
-            MSet<CalcProperty> mProps = SetFact.mSet();
+            MSet<Property> mProps = SetFact.mSet();
             boolean isReport = this instanceof PrintActionProperty;
             for (PropertyDrawEntity<?> propertyDraw : formEntity.getStaticPropertyDrawsList()) {
                 if (isReport) {
                     MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
                     propertyDraw.fillQueryProps(mReaders);
                     for (PropertyReaderEntity reader : mReaders.immutable())
-                        mProps.add((CalcProperty) reader.getPropertyObjectEntity().property);
+                        mProps.add((Property) reader.getPropertyObjectEntity().property);
                 } else 
                     mProps.add(propertyDraw.getCalcValueProperty().property);
             }

@@ -55,8 +55,8 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     }
 
     public static <I extends PropertyInterface, T extends ActionOrProperty<I>> PropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath) {
-        if(property instanceof CalcProperty)
-            return new CalcPropertyObjectEntity<>((CalcProperty<I>) property, map, creationScript, creationPath);
+        if(property instanceof Property)
+            return new CalcPropertyObjectEntity<>((Property<I>) property, map, creationScript, creationPath);
         else
             return new ActionPropertyObjectEntity<>((ActionProperty<I>) property, map, creationScript, creationPath);
     }

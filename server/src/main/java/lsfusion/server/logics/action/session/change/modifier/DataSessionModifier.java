@@ -7,7 +7,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.session.change.ModifyChange;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public abstract class DataSessionModifier extends SessionModifier {
@@ -16,15 +16,15 @@ public abstract class DataSessionModifier extends SessionModifier {
         super(debugInfo);
     }
 
-    protected abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property);
+    protected abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property);
     
-    protected abstract ImSet<CalcProperty> getChangedProps();
+    protected abstract ImSet<Property> getChangedProps();
 
     public OperationOwner getOpOwner() {
         return getQueryEnv().getOpOwner();
     }
 
-    protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided) {
+    protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(Property<P> property, PrereadRows<P> preread, FunctionSet<Property> overrided) {
         PropertyChange<P> propertyChange = getPropertyChange(property);
         if(propertyChange!=null)
             return new ModifyChange<>(propertyChange, false);
@@ -35,15 +35,15 @@ public abstract class DataSessionModifier extends SessionModifier {
 
     @Override
     public String out() {
-        return super.out() + "\nchanged : " + getChangedProps().mapValues(new GetValue<PropertyChange, CalcProperty>() {
+        return super.out() + "\nchanged : " + getChangedProps().mapValues(new GetValue<PropertyChange, Property>() {
             @Override
-            public PropertyChange getMapValue(CalcProperty value) {
+            public PropertyChange getMapValue(Property value) {
                 return getPropertyChange(value);
             }
         });
     }
 
-    public ImSet<CalcProperty> calculateProperties() {
+    public ImSet<Property> calculateProperties() {
         return getChangedProps();
     }
 }

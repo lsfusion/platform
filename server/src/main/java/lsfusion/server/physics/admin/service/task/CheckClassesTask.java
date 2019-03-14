@@ -7,7 +7,7 @@ import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
 import lsfusion.server.logics.action.session.DataSession;
@@ -26,7 +26,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
         } else if (element instanceof ImplementTable) {
             return "Check Table Classes";
         }
-        assert element instanceof CalcProperty;
+        assert element instanceof Property;
         return "Check Class";
     }
 
@@ -38,8 +38,8 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
             result = DataSession.checkClasses(sql, getBL().LM.baseClass);
         } else if (property instanceof ImplementTable) {
             result = DataSession.checkTableClasses((ImplementTable) property, sql, getBL().LM.baseClass, false); // так как снизу есть проверка классов
-        } else if(property instanceof CalcProperty) {
-            result = DataSession.checkClasses((CalcProperty) property, sql, getBL().LM.baseClass);
+        } else if(property instanceof Property) {
+            result = DataSession.checkClasses((Property) property, sql, getBL().LM.baseClass);
         }
         if (result != null && !result.isEmpty())
             addMessage(result);
@@ -62,7 +62,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
     @Override
     protected String getElementCaption(Object element) {
         return element instanceof ImplementTable ? ((ImplementTable) element).getName() :
-                element instanceof CalcProperty ? ((CalcProperty) element).getSID() : null;
+                element instanceof Property ? ((Property) element).getSID() : null;
     }
 
     @Override
@@ -79,8 +79,8 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
     protected long getTaskComplexity(Object element) {
         Stat stat;
         try {
-            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatRows() : element instanceof CalcProperty ?
-                    ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull : Stat.MAX;
+            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatRows() : element instanceof Property ?
+                    ((Property) element).mapTable.table.getStatProps().get(((Property) element).field).notNull : Stat.MAX;
         } catch (Exception e) {
             stat = null;
         }

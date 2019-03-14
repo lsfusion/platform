@@ -44,7 +44,7 @@ import lsfusion.server.base.stack.ThisMessage;
 
 import java.sql.SQLException;
 
-public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> {
+public abstract class DataProperty extends Property<ClassPropertyInterface> {
 
     public ValueClass value;
 
@@ -89,11 +89,11 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         if(noClasses())
             return SetFact.EMPTY();
         
-        return propChanges.getUsedChanges(SetFact.toSet((CalcProperty) getClassProperty().property, (CalcProperty) getValueClassProperty().property));
+        return propChanges.getUsedChanges(SetFact.toSet((Property) getClassProperty().property, (Property) getValueClassProperty().property));
     }
 
     @Override
@@ -159,8 +159,8 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return result;
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
-        ImSet<CalcProperty> result = SetFact.EMPTY();
+    public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {
+        ImSet<Property> result = SetFact.EMPTY();
         
         if(!noClasses()) {
             result = result.merge(value.getProperty().getRemoveUsedChanges(propChanges));
@@ -225,7 +225,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    protected void fillDepends(MSet<CalcProperty> depends, boolean events) { // для Action'а связь считается слабой
+    protected void fillDepends(MSet<Property> depends, boolean events) { // для Action'а связь считается слабой
         if(events) {
             if (event != null)
                 depends.addAll(event.getDepends());
@@ -233,8 +233,8 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         }
     }
 
-    public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
-        MSet<CalcProperty> mResult = SetFact.mSet();
+    public ImSet<Property> getSingleApplyDroppedIsClassProps() {
+        MSet<Property> mResult = SetFact.mSet();
         for(ChangedProperty<?> removeDepend : getDroppedDepends())
             mResult.addAll(removeDepend.getSingleApplyDroppedIsClassProps());
         return mResult.immutable();

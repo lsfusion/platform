@@ -19,8 +19,8 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -80,9 +80,9 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
 
     public static class ValueInterface<T extends PropertyInterface, P extends PropertyInterface> extends Interface<T, P> {
 
-        CalcProperty<P> toChange;
+        Property<P> toChange;
 
-        public ValueInterface(CalcProperty<P> toChange) {
+        public ValueInterface(Property<P> toChange) {
             super(1000);
 
             this.toChange = toChange;
@@ -98,7 +98,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
     }
 
-    public static <T extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Interface<T, P>> getInterfaces(CalcProperty<T> onChange, CalcProperty<P> toChange) {
+    public static <T extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Interface<T, P>> getInterfaces(Property<T> onChange, Property<P> toChange) {
         return onChange.getFriendlyOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, T>() {
             public Interface<T, P> getMapValue(T value) {
                 return new KeyOnInterface<>(value);
@@ -110,7 +110,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         })).addOrderExcl(new ValueInterface<T, P>(toChange));
     }
 
-    public OnChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
+    public OnChangeProperty(Property<T> onChange, Property<P> toChange) {
         super(LocalizedString.concatList(onChange.caption, " по (", toChange.caption, ")"), getInterfaces(onChange, toChange), onChange, toChange);
 
         finalizeInit();

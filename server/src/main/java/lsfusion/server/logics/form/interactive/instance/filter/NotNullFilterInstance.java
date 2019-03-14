@@ -16,7 +16,7 @@ import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInsta
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExecutionEnvironment;
@@ -50,13 +50,13 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         checkChange = false;
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return property.getExpr(mapKeys, modifier, reallyChanged, mUsedProps).getWhere();
     }
 
     @Override
-    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
-        if(checkChange && CalcProperty.depends((CalcProperty<?>) property.property, toChange))
+    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
+        if(checkChange && Property.depends((Property<?>) property.property, toChange))
             return BaseUtils.immutableCast(Collections.singleton(property.getValueImplement()));
         return super.getResolveChangeProperties(toChange);
     }

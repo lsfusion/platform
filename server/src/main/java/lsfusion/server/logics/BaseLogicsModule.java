@@ -529,7 +529,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public <P extends PropertyInterface> PropertyFormEntity getLogForm(CalcProperty<P> property, CalcProperty messageProperty) { // messageProperty - nullable
+    public <P extends PropertyInterface> PropertyFormEntity getLogForm(Property<P> property, Property messageProperty) { // messageProperty - nullable
         PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, getRecognizeGroup());
         addFormEntity(form);
         return form;

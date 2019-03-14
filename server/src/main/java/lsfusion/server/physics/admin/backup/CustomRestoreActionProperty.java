@@ -26,7 +26,7 @@ import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.data.StoredDataProperty;
@@ -265,7 +265,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                 }
                 Where where = importJoin.getWhere();
                 if (replaceOnlyNullSet.contains(lcp.property.getSID())) {
-                    where = where.and(((CalcProperty)lcp.property).getExpr(values).getWhere().not());
+                    where = where.and(((Property)lcp.property).getExpr(values).getWhere().not());
                 }
                 PropertyChange propChange = new PropertyChange(values.toRevMap(), importJoin.getExpr(lcp), where);
                 context.getEnv().change(lcp.property, propChange);

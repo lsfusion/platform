@@ -1,8 +1,8 @@
 package lsfusion.server.logics.event;
 
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 
 public interface ApplySingleEvent {
     
-    CalcProperty getProperty();
+    Property getProperty();
 }

@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.data;
 
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StoredDataProperty extends DataProperty {
@@ -18,8 +18,8 @@ public class StoredDataProperty extends DataProperty {
     }
 
     // нет
-    public static FunctionSet<CalcProperty> set = new FunctionSet<CalcProperty>() {
-        public boolean contains(CalcProperty element) {
+    public static FunctionSet<Property> set = new FunctionSet<Property>() {
+        public boolean contains(Property element) {
             return element instanceof StoredDataProperty;
         }
         public boolean isEmpty() {

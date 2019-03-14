@@ -24,7 +24,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
@@ -48,20 +48,20 @@ public abstract class SessionModifier implements Modifier {
         modifier.eventDataChanges(getPropertyChanges().getProperties());
     }
 
-    public long getMaxCountUsed(CalcProperty<?> property) {
+    public long getMaxCountUsed(Property<?> property) {
         long result = 0;
-        for(CalcProperty depend : property.getRecDepends()) {
+        for(Property depend : property.getRecDepends()) {
             result = BaseUtils.max(result, getMaxCount(depend));
         }
         return result;
     }
-    public abstract long getMaxCount(CalcProperty recDepends);
+    public abstract long getMaxCount(Property recDepends);
 
     public void unregisterView(OverrideSessionModifier modifier) { // protected
         views.remove(modifier);
     }
 
-    public <P extends CalcProperty> boolean eventChanges(ImSet<P> properties, GetValue<? extends UpdateResult, P> modifyResults) throws SQLException, SQLHandledException {
+    public <P extends Property> boolean eventChanges(ImSet<P> properties, GetValue<? extends UpdateResult, P> modifyResults) throws SQLException, SQLHandledException {
         boolean dataChanged = false;
         for(P property : properties) {
             UpdateResult result = modifyResults.getMapValue(property);
@@ -72,11 +72,11 @@ public abstract class SessionModifier implements Modifier {
         return dataChanged;
     }
 
-    public <P extends CalcProperty> void eventDataChanges(ImSet<P> properties) throws SQLException, SQLHandledException {
+    public <P extends Property> void eventDataChanges(ImSet<P> properties) throws SQLException, SQLHandledException {
         eventChanges(properties, ModifyResult.DATA_SOURCE.<P>fnGetValue());
     }
 
-    protected void eventChange(CalcProperty property, boolean data, boolean source) throws SQLException, SQLHandledException {
+    protected void eventChange(Property property, boolean data, boolean source) throws SQLException, SQLHandledException {
         if(source)
             addChange(property, data);
 /*        else {
@@ -89,17 +89,17 @@ public abstract class SessionModifier implements Modifier {
 
         if(data) { // если изменились данные, drop'аем хинты
             try {
-                for(CalcProperty<?> incrementProperty : getIncrementProps()) {
-                    if(CalcProperty.depends(incrementProperty, property)) {
+                for(Property<?> incrementProperty : getIncrementProps()) {
+                    if(Property.depends(incrementProperty, property)) {
                         if(increment.contains(incrementProperty))
                             increment.remove(incrementProperty, getSQL(), getOpOwner());
                         preread.remove(incrementProperty);
                         eventChange(incrementProperty, false, true); // так как изначально итерация идет или по increment или по preread, сработает в любом случае
                     }
                 }
-                MAddSet<CalcProperty> removedNoUpdate = SetFact.mAddSet();
-                for(CalcProperty<?> incrementProperty : noUpdate)
-                    if(CalcProperty.depends(incrementProperty, property)) // сбрасываем noUpdate, уведомляем остальных об изменении
+                MAddSet<Property> removedNoUpdate = SetFact.mAddSet();
+                for(Property<?> incrementProperty : noUpdate)
+                    if(Property.depends(incrementProperty, property)) // сбрасываем noUpdate, уведомляем остальных об изменении
                         eventNoUpdate(incrementProperty);
                     else
                         removedNoUpdate.add(incrementProperty);
@@ -113,26 +113,26 @@ public abstract class SessionModifier implements Modifier {
             view.eventChange(property, data, source);
     }
     
-    protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed, boolean forceUpdate) throws SQLException, SQLHandledException {        
+    protected void notifySourceChange(ImMap<Property, Boolean> changed, boolean forceUpdate) throws SQLException, SQLHandledException {        
     }
 
-    protected void eventNoUpdate(CalcProperty property) throws SQLException, SQLHandledException {
+    protected void eventNoUpdate(Property property) throws SQLException, SQLHandledException {
         addChange(property, true);
 
         for(OverrideSessionModifier view : views)
             view.eventChange(property, true, true); // если сюда зашли, значит гарантировано изменили данные
     }
 
-    protected void eventSourceChanges(Iterable<? extends CalcProperty> properties) throws SQLException, SQLHandledException {
-        for(CalcProperty property : properties)
+    protected void eventSourceChanges(Iterable<? extends Property> properties) throws SQLException, SQLHandledException {
+        for(Property property : properties)
             eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
 
 
-    private MMap<CalcProperty, Boolean> mChanged = null;
-    private void addChange(CalcProperty property, boolean dataChanged) {
+    private MMap<Property, Boolean> mChanged = null;
+    private void addChange(Property property, boolean dataChanged) {
         if(mChanged == null)
-            mChanged = MapFact.mMap(MapFact.<CalcProperty>or());
+            mChanged = MapFact.mMap(MapFact.<Property>or());
         mChanged.add(property, dataChanged);
     }
 
@@ -142,18 +142,18 @@ public abstract class SessionModifier implements Modifier {
     
     private static boolean enableCheckChanges = false; 
 
-    private ImSet<CalcProperty> propertyChangesRecursionGuard = SetFact.EMPTY();
+    private ImSet<Property> propertyChangesRecursionGuard = SetFact.EMPTY();
     // по сути protected
     protected PropertyChanges propertyChanges = PropertyChanges.EMPTY;
     @ManualLazy
     public PropertyChanges getPropertyChanges(boolean forceUpdate) throws SQLException, SQLHandledException {
         if(mChanged != null) {
-            ImMap<CalcProperty, Boolean> changed = mChanged.immutable();
+            ImMap<Property, Boolean> changed = mChanged.immutable();
             assert !changed.isEmpty();
             mChanged = null;
             
-            ImMap<CalcProperty, ModifyChange> replace = changed.keys().mapValues(new GetValue<ModifyChange, CalcProperty>() {
-                public ModifyChange getMapValue(CalcProperty value) {
+            ImMap<Property, ModifyChange> replace = changed.keys().mapValues(new GetValue<ModifyChange, Property>() {
+                public ModifyChange getMapValue(Property value) {
                     return getModifyChange(value);
                 }});
 
@@ -162,10 +162,10 @@ public abstract class SessionModifier implements Modifier {
 
             propertyChanges = propertyChanges.replace(replace);
         
-            ImSet<CalcProperty> prevRecursionGuard = propertyChangesRecursionGuard;
+            ImSet<Property> prevRecursionGuard = propertyChangesRecursionGuard;
             propertyChangesRecursionGuard = propertyChangesRecursionGuard.merge(changed.keys());
             try {
-                ImMap<CalcProperty, Boolean> guardedChanged = changed.remove(prevRecursionGuard);
+                ImMap<Property, Boolean> guardedChanged = changed.remove(prevRecursionGuard);
 //                if(guardedChanged.size() < changed.size())
 //                    ServerLoggers.exinfoLog("GUARDED CHANGES : " + changed + ", " + prevRecursionGuard);
                 notifySourceChange(guardedChanged, forceUpdate);
@@ -184,20 +184,20 @@ public abstract class SessionModifier implements Modifier {
             view.updateSourceChanges();        
     }
 
-    public ImSet<CalcProperty> getHintProps() {
+    public ImSet<Property> getHintProps() {
         return noUpdate.immutableCopy().merge(getIncrementProps());
     }
 
-    private CalcProperty readProperty;
-    public Set<CalcProperty> prereadProps = new HashSet<>();
+    private Property readProperty;
+    public Set<Property> prereadProps = new HashSet<>();
 
     // hint'ы хранит
     private TableProps increment = new TableProps();
-    private Map<CalcProperty, PrereadRows> preread = new HashMap<>();
-    private ImSet<CalcProperty> getPrereadProps() {
+    private Map<Property, PrereadRows> preread = new HashMap<>();
+    private ImSet<Property> getPrereadProps() {
         return SetFact.fromJavaSet(preread.keySet());
     }
-    private ImSet<CalcProperty> getIncrementProps() {
+    private ImSet<Property> getIncrementProps() {
         return increment.getProperties().merge(getPrereadProps());
     }
 
@@ -224,7 +224,7 @@ public abstract class SessionModifier implements Modifier {
     
     public abstract OperationOwner getOpOwner();
 
-    public boolean allowHintIncrement(CalcProperty property) {
+    public boolean allowHintIncrement(Property property) {
         if (increment.contains(property))
             return false;
 
@@ -237,19 +237,19 @@ public abstract class SessionModifier implements Modifier {
         return true;
     }
 
-    public boolean forceHintIncrement(CalcProperty property) {
+    public boolean forceHintIncrement(Property property) {
         return false;
     }
 
-    public boolean allowNoUpdate(CalcProperty property) {
+    public boolean allowNoUpdate(Property property) {
         return !noUpdate.contains(property) && !forceDisableNoUpdate(property);
     }
 
-    public boolean forceNoUpdate(CalcProperty property) {
+    public boolean forceNoUpdate(Property property) {
         return false;
     }
 
-    protected <P extends PropertyInterface> boolean allowPropertyPrereadValues(CalcProperty<P> property) {
+    protected <P extends PropertyInterface> boolean allowPropertyPrereadValues(Property<P> property) {
         if(!property.complex)
             return false;
 
@@ -262,7 +262,7 @@ public abstract class SessionModifier implements Modifier {
         return true;
     }
 
-    public <P extends PropertyInterface> ValuesContext cacheAllowPrereadValues(CalcProperty<P> property) {
+    public <P extends PropertyInterface> ValuesContext cacheAllowPrereadValues(Property<P> property) {
         if(!allowPropertyPrereadValues(property))
             return null;
 
@@ -275,7 +275,7 @@ public abstract class SessionModifier implements Modifier {
 
     // assert что в values только
     // предполагается что должно быть consistent с MapCacheAspect.prereadHintEnabled
-    public <P extends PropertyInterface> boolean allowPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
+    public <P extends PropertyInterface> boolean allowPrereadValues(Property<P> property, ImMap<P, Expr> values) {
         // assert что values только complex values
 
         if(!allowPropertyPrereadValues(property))
@@ -287,7 +287,7 @@ public abstract class SessionModifier implements Modifier {
             if(prereadRows!=null && prereadRows.readValues.containsKey(values))
                 return false;
         } else {
-            ImMap<P, Expr> complexValues = CalcProperty.onlyComplex(values);
+            ImMap<P, Expr> complexValues = Property.onlyComplex(values);
             if(complexValues.isEmpty() || (prereadRows!=null && prereadRows.readParams.keys().containsAll(complexValues.values().toSet())))
                 return false;
         }
@@ -295,7 +295,7 @@ public abstract class SessionModifier implements Modifier {
         return true;
     }
 
-    public boolean forceDisableNoUpdate(CalcProperty property) {
+    public boolean forceDisableNoUpdate(Property property) {
         return true;
     }
 
@@ -319,7 +319,7 @@ public abstract class SessionModifier implements Modifier {
         return Settings.get().getLimitHintNoUpdateComplexity();
     }
 
-    public void addHintIncrement(CalcProperty property) throws SQLException, SQLHandledException {
+    public void addHintIncrement(Property property) throws SQLException, SQLHandledException {
         assert allowHintIncrement(property);
 
         try {
@@ -338,7 +338,7 @@ public abstract class SessionModifier implements Modifier {
         eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
 
-    public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void addPrereadValues(Property<P> property, ImMap<P, Expr> values) throws SQLException, SQLHandledException {
         assert property.complex && allowPrereadValues(property, values);
 
         try {
@@ -378,8 +378,8 @@ public abstract class SessionModifier implements Modifier {
         eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
 
-    private MAddSet<CalcProperty> noUpdate = SetFact.mAddSet();
-    public void addNoUpdate(CalcProperty property) throws SQLException, SQLHandledException {
+    private MAddSet<Property> noUpdate = SetFact.mAddSet();
+    public void addNoUpdate(Property property) throws SQLException, SQLHandledException {
         assert allowNoUpdate(property);
 
         noUpdate.add(property);
@@ -387,11 +387,11 @@ public abstract class SessionModifier implements Modifier {
         eventNoUpdate(property);
     }
 
-    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property) {
-        return getModifyChange(property, PrereadRows.<P>EMPTY(), SetFact.<CalcProperty>EMPTY());
+    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(Property<P> property) {
+        return getModifyChange(property, PrereadRows.<P>EMPTY(), SetFact.<Property>EMPTY());
     }
 
-    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> disableHint) {
+    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(Property<P> property, PrereadRows<P> preread, FunctionSet<Property> disableHint) {
 
         if(!disableHint.contains(property)) {
             PrereadRows<P> rows = this.preread.get(property);
@@ -411,17 +411,17 @@ public abstract class SessionModifier implements Modifier {
         return calculateModifyChange(property, preread, disableHint);
     }
 
-    protected abstract <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided);
+    protected abstract <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(Property<P> property, PrereadRows<P> preread, FunctionSet<Property> overrided);
 
-    public ImSet<CalcProperty> getProperties() {
+    public ImSet<Property> getProperties() {
         return getHintProps().merge(calculateProperties());
     }
 
-    public abstract ImSet<CalcProperty> calculateProperties();
+    public abstract ImSet<Property> calculateProperties();
 
     public PropertyChanges calculatePropertyChanges() {
         PropertyChanges result = PropertyChanges.EMPTY;
-        for(CalcProperty property : getProperties()) {
+        for(Property property : getProperties()) {
             ModifyChange modifyChange = getModifyChange(property);
             if(modifyChange!=null)
                 result = result.add(new PropertyChanges(property, modifyChange));

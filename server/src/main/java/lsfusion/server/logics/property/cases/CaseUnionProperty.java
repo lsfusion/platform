@@ -60,10 +60,10 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @IdentityLazy
-    public ImSet<CalcProperty> getImplements() {
+    public ImSet<Property> getImplements() {
         ImList<CalcCase<Interface>> simpleCases = getSimpleCases();
         
-        MSet<CalcProperty> mResult = SetFact.mSetMax(simpleCases.size());
+        MSet<Property> mResult = SetFact.mSetMax(simpleCases.size());
         for(int i=0,size=simpleCases.size();i<size;i++) {
             CalcCase<Interface> simpleCase = simpleCases.get(i);
             if (simpleCase.implement instanceof CalcPropertyMapImplement)
@@ -112,9 +112,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         });
     }
 
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
-        MSet<CalcProperty> mPropValues = SetFact.mSet(); fillDepends(mPropValues, getProps());
-        MSet<CalcProperty> mPropWheres = SetFact.mSet(); fillDepends(mPropWheres, getWheres());
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+        MSet<Property> mPropValues = SetFact.mSet(); fillDepends(mPropValues, getProps());
+        MSet<Property> mPropWheres = SetFact.mSet(); fillDepends(mPropWheres, getWheres());
         return SetFact.add(propChanges.getUsedDataChanges(mPropValues.immutable()), propChanges.getUsedChanges(mPropValues.immutable()));
     }
 
@@ -148,7 +148,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<CalcProperty> path) {
+    protected boolean checkRecursions(ImSet<CaseUnionProperty> abstractPath, ImSet<Property> path) {
         if(abstractPath.contains(this)) { // found recursion
             if(path != null)
                 throw new ScriptParsingException("Property " + this + " is recursive. One of the pathes : " + path);
@@ -273,7 +273,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         int lastNotNullAction = 0;
         ImList<CalcCase<Interface>> cases = getCases();
@@ -479,9 +479,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                     }
                 });
 
-                checkAllImplementations(cases.mapListValues(new GetValue<CalcProperty<PropertyInterface>, CalcPropertyMapImplement<?, Interface>>() {
-                    public CalcProperty<PropertyInterface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
-                        return (CalcProperty<PropertyInterface>) value.property;
+                checkAllImplementations(cases.mapListValues(new GetValue<Property<PropertyInterface>, CalcPropertyMapImplement<?, Interface>>() {
+                    public Property<PropertyInterface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
+                        return (Property<PropertyInterface>) value.property;
                     }
                 }), cases.mapListValues(new GetValue<ImRevMap<PropertyInterface, Interface>, CalcPropertyMapImplement<?, Interface>>() {
                     public ImRevMap<PropertyInterface, Interface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
@@ -542,7 +542,7 @@ public class IfUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityInstanceLazy
-    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         ActionPropertyMapImplement<?, Interface> result = falseProp.mapEditAction(editActionSID, filterProperty);
         ActionPropertyMapImplement<?, Interface> trueAction = trueProp.mapEditAction(editActionSID, filterProperty);
@@ -602,9 +602,9 @@ public class IfUnionProperty extends IncrementUnionProperty {
         return exprCases.getFinal();
     }
 
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
-        MSet<CalcProperty> mPropValues = SetFact.mSet(); trueProp.mapFillDepends(mPropValues); falseProp.mapFillDepends(mPropValues);
-        MSet<CalcProperty> mPropWheres = SetFact.mSet(); ifProp.mapFillDepends(mPropWheres);
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+        MSet<Property> mPropValues = SetFact.mSet(); trueProp.mapFillDepends(mPropValues); falseProp.mapFillDepends(mPropValues);
+        MSet<Property> mPropWheres = SetFact.mSet(); ifProp.mapFillDepends(mPropWheres);
         return SetFact.add(propChanges.getUsedDataChanges(mPropValues.immutable()), propChanges.getUsedChanges(mPropWheres.immutable()));
     }
 

@@ -8,7 +8,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -19,7 +19,7 @@ import java.awt.*;
 import java.sql.SQLException;
 
 public class FormApplyActionProperty extends FormFlowActionProperty {
-    private static LCP showIf = createShowIfProperty(new CalcProperty[]{FormEntity.manageSession}, new boolean[]{false});
+    private static LCP showIf = createShowIfProperty(new Property[]{FormEntity.manageSession}, new boolean[]{false});
 
     static LCP applyBackground = new LCP(
             DerivedProperty.createAnd(
@@ -47,7 +47,7 @@ public class FormApplyActionProperty extends FormFlowActionProperty {
     }
 
     @Override
-    protected CalcProperty getEnableIf() {
+    protected Property getEnableIf() {
         return DataSession.isDataChanged;
     }
 

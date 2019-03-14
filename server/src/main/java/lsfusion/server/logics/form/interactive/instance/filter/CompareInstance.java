@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.change.Updated;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ public interface CompareInstance extends Updated {
 
     Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException;
     
-    Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException;
+    Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException;
 
     ImCol<ObjectInstance> getObjectInstances();
 }

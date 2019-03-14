@@ -178,17 +178,17 @@ public class MapCacheAspect {
         return checkCaches || ServerLoggers.isUserExLog();
     }
 
-    public static <T> void logCaches(T cached, T calced, ProceedingJoinPoint jp, String action, CalcProperty property) {
+    public static <T> void logCaches(T cached, T calced, ProceedingJoinPoint jp, String action, Property property) {
         boolean match = BaseUtils.hashEquals(cached, calced);
         ServerLoggers.hExInfoLogger.info(jp.getThis() + " " + action + " " + (match ? " MATCH " : "NOMATCH CACHED : " + cached + " CALCED: ") + calced + " ARGS " + Arrays.toString(jp.getArgs()) + (property != null ? "DEP " + property.getRecDepends() : "" ) );
     }
 
     private static ThreadLocal<Boolean> recursiveUsedChanges = new ThreadLocal<>();
 
-    public <K extends PropertyInterface> ImSet<CalcProperty> getUsedChanges(CalcProperty<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> ImSet<Property> getUsedChanges(Property<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         if(!(property instanceof AggregateProperty) && !(property instanceof DataProperty && ((DataProperty) property).event!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
-            return (ImSet<CalcProperty>) thisJoinPoint.proceed();
+            return (ImSet<Property>) thisJoinPoint.proceed();
 
         final boolean checkCaches = checkCaches();
         boolean inRecursion = false;
@@ -200,7 +200,7 @@ public class MapCacheAspect {
 
         // оптимизация самого верхнего уровня, проверка на isEmpty нужна для того чтобы до finalize'a (в CaseUnionProperty в частности) не вызвать случайно getRecDepends, там в fillDepends на это assert есть
         final Object[] filteredArgs = {!implement.isEmpty() ? implement.filterForProperty(property) : implement};
-        final ImSet<CalcProperty> result = (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, filteredArgs, true, CacheAspect.Type.SIMPLE, CacheType.USED_CHANGES);
+        final ImSet<Property> result = (ImSet<Property>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, filteredArgs, true, CacheAspect.Type.SIMPLE, CacheType.USED_CHANGES);
 
         if(checkCaches) {
             if(!inRecursion) {
@@ -214,9 +214,9 @@ public class MapCacheAspect {
         return result;
     }
 
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getUsedChanges(StructChanges)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getUsedChanges(StructChanges)) " +
             "&& target(property) && args(changes)")
-    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, CalcProperty property, StructChanges changes) throws Throwable {
+    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, StructChanges changes) throws Throwable {
         return getUsedChanges(property, changes, thisJoinPoint);
     }
 
@@ -228,7 +228,7 @@ public class MapCacheAspect {
         final PropertyChange<P> change;
         final boolean where;
 
-        DataChangesInterfaceImplement(CalcProperty<P> property, PropertyChange<P> change, PropertyChanges changes, boolean where) {
+        DataChangesInterfaceImplement(Property<P> property, PropertyChange<P> change, PropertyChanges changes, boolean where) {
             usedChanges = property.getUsedDataChanges(changes);
             this.change = change;
             this.where = where;
@@ -286,7 +286,7 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> DataChanges getDataChanges(CalcProperty<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> DataChanges getDataChanges(Property<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         if(disableCaches)
             return (DataChanges) thisJoinPoint.proceed();
@@ -307,7 +307,7 @@ public class MapCacheAspect {
 
             logger.debug("getDataChanges - not cached "+property);
             incrementMissed(CacheType.DATA_CHANGES);
-            WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
+            WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             DataChanges changes = (DataChanges) thisJoinPoint.proceed(new Object[]{property, change, propChanges, cacheWheres});
 
             cacheNoBig(implement, hashCaches, new DataChangesResult<K>(changes, changedWheres != null ? cacheWheres.toWhere() : null));
@@ -328,9 +328,9 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(DataChanges lsfusion.server.logics.property.CalcProperty.getDataChanges(PropertyChange,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(DataChanges lsfusion.server.logics.property.Property.getDataChanges(PropertyChange,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(change,propChanges,changedWhere)")
-    public Object callGetDataChanges(ProceedingJoinPoint thisJoinPoint, CalcProperty property, PropertyChange change, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public Object callGetDataChanges(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChange change, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
         return getDataChanges(property, change, changedWhere, propChanges, thisJoinPoint);
     }
@@ -351,7 +351,7 @@ public class MapCacheAspect {
 
         private boolean cachedPrereadHintEnabled; // transient
 
-        QueryInterfaceImplement(CalcProperty<?> property, CalcType calcType, PropertyChanges changes, PropertyQueryType changed, ImMap<K, ? extends Expr> values) {
+        QueryInterfaceImplement(Property<?> property, CalcType calcType, PropertyChanges changes, PropertyQueryType changed, ImMap<K, ? extends Expr> values) {
             usedChanges = property.getUsedChanges(changes);
             this.calcType = calcType;
             this.changed = (changed == PropertyQueryType.RECURSIVE ? PropertyQueryType.CHANGED : changed);
@@ -389,7 +389,7 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> IQuery<K, String> getQuery(CalcProperty<K> property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<K, ? extends Expr> interfaceValues, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> IQuery<K, String> getQuery(Property<K> property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<K, ? extends Expr> interfaceValues, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
 
         final boolean checkCaches = MapCacheAspect.checkCaches();
@@ -450,9 +450,9 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getQuery(lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,lsfusion.base.col.interfaces.immutable.ImMap)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getQuery(lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,lsfusion.base.col.interfaces.immutable.ImMap)) " +
             "&& target(property) && args(calcType,propChanges,queryType,interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap interfaceValues) throws Throwable {
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap interfaceValues) throws Throwable {
         // сначала target в аспекте должен быть
         return getQuery(property, calcType, propChanges, queryType, interfaceValues, thisJoinPoint);
     }
@@ -469,7 +469,7 @@ public class MapCacheAspect {
         
         private boolean cachedPrereadHintEnabled; // transient
 
-        public JoinExprInterfaceImplement(CalcProperty<P> property, ImMap<P, Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, boolean where) {
+        public JoinExprInterfaceImplement(Property<P> property, ImMap<P, Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, boolean where) {
             usedChanges = property.getUsedChanges(propChanges);
             this.calcType = calcType;
             this.joinImplement = joinImplement;
@@ -533,14 +533,14 @@ public class MapCacheAspect {
     
     // должно быть consistent с SessionModifier.allowPrereadValues
     // нужен чтобы не подцелялись кэши, когда хинты были отключены (так как тогда preread тогда срабатывать не будут)
-    private static boolean prereadHintEnabled(CalcProperty property) {
+    private static boolean prereadHintEnabled(Property property) {
         if(!property.isComplex()) // если не complex, то preread'ов не может быть
             return true;
         SessionModifier modifier = AutoHintsAspect.catchAutoHint.get();
         return modifier != null && modifier.prereadProps.isEmpty(); // если есть SessionModifier и это не preread разрешаем использовать кэш (предполагается что остальные параметры allowPrereadValues уже включены в ключи кэша) 
     }
 
-    public <K extends PropertyInterface> Expr getJoinExpr(CalcProperty<K> property, ImMap<K, Expr> joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> Expr getJoinExpr(Property<K> property, ImMap<K, Expr> joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         final boolean checkCaches = MapCacheAspect.checkCaches();
 
@@ -574,7 +574,7 @@ public class MapCacheAspect {
             }
 
             incrementMissed(CacheType.JOIN_EXPR);
-            WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
+            WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, implement.usedChanges, cacheWheres});
 
             logger.debug("getExpr - not cached "+property);
@@ -598,14 +598,14 @@ public class MapCacheAspect {
     public static boolean checkInfinite = false;
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
         return getJoinExpr(property, joinExprs, calcType, propChanges, changedWhere, thisJoinPoint);
     }
 
-    public <K extends PropertyInterface> PropertyChange<K> getIncrementChange(CalcProperty<K> property, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> PropertyChange<K> getIncrementChange(Property<K> property, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         final boolean checkCaches = MapCacheAspect.checkCaches();
 
@@ -653,20 +653,20 @@ public class MapCacheAspect {
     }
 
     // aspect нужен по большому счету чтобы сохранять query, и не делать лишних getInnerComponents
-    @Around("execution(* lsfusion.server.logics.property.CalcProperty.getIncrementChange(PropertyChanges)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getIncrementChange(PropertyChanges)) " +
             "&& target(property) && args(propChanges)")
-    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, PropertyChanges propChanges) throws Throwable {
+    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChanges propChanges) throws Throwable {
         return getIncrementChange(property, propChanges, thisJoinPoint);
     }
 
     // read save cache
     static class ReadSaveInterfaceImplement extends AbstractValuesContext<ReadSaveInterfaceImplement> {
-        private final ImSet<CalcProperty> properties;
+        private final ImSet<Property> properties;
         private final PropertyChanges usedChanges;
 
-        ReadSaveInterfaceImplement(ImSet<CalcProperty> properties, PropertyChanges changes) {
-            MSet<CalcProperty> mCommonChanges = SetFact.mSet();
-            for(CalcProperty property : properties)
+        ReadSaveInterfaceImplement(ImSet<Property> properties, PropertyChanges changes) {
+            MSet<Property> mCommonChanges = SetFact.mSet();
+            for(Property property : properties)
                 mCommonChanges.addAll(property.getSetUsedChanges(changes));
             usedChanges = changes.filter(mCommonChanges.immutable());
             this.properties = properties;
@@ -698,20 +698,20 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImplementTable table, ImSet<CalcProperty> properties, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> IQuery<KeyField, Property> getReadSaveQuery(ImplementTable table, ImSet<Property> properties, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         final boolean checkCaches = MapCacheAspect.checkCaches();
 
         // assert что в interfaceValues только values
         if(disableCaches)
-            return (IQuery<KeyField, CalcProperty>) thisJoinPoint.proceed();
+            return (IQuery<KeyField, Property>) thisJoinPoint.proceed();
 
         ReadSaveInterfaceImplement implement = new ReadSaveInterfaceImplement(properties, propChanges);
 
-        IQuery<KeyField, CalcProperty> query;
-        IQuery<KeyField, CalcProperty> cacheQuery = null;
-        MAddCol<CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>>> hashCaches = getCachedCol(table, implement.getValueComponents().hash, MapCacheAspect.Type.READSAVE);
+        IQuery<KeyField, Property> query;
+        IQuery<KeyField, Property> cacheQuery = null;
+        MAddCol<CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, Property>>> hashCaches = getCachedCol(table, implement.getValueComponents().hash, MapCacheAspect.Type.READSAVE);
         synchronized(hashCaches) {
-            for(CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, CalcProperty>> cache : hashCaches.it()) {
+            for(CacheResult<ReadSaveInterfaceImplement, IQuery<KeyField, Property>> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
                     if(cache.implement.translateValues(mapValues).equals(implement)) {
                         cacheQuery = cache.result.translateValues(mapValues.filter(cache.result.getInnerValues())); // так как могут не использоваться values в Query
@@ -720,7 +720,7 @@ public class MapCacheAspect {
                 }
             }
             if(cacheQuery==null || checkCaches) {
-                query = (IQuery<KeyField, CalcProperty>) thisJoinPoint.proceed(new Object[]{table, properties, implement.usedChanges});
+                query = (IQuery<KeyField, Property>) thisJoinPoint.proceed(new Object[]{table, properties, implement.usedChanges});
 
                 assert implement.getContextValues().containsAll(ValueExpr.removeStatic(query.getInnerValues())); // в query не должно быть элементов не из implement.getContextValues
 

@@ -17,10 +17,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.*;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -264,7 +262,7 @@ public class ActionOrPropertyUtils {
             if(lp.property instanceof ActionProperty)
                 return new ActionPropertyMapImplement<>((ActionProperty<P>) lp.property, mapping);
             else
-                return new CalcPropertyMapImplement<>((CalcProperty<P>) lp.property, mapping);
+                return new CalcPropertyMapImplement<>((Property<P>) lp.property, mapping);
         }
 
         <T> CalcPropertyObjectInterfaceImplement<T> mapObject(final ImOrderSet<T> interfaces) {
@@ -273,7 +271,7 @@ public class ActionOrPropertyUtils {
                     return interfaces.get(mapInt[i] - 1);
                 }});
 
-            return new CalcPropertyRevImplement<>((CalcProperty<P>) lp.property, mapping);
+            return new CalcPropertyRevImplement<>((Property<P>) lp.property, mapping);
         }
 
         Object[] write() {

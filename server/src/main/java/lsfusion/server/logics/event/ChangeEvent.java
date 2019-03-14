@@ -25,17 +25,17 @@ public class ChangeEvent<C extends PropertyInterface> {
 
     public static final PrevScope scope = PrevScope.DB;
 
-    protected final CalcProperty<C> writeTo; // что меняем
+    protected final Property<C> writeTo; // что меняем
     public final CalcPropertyMapImplement<? extends PropertyInterface, C> where;
 
     public final CalcPropertyInterfaceImplement<C> writeFrom;
 
-    public CalcProperty<?> getWhere() {
+    public Property<?> getWhere() {
         return where.property;
     }
 
-    public ChangeEvent(CalcProperty<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where) {
-        assert ((CalcProperty)where.property).noDB();
+    public ChangeEvent(Property<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where) {
+        assert ((Property)where.property).noDB();
         this.writeTo = writeTo;
         this.where = where;
         this.writeFrom = writeFrom;
@@ -48,8 +48,8 @@ public class ChangeEvent<C extends PropertyInterface> {
         return result.merge(writeFrom.mapOldDepends());
     }
 
-    public ImSet<CalcProperty> getDepends() {
-        MSet<CalcProperty> mResult = SetFact.mSet();
+    public ImSet<Property> getDepends() {
+        MSet<Property> mResult = SetFact.mSet();
         where.mapFillDepends(mResult);
         writeFrom.mapFillDepends(mResult);
         return mResult.immutable();
@@ -74,8 +74,8 @@ public class ChangeEvent<C extends PropertyInterface> {
         return writeTo.getDataChanges(getChange(changes, joinValues), changes);
     }
 
-    public ImSet<CalcProperty> getUsedDataChanges(StructChanges changes) {
-        ImSet<CalcProperty> usedChanges = where.property.getUsedChanges(changes);
+    public ImSet<Property> getUsedDataChanges(StructChanges changes) {
+        ImSet<Property> usedChanges = where.property.getUsedChanges(changes);
         if(!changes.hasChanges(usedChanges)) // для верхней оптимизации
             return usedChanges;
 

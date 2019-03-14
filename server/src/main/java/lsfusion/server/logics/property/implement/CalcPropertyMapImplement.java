@@ -48,11 +48,11 @@ import java.sql.SQLException;
 
 public class CalcPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends CalcPropertyRevImplement<P, T> implements CalcPropertyInterfaceImplement<T> {
 
-    public CalcPropertyMapImplement(CalcProperty<P> property) {
+    public CalcPropertyMapImplement(Property<P> property) {
         super(property, MapFact.<P, T>EMPTYREV());
     }
     
-    public CalcPropertyMapImplement(CalcProperty<P> property, ImRevMap<P, T> mapping) {
+    public CalcPropertyMapImplement(Property<P> property, ImRevMap<P, T> mapping) {
         super(property, mapping);
     }
 
@@ -150,7 +150,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.getExpr(mapping.join(joinImplement));
     }
 
-    public void mapFillDepends(MSet<CalcProperty> depends) {
+    public void mapFillDepends(MSet<Property> depends) {
         depends.add(property);
     }
 
@@ -200,7 +200,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     @Override
-    public ActionPropertyMapImplement<?, T> mapEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, T> mapEditAction(String editActionSID, Property filterProperty) {
         ActionPropertyMapImplement<?, P> editAction = property.getEditAction(editActionSID, filterProperty);
         return editAction == null ? null : editAction.map(mapping);
     }

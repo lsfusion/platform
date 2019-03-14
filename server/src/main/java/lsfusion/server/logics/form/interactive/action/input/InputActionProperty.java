@@ -9,7 +9,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
@@ -22,7 +22,7 @@ public class InputActionProperty extends SystemExplicitActionProperty {
     private final LCP<?> targetProp;
             
     //  используется только для событий поэтому по идее не надо, так как в событиях user activity быть не может
-//    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+//    public ImMap<Property, Boolean> aspectChangeExtProps() {
 //        return getChangeProps(requestCanceledProperty.property, requestedPropertySet.getLCP(dataClass).property);
 //    }
 
@@ -47,7 +47,7 @@ public class InputActionProperty extends SystemExplicitActionProperty {
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         if(targetProp != null)
             return getChangeProps(targetProp.property);
         // тут по хорошему надо getRequestedValue возвращать но для этого BL нужен

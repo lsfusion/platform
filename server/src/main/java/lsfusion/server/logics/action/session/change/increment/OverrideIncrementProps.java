@@ -3,7 +3,7 @@ package lsfusion.server.logics.action.session.change.increment;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class OverrideIncrementProps extends IncrementProps {
@@ -25,7 +25,7 @@ public class OverrideIncrementProps extends IncrementProps {
     }
 
     @Override
-    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
+    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
         PropertyChange<P> overrideChange = override.getPropertyChange(property);
         if(overrideChange!=null)
             return overrideChange;
@@ -33,11 +33,11 @@ public class OverrideIncrementProps extends IncrementProps {
     }
 
     @Override
-    public ImSet<CalcProperty> getProperties() {
+    public ImSet<Property> getProperties() {
         return override.getProperties().merge(increment.getProperties());
     }
 
-    public long getMaxCount(CalcProperty property) {
+    public long getMaxCount(Property property) {
         return BaseUtils.max(override.getMaxCount(property), increment.getMaxCount(property));
     }
 

@@ -413,11 +413,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
             message += DataSession.checkTableClasses(implementTable, session, LM.baseClass, false); // так как снизу есть проверка классов
         }
-        ImOrderSet<CalcProperty> storedDataProperties;
+        ImOrderSet<Property> storedDataProperties;
         try(DataSession dataSession = createRecalculateSession(session)) {
             storedDataProperties = businessLogics.getStoredDataProperties(dataSession);
         }
-        for (CalcProperty property : storedDataProperties)
+        for (Property property : storedDataProperties)
             message += DataSession.checkClasses(property, session, LM.baseClass);
         return message;
     }
@@ -497,7 +497,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         try(DataSession dataSession = createRecalculateSession(session)) {
-            for (final CalcProperty property : businessLogics.getStoredDataProperties(dataSession))
+            for (final Property property : businessLogics.getStoredDataProperties(dataSession))
                 run(session, isolatedTransactions, new RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         long start = System.currentTimeMillis();
@@ -737,10 +737,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     }
                 },
                 new ChangesController() {
-                    public void regChange(ImSet<CalcProperty> changes, DataSession session) {
+                    public void regChange(ImSet<Property> changes, DataSession session) {
                     }
 
-                    public ImSet<CalcProperty> update(DataSession session, FormInstance form) {
+                    public ImSet<Property> update(DataSession session, FormInstance form) {
                         return SetFact.EMPTY();
                     }
 
@@ -1066,13 +1066,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            List<CalcProperty> recalculateProperties = new ArrayList<>();
+            List<Property> recalculateProperties = new ArrayList<>();
 
             MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
             // бежим по свойствам
             List<DBStoredProperty> restNewDBStored = new LinkedList<>(newDBStructure.storedProperties);
-            List<CalcProperty> recalculateStatProperties = new ArrayList<>();
+            List<Property> recalculateStatProperties = new ArrayList<>();
             Map<ImplementTable, Map<Field, Type>> alterTableMap = new HashMap<>();
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 NamedTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
@@ -1340,31 +1340,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
         serverComputer = (long) getComputer(SystemUtils.getLocalHostName(), session, getStack()).object;
     }
 
-    private void updateAggregationStats(DataSession session, List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
-        Map<ImplementTable, List<CalcProperty>> calcPropertiesMap; // статистика для новых свойств
+    private void updateAggregationStats(DataSession session, List<Property> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
+        Map<ImplementTable, List<Property>> calcPropertiesMap; // статистика для новых свойств
         if (Settings.get().isGroupByTables()) {
             calcPropertiesMap = new HashMap<>();
-            for (CalcProperty property : recalculateProperties) {
-                List<CalcProperty> entry = calcPropertiesMap.get(property.mapTable.table);
+            for (Property property : recalculateProperties) {
+                List<Property> entry = calcPropertiesMap.get(property.mapTable.table);
                 if (entry == null)
                     entry = new ArrayList<>();
                 entry.add(property);
                 calcPropertiesMap.put(property.mapTable.table, entry);
             }
-            for(Map.Entry<ImplementTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet())
+            for(Map.Entry<ImplementTable, List<Property>> entry : calcPropertiesMap.entrySet())
                 recalculateAndUpdateStat(session, entry.getKey(), entry.getValue());
         }
     }
 
-    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<CalcProperty> properties) throws SQLException, SQLHandledException {
+    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Property> properties) throws SQLException, SQLHandledException {
         ImMap<PropertyField, String> fields = null;
         if(properties != null) {
-            fields = SetFact.fromJavaOrderSet(properties).getSet().mapKeyValues(new GetValue<PropertyField, CalcProperty>() {
-                public PropertyField getMapValue(CalcProperty value) {
+            fields = SetFact.fromJavaOrderSet(properties).getSet().mapKeyValues(new GetValue<PropertyField, Property>() {
+                public PropertyField getMapValue(Property value) {
                     return value.field;
                 }
-            }, new GetValue<String, CalcProperty>() {
-                public String getMapValue(CalcProperty value) {
+            }, new GetValue<String, Property>() {
+                public String getMapValue(Property value) {
                     return value.getCanonicalName();
                 }
             });
@@ -1430,7 +1430,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         String message = "";
         for (int i = 0; i < checkProperties.size(); i++) {
-            CalcProperty property = checkProperties.get(i);
+            Property property = checkProperties.get(i);
             if(property != null)
                 message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.aggregated.property}"), i, checkProperties.size(), property.getSID()));
         }
@@ -1487,7 +1487,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 //    }
 //
     public String checkAggregationTableColumn(SQLSession session, String propertyCanonicalName) throws SQLException, SQLHandledException {
-        CalcProperty property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
+        Property property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
         return property != null ? ((AggregateProperty) property).checkAggregation(session, LM.baseClass) : null;
     }
 
@@ -1547,13 +1547,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
-    public List<String> recalculateAggregations(DataSession dataSession, ExecutionStack stack, SQLSession session, final List<? extends CalcProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
+    public List<String> recalculateAggregations(DataSession dataSession, ExecutionStack stack, SQLSession session, final List<? extends Property> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         if(total > 0) {
             for (int i = 0; i < recalculateProperties.size(); i++) {
-                CalcProperty property = recalculateProperties.get(i);
+                Property property = recalculateProperties.get(i);
                 if(property instanceof AggregateProperty)
                     recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(localize("{logics.recalculation.aggregations}"), i, total), messageList, maxRecalculateTime, (AggregateProperty) property, logger);
             }
@@ -1616,14 +1616,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
         try(DataSession dataSession = createRecalculateSession(session)) {
-            recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<CalcProperty>(), dependents);
+            recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<Property>(), dependents);
             apply(dataSession, stack);
         }
     }
 
-    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, CalcProperty<?> property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
+    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, Property<?> property, boolean isolatedTransaction, Set<Property> calculated, boolean dependents) throws SQLException, SQLHandledException {
         if (!dependents) {
-            for (CalcProperty prop : property.getDepends()) {
+            for (Property prop : property.getDepends()) {
                 if (prop != property && !calculated.contains(prop)) {
                     recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, false);
                 }
@@ -1636,8 +1636,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         if (dependents) {
-            for (CalcProperty prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
-                if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, property)) {
+            for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
+                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property)) {
                     boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);
@@ -2146,7 +2146,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         
         public ImMap<Integer, KeyField> mapKeys;
-        public CalcProperty<?> property = null;
+        public Property<?> property = null;
         public ImplementTable getTable() {
             return property.mapTable.table;
         }
@@ -2156,12 +2156,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             return getDBName() + ' ' + tableName;
         }
 
-        public DBStoredProperty(CalcProperty<?> property) {
+        public DBStoredProperty(Property<?> property) {
             assert property.isNamed();
             this.setCanonicalName(property.getCanonicalName());
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
-            mapKeys = ((CalcProperty<PropertyInterface>)property).mapTable.mapKeys.mapKeys(new GetValue<Integer, PropertyInterface>() {
+            mapKeys = ((Property<PropertyInterface>)property).mapTable.mapKeys.mapKeys(new GetValue<Integer, PropertyInterface>() {
                 public Integer getMapValue(PropertyInterface value) {
                     return value.ID;
                 }});
@@ -2274,7 +2274,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             CalcPropertyRevImplement<P, String> basePropertyImplement = (CalcPropertyRevImplement<P, String>) findProperty(indexFields);
             assert basePropertyImplement != null; // исходя из логики addIndex
 
-            CalcProperty<P> baseProperty = basePropertyImplement.property;
+            Property<P> baseProperty = basePropertyImplement.property;
 
             if (!baseProperty.isStored())
                 throw new RuntimeException(localize("{logics.policy.forbidden.to.create.indexes.on.non.regular.properties}") + " (" + baseProperty + ")");
@@ -2288,7 +2288,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 Field field;
                 if(indexField instanceof CalcPropertyRevImplement) {
                     CalcPropertyRevImplement<P, String> propertyImplement = (CalcPropertyRevImplement<P, String>)indexField;
-                    CalcProperty<P> property = propertyImplement.property;
+                    Property<P> property = propertyImplement.property;
 
                     if (!property.isStored())
                         throw new RuntimeException(localize("{logics.policy.forbidden.to.create.indexes.on.non.regular.properties}") + " (" + property + ")");
@@ -2319,7 +2319,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             tables.putAll(getIndicesMap());
 
-            for (CalcProperty<?> property : businessLogics.getStoredProperties()) {
+            for (Property<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
                 assert property.isNamed();
             }

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.init;
 
 import lsfusion.server.logics.action.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.action.flow.ListCaseActionProperty;
@@ -19,7 +19,7 @@ public class MarkRecursionsTask extends GroupPropertiesTask {
             }
         }
 
-        if (property instanceof CalcProperty) {
+        if (property instanceof Property) {
             if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract()) {
                 ((CaseUnionProperty) property).checkRecursions();
             }

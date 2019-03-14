@@ -52,10 +52,10 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                FormPrintType staticType,
                                boolean syncType,
                                Integer top,
-                               CalcProperty password,
+                               Property password,
                                LCP sheetNameProperty,
                                LCP exportFile,
-                               CalcProperty printer,
+                               Property printer,
                                LCP formPageCount, boolean removeNullsAndDuplicates) {
         super(caption, form, objectsToSet, nulls, staticType, top, password, printer);
 
@@ -113,7 +113,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         if(exportFile != null)
             return getChangeProps(exportFile.property);
         return MapFact.EMPTY();

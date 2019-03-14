@@ -127,7 +127,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkPropertyValue(LCP<?> property, Map<CalcProperty, String> alwaysNullProperties) {
+    public void checkPropertyValue(LCP<?> property, Map<Property, String> alwaysNullProperties) {
         if (!property.property.checkAlwaysNull(false) && !alwaysNullProperties.containsKey(property.property)) {
             String path = parser.getCurrentScriptPath(LM.getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
             String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);
@@ -187,12 +187,12 @@ public class ScriptingLogicsModuleChecks {
         LCP<?> lp1 = properties.get(0).getLP();
         if(lp1 == null)
             return;
-        CalcProperty prop1 = lp1.property;
+        Property prop1 = lp1.property;
         for (int i = 1; i < properties.size(); i++) {
             LCP<?> lp2 = properties.get(i).getLP();
             if(lp2 == null)
                 return;
-            CalcProperty prop2 = lp2.property;
+            Property prop2 = lp2.property;
             if (prop1.getType() != null && prop2.getType() != null && prop1.getType().getCompatible(prop2.getType()) == null) {
                 errLog.emitIncompatibleTypes(parser, errMsgPropType);
             }
@@ -426,7 +426,7 @@ public class ScriptingLogicsModuleChecks {
         String firstPropertyName = null;
         for (LCPWithParams lp : lps) {
             if (lp.getLP() != null) {
-                CalcProperty<?> calcProperty = lp.getLP().property;
+                Property<?> calcProperty = lp.getLP().property;
                 String name = calcProperty.getName();
                 if (!calcProperty.isStored()) {
                     errLog.emitShouldBeStoredError(parser, name);

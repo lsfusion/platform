@@ -6,7 +6,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 
@@ -23,10 +23,10 @@ public class ImportField implements ImportFieldInterface, ImportKeyInterface {
     }
 
     public ImportField(LCP property) {
-        this((CalcProperty<?>) property.property);
+        this((Property<?>) property.property);
     }
 
-    public ImportField(CalcProperty<?> property) {
+    public ImportField(Property<?> property) {
         this.fieldClass = (DataClass) property.getType();
     }
 

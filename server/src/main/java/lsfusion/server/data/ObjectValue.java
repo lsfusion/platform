@@ -18,7 +18,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.filter.CompareInstance;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 
@@ -51,7 +51,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
         return getExpr();
     }
 
-    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return getExpr();
     }
 
@@ -84,7 +84,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
     public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden, ImSet<GroupObjectInstance> groupObjects) {return false;}
-    public void fillProperties(MSet<CalcProperty> properties) {}
+    public void fillProperties(MSet<Property> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
 
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);

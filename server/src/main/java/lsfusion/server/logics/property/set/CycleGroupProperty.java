@@ -36,18 +36,18 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         return GroupType.ASSERTSINGLE();
     }
 
-    final CalcProperty<P> toChange;
+    final Property<P> toChange;
 
-    public CycleGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
+    public CycleGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, Property<P> toChange) {
         super(caption, innerInterfaces, groupInterfaces, property, false);
         this.toChange = toChange;
     }
 
     @IdentityInstanceLazy
-    public CalcProperty getConstrainedProperty() {
+    public Property getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
-        CalcProperty constraint; 
+        Property constraint; 
                 
 //        constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
 //                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
@@ -71,7 +71,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @Override
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         if(toChange!=null)
             return MaxChangeProperty.getUsedChanges(this,toChange, propChanges);
         else

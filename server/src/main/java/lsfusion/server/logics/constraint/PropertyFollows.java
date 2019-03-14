@@ -9,13 +9,13 @@ public class PropertyFollows<T extends PropertyInterface, L extends PropertyInte
     public final static int RESOLVE_ALL = RESOLVE_TRUE | RESOLVE_FALSE;
     public final static int RESOLVE_NOTHING = 0;
 
-/*    public PropertyFollows(CalcProperty<T> property, CalcPropertyMapImplement<L, T> implement, int options) {
+/*    public PropertyFollows(Property<T> property, CalcPropertyMapImplement<L, T> implement, int options) {
         this.property = property;
         this.implement = implement;
         this.options = options;
     }
 
-    private final CalcProperty<T> property;
+    private final Property<T> property;
     private final CalcPropertyMapImplement<L, T> implement;
     private int options;
 

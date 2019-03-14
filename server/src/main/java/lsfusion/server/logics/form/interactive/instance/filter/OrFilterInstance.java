@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.change.ReallyChanged;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.io.DataInputStream;
@@ -26,7 +26,7 @@ public class OrFilterInstance extends OpFilterInstance {
         super(inStream, form);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return op1.getWhere(mapKeys, modifier, reallyChanged, mUsedProps).or(op2.getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
     }
 

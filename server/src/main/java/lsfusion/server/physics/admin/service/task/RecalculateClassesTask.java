@@ -7,8 +7,8 @@ import lsfusion.server.Settings;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.exec.DBManager;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
 import lsfusion.server.logics.action.session.DataSession;
@@ -19,7 +19,7 @@ import java.util.*;
 
 public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { // 1 - excl, ImplementTable
     public static int RECALC_TIL = -1;
-    Map<ImplementTable, List<CalcProperty>> calcPropertiesMap;
+    Map<ImplementTable, List<Property>> calcPropertiesMap;
     private boolean groupByTables;
 
     public RecalculateClassesTask() {
@@ -33,7 +33,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         } else if (element instanceof ImplementTable) {
             return "Recalculate Table Classes \\ Pack Table";
         }
-        assert element instanceof CalcProperty;
+        assert element instanceof Property;
         return "Recalculate Class";
     }
 
@@ -55,10 +55,10 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
                     sql.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global);
                 }
             });
-        } else if (element instanceof CalcProperty) {
+        } else if (element instanceof Property) {
             DBManager.run(sql, true, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    ((CalcProperty) element).recalculateClasses(sql, getBL().LM.baseClass);
+                    ((Property) element).recalculateClasses(sql, getBL().LM.baseClass);
                 }
             });
         }
@@ -75,7 +75,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         elements.add(1);
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
 
-        List<CalcProperty> storedDataPropertiesList;
+        List<Property> storedDataPropertiesList;
         try(DataSession session = createSession()) {
             storedDataPropertiesList = getBL().getStoredDataProperties(session).toJavaList();
         } catch (SQLException e) {
@@ -83,14 +83,14 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         }
         if(groupByTables) {
             calcPropertiesMap = new HashMap<>();
-            for (CalcProperty property : storedDataPropertiesList) {
-                List<CalcProperty> entry = calcPropertiesMap.get(property.mapTable.table);
+            for (Property property : storedDataPropertiesList) {
+                List<Property> entry = calcPropertiesMap.get(property.mapTable.table);
                 if (entry == null)
                     entry = new ArrayList<>();
                 entry.add(property);
                 calcPropertiesMap.put(property.mapTable.table, entry);
             }
-            for (Map.Entry<ImplementTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet()) {
+            for (Map.Entry<ImplementTable, List<Property>> entry : calcPropertiesMap.entrySet()) {
                 java.util.Collections.sort(entry.getValue(), COMPARATOR);
             }
         }
@@ -101,7 +101,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     @Override
     protected String getElementCaption(Object element) {
         return element instanceof ImplementTable ? ((ImplementTable) element).getName() :
-                element instanceof CalcProperty ? ((CalcProperty) element).getSID() : null;
+                element instanceof Property ? ((Property) element).getSID() : null;
     }
 
     @Override
@@ -112,8 +112,8 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     @Override
     protected ImSet<Object> getDependElements(Object key) {
         ImSet<Object> depends = SetFact.EMPTY();
-        if(key instanceof CalcProperty && groupByTables) {
-            List<CalcProperty> entry = calcPropertiesMap.get(((CalcProperty) key).mapTable.table);
+        if(key instanceof Property && groupByTables) {
+            List<Property> entry = calcPropertiesMap.get(((Property) key).mapTable.table);
             if(entry != null) {
                 int index = entry.indexOf(key);
                 if(index > 0)
@@ -128,7 +128,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         Stat stat;
         try {
             stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatRows() :
-                    element instanceof CalcProperty ? ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :
+                    element instanceof Property ? ((Property) element).mapTable.table.getStatProps().get(((Property) element).field).notNull :
                             Stat.MAX;
         } catch (Exception e) {
             stat = null;
@@ -136,13 +136,13 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
     }
 
-    private static Comparator<CalcProperty> COMPARATOR = new Comparator<CalcProperty>() {
-        public int compare(CalcProperty c1, CalcProperty c2) {
+    private static Comparator<Property> COMPARATOR = new Comparator<Property>() {
+        public int compare(Property c1, Property c2) {
             return getNotNullWeight(c1) - getNotNullWeight(c2);
         }
     };
 
-    private static int getNotNullWeight(CalcProperty c) {
+    private static int getNotNullWeight(Property c) {
         Stat stat;
         try {
             stat = c == null ? null : c.mapTable.table.getStatProps().get(c.field).notNull;

@@ -21,7 +21,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -88,7 +88,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return interfaceValues.get((P) this);
     }
 
-    public void mapFillDepends(MSet<CalcProperty> depends) {
+    public void mapFillDepends(MSet<Property> depends) {
     }
 
     public ImSet<OldProperty> mapOldDepends() {
@@ -125,7 +125,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty) {
         return null;
     }
 

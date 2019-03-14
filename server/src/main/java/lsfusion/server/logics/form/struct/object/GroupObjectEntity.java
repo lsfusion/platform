@@ -35,7 +35,7 @@ import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -122,7 +122,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             if(!Settings.get().isDisableUpdateTypeHeur()) {
                 // либо исключающий (для верхних групп объектов) фильтр, либо узкий (с низкой статистикой при "статичных" верхних объектах)
                 // в частности в таком случае нет смысла seek делать
-                Modifier modifier = CalcProperty.defaultModifier;
+                Modifier modifier = Property.defaultModifier;
 
                 ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
                 Where dynamicWhere = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));

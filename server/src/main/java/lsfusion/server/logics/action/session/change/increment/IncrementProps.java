@@ -4,7 +4,7 @@ import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.action.session.change.modifier.OverrideSessionModifier;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -30,26 +30,26 @@ public abstract class IncrementProps {
         increments.remove(modifier);
     }
 
-    public void eventChange(CalcProperty property, boolean sourceChanged) throws SQLException, SQLHandledException {
+    public void eventChange(Property property, boolean sourceChanged) throws SQLException, SQLHandledException {
         eventChange(property, true, sourceChanged);
     }
 
-    public void eventChange(CalcProperty property, boolean dataChanged, boolean sourceChanged) throws SQLException, SQLHandledException {
+    public void eventChange(Property property, boolean dataChanged, boolean sourceChanged) throws SQLException, SQLHandledException {
         for(OverrideIncrementProps increment : increments)
             increment.eventChange(property, dataChanged, sourceChanged);
 
          for(OverrideSessionModifier modifier : modifiers)
             modifier.eventIncrementChange(property, dataChanged, sourceChanged);
     }
-    public void eventChanges(Iterable<? extends CalcProperty> properties) throws SQLException, SQLHandledException {
-        for(CalcProperty property : properties)
+    public void eventChanges(Iterable<? extends Property> properties) throws SQLException, SQLHandledException {
+        for(Property property : properties)
             eventChange(property, true); // вызывается при clear, а значит все "источники" сбрасываются
     }
     
-    public abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property);
-    public abstract ImSet<CalcProperty> getProperties();
+    public abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property);
+    public abstract ImSet<Property> getProperties();
 
-    public abstract long getMaxCount(CalcProperty property);
+    public abstract long getMaxCount(Property property);
     
     public abstract String out();
 }

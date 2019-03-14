@@ -128,9 +128,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public void fillDepends(MSet<CalcProperty> depends, boolean events) {
+    public void fillDepends(MSet<Property> depends, boolean events) {
         fillDepends(depends,implement.mapping.values());
-        depends.add((CalcProperty) implement.property);
+        depends.add((Property) implement.property);
     }
 
     // разрешить менять основное свойство
@@ -139,10 +139,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     private final boolean user;
     
     @Override
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
-            MSet<CalcProperty> mResult = SetFact.mSet();
-            for(CalcProperty<?> property : getDepends()) {
+            MSet<Property> mResult = SetFact.mSet();
+            for(Property<?> property : getDepends()) {
                 mResult.addAll(property.getUsedDataChanges(propChanges));
                 mResult.addAll(property.getUsedChanges(propChanges));
             }
@@ -151,14 +151,14 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         T andInterface = getObjectAndInterface(implement.property);
         if(andInterface!=null) {
-            MSet<CalcProperty> mImplementDepends = SetFact.mSet();
+            MSet<Property> mImplementDepends = SetFact.mSet();
             implement.mapping.get(andInterface).mapFillDepends(mImplementDepends);
             return SetFact.add(propChanges.getUsedDataChanges(mImplementDepends.immutable()), getUsedChanges(propChanges));
         }
 
-        CalcProperty<T> implementProperty = implement.property;
+        Property<T> implementProperty = implement.property;
         if(implementChange) {
-            MSet<CalcProperty> mImplementProps = SetFact.mSet();
+            MSet<Property> mImplementProps = SetFact.mSet();
             fillDepends(mImplementProps,implement.mapping.values());
             return SetFact.add(implementProperty.getUsedDataChanges(propChanges), propChanges.getUsedChanges(mImplementProps.immutable()));
         }
@@ -176,7 +176,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
     
     // для And - data changes, тут чтобы не мусорить в Property
-    private static <T extends PropertyInterface> T getObjectAndInterface(CalcProperty<T> property) {
+    private static <T extends PropertyInterface> T getObjectAndInterface(Property<T> property) {
         if(property instanceof AndFormulaProperty)
             return (T) ((AndFormulaProperty)property).objectInterface;
         if(property instanceof JoinProperty) {
@@ -191,7 +191,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return null;
     }
     
-    private static <T extends PropertyInterface> Where getAndWhere(CalcProperty<T> property, final ImMap<T, ? extends Expr> mapExprs, final PropertyChanges propChanges) {
+    private static <T extends PropertyInterface> Where getAndWhere(Property<T> property, final ImMap<T, ? extends Expr> mapExprs, final PropertyChanges propChanges) {
         if(property instanceof AndFormulaProperty) {
             AndFormulaProperty andProperty = (AndFormulaProperty)property;
             Where where = Where.TRUE;
@@ -281,8 +281,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        CalcProperty<T> aggProp = implement.property;
+    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+        Property<T> aggProp = implement.property;
 
         if (aggProp instanceof AndFormulaProperty) {
             final AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
@@ -338,8 +338,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override // см. базовый метод
-    public ImList<CalcProperty> getAndProperties() {
-        ImList<CalcProperty> result = super.getAndProperties();
+    public ImList<Property> getAndProperties() {
+        ImList<Property> result = super.getAndProperties();
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
             CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<Interface>> andImplement

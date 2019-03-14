@@ -38,7 +38,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.base.stack.ParamMessage;
@@ -295,12 +295,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize() || expr.needMaterialize() || (table != null && table.used(getQuery()));
     }
 
-    public PropertyChangeTableUsage<T> materialize(String debugInfo, CalcProperty<T> property, DataSession session) throws SQLException, SQLHandledException {
+    public PropertyChangeTableUsage<T> materialize(String debugInfo, Property<T> property, DataSession session) throws SQLException, SQLHandledException {
         return materialize(debugInfo, property, session.sql, session.baseClass, session.env);
     }
 
     @StackMessage("{message.property.materialize}")
-    public PropertyChangeTableUsage<T> materialize(String debugInfo, @ParamMessage CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public PropertyChangeTableUsage<T> materialize(String debugInfo, @ParamMessage Property<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         PropertyChangeTableUsage<T> result = property.createChangeTable(debugInfo);
         writeRows(result, sql, baseClass, env, SessionTable.matLocalQuery);
         return result;

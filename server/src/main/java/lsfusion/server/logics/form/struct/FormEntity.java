@@ -664,7 +664,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcPropertyRevImplement<P, ObjectEntity> impl) {
         return addPropertyObject(impl.property, impl.mapping);
     }
-    public <P extends PropertyInterface> CalcPropertyObjectEntity<P> addPropertyObject(CalcProperty<P> property, ImRevMap<P, ObjectEntity> objects) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity<P> addPropertyObject(Property<P> property, ImRevMap<P, ObjectEntity> objects) {
         return new CalcPropertyObjectEntity<>(property, objects);
     }
 
@@ -745,27 +745,27 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getPropertyDraw(PropertyDrawEntity.createSID(name, mapping), version);
     }
 
-    private NFSet<CalcProperty> hintsIncrementTable = NFFact.set();
+    private NFSet<Property> hintsIncrementTable = NFFact.set();
     @LongMutable
-    public ImSet<CalcProperty> getHintsIncrementTable() {
+    public ImSet<Property> getHintsIncrementTable() {
         return hintsIncrementTable.getSet();
     }
 
     public void addHintsIncrementTable(Version version, LCP... props) {
         for (LP prop : props) {
-            hintsIncrementTable.add((CalcProperty) prop.property, version);
+            hintsIncrementTable.add((Property) prop.property, version);
         }
     }
 
-    public void addHintsIncrementTable(Version version, CalcProperty... props) {
-        for (CalcProperty prop : props) {
+    public void addHintsIncrementTable(Version version, Property... props) {
+        for (Property prop : props) {
             hintsIncrementTable.add(prop, version);
         }
     }
 
-    private NFSet<CalcProperty> hintsNoUpdate = NFFact.set();
+    private NFSet<Property> hintsNoUpdate = NFFact.set();
     @LongMutable
-    public ImSet<CalcProperty> getHintsNoUpdate() {
+    public ImSet<Property> getHintsNoUpdate() {
         return hintsNoUpdate.getSet();
     }
 
@@ -776,10 +776,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     protected void addHintsNoUpdate(LCP prop, Version version) {
-        addHintsNoUpdate((CalcProperty) prop.property, version);
+        addHintsNoUpdate((Property) prop.property, version);
     }
 
-    public void addHintsNoUpdate(CalcProperty prop, Version version) {
+    public void addHintsNoUpdate(Property prop, Version version) {
         hintsNoUpdate.add(prop, version);
     }
 

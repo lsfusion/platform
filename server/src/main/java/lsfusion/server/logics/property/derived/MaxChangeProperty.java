@@ -17,8 +17,8 @@ import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.data.DataObject;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -58,9 +58,9 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
     public static class ValueInterface<P extends PropertyInterface> extends Interface<P> {
 
-        CalcProperty<P> toChange;
+        Property<P> toChange;
 
-        public ValueInterface(CalcProperty<P> toChange) {
+        public ValueInterface(Property<P> toChange) {
             super(1000);
 
             this.toChange = toChange;  
@@ -75,7 +75,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         }
     }
 
-    public static <P extends PropertyInterface> ImOrderSet<Interface<P>> getInterfaces(CalcProperty<P> property) {
+    public static <P extends PropertyInterface> ImOrderSet<Interface<P>> getInterfaces(Property<P> property) {
         return property.getFriendlyOrderInterfaces().mapOrderSetValues(new GetValue<Interface<P>, P>() {
             public Interface<P> getMapValue(P value) {
                 return new KeyInterface<>(value);
@@ -83,7 +83,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         }).addOrderExcl(new ValueInterface<>(property));
     }
 
-    public MaxChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
+    public MaxChangeProperty(Property<T> onChange, Property<P> toChange) {
         super(LocalizedString.concatList(onChange.caption, " по (", toChange.caption, ")"), getInterfaces(toChange), onChange, toChange);
 
         finalizeInit();

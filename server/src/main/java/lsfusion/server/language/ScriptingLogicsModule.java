@@ -144,7 +144,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private ScriptParser parser;
     private ScriptingLogicsModuleChecks checks;
     private List<String> warningList = new ArrayList<>();
-    private Map<CalcProperty, String> alwaysNullProperties = new HashMap<>();
+    private Map<Property, String> alwaysNullProperties = new HashMap<>();
 
     private String lastOptimizedJPropSID = null;
 
@@ -1152,7 +1152,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {
         StringBuilder errorMessage = new StringBuilder();
-        for (CalcProperty property : alwaysNullProperties.keySet()) {
+        for (Property property : alwaysNullProperties.keySet()) {
             if (errorMessage.length() > 0) {
                 errorMessage.append("\n");
             }
@@ -1233,7 +1233,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setAggr(LP property) {
-        ((CalcProperty)property.property).setAggr(true);
+        ((Property)property.property).setAggr(true);
     }
 
     public void setScriptedEditAction(LP property, String actionType, LAPWithParams action) {
@@ -1730,7 +1730,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
-        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
+        ValueClass[] eaClasses = Property.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
         LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses);
         SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;
@@ -2858,7 +2858,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private LCP<?> getInputProp(PropertyUsage targetProp, ValueClass valueClass, Set<CalcProperty> usedProps) throws ScriptingErrorLog.SemanticErrorException {
+    private LCP<?> getInputProp(PropertyUsage targetProp, ValueClass valueClass, Set<Property> usedProps) throws ScriptingErrorLog.SemanticErrorException {
         if(targetProp != null) {
             LCP<?> result = findLCPNoParamsByPropertyUsage(targetProp);
             usedProps.add(result.property);
@@ -2891,10 +2891,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         MList<Pair<LCPWithParams, DebugInfo.DebugPoint>> mAssignProps = ListFact.mListMax(allObjects.size());
 
         MList<O> mContextObjects = ListFact.mListMax(allObjects.size() + 1);
-        MList<CalcProperty> mContextProps = ListFact.mListMax(allObjects.size() + 1);
+        MList<Property> mContextProps = ListFact.mListMax(allObjects.size() + 1);
         List<LCPWithParams> contextLPs = new ArrayList<>();
 
-        Set<CalcProperty> usedProps = new HashSet<>();
+        Set<Property> usedProps = new HashSet<>();
 
         for (int i = 0; i < allObjects.size(); i++) {
             O object = allObjects.get(i);
@@ -2936,7 +2936,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<Pair<LCPWithParams, DebugInfo.DebugPoint>> assignProps = mAssignProps.immutableList();
 
         ImList<O> contextObjects = mContextObjects.immutableList();
-        ImList<CalcProperty> contextProps = mContextProps.immutableList();
+        ImList<Property> contextProps = mContextProps.immutableList();
 
         if(windowType == null) {
             if (!inputObjects.isEmpty())
@@ -3670,15 +3670,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (!property.property.checkAlwaysNull(true)) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
-        ImSet<CalcProperty<?>> checkedProps = null;
-        CalcProperty.CheckType type = (checked ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO);
+        ImSet<Property<?>> checkedProps = null;
+        Property.CheckType type = (checked ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO);
         if (checked && propUsages != null) {
-            MSet<CalcProperty<?>> mCheckedProps = SetFact.mSet();
+            MSet<Property<?>> mCheckedProps = SetFact.mSet();
             for (PropertyUsage propUsage : propUsages) {
                 LCP<?> lcp = findLCPByPropertyUsage(propUsage);
                 mCheckedProps.add(lcp.property);
             }
-            type = CalcProperty.CheckType.CHECK_SOME;
+            type = Property.CheckType.CHECK_SOME;
             checkedProps = mCheckedProps.immutable();
         }
         addConstraint(property, messageProperty, type, checkedProps, event, this, debugPoint);
@@ -3752,11 +3752,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         mainProp.setEventChange(this, action, params.toArray());
     }
 
-    public Set<CalcProperty> findPropsByPropertyUsages(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    public Set<Property> findPropsByPropertyUsages(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(propUsages==null)
             return null;
 
-        Set<CalcProperty> props = new HashSet<>(); // функционально из-за exception'а не сделаешь
+        Set<Property> props = new HashSet<>(); // функционально из-за exception'а не сделаешь
         for (PropertyUsage usage : propUsages) {
             LCP<?> lp = findLCPByPropertyUsage(usage);
             props.add(lp.property);
@@ -4145,7 +4145,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     } 
     public void propertyDefinitionCreated(LCP<?> property, DebugInfo.DebugPoint point) {
         if(property != null) { // can be null if property is param
-            CalcProperty calcProp = property.property;
+            Property calcProp = property.property;
             boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && calcProp instanceof DataProperty;
             if (calcProp.getDebugInfo() == null) { // при использовании в propertyExpression оптимизированных join свойств, не нужно им переустанавливать DebugInfo
                 CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);

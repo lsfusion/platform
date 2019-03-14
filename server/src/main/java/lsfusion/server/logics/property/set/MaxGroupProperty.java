@@ -32,7 +32,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         finalizeInit();
     }
 
-    public MaxGroupProperty(LocalizedString caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, boolean min) {
+    public MaxGroupProperty(LocalizedString caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, Property<I> property, boolean min) {
         super(caption, interfaces, property);
 
         this.min = min;

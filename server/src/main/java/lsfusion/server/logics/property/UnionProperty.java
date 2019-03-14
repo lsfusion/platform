@@ -37,7 +37,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
     public abstract ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands();
 
     @Override
-    public void fillDepends(MSet<CalcProperty> depends, boolean events) {
+    public void fillDepends(MSet<Property> depends, boolean events) {
         fillDepends(depends,getOperands());
     }
 

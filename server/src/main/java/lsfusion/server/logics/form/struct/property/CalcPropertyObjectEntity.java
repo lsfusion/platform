@@ -17,24 +17,24 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 
-public class CalcPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, CalcProperty<P>> implements OrderEntity<CalcPropertyObjectInstance<P>> {
+public class CalcPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, Property<P>> implements OrderEntity<CalcPropertyObjectInstance<P>> {
 
     public CalcPropertyObjectEntity() {
         //нужен для десериализации
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, ImRevMap<P, ObjectEntity> mapping) {
+    public CalcPropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping) {
         super(property, mapping, null, null);
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public CalcPropertyObjectEntity(Property<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         super(property, mapping, creationScript, creationPath);
     }
 

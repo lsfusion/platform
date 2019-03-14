@@ -38,9 +38,9 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
     private final CalcPropertyMapImplement<P, ClassPropertyInterface> implement;
     private final String editActionSID;
-    private final CalcProperty filterProperty;
+    private final Property filterProperty;
 
-    public DefaultChangeActionProperty(LocalizedString caption, CalcProperty<P> property, ImOrderSet<P> listInterfaces, ImList<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
+    public DefaultChangeActionProperty(LocalizedString caption, Property<P> property, ImOrderSet<P> listInterfaces, ImList<ValueClass> valueClasses, String editActionSID, Property filterProperty) {
         super(caption, valueClasses.toArray(new ValueClass[valueClasses.size()]));
 
         assert editActionSID.equals(ServerResponse.EDIT_OBJECT) || property.canBeChanged();
@@ -169,7 +169,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         return getChangeProps(implement.property);
     }
 }

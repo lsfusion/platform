@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -27,7 +27,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         this.groupProperty = groupProperty;
     }
     
-    protected AddGroupProperty(LocalizedString caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property) {
+    protected AddGroupProperty(LocalizedString caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, Property<I> property) {
         this(caption, property.interfaces, interfaces, property.getImplement());
     }
 

@@ -478,7 +478,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     private boolean needsToBeSynchronized(ActionOrProperty property) {
-        return property.isNamed() && (property instanceof ActionProperty || !((CalcProperty)property).isEmpty(AlgType.syncType));
+        return property.isNamed() && (property instanceof ActionProperty || !((Property)property).isEmpty(AlgType.syncType));
     }
 
     public void synchronizePropertyEntities() {
@@ -521,8 +521,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     try {
                         classProperty = property.getClass().getSimpleName();
                         
-                        if(property instanceof CalcProperty) {
-                            CalcProperty calcProperty = (CalcProperty)property;
+                        if(property instanceof Property) {
+                            Property calcProperty = (Property)property;
                             complexityProperty = calcProperty.getComplexity();
                             if (calcProperty.mapTable != null) {
                                 tableSID = calcProperty.mapTable.table.getName();
@@ -530,16 +530,16 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                                 tableSID = "";
                             }
 
-                            returnClass = ((CalcProperty)property).getValueClass(ClassType.syncPolicy).getSID();
+                            returnClass = ((Property)property).getValueClass(ClassType.syncPolicy).getSID();
                         }
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), ThreadLocalContext.localize(property.caption), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
-                            property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
-                            property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
+                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), ThreadLocalContext.localize(property.caption), property instanceof Property && ((Property)property).isLoggable() ? true : null,
+                            property instanceof Property && ((Property) property).isStored() ? true : null,
+                            property instanceof Property && ((Property) property).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, property.annotation, 
-                            (Settings.get().isDisableSyncStatProps() || !(property instanceof CalcProperty) ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty((CalcProperty)property))));
+                            (Settings.get().isDisableSyncStatProps() || !(property instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty((Property)property))));
                 }
             }
 
@@ -789,7 +789,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 PropertyChange statusChanges = new PropertyChange(systemEventsLM.connectionStatus.getDataObject("disconnectedConnection"),
                         systemEventsLM.connectionStatusConnection.property.interfaces.single(),
                         systemEventsLM.connectionStatus.getDataObject("connectedConnection"));
-                session.change((CalcProperty) systemEventsLM.connectionStatusConnection.property, statusChanges);
+                session.change((Property) systemEventsLM.connectionStatusConnection.property, statusChanges);
                 apply(session);
             }
         } catch (Exception e) {

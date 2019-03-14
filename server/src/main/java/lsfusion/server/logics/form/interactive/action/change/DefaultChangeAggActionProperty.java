@@ -26,10 +26,10 @@ import java.sql.SQLException;
 
 public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends AroundAspectActionProperty {
 
-    private final CalcProperty<P> aggProp; // assert что один интерфейс и aggProp
+    private final Property<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public DefaultChangeAggActionProperty(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
+    public DefaultChangeAggActionProperty(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, Property<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
         super(caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;

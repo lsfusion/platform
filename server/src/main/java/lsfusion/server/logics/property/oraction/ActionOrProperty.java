@@ -23,7 +23,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.action.session.changed.SessionCalcProperty;
+import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
@@ -40,7 +40,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.AlgType;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -283,7 +283,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return getEditAction(editActionSID, null);
     }
 
-    public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID, Property filterProperty) {
         ActionPropertyMapImplement<?, T> editAction = getEditActions().get(editActionSID);
         if (editAction != null) {
             return editAction;
@@ -297,10 +297,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return getDefaultEditAction(editActionSID, filterProperty);
     }
 
-    public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);
+    public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty);
 
     public boolean checkEquals() {
-        return this instanceof CalcProperty;
+        return this instanceof Property;
     }
 
     public ImRevMap<T, T> getIdentityInterfaces() {
@@ -470,15 +470,15 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public void dropLinks() {
         links = null;
     }
-    public abstract ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events);
+    public abstract ImSet<SessionProperty> getSessionCalcDepends(boolean events);
 
     public abstract ImSet<OldProperty> getParseOldDepends(); // именно так, а не через getSessionCalcDepends, так как может использоваться до инициализации логики
 
     public ImSet<OldProperty> getOldDepends() {
         // без событий, так как либо используется в глобальных событиях когда вычисляемые события \ удаления отдельно отрабатываются
         // в локальных же событиях вычисляемые и должны браться на начало сессии
-        return getSessionCalcDepends(false).mapMergeSetValues(new GetValue<OldProperty, SessionCalcProperty>() {
-            public OldProperty getMapValue(SessionCalcProperty value) {
+        return getSessionCalcDepends(false).mapMergeSetValues(new GetValue<OldProperty, SessionProperty>() {
+            public OldProperty getMapValue(SessionProperty value) {
                 return value.getOldProperty();
             }});
     }

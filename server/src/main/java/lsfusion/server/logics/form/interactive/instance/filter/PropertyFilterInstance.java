@@ -17,7 +17,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -66,7 +66,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.dataUpdated(changedProps, reallyChanged, modifier, hidden, groupObjects);
     }
 
-    public void fillProperties(MSet<CalcProperty> properties) {
+    public void fillProperties(MSet<Property> properties) {
         property.fillProperties(properties);
     }
 

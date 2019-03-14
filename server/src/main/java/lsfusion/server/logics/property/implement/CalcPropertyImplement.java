@@ -6,12 +6,12 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
-    public CalcProperty<P> property;
+    public Property<P> property;
     public ImMap<P, T> mapping;
 
     public String toString() {
@@ -21,12 +21,12 @@ public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinI
     public CalcPropertyImplement() {
     }
 
-    public CalcPropertyImplement(CalcProperty<P> property, ImMap<P, T> mapping) {
+    public CalcPropertyImplement(Property<P> property, ImMap<P, T> mapping) {
         this.property = property;
         this.mapping = mapping;
     }
 
-    public CalcPropertyImplement(CalcProperty<P> property) {
+    public CalcPropertyImplement(Property<P> property) {
         this.property = property;
         mapping = MapFact.<P, T>EMPTY();
     }

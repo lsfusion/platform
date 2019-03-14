@@ -185,7 +185,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     @Override
-    public void fillDepends(MSet<CalcProperty> depends, boolean events) {
+    public void fillDepends(MSet<Property> depends, boolean events) {
         for(Interface interfaceImplement : interfaces)
             interfaceImplement.implement.mapFillDepends(depends);
         fillDepends(depends, getProps().getCol());

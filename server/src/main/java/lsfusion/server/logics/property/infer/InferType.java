@@ -18,39 +18,39 @@ public class InferType implements AlgType {
     public static InferType PREVSAME = new InferType();
     public static InferType RESOLVE = new InferType(); // PREVSAME
 
-    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property) {
+    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property) {
         return getClassValueWhere(property, null);
     }
 
-    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property, ExClassSet valueClasses) {
+    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property, ExClassSet valueClasses) {
         assert this != RESOLVE;
         return property.inferClassValueWhere(this, valueClasses);
     }
 
-    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property, ExClassSet valueClasses) {
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property, ExClassSet valueClasses) {
         return property.inferGetInterfaceClasses(this, valueClasses);
     }
 
-    public <P extends PropertyInterface> ValueClass getValueClass(CalcProperty<P> property) {
+    public <P extends PropertyInterface> ValueClass getValueClass(Property<P> property) {
         return property.inferGetValueClass(this);
     }
 
-    public <P extends PropertyInterface> boolean isInInterface(CalcProperty<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+    public <P extends PropertyInterface> boolean isInInterface(Property<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
         assert this != RESOLVE;
         return property.inferIsInInterface(interfaceClasses, isAny, this);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caseInfo, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(Property<T> property, String caseInfo, Property<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
         assert this != RESOLVE;
         property.inferCheckExclusiveness(caseInfo, intersect, intersectInfo, map, this, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
         assert this != RESOLVE;
         property.inferCheckContainsAll(intersect, caseInfo, map, this, value, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(CalcProperty<T> property, ImList<CalcProperty<P>> intersects, ImList<ImRevMap<P, T>> maps) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(Property<T> property, ImList<Property<P>> intersects, ImList<ImRevMap<P, T>> maps) {
         assert this != RESOLVE;        
         property.inferCheckAllImplementations(intersects, maps, this);
     }

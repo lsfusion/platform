@@ -26,7 +26,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.action.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
 import lsfusion.server.language.EvalUtils;
@@ -187,7 +187,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return new ExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues);
     }
 
-    private Object formatReturnValue(Object returnValue, CalcProperty returnProperty) {
+    private Object formatReturnValue(Object returnValue, Property returnProperty) {
         Type returnType = returnProperty.getType();
         return returnType.formatHTTP(returnValue, null);
     }
@@ -210,10 +210,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     @Override
     protected ChangesController createChangesController() {
         return new ChangesController() {
-            public void regChange(ImSet<CalcProperty> changes, DataSession session) {
+            public void regChange(ImSet<Property> changes, DataSession session) {
             }
 
-            public ImSet<CalcProperty> update(DataSession session, FormInstance form) {
+            public ImSet<Property> update(DataSession session, FormInstance form) {
                 return SetFact.EMPTY();
             }
 

@@ -13,7 +13,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.language.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
@@ -78,7 +78,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
     }
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         return getChangeProps(targetProp.property);
     }
 }

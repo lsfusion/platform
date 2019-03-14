@@ -39,8 +39,8 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
                                             FormIntegrationType staticType,
                                             LCP exportFile,
                                             String charset,
-                                            CalcProperty root,
-                                            CalcProperty tag) {
+                                            Property root,
+                                            Property tag) {
         super(caption, form, objectsToSet, nulls, staticType, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, root, tag);
 
         if (root != null) {
@@ -77,7 +77,7 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
     protected abstract void writeRootNode(PrintWriter printWriter, T rootNode) throws IOException;
 
     @Override
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
         return getChangeProps(exportFile.property);
     }
 }

@@ -19,7 +19,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.action.session.changed.SessionCalcProperty;
+import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
@@ -35,7 +35,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.ObjectClassProperty;
@@ -94,8 +94,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
         });
     }
 
-    public final static AddValue<CalcProperty, Boolean> addValue = new SymmAddValue<CalcProperty, Boolean>() {
-        public Boolean addValue(CalcProperty key, Boolean prevValue, Boolean newValue) {
+    public final static AddValue<Property, Boolean> addValue = new SymmAddValue<Property, Boolean>() {
+        public Boolean addValue(Property key, Boolean prevValue, Boolean newValue) {
             return prevValue && newValue;
         }
     };
@@ -118,7 +118,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
-    public ImMap<CalcProperty, Boolean> getChangeExtProps() {
+    public ImMap<Property, Boolean> getChangeExtProps() {
         ActionPropertyMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
             return compile.property.getChangeExtProps();
@@ -127,12 +127,12 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     // убирает Set и Drop, так как с depends будет использоваться
-    public ImSet<CalcProperty> getChangeProps() {
-        ImMap<CalcProperty, Boolean> changeExtProps = getChangeExtProps();
+    public ImSet<Property> getChangeProps() {
+        ImMap<Property, Boolean> changeExtProps = getChangeExtProps();
         int size = changeExtProps.size();
-        MSet<CalcProperty> mResult = SetFact.mSetMax(size);
+        MSet<Property> mResult = SetFact.mSetMax(size);
         for(int i=0;i<size;i++) {
-            CalcProperty property = changeExtProps.getKey(i);
+            Property property = changeExtProps.getKey(i);
             if(property instanceof ChangedProperty)
                 mResult.add(((ChangedProperty)property).property);
             else {
@@ -145,8 +145,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
     // схема с аспектом сделана из-за того что getChangeProps для ChangeClassAction не инвариантен (меняется после компиляции), тоже самое и For с addObject'ом
     @IdentityStartLazy // только компиляция, построение лексикографики
-    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
+    protected ImMap<Property, Boolean> aspectChangeExtProps() {
+        MMap<Property, Boolean> result = MapFact.mMap(addValue);
         for(ActionProperty<?> dependAction : getDependActions())
             result.addAll(dependAction.getChangeExtProps());
         return result.immutable();
@@ -157,7 +157,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
             action.markRecursions(recursiveActions);
     }
 
-    public ImMap<CalcProperty, Boolean> getUsedExtProps() {
+    public ImMap<Property, Boolean> getUsedExtProps() {
         ActionPropertyMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
             return compile.property.getUsedExtProps();
@@ -166,34 +166,34 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
-    protected ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
+    protected ImMap<Property, Boolean> aspectUsedExtProps() {
+        MMap<Property, Boolean> result = MapFact.mMap(addValue);
         for(ActionProperty<?> dependAction : getDependActions())
             result.addAll(dependAction.getUsedExtProps());
         return result.immutable();
     }
 
-    public ImSet<CalcProperty> getUsedProps() {
+    public ImSet<Property> getUsedProps() {
         return getUsedExtProps().keys();
     }
 
-    protected static ImMap<CalcProperty, Boolean> getChangeProps(CalcProperty... props) {
-        MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
-        for(CalcProperty element : props)
+    protected static ImMap<Property, Boolean> getChangeProps(Property... props) {
+        MMap<Property, Boolean> result = MapFact.mMap(addValue);
+        for(Property element : props)
             result.addAll(element.getChangeProps().toMap(false));
         return result.immutable();
     }
-    protected static ImMap<CalcProperty, Boolean> getChangeProps(ImCol<CalcProperty> props) {
-        MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
-        for(CalcProperty element : props)
+    protected static ImMap<Property, Boolean> getChangeProps(ImCol<Property> props) {
+        MMap<Property, Boolean> result = MapFact.mMap(addValue);
+        for(Property element : props)
             result.addAll(element.getChangeProps().toMap(false));
         return result.immutable();
     }
-    protected static <T extends PropertyInterface> ImMap<CalcProperty, Boolean> getUsedProps(CalcPropertyInterfaceImplement<T>... props) {
+    protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(CalcPropertyInterfaceImplement<T>... props) {
         return getUsedProps(SetFact.<CalcPropertyInterfaceImplement<T>>EMPTY(), props);
     }
-    protected static <T extends PropertyInterface> ImMap<CalcProperty, Boolean> getUsedProps(ImCol<? extends CalcPropertyInterfaceImplement<T>> col, CalcPropertyInterfaceImplement<T>... props) {
-        MSet<CalcProperty> mResult = SetFact.mSet();
+    protected static <T extends PropertyInterface> ImMap<Property, Boolean> getUsedProps(ImCol<? extends CalcPropertyInterfaceImplement<T>> col, CalcPropertyInterfaceImplement<T>... props) {
+        MSet<Property> mResult = SetFact.mSet();
         for(CalcPropertyInterfaceImplement<T> element : col)
             element.mapFillDepends(mResult);
         for(CalcPropertyInterfaceImplement<T> element : props)
@@ -201,10 +201,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
         return mResult.immutable().toMap(false);
     }
 
-    private FunctionSet<CalcProperty> usedProps;
-    public FunctionSet<CalcProperty> getDependsUsedProps() {
+    private FunctionSet<Property> usedProps;
+    public FunctionSet<Property> getDependsUsedProps() {
         if(usedProps==null)
-            usedProps = CalcProperty.getDependsFromSet(getUsedProps());
+            usedProps = Property.getDependsFromSet(getUsedProps());
         return usedProps;
     }
 
@@ -223,16 +223,16 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
-    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
-        MSet<SessionCalcProperty> mResult = SetFact.mSet();
-        for(CalcProperty property : getUsedProps())
+    public ImSet<SessionProperty> getSessionCalcDepends(boolean events) {
+        MSet<SessionProperty> mResult = SetFact.mSet();
+        for(Property property : getUsedProps())
             mResult.addAll(property.getSessionCalcDepends(events));
         return mResult.immutable();
     }
 
     public ImSet<OldProperty> getParseOldDepends() {
         MSet<OldProperty> mResult = SetFact.mSet();
-        for(CalcProperty property : getUsedProps())
+        for(Property property : getUsedProps())
             mResult.addAll(property.getParseOldDepends());
         return mResult.immutable();
     }
@@ -257,9 +257,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     @IdentityLazy
-    public boolean uses(CalcProperty property) {
-        for(CalcProperty usedProp : getUsedProps())
-            if(CalcProperty.depends(usedProp, property))
+    public boolean uses(Property property) {
+        for(Property usedProp : getUsedProps())
+            if(Property.depends(usedProp, property))
                 return true;
         return false;
     }
@@ -267,7 +267,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     @IdentityLazy
     private ImSet<Pair<String, Integer>> getChangePropsLocations() {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
-        for (CalcProperty property : getChangeProps()) {
+        for (Property property : getChangeProps()) {
             CalcPropertyDebugInfo debugInfo = property.getDebugInfo();
             if (debugInfo != null && debugInfo.needToCreateDelegate()) {
                 result.add(debugInfo.getDebuggerModuleLine());
@@ -331,13 +331,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
             return SetFact.EMPTY();
 
         MCol<Pair<ActionOrProperty<?>, LinkType>> mResult = ListFact.mCol();
-        ImMap<CalcProperty, Boolean> used = getUsedExtProps();
+        ImMap<Property, Boolean> used = getUsedExtProps();
         for(int i=0,size=used.size();i<size;i++) {
-            CalcProperty<?> property = used.getKey(i);
+            Property<?> property = used.getKey(i);
             Boolean rec = used.getValue(i);
 
             // эвристика : усилим связи к session calc, предполагается 
-            ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends(events); // в том числе и для событий усилим, хотя может быть определенная избыточность,когда в SessionCalc - другой SessionCalc, но это очень редкие случаи
+            ImSet<SessionProperty> calcDepends = property.getSessionCalcDepends(events); // в том числе и для событий усилим, хотя может быть определенная избыточность,когда в SessionCalc - другой SessionCalc, но это очень редкие случаи
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
                 mResult.add(new Pair<ActionOrProperty<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
 
@@ -347,27 +347,27 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
 //        раньше зачем-то было, но зачем непонятно
 //        mResult.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION));
 
-        ImSet<CalcProperty> depend = getStrongUsed();
+        ImSet<Property> depend = getStrongUsed();
         for(int i=0,size=depend.size();i<size;i++) {
-            CalcProperty property = depend.get(i);
+            Property property = depend.get(i);
             mResult.add(new Pair<ActionOrProperty<?>, LinkType>(property, isRecursiveStrongUsed(property) ? LinkType.GOAFTERREC : LinkType.DEPEND));
         }
         return mResult.immutableCol();
     }
 
-    private ImSet<CalcProperty> strongUsed = SetFact.EMPTY();
-    public void addStrongUsed(ImSet<CalcProperty> properties) { // чисто для лексикографики
+    private ImSet<Property> strongUsed = SetFact.EMPTY();
+    public void addStrongUsed(ImSet<Property> properties) { // чисто для лексикографики
         strongUsed = strongUsed.merge(properties);
     }
-    public ImSet<CalcProperty> getStrongUsed() {
+    public ImSet<Property> getStrongUsed() {
         return strongUsed;
     }
-    private ImSet<CalcProperty> recursiveStrongUsed = SetFact.EMPTY();
-    public void checkRecursiveStrongUsed(CalcProperty property) {
+    private ImSet<Property> recursiveStrongUsed = SetFact.EMPTY();
+    public void checkRecursiveStrongUsed(Property property) {
         if(strongUsed.contains(property))
             recursiveStrongUsed = recursiveStrongUsed.merge(property);  
     }
-    public boolean isRecursiveStrongUsed(CalcProperty property) { // при рекурсии ослабим связь, но не удалим, чтобы была в той же компоненте связности, но при этом не было цикла
+    public boolean isRecursiveStrongUsed(Property property) { // при рекурсии ослабим связь, но не удалим, чтобы была в той же компоненте связности, но при этом не было цикла
         return recursiveStrongUsed.contains(property);
     }
 
@@ -485,7 +485,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     @Override
-    public ActionPropertyMapImplement<?, P> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, P> getDefaultEditAction(String editActionSID, Property filterProperty) {
         if(editActionSID.equals(ServerResponse.CHANGE_WYS) || editActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return getImplement();
@@ -547,7 +547,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     @IdentityLazy
-    public ImSet<SessionCalcProperty> getGlobalEventSessionCalcDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
+    public ImSet<SessionProperty> getGlobalEventSessionCalcDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         assert getSessionEnv(SystemEvent.APPLY) != null;
         return getSessionCalcDepends(false); // предполагается что FOR g, гда для g - есть вычисляемое свойство не будет, так как может привести к событиям на пустых сессиях
     }
@@ -576,7 +576,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         return false;
     }
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         throw new RuntimeException("should not be");
     }
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?,T> pushFor(ImRevMap<P, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> where, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
@@ -596,7 +596,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Action
     }
 
     @IdentityStartLazy
-    public ImList<CalcProperty> getSortedUsedProps() {
+    public ImList<Property> getSortedUsedProps() {
         return getUsedProps().sort(BusinessLogics.propComparator());
     }
 

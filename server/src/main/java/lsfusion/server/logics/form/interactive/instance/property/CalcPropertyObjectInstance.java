@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.interactive.change.ReallyChanged;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -29,9 +29,9 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.sql.SQLException;
 
-public class CalcPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, CalcProperty<P>> implements OrderInstance {
+public class CalcPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, Property<P>> implements OrderInstance {
 
-    public CalcPropertyObjectInstance(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
+    public CalcPropertyObjectInstance(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);
     }
 
@@ -71,7 +71,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         return getExpr(classSource, modifier, reallyChanged, null);
     }
-    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         WhereBuilder changedWhere = null;
         if(reallyChanged!=null && !reallyChanged.containsChange(this))
             changedWhere = new WhereBuilder();
@@ -126,7 +126,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return false;
     }
 
-    public void fillProperties(MSet<CalcProperty> properties) {
+    public void fillProperties(MSet<Property> properties) {
         properties.add(property);
     }
 
