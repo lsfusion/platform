@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.CustomClass;
@@ -100,7 +100,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         if(editActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return ChangeClassAction.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));

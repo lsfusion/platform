@@ -15,8 +15,8 @@ import lsfusion.server.classes.*;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.change.SetAction;
-import lsfusion.server.logics.action.implement.ActionPropertyImplement;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
@@ -68,9 +68,9 @@ public class DerivedProperty {
             }};
     }
 
-    private static <P extends PropertyInterface, K extends PropertyInterface> GetValue<ActionPropertyMapImplement<?, P>,ActionPropertyMapImplement<?, K>> mapGetActionValue(final ImRevMap<K, P> map) {
-        return new GetValue<ActionPropertyMapImplement<?, P>, ActionPropertyMapImplement<?, K>>() {
-            public ActionPropertyMapImplement<?, P> getMapValue(ActionPropertyMapImplement<?, K> value) {
+    private static <P extends PropertyInterface, K extends PropertyInterface> GetValue<ActionMapImplement<?, P>, ActionMapImplement<?, K>> mapGetActionValue(final ImRevMap<K, P> map) {
+        return new GetValue<ActionMapImplement<?, P>, ActionMapImplement<?, K>>() {
+            public ActionMapImplement<?, P> getMapValue(ActionMapImplement<?, K> value) {
                 return value.map(map);
             }};
     }
@@ -95,7 +95,7 @@ public class DerivedProperty {
         return mapImplements(propertyImplements, map);
     }
 
-    public static <L,T extends PropertyInterface,K extends PropertyInterface> ImList<ActionPropertyMapImplement<?, K>> mapActionImplements(ImRevMap<T,K> map, ImList<ActionPropertyMapImplement<?, T>> propertyImplements) {
+    public static <L,T extends PropertyInterface,K extends PropertyInterface> ImList<ActionMapImplement<?, K>> mapActionImplements(ImRevMap<T,K> map, ImList<ActionMapImplement<?, T>> propertyImplements) {
         return propertyImplements.mapListValues(DerivedProperty.<K, T>mapGetActionValue(map));
     }
 
@@ -103,8 +103,8 @@ public class DerivedProperty {
         return interfaceImplements.mapValues(DerivedProperty.<K, T>mapGetCalcValue(map));
     }
 
-    public static <T extends PropertyInterface,K extends PropertyInterface, P extends PropertyInterface> ActionPropertyImplement<P, PropertyInterfaceImplement<K>> mapActionImplements(ActionPropertyImplement<P, PropertyInterfaceImplement<T>> implement, ImRevMap<T,K> map) {
-        return new ActionPropertyImplement<>(implement.property, mapImplements(implement.mapping, map));
+    public static <T extends PropertyInterface,K extends PropertyInterface, P extends PropertyInterface> ActionImplement<P, PropertyInterfaceImplement<K>> mapActionImplements(ActionImplement<P, PropertyInterfaceImplement<T>> implement, ImRevMap<T,K> map) {
+        return new ActionImplement<>(implement.property, mapImplements(implement.mapping, map));
     }
 
     public static <T extends PropertyInterface> ImSet<T> getUsedInterfaces(PropertyInterfaceImplement<T> interfaceImplement) {
@@ -134,7 +134,7 @@ public class DerivedProperty {
         return new PropertyMapImplement<>(joinProperty, revJoinMap);
     }
 
-    public static <L extends PropertyInterface, T extends PropertyInterface> ActionPropertyMapImplement<?,T> createJoinAction(ActionPropertyImplement<L, PropertyInterfaceImplement<T>> implement) {
+    public static <L extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<?,T> createJoinAction(ActionImplement<L, PropertyInterfaceImplement<T>> implement) {
         // определяем какие интерфейсы использовали
         ImSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
 
@@ -142,8 +142,8 @@ public class DerivedProperty {
         ImRevMap<T,PropertyInterface> joinMap = usedInterfaces.mapRevValues(ActionOrProperty.genInterface); // строим карту
         ImRevMap<PropertyInterface, T> revJoinMap = joinMap.reverse();
         JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
-                new ActionPropertyImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));
-        return new ActionPropertyMapImplement<>(joinProperty, revJoinMap);
+                new ActionImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));
+        return new ActionMapImplement<>(joinProperty, revJoinMap);
     }
 
     
@@ -752,27 +752,27 @@ public class DerivedProperty {
         return dataProperty.getRevImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, PropertyMapImplement<?, L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, PropertyMapImplement<?, L> where, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         Action actionProperty = CaseActionProperty.createIf(LocalizedString.NONAME, false, listInterfaces, where, action, elseAction);
         return actionProperty.getImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createCaseAction(ImSet<L> innerInterfaces, boolean isExclusive, ImList<ActionCase<L>> cases) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createCaseAction(ImSet<L> innerInterfaces, boolean isExclusive, ImList<ActionCase<L>> cases) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         Action actionProperty = new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
         return actionProperty.getImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createEmptyAction() {
-        return createListAction(SetFact.<L>EMPTY(), ListFact.<ActionPropertyMapImplement<?, L>>EMPTY());
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createEmptyAction() {
+        return createListAction(SetFact.<L>EMPTY(), ListFact.<ActionMapImplement<?, L>>EMPTY());
     }
     
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionPropertyMapImplement<?, L>> actions) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionMapImplement<?, L>> actions) {
         return createListAction(innerInterfaces, actions, SetFact.<SessionDataProperty>EMPTY());
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionPropertyMapImplement<?, L>> actions, ImSet<SessionDataProperty> localsInScope) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionMapImplement<?, L>> actions, ImSet<SessionDataProperty> localsInScope) {
         if(actions.size()==1)
             return actions.single();
 
@@ -781,23 +781,23 @@ public class DerivedProperty {
         return actionProperty.getImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, boolean recursive, ImSet<L> noInline, boolean forceInline) {
         return createForAction(context, forProp, orders, ordersNotNull, action, elseAction, null, null, false, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, boolean recursive, ImSet<L> noInline, boolean forceInline) {
         return createForAction(innerInterfaces, context, forProp, orders, ordersNotNull, action, elseAction, null, null, false, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, ActionPropertyMapImplement<?, L> action, L addObject, ConcreteCustomClass customClass, boolean recursive) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, ActionMapImplement<?, L> action, L addObject, ConcreteCustomClass customClass, boolean recursive) {
         return createForAction(innerInterfaces, context, action, addObject, customClass, recursive, SetFact.<L>EMPTY(), false);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, ActionPropertyMapImplement<?, L> action, L addObject, CustomClass customClass, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, ActionMapImplement<?, L> action, L addObject, CustomClass customClass, boolean recursive, ImSet<L> noInline, boolean forceInline) {
         return createForAction(innerInterfaces, context, null, MapFact.<PropertyInterfaceImplement<L>, Boolean>EMPTYORDER(), false, action, null, addObject, customClass, false, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
         MSet<L> mInnerInterfaces = SetFact.mSet();
         mInnerInterfaces.addAll(context);
         mInnerInterfaces.addAll(forProp.mapping.valuesSet());
@@ -811,41 +811,41 @@ public class DerivedProperty {
         return createForAction(mInnerInterfaces.immutable(), context.toOrderSet(), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
         return createForAction(innerInterfaces, context.toOrderSet(), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
+    public static <L extends PropertyInterface> ActionMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<?, L> forProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
         ForAction<L> actionProperty = new ForAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
         return actionProperty.getMapImplement();
     }
 
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         return createSetAction(context, context, null, writeToProp, writeFrom);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         return createSetAction(innerInterfaces, context, null, writeToProp, writeFrom);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         return createSetAction(innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         SetAction<P, W, L> actionProperty = new SetAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, whereProp, writeToProp, writeFrom);
         return actionProperty.getMapImplement();
     }
 
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> resultProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> resultProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
         return createAddAction(cls, innerInterfaces, context.toOrderSet(), whereProp, resultProp, orders, ordersNotNull, autoSet);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> resultProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> resultProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
         AddObjectAction<W, L> actionProperty = new AddObjectAction<>(cls, innerInterfaces, mapInterfaces, whereProp, resultProp, orders, ordersNotNull, autoSet);
         return actionProperty.getMapImplement();
     }
 
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
         return createChangeClassAction(cls, forceDialog, innerInterfaces, context.toOrderSet(), whereProp, changeInterface, baseClass);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
         ChangeClassAction<W, L> actionProperty = new ChangeClassAction<>(cls, forceDialog, innerInterfaces, mapInterfaces, changeInterface, whereProp, baseClass);
         return actionProperty.getMapImplement();
     }
@@ -855,7 +855,7 @@ public class DerivedProperty {
 //            SET f(a,b) <- g(a,b,c,e)   --- внеш. (a,c,e) + внутр. [b]
 //
 //        SET f(a,b) <- [GROUP LAST F(a,c,d,x), g(a,b,c,e) ORDER O(a,c,d) BY a,b,c,e,x](a,b,c,e,x) WHERE [GROUP ANY F(a,c,d,x) BY a,c,x](a,c,x) --- внеш. (e,x) + внутр. [a,b,c]
-    public static <W extends PropertyInterface, I extends PropertyInterface> ActionPropertyMapImplement<?, I> createSetAction(ImSet<I> context, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom, PropertyMapImplement<W, I> where, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public static <W extends PropertyInterface, I extends PropertyInterface> ActionMapImplement<?, I> createSetAction(ImSet<I> context, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom, PropertyMapImplement<W, I> where, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         ImSet<I> innerInterfaces = writeTo.mapping.valuesSet().merge(context);
         ImSet<I> whereInterfaces = where.mapping.valuesSet();
         assert innerInterfaces.merge(whereInterfaces).containsAll(getUsedInterfaces(writeFrom));
@@ -886,7 +886,7 @@ public class DerivedProperty {
         return createSetAction(innerInterfaces, context, where, writeTo, writeFrom);
     }
 
-    public static <W extends PropertyInterface, I extends PropertyInterface> ActionPropertyMapImplement<?, I> createChangeClassAction(ImSet<I> context, I changeInterface, ObjectClass cls, boolean forceDialog, PropertyMapImplement<W, I> where, BaseClass baseClass, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public static <W extends PropertyInterface, I extends PropertyInterface> ActionMapImplement<?, I> createChangeClassAction(ImSet<I> context, I changeInterface, ObjectClass cls, boolean forceDialog, PropertyMapImplement<W, I> where, BaseClass baseClass, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         ImSet<I> innerInterfaces = context.merge(changeInterface);
         ImSet<I> whereInterfaces = where.mapping.valuesSet();
 

@@ -5,7 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.action.implement.ActionPropertyValueImplement;
+import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -33,7 +33,7 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
         return property.getWhereProperty().mapObjects(mapping);
     }
 
-    public ActionPropertyValueImplement<P> getValueImplement(FormInstance formInstance) {
-        return new ActionPropertyValueImplement<>(property, getInterfaceObjectValues(), mapping, formInstance);
+    public ActionValueImplement<P> getValueImplement(FormInstance formInstance) {
+        return new ActionValueImplement<>(property, getInterfaceObjectValues(), mapping, formInstance);
     }
 }

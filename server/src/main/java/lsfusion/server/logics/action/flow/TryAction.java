@@ -12,7 +12,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.base.ThreadUtils;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -24,15 +24,15 @@ import java.sql.SQLException;
 
 public class TryAction extends KeepContextAction {
 
-    private final ActionPropertyMapImplement<?, PropertyInterface> tryAction;
-    private final ActionPropertyMapImplement<?, PropertyInterface> catchAction;
-    private final ActionPropertyMapImplement<?, PropertyInterface> finallyAction;
+    private final ActionMapImplement<?, PropertyInterface> tryAction;
+    private final ActionMapImplement<?, PropertyInterface> catchAction;
+    private final ActionMapImplement<?, PropertyInterface> finallyAction;
 
 
     public <I extends PropertyInterface> TryAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                   ActionPropertyMapImplement<?, I> tryAction,
-                                                   ActionPropertyMapImplement<?, I> catchAction,
-                                                   ActionPropertyMapImplement<?, I> finallyAction) {
+                                                   ActionMapImplement<?, I> tryAction,
+                                                   ActionMapImplement<?, I> catchAction,
+                                                   ActionMapImplement<?, I> finallyAction) {
         super(caption, innerInterfaces.size());
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -46,7 +46,7 @@ public class TryAction extends KeepContextAction {
     @IdentityInstanceLazy
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
 
-        MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
+        MList<ActionMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         actions.add(tryAction);
         if(catchAction != null)
             actions.add(catchAction);
@@ -54,9 +54,9 @@ public class TryAction extends KeepContextAction {
             actions.add(finallyAction);
         
         ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres = 
-                ((ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
-            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+                ((ImList<ActionMapImplement<?, PropertyInterface>>)actions).mapListValues(
+                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>() {
+            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
                 return value.mapCalcWhereProperty();
             }});
         return DerivedProperty.createUnion(interfaces, listWheres);

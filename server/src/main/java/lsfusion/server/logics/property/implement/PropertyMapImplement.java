@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -199,8 +199,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public ActionPropertyMapImplement<?, T> mapEditAction(String editActionSID, Property filterProperty) {
-        ActionPropertyMapImplement<?, P> editAction = property.getEditAction(editActionSID, filterProperty);
+    public ActionMapImplement<?, T> mapEditAction(String editActionSID, Property filterProperty) {
+        ActionMapImplement<?, P> editAction = property.getEditAction(editActionSID, filterProperty);
         return editAction == null ? null : editAction.map(mapping);
     }
 
@@ -227,8 +227,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         property.checkExclusiveness(caseInfo, implement.property, implementCaption, implement.mapping.rightCrossValuesRev(mapping), abstractInfo);
     }
 
-    public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
-        ActionPropertyMapImplement<?, P> action = property.getSetNotNullAction(notNull);
+    public ActionMapImplement<?, T> getSetNotNullAction(boolean notNull) {
+        ActionMapImplement<?, P> action = property.getSetNotNullAction(notNull);
         if(action!=null)
             return action.map(mapping);
         return null;

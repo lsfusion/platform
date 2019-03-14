@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.cases;
 
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -9,11 +9,11 @@ import java.util.List;
 
 public class ExplicitActionCase<P extends PropertyInterface> extends AbstractActionCase<P> {
 
-    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionPropertyMapImplement<?, P> implement) {
+    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionMapImplement<?, P> implement) {
         this(where, implement, null);
     }
 
-    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionPropertyMapImplement<?, P> implement, List<ResolveClassSet> signature) {
+    public ExplicitActionCase(PropertyMapImplement<?, P> where, ActionMapImplement<?, P> implement, List<ResolveClassSet> signature) {
         super(where, implement, signature);
     }
 

@@ -17,6 +17,7 @@ import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
@@ -34,7 +35,6 @@ import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -119,7 +119,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<Property, Boolean> getChangeExtProps() {
-        ActionPropertyMapImplement<?, P> compile = callCompile(false);
+        ActionMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
             return compile.property.getChangeExtProps();
 
@@ -158,7 +158,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public ImMap<Property, Boolean> getUsedExtProps() {
-        ActionPropertyMapImplement<?, P> compile = callCompile(false);
+        ActionMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
             return compile.property.getUsedExtProps();
 
@@ -371,8 +371,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return recursiveStrongUsed.contains(property);
     }
 
-    public <V extends PropertyInterface> ActionPropertyMapImplement<P, V> getImplement(ImOrderSet<V> list) {
-        return new ActionPropertyMapImplement<>(this, getMapInterfaces(list));
+    public <V extends PropertyInterface> ActionMapImplement<P, V> getImplement(ImOrderSet<V> list) {
+        return new ActionMapImplement<>(this, getMapInterfaces(list));
     }
 
     public Object events = MapFact.mExclMap();
@@ -394,28 +394,28 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     private Object beforeAspects = ListFact.mCol();
-    public void addBeforeAspect(ActionPropertyMapImplement<?, P> action) {
-        ((MCol<ActionPropertyMapImplement<?, P>>)beforeAspects).add(action);
+    public void addBeforeAspect(ActionMapImplement<?, P> action) {
+        ((MCol<ActionMapImplement<?, P>>)beforeAspects).add(action);
     }
     @LongMutable
-    public ImCol<ActionPropertyMapImplement<?, P>> getBeforeAspects() {
-        return (ImCol<ActionPropertyMapImplement<?,P>>)beforeAspects;
+    public ImCol<ActionMapImplement<?, P>> getBeforeAspects() {
+        return (ImCol<ActionMapImplement<?,P>>)beforeAspects;
     }
     private Object afterAspects = ListFact.mCol();
-    public void addAfterAspect(ActionPropertyMapImplement<?, P> action) {
-        ((MCol<ActionPropertyMapImplement<?, P>>)afterAspects).add(action);
+    public void addAfterAspect(ActionMapImplement<?, P> action) {
+        ((MCol<ActionMapImplement<?, P>>)afterAspects).add(action);
     }
     @LongMutable
-    public ImCol<ActionPropertyMapImplement<?, P>> getAfterAspects() {
-        return (ImCol<ActionPropertyMapImplement<?,P>>)afterAspects;
+    public ImCol<ActionMapImplement<?, P>> getAfterAspects() {
+        return (ImCol<ActionMapImplement<?,P>>)afterAspects;
     }
 
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
 
-        beforeAspects = ((MCol<ActionPropertyMapImplement<?, P>>)beforeAspects).immutableCol();
-        afterAspects = ((MCol<ActionPropertyMapImplement<?, P>>)afterAspects).immutableCol();
+        beforeAspects = ((MCol<ActionMapImplement<?, P>>)beforeAspects).immutableCol();
+        afterAspects = ((MCol<ActionMapImplement<?, P>>)afterAspects).immutableCol();
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 
@@ -445,19 +445,19 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         if(Thread.currentThread().isInterrupted() && !ThreadUtils.isFinallyMode(Thread.currentThread()))
             return FlowResult.THROWS;
 
-        for(ActionPropertyMapImplement<?, P> aspect : getBeforeAspects()) {
+        for(ActionMapImplement<?, P> aspect : getBeforeAspects()) {
             FlowResult beforeResult = aspect.execute(context);
             if(beforeResult != FlowResult.FINISH)
                 return beforeResult;
         }
 
-        ActionPropertyMapImplement<?, P> compile = callCompile(true);
+        ActionMapImplement<?, P> compile = callCompile(true);
         if (compile != null)
             return compile.execute(context);
 
         FlowResult result = aspectExecute(context);
 
-        for(ActionPropertyMapImplement<?, P> aspect : getAfterAspects())
+        for(ActionMapImplement<?, P> aspect : getAfterAspects())
             aspect.execute(context);
 
         return result;
@@ -471,8 +471,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
 
-    public ActionPropertyMapImplement<P, P> getImplement() {
-        return new ActionPropertyMapImplement<>(this, getIdentityInterfaces());
+    public ActionMapImplement<P, P> getImplement() {
+        return new ActionMapImplement<>(this, getIdentityInterfaces());
     }
 
     public void execute(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -485,7 +485,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public ActionPropertyMapImplement<?, P> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, P> getDefaultEditAction(String editActionSID, Property filterProperty) {
         if(editActionSID.equals(ServerResponse.CHANGE_WYS) || editActionSID.equals(ServerResponse.EDIT_OBJECT))
             return null;
         return getImplement();
@@ -527,8 +527,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @IdentityStrongLazy // STRONG because of using in security policy
-    public ActionPropertyMapImplement<?, P> getGroupChange() {
-        ActionPropertyMapImplement<P, P> changeImplement = getImplement();
+    public ActionMapImplement<?, P> getGroupChange() {
+        ActionMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();
 
         GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty(LocalizedString.NONAME, listInterfaces, changeImplement);
@@ -552,7 +552,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getSessionCalcDepends(false); // предполагается что FOR g, гда для g - есть вычисляемое свойство не будет, так как может привести к событиям на пустых сессиях
     }
 
-    private ActionPropertyMapImplement<?, P> callCompile(boolean forExecution) {
+    private ActionMapImplement<?, P> callCompile(boolean forExecution) {
         //не включаем компиляцию экшенов при дебаге
         if (forExecution && debugger.isEnabled() && !forceCompile()) {
             if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(), getChangePropsLocations())) {
@@ -566,12 +566,12 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return false;
     }
 
-    public ActionPropertyMapImplement<?, P> compile() {
+    public ActionMapImplement<?, P> compile() {
         return null;
     }
 
-    public ImList<ActionPropertyMapImplement<?, P>> getList() {
-        return ListFact.<ActionPropertyMapImplement<?, P>>singleton(getImplement());
+    public ImList<ActionMapImplement<?, P>> getList() {
+        return ListFact.<ActionMapImplement<?, P>>singleton(getImplement());
     }
     public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         return false;
@@ -579,7 +579,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<P, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         throw new RuntimeException("should not be");
     }
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?,T> pushFor(ImRevMap<P, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> where, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?,T> pushFor(ImRevMap<P, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> where, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         throw new RuntimeException("should not be");
     }
 

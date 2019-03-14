@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -71,8 +71,8 @@ public class LAP<T extends PropertyInterface> extends LP<T, Action<T>> {
         return property.getInterfaceClasses(listInterfaces, classType);
     }
 
-    public <U extends PropertyInterface> ActionPropertyMapImplement<T, U> getImplement(U... mapping) {
-        return new ActionPropertyMapImplement<>(property, getRevMap(mapping));
+    public <U extends PropertyInterface> ActionMapImplement<T, U> getImplement(U... mapping) {
+        return new ActionMapImplement<>(property, getRevMap(mapping));
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, ActionOrProperty<P>> mainProperty, LocalizedString contextMenuCaption) {
@@ -83,14 +83,14 @@ public class LAP<T extends PropertyInterface> extends LP<T, Action<T>> {
         assert listInterfaces.size() <= mainProperty.listInterfaces.size();
 
         //мэпим входы по порядку, у этого экшна входов может быть меньше
-        ActionPropertyMapImplement<T, P> actionImplement = new ActionPropertyMapImplement<>(property, getRevMap(mainProperty.listInterfaces));
+        ActionMapImplement<T, P> actionImplement = new ActionMapImplement<>(property, getRevMap(mainProperty.listInterfaces));
 
         mainProperty.property.setEditAction(actionSID, actionImplement);
     }
 
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = ActionOrPropertyUtils.readImplements(listInterfaces, params);
-        ActionPropertyMapImplement<?, PropertyInterface> actImpl = (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(0);
+        ActionMapImplement<?, PropertyInterface> actImpl = (ActionMapImplement<?, PropertyInterface>)readImplements.get(0);
         if (property instanceof ListActionProperty) {
             ((ListActionProperty) property).addAction(actImpl, version);
         } else if (hasWhen) {

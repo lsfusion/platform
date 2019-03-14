@@ -26,7 +26,7 @@ import lsfusion.interop.form.user.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
-import lsfusion.server.logics.action.implement.ActionPropertyValueImplement;
+import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -1335,7 +1335,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
     
     // formApply "injected" in every apply
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
         assert sessionEventFormEnv == null || this == sessionEventFormEnv;
 
         stack = new FormStack(stack);
@@ -2392,10 +2392,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.CANCEL, stack);
     }
 
-    public ImOrderSet<ActionPropertyValueImplement> getEventsOnOk() throws SQLException, SQLHandledException {
+    public ImOrderSet<ActionValueImplement> getEventsOnOk() throws SQLException, SQLHandledException {
         return getEvents(FormEventType.OK);
     }
-    public ImOrderSet<ActionPropertyValueImplement> getEventsOnApply() throws SQLException, SQLHandledException {
+    public ImOrderSet<ActionValueImplement> getEventsOnApply() throws SQLException, SQLHandledException {
         return getEvents(FormEventType.APPLY);
     }
 
@@ -2418,12 +2418,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
-        for(ActionPropertyValueImplement event : getEvents(eventObject))
+        for(ActionValueImplement event : getEvents(eventObject))
             event.execute(this, stack);
     }
 
-    private ImOrderSet<ActionPropertyValueImplement> getEvents(Object eventObject) {
-        MOrderExclSet<ActionPropertyValueImplement> mResult = SetFact.mOrderExclSet();
+    private ImOrderSet<ActionValueImplement> getEvents(Object eventObject) {
+        MOrderExclSet<ActionValueImplement> mResult = SetFact.mOrderExclSet();
         Iterable<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {

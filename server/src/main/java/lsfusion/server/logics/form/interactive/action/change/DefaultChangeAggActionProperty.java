@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.action.change;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -29,7 +29,7 @@ public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends
     private final Property<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public DefaultChangeAggActionProperty(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, Property<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
+    public DefaultChangeAggActionProperty(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, Property<P> aggProp, ValueClass aggClass, ActionMapImplement<?, JoinProperty.Interface> changeAction) {
         super(caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;

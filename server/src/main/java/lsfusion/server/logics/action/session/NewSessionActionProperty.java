@@ -8,7 +8,7 @@ import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.AroundAspectAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -29,7 +29,7 @@ public class NewSessionActionProperty extends AroundAspectAction {
     private final boolean newSQL; 
 
     public <I extends PropertyInterface> NewSessionActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                                  ActionPropertyMapImplement<?, I> action, boolean singleApply,
+                                                                  ActionMapImplement<?, I> action, boolean singleApply,
                                                                   boolean newSQL,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {

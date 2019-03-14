@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -41,11 +41,11 @@ public abstract class ListCaseAction extends KeepContextAction {
     }
 
 
-    protected void addWhereOperand(ActionPropertyMapImplement<?, PropertyInterface> action, List<ResolveClassSet> signature, Version version) {
+    protected void addWhereOperand(ActionMapImplement<?, PropertyInterface> action, List<ResolveClassSet> signature, Version version) {
         ((CaseUnionProperty) abstractWhere.property).addOperand(action.mapWhereProperty().map(abstractWhere.mapping.reverse()), signature, version);
     }
 
-    protected void addWhereCase(PropertyInterfaceImplement<PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
+    protected void addWhereCase(PropertyInterfaceImplement<PropertyInterface> where, ActionMapImplement<?, PropertyInterface> action, Version version) {
         ImRevMap<PropertyInterface, UnionProperty.Interface> abstractMap = abstractWhere.mapping.reverse();
         ((CaseUnionProperty) abstractWhere.property).addCase(where.map(abstractMap), action.mapWhereProperty().map(abstractMap), version);
     }
@@ -116,11 +116,11 @@ public abstract class ListCaseAction extends KeepContextAction {
         super.markRecursions(recursiveActions.addExcl(this)); // // пока исходим из того что рекурсивными могут быть только abstract'ы
     }
 
-    protected abstract ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions();
+    protected abstract ImList<ActionMapImplement<?, PropertyInterface>> getListActions();
 
     public ImSet<Action> getDependActions() {
-        return getListActions().mapListValues(new GetValue<Action, ActionPropertyMapImplement<?, PropertyInterface>>() {
-            public Action getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+        return getListActions().mapListValues(new GetValue<Action, ActionMapImplement<?, PropertyInterface>>() {
+            public Action getMapValue(ActionMapImplement<?, PropertyInterface> value) {
                 return value.property;
             }
         }).toOrderSet().getSet();

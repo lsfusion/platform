@@ -16,13 +16,13 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class ActionPropertyValueImplement<T extends PropertyInterface> extends ActionPropertyImplement<T, ObjectValue> implements ApplyActionEvent {
+public class ActionValueImplement<T extends PropertyInterface> extends ActionImplement<T, ObjectValue> implements ApplyActionEvent {
 
     // кривовато, но иначе там нужно небольшой рефакторинг проводить
     private final ImMap<T, PropertyObjectInterfaceInstance> mapObjects;
     private final FormInstance formInstance;
 
-    public ActionPropertyValueImplement(Action<T> action, ImMap<T, ? extends ObjectValue> mapping, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
+    public ActionValueImplement(Action<T> action, ImMap<T, ? extends ObjectValue> mapping, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
         super(action, (ImMap<T, ObjectValue>)mapping);
         this.mapObjects = mapObjects;
         this.formInstance = formInstance;
@@ -32,7 +32,7 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
         property.execute(mapping, session, stack, mapObjects == null ? null : new FormEnvironment<>(mapObjects, null, formInstance));
     }
     
-    public ActionPropertyValueImplement<T> updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+    public ActionValueImplement<T> updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
         ImMap<T, PropertyObjectInterfaceInstance> updatedMapObjects = null;
         if(mapObjects != null) {
             ImValueMap<T, PropertyObjectInterfaceInstance> mUpdateMapObjects = mapObjects.mapItValues(); // exception кидается
@@ -45,6 +45,6 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
             updatedMapObjects = mUpdateMapObjects.immutableValue();
         }
 
-        return new ActionPropertyValueImplement<>(property, session.updateCurrentClasses(mapping), updatedMapObjects, formInstance);
+        return new ActionValueImplement<>(property, session.updateCurrentClasses(mapping), updatedMapObjects, formInstance);
     }
 }

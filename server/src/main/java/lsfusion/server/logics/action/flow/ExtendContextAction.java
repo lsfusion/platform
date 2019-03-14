@@ -13,7 +13,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
@@ -45,8 +45,8 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
     }
     protected abstract PropertyMapImplement<?, I> calcGroupWhereProperty();
 
-    public ActionPropertyMapImplement<PropertyInterface, I> getMapImplement() {
-        return new ActionPropertyMapImplement<>(this, mapInterfaces);
+    public ActionMapImplement<PropertyInterface, I> getMapImplement() {
+        return new ActionMapImplement<>(this, mapInterfaces);
     }
 
     @Override
@@ -64,13 +64,13 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
     protected abstract FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException;
 
     // потом надо будет вверх реализацию перенести
-    private ActionPropertyMapImplement<?, PropertyInterface> compile;
+    private ActionMapImplement<?, PropertyInterface> compile;
     private boolean compiled;
     @Override
     @ManualLazy
-    public ActionPropertyMapImplement<?, PropertyInterface> compile() {
+    public ActionMapImplement<?, PropertyInterface> compile() {
         if(!compiled) {
-            ActionPropertyMapImplement<?, I> extCompile = compileExtend();
+            ActionMapImplement<?, I> extCompile = compileExtend();
             if(extCompile!=null)
                 compile = extCompile.map(mapInterfaces.reverse());
             compiled = true;
@@ -78,7 +78,7 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
         return compile;
    }
 
-    public ActionPropertyMapImplement<?, I> compileExtend() {
+    public ActionMapImplement<?, I> compileExtend() {
         return null;
     }
 }

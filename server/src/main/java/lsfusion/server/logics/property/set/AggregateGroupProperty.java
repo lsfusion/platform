@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -70,7 +70,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     }
 
     @Override
-    public ActionPropertyMapImplement<?, Interface<T>> getSetNotNullAction(boolean notNull) {
+    public ActionMapImplement<?, Interface<T>> getSetNotNullAction(boolean notNull) {
         if(notNull) {
             PropertyInterface addedObject = new PropertyInterface();
             ImRevMap<PropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = getMapInterfaces().toRevExclMap().reverse();
@@ -78,7 +78,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
             ImRevMap<T, PropertyInterface> propValues = MapFact.addRevExcl(MapFact.singletonRev(aggrInterface, addedObject), // aggrInterface = aggrObject, остальные из row'а читаем
                     aggrInterfaces.filterInclRev(innerInterfaces.removeIncl(aggrInterface))); // assert что будут все в aggrInterfaces
 
-            MList<ActionPropertyMapImplement<?, PropertyInterface>> mActions = ListFact.mList();
+            MList<ActionMapImplement<?, PropertyInterface>> mActions = ListFact.mList();
             if(whereProp instanceof PropertyMapImplement)
                 mActions.add(((PropertyMapImplement<?, T>) whereProp).getSetNotNullAction(true).map(propValues));
             for(int i=0,size= aggrInterfaces.size();i<size;i++) {

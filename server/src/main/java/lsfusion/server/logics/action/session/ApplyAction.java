@@ -13,8 +13,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
-import lsfusion.server.logics.action.implement.ActionPropertyValueImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -33,13 +33,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ApplyAction extends KeepContextAction {
-    private final ActionPropertyMapImplement<?, PropertyInterface> action;
+    private final ActionMapImplement<?, PropertyInterface> action;
     private final Property canceled;
     private final Property applyMessage;
     private final FunctionSet<SessionDataProperty> keepSessionProperties;
     private final boolean serializable;
 
-    public <I extends PropertyInterface> ApplyAction(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
+    public <I extends PropertyInterface> ApplyAction(BaseLogicsModule LM, ActionMapImplement<?, I> action,
                                                      LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                      FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
         super(caption, innerInterfaces.size());
@@ -66,14 +66,14 @@ public class ApplyAction extends KeepContextAction {
     @Override
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         
-        MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
+        MList<ActionMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         if(action != null)
             actions.add(action);
 
         ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres =
-                ((ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
-                            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+                ((ImList<ActionMapImplement<?, PropertyInterface>>)actions).mapListValues(
+                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>() {
+                            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
                                 return value.mapCalcWhereProperty();
                             }});
         return DerivedProperty.createUnion(interfaces, listWheres);
@@ -88,7 +88,7 @@ public class ApplyAction extends KeepContextAction {
                 DBManager.pushTIL(Connection.TRANSACTION_REPEATABLE_READ);
 
             Result<String> rApplyMessage = new Result<>(); 
-            if (!context.apply(action == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.<ActionPropertyValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties, rApplyMessage)) // no need to change canceled property if apply succeeds, because it is not nested and is dropped automatically
+            if (!context.apply(action == null ? SetFact.<ActionValueImplement>EMPTYORDER() : SetFact.<ActionValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties, rApplyMessage)) // no need to change canceled property if apply succeeds, because it is not nested and is dropped automatically
                 canceled.change(context, true);
             applyMessage.change(context, rApplyMessage.result);
         } finally {

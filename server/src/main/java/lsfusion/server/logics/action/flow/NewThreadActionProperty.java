@@ -13,7 +13,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.session.DataSession;
@@ -30,7 +30,7 @@ public class NewThreadActionProperty extends AroundAspectAction {
     private PropertyInterfaceImplement<PropertyInterface> connectionProp;
 
     public <I extends PropertyInterface> NewThreadActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                                 ActionPropertyMapImplement<?, I> action,
+                                                                 ActionMapImplement<?, I> action,
                                                                  PropertyInterfaceImplement<I> period,
                                                                  PropertyInterfaceImplement<I> delay,
                                                                  PropertyInterfaceImplement<I> connection) {

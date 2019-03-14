@@ -11,8 +11,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.implement.ActionPropertyImplement;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.language.linear.LAP;
 import lsfusion.server.language.linear.LCP;
@@ -146,7 +146,7 @@ public class ActionOrPropertyUtils {
         return BaseUtils.immutableCast(readImplements(listInterfaces, params));
     }
 
-    public static <T extends PropertyInterface> ImList<ActionPropertyMapImplement<?, T>> readActionImplements(ImOrderSet<T> listInterfaces, Object... params) {
+    public static <T extends PropertyInterface> ImList<ActionMapImplement<?, T>> readActionImplements(ImOrderSet<T> listInterfaces, Object... params) {
         return BaseUtils.immutableCast(readImplements(listInterfaces, params));
     }
 
@@ -187,8 +187,8 @@ public class ActionOrPropertyUtils {
         }
     }
 
-    public static <P extends PropertyInterface> ActionPropertyImplement<P, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
-        return new ActionPropertyImplement<>(property.property, getMapping(property, propImpl));
+    public static <P extends PropertyInterface> ActionImplement<P, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
+        return new ActionImplement<>(property.property, getMapping(property, propImpl));
     }
 
     public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapCalcImplement(LCP<T> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
@@ -260,7 +260,7 @@ public class ActionOrPropertyUtils {
                 }});
 
             if(lp.property instanceof Action)
-                return new ActionPropertyMapImplement<>((Action<P>) lp.property, mapping);
+                return new ActionMapImplement<>((Action<P>) lp.property, mapping);
             else
                 return new PropertyMapImplement<>((Property<P>) lp.property, mapping);
         }

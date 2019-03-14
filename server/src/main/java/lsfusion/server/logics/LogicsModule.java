@@ -24,8 +24,8 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.change.SetAction;
-import lsfusion.server.logics.action.implement.ActionPropertyImplement;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.interactive.ConfirmActionProperty;
 import lsfusion.server.logics.action.interactive.MessageAction;
 import lsfusion.server.logics.action.session.ApplyAction;
@@ -771,9 +771,9 @@ public abstract class LogicsModule {
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 1 && readImplements.size() <= 3;
 
-        ActionPropertyMapImplement<?, PropertyInterface> tryAction = (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0);
-        ActionPropertyMapImplement<?, PropertyInterface> catchAction = (ActionPropertyMapImplement<?, PropertyInterface>) (hasCatch ? readImplements.get(1) : null);
-        ActionPropertyMapImplement<?, PropertyInterface> finallyAction = (ActionPropertyMapImplement<?, PropertyInterface>) (hasFinally ? (readImplements.get(hasCatch ? 2 : 1)) : null);
+        ActionMapImplement<?, PropertyInterface> tryAction = (ActionMapImplement<?, PropertyInterface>) readImplements.get(0);
+        ActionMapImplement<?, PropertyInterface> catchAction = (ActionMapImplement<?, PropertyInterface>) (hasCatch ? readImplements.get(1) : null);
+        ActionMapImplement<?, PropertyInterface> finallyAction = (ActionMapImplement<?, PropertyInterface>) (hasFinally ? (readImplements.get(hasCatch ? 2 : 1)) : null);
         return addProperty(group, new LAP<>(new TryAction(caption, listInterfaces, tryAction, catchAction, finallyAction)));
     }
     
@@ -793,7 +793,7 @@ public abstract class LogicsModule {
         assert readImplements.size() >= 2 && readImplements.size() <= 3;
 
         return addProperty(group, new LAP(CaseActionProperty.createIf(caption, not, listInterfaces, (PropertyInterfaceImplement<PropertyInterface>) readImplements.get(0),
-                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1), readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(2) : null)));
+                (ActionMapImplement<?, PropertyInterface>) readImplements.get(1), readImplements.size() == 3 ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(2) : null)));
     }
 
     // ------------------- Case action ----------------- //
@@ -804,10 +804,10 @@ public abstract class LogicsModule {
 
         MList<ActionCase<PropertyInterface>> mCases = ListFact.mList();
         for (int i = 0; i*2+1 < readImplements.size(); i++) {
-            mCases.add(new ActionCase<>((PropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
+            mCases.add(new ActionCase<>((PropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
         }
         if(readImplements.size() % 2 != 0) {
-            mCases.add(new ActionCase<>(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
+            mCases.add(new ActionCase<>(DerivedProperty.createTrue(), (ActionMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
         }
         return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, mCases.immutableList())));
     }
@@ -816,9 +816,9 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
 
-        MList<ActionPropertyMapImplement> mCases = ListFact.mList();
+        MList<ActionMapImplement> mCases = ListFact.mList();
         for (int i = 0; i < readImplements.size(); i++) {
-            mCases.add((ActionPropertyMapImplement) readImplements.get(i));
+            mCases.add((ActionMapImplement) readImplements.get(i));
         }
         return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, mCases.immutableList(), listInterfaces)));
     }
@@ -845,11 +845,11 @@ public abstract class LogicsModule {
 
         PropertyInterface addedInterface = addClass!=null ? (PropertyInterface) readImplements.get(implCnt - (hasElse ? 3 : 2) - noInline) : null;
 
-        ActionPropertyMapImplement<?, PropertyInterface> elseAction =
-                !hasElse ? null : (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 2 - noInline);
+        ActionMapImplement<?, PropertyInterface> elseAction =
+                !hasElse ? null : (ActionMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 2 - noInline);
 
-        ActionPropertyMapImplement<?, PropertyInterface> action =
-                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1 - noInline);
+        ActionMapImplement<?, PropertyInterface> action =
+                (ActionMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1 - noInline);
 
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(readImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
@@ -884,7 +884,7 @@ public abstract class LogicsModule {
                                 FunctionSet<SessionDataProperty> keepSessionProps, boolean serializable) {
         
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
+        ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         ApplyAction applyAction = new ApplyAction(baseLM, actionImplement, caption, listInterfaces, keepSessionProps, serializable);
         actionImplement.property.singleApply = singleApply;
@@ -925,7 +925,7 @@ public abstract class LogicsModule {
                                      LAP action, boolean isNested, boolean singleApply, boolean newSQL,
                                      FunctionSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
+        ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         NewSessionActionProperty actionProperty = new NewSessionActionProperty(
                 LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
@@ -942,14 +942,14 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement connection = withConnection ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement period = hasPeriod ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement delay = hasDelay ? (PropertyInterfaceImplement) readImplements.get(hasPeriod ? 2 : 1) : null;
-        return addProperty(group, new LAP(new NewThreadActionProperty(caption, listInterfaces, (ActionPropertyMapImplement) readImplements.get(0), period, delay, connection)));
+        return addProperty(group, new LAP(new NewThreadActionProperty(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection)));
     }
 
     protected LAP addNewExecutorAProp(AbstractGroup group, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         return addProperty(group, new LAP(new NewExecutorActionProperty(caption, listInterfaces,
-                (ActionPropertyMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1))));
+                (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1))));
     }
 
     // ------------------- Request action ----------------- //
@@ -959,9 +959,9 @@ public abstract class LogicsModule {
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 2;
 
-        ActionPropertyMapImplement<?, PropertyInterface> elseAction =  readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(2) : null;
+        ActionMapImplement<?, PropertyInterface> elseAction =  readImplements.size() == 3 ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(2) : null;
         return addProperty(group, new LAP(new RequestAction(caption, listInterfaces, 
-                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1),
+                (ActionMapImplement<?, PropertyInterface>) readImplements.get(0), (ActionMapImplement<?, PropertyInterface>) readImplements.get(1),
                 elseAction))
         );
     }
@@ -1999,11 +1999,11 @@ public abstract class LogicsModule {
         property.checkChange = type;
         property.checkProperties = checkProperties;
 
-        ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
+        ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.<ObjectSelector>EMPTY(), ListFact.<Boolean>EMPTY(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).property.getImplement();
-        ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.<ObjectSelector>EMPTY(), ListFact.<Boolean>EMPTY(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).property.getImplement();
+        ActionMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
                         ListFact.toList(logAction,
@@ -2024,14 +2024,14 @@ public abstract class LogicsModule {
 
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(listImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
-        addEventAction(innerInterfaces.getSet(), (ActionPropertyMapImplement<?, PropertyInterface>) listImplements.get(0), (PropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, noInlineInterfaces, forceInline, false, debugPoint);
+        addEventAction(innerInterfaces.getSet(), (ActionMapImplement<?, PropertyInterface>) listImplements.get(0), (PropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, noInlineInterfaces, forceInline, false, debugPoint);
     }
 
     public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(Action<P> actionProperty, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve, DebugInfo.DebugPoint debugPoint) {
         addEventAction(actionProperty.interfaces, actionProperty.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.<P>EMPTY(), false, resolve, debugPoint);
     }
 
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionPropertyMapImplement<?, P> actionProperty, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, DebugInfo.DebugPoint debugPoint) {
+    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> actionProperty, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, DebugInfo.DebugPoint debugPoint) {
         if(!(whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, event.getScope());
 
@@ -2063,11 +2063,11 @@ public abstract class LogicsModule {
         action.resolve = resolve;
     }
 
-    public <P extends PropertyInterface> void addAspectEvent(int interfaces, ActionPropertyImplement<P, Integer> action, String mask, boolean before) {
+    public <P extends PropertyInterface> void addAspectEvent(int interfaces, ActionImplement<P, Integer> action, String mask, boolean before) {
         // todo: непонятно что пока с полными каноническими именами и порядками параметров делать
     }
 
-    public <P extends PropertyInterface, T extends PropertyInterface> void addAspectEvent(Action<P> action, ActionPropertyMapImplement<T, P> aspect, boolean before) {
+    public <P extends PropertyInterface, T extends PropertyInterface> void addAspectEvent(Action<P> action, ActionMapImplement<T, P> aspect, boolean before) {
         if(before)
             action.addBeforeAspect(aspect);
         else
@@ -2099,7 +2099,7 @@ public abstract class LogicsModule {
 
         for(PropertyFollowsDebug option : options) {
             assert !option.isTrue || property.interfaces.size() == implement.mapping.size(); // assert что количество
-            ActionPropertyMapImplement<?, T> setAction = option.isTrue ? implement.getSetNotNullAction(true) : property.getSetNotNullAction(false);
+            ActionMapImplement<?, T> setAction = option.isTrue ? implement.getSetNotNullAction(true) : property.getSetNotNullAction(false);
             if(setAction!=null) {
 //                setAction.property.caption = "RESOLVE " + option.isTrue + " : " + property + " => " + implement.property;
                 PropertyMapImplement<?, T> condition;
@@ -2128,8 +2128,8 @@ public abstract class LogicsModule {
         setNotNull(lp.property, debugPoint, resolve, event);
     }
 
-    public static <P extends PropertyInterface, T extends PropertyInterface> ActionPropertyMapImplement<P, T> mapActionListImplement(LAP<P> property, ImOrderSet<T> mapList) {
-        return new ActionPropertyMapImplement<>(property.property, getMapping(property, mapList));
+    public static <P extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<P, T> mapActionListImplement(LAP<P> property, ImOrderSet<T> mapList) {
+        return new ActionMapImplement<>(property.property, getMapping(property, mapList));
     }
     public static <P extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<P, T> mapCalcListImplement(LCP<P> property, ImOrderSet<T> mapList) {
         return new PropertyMapImplement<>(property.property, getMapping(property, mapList));

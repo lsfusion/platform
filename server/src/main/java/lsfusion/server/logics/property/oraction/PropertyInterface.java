@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.caches.LazyInit;
 import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
@@ -20,7 +21,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.CalcType;
@@ -125,7 +125,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, P> mapEditAction(String editActionSID, Property filterProperty) {
         return null;
     }
 

@@ -6,12 +6,12 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.flow.AroundAspectAction;
@@ -23,7 +23,7 @@ import java.sql.SQLException;
 // групповые изменения (групповая корректировка, paste таблицы, multi cell paste)
 public class GroupChangeActionProperty extends AroundAspectAction {
 
-    public <I extends PropertyInterface> GroupChangeActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeAction) {
+    public <I extends PropertyInterface> GroupChangeActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionMapImplement<?, I> changeAction) {
         super(caption, innerInterfaces, changeAction);
         
         finalizeInit();

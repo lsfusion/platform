@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
@@ -273,13 +273,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
-    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         int lastNotNullAction = 0;
         ImList<CalcCase<Interface>> cases = getCases();
         MList<ActionCase<Interface>> mActionCases = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            ActionPropertyMapImplement<?, Interface> editAction = propCase.implement.mapEditAction(editActionSID, filterProperty);
+            ActionMapImplement<?, Interface> editAction = propCase.implement.mapEditAction(editActionSID, filterProperty);
             if(isExclusive) {
                 if(editAction == null)
                     continue;                                
@@ -542,10 +542,10 @@ public class IfUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityInstanceLazy
-    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionMapImplement<?, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
-        ActionPropertyMapImplement<?, Interface> result = falseProp.mapEditAction(editActionSID, filterProperty);
-        ActionPropertyMapImplement<?, Interface> trueAction = trueProp.mapEditAction(editActionSID, filterProperty);
+        ActionMapImplement<?, Interface> result = falseProp.mapEditAction(editActionSID, filterProperty);
+        ActionMapImplement<?, Interface> trueAction = trueProp.mapEditAction(editActionSID, filterProperty);
         if (trueAction != null) {
             result = DerivedProperty.createIfAction(interfaces, (PropertyMapImplement<?, Interface>) ifProp, trueAction, result);
         }
