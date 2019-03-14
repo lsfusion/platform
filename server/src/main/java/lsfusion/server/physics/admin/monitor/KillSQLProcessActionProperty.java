@@ -1,17 +1,17 @@
 package lsfusion.server.physics.admin.monitor;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class KillSQLProcessActionProperty extends ScriptingActionProperty {
+public class KillSQLProcessActionProperty extends ScriptingAction {
     private final ClassPropertyInterface integerInterface;
 
     public KillSQLProcessActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

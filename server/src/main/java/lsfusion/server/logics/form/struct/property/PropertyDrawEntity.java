@@ -17,6 +17,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.interop.form.stat.report.ReportConstants;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -37,11 +38,10 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.ExplicitActionProperty;
+import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 
 import javax.swing.*;
@@ -297,7 +297,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return isEdit;
     }
     
-    private boolean checkPermission(ActionProperty editAction, String editActionSID, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
+    private boolean checkPermission(Action editAction, String editActionSID, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
         ActionOrProperty securityProperty;
         if (isEdit(editActionSID) && !editAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
@@ -364,7 +364,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if(groupObject != null) {
             for (ObjectEntity objectInstance : getObjectInstances().filter(groupObject.getObjects())) {
                 if (objectInstance.baseClass instanceof CustomClass) {
-                    ExplicitActionProperty dialogAction = objectInstance.getChangeAction();
+                    ExplicitAction dialogAction = objectInstance.getChangeAction();
                     return new ActionPropertyObjectEntity<>(dialogAction, MapFact.singletonRev(dialogAction.interfaces.single(), objectInstance));
                 }
             }

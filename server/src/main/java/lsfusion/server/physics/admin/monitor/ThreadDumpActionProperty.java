@@ -7,14 +7,14 @@ import lsfusion.interop.action.ThreadDumpClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
-public class ThreadDumpActionProperty extends ScriptingActionProperty {
+public class ThreadDumpActionProperty extends ScriptingAction {
 
     public ThreadDumpActionProperty(SystemEventsLogicsModule LM) {
         super(LM);

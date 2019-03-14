@@ -2,13 +2,13 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 
 public class NavigatorAction extends NavigatorElement {
-    private final ActionProperty action;
+    private final Action action;
     private final FormEntity form;
 
-    public NavigatorAction(ActionProperty action, String canonicalName, LocalizedString caption, FormEntity form, String icon, DefaultIcon defaultIcon) {
+    public NavigatorAction(Action action, String canonicalName, LocalizedString caption, FormEntity form, String icon, DefaultIcon defaultIcon) {
         super(canonicalName, caption);
         
         this.action = action;
@@ -30,7 +30,7 @@ public class NavigatorAction extends NavigatorElement {
         return form;
     }
 
-    public ActionProperty getAction() {
+    public Action getAction() {
         return action;
     }
 }

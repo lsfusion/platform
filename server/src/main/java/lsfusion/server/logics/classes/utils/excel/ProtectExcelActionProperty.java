@@ -3,6 +3,7 @@ package lsfusion.server.logics.classes.utils.excel;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.ReflectionUtils;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.StaticFormatFileClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -10,7 +11,6 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ProtectExcelActionProperty extends ScriptingActionProperty {
+public class ProtectExcelActionProperty extends ScriptingAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface passwordInterface;
 

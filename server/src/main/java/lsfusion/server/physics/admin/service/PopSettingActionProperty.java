@@ -1,18 +1,18 @@
 package lsfusion.server.physics.admin.service;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.base.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class PopSettingActionProperty extends ScriptingActionProperty {
+public class PopSettingActionProperty extends ScriptingAction {
     private ClassPropertyInterface nameInterface;
 
     public PopSettingActionProperty(ServiceLogicsModule LM, ValueClass... classes) {

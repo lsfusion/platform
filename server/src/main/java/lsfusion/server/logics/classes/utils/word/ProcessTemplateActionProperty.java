@@ -17,7 +17,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.apache.poi.hwpf.HWPFDocument;
@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class ProcessTemplateActionProperty extends ScriptingActionProperty {
+public class ProcessTemplateActionProperty extends ScriptingAction {
     public final ClassPropertyInterface templateInterface;
 
     public ProcessTemplateActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

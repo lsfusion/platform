@@ -13,7 +13,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.io.File;
@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
+public class MakeUnzipFileActionProperty extends ScriptingAction {
 
     public MakeUnzipFileActionProperty(UtilsLogicsModule LM) {
         super(LM);

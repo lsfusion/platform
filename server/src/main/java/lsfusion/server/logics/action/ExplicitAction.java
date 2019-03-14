@@ -4,6 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
@@ -13,21 +14,20 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
 // с явным задание классов параметров (where определяется этими классами)
-public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPropertyInterface> {
-    protected ExplicitActionProperty(ValueClass... classes) {
+public abstract class ExplicitAction extends BaseAction<ClassPropertyInterface> {
+    protected ExplicitAction(ValueClass... classes) {
         this(LocalizedString.NONAME, classes);
     }
 
-    protected ExplicitActionProperty(ImOrderSet interfaces) {
+    protected ExplicitAction(ImOrderSet interfaces) {
         super(LocalizedString.NONAME, interfaces);
     }
 
-    protected ExplicitActionProperty(LocalizedString caption, ValueClass[] classes) {
+    protected ExplicitAction(LocalizedString caption, ValueClass[] classes) {
         super(caption, IsClassProperty.getInterfaces(classes));
     }
 
@@ -52,8 +52,8 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
             proceedNullException();
         else {
             if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys).removeIncl(getNoClassesInterfaces()))) { // если подходит по классам выполнем
-                if (this instanceof ScriptingActionProperty)
-                    ((ScriptingActionProperty) this).commonExecuteCustomDelegate(context);
+                if (this instanceof ScriptingAction)
+                    ((ScriptingAction) this).commonExecuteCustomDelegate(context);
                 else
                     executeCustom(context);
             }

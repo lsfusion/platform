@@ -8,12 +8,12 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class FileExistsActionProperty extends ScriptingActionProperty {
+public class FileExistsActionProperty extends ScriptingAction {
     private final ClassPropertyInterface pathInterface;
     private final ClassPropertyInterface isClientInterface;
 

@@ -4,26 +4,26 @@ import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.SystemActionProperty;
 
 import java.sql.SQLException;
 
-public class MessageActionProperty extends SystemActionProperty {
+public class MessageAction extends SystemAction {
     protected final String title;
     private boolean noWait = false;
 
-    public <I extends PropertyInterface> MessageActionProperty(LocalizedString caption, String title) {
+    public <I extends PropertyInterface> MessageAction(LocalizedString caption, String title) {
         super(caption, SetFact.singletonOrder(new PropertyInterface()));
 
         this.title = title;
     }
 
-    public <I extends PropertyInterface> MessageActionProperty(LocalizedString caption, String title, boolean noWait) {
+    public <I extends PropertyInterface> MessageAction(LocalizedString caption, String title, boolean noWait) {
         this(caption, title);
 
         this.noWait = noWait;

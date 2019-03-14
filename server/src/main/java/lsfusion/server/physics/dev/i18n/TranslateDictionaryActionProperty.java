@@ -1,5 +1,6 @@
 package lsfusion.server.physics.dev.i18n;
 
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -7,7 +8,6 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 
@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
+public class TranslateDictionaryActionProperty extends ScriptingAction {
     public final ClassPropertyInterface dictionaryInterface;
     public final ClassPropertyInterface termInterface;
 

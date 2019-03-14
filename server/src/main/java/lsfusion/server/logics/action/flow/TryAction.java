@@ -10,7 +10,7 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.base.ThreadUtils;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
@@ -22,17 +22,17 @@ import lsfusion.server.base.stack.ExecutionStackAspect;
 
 import java.sql.SQLException;
 
-public class TryActionProperty extends KeepContextActionProperty {
+public class TryAction extends KeepContextAction {
 
     private final ActionPropertyMapImplement<?, PropertyInterface> tryAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> catchAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> finallyAction;
 
 
-    public <I extends PropertyInterface> TryActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                           ActionPropertyMapImplement<?, I> tryAction,
-                                                           ActionPropertyMapImplement<?, I> catchAction,
-                                                           ActionPropertyMapImplement<?, I> finallyAction) {
+    public <I extends PropertyInterface> TryAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
+                                                   ActionPropertyMapImplement<?, I> tryAction,
+                                                   ActionPropertyMapImplement<?, I> catchAction,
+                                                   ActionPropertyMapImplement<?, I> finallyAction) {
         super(caption, innerInterfaces.size());
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -62,8 +62,8 @@ public class TryActionProperty extends KeepContextActionProperty {
         return DerivedProperty.createUnion(interfaces, listWheres);
     }
 
-    public ImSet<ActionProperty> getDependActions() {
-        ImSet<ActionProperty> result = SetFact.EMPTY();
+    public ImSet<Action> getDependActions() {
+        ImSet<Action> result = SetFact.EMPTY();
         result = result.merge(tryAction.property);
 
         if (catchAction != null) {

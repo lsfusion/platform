@@ -1,18 +1,18 @@
 package lsfusion.server.physics.admin.service;
 
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetVolatileStatsEnabledUserActionProperty extends ScriptingActionProperty {
+public class SetVolatileStatsEnabledUserActionProperty extends ScriptingAction {
 
     public SetVolatileStatsEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

@@ -9,7 +9,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class BreakActionProperty extends ChangeFlowActionProperty {
+public class BreakActionProperty extends ChangeFlowAction {
     public BreakActionProperty() {
         super(LocalizedString.create("break"));
 

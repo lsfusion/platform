@@ -7,7 +7,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.physics.exec.table.ImplementTable;
 
@@ -18,7 +18,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
-public class AlterTableColumnsToLongActionProperty extends ScriptingActionProperty {
+public class AlterTableColumnsToLongActionProperty extends ScriptingAction {
 
     private final ClassPropertyInterface tableInterface;
 

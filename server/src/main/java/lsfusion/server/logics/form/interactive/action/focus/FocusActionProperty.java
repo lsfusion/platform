@@ -5,12 +5,12 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.SystemExplicitAction;
 
 import java.sql.SQLException;
 
 // сбрасывает объект в null
-public class FocusActionProperty extends SystemExplicitActionProperty {
+public class FocusActionProperty extends SystemExplicitAction {
     private final PropertyDrawEntity property;
 
     public FocusActionProperty(PropertyDrawEntity property) {

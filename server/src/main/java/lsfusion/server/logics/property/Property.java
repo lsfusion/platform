@@ -21,7 +21,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.language.ScriptParsingException;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
@@ -791,7 +791,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     private MCol<Pair<ActionOrProperty<?>, LinkType>> actionChangeProps; // только у Data и IsClassProperty, чисто для лексикографики
     public <T extends PropertyInterface> void addActionChangeProp(Pair<ActionOrProperty<T>, LinkType> pair) {
-        ((ActionProperty<?>) pair.first).checkRecursiveStrongUsed(this);
+        ((Action<?>) pair.first).checkRecursiveStrongUsed(this);
 
         if(actionChangeProps==null)
             actionChangeProps = ListFact.mCol();

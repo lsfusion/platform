@@ -5,12 +5,12 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CalculateBase64HashActionProperty extends ScriptingActionProperty {
+public class CalculateBase64HashActionProperty extends ScriptingAction {
     AuthenticationLogicsModule LM;
     private final ClassPropertyInterface algorithmInterface;
     private final ClassPropertyInterface passwordInterface;

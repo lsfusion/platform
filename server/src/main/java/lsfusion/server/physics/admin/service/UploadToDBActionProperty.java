@@ -8,14 +8,14 @@ import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.PostgreDataAdapter;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public class UploadToDBActionProperty extends ScriptingActionProperty {
+public class UploadToDBActionProperty extends ScriptingAction {
 
     public UploadToDBActionProperty(ServiceLogicsModule LM) {
         super(LM);

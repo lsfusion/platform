@@ -1,16 +1,16 @@
 package lsfusion.server.physics.admin.service;
 
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class SetRepeatableReadDisableTILModeActionProperty extends ScriptingActionProperty {
+public class SetRepeatableReadDisableTILModeActionProperty extends ScriptingAction {
 
     public SetRepeatableReadDisableTILModeActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

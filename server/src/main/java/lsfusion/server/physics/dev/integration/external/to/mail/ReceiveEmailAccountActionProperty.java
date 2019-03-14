@@ -2,12 +2,12 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import org.apache.log4j.Logger;
 
@@ -20,7 +20,7 @@ import java.util.Iterator;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
+public class ReceiveEmailAccountActionProperty extends ScriptingAction {
     private final ClassPropertyInterface accountInterface;
     private final static Logger logger = ServerLoggers.mailLogger;
     EmailLogicsModule emailLM;

@@ -11,6 +11,8 @@ import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.SystemExplicitAction;
+import lsfusion.server.logics.action.change.SetAction;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.FileClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -26,15 +28,13 @@ import lsfusion.server.logics.property.implement.CalcPropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.action.change.SetActionProperty;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class DefaultChangeActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
+public class DefaultChangeActionProperty<P extends PropertyInterface> extends SystemExplicitAction {
 
     private final CalcPropertyMapImplement<P, ClassPropertyInterface> implement;
     private final String editActionSID;
@@ -54,7 +54,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(SetActionProperty.hasFlow(implement, type))
+        if(SetAction.hasFlow(implement, type))
             return true;
         return super.hasFlow(type);
     }

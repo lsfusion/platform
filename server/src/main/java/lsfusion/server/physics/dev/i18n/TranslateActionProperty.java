@@ -5,7 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TranslateActionProperty extends ScriptingActionProperty {
+public class TranslateActionProperty extends ScriptingAction {
     public final ClassPropertyInterface translationInterface;
     public final ClassPropertyInterface languageFromInterface;
     public final ClassPropertyInterface languageToInterface;

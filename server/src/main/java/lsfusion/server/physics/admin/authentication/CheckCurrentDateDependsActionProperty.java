@@ -9,13 +9,13 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import javax.swing.*;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CheckCurrentDateDependsActionProperty extends ScriptingActionProperty {
+public class CheckCurrentDateDependsActionProperty extends ScriptingAction {
 
     private final ClassPropertyInterface propertyInterface;
 

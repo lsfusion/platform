@@ -20,15 +20,15 @@ import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.logics.action.ActionProperty;
-import lsfusion.server.logics.action.change.AddObjectActionProperty;
-import lsfusion.server.logics.action.change.ChangeClassActionProperty;
-import lsfusion.server.logics.action.change.SetActionProperty;
+import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.change.AddObjectAction;
+import lsfusion.server.logics.action.change.ChangeClassAction;
+import lsfusion.server.logics.action.change.SetAction;
 import lsfusion.server.logics.action.implement.ActionPropertyImplement;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.interactive.ConfirmActionProperty;
-import lsfusion.server.logics.action.interactive.MessageActionProperty;
-import lsfusion.server.logics.action.session.ApplyActionProperty;
+import lsfusion.server.logics.action.interactive.MessageAction;
+import lsfusion.server.logics.action.session.ApplyAction;
 import lsfusion.server.logics.action.session.CancelActionProperty;
 import lsfusion.server.logics.action.session.NewSessionActionProperty;
 import lsfusion.server.logics.action.session.changed.IncrementType;
@@ -46,7 +46,7 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.action.focus.FocusActionProperty;
 import lsfusion.server.logics.form.interactive.action.input.InputActionProperty;
-import lsfusion.server.logics.form.interactive.action.input.RequestActionProperty;
+import lsfusion.server.logics.form.interactive.action.input.RequestAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectActionProperty;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectActionProperty;
 import lsfusion.server.logics.form.open.interactive.FormInteractiveActionProperty;
@@ -112,7 +112,7 @@ import lsfusion.server.logics.form.stat.integration.exporting.plain.csv.ExportCS
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.ExportDBFActionProperty;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.table.ExportTableActionProperty;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSActionProperty;
-import lsfusion.server.logics.form.open.stat.ImportActionProperty;
+import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.stat.integration.importing.hierarchy.json.ImportJSONActionProperty;
 import lsfusion.server.logics.form.stat.integration.importing.hierarchy.xml.ImportXMLActionProperty;
 import lsfusion.server.logics.form.stat.integration.importing.plain.csv.ImportCSVActionProperty;
@@ -637,7 +637,7 @@ public abstract class LogicsModule {
     }
     
     protected <O extends ObjectSelector> LAP addImportFAProp(FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
-        ImportActionProperty importAction;
+        ImportAction importAction;
 
         if(format == null)
             return addAutoImportFAProp(formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere);
@@ -680,7 +680,7 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<PropertyInterface, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<PropertyInterface, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces) : null);
 
-        return addAProp(new ChangeClassActionProperty<>(cls, false, innerInterfaces.getSet(),
+        return addAProp(new ChangeClassAction<>(cls, false, innerInterfaces.getSet(),
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, getBaseClass()));
     }
 
@@ -735,7 +735,7 @@ public abstract class LogicsModule {
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<W, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<W, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createTrue());
-        return addProperty(group, new LAP<>(new SetActionProperty<C, W, PropertyInterface>(caption,
+        return addProperty(group, new LAP<>(new SetAction<C, W, PropertyInterface>(caption,
                 innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart,
                 (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
@@ -775,7 +775,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<?, PropertyInterface> tryAction = (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0);
         ActionPropertyMapImplement<?, PropertyInterface> catchAction = (ActionPropertyMapImplement<?, PropertyInterface>) (hasCatch ? readImplements.get(1) : null);
         ActionPropertyMapImplement<?, PropertyInterface> finallyAction = (ActionPropertyMapImplement<?, PropertyInterface>) (hasFinally ? (readImplements.get(hasCatch ? 2 : 1)) : null);
-        return addProperty(group, new LAP<>(new TryActionProperty(caption, listInterfaces, tryAction, catchAction, finallyAction)));
+        return addProperty(group, new LAP<>(new TryAction(caption, listInterfaces, tryAction, catchAction, finallyAction)));
     }
     
     // ------------------- If action ----------------- //
@@ -824,7 +824,7 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
-    protected LAP addAbstractCaseAProp(ListCaseActionProperty.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params) {
+    protected LAP addAbstractCaseAProp(ListCaseAction.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
         return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
@@ -855,7 +855,7 @@ public abstract class LogicsModule {
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(readImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
         return addProperty(null, new LAP<>(
-                new ForActionProperty<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline))
+                new ForAction<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline))
         );
     }
 
@@ -876,7 +876,7 @@ public abstract class LogicsModule {
     protected LAP addJoinAProp(AbstractGroup group, LocalizedString caption, ValueClass[] classes, LAP action, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(listInterfaces, params);
-        return addProperty(group, new LAP(new JoinActionProperty(caption, listInterfaces, mapActionImplement(action, readImplements))));
+        return addProperty(group, new LAP(new JoinAction(caption, listInterfaces, mapActionImplement(action, readImplements))));
     }
 
     // ------------------------ APPLY / CANCEL ----------------- //
@@ -887,7 +887,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, caption, listInterfaces, keepSessionProps, serializable);
+        ApplyAction applyAction = new ApplyAction(baseLM, actionImplement, caption, listInterfaces, keepSessionProps, serializable);
         actionImplement.property.singleApply = singleApply;
         return addProperty(group, new LAP<>(applyAction));
     }
@@ -961,7 +961,7 @@ public abstract class LogicsModule {
         assert readImplements.size() >= 2;
 
         ActionPropertyMapImplement<?, PropertyInterface> elseAction =  readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(2) : null;
-        return addProperty(group, new LAP(new RequestActionProperty(caption, listInterfaces, 
+        return addProperty(group, new LAP(new RequestAction(caption, listInterfaces, 
                 (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1),
                 elseAction))
         );
@@ -1585,11 +1585,11 @@ public abstract class LogicsModule {
 
     // ------------------- ACTION ----------------- //
 
-    public LAP addAProp(ActionProperty property) {
+    public LAP addAProp(Action property) {
         return addAProp(null, property);
     }
 
-    public LAP addAProp(AbstractGroup group, ActionProperty property) {
+    public LAP addAProp(AbstractGroup group, Action property) {
         return addProperty(group, new LAP(property));
     }
 
@@ -1605,7 +1605,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     protected LAP addMAProp(String title, boolean noWait) {
-        return addProperty(null, new LAP(new MessageActionProperty(LocalizedString.create("Message"), title, noWait)));
+        return addProperty(null, new LAP(new MessageAction(LocalizedString.create("Message"), title, noWait)));
     }
 
     public LAP addFocusActionProp(PropertyDrawEntity propertyDrawEntity) {
@@ -1644,7 +1644,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     protected LAP addAsyncUpdateAProp() {
-        return addProperty(null, new LAP(new AsyncUpdateEditValueActionProperty(LocalizedString.create("Async Update"))));
+        return addProperty(null, new LAP(new AsyncUpdateEditValueAction(LocalizedString.create("Async Update"))));
     }
 
     // ------------------- EVAL ----------------- //
@@ -1658,7 +1658,7 @@ public abstract class LogicsModule {
     public void setupDrillDownProperty(Property property, boolean isLightStart) {
         if (property.supportsDrillDown()) {
             LAP<?> drillDownFormProperty = isLightStart ? addLazyAProp((Property) property) : addDDAProp((Property) property);
-            ActionProperty formProperty = drillDownFormProperty.property;
+            Action formProperty = drillDownFormProperty.property;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
             property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
         }
@@ -1729,7 +1729,7 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : null);
 
-        return addAProp(null, new AddObjectActionProperty(cls, innerInterfaces.getSet(), readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
+        return addAProp(null, new AddObjectAction(cls, innerInterfaces.getSet(), readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
     }
 
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass explicitClass) {
@@ -1852,11 +1852,11 @@ public abstract class LogicsModule {
         result.setShowChangeKey(false);
     }
 
-    public LAP addProp(ActionProperty prop) {
+    public LAP addProp(Action prop) {
         return addProp(null, prop);
     }
 
-    public LAP addProp(AbstractGroup group, ActionProperty prop) {
+    public LAP addProp(AbstractGroup group, Action prop) {
         return addProperty(group, new LAP(prop));
     }
 
@@ -2028,7 +2028,7 @@ public abstract class LogicsModule {
         addEventAction(innerInterfaces.getSet(), (ActionPropertyMapImplement<?, PropertyInterface>) listImplements.get(0), (CalcPropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, noInlineInterfaces, forceInline, false, debugPoint);
     }
 
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ActionProperty<P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve, DebugInfo.DebugPoint debugPoint) {
+    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(Action<P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve, DebugInfo.DebugPoint debugPoint) {
         addEventAction(actionProperty.interfaces, actionProperty.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.<P>EMPTY(), false, resolve, debugPoint);
     }
 
@@ -2036,7 +2036,7 @@ public abstract class LogicsModule {
         if(!(whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, event.getScope());
 
-        ActionProperty<? extends PropertyInterface> action =
+        Action<? extends PropertyInterface> action =
                 innerInterfaces.isEmpty() ?
                     DerivedProperty.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
                     DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
@@ -2056,7 +2056,7 @@ public abstract class LogicsModule {
         addBaseEvent(action, event, resolve, false);
     }
 
-    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, Event event, boolean resolve, boolean single) {
+    public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean resolve, boolean single) {
         action.addEvent(event.base, event.session);
         if(event.after != null)
             action.addStrongUsed(event.after);
@@ -2068,7 +2068,7 @@ public abstract class LogicsModule {
         // todo: непонятно что пока с полными каноническими именами и порядками параметров делать
     }
 
-    public <P extends PropertyInterface, T extends PropertyInterface> void addAspectEvent(ActionProperty<P> action, ActionPropertyMapImplement<T, P> aspect, boolean before) {
+    public <P extends PropertyInterface, T extends PropertyInterface> void addAspectEvent(Action<P> action, ActionPropertyMapImplement<T, P> aspect, boolean before) {
         if(before)
             action.addBeforeAspect(aspect);
         else

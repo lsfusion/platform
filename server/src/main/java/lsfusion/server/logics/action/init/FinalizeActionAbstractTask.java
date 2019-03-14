@@ -1,8 +1,8 @@
 package lsfusion.server.logics.action.init;
 
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.logics.action.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.init.GroupPropertiesTask;
 
 public class FinalizeActionAbstractTask extends GroupPropertiesTask {
@@ -11,8 +11,8 @@ public class FinalizeActionAbstractTask extends GroupPropertiesTask {
     }
 
     protected void runTask(ActionOrProperty property) {
-        if (property instanceof ActionProperty) {
-            if (property instanceof ListCaseActionProperty && ((ListCaseActionProperty) property).isAbstract()) {
+        if (property instanceof Action) {
+            if (property instanceof ListCaseAction && ((ListCaseAction) property).isAbstract()) {
                 property.finalizeInit();
             }
         }

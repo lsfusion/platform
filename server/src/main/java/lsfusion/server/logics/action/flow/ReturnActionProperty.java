@@ -9,7 +9,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class ReturnActionProperty extends ChangeFlowActionProperty {
+public class ReturnActionProperty extends ChangeFlowAction {
     public ReturnActionProperty() {
         super(LocalizedString.create("return"));
 

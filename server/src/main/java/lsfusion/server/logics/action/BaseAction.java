@@ -6,13 +6,13 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public abstract class BaseActionProperty<P extends PropertyInterface> extends ActionProperty<P> {
+public abstract class BaseAction<P extends PropertyInterface> extends Action<P> {
 
-    protected BaseActionProperty(LocalizedString caption, ImOrderSet<P> interfaces) {
+    protected BaseAction(LocalizedString caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
     }
 
-    public ImSet<ActionProperty> getDependActions() {
+    public ImSet<Action> getDependActions() {
         return SetFact.EMPTY();
     }
 }

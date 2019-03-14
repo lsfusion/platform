@@ -1,9 +1,9 @@
 package lsfusion.server.base.stack;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.physics.admin.profiler.ActionProfileObject;
 import lsfusion.server.physics.admin.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,14 +11,14 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
 public class ExecuteActionStackItem extends ExecutionStackItem {
-    private final ActionProperty property;
+    private final Action property;
 
     public ExecuteActionStackItem(ProceedingJoinPoint joinPoint) {
-        super(joinPoint, Profiler.PROFILER_ENABLED ? new ActionProfileObject((ActionProperty) joinPoint.getTarget()) : null);
-        this.property = (ActionProperty) joinPoint.getTarget();
+        super(joinPoint, Profiler.PROFILER_ENABLED ? new ActionProfileObject((Action) joinPoint.getTarget()) : null);
+        this.property = (Action) joinPoint.getTarget();
     }
     
-    public ActionProperty getProperty() {
+    public Action getProperty() {
         return property;
     }
     

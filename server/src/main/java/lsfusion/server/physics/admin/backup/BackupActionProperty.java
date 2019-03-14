@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
@@ -14,7 +15,6 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 
@@ -27,7 +27,7 @@ import java.util.List;
 
 import static lsfusion.base.file.IOUtils.readFileToString;
 
-public class BackupActionProperty extends ScriptingActionProperty {
+public class BackupActionProperty extends ScriptingAction {
 
     public BackupActionProperty(ScriptingLogicsModule LM) {
         super(LM);

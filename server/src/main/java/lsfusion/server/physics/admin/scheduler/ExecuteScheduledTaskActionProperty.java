@@ -8,13 +8,13 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ExecuteScheduledTaskActionProperty extends ScriptingActionProperty {
+public class ExecuteScheduledTaskActionProperty extends ScriptingAction {
     private final ClassPropertyInterface scheduledTask;
 
     public ExecuteScheduledTaskActionProperty(SchedulerLogicsModule LM, ValueClass... classes) {

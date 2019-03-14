@@ -5,19 +5,19 @@ import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.SystemActionProperty;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
-public class AsyncUpdateEditValueActionProperty extends SystemActionProperty {
+public class AsyncUpdateEditValueAction extends SystemAction {
 
-    public AsyncUpdateEditValueActionProperty(LocalizedString caption) {
+    public AsyncUpdateEditValueAction(LocalizedString caption) {
         super(caption, SetFact.singletonOrder(new PropertyInterface()));
     }
 

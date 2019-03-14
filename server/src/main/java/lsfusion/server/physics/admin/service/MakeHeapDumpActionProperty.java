@@ -4,9 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class MakeHeapDumpActionProperty extends ScriptingActionProperty {
+public class MakeHeapDumpActionProperty extends ScriptingAction {
 
     public MakeHeapDumpActionProperty(ServiceLogicsModule LM) {
         super(LM);

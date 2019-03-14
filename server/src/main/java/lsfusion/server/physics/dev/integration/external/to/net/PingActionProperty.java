@@ -6,14 +6,14 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.physics.dev.integration.external.to.net.client.PingClientAction;
 
 import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class PingActionProperty extends ScriptingActionProperty {
+public class PingActionProperty extends ScriptingAction {
     private final ClassPropertyInterface hostInterface;
     private final ClassPropertyInterface isClientInterface;
 

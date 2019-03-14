@@ -47,7 +47,7 @@ import java.util.*;
 
 import static lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod.PUT;
 
-public class ExternalHTTPActionProperty extends ExternalActionProperty {
+public class ExternalHTTPActionProperty extends ExternalAction {
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;

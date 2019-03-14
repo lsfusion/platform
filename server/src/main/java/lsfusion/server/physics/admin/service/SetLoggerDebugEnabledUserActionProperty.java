@@ -5,13 +5,13 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetLoggerDebugEnabledUserActionProperty extends ScriptingActionProperty {
+public class SetLoggerDebugEnabledUserActionProperty extends ScriptingAction {
 
     public SetLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

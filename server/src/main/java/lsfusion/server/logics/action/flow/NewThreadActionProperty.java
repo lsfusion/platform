@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class NewThreadActionProperty extends AroundAspectActionProperty {
+public class NewThreadActionProperty extends AroundAspectAction {
 
     private CalcPropertyInterfaceImplement<PropertyInterface> periodProp;
     private CalcPropertyInterfaceImplement<PropertyInterface> delayProp;

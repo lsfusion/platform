@@ -4,7 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.event.Event;
@@ -32,15 +32,15 @@ import java.sql.SQLException;
 
 public class ActionPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements PropertyInterfaceImplement<T> {
 
-    public ActionProperty<P> property;
+    public Action<P> property;
     public ImRevMap<P, T> mapping;
 
-    public ActionPropertyMapImplement(ActionProperty<P> property) {
+    public ActionPropertyMapImplement(Action<P> property) {
         this.property = property;
         mapping = MapFact.EMPTYREV();
     }
 
-    public ActionPropertyMapImplement(ActionProperty<P> property, ImRevMap<P, T> mapping) {
+    public ActionPropertyMapImplement(Action<P> property, ImRevMap<P, T> mapping) {
         this.property = property;
         this.mapping = mapping;
     }

@@ -4,20 +4,20 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public abstract class FlowActionProperty extends ActionProperty<PropertyInterface> {
+public abstract class FlowAction extends Action<PropertyInterface> {
 
     public static ImOrderSet<PropertyInterface> genInterfaces(int size) {
         return SetFact.toOrderExclSet(size, genInterface);
     }
 
-    protected <I extends PropertyInterface> FlowActionProperty(LocalizedString caption, int size) {
+    protected <I extends PropertyInterface> FlowAction(LocalizedString caption, int size) {
         super(caption, genInterfaces(size));
     }
 

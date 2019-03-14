@@ -8,7 +8,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.poi.util.IOUtils;
 
@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class DownloadFileActionProperty extends ScriptingActionProperty {
+public class DownloadFileActionProperty extends ScriptingAction {
     private final ClassPropertyInterface pathInterface;
 
     public DownloadFileActionProperty(BaseLogicsModule LM, ValueClass... classes) {

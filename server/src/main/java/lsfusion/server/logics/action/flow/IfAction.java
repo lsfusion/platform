@@ -4,7 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.CustomClass;
@@ -21,13 +21,13 @@ import java.sql.SQLException;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.createForAction;
 
-public class IfActionProperty extends KeepContextActionProperty {
+public class IfAction extends KeepContextAction {
 
     private final CalcPropertyInterfaceImplement<PropertyInterface> ifProp;
     private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
 
-    public <I extends PropertyInterface> IfActionProperty(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public <I extends PropertyInterface> IfAction(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         super(caption, innerInterfaces.size());
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -52,8 +52,8 @@ public class IfActionProperty extends KeepContextActionProperty {
                 falseAction !=null ? falseAction.mapCalcWhereProperty() : null);
     }
 
-    public ImSet<ActionProperty> getDependActions() {
-        ImSet<ActionProperty> result = SetFact.EMPTY();
+    public ImSet<Action> getDependActions() {
+        ImSet<Action> result = SetFact.EMPTY();
         if (trueAction != null) {
             result = result.merge(trueAction.property);
         }
@@ -126,13 +126,13 @@ public class IfActionProperty extends KeepContextActionProperty {
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> Property getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
-        return ForActionProperty.getPushWhere(ifProp);
+        return ForAction.getPushWhere(ifProp);
     }
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
-        return ForActionProperty.pushFor(interfaces, ifProp, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<PropertyInterface, PropertyInterface>() {
+        return ForAction.pushFor(interfaces, ifProp, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<PropertyInterface, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
                 return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
             }

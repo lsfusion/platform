@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.implement.ActionPropertyValueImplement;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -23,7 +23,7 @@ import lsfusion.server.physics.exec.DBManager;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.action.flow.KeepContextActionProperty;
+import lsfusion.server.logics.action.flow.KeepContextAction;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
@@ -32,16 +32,16 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class ApplyActionProperty extends KeepContextActionProperty {
+public class ApplyAction extends KeepContextAction {
     private final ActionPropertyMapImplement<?, PropertyInterface> action;
     private final Property canceled;
     private final Property applyMessage;
     private final FunctionSet<SessionDataProperty> keepSessionProperties;
     private final boolean serializable;
 
-    public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
-                                                             LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                             FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
+    public <I extends PropertyInterface> ApplyAction(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
+                                                     LocalizedString caption, ImOrderSet<I> innerInterfaces,
+                                                     FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
         super(caption, innerInterfaces.size());
         this.keepSessionProperties = keepSessionProperties;
         this.serializable = serializable;
@@ -98,8 +98,8 @@ public class ApplyActionProperty extends KeepContextActionProperty {
         return FlowResult.FINISH;
     }
 
-    public ImSet<ActionProperty> getDependActions() {
-        ImSet<ActionProperty> result = SetFact.EMPTY();
+    public ImSet<Action> getDependActions() {
+        ImSet<Action> result = SetFact.EMPTY();
         if (action != null) {
             result = result.merge(action.property);
         }        

@@ -19,12 +19,12 @@ import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.flow.AroundAspectActionProperty;
+import lsfusion.server.logics.action.flow.AroundAspectAction;
 import lsfusion.server.logics.action.flow.FlowResult;
 
 import java.sql.SQLException;
 
-public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends AroundAspectActionProperty {
+public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends AroundAspectAction {
 
     private final Property<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;

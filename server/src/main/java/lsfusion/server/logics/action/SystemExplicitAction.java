@@ -5,22 +5,22 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 // usually are created from parser
-public abstract class SystemExplicitActionProperty extends ExplicitActionProperty {
+public abstract class SystemExplicitAction extends ExplicitAction {
 
 
-    protected SystemExplicitActionProperty() {
+    protected SystemExplicitAction() {
         super();
     }
     
-    protected SystemExplicitActionProperty(LocalizedString caption) {
+    protected SystemExplicitAction(LocalizedString caption) {
         super(caption, new ValueClass[]{});
     }
     
-    protected SystemExplicitActionProperty(ValueClass... classes) {
+    protected SystemExplicitAction(ValueClass... classes) {
         super(classes);
     }
 
-    protected SystemExplicitActionProperty(ImOrderSet interfaces) {
+    protected SystemExplicitAction(ImOrderSet interfaces) {
         super(interfaces);
     }
 
@@ -29,7 +29,7 @@ public abstract class SystemExplicitActionProperty extends ExplicitActionPropert
         return true;
     }
 
-    protected SystemExplicitActionProperty(LocalizedString caption, ValueClass... classes) {
+    protected SystemExplicitAction(LocalizedString caption, ValueClass... classes) {
         super(caption, classes);
     }
 }

@@ -4,7 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -21,7 +21,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.util.List;
 
-public abstract class ListCaseActionProperty extends KeepContextActionProperty {
+public abstract class ListCaseAction extends KeepContextAction {
 
     private final CalcPropertyMapImplement<UnionProperty.Interface, PropertyInterface> abstractWhere;
     protected boolean isExclusive;
@@ -51,7 +51,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     }
 
     // immutable реализация
-    protected <I extends PropertyInterface> ListCaseActionProperty(LocalizedString caption, boolean isExclusive, ImOrderSet<I> innerInterfaces) {
+    protected <I extends PropertyInterface> ListCaseAction(LocalizedString caption, boolean isExclusive, ImOrderSet<I> innerInterfaces) {
         super(caption, innerInterfaces.size());
 
         this.abstractWhere = null;
@@ -60,7 +60,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     }
 
     // mutable реализация
-    public <I extends PropertyInterface> ListCaseActionProperty(LocalizedString caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> ListCaseAction(LocalizedString caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, innerInterfaces.size());
 
         this.checkExclusiveImplementations = checkExclusiveImplementations;
@@ -108,19 +108,19 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
 
     public void markRecursions() {
         assert isAbstract();
-        markRecursions(SetFact.<ListCaseActionProperty>EMPTY());
+        markRecursions(SetFact.<ListCaseAction>EMPTY());
     }
 
     @Override
-    protected void markRecursions(ImSet<ListCaseActionProperty> recursiveActions) {
+    protected void markRecursions(ImSet<ListCaseAction> recursiveActions) {
         super.markRecursions(recursiveActions.addExcl(this)); // // пока исходим из того что рекурсивными могут быть только abstract'ы
     }
 
     protected abstract ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions();
 
-    public ImSet<ActionProperty> getDependActions() {
-        return getListActions().mapListValues(new GetValue<ActionProperty, ActionPropertyMapImplement<?, PropertyInterface>>() {
-            public ActionProperty getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+    public ImSet<Action> getDependActions() {
+        return getListActions().mapListValues(new GetValue<Action, ActionPropertyMapImplement<?, PropertyInterface>>() {
+            public Action getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
                 return value.property;
             }
         }).toOrderSet().getSet();

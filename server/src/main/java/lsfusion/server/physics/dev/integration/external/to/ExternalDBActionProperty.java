@@ -27,7 +27,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExternalDBActionProperty extends ExternalActionProperty {
+public class ExternalDBActionProperty extends ExternalAction {
 
     private PropertyInterface connectionString;
     private PropertyInterface exec;

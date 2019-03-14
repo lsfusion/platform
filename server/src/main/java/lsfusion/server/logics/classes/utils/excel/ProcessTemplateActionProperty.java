@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
@@ -14,7 +15,6 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -31,7 +31,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.trim;
 
-public class ProcessTemplateActionProperty extends ScriptingActionProperty {
+public class ProcessTemplateActionProperty extends ScriptingAction {
     public final ClassPropertyInterface templateInterface;
 
     public ProcessTemplateActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

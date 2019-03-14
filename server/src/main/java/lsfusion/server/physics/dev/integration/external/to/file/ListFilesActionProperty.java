@@ -9,13 +9,13 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 
-public class ListFilesActionProperty extends ScriptingActionProperty {
+public class ListFilesActionProperty extends ScriptingAction {
     private final ClassPropertyInterface pathInterface;
     private final ClassPropertyInterface charsetInterface;
     private final ClassPropertyInterface isClientInterface;

@@ -14,7 +14,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import java.awt.*;
@@ -22,7 +22,7 @@ import java.awt.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createTrue;
 
-public abstract class FormToolbarActionProperty extends ScriptingActionProperty {
+public abstract class FormToolbarActionProperty extends ScriptingAction {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
 
     public FormToolbarActionProperty(ScriptingLogicsModule lm) {

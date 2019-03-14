@@ -12,7 +12,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.logics.classes.sets.*;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 
 public class UnknownClass extends ImmutableObject implements FormulaClass, ConcreteObjectClass {
 
@@ -80,7 +80,7 @@ public class UnknownClass extends ImmutableObject implements FormulaClass, Concr
     }
 
     @IdentityStrongLazy // для ID
-    public ActionProperty getChangeClassAction() {
+    public Action getChangeClassAction() {
         return CustomClass.getChangeClassAction(this);
     }
 

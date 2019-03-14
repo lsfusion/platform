@@ -12,8 +12,9 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
@@ -38,8 +39,7 @@ import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.action.change.AddObjectActionProperty;
-import lsfusion.server.logics.action.change.ChangeClassActionProperty;
+import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.ExecutionStackAspect;
@@ -53,7 +53,7 @@ import java.util.Iterator;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.*;
 
-public class ForActionProperty<I extends PropertyInterface> extends ExtendContextActionProperty<I> {
+public class ForAction<I extends PropertyInterface> extends ExtendContextAction<I> {
    
     private final CalcPropertyMapImplement<?, I> ifProp; // calculate
     private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders; // calculate
@@ -69,7 +69,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private final ImSet<I> noInline; // из extend interfaces
     private final boolean forceInline;
    
-    public ForActionProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean autoSet, boolean recursive, ImSet<I> noInline, boolean forceInline) {
+    public ForAction(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean autoSet, boolean recursive, ImSet<I> noInline, boolean forceInline) {
        super(caption, innerInterfaces, mapInterfaces);
 
         assert !recursive || (addObject == null && elseAction == null);
@@ -95,8 +95,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         assert innerInterfaces.containsAll(action.mapping.valuesSet().merge(ifProp != null ? ifProp.mapping.valuesSet() : SetFact.<I>EMPTY()));
     }
 
-    public ImSet<ActionProperty> getDependActions() {
-       ImSet<ActionProperty> result = SetFact.singleton((ActionProperty) action.property);
+    public ImSet<Action> getDependActions() {
+       ImSet<Action> result = SetFact.singleton((Action) action.property);
        if(elseAction != null)
            result = result.merge(elseAction.property);
        return result;
@@ -282,7 +282,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
         ImMap<Property, Boolean> result = super.aspectChangeExtProps();
         if(addObject != null) // может быть, из-за break, noinline и т.п.
-            result = result.merge(AddObjectActionProperty.getChangeExtProps(addClass, needDialog()), addValue);
+            result = result.merge(AddObjectAction.getChangeExtProps(addClass, needDialog()), addValue);
         return result;
     }
 
@@ -338,8 +338,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
             if (list.size() > 0) {
                 ActionPropertyMapImplement<?, I> first = list.get(0);
-                if (first.mapping.size() == 1 && first.mapping.singleValue().equals(addObject) && first.property instanceof ChangeClassActionProperty) {
-                    ChangeClassActionProperty changeClassProperty = (ChangeClassActionProperty) first.property;
+                if (first.mapping.size() == 1 && first.mapping.singleValue().equals(addObject) && first.property instanceof ChangeClassAction) {
+                    ChangeClassAction changeClassProperty = (ChangeClassAction) first.property;
                     if (changeClassProperty.valueClass instanceof CustomClass && changeClassProperty.where == null) // удаление не интересует
                         return DerivedProperty.createForAction(innerInterfaces, context, ifProp, orders, ordersNotNull,
                                 DerivedProperty.createListAction(innerInterfaces, list.subList(1, list.size())), elseAction, addObject,
@@ -439,7 +439,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
-        return elseAction==null && !hasFlow(ChangeFlowType.BREAK) && ForActionProperty.this.ordersNotNull == ordersNotNull && elseAction == null && !recursive; // потом отработаем эти случаи
+        return elseAction==null && !hasFlow(ChangeFlowType.BREAK) && ForAction.this.ordersNotNull == ordersNotNull && elseAction == null && !recursive; // потом отработаем эти случаи
     }
     
     // nullable
@@ -458,7 +458,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, new PushFor<I, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders.mergeOrder(mapImplements(ForActionProperty.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, autoSet, false, noInline.mapRev(mapInnerInterfaces), forceInline);
+                return createForAction(context, where, orders.mergeOrder(mapImplements(ForAction.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, autoSet, false, noInline.mapRev(mapInnerInterfaces), forceInline);
             }
         });
     }

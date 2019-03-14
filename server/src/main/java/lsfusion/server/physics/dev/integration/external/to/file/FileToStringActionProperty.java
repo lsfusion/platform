@@ -8,12 +8,12 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class FileToStringActionProperty extends ScriptingActionProperty {
+public class FileToStringActionProperty extends ScriptingAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface charsetInterface;
 

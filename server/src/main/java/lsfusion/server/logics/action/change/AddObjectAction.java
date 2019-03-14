@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.*;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -30,14 +30,14 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.action.flow.ExtendContextActionProperty;
+import lsfusion.server.logics.action.flow.ExtendContextAction;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;
 
-public class AddObjectActionProperty<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
+public class AddObjectAction<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
 
     protected final CustomClass valueClass; // обозначает класс объекта, который нужно добавить
     private final boolean autoSet;
@@ -48,11 +48,11 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final boolean ordersNotNull;
 
-    public <T extends PropertyInterface> AddObjectActionProperty(CustomClass valueClass, Property<T> result, boolean autoSet) {
+    public <T extends PropertyInterface> AddObjectAction(CustomClass valueClass, Property<T> result, boolean autoSet) {
         this(valueClass, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet);
     }
 
-    public AddObjectActionProperty(CustomClass valueClass, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
+    public AddObjectAction(CustomClass valueClass, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
         super(LocalizedString.create("{logics.add}"), innerInterfaces, mapInterfaces);
         
         this.valueClass = valueClass;
@@ -76,7 +76,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         return valueClass instanceof AbstractCustomClass;  // || (forceDialog && valueClass.hasChildren())
     }
 
-    public ImSet<ActionProperty> getDependActions() {
+    public ImSet<Action> getDependActions() {
         return SetFact.EMPTY();
     }
 

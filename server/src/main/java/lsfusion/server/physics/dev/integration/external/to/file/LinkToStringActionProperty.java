@@ -6,7 +6,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 
 import java.io.UnsupportedEncodingException;
@@ -14,7 +14,7 @@ import java.net.URLDecoder;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class LinkToStringActionProperty extends ScriptingActionProperty {
+public class LinkToStringActionProperty extends ScriptingAction {
     private final ClassPropertyInterface stringInterface;
 
     public LinkToStringActionProperty(UtilsLogicsModule LM, ValueClass... classes) {

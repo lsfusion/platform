@@ -14,14 +14,14 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.implement.ActionPropertyMapImplement;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.flow.AroundAspectActionProperty;
+import lsfusion.server.logics.action.flow.AroundAspectAction;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;
 
 // групповые изменения (групповая корректировка, paste таблицы, multi cell paste)
-public class GroupChangeActionProperty extends AroundAspectActionProperty {
+public class GroupChangeActionProperty extends AroundAspectAction {
 
     public <I extends PropertyInterface> GroupChangeActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeAction) {
         super(caption, innerInterfaces, changeAction);

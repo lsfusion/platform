@@ -11,10 +11,10 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 
@@ -22,7 +22,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.Calendar;
 
-public class DecimateBackupsActionProperty extends ScriptingActionProperty {
+public class DecimateBackupsActionProperty extends ScriptingAction {
 
     public DecimateBackupsActionProperty(ScriptingLogicsModule LM) {
         super(LM);

@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.action.ActionProperty;
 import lsfusion.server.logics.action.implement.ActionPropertyValueImplement;
 import lsfusion.server.base.context.ExecutionStack;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -14,9 +14,9 @@ import lsfusion.server.logics.action.ExecutionEnvironment;
 
 import java.sql.SQLException;
 
-public class ActionPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, ActionProperty<P>> {
+public class ActionPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, Action<P>> {
 
-    public ActionPropertyObjectInstance(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
+    public ActionPropertyObjectInstance(Action<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);
     }
 

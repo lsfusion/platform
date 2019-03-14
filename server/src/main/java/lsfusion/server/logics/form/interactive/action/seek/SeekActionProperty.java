@@ -6,11 +6,11 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.SystemExplicitAction;
 
 import java.sql.SQLException;
 
-public abstract class SeekActionProperty extends SystemExplicitActionProperty {
+public abstract class SeekActionProperty extends SystemExplicitAction {
 
     public SeekActionProperty(LocalizedString caption, ValueClass... classes) {
         super(caption, classes);

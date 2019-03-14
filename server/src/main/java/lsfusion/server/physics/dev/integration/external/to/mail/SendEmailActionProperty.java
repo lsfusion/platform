@@ -18,7 +18,7 @@ import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
+import lsfusion.server.logics.action.SystemExplicitAction;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
@@ -34,7 +34,7 @@ import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
-public class SendEmailActionProperty extends SystemExplicitActionProperty {
+public class SendEmailActionProperty extends SystemExplicitAction {
     private final static Logger logger = ServerLoggers.mailLogger;
 
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount;

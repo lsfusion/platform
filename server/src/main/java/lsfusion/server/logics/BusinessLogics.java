@@ -30,7 +30,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.*;
@@ -231,8 +231,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         if(result != 0)
             return result;
 
-        ImList<Property> depends1 = p1 instanceof ActionProperty ? ((ActionProperty<?>) p1).getSortedUsedProps() : ((Property<?>)p1).getSortedDepends(); 
-        ImList<Property> depends2 = p2 instanceof ActionProperty ? ((ActionProperty<?>) p2).getSortedUsedProps() : ((Property<?>)p2).getSortedDepends();
+        ImList<Property> depends1 = p1 instanceof Action ? ((Action<?>) p1).getSortedUsedProps() : ((Property<?>)p1).getSortedDepends(); 
+        ImList<Property> depends2 = p2 instanceof Action ? ((Action<?>) p2).getSortedUsedProps() : ((Property<?>)p2).getSortedDepends();
         result = Integer.compare(depends1.size(), depends2.size());
         if(result != 0)
             return result;
@@ -691,7 +691,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public <P extends PropertyInterface> void finishLogInit(Property property) {
         if (property.isLoggable()) {
-            ActionProperty<P> logActionProperty = (ActionProperty<P>) property.getLogFormProperty().property;
+            Action<P> logActionProperty = (Action<P>) property.getLogFormProperty().property;
 
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), logActionProperty.caption);
@@ -711,7 +711,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
-            ActionProperty setupPolicyAction = setupPolicyLAP.property;
+            Action setupPolicyAction = setupPolicyLAP.property;
             LM.makeActionPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
@@ -753,15 +753,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return getCalcOrderProperties().getSet();
     }
 
-    public ImOrderSet<ActionProperty> getActionOrderProperties() {
+    public ImOrderSet<Action> getActionOrderProperties() {
         return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
             public boolean contains(ActionOrProperty element) {
-                return element instanceof ActionProperty;
+                return element instanceof Action;
             }
         }));
     }
 
-    public ImSet<ActionProperty> getActionProperties() {
+    public ImSet<Action> getActionProperties() {
         return getActionOrderProperties().getSet();
     }
 
@@ -923,19 +923,19 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
-        for (ActionProperty property : getActionOrderProperties()) {
+        for (Action property : getActionOrderProperties()) {
             if (!property.getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
-                ImMap<Property, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
+                ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
-                    change.getKey(i).addActionChangeProp(new Pair<ActionProperty<?>, LinkType>((ActionProperty<?>) property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
+                    change.getKey(i).addActionChangeProp(new Pair<Action<?>, LinkType>((Action<?>) property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
         }
     }
 
     private void dropActionChangeProps() { // для экономии памяти - симметричное удаление ссылок
-        for (ActionProperty property : getActionOrderProperties()) {
+        for (Action property : getActionOrderProperties()) {
             if (!property.getEvents().isEmpty()) {
-                ImMap<Property, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
+                ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++)
                     change.getKey(i).dropActionChangeProps();
             }
@@ -1352,10 +1352,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public Graph<ActionProperty> getRecalculateFollowsGraph() {
+    public Graph<Action> getRecalculateFollowsGraph() {
         return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<ActionOrProperty>() {
             public boolean contains(ActionOrProperty element) {
-                return element instanceof ActionProperty && ((ActionProperty) element).hasResolve();
+                return element instanceof Action && ((Action) element).hasResolve();
             }
         }));
     }
@@ -1529,13 +1529,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    public ImOrderMap<ActionProperty, SessionEnvEvent> getSessionEvents() {
+    public ImOrderMap<Action, SessionEnvEvent> getSessionEvents() {
         ImOrderSet<ActionOrProperty> list = getPropertyList();
-        MOrderExclMap<ActionProperty, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
+        MOrderExclMap<Action, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         SessionEnvEvent sessionEnv;
         for (ActionOrProperty property : list)
-            if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.SESSION))!=null)
-                mResult.exclAdd((ActionProperty) property, sessionEnv);
+            if (property instanceof Action && (sessionEnv = ((Action) property).getSessionEnv(SystemEvent.SESSION))!=null)
+                mResult.exclAdd((Action) property, sessionEnv);
         return mResult.immutableOrder();
     }
 
@@ -1704,8 +1704,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for (ActionOrProperty property : getPropertyList())
-            if (property instanceof ActionProperty) {
-                final ActionProperty<?> action = (ActionProperty) property;
+            if (property instanceof Action) {
+                final Action<?> action = (Action) property;
                 if (action.hasResolve()) {
                     long start = System.currentTimeMillis();
                     try {

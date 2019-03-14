@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.change;
 
+import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -8,14 +9,13 @@ import lsfusion.server.logics.form.interactive.instance.object.DataObjectInstanc
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class DefaultChangeObjectActionProperty extends SystemExplicitActionProperty {
+public class DefaultChangeObjectActionProperty extends SystemExplicitAction {
 
     private final ObjectEntity object;
     

@@ -1,15 +1,15 @@
 package lsfusion.server.physics.admin.authentication.policy;
 
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.admin.authentication.SecurityLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-public class UpdatePropertyPolicyCachesProperty extends ScriptingActionProperty {
+public class UpdatePropertyPolicyCachesProperty extends ScriptingAction {
 
     public UpdatePropertyPolicyCachesProperty(SecurityLogicsModule LM, ValueClass... valueClasses) {
         super(LM, valueClasses);

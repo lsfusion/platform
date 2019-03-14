@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.struct.property;
 
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.logics.action.ActionProperty;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -58,6 +58,6 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         if(property instanceof Property)
             return new CalcPropertyObjectEntity<>((Property<I>) property, map, creationScript, creationPath);
         else
-            return new ActionPropertyObjectEntity<>((ActionProperty<I>) property, map, creationScript, creationPath);
+            return new ActionPropertyObjectEntity<>((Action<I>) property, map, creationScript, creationPath);
     }
 }

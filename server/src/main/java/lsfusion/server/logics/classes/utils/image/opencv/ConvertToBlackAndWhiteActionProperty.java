@@ -3,10 +3,10 @@ package lsfusion.server.logics.classes.utils.image.opencv;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 
 import javax.imageio.ImageIO;
@@ -17,7 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class ConvertToBlackAndWhiteActionProperty extends ScriptingActionProperty {
+public class ConvertToBlackAndWhiteActionProperty extends ScriptingAction {
     protected final ClassPropertyInterface imageInterface;
     protected final ClassPropertyInterface thresholdInterface;
 

@@ -3,15 +3,15 @@ package lsfusion.server.physics.admin.service;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.language.ScriptingAction;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.base.context.ThreadLocalContext.localize;
 
-public class PackActionProperty extends ScriptingActionProperty {
+public class PackActionProperty extends ScriptingAction {
     public PackActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }

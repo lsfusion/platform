@@ -7,13 +7,13 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.language.ScriptingAction;
 
 import java.io.BufferedInputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class RunCommandActionProperty extends ScriptingActionProperty {
+public class RunCommandActionProperty extends ScriptingAction {
     private final ClassPropertyInterface commandInterface;
     private final ClassPropertyInterface isClientInterface;
 
