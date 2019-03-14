@@ -35,6 +35,8 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.data.DataProperty;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import sun.management.jmxremote.LocalRMIServerSocketFactory;
@@ -148,8 +150,8 @@ public class ActionPropertyDebugger implements DebuggerService {
             "import lsfusion.server.data.SQLHandledException;\n" +
             "import lsfusion.server.logics.property.ActionProperty;\n" +
             "import lsfusion.server.logics.property.CalcProperty;\n" +
-            "import lsfusion.server.logics.property.ClassPropertyInterface;\n" +
-            "import lsfusion.server.logics.property.DataProperty;\n" +
+            "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
+            "import lsfusion.server.logics.property.data.DataProperty;\n" +
             "import lsfusion.server.logics.action.ExecutionContext;\n" +
             "import lsfusion.server.logics.action.flow.FlowResult;\n" +
             "import ClassChange;\n" +

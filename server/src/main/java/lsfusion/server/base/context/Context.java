@@ -19,8 +19,8 @@ import lsfusion.server.logics.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.DialogRequest;
-import lsfusion.server.logics.property.PullChangeProperty;
+import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;
+import lsfusion.server.logics.property.derived.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.logics.action.session.DataSession;
 

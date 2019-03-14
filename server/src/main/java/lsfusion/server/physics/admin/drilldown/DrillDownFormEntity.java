@@ -19,7 +19,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 
 public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProperty<I>> extends FormEntity {

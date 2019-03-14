@@ -15,7 +15,7 @@ import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 

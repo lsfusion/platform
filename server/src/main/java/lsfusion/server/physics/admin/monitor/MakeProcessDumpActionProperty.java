@@ -14,7 +14,7 @@ import lsfusion.server.data.SQLThreadInfo;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.base.ThreadUtils;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingErrorLog;
 

@@ -14,6 +14,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.AroundAspectActionProperty;

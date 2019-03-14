@@ -16,6 +16,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

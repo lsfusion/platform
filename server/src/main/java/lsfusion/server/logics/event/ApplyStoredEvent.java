@@ -2,7 +2,7 @@ package lsfusion.server.logics.event;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.DataProperty;
+import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.OldProperty;
 
 public class ApplyStoredEvent extends ApplyCalcEvent implements ApplySingleEvent {

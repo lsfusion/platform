@@ -3,7 +3,7 @@ package lsfusion.server.physics.admin.logging;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.UtilsLogicsModule;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.language.ScriptingActionProperty;
 

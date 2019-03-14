@@ -20,7 +20,7 @@ import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public abstract class StaticClassNullableExpr extends NullableExpr implements StaticClassExprInterface {
     

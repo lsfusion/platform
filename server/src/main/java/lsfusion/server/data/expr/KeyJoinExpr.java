@@ -26,7 +26,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 
 // нужно только для определения статистики для создания связи ключ-ключ
 public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {

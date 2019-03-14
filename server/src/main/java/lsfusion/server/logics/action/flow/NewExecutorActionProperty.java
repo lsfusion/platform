@@ -8,6 +8,7 @@ import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.base.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.base.task.TaskRunner;

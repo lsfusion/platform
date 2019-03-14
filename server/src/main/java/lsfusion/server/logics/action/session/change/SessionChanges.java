@@ -8,9 +8,9 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.interactive.change.ChangedData;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.data.DataObject;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.DataProperty;
-import lsfusion.server.logics.property.SessionDataProperty;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 
 import java.sql.SQLException;
 

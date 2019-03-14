@@ -61,7 +61,9 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderI
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;

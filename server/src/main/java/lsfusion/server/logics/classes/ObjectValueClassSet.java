@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.classes.sets.ObjectClassSet;
 import lsfusion.server.logics.property.classes.IsClassField;
-import lsfusion.server.logics.property.ObjectClassField;
+import lsfusion.server.logics.property.classes.ObjectClassField;
 
 public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
 

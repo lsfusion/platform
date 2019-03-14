@@ -46,6 +46,8 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.logics.navigator.*;
+import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;

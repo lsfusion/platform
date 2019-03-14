@@ -3,6 +3,7 @@ package lsfusion.server.logics.action.session;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.data.DataProperty;
 
 public enum ApplyFilter {
     WITHOUT_RECALC, ONLYCHECK, NO, ONLY_CALC, ONLY_DATA;

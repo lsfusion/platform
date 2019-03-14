@@ -15,6 +15,7 @@ import lsfusion.server.logics.action.session.change.DataChanges;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
+import lsfusion.server.logics.property.data.DataProperty;
 
 public class ChangeEvent<C extends PropertyInterface> {
 

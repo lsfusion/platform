@@ -11,7 +11,7 @@ import lsfusion.server.physics.admin.drilldown.StringAggUnionDrillDownFormEntity
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.FormulaUnionProperty;
+import lsfusion.server.logics.property.classes.data.FormulaUnionProperty;
 
 public class StringAggUnionProperty extends FormulaUnionProperty {
 
