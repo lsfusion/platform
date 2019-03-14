@@ -18,7 +18,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 

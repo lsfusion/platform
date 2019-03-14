@@ -2,6 +2,7 @@ package lsfusion.server.base.caches;
 
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

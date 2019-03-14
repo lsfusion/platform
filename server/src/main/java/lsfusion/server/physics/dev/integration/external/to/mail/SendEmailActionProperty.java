@@ -14,10 +14,10 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.SystemExplicitActionProperty;
 import org.apache.log4j.Logger;
 

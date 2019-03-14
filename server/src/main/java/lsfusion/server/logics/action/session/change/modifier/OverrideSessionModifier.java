@@ -23,7 +23,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;

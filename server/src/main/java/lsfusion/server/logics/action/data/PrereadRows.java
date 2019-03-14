@@ -18,7 +18,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PrereadRows<P extends PropertyInterface> extends AbstractValuesContext<PrereadRows<P>> {
 

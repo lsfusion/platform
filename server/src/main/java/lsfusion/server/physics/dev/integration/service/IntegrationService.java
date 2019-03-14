@@ -27,9 +27,10 @@ import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
+import lsfusion.server.logics.property.implement.CalcPropertyImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.session.*;
 import lsfusion.server.base.stack.StackMessage;
 

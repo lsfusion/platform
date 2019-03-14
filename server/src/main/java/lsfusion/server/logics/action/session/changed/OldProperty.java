@@ -10,6 +10,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.infer.CalcClassType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.OldDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;

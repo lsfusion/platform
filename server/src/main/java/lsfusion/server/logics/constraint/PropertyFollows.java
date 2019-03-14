@@ -1,6 +1,6 @@
 package lsfusion.server.logics.constraint;
 
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyFollows<T extends PropertyInterface, L extends PropertyInterface> {
 

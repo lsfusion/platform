@@ -7,10 +7,9 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.CalcType;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.set.GroupProperty;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 

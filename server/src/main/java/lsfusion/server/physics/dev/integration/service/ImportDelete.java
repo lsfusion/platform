@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.integration.service;
 
-import lsfusion.server.logics.property.CalcPropertyImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.implement.CalcPropertyImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ImportDelete <P extends PropertyInterface, T extends PropertyInterface> {
     ImportKey<P> key;

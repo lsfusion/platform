@@ -40,7 +40,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.ExplicitActionProperty;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 

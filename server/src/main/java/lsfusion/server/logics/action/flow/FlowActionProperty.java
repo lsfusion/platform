@@ -7,7 +7,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 

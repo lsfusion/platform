@@ -5,8 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class FormEnvironment<P extends PropertyInterface> {
     private final ImMap<P, PropertyObjectInterfaceInstance> mapObjects;

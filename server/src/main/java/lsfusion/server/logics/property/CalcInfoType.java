@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.infer.AlgInfoType;
 import lsfusion.server.logics.property.infer.CalcClassType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 // вычисление empty, full, notnull, классов
 public class CalcInfoType extends CalcClassType implements AlgInfoType {

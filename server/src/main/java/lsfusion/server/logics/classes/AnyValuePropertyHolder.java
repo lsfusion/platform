@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.classes;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
@@ -20,6 +20,7 @@ import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.link.*;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.ExecutionEnvironment;
+import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 
 import java.sql.SQLException;

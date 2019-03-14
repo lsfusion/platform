@@ -10,7 +10,7 @@ import lsfusion.server.base.caches.hash.HashValues;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.logics.action.data.PrereadRows;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ModifyChange<P extends PropertyInterface> extends AbstractValuesContext<ModifyChange<P>> {
     public final PropertyChange<P> change;

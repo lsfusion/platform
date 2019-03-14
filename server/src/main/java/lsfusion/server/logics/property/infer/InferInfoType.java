@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.infer;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class InferInfoType extends InferType implements AlgInfoType {
 

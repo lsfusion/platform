@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public final class MappedProperty {
     public LP<PropertyInterface, ?> property;

@@ -19,7 +19,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 
 public class AbstractGroup extends AbstractNode {

@@ -4,9 +4,9 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
 public abstract class SystemActionProperty extends BaseActionProperty<PropertyInterface> {

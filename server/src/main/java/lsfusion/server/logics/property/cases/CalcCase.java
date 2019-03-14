@@ -1,7 +1,9 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class CalcCase<T extends PropertyInterface> extends Case<T, CalcPropertyInterfaceImplement<T>, CalcPropertyInterfaceImplement<T>> {
     

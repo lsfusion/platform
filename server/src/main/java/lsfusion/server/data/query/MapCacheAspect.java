@@ -38,6 +38,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.classes.data.FormulaProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.infer.CalcClassType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.table.ImplementTable;
 import lsfusion.server.session.*;
 import org.apache.log4j.Logger;

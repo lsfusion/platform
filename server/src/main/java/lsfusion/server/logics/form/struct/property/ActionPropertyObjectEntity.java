@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.Instantiable;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ActionPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, ActionProperty<P>> implements Instantiable<ActionPropertyObjectInstance<P>> {
 

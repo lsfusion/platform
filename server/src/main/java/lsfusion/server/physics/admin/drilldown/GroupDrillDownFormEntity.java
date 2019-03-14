@@ -20,10 +20,13 @@ import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.implement.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.GroupProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
 public class GroupDrillDownFormEntity<I extends PropertyInterface> extends DrillDownFormEntity<GroupProperty.Interface<I>, GroupProperty<I>> {

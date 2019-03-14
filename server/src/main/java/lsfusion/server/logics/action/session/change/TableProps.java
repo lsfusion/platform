@@ -7,7 +7,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.Map;

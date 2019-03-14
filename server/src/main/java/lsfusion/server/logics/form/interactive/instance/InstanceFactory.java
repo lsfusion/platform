@@ -24,8 +24,8 @@ import lsfusion.server.logics.form.struct.property.ActionPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.CalcPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.property.CalcPropertyRevImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.implement.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class InstanceFactory {
 

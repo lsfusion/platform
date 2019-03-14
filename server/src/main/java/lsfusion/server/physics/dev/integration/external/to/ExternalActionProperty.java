@@ -18,7 +18,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.language.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.action.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.action.SystemActionProperty;
 import lsfusion.server.language.ScriptingLogicsModule;
 

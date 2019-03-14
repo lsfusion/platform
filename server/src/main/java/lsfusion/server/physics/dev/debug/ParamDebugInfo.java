@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.debug;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ParamDebugInfo<P extends PropertyInterface> {
 

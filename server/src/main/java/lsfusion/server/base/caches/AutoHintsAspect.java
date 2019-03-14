@@ -10,6 +10,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.infer.AlgType;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

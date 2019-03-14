@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.implement;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.set.SFunctionSet;
@@ -32,12 +32,15 @@ import lsfusion.server.logics.form.interactive.instance.property.CalcPropertyObj
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.oraction.PropertyInterfaceImplement;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;

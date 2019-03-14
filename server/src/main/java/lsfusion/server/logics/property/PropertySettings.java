@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.server.logics.event.Event;
+import lsfusion.server.logics.property.oraction.ActionOrPropertySettings;
 import lsfusion.server.physics.dev.debug.BooleanDebug;
 
 public class PropertySettings extends ActionOrPropertySettings {
