@@ -45,7 +45,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
-import lsfusion.server.logics.navigator.controller.SQLSessionContextProvider;
+import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.exec.db.DBManager;
 import org.apache.commons.collections.Buffer;
 import org.apache.commons.collections.BufferUtils;

@@ -5,7 +5,7 @@ import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
-import lsfusion.server.base.controller.lifecycle.LogicsManager;
+import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.controller.remote.RMIManager;
 import lsfusion.server.logics.BusinessLogics;
 import org.apache.log4j.Logger;

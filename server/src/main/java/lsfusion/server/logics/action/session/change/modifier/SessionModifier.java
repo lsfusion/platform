@@ -18,7 +18,7 @@ import lsfusion.server.data.caches.ValuesContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.action.data.PrereadRows;
-import lsfusion.server.logics.action.session.UpdateResult;
+import lsfusion.server.logics.action.session.changed.UpdateResult;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.BaseClass;

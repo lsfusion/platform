@@ -131,7 +131,7 @@ reportToStretch '{system.report.to.stretch}' = NOT reportNotToStretch();
 
 hashModules '{system.hash.modules}' = DATA VARSTRING[200] ();
 
-checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.CheckIsServerActionProperty' ();
+checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.action.CheckIsServerActionProperty' ();
 isServer = DATA LOCAL BOOLEAN ();
 
 // ----------------------------------- open files ----------------------------------- //

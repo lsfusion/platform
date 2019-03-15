@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.action.focus;
 
 import lsfusion.interop.action.ActivateFormClientAction;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

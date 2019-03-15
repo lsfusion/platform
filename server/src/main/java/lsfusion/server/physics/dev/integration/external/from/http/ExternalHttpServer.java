@@ -13,7 +13,7 @@ import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
-import lsfusion.server.base.controller.lifecycle.MonitorServer;
+import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
 import org.apache.commons.lang.StringUtils;

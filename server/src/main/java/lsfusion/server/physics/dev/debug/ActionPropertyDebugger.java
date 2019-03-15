@@ -29,7 +29,7 @@ import lsfusion.server.language.linear.LA;
 import lsfusion.server.language.linear.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -154,7 +154,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             "import lsfusion.server.logics.property.Property;\n" +
             "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
             "import lsfusion.server.logics.property.data.DataProperty;\n" +
-            "import lsfusion.server.logics.action.ExecutionContext;\n" +
+            "import lsfusion.server.logics.action.controller.context.ExecutionContext;\n" +
             "import lsfusion.server.logics.action.flow.FlowResult;\n" +
             "import ClassChange;\n" +
             "import DataSession;\n" +

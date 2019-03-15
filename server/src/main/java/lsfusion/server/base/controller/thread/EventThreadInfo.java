@@ -1,7 +1,7 @@
 package lsfusion.server.base.controller.thread;
 
-import lsfusion.server.base.controller.lifecycle.EventServer;
-import lsfusion.server.base.controller.lifecycle.MonitorServer;
+import lsfusion.server.base.controller.manager.EventServer;
+import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.RmiServer;
 

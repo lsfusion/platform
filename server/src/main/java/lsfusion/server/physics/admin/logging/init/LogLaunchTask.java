@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.logging.init;
 
-import lsfusion.server.physics.admin.reflection.init.ReflectionTask;
+import lsfusion.server.physics.admin.reflection.controller.init.ReflectionTask;
 import org.apache.log4j.Logger;
 
 public class LogLaunchTask extends ReflectionTask {

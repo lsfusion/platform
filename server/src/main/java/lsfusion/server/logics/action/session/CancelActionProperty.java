@@ -2,7 +2,7 @@ package lsfusion.server.logics.action.session;
 
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

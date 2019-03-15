@@ -14,8 +14,8 @@ import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
-import lsfusion.server.physics.admin.drilldown.OldDrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.OldDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class OldProperty<T extends PropertyInterface> extends SessionProperty<T> {

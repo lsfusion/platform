@@ -27,7 +27,7 @@ import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.action.ExecutionEnvironment;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.classes.BaseClass;

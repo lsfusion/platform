@@ -40,7 +40,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.ActionSettings;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.BreakActionProperty;
 import lsfusion.server.logics.action.flow.ListCaseAction;
@@ -76,7 +75,6 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertySettings;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -87,7 +85,6 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.logics.property.oraction.ActionOrPropertySettings;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.AggregateGroupProperty;
 import lsfusion.server.logics.property.set.Cycle;
@@ -1570,7 +1567,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             String javaClass = "import lsfusion.server.data.SQLHandledException;\n" +
                     "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
-                    "import lsfusion.server.logics.action.ExecutionContext;\n" +
+                    "import lsfusion.server.logics.action.controller.context.ExecutionContext;\n" +
                     "import lsfusion.server.language.ScriptingActionProperty;\n" +
                     "import lsfusion.server.language.ScriptingLogicsModule;\n" +
                     "\n" +

@@ -34,8 +34,8 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.drilldown.ChangedDrillDownFormEntity;
-import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.ChangedDrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;

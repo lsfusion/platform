@@ -29,7 +29,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.action.ExecutionEnvironment;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.table.NoPropertyTableUsage;
 import lsfusion.server.logics.action.session.table.NoPropertyWhereTableUsage;

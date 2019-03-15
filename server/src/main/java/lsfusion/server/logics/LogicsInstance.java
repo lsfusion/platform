@@ -1,17 +1,18 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.thread.EventThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.base.controller.lifecycle.LifecycleManager;
+import lsfusion.server.base.controller.manager.LifecycleManager;
 import lsfusion.server.base.controller.stack.NestedThreadException;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
-import lsfusion.server.logics.navigator.NavigatorsManager;
-import lsfusion.server.physics.admin.authentication.security.SecurityManager;
-import lsfusion.server.physics.admin.reflection.ReflectionManager;
+import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
+import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
+import lsfusion.server.physics.admin.reflection.controller.manager.ReflectionManager;
 import lsfusion.server.physics.exec.db.DBManager;
 import lsfusion.server.base.controller.remote.RMIManager;
 import org.apache.log4j.Logger;
