@@ -6,11 +6,11 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.base.caches.AbstractOuterContext;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.base.caches.hash.HashContext;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.query.ExprEnumerator;
@@ -77,8 +77,8 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
             return AbstractOuterContext.hashMapOuter(BaseUtils.<ImMap<MeanClassWhere, Where>>immutableCast(MeanClassWheres.this), hash);
         }
 
-        public ImSet<lsfusion.server.base.caches.OuterContext> calculateOuterDepends() {
-            return SetFact.<lsfusion.server.base.caches.OuterContext>mergeSet(keys(), BaseUtils.<ImSet<OuterContext>>immutableCast(values().toSet()));
+        public ImSet<lsfusion.server.data.caches.OuterContext> calculateOuterDepends() {
+            return SetFact.<lsfusion.server.data.caches.OuterContext>mergeSet(keys(), BaseUtils.<ImSet<OuterContext>>immutableCast(values().toSet()));
         }
 
         public MeanClassWheres getThis() {
@@ -103,7 +103,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
     public int hashOuter(HashContext hashContext) {
         return getOuter().hashOuter(hashContext);
     }
-    public ImSet<lsfusion.server.base.caches.OuterContext> getOuterDepends() {
+    public ImSet<lsfusion.server.data.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
     public boolean enumerate(ExprEnumerator enumerator) {

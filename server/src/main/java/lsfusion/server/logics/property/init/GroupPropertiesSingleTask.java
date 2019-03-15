@@ -2,8 +2,8 @@ package lsfusion.server.logics.property.init;
 
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.Context;
-import lsfusion.server.base.context.ExecutionStack;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.init.BLGroupSingleTask;

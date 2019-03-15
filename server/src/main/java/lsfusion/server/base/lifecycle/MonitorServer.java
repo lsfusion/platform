@@ -1,7 +1,7 @@
 package lsfusion.server.base.lifecycle;
 
-import lsfusion.server.base.context.ExecutionStack;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.base.thread.ThreadLocalContext;
 
 public abstract class MonitorServer extends EventServer implements MonitorServerInterface {
 

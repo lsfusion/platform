@@ -4,8 +4,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.base.caches.hash.HashTranslateValues;
-import lsfusion.server.base.caches.hash.HashValues;
+import lsfusion.server.data.caches.hash.HashTranslateValues;
+import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.ValueExpr;
 

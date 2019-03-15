@@ -3,7 +3,7 @@ package lsfusion.server.data.translator;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.lru.LRUWVWSMap;
-import lsfusion.server.base.caches.AbstractTranslateContext;
+import lsfusion.server.data.caches.AbstractTranslateContext;
 import lsfusion.server.base.caches.CacheAspect;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.data.Value;

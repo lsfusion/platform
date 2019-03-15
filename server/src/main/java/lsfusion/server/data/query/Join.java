@@ -2,7 +2,7 @@ package lsfusion.server.data.query;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.base.caches.TranslateValues;
+import lsfusion.server.data.caches.TranslateValues;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 

@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.data.StaticParamNullableExpr;
 import lsfusion.server.data.expr.*;

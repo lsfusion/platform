@@ -8,7 +8,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class VacuumDBActionProperty extends ScriptingAction {
     public VacuumDBActionProperty(ServiceLogicsModule LM) {

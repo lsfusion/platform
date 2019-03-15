@@ -1,8 +1,8 @@
 package lsfusion.server.base.remote;
 
 import lsfusion.interop.server.RmiServerInterface;
-import lsfusion.server.base.context.ExecutionStack;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.lifecycle.EventServer;
 import lsfusion.server.logics.action.session.DataSession;
 

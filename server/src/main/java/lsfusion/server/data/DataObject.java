@@ -11,7 +11,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.caches.hash.HashValues;
+import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;

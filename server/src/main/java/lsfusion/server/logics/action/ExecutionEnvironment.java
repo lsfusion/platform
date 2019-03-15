@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.exception.ApplyCanceledException;
-import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.data.*;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.flow.FlowResult;

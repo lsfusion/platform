@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.caches.AbstractOuterContext;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.ParseValue;
 import lsfusion.server.data.Table;

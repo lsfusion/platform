@@ -20,7 +20,7 @@ import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.interop.form.stat.report.ReportConstants;
 import lsfusion.server.base.caches.IdentityStartLazy;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;

@@ -10,7 +10,7 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.layout.AbstractForm;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.SIDHandler;
 import lsfusion.server.base.version.Version;

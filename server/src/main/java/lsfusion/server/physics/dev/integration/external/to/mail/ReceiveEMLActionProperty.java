@@ -28,7 +28,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nullTrim;
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class ReceiveEMLActionProperty extends EmailActionProperty {
     private final ClassPropertyInterface accountInterface;

@@ -14,7 +14,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.caches.ValuesContext;
+import lsfusion.server.data.caches.ValuesContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.action.data.PrereadRows;

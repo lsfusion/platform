@@ -5,7 +5,7 @@ import lsfusion.interop.exception.RemoteInternalException;
 import lsfusion.interop.exception.RemoteMessageException;
 import lsfusion.interop.exception.RemoteServerException;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.remote.context.RemoteContextAspect;
 import lsfusion.server.base.stack.ThrowableWithStack;

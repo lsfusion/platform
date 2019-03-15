@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.monitor;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.base.ThreadUtils;
+import lsfusion.server.base.thread.ThreadUtils;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;

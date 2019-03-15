@@ -10,7 +10,7 @@ import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.user.UserInputResult;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.AbstractContext;
-import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;

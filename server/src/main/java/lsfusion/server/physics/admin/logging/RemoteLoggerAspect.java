@@ -5,7 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.context.Context;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.remote.context.RemoteContextAspect;
 import org.apache.log4j.Logger;
