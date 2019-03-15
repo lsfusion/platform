@@ -13,7 +13,7 @@ import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.query.NotMaterializable;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 
 public class RecursiveTable extends NamedTable implements NotMaterializable {
 

@@ -9,7 +9,7 @@ import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.IntegralClass;
+import lsfusion.server.logics.classes.data.IntegralClass;
 
 public class LinearOperandMap extends WrapMap<Expr,Integer> {
 

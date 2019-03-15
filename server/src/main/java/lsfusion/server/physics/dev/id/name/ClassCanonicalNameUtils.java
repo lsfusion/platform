@@ -2,11 +2,13 @@ package lsfusion.server.physics.dev.id.name;
 
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.link.*;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.classes.sets.ResolveConcatenateClassSet;
-import lsfusion.server.logics.classes.sets.ResolveOrObjectClassSet;
-import lsfusion.server.logics.classes.sets.ResolveUpClassSet;
+import lsfusion.server.logics.classes.data.*;
+import lsfusion.server.logics.classes.data.link.*;
+import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveConcatenateClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveOrObjectClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;

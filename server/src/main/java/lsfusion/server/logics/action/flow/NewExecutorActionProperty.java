@@ -8,7 +8,7 @@ import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;

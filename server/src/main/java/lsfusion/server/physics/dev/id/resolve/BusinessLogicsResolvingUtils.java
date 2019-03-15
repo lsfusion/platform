@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.id.resolve;
 
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;

@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.name;
 
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 
 import java.util.List;
 

@@ -34,11 +34,11 @@ import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClasses
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.logics.classes.ConcreteObjectClass;
-import lsfusion.server.logics.classes.CustomClass;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.dialogedit.DialogRequest;

@@ -21,7 +21,7 @@ import lsfusion.server.logics.action.data.PrereadRows;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

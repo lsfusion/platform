@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;

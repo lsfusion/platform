@@ -5,8 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.link.*;
+import lsfusion.server.logics.classes.data.*;
+import lsfusion.server.logics.classes.data.link.*;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.ByteArrayOutputStream;

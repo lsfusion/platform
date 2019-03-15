@@ -11,7 +11,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;

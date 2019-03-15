@@ -28,7 +28,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.property.classes.ObjectClassField;
+import lsfusion.server.logics.property.classes.user.ObjectClassField;
 
 public class NullExpr extends Expr {
 

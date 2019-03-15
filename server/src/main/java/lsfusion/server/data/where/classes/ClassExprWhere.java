@@ -28,10 +28,10 @@ import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Equal;
 import lsfusion.server.data.where.EqualMap;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere>, OuterContext<ClassExprWhere>, KeyType {
 

@@ -8,8 +8,8 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.StringClass;
 
 public class SumFormulaImpl extends ArithmeticFormulaImpl {
     public final static CompoundTypeConversion sumConversion = new CompoundTypeConversion(

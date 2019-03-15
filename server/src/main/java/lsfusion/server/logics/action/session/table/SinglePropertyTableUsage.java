@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

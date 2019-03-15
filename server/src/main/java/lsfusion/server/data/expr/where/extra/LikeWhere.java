@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.StringClass;
 
 public class LikeWhere extends BinaryWhere<LikeWhere> {
 

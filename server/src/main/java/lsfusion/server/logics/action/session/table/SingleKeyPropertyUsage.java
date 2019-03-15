@@ -15,7 +15,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.ModifyResult;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
-import lsfusion.server.logics.classes.sets.ObjectClassSet;
+import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

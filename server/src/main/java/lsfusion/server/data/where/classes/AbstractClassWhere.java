@@ -19,13 +19,13 @@ import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.classes.sets.OrClassSet;
-import lsfusion.server.logics.classes.sets.OrObjectClassSet;
-import lsfusion.server.logics.classes.sets.ResolveUpClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.classes.user.set.OrClassSet;
+import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.property.infer.ExClassSet;
 
 

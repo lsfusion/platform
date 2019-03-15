@@ -15,7 +15,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.TypeObject;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 // по факту не nullable, но тут есть архитектурный нюанс, если не возвращать NotNull непонятно как класс заведомо определенный делать
 // можно конечно смешать каким-то образом с StaticClassExpr, но не совсем понятно как это будет работать (тот же IsClassExpr все же возвращает конкретный класс)

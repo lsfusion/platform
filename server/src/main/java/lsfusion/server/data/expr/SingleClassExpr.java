@@ -6,9 +6,9 @@ import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.classes.sets.OrClassSet;
-import lsfusion.server.logics.property.classes.ObjectClassField;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.classes.user.set.OrClassSet;
+import lsfusion.server.logics.property.classes.user.ObjectClassField;
 
 public abstract class SingleClassExpr extends VariableClassExpr {
 

@@ -6,7 +6,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.property.classes.data.FormulaProperty;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

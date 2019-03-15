@@ -45,9 +45,9 @@ import lsfusion.server.data.where.CheckWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.classes.IntegralClass;
-import lsfusion.server.logics.classes.OrderClass;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.OrderClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 
 import java.sql.SQLException;

@@ -11,7 +11,7 @@ loadFile '{excel.load.file.template}'(Template t)  { INPUT =file(t) CHANGE; }
 openFile '{excel.open.file.template}'(Template t)  { open(file(t)); }
 id '{excel.id.template}' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
 
-process  INTERNAL  'lsfusion.server.logics.classes.utils.excel.ProcessTemplateActionProperty' (Template);
+process  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA LOCAL EXCELFILE ();
 openResultTemplate ()  { open(resultTemplate()); }

@@ -9,7 +9,7 @@ import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.SystemClass;
+import lsfusion.server.logics.classes.data.SystemClass;
 
 public class DumbTable extends DBTable {
 

@@ -19,10 +19,10 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcatenateClassSet;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.struct.ConcatenateClassSet;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
 
 import java.io.DataOutputStream;

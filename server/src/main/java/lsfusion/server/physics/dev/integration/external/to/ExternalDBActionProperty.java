@@ -16,8 +16,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.DynamicFormatFileClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.DynamicFormatFileClass;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.io.IOException;

@@ -4,7 +4,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

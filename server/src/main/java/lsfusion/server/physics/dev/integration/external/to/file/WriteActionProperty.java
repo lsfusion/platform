@@ -10,9 +10,9 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
-import lsfusion.server.logics.classes.FileClass;
-import lsfusion.server.logics.classes.StaticFormatFileClass;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.FileClass;
+import lsfusion.server.logics.classes.data.StaticFormatFileClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 

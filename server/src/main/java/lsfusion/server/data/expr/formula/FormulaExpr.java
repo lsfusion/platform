@@ -30,9 +30,9 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.UnknownClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.user.UnknownClass;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface {
     public final static String MIN2 = "(prm1+prm2-ABS(prm1-prm2))/2"; // пока так сделаем min и проверку на infinite

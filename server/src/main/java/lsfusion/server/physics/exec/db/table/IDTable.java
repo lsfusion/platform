@@ -17,9 +17,9 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.IntegerClass;
-import lsfusion.server.logics.classes.SystemClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.IntegerClass;
+import lsfusion.server.logics.classes.data.SystemClass;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;

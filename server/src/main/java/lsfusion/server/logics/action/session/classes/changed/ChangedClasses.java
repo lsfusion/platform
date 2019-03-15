@@ -4,10 +4,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 
 import java.util.Map;
 

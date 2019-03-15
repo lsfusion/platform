@@ -19,7 +19,7 @@ import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
-import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.ByteArrayOutputStream;

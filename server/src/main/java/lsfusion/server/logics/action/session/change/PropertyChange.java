@@ -35,7 +35,7 @@ import lsfusion.server.logics.action.session.table.NoPropertyTableUsage;
 import lsfusion.server.logics.action.session.table.NoPropertyWhereTableUsage;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

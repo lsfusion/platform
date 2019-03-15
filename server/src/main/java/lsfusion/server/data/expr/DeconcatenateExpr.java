@@ -23,9 +23,9 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcatenateClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.struct.ConcatenateClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 public class DeconcatenateExpr extends SingleClassExpr {
 

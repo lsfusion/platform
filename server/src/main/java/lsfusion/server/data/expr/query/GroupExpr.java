@@ -43,7 +43,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.classes.LogicalClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 
 import java.util.Collection;
 import java.util.Iterator;

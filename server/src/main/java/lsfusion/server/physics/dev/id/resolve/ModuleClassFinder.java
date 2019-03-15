@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.resolve;
 
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 
 public class ModuleClassFinder extends ModuleSingleElementFinder<CustomClass, Object> {
     @Override

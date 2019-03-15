@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes;
 
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -11,7 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 
-public interface ValueClass extends RemoteClass {
+public interface ValueClass extends AClass {
 
     boolean isCompatibleParent(ValueClass remoteClass);
 

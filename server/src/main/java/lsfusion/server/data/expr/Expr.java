@@ -38,7 +38,11 @@ import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.property.classes.ObjectClassField;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.property.classes.user.ObjectClassField;
 
 import java.sql.SQLException;
 

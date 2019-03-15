@@ -13,10 +13,10 @@ import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.logics.classes.IntegralClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.data.IntegralClass;
 import lsfusion.server.logics.classes.StaticClass;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StaticValueExpr extends AbstractValueExpr<StaticClass> {

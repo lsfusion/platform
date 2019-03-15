@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.listener;
 
-import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 
 public interface CustomClassListener {
 

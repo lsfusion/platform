@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.struct.property;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
