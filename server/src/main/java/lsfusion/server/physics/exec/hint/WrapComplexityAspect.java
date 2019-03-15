@@ -17,7 +17,7 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyQueryType;
-import lsfusion.server.logics.property.infer.CalcType;
+import lsfusion.server.logics.property.classes.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -49,7 +49,7 @@ public class WrapComplexityAspect {
         return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere}),
                 changedWhere!=null?cascadeWhere.toWhere():null, property, joinExprs, changedWhere, calcType);
     }
-    @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         return getJoinExpr(thisJoinPoint, property, joinExprs, calcType, propChanges, changedWhere);
@@ -80,7 +80,7 @@ public class WrapComplexityAspect {
             return wrappedQuery.getQuery();
         }
     }
-    @Around("execution(* lsfusion.server.logics.property.Property.getQuery(lsfusion.server.logics.property.infer.CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,lsfusion.base.col.interfaces.immutable.ImMap)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getQuery(CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,lsfusion.base.col.interfaces.immutable.ImMap)) " +
             "&& target(property) && args(calcType, propChanges, queryType, interfaceValues)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap interfaceValues) throws Throwable {
         return getQuery(thisJoinPoint, property, calcType, propChanges, queryType, interfaceValues);

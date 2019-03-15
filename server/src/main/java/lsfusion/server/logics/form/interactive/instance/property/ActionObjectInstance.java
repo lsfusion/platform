@@ -29,7 +29,7 @@ public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrP
     }
 
     public PropertyObjectInstance<?> getDrawProperty() {
-//        return DerivedProperty.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
+//        return PropertyFact.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
         return property.getWhereProperty().mapObjects(mapping);
     }
 

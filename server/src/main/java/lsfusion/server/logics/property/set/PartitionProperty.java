@@ -21,10 +21,10 @@ import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -163,7 +163,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     @Override
-    public lsfusion.server.logics.property.infer.Inferred<Interface<T>> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
+    public Inferred<Interface<T>> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
         return inferInnerInterfaceClasses(commonValue, inferType).map(getMapInterfaces().reverse());
     }
     public ExClassSet calcInferValueClass(ImMap<Interface<T>, ExClassSet> inferred, InferType inferType) {

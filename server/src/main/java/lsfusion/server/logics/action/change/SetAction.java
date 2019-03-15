@@ -25,10 +25,10 @@ import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
@@ -36,7 +36,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.logics.property.DerivedProperty.createSetAction;
+import static lsfusion.server.logics.property.PropertyFact.createSetAction;
 
 public class SetAction<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
 
@@ -98,7 +98,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
         ImSet<I> extInterfaces = innerInterfaces.remove(mapInterfaces.valuesSet());
         PropertyMapImplement<?, I> changeWhere = (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces) && !(writeTo.property instanceof SessionDataProperty)) ?
-                (where == null ? DerivedProperty.<I>createTrue() : where) : getFullProperty();
+                (where == null ? PropertyFact.<I>createTrue() : where) : getFullProperty();
 
         Where exprWhere = changeWhere.mapExpr(innerExprs, context.getModifier()).getWhere();
 
@@ -129,15 +129,15 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     }
 
     public static <I extends PropertyInterface> PropertyMapImplement<?, I> getFullProperty(ImSet<I> innerInterfaces, PropertyMapImplement<?, I> where, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom) {
-        PropertyMapImplement<?, I> result = DerivedProperty.createUnion(innerInterfaces, // проверяем на is WriteClass (можно было бы еще на интерфейсы проверить но пока нет смысла)
-                DerivedProperty.createNotNull(writeTo), getValueClassProperty(writeTo, writeFrom));
+        PropertyMapImplement<?, I> result = PropertyFact.createUnion(innerInterfaces, // проверяем на is WriteClass (можно было бы еще на интерфейсы проверить но пока нет смысла)
+                PropertyFact.createNotNull(writeTo), getValueClassProperty(writeTo, writeFrom));
         if(where!=null)
-            result = DerivedProperty.createAnd(innerInterfaces, where, result);
+            result = PropertyFact.createAnd(innerInterfaces, where, result);
         return result;
     }
 
     public static <I extends PropertyInterface> PropertyMapImplement<?, I> getValueClassProperty(PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom) {
-        return DerivedProperty.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(ClassType.wherePolicy), "value").
+        return PropertyFact.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(ClassType.wherePolicy), "value").
                 mapImplement(MapFact.singleton("value", writeFrom)));
     }
 

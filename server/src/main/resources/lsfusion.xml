@@ -305,7 +305,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
     
-    <bean id="fillImplicitCasesTask" class="lsfusion.server.logics.property.init.FillImplicitCasesTask">
+    <bean id="fillImplicitCasesTask" class="lsfusion.server.logics.property.controller.init.FillImplicitCasesTask">
         <property name="dependencies">
             <set>
                 <ref bean="checkDuplicateSystemElements"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
@@ -314,7 +314,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeCalcAbstractTask" class="lsfusion.server.logics.property.init.FinalizeCalcAbstractTask">
+    <bean id="finalizeCalcAbstractTask" class="lsfusion.server.logics.property.controller.init.FinalizeCalcAbstractTask">
         <property name="dependencies">
             <set>
                 <ref bean="fillImplicitCasesTask"/>
@@ -332,7 +332,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="markRecursionsTask" class="lsfusion.server.logics.property.init.MarkRecursionsTask">
+    <bean id="markRecursionsTask" class="lsfusion.server.logics.property.controller.init.MarkRecursionsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeActionAbstractTask"/>
@@ -342,7 +342,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="checkAbstractTask" class="lsfusion.server.logics.property.init.CheckAbstractTask">
+    <bean id="checkAbstractTask" class="lsfusion.server.logics.property.controller.init.CheckAbstractTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeCalcAbstractTask"/>
@@ -424,7 +424,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="showDependenciesTask" class="lsfusion.server.logics.property.init.ShowDependenciesTask">
+    <bean id="showDependenciesTask" class="lsfusion.server.logics.property.controller.init.ShowDependenciesTask">
         <property name="dependencies">
             <set>
                 <ref bean="setupDrillDownTask"/>
@@ -443,7 +443,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizePropsTask" class="lsfusion.server.logics.property.init.FinalizePropsTask">
+    <bean id="finalizePropsTask" class="lsfusion.server.logics.property.controller.init.FinalizePropsTask">
         <property name="dependencies">
             <set>
                 <!-- должно быть после всего, что может поменять editAction, contextMenu, etc.-->
@@ -630,7 +630,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="prereadPropertyCachesTask" class="lsfusion.server.logics.property.init.PrereadPropertyCachesTask">
+    <bean id="prereadPropertyCachesTask" class="lsfusion.server.logics.property.controller.init.PrereadPropertyCachesTask">
         <property name="dependencies">
             <set>
             </set>

@@ -16,14 +16,14 @@ import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
@@ -285,7 +285,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> PropertyMapImplement<?, P> createUnionWhere(ImSet<P> interfaces, ImList<F> aCase, boolean isExclusive) {
         
         // собираем where и делаем их or
-        return DerivedProperty.createUnion(interfaces, aCase.mapListValues(new GetValue<W, F>() {
+        return PropertyFact.createUnion(interfaces, aCase.mapListValues(new GetValue<W, F>() {
             public W getMapValue(F value) {
                 return value.where;
             }
@@ -293,11 +293,11 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
     }
     
     private static <P extends PropertyInterface> ActionCase<P> createInnerActionCase(ImSet<P> interfaces, ImList<ActionCase<P>> cases, boolean isExclusive) {
-        return new ActionCase<>(createUnionWhere(interfaces, cases, isExclusive), DerivedProperty.createCaseAction(interfaces, isExclusive, cases));
+        return new ActionCase<>(createUnionWhere(interfaces, cases, isExclusive), PropertyFact.createCaseAction(interfaces, isExclusive, cases));
     }
 
     private static <P extends PropertyInterface> CalcCase<P> createInnerCalcCase(ImSet<P> interfaces, ImList<CalcCase<P>> cases, boolean isExclusive) {
-        return new CalcCase<>(createUnionWhere(interfaces, cases, isExclusive), DerivedProperty.createUnion(interfaces, isExclusive, cases));
+        return new CalcCase<>(createUnionWhere(interfaces, cases, isExclusive), PropertyFact.createUnion(interfaces, isExclusive, cases));
     }
     
     public static <P extends PropertyInterface> FinalizeResult<ActionCase<P>> finalizeActionCases(final ImSet<P> interfaces, NFList<AbstractActionCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {

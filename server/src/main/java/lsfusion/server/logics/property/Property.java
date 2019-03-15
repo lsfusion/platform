@@ -23,6 +23,7 @@ import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.base.caches.*;
@@ -1423,20 +1424,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             if(onChangeWhereImplements.size()==1)
                 where = onChangeWhereImplements.single();
             else
-                where = DerivedProperty.createUnion(interfaces, onChangeWhereImplements.toList());
+                where = PropertyFact.createUnion(interfaces, onChangeWhereImplements.toList());
             if(whereImplements.size()>0)
-                where = DerivedProperty.createAnd(interfaces, where, whereImplements.getCol());
+                where = PropertyFact.createAnd(interfaces, where, whereImplements.getCol());
         } else { // по сути новая ветка, assert что whereImplements > 0
             where = whereImplements.get(0);
             if(whereImplements.size() > 1)
-                where = DerivedProperty.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()).getCol());
+                where = PropertyFact.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()).getCol());
         }
         setEventChange(null, false, valueImplement, where);
     }
 
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
         if(action && !Settings.get().isDisableWhenCalcDo()) {
-            ActionMapImplement<?, T> setAction = DerivedProperty.createSetAction(interfaces, getImplement(), valueImplement);
+            ActionMapImplement<?, T> setAction = PropertyFact.createSetAction(interfaces, getImplement(), valueImplement);
             lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<PropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false, null);
             return;
         }
@@ -1478,11 +1479,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ObjectValue defaultValue = getDefaultDataObject();
             if(defaultValue != null) {
                 StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
-                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(DerivedProperty.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
+                return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.<T>createStatic(PropertyFact.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
             }
             return null;
         } else
-            return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());
+            return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.<T>createNull());
     }
 
     protected boolean assertPropClasses(CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {

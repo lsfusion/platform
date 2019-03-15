@@ -3,7 +3,7 @@ package lsfusion.server.logics.action.flow;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -15,7 +15,7 @@ public abstract class ChangeFlowAction extends KeepContextAction {
     }
 
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
-        return DerivedProperty.createTrue();
+        return PropertyFact.createTrue();
     }
 
     public ImSet<Action> getDependActions() {

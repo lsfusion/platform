@@ -19,9 +19,9 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -80,7 +80,7 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
     }
 
     public ImList<ActionMapImplement<?, T>> getList() {
-        return DerivedProperty.mapActionImplements(mapping, property.getList());
+        return PropertyFact.mapActionImplements(mapping, property.getList());
     }
 /*    public ActionMapImplement<?, T> compile() {
         return property.compile().map(mapping);

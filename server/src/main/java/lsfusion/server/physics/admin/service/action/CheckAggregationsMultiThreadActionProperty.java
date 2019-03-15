@@ -2,7 +2,7 @@ package lsfusion.server.physics.admin.service.action;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
+import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.admin.service.task.CheckAggregationsTask;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

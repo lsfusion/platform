@@ -26,8 +26,8 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectClass;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -177,7 +177,7 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
 
     protected PropertyMapImplement<?, I> calcGroupWhereProperty() {
         if(where==null)
-            return DerivedProperty.createTrue();
+            return PropertyFact.createTrue();
         return where;
     }
 

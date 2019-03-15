@@ -13,7 +13,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -73,7 +73,7 @@ public abstract class ListCaseAction extends KeepContextAction {
             case MULTI: caseType = CaseUnionProperty.Type.MULTI; break;
             case LIST: caseType = CaseUnionProperty.Type.VALUE; break;
         }
-        abstractWhere = DerivedProperty.createUnion(checkExclusiveImplementations, checkAllImplementations, isLast, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
+        abstractWhere = PropertyFact.createUnion(checkExclusiveImplementations, checkAllImplementations, isLast, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
     protected abstract PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty();

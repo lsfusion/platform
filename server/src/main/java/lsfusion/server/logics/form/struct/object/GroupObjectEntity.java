@@ -16,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.SQLHandledException;
@@ -27,7 +28,7 @@ import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.interactive.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
@@ -40,7 +41,6 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -180,7 +180,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         PropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = DerivedProperty.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
+            prop = PropertyFact.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
                     return value.baseClass;
                 }}), type.getValueClass(), null);

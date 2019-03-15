@@ -2,7 +2,7 @@ package lsfusion.server.logics.action.flow;
 
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -28,6 +28,6 @@ public class BreakActionProperty extends ChangeFlowAction {
 
     @Override
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
-        return DerivedProperty.createNull();
+        return PropertyFact.createNull();
     }
 }

@@ -17,7 +17,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -62,7 +62,7 @@ public class TryAction extends KeepContextAction {
             public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
                 return value.mapCalcWhereProperty();
             }});
-        return DerivedProperty.createUnion(interfaces, listWheres);
+        return PropertyFact.createUnion(interfaces, listWheres);
     }
 
     public ImSet<Action> getDependActions() {

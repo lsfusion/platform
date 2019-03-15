@@ -30,7 +30,7 @@ import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.logging.LogFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;

@@ -22,7 +22,7 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -49,17 +49,17 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         // I1=I1' AND … In = In' AND G!=G' == false
         Property constraint; 
                 
-//        constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
+//        constraint = PropertyFact.createPartition(innerInterfaces, PropertyFact.<I>createTrue(),
 //                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
 
         PropertyMapImplement<?, Interface<I>> constraintImplement;
-        PropertyMapImplement<?, I> one = DerivedProperty.createOne();
+        PropertyMapImplement<?, I> one = PropertyFact.createOne();
         if(this instanceof AggregateGroupProperty) {
-            constraintImplement = DerivedProperty.createSumGProp(innerInterfaces, getMapInterfaces().values(), DerivedProperty.createAnd(one, groupProperty));
+            constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values(), PropertyFact.createAnd(one, groupProperty));
         } else {
-            constraintImplement = DerivedProperty.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
+            constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
         }
-        constraint = DerivedProperty.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
+        constraint = PropertyFact.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
         
         String cycleCaption;
         if(groupProperty instanceof PropertyMapImplement)

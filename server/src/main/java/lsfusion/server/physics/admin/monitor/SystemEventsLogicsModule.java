@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.property.env.CurrentConnectionFormulaProperty;
+import lsfusion.server.physics.admin.authentication.property.CurrentConnectionProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import org.antlr.runtime.RecognitionException;
@@ -123,7 +123,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        currentConnection = addProperty(null, new LP<>(new CurrentConnectionFormulaProperty(connection)));
+        currentConnection = addProperty(null, new LP<>(new CurrentConnectionProperty(connection)));
         makePropertyPublic(currentConnection, "currentConnection", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();

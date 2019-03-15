@@ -20,8 +20,8 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -50,7 +50,7 @@ public class ListActionProperty extends ListCaseAction {
     public <I extends PropertyInterface> ListActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ImList<ActionMapImplement<?, I>> actions, ImSet<SessionDataProperty> localsInScope)  {
         super(caption, false, innerInterfaces);
 
-        this.actions = DerivedProperty.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
+        this.actions = PropertyFact.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
         this.localsInScope = localsInScope;
 
         finalizeInit();
@@ -70,7 +70,7 @@ public class ListActionProperty extends ListCaseAction {
             public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
                 return value.mapCalcWhereProperty();
             }});
-        return DerivedProperty.createUnion(interfaces, listWheres);
+        return PropertyFact.createUnion(interfaces, listWheres);
     }
 
     protected ImList<ActionMapImplement<?, PropertyInterface>> getListActions() {

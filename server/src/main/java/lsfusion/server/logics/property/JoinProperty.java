@@ -25,6 +25,7 @@ import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggAct
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -292,9 +293,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }).values();
             ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEditAction(editActionSID, filterProperty);
             if (implementEdit != null) {
-                return DerivedProperty.createIfAction(
+                return PropertyFact.createIfAction(
                         interfaces,
-                        DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createTrue(), ands),
+                        PropertyFact.createAnd(interfaces, PropertyFact.<Interface>createTrue(), ands),
                         implementEdit,
                         null
                 );

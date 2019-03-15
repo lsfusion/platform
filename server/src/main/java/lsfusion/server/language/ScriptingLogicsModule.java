@@ -40,6 +40,7 @@ import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -71,7 +72,7 @@ import lsfusion.server.logics.event.BaseEvent;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.event.SessionEnvEvent;
-import lsfusion.server.logics.form.interactive.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -98,9 +99,8 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.AggregateGroupProperty;
@@ -2891,7 +2891,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 return requested;
         }
         // уже был или Object - генерим новое
-        return new LP<>(DerivedProperty.createInputDataProp(valueClass));
+        return new LP<>(PropertyFact.createInputDataProp(valueClass));
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedDialogFAProp(
@@ -3050,7 +3050,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
                 LPWithParams importProp = new LPWithParams(importParamProps.get(importIndex), params);
                 DataClass cls = (DataClass) newContext.get(i).cls;
-                LPWithParams defaultValueProp = new LPWithParams(addCProp(cls, DerivedProperty.getValueForProp(cls.getDefaultValue(), cls)));
+                LPWithParams defaultValueProp = new LPWithParams(addCProp(cls, PropertyFact.getValueForProp(cls.getDefaultValue(), cls)));
                 // prop(row) <- defvalue WHERE NOT prop(row)
                 fillNulls.add(addScriptedAssignAProp(oldAndRowContext, defaultValueProp, addScriptedNotProp(importProp), importProp));
             }
@@ -3495,7 +3495,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         MList<LP> mResult = ListFact.mList(size);
         for(int i=size-1;i>=0;i--)
-            mResult.add(new LP<>(DerivedProperty.createImportDataProp(newContext.get(newContext.size() - 1 - i).cls, paramClasses)));
+            mResult.add(new LP<>(PropertyFact.createImportDataProp(newContext.get(newContext.size() - 1 - i).cls, paramClasses)));
         return mResult.immutableList();
     }
 
@@ -3587,7 +3587,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP<?> whereLCP;
         if(fieldParams != null) { // FIELDS
             assert wherePropertyUsage == null;
-            whereLCP = !noParams ? new LP<>(DerivedProperty.createImportDataProp(LogicalClass.instance, paramClasses)) : null;
+            whereLCP = !noParams ? new LP<>(PropertyFact.createImportDataProp(LogicalClass.instance, paramClasses)) : null;
         } else { // TO
             if(wherePropertyUsage != null)
                 whereLCP = findLPByPropertyUsage(wherePropertyUsage);

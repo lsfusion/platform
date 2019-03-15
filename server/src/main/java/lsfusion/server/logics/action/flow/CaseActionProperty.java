@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -33,29 +34,28 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
 
-import static lsfusion.server.logics.property.DerivedProperty.createForAction;
+import static lsfusion.server.logics.property.PropertyFact.createForAction;
 
 public class CaseActionProperty extends ListCaseAction {
 
     public static <I extends PropertyInterface> Action createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, PropertyInterfaceImplement<I> ifProp, ActionMapImplement<?, I> trueAction, ActionMapImplement<?, I> falseAction) {
         assert trueAction != null;
         if(not) // просто not'им if
-            ifProp = DerivedProperty.createNot(ifProp);
+            ifProp = PropertyFact.createNot(ifProp);
 
         MList<ActionCase<I>> mCases = ListFact.mListMax(2);
         mCases.add(new ActionCase<>(ifProp, trueAction));
         if(falseAction != null)
-            mCases.add(new ActionCase<>(DerivedProperty.<I>createTrue(), falseAction));
+            mCases.add(new ActionCase<>(PropertyFact.<I>createTrue(), falseAction));
         return new CaseActionProperty(caption, false, innerInterfaces, mCases.immutableList());
     }
 
@@ -130,7 +130,7 @@ public class CaseActionProperty extends ListCaseAction {
             public CalcCase<PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
                 return new CalcCase<>(value.where, value.implement.mapCalcWhereProperty());
             }});
-        return DerivedProperty.createUnion(interfaces, isExclusive, listWheres);
+        return PropertyFact.createUnion(interfaces, isExclusive, listWheres);
     }
 
     protected ImList<ActionMapImplement<?, PropertyInterface>> getListActions() {
@@ -343,7 +343,7 @@ public class CaseActionProperty extends ListCaseAction {
 
     @IdentityInstanceLazy
     public PropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        return DerivedProperty.createIfElseUProp(interfaces, ifProp,
+        return PropertyFact.createIfElseUProp(interfaces, ifProp,
                 trueAction != null ? trueAction.mapWhereProperty() : null,
                 falseAction !=null ? falseAction.mapWhereProperty() : null);
     }

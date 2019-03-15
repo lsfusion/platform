@@ -13,9 +13,9 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.ValueFormulaProperty;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -75,7 +75,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
     }
 
     @Override
-    public lsfusion.server.logics.property.infer.ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
         return FormulaImplProperty.inferValueClass(getOrderInterfaces(), FormulaExpr.createCustomFormulaImpl(formula, value, hasNotNull, getOrderInterfaces().mapOrderSetValues(new GetValue<String, Interface>() {
             public String getMapValue(Interface value) {
                 return value.getString();

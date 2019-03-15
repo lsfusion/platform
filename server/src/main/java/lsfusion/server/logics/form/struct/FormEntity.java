@@ -57,7 +57,7 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.env.IsDebugFormulaProperty;
+import lsfusion.server.physics.dev.IsDevProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -76,7 +76,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     
     public static Boolean DEFAULT_NOCANCEL = null;
 
-    public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
+    public static final IsDevProperty isDev = IsDevProperty.instance;
     public static final SessionDataProperty isFloat = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
     public static final SessionDataProperty isSync = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);

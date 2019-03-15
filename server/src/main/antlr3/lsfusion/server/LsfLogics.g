@@ -37,7 +37,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.ChangeEvent;
     import lsfusion.server.logics.event.Event;
     import lsfusion.server.logics.event.SystemEvent;
-    import lsfusion.server.logics.form.interactive.GroupObjectProp;
+    import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
     import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;

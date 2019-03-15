@@ -64,7 +64,7 @@ import lsfusion.server.logics.action.session.change.modifier.OverridePropSourceS
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.form.interactive.FormCloseType;
-import lsfusion.server.logics.form.interactive.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.design.ComponentView;

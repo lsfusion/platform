@@ -6,7 +6,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.property.env.IsServerRestartingFormulaProperty;
+import lsfusion.server.logics.property.IsServerRestartingProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        isServerRestarting = addProperty(null, new LP<>(new IsServerRestartingFormulaProperty()));
+        isServerRestarting = addProperty(null, new LP<>(new IsServerRestartingProperty()));
         makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<ResolveClassSet>());
         super.initMainLogic();
         // Управление сервером базы данных

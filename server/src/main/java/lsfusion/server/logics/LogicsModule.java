@@ -33,6 +33,7 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.user.*;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.physics.admin.interpreter.action.EvalActionProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyActionProperty;
 import lsfusion.server.language.metacode.MetaCodeFragment;
@@ -66,7 +67,7 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
-import lsfusion.server.logics.form.interactive.GroupObjectProp;
+import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -108,10 +109,6 @@ import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
-import lsfusion.server.logics.property.AggregateProperty;
-import lsfusion.server.logics.property.JoinProperty;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -120,9 +117,9 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.*;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.*;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -152,8 +149,8 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
-import static lsfusion.server.logics.property.DerivedProperty.createAnd;
-import static lsfusion.server.logics.property.DerivedProperty.createStatic;
+import static lsfusion.server.logics.property.PropertyFact.createAnd;
+import static lsfusion.server.logics.property.PropertyFact.createStatic;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 // modules logics in theory should be in dev.module.package but in this class it's more about logics, than about modularity
@@ -707,7 +704,7 @@ public abstract class LogicsModule {
         
         // determining where
         PropertyInterfaceImplement<PropertyInterface> where = conditional ? readImplements.get(readImplements.size() - 1 - extraParamsCount) : null;
-        where = DerivedProperty.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
+        where = PropertyFact.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, aliases, literals, exprs, where, orders, attr, version);
@@ -745,7 +742,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         PropertyMapImplement<W, PropertyInterface> conditionalPart = (PropertyMapImplement<W, PropertyInterface>)
-                (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createTrue());
+                (conditional ? readImplements.get(resInterfaces + 2) : PropertyFact.createTrue());
         return addProperty(group, new LA<>(new SetAction<C, W, PropertyInterface>(caption,
                 innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart,
                 (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
@@ -819,7 +816,7 @@ public abstract class LogicsModule {
             mCases.add(new ActionCase<>((PropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
         }
         if(readImplements.size() % 2 != 0) {
-            mCases.add(new ActionCase<>(DerivedProperty.createTrue(), (ActionMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
+            mCases.add(new ActionCase<>(PropertyFact.createTrue(), (ActionMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
         }
         return addProperty(null, new LA<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, mCases.immutableList())));
     }
@@ -1086,7 +1083,7 @@ public abstract class LogicsModule {
             wasNot = wasNot || not;
         }
         if(wasNot)
-            return mapLProp(group, false, DerivedProperty.createAnd(interfaces, mList.immutableList()), interfaces);
+            return mapLProp(group, false, PropertyFact.createAnd(interfaces, mList.immutableList()), interfaces);
         else
             return addProperty(group, new LP<>(new AndFormulaProperty(nots.length)));
     }
@@ -1155,7 +1152,7 @@ public abstract class LogicsModule {
         ImList<PropertyInterfaceImplement<PropertyInterface>> mainProp = listImplements.subList(partNum, partNum + 1);
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
-        return mapLProp(group, persistent, DerivedProperty.createOProp(caption, partitionType, interfaces.getSet(), mainProp, partitions, orders, ordersNotNull, includeLast), interfaces);
+        return mapLProp(group, persistent, PropertyFact.createOProp(caption, partitionType, interfaces.getSet(), mainProp, partitions, orders, ordersNotNull, includeLast), interfaces);
     }
 
     protected <P extends PropertyInterface> LP addRProp(AbstractGroup group, boolean persistent, LocalizedString caption, Cycle cycle, ImList<Integer> resInterfaces, ImRevMap<Integer, Integer> mapPrev, Object... params) {
@@ -1211,7 +1208,7 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement<PropertyInterface> restriction = listImplements.get(partNum);
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
-        return mapLProp(group, persistent, DerivedProperty.createUGProp(caption, innerInterfaces.getSet(),
+        return mapLProp(group, persistent, PropertyFact.createUGProp(caption, innerInterfaces.getSet(),
                 new PropertyImplement<>(ungroup.property, groupImplement), orders, ordersNotNull, restriction, over), innerInterfaces);
     }
 
@@ -1227,7 +1224,7 @@ public abstract class LogicsModule {
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
                 listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
-        return mapLProp(group, persistent, DerivedProperty.createPGProp(caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces, explicitInnerClasses,
+        return mapLProp(group, persistent, PropertyFact.createPGProp(caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces, explicitInnerClasses,
                 new PropertyImplement<>(ungroup.property, groupImplement), proportion, orders, ordersNotNull), innerInterfaces);
     }
 
@@ -1343,7 +1340,7 @@ public abstract class LogicsModule {
         MSet<Property> mOverridePersist = SetFact.mSet();
 
         ImList<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(exprs, listImplements.size());
-        ImList<PropertyImplement<?, PropertyInterfaceImplement<T>>> mgProps = DerivedProperty.createMGProp(captions, listInterfaces, explicitInnerClasses, baseLM.baseClass,
+        ImList<PropertyImplement<?, PropertyInterfaceImplement<T>>> mgProps = PropertyFact.createMGProp(captions, listInterfaces, explicitInnerClasses, baseLM.baseClass,
                 listImplements.subList(0, exprs), groupImplements.getCol(), mOverridePersist, min);
 
         ImSet<Property> overridePersist = mOverridePersist.immutable();
@@ -2010,13 +2007,13 @@ public abstract class LogicsModule {
         //  PRINT OUT property MESSAGE NOWAIT;
         logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.<ObjectSelector>EMPTY(), ListFact.<Boolean>EMPTY(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).property.getImplement();
         ActionMapImplement<?, ClassPropertyInterface> constraintAction =
-                DerivedProperty.createListAction(
+                PropertyFact.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
                         ListFact.toList(logAction,
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );
-        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), event, true, debugPoint);
+        constraintAction.mapEventAction(this, PropertyFact.createAnyGProp(property).getImplement(), event, true, debugPoint);
         addProp(constraintAction.property);
     }
 
@@ -2043,8 +2040,8 @@ public abstract class LogicsModule {
 
         Action<? extends PropertyInterface> action =
                 innerInterfaces.isEmpty() ?
-                    DerivedProperty.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
-                    DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
+                    PropertyFact.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
+                    PropertyFact.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
 
         if(debugPoint != null) { // создано getEventDebugPoint
             if(debugger.isEnabled()) // topContextActionPropertyDefinitionBodyCreated
@@ -2110,18 +2107,18 @@ public abstract class LogicsModule {
 //                setAction.property.caption = "RESOLVE " + option.isTrue + " : " + property + " => " + implement.property;
                 PropertyMapImplement<?, T> condition;
                 if(option.isFull)
-                    condition = DerivedProperty.createAndNot(property, implement).mapChanged(IncrementType.SET, event.getScope());
+                    condition = PropertyFact.createAndNot(property, implement).mapChanged(IncrementType.SET, event.getScope());
                 else {
                     if (option.isTrue)
-                        condition = DerivedProperty.createAndNot(property.getChanged(IncrementType.SET, event.getScope()), implement);
+                        condition = PropertyFact.createAndNot(property.getChanged(IncrementType.SET, event.getScope()), implement);
                     else
-                        condition = DerivedProperty.createAnd(property, implement.mapChanged(IncrementType.DROP, event.getScope()));
+                        condition = PropertyFact.createAnd(property, implement.mapChanged(IncrementType.DROP, event.getScope()));
                 }
                 setAction.mapEventAction(this, condition, event, true, option.debugPoint);
             }
         }
 
-        Property constraint = DerivedProperty.createAndNot(property, implement).property;
+        Property constraint = PropertyFact.createAndNot(property, implement).property;
         constraint.caption = caption;
         addConstraint(constraint, false, debugPoint);
     }

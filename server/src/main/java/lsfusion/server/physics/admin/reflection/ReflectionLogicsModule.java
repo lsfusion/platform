@@ -9,7 +9,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.property.env.CurrentFormFormulaProperty;
+import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 
@@ -223,7 +223,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initMainLogic() throws RecognitionException {
-        currentForm = addProperty(null, new LP<>(new CurrentFormFormulaProperty(form)));
+        currentForm = addProperty(null, new LP<>(new CurrentFormProperty(form)));
         makePropertyPublic(currentForm, "currentForm", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();

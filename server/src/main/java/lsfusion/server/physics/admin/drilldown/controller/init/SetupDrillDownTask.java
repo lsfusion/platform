@@ -2,7 +2,7 @@ package lsfusion.server.physics.admin.drilldown.controller.init;
 
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.init.GroupPropertiesTask;
+import lsfusion.server.logics.property.controller.init.GroupPropertiesTask;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class SetupDrillDownTask extends GroupPropertiesTask {

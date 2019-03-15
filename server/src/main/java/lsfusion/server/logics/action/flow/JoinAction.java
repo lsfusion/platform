@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -33,7 +33,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     public <I extends PropertyInterface> JoinAction(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionImplement<T, PropertyInterfaceImplement<I>> implement) {
         super(caption, listInterfaces.size());
 
-        action = DerivedProperty.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
+        action = PropertyFact.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
 
         finalizeInit();
     }
@@ -105,7 +105,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     @IdentityInstanceLazy
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() { // тут на recursive не смо
-        return DerivedProperty.createJoin(action.property.getWhereProperty(true).mapImplement(action.mapping));
+        return PropertyFact.createJoin(action.property.getWhereProperty(true).mapImplement(action.mapping));
     }
 
     @Override
@@ -118,7 +118,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
         if(identityMap == null)
             return super.getList();
 
-        return DerivedProperty.mapActionImplements(identityMap, action.property.getList());
+        return PropertyFact.mapActionImplements(identityMap, action.property.getList());
     }
 
     private boolean isRecursive;

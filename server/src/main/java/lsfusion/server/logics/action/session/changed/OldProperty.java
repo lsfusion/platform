@@ -3,6 +3,7 @@ package lsfusion.server.logics.action.session.changed;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
