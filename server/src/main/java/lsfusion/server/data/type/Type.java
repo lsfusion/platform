@@ -6,7 +6,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.SQLSession;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.user.BaseClass;

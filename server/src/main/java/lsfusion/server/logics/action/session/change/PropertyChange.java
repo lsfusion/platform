@@ -29,7 +29,7 @@ import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.join.Join;
+import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.translator.MapTranslate;

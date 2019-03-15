@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.stat;
+package lsfusion.server.data.expr.join.stat;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -26,6 +26,10 @@ import lsfusion.server.data.expr.join.query.GroupJoin;
 import lsfusion.server.data.expr.join.query.LastJoin;
 import lsfusion.server.data.expr.join.query.PartitionJoin;
 import lsfusion.server.data.expr.join.query.QueryJoin;
+import lsfusion.server.data.expr.query.stat.DistinctKeys;
+import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.innerjoins.InnerJoins;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.caches.AbstractOuterContext;

@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.property.classes.user.IsClassField;
 import lsfusion.server.logics.property.classes.user.ObjectClassField;

@@ -1,4 +1,4 @@
-package lsfusion.server.data.query;
+package lsfusion.server.data.query.builder;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -10,6 +10,8 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
+import lsfusion.server.data.query.MapKeysInterface;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;

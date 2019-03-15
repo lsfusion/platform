@@ -22,7 +22,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.join.Join;
+import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

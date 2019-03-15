@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.physics.admin.profiler.Profiler;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;

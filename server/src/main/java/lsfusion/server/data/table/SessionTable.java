@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.*;
+import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.query.modify.ModifyQuery;
@@ -46,10 +47,10 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.expr.join.stat.TableStatKeys;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
@@ -505,7 +506,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     }
     public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this);
-        lsfusion.server.data.query.join.Join<PropertyField> join = join(query.getMapExprs());
+        lsfusion.server.data.query.builder.Join<PropertyField> join = join(query.getMapExprs());
 
         String formula = ""; String aggsh = "";
         MExclMap<String, Expr> mParams = MapFact.mExclMap(1 + 2 * shifts.length);
@@ -552,7 +553,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
             return this;
 
         final ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-        lsfusion.server.data.query.join.Join<PropertyField> join = join(mapKeys);
+        lsfusion.server.data.query.builder.Join<PropertyField> join = join(mapKeys);
 
         MExclMap<Field, Expr> mMapExprs = MapFact.mExclMapMax(keys.size()+properties.size());
         MExclMap<Field, DataClass> mMapData = MapFact.mExclMapMax(keys.size()+properties.size());
@@ -592,7 +593,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
             return session.createTemporaryTable(keys, properties, count, null, null, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException, SQLHandledException {
                     QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(SessionTable.this);
-                    lsfusion.server.data.query.join.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
+                    lsfusion.server.data.query.builder.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
                     moveData.addProperties(prevJoin.getExprs());
                     session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner), owner);
@@ -619,7 +620,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
                 ImSet<KeyField> tableKeys = getTableKeys();
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(tableKeys.addExcl(addKeys.keys()), addKeys);
-                lsfusion.server.data.query.join.Join<PropertyField> prevJoin = join(moveData.getMapExprs().filterIncl(tableKeys));
+                lsfusion.server.data.query.builder.Join<PropertyField> prevJoin = join(moveData.getMapExprs().filterIncl(tableKeys));
                 moveData.and(prevJoin.getWhere());
                 moveData.addProperties(prevJoin.getExprs());
                 moveData.addProperties(DataObject.getMapExprs(addProps));
@@ -650,12 +651,12 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(remainKeys);
 
                 if (remainKeys.size() == keys.size()) { // для оптимизации
-                    lsfusion.server.data.query.join.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
+                    lsfusion.server.data.query.builder.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
                     moveData.addProperties(prevJoin.getExprs().filterIncl(remainProps));
                 } else {
                     ImRevMap<KeyField, KeyExpr> tableKeys = getMapKeys();
-                    lsfusion.server.data.query.join.Join<PropertyField> prevJoin = join(tableKeys);
+                    lsfusion.server.data.query.builder.Join<PropertyField> prevJoin = join(tableKeys);
                     ImRevMap<KeyField, KeyExpr> groupKeys = tableKeys.filterInclRev(remainKeys);
                     moveData.and(GroupExpr.create(groupKeys, prevJoin.getWhere(), moveData.getMapExprs()).getWhere());
                     for (PropertyField prop : remainProps)

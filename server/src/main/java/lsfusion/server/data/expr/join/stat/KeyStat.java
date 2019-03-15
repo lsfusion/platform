@@ -1,7 +1,7 @@
-package lsfusion.server.data.query.stat;
+package lsfusion.server.data.expr.join.stat;
 
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 
 public interface KeyStat {
 

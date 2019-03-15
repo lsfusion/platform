@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query;
+package lsfusion.server.data.expr.query.stat;
 
 import lsfusion.base.col.WrapMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;

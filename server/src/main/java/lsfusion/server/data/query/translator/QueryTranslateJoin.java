@@ -1,17 +1,18 @@
-package lsfusion.server.data.query.join;
+package lsfusion.server.data.query.translator;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.join.AbstractJoin;
+import lsfusion.server.data.query.builder.AbstractJoin;
+import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 
 public class QueryTranslateJoin<U> extends AbstractJoin<U> {
 
-    KeyExprTranslator translator;
-    Join<U> join;
+    public final KeyExprTranslator translator;
+    public final Join<U> join;
 
     public QueryTranslateJoin(KeyExprTranslator translator, Join<U> join) {
         this.translator = translator;

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.*;
+import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.sql.SQLDML;

@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 
 // сделаем generics для обратной совместимости, хотя в общем то он не нужен

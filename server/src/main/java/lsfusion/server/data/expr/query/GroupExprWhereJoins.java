@@ -16,11 +16,12 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.WhereJoins;
+import lsfusion.server.data.expr.join.stat.KeyStat;
+import lsfusion.server.data.expr.join.stat.StatKeys;
+import lsfusion.server.data.expr.join.stat.WhereJoins;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 

@@ -25,8 +25,8 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.*;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.stat.Cost;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.join.stat.Cost;
 import lsfusion.server.data.type.ParseInterface;
 
 import java.sql.SQLException;

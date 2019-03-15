@@ -6,11 +6,11 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.data.expr.query.DistinctKeys;
-import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.DistinctKeys;
+import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.expr.join.stat.TableStatKeys;
 
 public class ValuesTable extends Table {
 

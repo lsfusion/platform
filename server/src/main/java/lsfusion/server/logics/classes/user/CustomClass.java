@@ -29,7 +29,7 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.LA;

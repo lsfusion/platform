@@ -14,6 +14,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -35,8 +37,8 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.query.builder.QueryBuilder;
+import lsfusion.server.data.expr.join.stat.TableStatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -519,7 +521,7 @@ public class ImplementTable extends DBTable { // последний интерф
         int rows = 0;
         if (!SystemProperties.doNotCalculateStats) {
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.query.join.Join<PropertyField> join = join(mapKeys);
+            lsfusion.server.data.query.builder.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
             MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
@@ -631,7 +633,7 @@ public class ImplementTable extends DBTable { // последний интерф
         if (!SystemProperties.doNotCalculateStats) {
 
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.query.join.Join<PropertyField> join = join(mapKeys);
+            lsfusion.server.data.query.builder.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
             MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();

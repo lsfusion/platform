@@ -6,12 +6,13 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.data.expr.query.stat.PropStat;
 import lsfusion.server.data.table.Field;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.NamedTable;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.query.exec.materialize.NotMaterializable;
-import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.expr.join.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.data.DataClass;
 

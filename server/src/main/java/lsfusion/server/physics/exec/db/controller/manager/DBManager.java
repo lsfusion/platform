@@ -43,7 +43,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ObjectType;

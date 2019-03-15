@@ -22,7 +22,7 @@ import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.query.join.Join;
+import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.language.ScriptingErrorLog;

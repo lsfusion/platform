@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.stat;
+package lsfusion.server.data.expr.join.stat;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.MSet;

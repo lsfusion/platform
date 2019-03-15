@@ -13,12 +13,12 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.WhereJoin;
-import lsfusion.server.data.query.stat.WhereJoins;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.expr.join.stat.KeyStat;
+import lsfusion.server.data.expr.join.stat.StatKeys;
+import lsfusion.server.data.expr.join.stat.WhereJoin;
+import lsfusion.server.data.expr.join.stat.WhereJoins;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 

@@ -8,12 +8,12 @@ import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.ExprEqualsJoin;
 import lsfusion.server.data.expr.join.ExprStatJoin;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
-import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.expr.join.stat.WhereJoin;
 import lsfusion.server.data.where.Where;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
