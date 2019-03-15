@@ -25,7 +25,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.RMIManager;
 import lsfusion.server.physics.admin.logging.RemoteLoggerAspect;

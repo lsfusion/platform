@@ -20,7 +20,7 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.data.*;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;

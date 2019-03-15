@@ -7,7 +7,7 @@ import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

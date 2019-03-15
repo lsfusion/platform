@@ -35,7 +35,7 @@ import lsfusion.server.logics.classes.ConcreteCustomClass;
 import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

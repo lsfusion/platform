@@ -102,9 +102,9 @@ import lsfusion.server.physics.dev.integration.external.to.ExternalDBActionPrope
 import lsfusion.server.physics.dev.integration.external.to.ExternalDBFActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod;
-import lsfusion.server.physics.dev.integration.external.to.file.action.ReadActionProperty;
-import lsfusion.server.physics.dev.integration.external.to.file.action.WriteActionProperty;
-import lsfusion.server.physics.dev.integration.external.to.mail.action.SendEmailActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.file.ReadActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.file.WriteActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailActionProperty;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.ANTLRFileStream;

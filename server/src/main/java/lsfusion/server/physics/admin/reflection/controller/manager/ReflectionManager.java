@@ -40,7 +40,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.integration.service.*;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;

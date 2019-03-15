@@ -144,7 +144,7 @@
     <!--</bean>-->
 
 
-    <bean id="dbManager" class="lsfusion.server.physics.exec.db.DBManager">
+    <bean id="dbManager" class="lsfusion.server.physics.exec.db.controller.manager.DBManager">
         <property name="adapter" ref="dataAdapter"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="restartManager" ref="restartManager"/>
@@ -207,7 +207,7 @@
 
     <!-- Задачи инициализации логики -->
 
-    <bean id="createModulesTask" class="lsfusion.server.physics.dev.module.init.CreateModulesTask">
+    <bean id="createModulesTask" class="lsfusion.server.physics.dev.module.controller.init.CreateModulesTask">
         <property name="dependencies">
             <set>
             </set>
@@ -223,7 +223,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initModuleDependenciesTask" class="lsfusion.server.physics.dev.module.init.InitModuleDependenciesTask">
+    <bean id="initModuleDependenciesTask" class="lsfusion.server.physics.dev.module.controller.init.InitModuleDependenciesTask">
         <property name="dependencies">
             <set>
                 <ref bean="createModulesTask"/>
@@ -233,7 +233,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initModuleOrderTask" class="lsfusion.server.physics.dev.module.init.InitModuleOrderTask">
+    <bean id="initModuleOrderTask" class="lsfusion.server.physics.dev.module.controller.init.InitModuleOrderTask">
         <property name="dependencies">
             <set>
                 <ref bean="initModuleDependenciesTask"/>
@@ -260,7 +260,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initTablesTask" class="lsfusion.server.physics.exec.db.init.InitTablesTask">
+    <bean id="initTablesTask" class="lsfusion.server.physics.exec.db.controller.init.InitTablesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initObjectClassTask"/> <!-- нужны все классы, в том числе reflection -->
@@ -278,7 +278,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initFullTablesTask" class="lsfusion.server.physics.exec.db.init.InitFullSingleTablesTask">
+    <bean id="initFullTablesTask" class="lsfusion.server.physics.exec.db.controller.init.InitFullSingleTablesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initClassDataPropsTask"/> <!-- нужны все классы, в том числе reflection -->
@@ -475,7 +475,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
     
-    <bean id="initIndicesTask" class="lsfusion.server.physics.exec.db.init.InitIndicesTask">
+    <bean id="initIndicesTask" class="lsfusion.server.physics.exec.db.controller.init.InitIndicesTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -638,7 +638,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.db.init.FirstRecalculateStatsTask">
+    <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.db.controller.init.FirstRecalculateStatsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncTablesTask"/>

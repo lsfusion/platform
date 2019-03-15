@@ -28,7 +28,7 @@ vacuumTablesAction '{sql.utils.vacuum.tables.action}' ()  {
     MESSAGE '{sql.utils.message.vacuum.tables.action}';
 }
 
-alterTableColumnsToLong '{sql.utils.alter.table.columns.to.long}'  INTERNAL  'lsfusion.server.physics.dev.migration.AlterTableColumnsToLongActionProperty' (Table);
+alterTableColumnsToLong '{sql.utils.alter.table.columns.to.long}'  INTERNAL  'lsfusion.server.physics.dev.migration.action.AlterTableColumnsToLongActionProperty' (Table);
 
 EXTEND FORM physicalModel PROPERTIES(t) BEFORE skipVacuum(t) GRID vacuumTableAction, alterTableColumnsToLong;
 EXTEND FORM maintenance PROPERTIES() vacuumTablesAction;
@@ -38,7 +38,7 @@ DESIGN maintenance {
     }
 }
 
-changeAllDates '{sql.utils.change.all.dates}'  INTERNAL  'lsfusion.server.physics.dev.migration.ChangeAllDatesActionProperty' () CONFIRM;
+changeAllDates '{sql.utils.change.all.dates}'  INTERNAL  'lsfusion.server.physics.dev.migration.action.ChangeAllDatesActionProperty' () CONFIRM;
 secondsChangeAllDates '{sql.utils.seconds.change.all.dates}' = DATA INTEGER ();
 
 EXTEND FORM maintenance PROPERTIES() changeAllDates, secondsChangeAllDates;

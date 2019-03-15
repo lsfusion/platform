@@ -8,7 +8,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
