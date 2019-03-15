@@ -16,8 +16,8 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
-import lsfusion.server.physics.admin.drilldown.SumUnionDrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.SumUnionDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class SumUnionProperty extends IncrementUnionProperty {

@@ -24,8 +24,8 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
-import lsfusion.server.physics.admin.drilldown.XorUnionDrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.XorUnionDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class XorUnionProperty extends IncrementUnionProperty {

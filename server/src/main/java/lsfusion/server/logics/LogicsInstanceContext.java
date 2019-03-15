@@ -16,9 +16,9 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.physics.admin.logging.LogInfo;
-import lsfusion.server.physics.admin.authentication.security.SecurityManager;
+import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
-import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
@@ -86,7 +86,7 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
-    protected Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
+    public Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
         for (int i = 0; i < messages.length; i++) {
             String message = messages[i];
             if (message == null)

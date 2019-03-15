@@ -17,9 +17,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
     
-    protected LP<?> idPolicy;
-    protected LP<?> policyId;
-    protected LP<?> namePolicy;
+    public LP<?> idPolicy;
+    public LP<?> policyId;
+    public LP<?> namePolicy;
     public LP descriptionPolicy;
     public LP orderUserPolicy;
 

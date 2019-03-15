@@ -3,7 +3,7 @@ package lsfusion.server.base.controller.remote;
 import lsfusion.interop.server.RmiServerInterface;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.base.controller.lifecycle.EventServer;
+import lsfusion.server.base.controller.manager.EventServer;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;

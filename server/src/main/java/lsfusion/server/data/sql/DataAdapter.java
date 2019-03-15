@@ -20,7 +20,7 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
 

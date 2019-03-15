@@ -1,7 +1,7 @@
 package lsfusion.server.logics.action.session.change;
 
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.action.session.UpdateResult;
+import lsfusion.server.logics.action.session.changed.UpdateResult;
 
 public enum ModifyResult implements UpdateResult {
     NO, // нет изменений

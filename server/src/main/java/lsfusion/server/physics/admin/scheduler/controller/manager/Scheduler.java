@@ -1,0 +1,637 @@
+package lsfusion.server.physics.admin.scheduler.controller.manager;
+
+import lsfusion.base.BaseUtils;
+import lsfusion.base.DateConverter;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Result;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.controller.thread.ExecutorFactory;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.base.controller.thread.ThreadUtils;
+import lsfusion.server.base.controller.context.*;
+import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
+import lsfusion.server.base.controller.manager.MonitorServer;
+import lsfusion.server.base.controller.stack.ExecutionStackAspect;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.NullValue;
+import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.linear.LA;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.IntegerClass;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.exec.db.DBManager;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
+
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.concurrent.*;
+
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static org.apache.commons.lang3.StringUtils.trim;
+
+public class Scheduler extends MonitorServer implements InitializingBean {
+    private static final Logger logger = ServerLoggers.systemLogger;
+    public static final Logger schedulerLogger = ServerLoggers.schedulerLogger;
+
+    public ScheduledExecutorService daemonTasksExecutor;
+
+    private LogicsInstance logicsInstance;
+
+    private BusinessLogics BL;
+    private DBManager dbManager;
+
+    private Map<Long, List<ScheduledFuture>> futuresMap = new HashMap<>();
+
+    public Scheduler() {
+    }
+
+    public void setBusinessLogics(BusinessLogics businessLogics) {
+        this.BL = businessLogics;
+    }
+
+    public void setDbManager(DBManager dbManager) {
+        this.dbManager = dbManager;
+    }
+
+    public void setLogicsInstance(LogicsInstance logicsInstance) {
+        this.logicsInstance = logicsInstance;
+    }
+
+    @Override
+    protected void onStopping(LifecycleEvent event) {
+        schedulerLogger.error("SERVER STOPPING, all scheduled tasks will be interrupted");
+        super.onStopping(event);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(BL, "businessLogics must be specified");
+        Assert.notNull(dbManager, "dbManager must be specified");
+        Assert.notNull(logicsInstance, "logicsInstance must be specified");
+    }
+
+    private void changeCurrentDate(ExecutionStack stack) {
+        try (DataSession session = createSession()) {
+            session.setNoCancelInTransaction(true);
+
+            java.sql.Date currentDate = (java.sql.Date) BL.timeLM.currentDate.read(session);
+            java.sql.Date newDate = DateConverter.getCurrentDate();
+            if (currentDate == null || currentDate.getDate() != newDate.getDate() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
+                logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
+                BL.timeLM.currentDate.change(newDate, session);
+                session.applyException(BL, stack);
+                logger.info("ChangeCurrentDate finished");
+            }
+        } catch (Exception e) {
+            logger.error(String.format("ChangeCurrentDate error: %s", e));
+        }
+    }
+
+    @Override
+    public String getEventName() {
+        return "scheduler-daemon";
+    }
+
+    @Override
+    public LogicsInstance getLogicsInstance() {
+        return logicsInstance;
+    }
+
+    public void setupScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+        if (daemonTasksExecutor != null) {
+            Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
+            List<ScheduledFuture> futures = futuresMap.remove(scheduledTaskId);
+            if (futures != null) {
+                schedulerLogger.info("Stopped scheduler task: " + nameScheduledTask);
+                for (ScheduledFuture future : futures) {
+                    future.cancel(true);
+                }
+            }
+
+            if(BL.schedulerLM.activeScheduledTask.read(session, scheduledTaskObject) != null) {
+                Time timeFrom = (Time) BL.schedulerLM.timeFromScheduledTask.read(session, scheduledTaskObject);
+                Time timeTo = (Time) BL.schedulerLM.timeToScheduledTask.read(session, scheduledTaskObject);
+                String daysOfWeek = (String) BL.schedulerLM.daysOfWeekScheduledTask.read(session, scheduledTaskObject);
+                String daysOfMonth = (String) BL.schedulerLM.daysOfMonthScheduledTask.read(session, scheduledTaskObject);
+                boolean runAtStart = BL.schedulerLM.runAtStartScheduledTask.read(session, scheduledTaskObject) != null;
+                Timestamp startDate = (Timestamp) BL.schedulerLM.startDateScheduledTask.read(session, scheduledTaskObject);
+                Integer period = (Integer) BL.schedulerLM.periodScheduledTask.read(session, scheduledTaskObject);
+                Object schedulerStartType = BL.schedulerLM.schedulerStartTypeScheduledTask.read(session, scheduledTaskObject);
+                Object afterFinish = ((ConcreteCustomClass) BL.schedulerLM.findClass("SchedulerStartType")).getDataObject("afterFinish").object;
+                boolean fixedDelay = afterFinish.equals(schedulerStartType);
+
+                if (startDate != null || runAtStart) {
+                    schedulerLogger.info("Scheduled scheduler task: " + nameScheduledTask);
+                    SchedulerTask task = new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, session.getModifier(), scheduledTaskObject, nameScheduledTask,
+                            timeFrom, timeTo, daysOfWeek, daysOfMonth), scheduledTaskId, runAtStart, startDate, period, fixedDelay);
+                    futures = task.schedule(daemonTasksExecutor);
+                    futuresMap.put(scheduledTaskId, futures);
+                }
+            }
+        }
+    }
+
+    public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+        if (daemonTasksExecutor != null) {
+            Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
+            List<ScheduledFuture> futures = futuresMap.get(scheduledTaskId);
+            if (futures == null)
+                futures = new ArrayList<>();
+
+            schedulerLogger.info("Execute scheduler task: " + nameScheduledTask);
+            SchedulerTask task = new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, session.getModifier(), scheduledTaskObject, nameScheduledTask,
+                    null, null, null, null), scheduledTaskId, true, null, 0, false);
+            futures.add(task.execute(daemonTasksExecutor));
+            futuresMap.put(scheduledTaskId, futures);
+        }
+    }
+
+    public void setupScheduledTasks(DataSession session, Integer threadCount) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+
+        if (daemonTasksExecutor != null)
+            daemonTasksExecutor.shutdownNow();
+
+        daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService(threadCount != null ? threadCount : 5, this);
+
+        List<SchedulerTask> tasks = new ArrayList<>();
+        fillSystemScheduledTasks(tasks);
+        fillUserScheduledTasks(session, tasks);
+
+        for (SchedulerTask task : tasks) {
+            List<ScheduledFuture> futures = futuresMap.get(task.scheduledTaskId);
+            if (futures == null)
+                futures = new ArrayList<>();
+            futures.addAll(task.schedule(daemonTasksExecutor));
+            futuresMap.put(task.scheduledTaskId, futures);
+        }
+    }
+
+    private void fillSystemScheduledTasks(List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        tasks.add(new SystemSchedulerTask(new EExecutionStackRunnable() {
+            @Override
+            public void run(ExecutionStack stack) throws Exception {
+                changeCurrentDate(stack);
+            }
+        }, -1L, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
+        tasks.addAll(BL.getSystemTasks(this));
+    }
+
+    private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        Modifier modifier = session.getModifier();
+        KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
+        ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);
+
+        QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<>(scheduledTaskKeys);
+        scheduledTaskQuery.addProperty("nameScheduledTask", BL.schedulerLM.nameScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("timeFromScheduledTask", BL.schedulerLM.timeFromScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("timeToScheduledTask", BL.schedulerLM.timeToScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("periodScheduledTask", BL.schedulerLM.periodScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("daysOfWeekScheduledTask", BL.schedulerLM.daysOfWeekScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("daysOfMonthScheduledTask", BL.schedulerLM.daysOfMonthScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("schedulerStartTypeScheduledTask", BL.schedulerLM.schedulerStartTypeScheduledTask.getExpr(modifier, scheduledTaskExpr));
+
+        scheduledTaskQuery.and(BL.schedulerLM.activeScheduledTask.getExpr(modifier, scheduledTaskExpr).getWhere());
+
+        Object afterFinish = ((ConcreteCustomClass) BL.schedulerLM.findClass("SchedulerStartType")).getDataObject("afterFinish").object;
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session);
+        for (int i = 0, size = scheduledTaskResult.size(); i < size; i++) {
+            ImMap<Object, Object> key = scheduledTaskResult.getKey(i);
+            ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
+            Long scheduledTaskId = (Long) key.getValue(0);
+            DataObject currentScheduledTaskObject = new DataObject(scheduledTaskId, BL.schedulerLM.scheduledTask);
+            String nameScheduledTask = trim((String) value.get("nameScheduledTask"));
+            Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
+            Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
+            Time timeFrom = (Time) value.get("timeFromScheduledTask");
+            Time timeTo = (Time) value.get("timeToScheduledTask");
+            Integer period = (Integer) value.get("periodScheduledTask");
+            Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
+            boolean fixedDelay = afterFinish.equals(schedulerStartType);
+
+            String daysOfWeekScheduledTask = (String) value.get("daysOfWeekScheduledTask");
+            Set<String> daysOfWeek = daysOfWeekScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfWeekScheduledTask.split(",| ")));
+            daysOfWeek.remove("");
+            String daysOfMonthScheduledTask = (String) value.get("daysOfMonthScheduledTask");
+            Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
+            daysOfMonth.remove("");
+
+            if(startDate != null || runAtStart)
+                tasks.add(new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, modifier, currentScheduledTaskObject, nameScheduledTask, timeFrom, timeTo,
+                    daysOfWeekScheduledTask, daysOfMonthScheduledTask), scheduledTaskId, runAtStart, startDate, period, fixedDelay));
+        }
+    }
+
+    private UserSchedulerTask readUserSchedulerTask(DataSession session, Modifier modifier, DataObject scheduledTaskObject, String nameScheduledTask,
+                                                    Time timeFrom, Time timeTo, String daysOfWeekScheduledTask, String daysOfMonthScheduledTask) throws SQLException, SQLHandledException {
+        KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
+        ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
+
+        QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<>(scheduledTaskDetailKeys);
+        scheduledTaskDetailQuery.addProperty("canonicalNameAction", BL.schedulerLM.canonicalNameActionScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("ignoreExceptions", BL.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("order", BL.schedulerLM.orderScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("script", BL.schedulerLM.scriptScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("timeout", BL.schedulerLM.timeoutScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("parameter", BL.schedulerLM.parameterScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.and(BL.schedulerLM.activeScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).getWhere());
+        scheduledTaskDetailQuery.and(BL.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).compare(scheduledTaskObject, Compare.EQUALS));
+
+        TreeMap<Integer, ScheduledTaskDetail> propertySIDMap = new TreeMap<>();
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
+        int defaultOrder = propertyResult.size() + 100;
+        for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
+            String canonicalName = (String) propertyValues.get("canonicalNameAction");
+            String script = (String) propertyValues.get("script");
+            if(script != null && !script.isEmpty())
+                script = String.format("run() {%s;\n};", script);
+            boolean ignoreExceptions = propertyValues.get("ignoreExceptions") != null;
+            Integer timeout = (Integer) propertyValues.get("timeout");
+            String parameter = (String) propertyValues.get("parameter");
+            List<String> params = new ArrayList<>();
+            if(parameter != null)
+                Collections.addAll(params, parameter.split(","));
+            Integer orderProperty = (Integer) propertyValues.get("order");
+            if (canonicalName != null || script != null) {
+                if (orderProperty == null) {
+                    orderProperty = defaultOrder;
+                    defaultOrder++;
+                }
+                LA LA = script == null ? BL.findAction(canonicalName.trim()) : BL.schedulerLM.evalScript;
+                if(LA != null)
+                    propertySIDMap.put(orderProperty, new ScheduledTaskDetail(LA, script, ignoreExceptions, timeout, params));
+            }
+        }
+        Set<String> daysOfWeek = daysOfWeekScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfWeekScheduledTask.split(",| ")));
+        daysOfWeek.remove("");
+        Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
+        daysOfMonth.remove("");
+        return new UserSchedulerTask(nameScheduledTask, scheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth);
+    }
+
+    public class SystemSchedulerTask extends SchedulerTask {
+
+        public SystemSchedulerTask(final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
+            super(name, task, scheduledTaskId, runAtStart, null, period, fixedDelay);
+        }
+    }
+
+    public SchedulerTask createSystemTask(EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
+        return new SystemSchedulerTask(task, -1L, runAtStart, period, fixedDelay, name);
+    }
+
+    public class SchedulerTask {
+        private final Long scheduledTaskId;
+        private final boolean runAtStart;
+        private final Timestamp startDate;
+        private final Integer period;
+        private final boolean fixedDelay;
+        private final Runnable task;
+
+        public SchedulerTask(final String name, final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
+            this.task = new Runnable() {
+                public void run() {
+                    schedulerLogger.info("Started running scheduler task - " + name);
+                    try {
+                        task.run(getStack());
+                        schedulerLogger.info("Finished running scheduler task - " + name);
+                    } catch (Throwable e) {
+                        schedulerLogger.error("Error while running scheduler task - " + name + " :", e);
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+            this.scheduledTaskId = scheduledTaskId;
+            this.runAtStart = runAtStart;
+            this.startDate = startDate;
+            this.period = period;
+            this.fixedDelay = fixedDelay;
+            assert startDate != null || period != null || runAtStart;
+        }
+
+        public ScheduledFuture execute(ScheduledExecutorService service) {
+            return service.schedule(task, 0, TimeUnit.MILLISECONDS);
+        }
+
+        public List<ScheduledFuture> schedule(ScheduledExecutorService service) {
+            List<ScheduledFuture> scheduledFutureList = new ArrayList<>();
+            if (runAtStart) {
+                scheduledFutureList.add(service.schedule(task, 0, TimeUnit.MILLISECONDS));
+            }
+            Long start = null;
+            if (startDate != null)
+                start = startDate.getTime();
+            long currentTime = System.currentTimeMillis();
+            if (period != null) {
+                long longPeriod = period.longValue() * 1000;
+                long delay;
+                if(start != null) {
+                    if (start < currentTime) {
+                        int periods = (int) ((currentTime - start) / longPeriod) + 1;
+                        start += periods * longPeriod;
+                    }
+                    delay = start - currentTime;
+                } else {
+                    if(runAtStart)
+                        delay = longPeriod;
+                    else
+                        delay = 0L;
+                }
+                if (fixedDelay)
+                    scheduledFutureList.add(service.scheduleWithFixedDelay(task, delay, longPeriod, TimeUnit.MILLISECONDS));
+                else
+                    scheduledFutureList.add(service.scheduleAtFixedRate(task, delay, longPeriod, TimeUnit.MILLISECONDS));
+            } else {
+                assert start != null || runAtStart;
+                if (start != null && start > currentTime) {
+                    scheduledFutureList.add(service.schedule(task, start - currentTime, TimeUnit.MILLISECONDS));
+                }
+            }
+            return scheduledFutureList;
+        }
+    }
+
+    public void stopScheduledTasks() {
+        if (daemonTasksExecutor != null)
+            daemonTasksExecutor.shutdownNow();
+    }
+
+    private class UserSchedulerTask implements EExecutionStackRunnable {
+        String nameScheduledTask;
+        private DataObject scheduledTaskObject;
+        Time defaultTime = new Time(0, 0, 0);
+        TreeMap<Integer, ScheduledTaskDetail> lapMap;
+        private Time timeFrom;
+        private Time timeTo;
+        private Set<String> daysOfWeek;
+        private Set<String> daysOfMonth;
+
+        public UserSchedulerTask(String nameScheduledTask, DataObject scheduledTaskObject, TreeMap<Integer, ScheduledTaskDetail> lapMap, Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
+            this.nameScheduledTask = nameScheduledTask;
+            this.scheduledTaskObject = scheduledTaskObject;
+            this.lapMap = lapMap;
+            this.timeFrom = timeFrom == null ? defaultTime : timeFrom;
+            this.timeTo = timeTo == null ? defaultTime : timeTo;
+            this.daysOfWeek = daysOfWeek;
+            this.daysOfMonth = daysOfMonth;
+        }
+
+        public void run(ExecutionStack stack) throws Exception {
+            final Result<Long> threadId = new Result<>();
+            Future<Boolean> future = null;
+            try {
+                boolean isTimeToRun = isTimeToRun(timeFrom, timeTo, daysOfWeek, daysOfMonth);
+                schedulerLogger.info(String.format("Task %s. TimeFrom %s, TimeTo %s, daysOfWeek %s, daysOfMonth %s. %s",
+                        nameScheduledTask, timeFrom == null ? "-" : timeFrom, timeTo == null ? "-" : timeTo,
+                        daysOfWeek.isEmpty() ? "-" : daysOfWeek, daysOfMonth.isEmpty() ? "-" : daysOfMonth,
+                        isTimeToRun ? "Started successful" : "Not started due to conditions"));
+
+                if(isTimeToRun) {
+                    ExecutorService mirrorMonitorService = null;
+                    try {
+                        for (final ScheduledTaskDetail detail : lapMap.values()) {
+                            if (detail != null) {
+
+                                if (mirrorMonitorService == null)
+                                    mirrorMonitorService = ExecutorFactory.createMonitorMirrorSyncService(Scheduler.this);
+
+                                future = mirrorMonitorService.submit(new Callable<Boolean>() {
+                                    public Boolean call() throws Exception {
+                                        threadId.set(Thread.currentThread().getId());
+                                        try {
+                                            return run(detail);
+                                        } finally {
+                                            threadId.set(null);
+                                        }
+                                    }});
+                                boolean succeeded;
+                                if (detail.timeout == null)
+                                    succeeded = future.get();
+                                else {
+                                    try {
+                                        succeeded = future.get(detail.timeout, TimeUnit.SECONDS);
+                                    } catch (TimeoutException e) {
+                                        ThreadUtils.interruptThread(dbManager, threadId.result, future);
+
+                                        ExecutorService terminateService = mirrorMonitorService;
+                                        mirrorMonitorService = null;
+                                        terminateService.shutdown();
+                                        if(!terminateService.awaitTermination(Settings.get().getWaitSchedulerCanceledDelay(), TimeUnit.MILLISECONDS)) { // giving thread some time to be canceled
+                                            logExceptionTask(detail.getCaption(), e, stack);
+                                        }
+                                        
+                                        succeeded = false;
+                                    }
+                                }
+                                
+                                if (!succeeded && !detail.ignoreExceptions)
+                                    break;
+                            }
+                        }
+                    } finally {
+                        if(mirrorMonitorService != null)
+                            mirrorMonitorService.shutdown();
+                    }
+                }
+            } catch (Exception e) {
+                if (future != null) {
+                    try {
+                        ThreadUtils.interruptThread(dbManager, threadId.result, future);
+                    } catch (SQLException | SQLHandledException ignored) {
+                    }
+                }
+                throw e;
+            }
+        }
+
+        private boolean isTimeToRun(Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
+            Calendar currentCal = Calendar.getInstance();
+
+            if((!daysOfWeek.isEmpty() && !daysOfWeek.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_WEEK) - 1)))
+                    || (!daysOfMonth.isEmpty() && !daysOfMonth.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_MONTH)))))
+                return false;
+
+            if(timeFrom.equals(defaultTime) && timeTo.equals(defaultTime)) return true;
+
+            Calendar calendarFrom = Calendar.getInstance();
+            calendarFrom.setTime(timeFrom);
+            calendarFrom.set(Calendar.DAY_OF_MONTH, currentCal.get(Calendar.DAY_OF_MONTH));
+            calendarFrom.set(Calendar.MONTH, currentCal.get(Calendar.MONTH));
+            calendarFrom.set(Calendar.YEAR, currentCal.get(Calendar.YEAR));
+
+            Calendar calendarTo = Calendar.getInstance();
+            calendarTo.setTime(timeTo);
+            calendarTo.set(Calendar.DAY_OF_MONTH, currentCal.get(Calendar.DAY_OF_MONTH));
+            if(timeFrom.compareTo(timeTo) > 0)
+                calendarTo.add(Calendar.DAY_OF_MONTH, 1);
+            calendarTo.set(Calendar.MONTH, currentCal.get(Calendar.MONTH));
+            calendarTo.set(Calendar.YEAR, currentCal.get(Calendar.YEAR));
+
+            return currentCal.getTimeInMillis() >= calendarFrom.getTimeInMillis() && currentCal.getTimeInMillis() <= calendarTo.getTimeInMillis();
+        }
+        
+        public boolean run(ScheduledTaskDetail detail) {
+            ExecutionStack stack = getStack(); // иначе assertion'ы внутри с проверкой контекста валятся
+
+            Long taskLogId = null;
+            Exception exception = null;
+
+            String taskCaption = detail.getCaption();
+            
+            ThreadLocalContext.pushLogMessage();
+            try {
+                logStartTask(taskCaption, stack);
+
+                String applyResult;
+
+                try (DataSession mainSession = createSession()) {
+                    if (detail.script != null) // if LA is evalScript 
+                        BL.schedulerLM.scriptText.change(detail.script, mainSession);
+                    ImOrderSet<ClassPropertyInterface> interfaces = detail.LA.listInterfaces;
+                    if (interfaces.isEmpty()) 
+                        detail.LA.execute(mainSession, stack);
+                    else if (detail.params.isEmpty()) 
+                        detail.LA.execute(mainSession, stack, NullValue.instance);
+                    else {
+                        List<ObjectValue> parsedParameters = new ArrayList<>();
+                        for (int i = 0; i < interfaces.size(); i++) {
+                            ValueClass valueClass = interfaces.get(i).interfaceClass;
+                            ObjectValue parsedParameter;
+                            try {
+                                parsedParameter = detail.params.size() < i ? NullValue.instance : (valueClass == IntegerClass.instance ? new DataObject(((IntegerClass) valueClass).parseString(detail.params.get(i))) : new DataObject(detail.params.get(i)));
+                            } catch (Exception e) {
+                                parsedParameter = null;
+                            }
+                            parsedParameters.add(parsedParameter);
+                        }
+                        detail.LA.execute(mainSession, stack, parsedParameters.toArray(new ObjectValue[parsedParameters.size()]));
+                    }
+
+                    schedulerLogger.info("Task " + taskCaption + " before apply");
+                    applyResult = mainSession.applyMessage(BL, stack);
+                }
+
+                taskLogId = logFinishTask(taskCaption, stack, applyResult);
+                
+                return applyResult == null;
+            } catch (Exception e) {
+                taskLogId = logExceptionTask(taskCaption, e, stack);
+                exception = e;
+                return false;
+            } finally {
+                ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
+                if(exception != null)
+                    logMessages = logMessages.addList(new AbstractContext.LogMessage(ExceptionUtils.toString(exception), true, ExecutionStackAspect.getExceptionStackTrace()));
+                if(taskLogId != null)
+                    logClientTasks(logMessages, taskLogId, taskCaption, stack);
+            }
+        }
+
+        private void logStartTask(String taskCaption, ExecutionStack stack) throws SQLException, SQLHandledException {
+            logTask(taskCaption, "Запущено", "start", stack, null);
+        }
+
+        private Long logFinishTask(String taskCaption, ExecutionStack stack, String applyResult) throws SQLException, SQLHandledException {
+            return logTask(taskCaption, applyResult == null ? "Выполнено успешно" : BaseUtils.truncate(applyResult, 200), "exception", stack, null);
+        }
+
+        private Long logExceptionTask(String taskCaption, Exception e, ExecutionStack stack) {
+            return logTask(taskCaption, BaseUtils.truncate(String.valueOf(e), 200), "exception", stack, e);
+        }
+
+        private Long logTask(String message, String result, String phase, ExecutionStack stack, Exception e) {
+            if(e != null)
+                schedulerLogger.error("Exception in task : " + message, e);
+            else
+                schedulerLogger.info("Task " + message + " " + phase);
+            
+            try (DataSession session = createSession()) {
+                DataObject taskLogObject = session.addObject(BL.schedulerLM.scheduledTaskLog);
+
+                BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) session, taskLogObject);
+                BL.schedulerLM.propertyScheduledTaskLog.change(message, session, taskLogObject);
+                BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), session, taskLogObject);
+                if(e != null)
+                    BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, session, taskLogObject);
+                BL.schedulerLM.resultScheduledTaskLog.change(result, session, taskLogObject);
+
+                session.applyException(BL, stack);
+
+                return (long)taskLogObject.object;
+            } catch (Exception le) {
+                schedulerLogger.error("Error while logging scheduler task " + phase + " : " + message + " " + result, le);
+                return null;
+            }
+        }
+
+        private void logClientTasks(ImList<AbstractContext.LogMessage> logMessages, long taskLogId, String taskCaption, ExecutionStack stack) {
+            DataObject taskLog = new DataObject(taskLogId, BL.schedulerLM.scheduledTaskLog);
+            try (DataSession session = createSession()) {
+                
+                for(AbstractContext.LogMessage logMessage : logMessages)
+                    logClientTask(session, taskLog, logMessage);
+
+                session.applyException(BL, stack);
+            } catch (Exception e) {
+                schedulerLogger.error("Error while logging scheduler messages : " + taskCaption, e);
+            }
+        }
+
+        private void logClientTask(DataSession session, DataObject taskLog, AbstractContext.LogMessage logMessage) throws SQLException, SQLHandledException {            
+            ServerLoggers.serviceLogger.info(logMessage.message);
+            
+            DataObject clientTaskLog = session.addObject(BL.schedulerLM.scheduledClientTaskLog);
+            BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
+                    .change(taskLog, (ExecutionEnvironment) session, clientTaskLog);
+            BL.schedulerLM.messageScheduledClientTaskLog.change(logMessage.message, session, clientTaskLog);
+            String lsfStack = logMessage.lsfStackTrace;
+            if(lsfStack != null)
+                BL.schedulerLM.lsfStackScheduledClientTaskLog.change(lsfStack, session, clientTaskLog);
+            if(logMessage.failed)
+                BL.schedulerLM.failedScheduledClientTaskLog.change(true, session, clientTaskLog);
+            BL.schedulerLM.dateScheduledClientTaskLog.change(new Timestamp(logMessage.time), session, clientTaskLog);
+        }
+    }
+
+    private class ScheduledTaskDetail {
+        public LA LA;
+        public String script;
+        public boolean ignoreExceptions;
+        public Integer timeout;
+        public List<String> params;
+        
+        public String getCaption() {
+            return (script == null ? (localize(LA.property.caption) + " (" + LA.property.getSID() + ")") : (" " + BaseUtils.truncate(script, 191)));
+        }
+
+        public ScheduledTaskDetail(LA LA, String script, boolean ignoreExceptions, Integer timeout, List<String> params) {
+            this.LA = LA;
+            this.script = script;
+            this.ignoreExceptions = ignoreExceptions;
+            this.timeout = timeout;
+            this.params = params;
+        }
+    }
+}

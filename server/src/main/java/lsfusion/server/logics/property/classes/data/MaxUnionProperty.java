@@ -11,8 +11,8 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.IncrementUnionProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
-import lsfusion.server.physics.admin.drilldown.MaxUnionDrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.MaxUnionDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class MaxUnionProperty extends IncrementUnionProperty {

@@ -2,9 +2,9 @@ package lsfusion.server.base.controller.thread;
 
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.server.base.controller.context.Context;
-import lsfusion.server.base.controller.lifecycle.MonitorServer;
+import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.RmiServer;

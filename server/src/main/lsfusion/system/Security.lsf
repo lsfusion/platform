@@ -600,7 +600,7 @@ DESIGN propertyPolicy {
     }
 }
 
-checkCurrentDateDependsAction  INTERNAL  'lsfusion.server.physics.admin.authentication.CheckCurrentDateDependsActionProperty' (Property);
+checkCurrentDateDependsAction  INTERNAL  'lsfusion.server.physics.admin.authentication.action.CheckCurrentDateDependsActionProperty' (Property);
 WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO checkCurrentDateDependsAction(p);
 
 // - Action - //

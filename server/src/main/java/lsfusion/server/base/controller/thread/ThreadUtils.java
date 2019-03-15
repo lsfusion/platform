@@ -7,7 +7,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.physics.exec.db.DBManager;
 
 import java.lang.management.ManagementFactory;

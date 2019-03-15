@@ -3,7 +3,7 @@ package lsfusion.server.physics.admin.service;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

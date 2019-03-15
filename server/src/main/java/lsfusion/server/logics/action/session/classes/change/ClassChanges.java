@@ -31,7 +31,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.UpdateResult;
+import lsfusion.server.logics.action.session.changed.UpdateResult;
 import lsfusion.server.logics.action.session.change.ModifyResult;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;

@@ -17,7 +17,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectActionProperty;
-import lsfusion.server.logics.form.interactive.instance.InstanceFactory;
+import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.open.ObjectSelector;

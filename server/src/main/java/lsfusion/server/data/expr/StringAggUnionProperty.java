@@ -9,8 +9,8 @@ import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.classes.data.FormulaUnionProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
-import lsfusion.server.physics.admin.drilldown.StringAggUnionDrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.drilldown.form.StringAggUnionDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StringAggUnionProperty extends FormulaUnionProperty {

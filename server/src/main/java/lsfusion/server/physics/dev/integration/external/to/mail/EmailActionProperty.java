@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import org.apache.log4j.Logger;
 

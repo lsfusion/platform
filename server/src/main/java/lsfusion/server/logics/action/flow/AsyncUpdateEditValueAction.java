@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.action.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

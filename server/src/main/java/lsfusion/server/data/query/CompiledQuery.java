@@ -48,7 +48,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.classes.IntegralClass;
 import lsfusion.server.logics.classes.OrderClass;
 import lsfusion.server.logics.classes.StringClass;
-import lsfusion.server.logics.navigator.controller.SQLSessionContextProvider;
+import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 
 import java.sql.SQLException;
 import java.util.*;
