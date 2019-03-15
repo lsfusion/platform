@@ -31,12 +31,12 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.thread.ThreadUtils;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.context.AbstractContext;
-import lsfusion.server.logics.action.stack.ExecutionStack;
-import lsfusion.server.base.thread.ThreadLocalContext;
-import lsfusion.server.base.stack.*;
+import lsfusion.server.base.controller.context.AbstractContext;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
@@ -88,9 +88,9 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.ClassDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.DBManager;
-import lsfusion.server.physics.exec.table.IDTable;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.table.IDTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import javax.swing.*;
 import java.lang.ref.WeakReference;
@@ -99,7 +99,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 

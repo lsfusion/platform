@@ -12,7 +12,7 @@ import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.util.List;
 

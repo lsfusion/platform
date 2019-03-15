@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.LogicsInstance;
@@ -26,7 +26,7 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.admin.authentication.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.remote.RemoteConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.remote.RemoteForm;
-import lsfusion.server.base.remote.ui.RemoteUIContext;
+import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 
 import java.sql.SQLException;
 import java.util.Locale;

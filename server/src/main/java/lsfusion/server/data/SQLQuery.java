@@ -22,7 +22,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.base.stack.StackMessage;
+import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.Cost;

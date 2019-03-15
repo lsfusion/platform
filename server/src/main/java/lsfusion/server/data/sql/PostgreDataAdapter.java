@@ -6,7 +6,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;

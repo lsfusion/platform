@@ -7,11 +7,11 @@ import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.action.session.SessionCreator;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.physics.exec.db.DBManager;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class ServiceDBActionProperty extends ScriptingAction {
     public ServiceDBActionProperty(ServiceLogicsModule LM) {

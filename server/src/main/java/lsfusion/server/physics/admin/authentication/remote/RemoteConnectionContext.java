@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.authentication.remote;
 
-import lsfusion.server.base.context.AbstractContext;
+import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.physics.admin.logging.LogInfo;
 

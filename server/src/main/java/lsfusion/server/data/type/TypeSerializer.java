@@ -7,7 +7,7 @@ import lsfusion.interop.form.property.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.link.*;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.physics.exec.db.DBManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

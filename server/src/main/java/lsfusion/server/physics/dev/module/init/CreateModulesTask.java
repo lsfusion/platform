@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.module.init;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.logics.init.SimpleBLTask;
+import lsfusion.server.logics.controller.init.SimpleBLTask;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;

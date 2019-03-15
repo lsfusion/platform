@@ -16,7 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
-import lsfusion.server.base.stack.StackProgress;
+import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;

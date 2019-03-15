@@ -24,7 +24,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.ValuesContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.caches.hash.HashValues;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -48,7 +48,7 @@ import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.physics.exec.db.DBManager;
 import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;

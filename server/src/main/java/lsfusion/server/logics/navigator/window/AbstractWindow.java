@@ -1,7 +1,7 @@
 package lsfusion.server.logics.navigator.window;
 
 import lsfusion.interop.navigator.WindowType;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 

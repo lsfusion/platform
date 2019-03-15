@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.classes;
 
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.classes.ObjectValueClassSet;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 public interface ObjectClassField extends IsClassField {
 

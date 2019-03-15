@@ -23,7 +23,7 @@ import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.nullTrim;
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class ReceiveEmailActionProperty extends ScriptingAction {
     private final static Logger logger = ServerLoggers.mailLogger;

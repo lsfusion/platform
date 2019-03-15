@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.init.BLGroupSingleTask;
+import lsfusion.server.logics.controller.init.BLGroupSingleTask;
 import org.antlr.runtime.RecognitionException;
 
 import java.util.List;

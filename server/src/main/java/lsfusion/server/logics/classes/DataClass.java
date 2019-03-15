@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;

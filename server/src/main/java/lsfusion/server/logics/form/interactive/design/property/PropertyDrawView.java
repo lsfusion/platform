@@ -8,7 +8,7 @@ import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.classes.StringClass;
@@ -30,7 +30,7 @@ import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.table.MapKeysTable;
+import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.service.task;
 
-import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
@@ -8,7 +8,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.physics.exec.db.DBManager;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

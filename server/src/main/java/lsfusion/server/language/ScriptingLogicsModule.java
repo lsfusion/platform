@@ -109,7 +109,7 @@ import lsfusion.server.physics.dev.integration.external.to.file.ReadActionProper
 import lsfusion.server.physics.dev.integration.external.to.file.WriteActionProperty;
 import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailActionProperty;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;

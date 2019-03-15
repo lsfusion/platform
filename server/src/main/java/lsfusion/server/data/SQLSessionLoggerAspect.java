@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.stack.ExecutionStackAspect;
+import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
 import lsfusion.server.physics.admin.profiler.Profiler;

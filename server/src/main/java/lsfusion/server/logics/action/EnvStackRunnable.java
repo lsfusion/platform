@@ -1,6 +1,6 @@
 package lsfusion.server.logics.action;
 
-import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 
 public interface EnvStackRunnable {
 

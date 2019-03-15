@@ -9,7 +9,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class PackActionProperty extends ScriptingAction {
     public PackActionProperty(ServiceLogicsModule LM) {

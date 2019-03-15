@@ -3,7 +3,7 @@ package lsfusion.server.logics.classes;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.expr.formula.FormulaClass;

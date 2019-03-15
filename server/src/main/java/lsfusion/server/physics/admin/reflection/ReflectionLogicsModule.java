@@ -10,7 +10,7 @@ import lsfusion.server.logics.classes.LogicalClass;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.env.CurrentFormFormulaProperty;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
