@@ -46,7 +46,7 @@ import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.*;

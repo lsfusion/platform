@@ -13,7 +13,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;

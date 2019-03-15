@@ -19,7 +19,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.expr.join.stat.TableStatKeys;
