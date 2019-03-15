@@ -8,7 +8,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.OrClassSet;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public abstract class SingleClassExpr extends VariableClassExpr {
 

@@ -23,8 +23,8 @@ import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.exec.*;
-import lsfusion.server.data.query.innerjoins.InnerJoins;
-import lsfusion.server.data.expr.join.where.inner.InnerJoin;
+import lsfusion.server.data.expr.join.where.InnerJoins;
+import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.result.ResultHandler;
 import lsfusion.server.data.sql.SQLQuery;
@@ -51,8 +51,8 @@ import lsfusion.server.data.expr.order.PartitionCalc;
 import lsfusion.server.data.expr.order.PartitionToken;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
-import lsfusion.server.data.query.innerjoins.UpWheres;
+import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
+import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -187,14 +187,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     private static class FullSelect extends CompileSource {
 
-        private FullSelect(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, MStaticExecuteEnvironment env, ImMap<KeyExpr, String> keySelect, ImMap<JoinData, String> joinData) {
+        private FullSelect(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, MStaticExecuteEnvironment env, ImMap<KeyExpr, String> keySelect, ImMap<FJData, String> joinData) {
             super(keyType, fullWhere, params, syntax, env);
             this.keySelect = keySelect;
             this.joinData = joinData;
         }
 
         public final ImMap<KeyExpr,String> keySelect;
-        public final ImMap<JoinData,String> joinData;
+        public final ImMap<FJData,String> joinData;
 
         @Override
         public String getSource(KeyExpr key) {
@@ -1694,14 +1694,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
 /*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
 
-        MapWhere<JoinData> joinDatas = new MapWhere<JoinData>();
+        MapWhere<FJData> joinDatas = new MapWhere<FJData>();
         for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet())
             joinProp.getValue().fillJoinWheres(joinDatas, Where.TRUE);
 
         String innerAlias = subcontext+"inalias";
         Map<String, Expr> joinProps = new HashMap<String, Expr>();
         // затем все данные по JoinSelect'ам по вариантам
-        for(JoinData joinData : joinDatas.keys()) {
+        for(FJData joinData : joinDatas.keys()) {
             String joinName = "join_" + joinProps.size();
             joinProps.put(joinName, joinData.getFJExpr());
             FJSelect.joinData.put(joinData,joinData.getFJString(innerAlias +'.'+joinName));
@@ -1741,7 +1741,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             for(Expr property : compiledProps.valueIt())
                 property.enumerate(new ExprEnumerator() {
                     public Boolean enumerate(OuterContext join) {
-                        if (join instanceof JoinData) { // если JoinData то что внутри не интересует
+                        if (join instanceof FJData) { // если FJData то что внутри не интересует
                             if (join instanceof GroupExpr && !compile.isInner(((GroupExpr) join).getInnerJoin()) && !groupExprs.add((GroupExpr) join))
                                 repeats.set(repeats.result + 1);
                             return false;
@@ -1807,11 +1807,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
         });
 
-        MMap<JoinData, Where> mJoinDataWheres = MapFact.mMap(AbstractWhere.<JoinData>addOr());
+        MMap<FJData, Where> mJoinDataWheres = MapFact.mMap(AbstractWhere.<FJData>addOr());
         for(int i=0,size=compiledProps.size();i<size;i++)
             if(!orders.containsKey(compiledProps.getKey(i)))
                 compiledProps.getValue(i).fillJoinWheres(mJoinDataWheres, Where.TRUE);
-        ImMap<JoinData, Where> joinDataWheres = mJoinDataWheres.immutable();
+        ImMap<FJData, Where> joinDataWheres = mJoinDataWheres.immutable();
 
         // для JoinSelect'ов узнаем при каких условиях они нужны
         MMap<Object, Where> mJoinWheres = MapFact.mMapMax(joinDataWheres.size(), AbstractWhere.addOr());
@@ -1826,9 +1826,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }});
 
         // затем все данные по JoinSelect'ам по вариантам
-        ImValueMap<JoinData, String> mvJoinData = joinDataWheres.mapItValues(); // последействие есть
+        ImValueMap<FJData, String> mvJoinData = joinDataWheres.mapItValues(); // последействие есть
         for(int i=0;i<joinDataWheres.size();i++) {
-            JoinData joinData = joinDataWheres.getKey(i);
+            FJData joinData = joinDataWheres.getKey(i);
             String joinName = "join_" + i;
             Collection<CompileAndQuery> dataAnds = new ArrayList<>();
             for(CompileAndQuery and : getWhereSubSet(joinAnds.get(joinData.getFJGroup()), joinDataWheres.getValue(i))) {
@@ -1851,7 +1851,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
             mvJoinData.mapValue(i, joinData.getFJString(joinSource));
         }
-        ImMap<JoinData, String> joinData = mvJoinData.immutableValue();
+        ImMap<FJData, String> joinData = mvJoinData.immutableValue();
 
         // order'ы отдельно обрабатываем, они нужны в каждом запросе генерируем имена для Order'ов
         MOrderExclMap<String, Boolean> mOrderAnds = MapFact.mOrderExclMap(limit.hasLimit() ? orders.size() : 0);

@@ -13,7 +13,7 @@ import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.InnerExprFollows;
+import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.expr.join.stat.Cost;
 import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;

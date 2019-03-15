@@ -20,7 +20,7 @@ import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.extra.GreaterWhere;
 import lsfusion.server.data.expr.where.extra.InArrayWhere;
 import lsfusion.server.data.expr.where.extra.LikeWhere;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.stat.BaseJoin;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;
@@ -82,7 +82,7 @@ public abstract class BaseExpr extends Expr {
         return hasExprFollowsWithoutNotNull;        
     }
 
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         fillAndJoinWheres(joins, andWhere.and(getWhere()));
     }
 
@@ -95,7 +95,7 @@ public abstract class BaseExpr extends Expr {
         return (BaseExpr) aspectTranslate(translator);
     }
 
-    public abstract void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere);
+    public abstract void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere);
 
     public Expr followFalse(Where where, boolean pack) {
         if(getWhere().means(where))

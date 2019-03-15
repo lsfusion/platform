@@ -5,16 +5,20 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.data.expr.join.classes.InnerFollows;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
+import lsfusion.server.data.expr.join.where.InnerJoins;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.*;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.query.compile.where.InnerUpWhere;
+import lsfusion.server.data.query.compile.where.UpWhere;
+import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.expr.join.ExprStatJoin;
-import lsfusion.server.data.expr.join.where.inner.InnerJoin;
+import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.table.Table;
 import lsfusion.server.data.expr.query.stat.PropStat;
 import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.*;
 import lsfusion.server.data.expr.join.stat.BaseJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.expr.join.stat.UnionJoin;
@@ -22,9 +26,9 @@ import lsfusion.server.data.expr.join.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
 
-public abstract class InnerExpr extends NullableExpr implements JoinData {
+public abstract class InnerExpr extends NullableExpr implements FJData {
 
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         joins.add(this, andWhere);
     }
 

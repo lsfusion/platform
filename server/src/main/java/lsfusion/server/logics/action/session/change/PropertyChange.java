@@ -31,7 +31,7 @@ import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.innerjoins.KeyEqual;
+import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;

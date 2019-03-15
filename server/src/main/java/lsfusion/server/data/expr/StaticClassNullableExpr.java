@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.stat.PropStat;
 import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -20,7 +20,7 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public abstract class StaticClassNullableExpr extends NullableExpr implements StaticClassExprInterface {
     

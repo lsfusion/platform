@@ -12,9 +12,9 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.UpWhere;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
+import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -41,7 +41,7 @@ public class PackClassWhere extends DataWhere {
         return SetFact.EMPTY();
     }
 
-    protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    protected void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         throw new RuntimeException("Not supported");
     }
 

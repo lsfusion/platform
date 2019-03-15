@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.expr.formula.FormulaJoinImpl;
 import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
@@ -46,7 +46,7 @@ public class FormulaNullableExpr extends StaticClassNullableExpr implements Form
         this.formula = formula;
     }
 
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         FormulaExpr.fillAndJoinWheres(this, joins, andWhere);
     }
 

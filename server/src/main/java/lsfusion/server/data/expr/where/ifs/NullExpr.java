@@ -7,6 +7,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.QueryEnvironment;
@@ -18,7 +19,6 @@ import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -28,7 +28,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public class NullExpr extends Expr {
 
@@ -99,7 +99,7 @@ public class NullExpr extends Expr {
         return SQLSyntax.NULL;
     }
 
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {

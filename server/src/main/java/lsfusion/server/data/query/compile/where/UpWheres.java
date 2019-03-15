@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.innerjoins;
+package lsfusion.server.data.query.compile.where;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.WrapMap;

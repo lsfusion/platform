@@ -18,7 +18,7 @@ import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.ClassReader;
@@ -27,7 +27,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public class IfExpr extends Expr {
 
@@ -210,7 +210,7 @@ public class IfExpr extends Expr {
         return compile.syntax.getIIF(ifWhere.getSource(compile), trueExpr.getSource(compile, needValue), falseExpr.getSource(compile, needValue));
     }
 
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         ifWhere.fillJoinWheres(joins, andWhere);
         trueExpr.fillJoinWheres(joins, andWhere.and(ifWhere));
         falseExpr.fillJoinWheres(joins, andWhere.and(ifWhere.not()));

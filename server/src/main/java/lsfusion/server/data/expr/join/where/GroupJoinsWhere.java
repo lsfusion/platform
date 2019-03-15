@@ -1,9 +1,10 @@
-package lsfusion.server.data.query.innerjoins;
+package lsfusion.server.data.expr.join.where;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
@@ -19,7 +20,7 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 
     public final WhereJoins joins;
 
-    public final UpWheres<WhereJoin> upWheres;
+    public final UpWheres<WhereJoin> upWheres; // used only for compilation
 
     public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, UpWheres<WhereJoin> upWheres, Where where, ImOrderSet<Expr> orderTop) {
         this(keyEqual, joins, where, upWheres);

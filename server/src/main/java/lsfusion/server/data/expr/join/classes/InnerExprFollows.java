@@ -1,4 +1,4 @@
-package lsfusion.server.data.query;
+package lsfusion.server.data.expr.join.classes;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -9,11 +9,11 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
+import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.property.classes.user.IsClassField;
 
 public class InnerExprFollows<K extends OuterContext> extends InnerFollows<K> implements OuterContext<InnerExprFollows<K>> { //InnerFollows<InnerExprFollows<K>>
 

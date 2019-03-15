@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.classes.user;
+package lsfusion.server.data.expr.join.classes;
 
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.expr.BaseExpr;

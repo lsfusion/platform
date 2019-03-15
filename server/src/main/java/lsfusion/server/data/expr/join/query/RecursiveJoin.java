@@ -26,7 +26,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.compile.CompiledQuery;
-import lsfusion.server.data.query.InnerExprFollows;
+import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.translator.RemapJoin;
 import lsfusion.server.data.expr.join.stat.StatKeys;

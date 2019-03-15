@@ -10,6 +10,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.SingleClassExpr;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.modify.ModifyQuery;

@@ -19,8 +19,8 @@ import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.ExprIndexedJoin;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.expr.join.stat.WhereJoin;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -65,7 +65,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return SetFact.<OuterContext>toSet(operator1, operator2);
     }
 
-    public void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         operator1.fillJoinWheres(joins,andWhere);
         operator2.fillJoinWheres(joins,andWhere);
     }

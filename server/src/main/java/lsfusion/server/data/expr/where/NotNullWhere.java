@@ -17,8 +17,8 @@ import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.ExprIndexedJoin;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -83,7 +83,7 @@ public abstract class NotNullWhere extends DataWhere {
         return SetFact.<OuterContext>singleton(getExpr());
     }
 
-    protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    protected void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         getExpr().fillAndJoinWheres(joins,andWhere);
     }
 

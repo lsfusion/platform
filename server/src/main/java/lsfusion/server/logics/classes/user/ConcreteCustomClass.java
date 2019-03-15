@@ -23,8 +23,8 @@ import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.user.set.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
-import lsfusion.server.logics.property.classes.user.IsClassField;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.IsClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;

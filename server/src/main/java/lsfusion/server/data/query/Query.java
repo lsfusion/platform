@@ -30,7 +30,7 @@ import lsfusion.server.data.pack.Pack;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.compile.CompiledQuery;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
+import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
 import lsfusion.server.data.query.translator.MapJoin;
 import lsfusion.server.data.query.translator.MapQuery;
 import lsfusion.server.data.sql.SQLSession;

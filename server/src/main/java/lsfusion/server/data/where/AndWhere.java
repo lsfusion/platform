@@ -11,9 +11,9 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
+import lsfusion.server.data.expr.join.where.KeyEquals;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -82,7 +82,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     }
 
     // разобъем чисто для оптимизации
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         for(int i=0;i<wheres.length;i++)
             wheres[i].fillJoinWheres(joins,andWhere.and(toWhere(siblings(wheres, i))));
     }

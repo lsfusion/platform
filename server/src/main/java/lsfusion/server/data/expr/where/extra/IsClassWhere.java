@@ -16,8 +16,8 @@ import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.ExprStatJoin;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.JoinExprTranslator;
@@ -32,7 +32,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.property.classes.user.IsClassField;
+import lsfusion.server.data.expr.join.classes.IsClassField;
 
 public class IsClassWhere extends DataWhere {
 
@@ -156,7 +156,7 @@ public class IsClassWhere extends DataWhere {
         return SetFact.<OuterContext>singleton(expr);
     }
 
-    protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    protected void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         if(classes instanceof ObjectValueClassSet)
             classExpr.fillJoinWheres(joins,andWhere);
         else

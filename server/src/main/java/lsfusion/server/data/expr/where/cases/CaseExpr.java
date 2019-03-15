@@ -21,7 +21,7 @@ import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -32,7 +32,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public class CaseExpr extends Expr {
 
@@ -155,7 +155,7 @@ public class CaseExpr extends Expr {
         return result.immutable();
     }
 
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         // здесь по-хорошему надо andNot(верхних) но будет тормозить
         for(ExprCase exprCase : cases) {
             exprCase.where.fillJoinWheres(joins, andWhere);

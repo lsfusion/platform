@@ -10,8 +10,8 @@ import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.property.classes.user.IsClassField;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.IsClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 // не ExtraIntSetWhere потому как intersect несколько, а не один элемент возвращает
 public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueClassSet {
