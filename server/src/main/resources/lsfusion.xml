@@ -215,7 +215,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initLocalizerTask" class="lsfusion.server.physics.dev.i18n.init.InitLocalizerTask">
+    <bean id="initLocalizerTask" class="lsfusion.server.physics.dev.i18n.controller.init.InitLocalizerTask">
         <property name="dependencies">
             <set>
             </set>
@@ -388,7 +388,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finishLogInitTask" class="lsfusion.server.physics.admin.logging.init.FinishLogInitTask">
+    <bean id="finishLogInitTask" class="lsfusion.server.physics.admin.logging.controller.init.FinishLogInitTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как логи - часть reflection'а-->
@@ -484,7 +484,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initDebugTask" class="lsfusion.server.physics.dev.debug.init.InitActionDebuggerTask">
+    <bean id="initDebugTask" class="lsfusion.server.physics.dev.debug.controller.init.InitActionDebuggerTask">
         <property name="dependencies">
             <set>
                 <ref bean="checkAbstractTask"/>
@@ -604,7 +604,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="resetConnectionStatusTask" class="lsfusion.server.physics.admin.monitor.init.ResetConnectionStatusTask">
+    <bean id="resetConnectionStatusTask" class="lsfusion.server.physics.admin.monitor.controller.init.ResetConnectionStatusTask">
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
@@ -613,7 +613,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="logLaunchTask" class="lsfusion.server.physics.admin.logging.init.LogLaunchTask">
+    <bean id="logLaunchTask" class="lsfusion.server.physics.admin.logging.controller.init.LogLaunchTask">
         <property name="dependencies">
             <set>
             </set>

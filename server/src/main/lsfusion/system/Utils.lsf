@@ -11,34 +11,34 @@ fileName '{utils.file.name.integer}' = DATA LOCAL VARISTRING[500] (INTEGER);
 fileIsDirectory '{utils.file.is.directory.integer}' = DATA LOCAL BOOLEAN (INTEGER);
 //path, charset, isClient
 //todo: во всех использованиях с кастомной кодировкой вписать кодировку в строку подключения, чтобы можно было убрать  charset из параметров
-listFiles '{utils.list.files}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ListFilesActionProperty' (VARISTRING[500], VARISTRING[10], BOOLEAN); 
+listFiles '{utils.list.files}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.ListFilesActionProperty' (VARISTRING[500], VARISTRING[10], BOOLEAN); 
 listFiles '{utils.list.files}' (VARISTRING[500] path)  { listFiles(path, 'UTF-8', NULL); }
 listFilesClient '{utils.list.files.client}' (VARISTRING[500] path)  { listFiles(path, NULL, TRUE); }
 
 // ------------------------------ Проверка существования файла по пути ------------------------------ //
 fileExists = DATA LOCAL BOOLEAN ();
 //path, isClient
-fileExists '{utils.file.exists}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.FileExistsActionProperty' (VARISTRING[500], BOOLEAN); 
+fileExists '{utils.file.exists}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.FileExistsActionProperty' (VARISTRING[500], BOOLEAN); 
 fileExists '{utils.file.exists}' (VARISTRING[500] path)  { fileExists(path, NULL); }
 fileExistsClient '{utils.file.exists.client}' (VARISTRING[500] path)  { fileExists(path, TRUE); } 
 
 // --------------------------------- STRING -> FILE/LINK/RICHTEXT -> STRING --------------------------------- //
 resultFile = DATA LOCAL FILE ();
 //value, charset, extension
-stringToFile '{utils.string.to.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
+stringToFile '{utils.string.to.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
 stringToFile(TEXT str) { stringToFile(str, 'UTF-8', ''); }
 
 resultString = DATA LOCAL TEXT ();
 //file, charset
-fileToString '{utils.file.to.string}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.FileToStringActionProperty' (FILE, VARSTRING[10]);
+fileToString '{utils.file.to.string}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.FileToStringActionProperty' (FILE, VARSTRING[10]);
 fileToString(FILE file) { fileToString(file, 'UTF-8'); }
 //cast link to string
-linkToString '{utils.link.to.string}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.LinkToStringActionProperty' (LINK);
+linkToString '{utils.link.to.string}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.action.LinkToStringActionProperty' (LINK);
 //cast richtext to string
 richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.classes.utils.string.RichTextToStringActionProperty' (RICHTEXT);
 
 //path, text, charset
-appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
+appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.action.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
 appendToFile(VARSTRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
 setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)'; // for RAWFILE, PDFFILE...
@@ -46,7 +46,7 @@ changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extensi
 
 // --------------------------------- Logging --------------------------------- //
 
-printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.logging.PrintToLogActionProperty' (TEXT);
+printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.logging.action.PrintToLogActionProperty' (TEXT);
 logToFile (VARSTRING[1000] file, TEXT message) {
     appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message, '\n')); 
 }
@@ -57,38 +57,38 @@ logToFile (VARSTRING[1000] file, FILE message) {
 
 // ----------------------------------- Работа с файловой системой ----------------------------------- //
 //path, isClient
-mkdir '{utils.mkdir}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MkdirActionProperty' (VARISTRING[500], BOOLEAN);
+mkdir '{utils.mkdir}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.MkdirActionProperty' (VARISTRING[500], BOOLEAN);
 mkdir '{utils.mkdir}' (VARISTRING[500] path)  { mkdir(path, NULL); }
 mkdirClient '{utils.mkdir.client}' (VARISTRING[500] path)  { mkdir(path, TRUE); }
 //path, isClient
-delete '{utils.delete}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DeleteActionProperty' (VARISTRING[500], BOOLEAN);
+delete '{utils.delete}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.DeleteActionProperty' (VARISTRING[500], BOOLEAN);
 delete '{utils.delete}' (VARISTRING[500] path)  { delete(path, NULL); }
 deleteClient '{utils.delete.client}' (VARISTRING[500] path)  { delete(path, TRUE); }
 //sourcePath, destinationPath, isClient
-move '{utils.move}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MoveActionProperty' (VARISTRING[500], VARISTRING[500], BOOLEAN);
+move '{utils.move}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.MoveActionProperty' (VARISTRING[500], VARISTRING[500], BOOLEAN);
 move '{utils.move}' (VARISTRING[500] source, VARISTRING[500] destination)  { move(source, destination, NULL); }
 moveClient '{utils.move.client}' (VARISTRING[500] source, VARISTRING[500] destination)  { move(source, destination, TRUE); }
 
 fileSize = DATA LOCAL LONG ();
-getFileSize '{utils.get.file.size}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.GetFileSizeActionProperty' (FILE);
+getFileSize '{utils.get.file.size}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.GetFileSizeActionProperty' (FILE);
 
 //zip files
 zipping '{utils.zipping.string}' = DATA LOCAL FILE (VARSTRING[1000]);
 zipped '{utils.zipped}' = DATA LOCAL FILE ();
-makeZipFile '{utils.make.zip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeZipFileActionProperty' ();
+makeZipFile '{utils.make.zip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.MakeZipFileActionProperty' ();
 
 //unzip files
 unzipping '{utils.unzipping}' = DATA LOCAL FILE ();
 unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (VARSTRING[100]);
-makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeUnzipFileActionProperty' ();
+makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.MakeUnzipFileActionProperty' ();
 
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
-cmd '{utils.cmd}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.RunCommandActionProperty' (TEXT, BOOLEAN);
+cmd '{utils.cmd}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandActionProperty' (TEXT, BOOLEAN);
 cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL); }
 cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, TRUE); }
 
 pingError '{utils.ping.error}' = DATA LOCAL BOOLEAN ();
-ping '{utils.ping}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.net.PingActionProperty' (TEXT, BOOLEAN);
+ping '{utils.ping}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.net.action.PingActionProperty' (TEXT, BOOLEAN);
 ping '{utils.ping}' (TEXT host)  {ping(host, NULL); }
 pingClient '{utils.ping.client}' (TEXT host)  {ping(host, TRUE); }
 

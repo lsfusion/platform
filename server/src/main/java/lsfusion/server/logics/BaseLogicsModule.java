@@ -51,7 +51,7 @@ import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
-import lsfusion.server.physics.dev.debug.WatchActionProperty;
+import lsfusion.server.physics.dev.debug.action.WatchActionProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.AbstractPropertyNameParser;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;

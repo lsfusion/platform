@@ -199,10 +199,10 @@ readFile = DATA LOCAL FILE ();
 getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
 getExtension = getFileExtension(FILE(file));
 
-downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileActionProperty' (VARSTRING[100]); 
+downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.DownloadFileActionProperty' (VARSTRING[100]); 
 
-loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
-loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedFontActionProperty' (VARSTRING[100]);
+loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
+loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.action.LoadDownloadedFontActionProperty' (VARSTRING[100]);
 
 loadLibrary '{system.load.library}' (path)   { 
     downloadFile(path);
