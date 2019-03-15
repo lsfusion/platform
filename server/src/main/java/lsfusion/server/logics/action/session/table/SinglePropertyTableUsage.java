@@ -10,7 +10,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -31,7 +35,7 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         updateAdded(sql, baseClass, "value", shifts, owner);
     }
 
-    public void writeRows(ImMap<ImMap<K,DataObject>, ObjectValue> writeRows, SQLSession session, OperationOwner opOwner) throws SQLException, SQLHandledException {
+    public void writeRows(ImMap<ImMap<K, DataObject>, ObjectValue> writeRows, SQLSession session, OperationOwner opOwner) throws SQLException, SQLHandledException {
         writeRows(session, writeRows.mapValues(new GetValue<ImMap<String, ObjectValue>, ObjectValue>() {
             public ImMap<String, ObjectValue> getMapValue(ObjectValue value) {
                 return MapFact.singleton("value", value);

@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.caches.LazyInit;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.query.GroupType;

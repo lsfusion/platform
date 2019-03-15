@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.equ.printer;
 
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.dev.integration.external.to.equ.printer.client.GetAvailablePrintersClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;

@@ -2,10 +2,10 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 
 public class MultiplyFormulaImpl extends ScaleFormulaImpl {
 

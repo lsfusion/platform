@@ -4,7 +4,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.formula.conversion.AbstractConversionSource;
 import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
 public abstract class ScaleFormulaImpl extends ArithmeticFormulaImpl {

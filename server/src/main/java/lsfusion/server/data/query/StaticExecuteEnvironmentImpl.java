@@ -6,10 +6,14 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.connection.ExConnection;
+import lsfusion.server.data.table.SessionTable;
+import lsfusion.server.data.type.TypePool;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.type.ArrayClass;
+import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 

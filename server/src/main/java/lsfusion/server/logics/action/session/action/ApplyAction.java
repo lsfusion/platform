@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

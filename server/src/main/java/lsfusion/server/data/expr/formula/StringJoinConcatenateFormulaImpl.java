@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.data.StringClass;
 
 // obsolete - вместо SumFormulaImpl

@@ -15,7 +15,7 @@ import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.interop.form.user.FormUserPreferences;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.*;
 import lsfusion.server.logics.form.stat.report.design.ReportDesignGenerator;

@@ -1,8 +1,13 @@
 package lsfusion.server.physics.dev.migration.action;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.*;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.table.Field;
+import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.type.ObjectType;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

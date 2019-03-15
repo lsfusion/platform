@@ -3,7 +3,7 @@ package lsfusion.server.physics.admin.scheduler.action;
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
 import lsfusion.server.physics.admin.scheduler.controller.manager.Scheduler;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;

@@ -2,9 +2,8 @@ package lsfusion.server.physics.exec.db.table;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.DBTable;
-import lsfusion.server.data.KeyField;
-import lsfusion.server.data.PropertyField;
+import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.logics.classes.data.SystemClass;

@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.KeyField;
+import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.DistinctKeys;

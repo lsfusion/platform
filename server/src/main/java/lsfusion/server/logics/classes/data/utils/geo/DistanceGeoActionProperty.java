@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes.data.utils.geo;
 
 import com.google.common.base.Throwables;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;

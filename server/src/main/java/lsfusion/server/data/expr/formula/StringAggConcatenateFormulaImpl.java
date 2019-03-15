@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.data.StringClass;
 
 public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImpl implements FormulaUnionImpl {

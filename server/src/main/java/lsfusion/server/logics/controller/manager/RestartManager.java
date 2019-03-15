@@ -4,7 +4,7 @@ import lsfusion.base.DaemonThreadFactory;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.BusinessLogicsBootstrap;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;

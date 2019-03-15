@@ -6,7 +6,16 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.data.*;
+import lsfusion.server.logics.classes.data.file.*;
+import lsfusion.server.logics.classes.data.integral.DoubleClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.data.integral.LongClass;
+import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.link.*;
+import lsfusion.server.logics.classes.data.time.DateClass;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
+import lsfusion.server.logics.classes.data.time.TimeClass;
+import lsfusion.server.logics.classes.data.time.YearClass;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.ByteArrayOutputStream;

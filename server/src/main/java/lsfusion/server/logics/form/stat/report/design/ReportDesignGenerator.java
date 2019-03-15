@@ -11,7 +11,7 @@ import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportConstants;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;

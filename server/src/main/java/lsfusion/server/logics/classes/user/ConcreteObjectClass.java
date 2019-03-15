@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.user;
 
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 

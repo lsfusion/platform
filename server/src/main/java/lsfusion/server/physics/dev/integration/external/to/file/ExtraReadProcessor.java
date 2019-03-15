@@ -7,7 +7,7 @@ import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.ExtraReadInterface;
-import lsfusion.server.data.JDBCTable;
+import lsfusion.server.logics.form.stat.integration.plain.JDBCTable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DateUtils;
 

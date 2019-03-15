@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.base.caches.CacheStats;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.MapQuery;
 import lsfusion.server.data.query.Query;

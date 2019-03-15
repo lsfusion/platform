@@ -4,17 +4,18 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.ArrayInstancer;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.data.ParseValue;
-import lsfusion.server.data.Table;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.query.compile.ParseValue;
+import lsfusion.server.data.table.Table;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.QueryExpr;
-import lsfusion.server.data.sql.DataAdapter;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -22,7 +23,7 @@ import lsfusion.server.data.where.Where;
 
 abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends AbstractOuterContext<T> implements SourceJoin<T> {
 
-    protected static class ToString extends CompileSource  {
+    protected static class ToString extends CompileSource {
         public ToString(ImSet<Value> values) {
             super(new KeyType() {
                 public Type getKeyType(ParamExpr expr) {

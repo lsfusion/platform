@@ -1,6 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.server.data.SQLQuery;
+import lsfusion.server.data.sql.SQLQuery;
 
 public enum TypeExecuteEnvironment {
     MATERIALIZE, DISABLENESTLOOP, NONE;

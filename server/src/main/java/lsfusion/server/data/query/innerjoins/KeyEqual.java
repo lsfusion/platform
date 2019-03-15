@@ -14,7 +14,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.caches.OuterContext;
-import lsfusion.server.data.caches.TranslateContext;
+import lsfusion.server.data.translator.TranslateContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ParamExpr;

@@ -3,8 +3,8 @@ package lsfusion.server.data.type;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.ParsedStatement;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.statement.ParsedStatement;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 import java.sql.Connection;
 import java.sql.SQLException;

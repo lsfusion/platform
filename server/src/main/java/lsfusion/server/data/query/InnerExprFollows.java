@@ -9,7 +9,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.ClassWhere;

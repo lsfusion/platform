@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.file.RawFileData;
-import lsfusion.server.data.JDBCTable;
+import lsfusion.server.logics.form.stat.integration.plain.JDBCTable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.integration.importing.plain.ImportPlainIterator;
 

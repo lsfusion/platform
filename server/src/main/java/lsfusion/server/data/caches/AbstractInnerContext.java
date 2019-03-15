@@ -9,7 +9,7 @@ import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.*;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.translator.MapTranslate;

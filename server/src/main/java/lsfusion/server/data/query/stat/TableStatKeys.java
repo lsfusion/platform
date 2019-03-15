@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.KeyField;
+import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.Stat;
 

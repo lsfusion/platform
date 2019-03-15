@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.backup.action;
 
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

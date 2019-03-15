@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
 public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {

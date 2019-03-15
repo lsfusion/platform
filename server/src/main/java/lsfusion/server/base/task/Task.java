@@ -5,7 +5,7 @@ import lsfusion.base.Result;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

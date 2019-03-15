@@ -19,7 +19,7 @@ import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.KeyExprTranslator;

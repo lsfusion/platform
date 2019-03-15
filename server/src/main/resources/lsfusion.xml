@@ -117,7 +117,7 @@
         </property>
         </bean>
 
-    <bean id="dataAdapter" class="lsfusion.server.data.sql.PostgreDataAdapter">
+    <bean id="dataAdapter" class="lsfusion.server.data.sql.adapter.PostgreDataAdapter">
         <constructor-arg value="${db.name}"/>
         <constructor-arg value="${db.server}"/>
         <constructor-arg value="${db.user}"/>
@@ -465,7 +465,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeFormsTask" class="lsfusion.server.logics.form.init.FinalizeFormsTask">
+    <bean id="finalizeFormsTask" class="lsfusion.server.logics.form.controller.init.FinalizeFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="setupDrillDownTask"/> <!-- drilldown forms-->

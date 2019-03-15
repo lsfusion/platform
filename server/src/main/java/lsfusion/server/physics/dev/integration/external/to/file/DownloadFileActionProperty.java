@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.dev.integration.external.to.file.client.CheckFileClientAction;
 import lsfusion.server.physics.dev.integration.external.to.file.client.DownloadFileClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;

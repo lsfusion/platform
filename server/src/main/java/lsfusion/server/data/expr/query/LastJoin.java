@@ -7,7 +7,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityQuickLazy;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.InnerExprFollows;

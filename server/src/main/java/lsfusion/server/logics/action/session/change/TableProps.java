@@ -4,7 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

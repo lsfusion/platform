@@ -18,7 +18,7 @@ import lsfusion.server.data.expr.query.RecursiveExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.property.ComplexIncrementProperty;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;

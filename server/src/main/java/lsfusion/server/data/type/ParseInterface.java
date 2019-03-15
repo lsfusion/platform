@@ -1,8 +1,8 @@
 package lsfusion.server.data.type;
 
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.SessionTable;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.table.SessionTable;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

@@ -10,7 +10,7 @@ import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.context.*;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import lsfusion.server.base.controller.remote.PendingRemoteObject;

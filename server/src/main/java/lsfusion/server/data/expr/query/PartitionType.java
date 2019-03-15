@@ -11,9 +11,9 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.order.PartitionCalc;
 import lsfusion.server.data.expr.order.PartitionParam;
 import lsfusion.server.data.expr.order.PartitionToken;
-import lsfusion.server.data.query.CompileOrder;
+import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 

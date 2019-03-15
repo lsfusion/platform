@@ -6,9 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.data.caches.TranslateValues;
 import lsfusion.server.data.caches.ValuesContext;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 
 import java.util.Map;
 

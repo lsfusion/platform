@@ -5,8 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.context.Context;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 

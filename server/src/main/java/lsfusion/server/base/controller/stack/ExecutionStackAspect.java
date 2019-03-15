@@ -7,7 +7,7 @@ import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.base.controller.remote.stack.RmiCallStackItem;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.data.HandledException;
+import lsfusion.server.data.sql.exception.HandledException;
 import lsfusion.server.logics.action.controller.stack.ExecuteActionStackItem;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;

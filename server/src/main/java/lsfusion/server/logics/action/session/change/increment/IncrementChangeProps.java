@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

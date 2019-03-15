@@ -6,10 +6,10 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.formula.AbstractFormulaImpl;
 import lsfusion.server.data.expr.formula.ListExprType;
 import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 
 public class LinearOperandMap extends WrapMap<Expr,Integer> {
 

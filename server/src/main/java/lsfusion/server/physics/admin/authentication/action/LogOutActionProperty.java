@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.authentication.action;
 
 import lsfusion.interop.action.LogOutClientAction;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

@@ -1,9 +1,9 @@
 package lsfusion.server.data.query;
 
-import lsfusion.server.data.ExConnection;
+import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.TypePool;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.type.TypePool;
 
 import java.sql.Connection;
 import java.sql.SQLException;

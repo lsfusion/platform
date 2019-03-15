@@ -3,7 +3,7 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.dev.integration.external.to.file.client.DeleteFileClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.UtilsLogicsModule;

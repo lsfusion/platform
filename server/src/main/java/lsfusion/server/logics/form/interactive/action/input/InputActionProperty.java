@@ -2,8 +2,8 @@ package lsfusion.server.logics.form.interactive.action.input;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.ObjectValue;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

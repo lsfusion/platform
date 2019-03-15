@@ -10,7 +10,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;

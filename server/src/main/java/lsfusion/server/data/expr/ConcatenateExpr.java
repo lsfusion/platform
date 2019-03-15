@@ -13,7 +13,7 @@ import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.stat.FormulaJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
