@@ -113,7 +113,7 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.*;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -145,8 +145,8 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
-import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
-import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
+import static lsfusion.server.logics.property.DerivedProperty.createAnd;
+import static lsfusion.server.logics.property.DerivedProperty.createStatic;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 // modules logics in theory should be in dev.module.package but in this class it's more about logics, than about modularity

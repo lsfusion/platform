@@ -30,7 +30,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
@@ -40,7 +40,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.logics.property.derived.DerivedProperty.createChangeClassAction;
+import static lsfusion.server.logics.property.DerivedProperty.createChangeClassAction;
 
 // с открытым 2-м интерфейсом класса уже есть в SystemActionProperty
 public class ChangeClassAction<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
