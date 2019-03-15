@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.Where;
 

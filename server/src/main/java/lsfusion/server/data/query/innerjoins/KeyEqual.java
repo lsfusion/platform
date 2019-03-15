@@ -14,16 +14,16 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.caches.OuterContext;
+import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.TranslateContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.join.ExprEqualsJoin;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.WhereJoin;
-import lsfusion.server.data.query.stat.WhereJoins;
+import lsfusion.server.data.expr.join.stat.WhereJoin;
+import lsfusion.server.data.expr.join.stat.WhereJoins;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
@@ -122,7 +122,7 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
     }
     
     public KeyStat getKeyStat(final KeyStat keyStat) {
-        return new lsfusion.server.data.query.stat.KeyStat() {
+        return new KeyStat() {
             public Stat getKeyStat(ParamExpr key, boolean forJoin) {
                 BaseExpr keyExpr = keyExprs.get(key);
                 if(keyExpr!=null)

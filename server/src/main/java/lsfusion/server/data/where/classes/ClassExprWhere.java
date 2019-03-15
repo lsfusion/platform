@@ -18,7 +18,7 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.translator.MapTranslate;

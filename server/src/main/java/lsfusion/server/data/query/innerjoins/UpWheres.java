@@ -4,7 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.WrapMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.expr.join.stat.WhereJoin;
 import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 

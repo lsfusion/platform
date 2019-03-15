@@ -18,7 +18,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.MaxFormulaImpl;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.cases.ExprCase;

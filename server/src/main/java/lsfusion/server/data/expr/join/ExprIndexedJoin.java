@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.expr.join.stat.*;
 import lsfusion.server.data.expr.join.where.inner.InnerJoin;
 import lsfusion.server.data.query.innerjoins.InnerJoins;
 import lsfusion.server.physics.admin.Settings;
@@ -20,12 +21,11 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.join.query.QueryJoin;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.innerjoins.AbstractUpWhere;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.translator.MapTranslate;
 
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {

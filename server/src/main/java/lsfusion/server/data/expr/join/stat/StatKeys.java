@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.stat;
+package lsfusion.server.data.expr.join.stat;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -16,9 +16,9 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.DistinctKeys;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.expr.query.stat.DistinctKeys;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.translator.MapTranslate;
 
 public class StatKeys<K> extends TwinImmutableObject {

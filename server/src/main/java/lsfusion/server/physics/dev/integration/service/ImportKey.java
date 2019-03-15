@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.query.join.Join;
+import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.data.PropertyOrderSet;
 import lsfusion.server.logics.action.session.DataSession;

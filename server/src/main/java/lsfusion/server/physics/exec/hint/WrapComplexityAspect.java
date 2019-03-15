@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.SubQueryExpr;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;

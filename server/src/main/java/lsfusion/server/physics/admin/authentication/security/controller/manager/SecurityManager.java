@@ -28,7 +28,7 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;

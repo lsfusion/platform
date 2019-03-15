@@ -15,7 +15,7 @@ import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.FormulaClass;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;

@@ -14,8 +14,8 @@ import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.join.where.inner.InnerJoin;
 import lsfusion.server.data.query.innerjoins.InnerJoins;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.UnionJoin;
-import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.expr.join.stat.UnionJoin;
+import lsfusion.server.data.expr.join.stat.WhereJoin;
 
 public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterContext<T> implements WhereJoin<Integer, T> {
 

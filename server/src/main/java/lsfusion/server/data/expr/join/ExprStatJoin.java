@@ -8,12 +8,12 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.join.where.inner.InnerJoin;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.innerjoins.InnerJoins;
-import lsfusion.server.data.query.stat.Cost;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.expr.join.stat.Cost;
+import lsfusion.server.data.expr.join.stat.KeyStat;
+import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
 
 public class ExprStatJoin extends ExprJoin<ExprStatJoin> {

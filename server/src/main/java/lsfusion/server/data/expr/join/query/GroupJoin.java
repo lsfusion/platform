@@ -7,15 +7,16 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
+import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.expr.query.GroupExprWhereJoins;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.InnerExprFollows;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -94,7 +95,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
 
     @IdentityLazy
     public StatKeys<Expr> getPushedStatKeys(StatType type, StatKeys<Expr> pushStatKeys) {
-        return query.joins.getStatKeys(new lsfusion.server.data.query.stat.KeyStat() {
+        return query.joins.getStatKeys(new KeyStat() {
             public Stat getKeyStat(ParamExpr key, boolean forJoin) {
                 Type keyType = query.keyTypes.get((KeyExpr) key);
                 if(keyType == null) // при висячих ключах бывает

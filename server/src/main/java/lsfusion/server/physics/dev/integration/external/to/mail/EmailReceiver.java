@@ -22,7 +22,7 @@ import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;

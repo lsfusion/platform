@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.where.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.query.join.Join;
+import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.where.Where;
 
 public class MJoinCaseList<U> extends MCaseList<Join<U>, Join<U>,JoinCase<U>> {

@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.join;
+package lsfusion.server.data.query.builder;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -7,7 +7,6 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseJoin;
 import lsfusion.server.data.expr.where.ifs.IfJoin;
-import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.query.translator.MapJoin;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;

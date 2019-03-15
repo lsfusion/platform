@@ -31,7 +31,7 @@ import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.base.controller.stack.StackMessage;
-import lsfusion.server.data.query.stat.Cost;
+import lsfusion.server.data.expr.join.stat.Cost;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.NullReader;

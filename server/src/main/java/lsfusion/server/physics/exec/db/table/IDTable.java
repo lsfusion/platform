@@ -19,10 +19,10 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.PropStat;
+import lsfusion.server.data.expr.query.stat.PropStat;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.query.builder.QueryBuilder;
+import lsfusion.server.data.expr.join.stat.TableStatKeys;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -67,7 +67,7 @@ public class IDTable extends DBTable {
     @IdentityInstanceLazy
     private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));
-        lsfusion.server.data.query.join.Join<PropertyField> joinTable = join(query.getMapExprs());
+        lsfusion.server.data.query.builder.Join<PropertyField> joinTable = join(query.getMapExprs());
         query.and(joinTable.getWhere());
         query.addProperty(value, joinTable.getExpr(value));
         return query.getQuery();

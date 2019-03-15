@@ -6,9 +6,9 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 
 public class StatPullWheres extends ExclPullWheres<Stat, Integer, Where> {
