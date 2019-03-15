@@ -23,6 +23,18 @@ import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.stat.report.FormPrintType;
+import lsfusion.server.language.action.ActionSettings;
+import lsfusion.server.language.form.FormPropertyOptions;
+import lsfusion.server.language.form.ScriptingFormEntity;
+import lsfusion.server.language.form.design.ScriptingFormView;
+import lsfusion.server.language.metacode.MetaCodeFragment;
+import lsfusion.server.language.navigator.window.BorderPosition;
+import lsfusion.server.language.navigator.window.DockPosition;
+import lsfusion.server.language.navigator.window.NavigatorWindowOptions;
+import lsfusion.server.language.navigator.window.Orientation;
+import lsfusion.server.language.property.PropertySettings;
+import lsfusion.server.language.property.oraction.ActionOrPropertySettings;
+import lsfusion.server.language.property.oraction.MappedActionOrProperty;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -33,9 +45,9 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LAP;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.oraction.LAP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
@@ -130,7 +142,7 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.language.AlignmentUtils.*;
+import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 public class ScriptingLogicsModule extends LogicsModule {
@@ -341,7 +353,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return obj;
     }
 
-    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormActionOrPropertyUsage pDrawUsage, Result<Pair<ActionOrProperty, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
+    public MappedActionOrProperty getPropertyWithMapping(FormEntity form, AbstractFormActionOrPropertyUsage pDrawUsage, Result<Pair<ActionOrProperty, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
         assert !(pDrawUsage instanceof FormPredefinedUsage);
         LAP<?, ?> property;
         ImOrderSet<String> mapping;
@@ -377,7 +389,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //        if (property.property.interfaces.size() != mapping.size()) {
 //            getErrLog().emitParamCountError(parser, property, mapping.size());
 //        }
-        return new MappedProperty(property, getMappingObjectsArray(form, mapping));
+        return new MappedActionOrProperty(property, getMappingObjectsArray(form, mapping));
     }
 
     public LP<?> findLPByPropertyUsage(NamedPropertyUsage pUsage, FormEntity form, List<String> mapping, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {

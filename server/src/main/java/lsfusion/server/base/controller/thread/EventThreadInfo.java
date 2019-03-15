@@ -3,7 +3,7 @@ package lsfusion.server.base.controller.thread;
 import lsfusion.server.base.controller.manager.EventServer;
 import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
-import lsfusion.server.base.controller.remote.RmiServer;
+import lsfusion.server.base.controller.remote.manager.RmiServer;
 
 public class EventThreadInfo implements ThreadInfo {
 

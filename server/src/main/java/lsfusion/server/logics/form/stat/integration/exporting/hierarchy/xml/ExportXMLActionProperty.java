@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.stat.integration.exporting.hierarchy.xml;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;

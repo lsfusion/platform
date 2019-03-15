@@ -14,7 +14,7 @@ import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.reflection.controller.manager.ReflectionManager;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import lsfusion.server.base.controller.remote.RMIManager;
+import lsfusion.server.base.controller.remote.RmiManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -41,7 +41,7 @@ public class LogicsInstance implements InitializingBean {
 
     private ReflectionManager reflectionManager;
 
-    private RMIManager rmiManager;
+    private RmiManager rmiManager;
 
     private Settings settings;
 
@@ -107,11 +107,11 @@ public class LogicsInstance implements InitializingBean {
         this.reflectionManager = reflectionManager;
     }
 
-    public RMIManager getRmiManager() {
+    public RmiManager getRmiManager() {
         return rmiManager;
     }
 
-    public void setRmiManager(RMIManager rmiManager) {
+    public void setRmiManager(RmiManager rmiManager) {
         this.rmiManager = rmiManager;
     }
 

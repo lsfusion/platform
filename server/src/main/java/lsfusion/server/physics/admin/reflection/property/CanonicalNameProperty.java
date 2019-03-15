@@ -4,7 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.StringClass;
 import lsfusion.server.logics.property.classes.data.FormulaProperty;

@@ -32,7 +32,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.ChangeClassAction;

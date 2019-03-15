@@ -15,7 +15,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.property.Property;

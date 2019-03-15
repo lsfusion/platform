@@ -17,7 +17,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.sets.*;
 import lsfusion.server.logics.property.Property;

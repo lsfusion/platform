@@ -32,7 +32,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.form.interactive.change.FormChanges;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

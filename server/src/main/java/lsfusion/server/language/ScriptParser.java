@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.server.LsfLogicsLexer;
 import lsfusion.server.LsfLogicsParser;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
+import lsfusion.server.language.metacode.MetaCodeFragment;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.antlr.runtime.*;

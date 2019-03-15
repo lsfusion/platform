@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;

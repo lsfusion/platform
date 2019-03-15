@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.dialogedit;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;

@@ -1,6 +1,6 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.LogicsModule;
 
 import java.util.ArrayList;

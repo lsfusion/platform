@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.backup.action;
 
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 
 import java.util.ArrayList;
 import java.util.HashSet;

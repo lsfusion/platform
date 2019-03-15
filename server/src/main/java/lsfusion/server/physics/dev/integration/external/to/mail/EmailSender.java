@@ -8,7 +8,7 @@ import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.DataSession;
 import org.apache.log4j.Logger;

@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.classes.DataClass;

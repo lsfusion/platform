@@ -39,9 +39,9 @@ import lsfusion.server.physics.admin.authentication.security.controller.manager.
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
-import lsfusion.server.base.controller.remote.RMIManager;
+import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.physics.admin.logging.RemoteLoggerAspect;
-import lsfusion.server.base.controller.remote.RmiServer;
+import lsfusion.server.base.controller.remote.manager.RmiServer;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.MDC;
@@ -170,7 +170,7 @@ public class ThreadLocalContext {
         return getDbManager().createSession();
     }
 
-    public static RMIManager getRmiManager() {
+    public static RmiManager getRmiManager() {
         return getLogicsInstance().getRmiManager();
     }
 

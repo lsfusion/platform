@@ -30,7 +30,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;

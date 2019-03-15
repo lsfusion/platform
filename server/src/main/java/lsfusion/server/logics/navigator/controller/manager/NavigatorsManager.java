@@ -8,6 +8,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.exception.RemoteMessageException;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
@@ -24,7 +25,6 @@ import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import lsfusion.server.base.controller.remote.RMIManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -54,7 +54,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     private SecurityManager securityManager;
 
-    private RMIManager rmiManager;
+    private RmiManager rmiManager;
 
     private DBManager dbManager;
 
@@ -84,7 +84,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         this.securityManager = securityManager;
     }
 
-    public void setRmiManager(RMIManager rmiManager) {
+    public void setRmiManager(RmiManager rmiManager) {
         this.rmiManager = rmiManager;
     }
 

@@ -3,7 +3,7 @@ package lsfusion.server.base.controller.remote.context;
 import lsfusion.server.base.controller.thread.EventThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.base.controller.remote.RmiServer;
+import lsfusion.server.base.controller.remote.manager.RmiServer;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.lifecycle;
 
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

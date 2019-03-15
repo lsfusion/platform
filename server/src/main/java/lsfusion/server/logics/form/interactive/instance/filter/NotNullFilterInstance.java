@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.form.interactive.change.ReallyChanged;
+import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;

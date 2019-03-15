@@ -1,5 +1,6 @@
 package lsfusion.server.language;
 
+import lsfusion.server.language.metacode.MetaCodeFragment;
 import org.antlr.runtime.Parser;
 
 public class ParserInfo {

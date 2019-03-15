@@ -1,7 +1,7 @@
 package lsfusion.server.language;
 
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import org.antlr.runtime.BaseRecognizer;
