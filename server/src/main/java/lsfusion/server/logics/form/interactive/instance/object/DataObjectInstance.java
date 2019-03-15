@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.interactive.instance.object;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.NullValue;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.classes.ConcreteClass;

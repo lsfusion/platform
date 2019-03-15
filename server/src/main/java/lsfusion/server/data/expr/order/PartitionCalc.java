@@ -8,9 +8,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.server.data.query.CompileOrder;
+import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 public class PartitionCalc extends PartitionToken {
 

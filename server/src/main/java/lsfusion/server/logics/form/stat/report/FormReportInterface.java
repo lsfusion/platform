@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.stat.report;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.form.stat.FormDataInterface;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;

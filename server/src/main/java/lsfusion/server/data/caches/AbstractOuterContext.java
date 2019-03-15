@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.expr.StaticValueExpr;

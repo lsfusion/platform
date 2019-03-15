@@ -2,9 +2,9 @@ package lsfusion.server.physics.dev.integration.external.to.file.open;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.OpenUriClientAction;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.ObjectValue;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

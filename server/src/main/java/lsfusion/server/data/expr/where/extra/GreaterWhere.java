@@ -8,10 +8,10 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.where.OrObjectWhere;
 import lsfusion.server.data.where.Where;
 

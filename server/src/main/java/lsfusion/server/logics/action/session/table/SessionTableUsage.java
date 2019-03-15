@@ -16,7 +16,13 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.modify.Modify;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.DataSession;
@@ -29,7 +35,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import java.sql.SQLException;
 import java.util.Map;
 
-import static lsfusion.server.data.SessionData.castTypes;
+import static lsfusion.server.data.table.SessionData.castTypes;
 
 public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 

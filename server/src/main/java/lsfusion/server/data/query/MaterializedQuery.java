@@ -2,10 +2,10 @@ package lsfusion.server.data.query;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.KeyField;
-import lsfusion.server.data.PropertyField;
-import lsfusion.server.data.TableOwner;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.PropertyField;
+import lsfusion.server.data.table.TableOwner;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 public class MaterializedQuery {
     public final String tableName;

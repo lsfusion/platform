@@ -4,11 +4,11 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать BaseExpr

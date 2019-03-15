@@ -1,8 +1,8 @@
 package lsfusion.server.physics.admin.monitor.action;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.order;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 public class PartitionParam extends PartitionToken {
 

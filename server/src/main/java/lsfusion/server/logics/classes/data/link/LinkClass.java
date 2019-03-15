@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes.data.link;
 
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

@@ -1,6 +1,6 @@
 package lsfusion.server.logics.action.session.classes.change;
 
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 
 import java.sql.SQLException;
 

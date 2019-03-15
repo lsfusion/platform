@@ -10,7 +10,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashObject;
 import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.translator.MapObject;

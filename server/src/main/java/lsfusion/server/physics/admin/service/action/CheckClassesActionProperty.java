@@ -2,8 +2,8 @@ package lsfusion.server.physics.admin.service.action;
 
 import lsfusion.base.Result;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;

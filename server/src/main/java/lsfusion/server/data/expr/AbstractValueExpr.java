@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.server.data.ParseValue;
+import lsfusion.server.data.query.compile.ParseValue;
 import lsfusion.server.logics.classes.ConcreteClass;
 
 public abstract class AbstractValueExpr<C extends ConcreteClass> extends StaticExpr<C> implements ParseValue {

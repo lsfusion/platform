@@ -2,7 +2,7 @@ package lsfusion.server.physics.exec.db.table;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.KeyField;
+import lsfusion.server.data.table.KeyField;
 
 public class MapKeysTable<T> extends TwinImmutableObject {
     public final ImplementTable table;

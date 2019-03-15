@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.equ;
 
 import lsfusion.base.file.FileData;
 import lsfusion.interop.action.BeepClientAction;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

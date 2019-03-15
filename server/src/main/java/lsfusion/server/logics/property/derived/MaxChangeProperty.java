@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.derived;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.data.DataObject;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;

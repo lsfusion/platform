@@ -1,8 +1,8 @@
 package lsfusion.server.physics.admin.service.task;
 
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;

@@ -6,9 +6,13 @@ import lsfusion.interop.form.property.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.data.file.CSVClass;
+import lsfusion.server.logics.classes.data.file.HTMLClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.classes.data.file.XMLClass;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

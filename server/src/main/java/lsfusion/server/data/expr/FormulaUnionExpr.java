@@ -8,7 +8,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;

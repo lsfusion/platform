@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.NotNullWhere;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.UpWhere;

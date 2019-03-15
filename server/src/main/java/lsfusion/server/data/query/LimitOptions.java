@@ -1,6 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.sql.SQLSession;
 
 public class LimitOptions {
 

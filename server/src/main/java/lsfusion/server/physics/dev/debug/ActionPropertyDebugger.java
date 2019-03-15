@@ -20,8 +20,8 @@ import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.data.ObjectValue;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -159,7 +159,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         String sourceString =
             "package " + DELEGATES_HOLDER_CLASS_PACKAGE + ";\n" +
             "\n" +
-            "import lsfusion.server.data.SQLHandledException;\n" +
+            "import lsfusion.server.data.sql.exception.SQLHandledException;\n" +
             "import lsfusion.server.logics.action.ActionProperty;\n" +
             "import lsfusion.server.logics.property.Property;\n" +
             "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +

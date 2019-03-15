@@ -2,7 +2,7 @@ package lsfusion.server.data.caches;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.translator.MapTranslate;

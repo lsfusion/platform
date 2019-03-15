@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.classes.user;
 
-import lsfusion.server.data.PropertyField;
+import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.SingleClassExpr;
 import lsfusion.server.data.where.Where;

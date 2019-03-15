@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.classes.data;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.Time;
+import lsfusion.server.data.type.Time;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.TimeExpr;
 import lsfusion.server.data.where.WhereBuilder;

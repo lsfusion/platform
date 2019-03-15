@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.caches.ValuesContext;
 import lsfusion.server.data.caches.hash.HashValues;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 
 public interface MapValuesTranslate extends MapObject {
 

@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.where.OrObjectWhere;
 import lsfusion.server.data.where.OrWhere;

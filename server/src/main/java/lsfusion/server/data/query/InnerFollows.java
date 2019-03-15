@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.Table;
+import lsfusion.server.data.table.Table;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.where.classes.ClassWhere;

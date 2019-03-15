@@ -1,7 +1,7 @@
 package lsfusion.server.data.caches.hash;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
 
 public class HashTranslateValues extends HashValues {

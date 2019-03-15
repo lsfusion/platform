@@ -9,7 +9,7 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.ExprEqualsJoin;
 import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.innerjoins.KeyEquals;

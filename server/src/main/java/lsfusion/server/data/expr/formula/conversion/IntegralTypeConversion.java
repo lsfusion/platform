@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula.conversion;
 
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 
 public abstract class IntegralTypeConversion implements TypeConversion {
 

@@ -14,6 +14,13 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.interop.form.user.Order;
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLRunnable;
+import lsfusion.server.data.table.SessionData;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -645,7 +652,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         ImSet<ObjectInstance> upGroups = GroupObjectInstance.getObjects(getUpTreeGroups());
         assert value.isEmpty() || value.keys().equals(upGroups);
         for (ObjectInstance object : upGroups)
-            object.changeValue(session, value.isEmpty()?NullValue.instance:value.get(object));
+            object.changeValue(session, value.isEmpty()? NullValue.instance:value.get(object));
         ImSet<ObjectInstance> downGroups = GroupObjectInstance.getObjects(getDownTreeGroups());
         for(ObjectInstance object : downGroups)
             object.changeValue(session, NullValue.instance);

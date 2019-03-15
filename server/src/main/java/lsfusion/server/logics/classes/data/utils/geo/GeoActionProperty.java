@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.data.utils.geo;
 
-import lsfusion.server.data.DataObject;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;

@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.where.Where;
 

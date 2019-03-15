@@ -5,7 +5,7 @@ import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.task.PublicTask;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.controller.init.BLGroupSingleTask;
 import org.antlr.runtime.RecognitionException;
 

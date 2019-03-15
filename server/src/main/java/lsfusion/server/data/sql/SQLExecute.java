@@ -4,7 +4,12 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.*;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
 import lsfusion.server.data.query.DynamicExecuteEnvironment;
+import lsfusion.server.data.query.PureTime;
+import lsfusion.server.data.query.PureTimeInterface;
+import lsfusion.server.data.table.RegisterChange;
+import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
 
 public class SQLExecute<OE, S extends DynamicExecEnvSnapshot<OE, S>> {
 

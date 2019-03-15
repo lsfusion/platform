@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
 
 public class HashMapValues extends HashValues {

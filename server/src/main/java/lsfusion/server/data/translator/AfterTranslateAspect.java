@@ -6,7 +6,7 @@ import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.data.caches.AbstractTranslateContext;
 import lsfusion.server.base.caches.CacheAspect;
 import lsfusion.server.base.caches.CacheStats;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
