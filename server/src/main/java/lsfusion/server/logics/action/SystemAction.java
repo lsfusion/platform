@@ -3,7 +3,7 @@ package lsfusion.server.logics.action;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

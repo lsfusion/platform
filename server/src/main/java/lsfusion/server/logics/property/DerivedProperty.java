@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.derived;
+package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -32,9 +32,6 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.property.JoinProperty;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;

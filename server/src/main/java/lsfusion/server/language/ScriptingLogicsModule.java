@@ -98,7 +98,7 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;

@@ -84,7 +84,6 @@ import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.derived.ChangeProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.property.implement.*;

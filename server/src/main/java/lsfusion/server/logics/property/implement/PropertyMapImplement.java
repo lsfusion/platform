@@ -40,7 +40,7 @@ import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

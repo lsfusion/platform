@@ -37,7 +37,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
@@ -48,7 +48,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 
-import static lsfusion.server.logics.property.derived.DerivedProperty.*;
+import static lsfusion.server.logics.property.DerivedProperty.*;
 
 public class ForAction<I extends PropertyInterface> extends ExtendContextAction<I> {
    

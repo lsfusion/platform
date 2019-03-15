@@ -20,7 +20,7 @@ import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.ClassType;
