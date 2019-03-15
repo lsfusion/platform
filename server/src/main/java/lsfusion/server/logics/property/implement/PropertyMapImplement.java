@@ -35,12 +35,13 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -256,7 +257,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     // временно
     public PropertyMapImplement<?, T> cloneProp() {
-        return DerivedProperty.createJoin(new PropertyImplement<>(property, BaseUtils.<ImMap<P, PropertyInterfaceImplement<T>>>immutableCast(mapping)));
+        return PropertyFact.createJoin(new PropertyImplement<>(property, BaseUtils.<ImMap<P, PropertyInterfaceImplement<T>>>immutableCast(mapping)));
     }
 
     public Graph<CalcCase<T>> mapAbstractGraph() {

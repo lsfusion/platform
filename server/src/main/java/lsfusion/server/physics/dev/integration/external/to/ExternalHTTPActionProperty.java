@@ -25,7 +25,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;

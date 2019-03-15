@@ -8,9 +8,9 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

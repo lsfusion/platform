@@ -11,7 +11,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;

@@ -35,7 +35,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.event.PrevScope;
-import lsfusion.server.logics.form.interactive.ObjectValueProperty;
+import lsfusion.server.logics.form.interactive.property.ObjectValueProperty;
 import lsfusion.server.logics.form.interactive.action.change.FormAddObjectActionProperty;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
@@ -48,11 +48,11 @@ import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.navigator.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
@@ -627,7 +627,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     protected <P extends PropertyInterface> LP addCProp(StaticClass valueClass, Object value) {
-        PropertyRevImplement<P, Integer> implement = (PropertyRevImplement<P, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+        PropertyRevImplement<P, Integer> implement = (PropertyRevImplement<P, Integer>) PropertyFact.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, new LP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 

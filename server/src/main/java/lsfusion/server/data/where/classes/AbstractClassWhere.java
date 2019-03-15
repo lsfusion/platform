@@ -26,7 +26,7 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
-import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
 
 
 // !!! equals'ы и hashCode должны только в meanWheres вызываться

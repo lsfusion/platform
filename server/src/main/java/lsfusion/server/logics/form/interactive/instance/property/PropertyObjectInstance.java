@@ -24,7 +24,7 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

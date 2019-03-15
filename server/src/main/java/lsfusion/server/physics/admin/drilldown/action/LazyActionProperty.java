@@ -8,7 +8,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;

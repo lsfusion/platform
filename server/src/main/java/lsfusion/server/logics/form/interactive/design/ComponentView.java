@@ -19,7 +19,7 @@ import lsfusion.server.logics.form.interactive.serialization.ServerSerialization
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -112,7 +112,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
         if (activeTab == null) {
-            activeTab = DerivedProperty.createDataPropRev(LocalizedString.create(this.toString()), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, LocalNestedType.ALL);
+            activeTab = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, LocalNestedType.ALL);
         }
         return activeTab;
     }

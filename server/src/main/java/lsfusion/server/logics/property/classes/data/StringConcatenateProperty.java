@@ -5,9 +5,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StringConcatenateProperty extends FormulaImplProperty {

@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.logging.controller.init;
 
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.init.GroupPropertiesTask;
+import lsfusion.server.logics.property.controller.init.GroupPropertiesTask;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class FinishLogInitTask extends GroupPropertiesTask {

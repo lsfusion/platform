@@ -41,7 +41,7 @@ import lsfusion.server.logics.form.struct.property.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -537,7 +537,7 @@ public class ScriptingFormEntity {
     private <P extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity<P> groundProperty, boolean back) {
         LP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
         PropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
-        PropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
+        PropertyMapImplement<?, P> mapImpl = PropertyFact.createAnd(groundProperty.property.interfaces,
                 new PropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
         return new PropertyObjectEntity(
                 mapImpl.property,

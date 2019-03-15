@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin;
 
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.logics.property.infer.AlgType;
+import lsfusion.server.logics.property.classes.infer.AlgType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 

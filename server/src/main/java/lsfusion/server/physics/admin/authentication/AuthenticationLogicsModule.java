@@ -13,9 +13,9 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.property.env.CurrentAuthTokenFormulaProperty;
-import lsfusion.server.logics.property.env.CurrentComputerFormulaProperty;
-import lsfusion.server.logics.property.env.CurrentUserFormulaProperty;
+import lsfusion.server.physics.admin.authentication.property.CurrentAuthTokenProperty;
+import lsfusion.server.physics.admin.authentication.property.CurrentComputerProperty;
+import lsfusion.server.physics.admin.authentication.property.CurrentUserProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -104,11 +104,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initMainLogic() throws RecognitionException {
         // Текущий пользователь
-        currentUser = addProperty(null, new LP<>(new CurrentUserFormulaProperty(user)));
+        currentUser = addProperty(null, new LP<>(new CurrentUserProperty(user)));
         makePropertyPublic(currentUser, "currentUser", new ArrayList<ResolveClassSet>());
-        currentComputer = addProperty(null, new LP<>(new CurrentComputerFormulaProperty(computer)));
+        currentComputer = addProperty(null, new LP<>(new CurrentComputerProperty(computer)));
         makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
-        currentAuthToken = addProperty(null, new LP<>(new CurrentAuthTokenFormulaProperty()));
+        currentAuthToken = addProperty(null, new LP<>(new CurrentAuthTokenProperty()));
         makePropertyPublic(currentAuthToken, "currentAuthToken", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();

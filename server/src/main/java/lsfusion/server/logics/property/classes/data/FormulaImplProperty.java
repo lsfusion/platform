@@ -13,9 +13,9 @@ import lsfusion.server.data.expr.formula.FormulaJoinImpl;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -63,7 +63,7 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
         }));
     }
     
-    public lsfusion.server.logics.property.infer.ExClassSet calcInferValueClass(final ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+    public ExClassSet calcInferValueClass(final ImMap<Interface, ExClassSet> inferred, InferType inferType) {
         return inferValueClass(getOrderInterfaces(), formula, inferred);
     }
 }

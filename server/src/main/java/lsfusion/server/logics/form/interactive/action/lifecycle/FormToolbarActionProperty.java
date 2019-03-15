@@ -19,8 +19,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;
 
-import static lsfusion.server.logics.property.DerivedProperty.createAnd;
-import static lsfusion.server.logics.property.DerivedProperty.createTrue;
+import static lsfusion.server.logics.property.PropertyFact.createAnd;
+import static lsfusion.server.logics.property.PropertyFact.createTrue;
 
 public abstract class FormToolbarActionProperty extends ScriptingAction {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);

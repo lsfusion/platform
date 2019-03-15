@@ -36,9 +36,10 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.IncrementUnionProperty;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.cases.graph.Graph;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.infer.*;
@@ -287,7 +288,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                     continue;                                
             } else {
                 if(editAction == null)
-                    editAction = DerivedProperty.createEmptyAction();                    
+                    editAction = PropertyFact.createEmptyAction();                    
                 else
                     lastNotNullAction = mActionCases.size() + 1;
             }
@@ -307,7 +308,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         if(actionCases.isEmpty())
             return null;
 
-        return DerivedProperty.createCaseAction(interfaces, isExclusive, actionCases);
+        return PropertyFact.createCaseAction(interfaces, isExclusive, actionCases);
     }
 
     @Override
@@ -377,7 +378,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         assert abs.type == Type.CASE;
 //        
 //        if(property instanceof PropertyMapImplement)
-//            where = DerivedProperty.createAnd(interfaces, where, ((PropertyMapImplement<?, Interface>)property).mapClassProperty());
+//            where = PropertyFact.createAnd(interfaces, where, ((PropertyMapImplement<?, Interface>)property).mapClassProperty());
 
         addCase(new ExplicitCalcCase(where, property), version);
     }
@@ -549,7 +550,7 @@ public class IfUnionProperty extends IncrementUnionProperty {
         ActionMapImplement<?, Interface> result = falseProp.mapEditAction(editActionSID, filterProperty);
         ActionMapImplement<?, Interface> trueAction = trueProp.mapEditAction(editActionSID, filterProperty);
         if (trueAction != null) {
-            result = DerivedProperty.createIfAction(interfaces, (PropertyMapImplement<?, Interface>) ifProp, trueAction, result);
+            result = PropertyFact.createIfAction(interfaces, (PropertyMapImplement<?, Interface>) ifProp, trueAction, result);
         }
         return result;
     }

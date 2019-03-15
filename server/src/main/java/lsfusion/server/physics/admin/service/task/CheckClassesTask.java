@@ -9,7 +9,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
+import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 

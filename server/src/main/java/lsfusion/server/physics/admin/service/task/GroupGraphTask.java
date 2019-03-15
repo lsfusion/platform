@@ -6,7 +6,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
+import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 
 import java.sql.SQLException;
 import java.util.List;

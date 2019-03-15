@@ -21,7 +21,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -101,7 +101,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
             PropertyInterfaceImplement<I> groupImplement = mapInterfaces.getValue(i);
 
             if (groupImplement instanceof PropertyMapImplement || !innerObjects.containsKey((I) groupImplement)) {
-                PropertyRevImplement filterProp = DerivedProperty.createCompare(groupImplement, (PropertyInterface) groupInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(innerObjects, groupInterface, interfaceObjects.get(groupInterface)));
+                PropertyRevImplement filterProp = PropertyFact.createCompare(groupImplement, (PropertyInterface) groupInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(innerObjects, groupInterface, interfaceObjects.get(groupInterface)));
                 addFixedFilter(new FilterEntity(addPropertyObject(filterProp)), version);
 
                 if(groupImplement instanceof PropertyMapImplement) {

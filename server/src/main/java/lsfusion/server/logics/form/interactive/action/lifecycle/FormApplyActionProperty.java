@@ -12,8 +12,8 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.DerivedProperty;
 
 import java.awt.*;
 import java.sql.SQLException;
@@ -22,8 +22,8 @@ public class FormApplyActionProperty extends FormFlowActionProperty {
     private static LP showIf = createShowIfProperty(new Property[]{FormEntity.manageSession}, new boolean[]{false});
 
     static LP applyBackground = new LP(
-            DerivedProperty.createAnd(
-                    DerivedProperty.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance),
+            PropertyFact.createAnd(
+                    PropertyFact.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance),
                     DataSession.isDataChanged.getImplement()
             ).property
     );

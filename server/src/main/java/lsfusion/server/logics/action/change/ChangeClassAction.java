@@ -30,17 +30,17 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.logics.property.DerivedProperty.createChangeClassAction;
+import static lsfusion.server.logics.property.PropertyFact.createChangeClassAction;
 
 // с открытым 2-м интерфейсом класса уже есть в SystemActionProperty
 public class ChangeClassAction<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
@@ -100,7 +100,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     protected PropertyMapImplement<?, I> calcGroupWhereProperty() {
         PropertyMapImplement<?, I> result = IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
         if(where!=null)
-            result = DerivedProperty.createAnd(innerInterfaces, where, result);
+            result = PropertyFact.createAnd(innerInterfaces, where, result);
         return result;
     }
 

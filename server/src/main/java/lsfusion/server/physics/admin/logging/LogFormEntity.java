@@ -16,7 +16,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.property.JoinProperty;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

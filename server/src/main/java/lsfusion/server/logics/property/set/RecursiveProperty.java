@@ -22,13 +22,13 @@ import lsfusion.server.logics.classes.data.IntegralClass;
 import lsfusion.server.logics.property.ComplexIncrementProperty;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -75,7 +75,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         assert !isLogical();
 
         IntegralClass<?> integralClass = (IntegralClass)getType();
-        Property constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
+        Property constraint = PropertyFact.createCompare(interfaces, getImplement(), PropertyFact.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
         constraint.caption = LocalizedString.createFormatted("{logics.property.cycle.detected}", caption);
         return constraint;
     }
@@ -91,9 +91,9 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         // в initial докинем недостающие ключи
         ImCol<PropertyInterfaceImplement<T>> and = mapIterate.mapColValues(new GetKeyValue<PropertyInterfaceImplement<T>, T, T>() {
             public PropertyInterfaceImplement<T> getMapValue(T key, T value) {
-                return DerivedProperty.createCompare(Compare.EQUALS, key, value);
+                return PropertyFact.createCompare(Compare.EQUALS, key, value);
             }});
-        initial = DerivedProperty.createAnd(innerInterfaces, initial, and);
+        initial = PropertyFact.createAnd(innerInterfaces, initial, and);
 
         this.initial = initial;
         this.step = step;

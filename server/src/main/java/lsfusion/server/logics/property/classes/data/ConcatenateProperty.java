@@ -13,10 +13,10 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveConcatenateClassSet;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

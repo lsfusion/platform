@@ -11,7 +11,7 @@ import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
+import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 
 import java.sql.SQLException;
 import java.util.Iterator;

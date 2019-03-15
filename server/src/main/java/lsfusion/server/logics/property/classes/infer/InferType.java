@@ -1,0 +1,62 @@
+package lsfusion.server.logics.property.classes.infer;
+
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
+
+public class InferType implements AlgType {
+    public InferType() {
+    }
+
+    public static InferInfoType PREVBASE = new InferInfoType();
+    public static InferType PREVSAME = new InferType();
+    public static InferType RESOLVE = new InferType(); // PREVSAME
+
+    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property) {
+        return getClassValueWhere(property, null);
+    }
+
+    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(Property<P> property, ExClassSet valueClasses) {
+        assert this != RESOLVE;
+        return property.inferClassValueWhere(this, valueClasses);
+    }
+
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(Property<P> property, ExClassSet valueClasses) {
+        return property.inferGetInterfaceClasses(this, valueClasses);
+    }
+
+    public <P extends PropertyInterface> ValueClass getValueClass(Property<P> property) {
+        return property.inferGetValueClass(this);
+    }
+
+    public <P extends PropertyInterface> boolean isInInterface(Property<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+        assert this != RESOLVE;
+        return property.inferIsInInterface(interfaceClasses, isAny, this);
+    }
+
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(Property<T> property, String caseInfo, Property<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
+        assert this != RESOLVE;
+        property.inferCheckExclusiveness(caseInfo, intersect, intersectInfo, map, this, abstractInfo);
+    }
+
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(Property<T> property, Property<P> intersect, String caseInfo, ImRevMap<P, T> map, PropertyInterfaceImplement<T> value, String abstractInfo) {
+        assert this != RESOLVE;
+        property.inferCheckContainsAll(intersect, caseInfo, map, this, value, abstractInfo);
+    }
+
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(Property<T> property, ImList<Property<P>> intersects, ImList<ImRevMap<P, T>> maps) {
+        assert this != RESOLVE;        
+        property.inferCheckAllImplementations(intersects, maps, this);
+    }
+
+    public AlgInfoType getAlgInfo() {
+        assert this != RESOLVE;
+        return PREVBASE;
+    }
+}

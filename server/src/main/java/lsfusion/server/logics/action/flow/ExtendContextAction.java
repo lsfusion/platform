@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

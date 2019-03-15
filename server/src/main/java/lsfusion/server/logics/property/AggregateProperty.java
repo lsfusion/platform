@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.base.caches.IdentityLazy;

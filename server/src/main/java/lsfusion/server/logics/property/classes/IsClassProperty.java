@@ -39,8 +39,9 @@ import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -75,7 +76,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         synchronized (cacheClasses) {
             PropertyImplement<P, ValueClass> implement = (PropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
             if(implement==null) {
-                PropertyRevImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
+                PropertyRevImplement<?, T> classImplement = PropertyFact.createCProp(LogicalClass.instance, true, classes);
                 cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
                 return classImplement;
             } else

@@ -19,11 +19,11 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.DerivedProperty;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.logics.property.infer.ClassType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -66,7 +66,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                     innerObject.groupTo.setPanelClassView();
     
                     PropertyInterface innerInterface = new PropertyInterface();
-                    PropertyRevImplement filterProp = DerivedProperty.createCompare(intImpl, innerInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(interfaceObjects, innerInterface, innerObject));
+                    PropertyRevImplement filterProp = PropertyFact.createCompare(intImpl, innerInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(interfaceObjects, innerInterface, innerObject));
                     addFixedFilter(new FilterEntity(addPropertyObject(filterProp)), version);
                     
                     if(intImpl instanceof PropertyMapImplement) {

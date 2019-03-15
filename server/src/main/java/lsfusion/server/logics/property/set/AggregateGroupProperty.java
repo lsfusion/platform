@@ -14,8 +14,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.DerivedProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -30,7 +30,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
 
     // чисто из-за ограничения конструктора
     public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, T aggrInterface, ImSet<PropertyInterfaceImplement<T>> groupProps) {
-        PropertyMapImplement<?, T> and = DerivedProperty.createAnd(innerInterfaces, aggrInterface, property);
+        PropertyMapImplement<?, T> and = PropertyFact.createAnd(innerInterfaces, aggrInterface, property);
         if(caption.isEmpty()) {
             ImCol<PropertyMapImplement<?, T>> groupMapProps = PropertyMapImplement.filter(groupProps);
             for(PropertyMapImplement<?, T> groupProp : groupMapProps)
@@ -87,13 +87,13 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
                     PropertyMapImplement<?, PropertyInterface> change = ((PropertyMapImplement<?, T>) keyImplement).map(propValues);
                     Interface<T> valueInterface = aggrInterfaces.getValue(i);
                     ImSet<PropertyInterface> usedInterfaces = change.mapping.valuesSet().addExcl(valueInterface); // assert что не будет
-                    mActions.add(DerivedProperty.createSetAction(usedInterfaces, change, (PropertyInterface) valueInterface));
+                    mActions.add(PropertyFact.createSetAction(usedInterfaces, change, (PropertyInterface) valueInterface));
                 }
             }
 
             ImSet<PropertyInterface> setInnerInterfaces = SetFact.addExcl(interfaces, addedObject);
-            return BaseUtils.immutableCast(DerivedProperty.createForAction(setInnerInterfaces, BaseUtils.<ImSet<PropertyInterface>>immutableCast(interfaces),
-                    DerivedProperty.createListAction(setInnerInterfaces, mActions.immutableList()), addedObject, null, false));
+            return BaseUtils.immutableCast(PropertyFact.createForAction(setInnerInterfaces, BaseUtils.<ImSet<PropertyInterface>>immutableCast(interfaces),
+                    PropertyFact.createListAction(setInnerInterfaces, mActions.immutableList()), addedObject, null, false));
         } else
             return super.getSetNotNullAction(notNull);
     }

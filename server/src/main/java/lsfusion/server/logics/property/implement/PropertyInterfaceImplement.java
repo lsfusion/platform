@@ -24,10 +24,10 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.data.DataProperty;
-import lsfusion.server.logics.property.infer.CalcType;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
