@@ -10,7 +10,7 @@ import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;

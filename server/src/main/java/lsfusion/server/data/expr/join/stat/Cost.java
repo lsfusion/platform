@@ -2,7 +2,7 @@ package lsfusion.server.data.expr.join.stat;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 
 public class Cost {
 

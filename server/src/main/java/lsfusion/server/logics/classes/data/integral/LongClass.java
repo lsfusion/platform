@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.data.integral;
 
 import lsfusion.interop.form.property.DataType;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ParseException;

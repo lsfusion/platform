@@ -9,8 +9,8 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.StaticExprInterface;
-import lsfusion.server.data.expr.query.stat.Stat;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.stat.StatType;
 
 public class ValueJoin extends TwinImmutableObject implements InnerBaseJoin<Object> {
 

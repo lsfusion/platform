@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.user.set;
 
 import lsfusion.base.lambda.ArrayInstancer;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.ValueClassSet;
 

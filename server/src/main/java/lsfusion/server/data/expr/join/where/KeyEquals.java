@@ -18,7 +18,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;

@@ -16,9 +16,9 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.stat.DistinctKeys;
-import lsfusion.server.data.expr.query.stat.Stat;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.DistinctKeys;
+import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.translator.MapTranslate;
 
 public class StatKeys<K> extends TwinImmutableObject {

@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.ExprEqualsJoin;
 import lsfusion.server.data.expr.join.ExprStatJoin;

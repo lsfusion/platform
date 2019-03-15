@@ -8,7 +8,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NullableExprInterface;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.where.DataUpWhere;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;

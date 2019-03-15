@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query.stat;
+package lsfusion.server.data.stat;
 
 public class PropStat {
     public final Stat distinct;

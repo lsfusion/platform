@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.comb.map.GlobalInteger;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;

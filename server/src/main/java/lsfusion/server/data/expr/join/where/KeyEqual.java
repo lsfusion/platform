@@ -22,7 +22,7 @@ import lsfusion.server.data.translator.TranslateContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.join.ExprEqualsJoin;
 import lsfusion.server.data.expr.join.stat.WhereJoin;
