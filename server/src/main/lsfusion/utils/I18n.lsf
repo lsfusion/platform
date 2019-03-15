@@ -68,7 +68,7 @@ nameLanguageFromTranslation '{i18n.name.language.from}'() = name(languageFromTra
 languageToTranslation = DATA Language ();
 nameLanguageToTranslation '{i18n.name.language.to}'() = name(languageToTranslation());
 
-translate   INTERNAL  'lsfusion.server.physics.dev.i18n.TranslateActionProperty' (TEXT, Language, Language);
+translate   INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateActionProperty' (TEXT, Language, Language);
 
 translateTerm '{i18n.translate}'(DictionaryEntry dictionaryEntry)  { 
 
@@ -84,7 +84,7 @@ translateText '{i18n.translate}'()  {
 
 // ------------------------------------ Перевод через словарь -------------------------------- //
 
-translate   INTERNAL  'lsfusion.server.physics.dev.i18n.TranslateDictionaryActionProperty' (Dictionary, TEXT);
+translate   INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateDictionaryActionProperty' (Dictionary, TEXT);
 
 WHEN LOCAL CHANGED (translationInput()) AND Dictionary dictionary IS Dictionary DO EXEC translate(dictionary, translationInput());
 

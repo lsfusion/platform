@@ -2,9 +2,9 @@ MODULE SQLUtils;
 
 REQUIRE System, Authentication, Service, Utils, Time, ProcessMonitor;
 
-runSQL '{sql.utils.run.sql}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.RunSQLScriptActionProperty' (TEXT);
+runSQL '{sql.utils.run.sql}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunSQLScriptActionProperty' (TEXT);
 
-runJDBC '{sql.utils.run.jdbc}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.RunJDBCStatementActionProperty' (VARSTRING[100], TEXT);
+runJDBC '{sql.utils.run.jdbc}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunJDBCStatementActionProperty' (VARSTRING[100], TEXT);
 
 vacuumTableAction '{sql.utils.vacuum.table.action}'(Table table)  { 
     runSQL('VACUUM FULL ' + sid(table));

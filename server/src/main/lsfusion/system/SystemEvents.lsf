@@ -122,7 +122,7 @@ shutdown '{system.events.shutdown.custom.user}' (CustomUser user)  {
 hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection;
 
 fileUserLogs = DATA FILE (Connection);
-userLogs ()  INTERNAL  'lsfusion.server.physics.admin.monitor.UserLogsActionProperty' ();
+userLogs ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.UserLogsActionProperty' ();
 requestUserLogs '{system.events.request.user.logs.custom.user}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
@@ -140,7 +140,7 @@ openUserLogs '{system.events.open.user.logs.custom.user}' (CustomUser user)  {
 }
 
 fileThreadDump = DATA FILE (Connection);
-threadDump ()  INTERNAL  'lsfusion.server.physics.admin.monitor.ThreadDumpActionProperty' ();
+threadDump ()  INTERNAL  'lsfusion.server.physics.admin.monitor.action.ThreadDumpActionProperty' ();
 requestThreadDump '{system.events.request.thread.dump.custom.user}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION { fileThreadDump(conn) <- NULL; apply(); } 

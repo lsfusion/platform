@@ -1,0 +1,47 @@
+package lsfusion.server.physics.admin.service.action;
+
+import lsfusion.base.col.lru.ALRUMap;
+import lsfusion.server.data.DataObject;
+import lsfusion.server.data.ObjectValue;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.physics.admin.service.ServiceLogicsModule;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+
+import java.sql.SQLException;
+import java.util.Iterator;
+
+public class DropLRUActionProperty extends ScriptingAction {
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
+    }
+
+    private final ClassPropertyInterface percentInterface;
+    private final ClassPropertyInterface randomInterface;
+
+    public DropLRUActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
+
+        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        percentInterface = i.next();
+        randomInterface = i.next();
+
+    }
+
+    @Override
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        final ObjectValue keyValue = context.getKeyValue(percentInterface);
+        if(keyValue instanceof DataObject) {
+            final double percent = ((Double) ((DataObject) keyValue).object) / 100.0;
+            if (context.getKeyValue(randomInterface).isNull()) {
+                ALRUMap.forceRemoveAllLRU(percent);
+            } else {
+                ALRUMap.forceRandomRemoveAllLRU(percent);
+            }
+        }
+    }
+}

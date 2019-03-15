@@ -1,0 +1,15 @@
+package lsfusion.server.physics.admin.monitor.controller.init;
+
+import lsfusion.server.physics.admin.reflection.controller.init.ReflectionTask;
+import org.apache.log4j.Logger;
+
+public class ResetConnectionStatusTask extends ReflectionTask {
+
+    public String getCaption() {
+        return "Resetting connection status";
+    }
+
+    public void run(Logger logger) {
+        getReflectionManager().resetConnectionStatus();
+    }
+}
