@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.base.caches.hash.HashContext;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;

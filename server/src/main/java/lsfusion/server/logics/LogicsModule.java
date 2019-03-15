@@ -19,7 +19,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;

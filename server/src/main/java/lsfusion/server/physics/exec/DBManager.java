@@ -19,8 +19,8 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.*;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.context.ExecutionStack;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.base.stack.*;
@@ -90,7 +90,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class DBManager extends LogicsManager implements InitializingBean {
     public static final Logger logger = Logger.getLogger(DBManager.class);

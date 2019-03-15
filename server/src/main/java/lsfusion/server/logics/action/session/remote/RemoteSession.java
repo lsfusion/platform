@@ -13,7 +13,7 @@ import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ParseException;

@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.caches.hash.HashContext;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;

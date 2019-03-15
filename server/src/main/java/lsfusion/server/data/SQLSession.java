@@ -25,7 +25,7 @@ import lsfusion.base.lambda.Provider;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.ThreadUtils;
+import lsfusion.server.base.thread.ThreadUtils;
 import lsfusion.server.base.stack.ExecutionStackAspect;
 import lsfusion.server.base.stack.ParamMessage;
 import lsfusion.server.base.stack.StackMessage;

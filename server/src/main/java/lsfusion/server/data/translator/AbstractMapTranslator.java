@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.base.caches.TranslateContext;
+import lsfusion.server.data.caches.TranslateContext;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;

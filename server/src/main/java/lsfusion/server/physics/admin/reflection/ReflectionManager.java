@@ -5,7 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.lifecycle.LifecycleEvent;
 import lsfusion.server.base.lifecycle.LogicsManager;
 import lsfusion.server.base.task.PublicTask;

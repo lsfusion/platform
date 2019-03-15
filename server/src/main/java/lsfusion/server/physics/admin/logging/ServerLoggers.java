@@ -6,7 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.logging.FlushableRollingFileAppender;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.stack.ExecutionStackAspect;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;

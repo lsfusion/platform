@@ -2,7 +2,7 @@ package lsfusion.server.data.query.stat;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
 import lsfusion.server.data.query.innerjoins.UpWheres;

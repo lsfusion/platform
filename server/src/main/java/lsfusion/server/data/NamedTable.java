@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.classes.ClassWhere;

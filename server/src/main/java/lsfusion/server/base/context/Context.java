@@ -9,6 +9,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;

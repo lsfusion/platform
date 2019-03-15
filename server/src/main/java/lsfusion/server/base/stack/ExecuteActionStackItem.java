@@ -8,7 +8,7 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import org.aspectj.lang.ProceedingJoinPoint;
 
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class ExecuteActionStackItem extends ExecutionStackItem {
     private final Action property;

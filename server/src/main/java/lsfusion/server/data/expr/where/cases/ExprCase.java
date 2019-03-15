@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.where.cases;
 
-import lsfusion.server.base.caches.hash.HashContext;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.Case;
 import lsfusion.server.data.where.Where;

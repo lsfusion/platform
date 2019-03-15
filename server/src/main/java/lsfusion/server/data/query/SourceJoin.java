@@ -1,7 +1,7 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.where.Where;
 

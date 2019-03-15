@@ -1,6 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.data.caches.OuterContext;
 
 public interface ExprEnumerator {
 

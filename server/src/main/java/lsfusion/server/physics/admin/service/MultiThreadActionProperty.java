@@ -2,7 +2,7 @@ package lsfusion.server.physics.admin.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.base.ThreadUtils;
+import lsfusion.server.base.thread.ThreadUtils;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;

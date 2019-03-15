@@ -4,11 +4,11 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.base.caches.AbstractOuterContext;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.caches.OuterContext;
+import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.base.caches.hash.HashContext;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.translator.MapTranslate;
@@ -23,8 +23,8 @@ public class InnerExprFollows<K extends OuterContext> extends InnerFollows<K> im
 
     public class OuterContext extends AbstractOuterContext<OuterContext> {
 
-        protected ImSet<lsfusion.server.base.caches.OuterContext> calculateOuterDepends() {
-            return (ImSet<lsfusion.server.base.caches.OuterContext>) fields.keys();
+        protected ImSet<lsfusion.server.data.caches.OuterContext> calculateOuterDepends() {
+            return (ImSet<lsfusion.server.data.caches.OuterContext>) fields.keys();
         }
 
         protected OuterContext translate(MapTranslate translator) {
@@ -52,7 +52,7 @@ public class InnerExprFollows<K extends OuterContext> extends InnerFollows<K> im
     }
 
     private final static InnerExprFollows EMPTYEXPR = new InnerExprFollows(MapFact.EMPTY());
-    public static <K extends lsfusion.server.base.caches.OuterContext> InnerExprFollows<K> EMPTYEXPR() {
+    public static <K extends lsfusion.server.data.caches.OuterContext> InnerExprFollows<K> EMPTYEXPR() {
         return EMPTYEXPR;
     }
 
@@ -72,7 +72,7 @@ public class InnerExprFollows<K extends OuterContext> extends InnerFollows<K> im
     public int hashOuter(HashContext hashContext) {
         return getOuter().hashOuter(hashContext);
     }
-    public ImSet<lsfusion.server.base.caches.OuterContext> getOuterDepends() {
+    public ImSet<lsfusion.server.data.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
     public InnerExprFollows<K> translateOuter(MapTranslate translator) {

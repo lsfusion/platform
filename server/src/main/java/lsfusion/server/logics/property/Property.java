@@ -21,8 +21,8 @@ import lsfusion.server.data.pack.PackComplex;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.base.caches.*;
-import lsfusion.server.base.context.ExecutionStack;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.stack.StackMessage;
 import lsfusion.server.base.stack.ThisMessage;
 import lsfusion.server.data.*;
@@ -100,7 +100,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public abstract class Property<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
 

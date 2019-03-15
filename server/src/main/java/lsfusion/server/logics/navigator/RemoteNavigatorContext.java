@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.LogicsInstance;

@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class SendEmailActionProperty extends SystemExplicitAction {

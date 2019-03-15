@@ -11,7 +11,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class CheckAggregationsActionProperty extends ScriptingAction {
     public CheckAggregationsActionProperty(ServiceLogicsModule LM) {

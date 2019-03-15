@@ -13,7 +13,7 @@ import lsfusion.server.physics.exec.DBManager;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class ServiceDBMultiThreadActionProperty extends ScriptingAction {
     private ClassPropertyInterface threadCountInterface;

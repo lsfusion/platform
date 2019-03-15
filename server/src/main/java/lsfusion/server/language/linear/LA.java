@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;

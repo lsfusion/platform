@@ -19,7 +19,7 @@ import lsfusion.base.lambda.Processor;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.EvalUtils;

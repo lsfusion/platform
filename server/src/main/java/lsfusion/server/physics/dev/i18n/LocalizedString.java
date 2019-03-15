@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.i18n;
 
 import lsfusion.server.base.caches.IdentityStartLazy;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.base.thread.ThreadLocalContext;
 
 import java.text.MessageFormat;
 import java.util.Locale;

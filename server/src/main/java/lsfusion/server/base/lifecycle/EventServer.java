@@ -1,7 +1,7 @@
 package lsfusion.server.base.lifecycle;
 
-import lsfusion.server.base.context.NewThreadExecutionStack;
-import lsfusion.server.base.context.TopExecutionStack;
+import lsfusion.server.logics.action.stack.NewThreadExecutionStack;
+import lsfusion.server.logics.action.stack.TopExecutionStack;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.session.DataSession;
 

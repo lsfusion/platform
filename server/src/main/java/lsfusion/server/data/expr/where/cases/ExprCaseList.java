@@ -3,7 +3,7 @@ package lsfusion.server.data.expr.where.cases;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.base.caches.hash.HashContext;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.translator.MapTranslate;
 

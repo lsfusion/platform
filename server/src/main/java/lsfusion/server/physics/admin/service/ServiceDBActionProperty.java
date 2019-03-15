@@ -11,7 +11,7 @@ import lsfusion.server.physics.exec.DBManager;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class ServiceDBActionProperty extends ScriptingAction {
     public ServiceDBActionProperty(ServiceLogicsModule LM) {

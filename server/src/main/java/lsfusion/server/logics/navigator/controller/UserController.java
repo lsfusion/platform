@@ -1,6 +1,6 @@
 package lsfusion.server.logics.navigator.controller;
 
-import lsfusion.server.base.context.ExecutionStack;
+import lsfusion.server.logics.action.stack.ExecutionStack;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
 

@@ -31,11 +31,11 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.ThreadUtils;
+import lsfusion.server.base.thread.ThreadUtils;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.context.AbstractContext;
-import lsfusion.server.base.context.ExecutionStack;
-import lsfusion.server.base.context.ThreadLocalContext;
+import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.base.thread.ThreadLocalContext;
 import lsfusion.server.base.stack.*;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
@@ -99,7 +99,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
-import static lsfusion.server.base.context.ThreadLocalContext.localize;
+import static lsfusion.server.base.thread.ThreadLocalContext.localize;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 

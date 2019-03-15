@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.base.caches.AbstractInnerContext;
+import lsfusion.server.data.caches.AbstractInnerContext;
 import lsfusion.server.base.stack.StackMessage;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;

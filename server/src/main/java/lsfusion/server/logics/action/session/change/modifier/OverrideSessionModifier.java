@@ -11,7 +11,7 @@ import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.caches.ValuesContext;
+import lsfusion.server.data.caches.ValuesContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
