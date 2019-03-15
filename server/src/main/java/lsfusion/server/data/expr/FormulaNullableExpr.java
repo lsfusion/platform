@@ -10,7 +10,7 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.expr.formula.FormulaJoinImpl;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;

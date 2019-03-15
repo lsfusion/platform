@@ -14,7 +14,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.KeyType;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.query.compile.CompileSource;

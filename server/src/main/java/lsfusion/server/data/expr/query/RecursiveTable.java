@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.table.Field;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.NamedTable;

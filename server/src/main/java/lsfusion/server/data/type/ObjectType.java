@@ -15,7 +15,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.type.exec.TypeEnvironment;
