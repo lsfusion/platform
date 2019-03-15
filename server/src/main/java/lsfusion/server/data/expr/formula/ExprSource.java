@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 public interface ExprSource extends ExprType {

@@ -20,7 +20,7 @@ import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.extra.GreaterWhere;
 import lsfusion.server.data.expr.where.extra.InArrayWhere;
 import lsfusion.server.data.expr.where.extra.LikeWhere;
-import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.query.stat.BaseJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;

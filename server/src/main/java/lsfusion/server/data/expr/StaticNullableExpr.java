@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.ValueJoin;

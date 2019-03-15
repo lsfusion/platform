@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.formula.ExprSource;
 import lsfusion.server.data.expr.formula.ExprType;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.query.compile.CompileOrder;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ParseException;

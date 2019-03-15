@@ -11,6 +11,9 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.serialization.BinarySerializable;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.query.compile.CompileOrder;
+import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
+import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -20,7 +23,6 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.classes.data.StringClass;
 

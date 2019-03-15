@@ -9,7 +9,7 @@ public class Equal {
     public final BaseExpr[] staticExprs = new BaseExpr[BaseExpr.STATICEQUALCLASSES];
     public boolean dropped = false;
 
-    Equal(BaseExpr expr,int max) {
+    public Equal(BaseExpr expr,int max) {
         exprs = new BaseExpr[max];
         exprs[0] = expr;
         size = 1;

@@ -4,12 +4,15 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.query.compile.CompileOrder;
+import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
+import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.ArrayClass;
 
 import java.sql.*;

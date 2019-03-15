@@ -13,7 +13,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.MapQuery;
+import lsfusion.server.data.query.translator.MapQuery;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslator;

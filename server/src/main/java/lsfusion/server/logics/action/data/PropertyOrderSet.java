@@ -20,7 +20,7 @@ import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.AggrExpr;
 import lsfusion.server.data.expr.query.PartitionExpr;
 import lsfusion.server.data.expr.query.PartitionType;
-import lsfusion.server.data.query.Join;
+import lsfusion.server.data.expr.join.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.NullReader;

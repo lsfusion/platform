@@ -15,7 +15,7 @@ public class EqualMap extends HMap<BaseExpr,Equal> {
         comps = new Equal[max];
     }
 
-    Equal getEqual(BaseExpr expr) {
+    public Equal getEqual(BaseExpr expr) {
         Equal equal = get(expr);
         if(equal==null) {
             equal = new Equal(expr, comps.length);

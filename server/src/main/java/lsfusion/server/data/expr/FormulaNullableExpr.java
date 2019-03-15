@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.expr.formula.FormulaJoinImpl;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;

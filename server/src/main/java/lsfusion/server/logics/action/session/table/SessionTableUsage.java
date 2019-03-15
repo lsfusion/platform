@@ -16,6 +16,8 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
+import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.expr.join.RemapJoin;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;

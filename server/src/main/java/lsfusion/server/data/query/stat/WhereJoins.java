@@ -20,6 +20,8 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.tree.GreedyTreeBuilding;
+import lsfusion.server.data.expr.join.*;
+import lsfusion.server.data.query.innerjoins.InnerJoins;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.ManualLazy;

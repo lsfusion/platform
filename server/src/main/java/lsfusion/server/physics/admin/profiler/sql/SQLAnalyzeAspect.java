@@ -6,7 +6,7 @@ import lsfusion.server.data.sql.SQLCommand;
 import lsfusion.server.data.sql.SQLDML;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.query.DynamicExecEnvSnapshot;
+import lsfusion.server.data.query.exec.DynamicExecEnvSnapshot;
 import lsfusion.server.data.type.ParseInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -15,7 +15,7 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class SQLAnalyzeAspect {
 
-    @Around("execution(* lsfusion.server.data.sql.SQLSession.executeCommand(lsfusion.server.data.sql.SQLCommand, lsfusion.server.data.query.DynamicExecEnvSnapshot, lsfusion.server.data.OperationOwner, lsfusion.base.col.interfaces.immutable.ImMap, " +
+    @Around("execution(* lsfusion.server.data.sql.SQLSession.executeCommand(lsfusion.server.data.sql.SQLCommand, lsfusion.server.data.query.exec.DynamicExecEnvSnapshot, lsfusion.server.data.OperationOwner, lsfusion.base.col.interfaces.immutable.ImMap, " +
             "java.lang.Object)) && target(sql) && args(command, queryExecEnv, owner, paramObjects, handler)")
     public Object executeCommand(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final SQLCommand command, DynamicExecEnvSnapshot queryExecEnv, final OperationOwner owner, final ImMap<String, ParseInterface> paramObjects, final Object handler) throws Throwable {
         if (command instanceof SQLAnalyze)

@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.SourceJoin;
+import lsfusion.server.data.expr.join.SourceJoin;
 
 // транслятор в тот же контекст как правило
 public class PartialKeyExprTranslator extends KeyExprTranslator {

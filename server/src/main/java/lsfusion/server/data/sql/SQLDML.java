@@ -1,7 +1,7 @@
 package lsfusion.server.data.sql;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.query.StaticExecuteEnvironment;
+import lsfusion.server.data.query.exec.StaticExecuteEnvironment;
 import lsfusion.server.data.query.stat.Cost;
 
 import java.sql.PreparedStatement;

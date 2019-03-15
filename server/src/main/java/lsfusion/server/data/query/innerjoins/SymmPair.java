@@ -12,11 +12,6 @@ public class SymmPair<Class1, Class2> {
         this.second = second;
     }
 
-    // чтобы короче ситнаксис был
-    public static <Class1,Class2> Pair<Class1,Class2> create(Class1 first, Class2 second) {
-        return new Pair<>(first, second);
-    }
-
     public String toString() { return "(" + first.toString() + "," + second.toString() + ")"; }
 
     @Override

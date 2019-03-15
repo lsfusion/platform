@@ -2,8 +2,8 @@ package lsfusion.server.data.expr.where.ifs;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.query.AbstractJoin;
-import lsfusion.server.data.query.Join;
+import lsfusion.server.data.expr.join.AbstractJoin;
+import lsfusion.server.data.expr.join.Join;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 

@@ -2,10 +2,10 @@ package lsfusion.server.data.sql;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.*;
-import lsfusion.server.data.query.DynamicExecEnvSnapshot;
-import lsfusion.server.data.query.DynamicExecuteEnvironment;
-import lsfusion.server.data.query.PureTime;
-import lsfusion.server.data.query.PureTimeInterface;
+import lsfusion.server.data.query.exec.DynamicExecEnvSnapshot;
+import lsfusion.server.data.query.exec.DynamicExecuteEnvironment;
+import lsfusion.server.data.query.exec.materialize.PureTime;
+import lsfusion.server.data.query.exec.materialize.PureTimeInterface;
 import lsfusion.server.data.table.RegisterChange;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.type.ParseInterface;

@@ -7,7 +7,7 @@ import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.Join;
+import lsfusion.server.data.expr.join.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.session.change.Correlation;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
