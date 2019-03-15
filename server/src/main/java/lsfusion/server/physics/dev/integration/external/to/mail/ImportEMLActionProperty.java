@@ -16,7 +16,7 @@ import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.apache.poi.hmef.Attachment;

@@ -1,8 +1,8 @@
 package lsfusion.server.physics.dev.id.name;
 
-import lsfusion.server.logics.classes.NumericClass;
-import lsfusion.server.logics.classes.StringClass;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.data.NumericClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 
 import java.util.Arrays;
 import java.util.List;

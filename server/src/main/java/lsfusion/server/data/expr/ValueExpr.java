@@ -23,6 +23,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.data.*;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 
 import java.math.BigInteger;
 

@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.ValueFormulaProperty;
 import lsfusion.server.logics.property.infer.CalcType;

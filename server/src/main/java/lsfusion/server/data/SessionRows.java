@@ -33,6 +33,10 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 
 import java.sql.SQLException;
 

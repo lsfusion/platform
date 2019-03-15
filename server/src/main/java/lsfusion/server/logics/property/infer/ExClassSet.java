@@ -9,11 +9,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.LogicalClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.classes.sets.ResolveUpClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
 
 import java.util.List;

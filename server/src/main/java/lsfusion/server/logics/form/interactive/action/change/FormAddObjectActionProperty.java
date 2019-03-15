@@ -7,8 +7,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.change.AddObjectAction;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

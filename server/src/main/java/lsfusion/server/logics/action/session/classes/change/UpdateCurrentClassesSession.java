@@ -9,9 +9,8 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.DataSessionModifier;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.action.session.classes.change.ClassChanges;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

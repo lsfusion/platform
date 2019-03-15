@@ -35,7 +35,7 @@ fileToString(FILE file) { fileToString(file, 'UTF-8'); }
 //cast link to string
 linkToString '{utils.link.to.string}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.LinkToStringActionProperty' (LINK);
 //cast richtext to string
-richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.classes.utils.string.RichTextToStringActionProperty' (RICHTEXT);
+richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.server.logics.classes.data.utils.string.RichTextToStringActionProperty' (RICHTEXT);
 
 //path, text, charset
 appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
@@ -94,7 +94,7 @@ pingClient '{utils.ping.client}' (TEXT host)  {ping(host, TRUE); }
 
 // ---------------------------------- Работа с файлами Excel  ---------------------------------- //
 protectedExcel '{utils.protected.excel}' = DATA LOCAL EXCELFILE ();
-protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.server.logics.classes.utils.excel.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
+protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
 
 // --------------------------------------------- Работа со строками --------------------------------- //
 
@@ -147,13 +147,13 @@ decode = FORMULA RAWFILE 'decode(($1),($2))';
 decodeText = FORMULA TEXT 'decode(($1),($2))';
 
 encodedBase64 = DATA LOCAL TEXT();
-encodeBase64  INTERNAL  'lsfusion.server.logics.classes.utils.string.EncodeBase64ActionProperty' (TEXT);
+encodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.EncodeBase64ActionProperty' (TEXT);
 
 decodedBase64 = DATA LOCAL TEXT();
-decodeBase64  INTERNAL  'lsfusion.server.logics.classes.utils.string.DecodeBase64ActionProperty' (TEXT);
+decodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.DecodeBase64ActionProperty' (TEXT);
 
 urlEncoded = DATA LOCAL TEXT();
-urlEncode  INTERNAL 'lsfusion.server.logics.classes.utils.string.UrlEncodeActionProperty' (TEXT, STRING[20]);
+urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeActionProperty' (TEXT, STRING[20]);
 
 // --------------------------------------------- Работа с числами --------------------------------- //
 
@@ -207,7 +207,7 @@ round6 (number) = round(number, 6);
 
 // ---------------------------------- Работа с датами  ---------------------------------- //
 resultMilliseconds '{utils.result.milliseconds}' = DATA LOCAL LONG();
-toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classes.utils.time.ToMillisecondsActionProperty' (DATETIME);
+toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classes.data.utils.time.ToMillisecondsActionProperty' (DATETIME);
 
 // -------------------------------------------- Свойства под файлы ---------------------------- //
 

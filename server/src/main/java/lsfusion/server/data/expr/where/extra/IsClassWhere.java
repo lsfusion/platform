@@ -27,8 +27,12 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.property.classes.IsClassField;
+import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.property.classes.user.IsClassField;
 
 public class IsClassWhere extends DataWhere {
 

@@ -41,9 +41,9 @@ import lsfusion.server.logics.action.session.change.increment.IncrementChangePro
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.table.NoPropertyTableUsage;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
-import lsfusion.server.logics.classes.OrderClass;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.UpdateType;

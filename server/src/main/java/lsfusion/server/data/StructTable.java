@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.ByteArrayClass;
+import lsfusion.server.logics.classes.data.ByteArrayClass;
 
 public class StructTable extends DBTable {
 

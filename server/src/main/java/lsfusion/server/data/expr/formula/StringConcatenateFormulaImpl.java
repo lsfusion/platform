@@ -3,7 +3,7 @@ package lsfusion.server.data.expr.formula;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.StringClass;
 
 public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
     protected final String separator;

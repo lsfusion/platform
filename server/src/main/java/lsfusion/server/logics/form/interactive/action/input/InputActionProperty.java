@@ -8,7 +8,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

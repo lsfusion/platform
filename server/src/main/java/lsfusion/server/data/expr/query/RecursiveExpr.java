@@ -22,9 +22,9 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.IntegralClass;
-import lsfusion.server.logics.classes.LogicalClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.IntegralClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 
 public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, RecursiveJoin, RecursiveExpr, RecursiveExpr.QueryInnerContext> {
 

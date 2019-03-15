@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;

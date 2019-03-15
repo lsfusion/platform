@@ -28,7 +28,7 @@ import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Reader;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
-import lsfusion.server.logics.classes.FileClass;
+import lsfusion.server.logics.classes.data.FileClass;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.PreparedStatement;

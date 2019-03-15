@@ -17,7 +17,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 
 import java.sql.SQLException;
 

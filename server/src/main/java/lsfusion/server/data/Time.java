@@ -1,10 +1,10 @@
 package lsfusion.server.data;
 
 import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.DateTimeClass;
-import lsfusion.server.logics.classes.IntegerClass;
-import lsfusion.server.logics.classes.LongClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.DateTimeClass;
+import lsfusion.server.logics.classes.data.IntegerClass;
+import lsfusion.server.logics.classes.data.LongClass;
 
 public enum Time {
     EPOCH, HOUR, MINUTE, DATETIME;

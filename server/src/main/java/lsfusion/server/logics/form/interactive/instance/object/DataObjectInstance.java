@@ -8,9 +8,9 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 

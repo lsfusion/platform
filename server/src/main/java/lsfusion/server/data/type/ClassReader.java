@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.ConcreteClass;
 
 public interface ClassReader<T> extends Reader<T> {

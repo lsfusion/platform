@@ -7,7 +7,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.property.Property;
 
 public class ImportField implements ImportFieldInterface, ImportKeyInterface {

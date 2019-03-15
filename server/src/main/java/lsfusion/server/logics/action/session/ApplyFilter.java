@@ -2,7 +2,7 @@ package lsfusion.server.logics.action.session;
 
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.property.classes.ClassDataProperty;
+import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 

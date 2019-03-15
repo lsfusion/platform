@@ -7,7 +7,7 @@ import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
-import lsfusion.server.logics.classes.SystemClass;
+import lsfusion.server.logics.classes.data.SystemClass;
 
 public class EmptyTable extends DBTable {
     public static final EmptyTable instance = new EmptyTable();

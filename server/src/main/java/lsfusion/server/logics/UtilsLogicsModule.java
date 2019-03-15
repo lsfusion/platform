@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.classes.utils.time.TimeLogicsModule;
+import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 
 import java.io.IOException;
 

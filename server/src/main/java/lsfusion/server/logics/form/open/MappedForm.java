@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.open;
 
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;

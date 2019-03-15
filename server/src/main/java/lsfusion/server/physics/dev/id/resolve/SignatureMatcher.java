@@ -1,6 +1,6 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 
 import java.util.List;
 

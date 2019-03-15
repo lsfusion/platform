@@ -16,7 +16,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 
 public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
 

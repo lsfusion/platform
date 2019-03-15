@@ -8,7 +8,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang.StringUtils;

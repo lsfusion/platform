@@ -30,7 +30,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;

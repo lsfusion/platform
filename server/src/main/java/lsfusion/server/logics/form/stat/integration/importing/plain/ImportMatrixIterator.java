@@ -11,8 +11,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.StringClass;
 
 import java.io.IOException;
 

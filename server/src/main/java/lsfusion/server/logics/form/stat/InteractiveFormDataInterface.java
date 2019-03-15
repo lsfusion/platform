@@ -17,7 +17,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;

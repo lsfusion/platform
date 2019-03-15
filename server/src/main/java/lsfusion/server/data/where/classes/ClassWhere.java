@@ -13,9 +13,9 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 

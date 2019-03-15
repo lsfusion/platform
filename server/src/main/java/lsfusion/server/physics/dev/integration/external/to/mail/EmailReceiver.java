@@ -25,7 +25,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.dev.integration.service.*;
 import org.apache.poi.hmef.Attachment;
 import org.apache.poi.hmef.HMEFMessage;

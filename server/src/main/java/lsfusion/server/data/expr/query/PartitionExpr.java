@@ -28,8 +28,8 @@ import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.sets.AndClassSet;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExpr.Query, PartitionJoin, PartitionExpr, PartitionExpr.QueryInnerContext> {
 

@@ -13,10 +13,10 @@ import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.property.classes.IsClassField;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.property.classes.user.IsClassField;
 import lsfusion.server.physics.exec.db.table.FullTablesInterface;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 

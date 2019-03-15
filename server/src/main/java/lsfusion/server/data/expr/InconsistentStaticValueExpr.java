@@ -22,7 +22,7 @@ import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 
 // вообще надо по хорошему через множественное наследование связать с ValueExpr, но т.к. это локальный case пока делать не будем
 // класс нужен так как classExpr работает только с VariableClassExpr

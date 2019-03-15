@@ -8,7 +8,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.IntegralClass;
+import lsfusion.server.logics.classes.data.IntegralClass;
 
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать BaseExpr

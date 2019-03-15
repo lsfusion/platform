@@ -5,7 +5,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.classes.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

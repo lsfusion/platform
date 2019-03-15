@@ -5,7 +5,7 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 
 public class TimeExpr extends StaticExpr<DataClass> {
 

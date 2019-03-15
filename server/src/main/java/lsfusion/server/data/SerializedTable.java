@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 
 import java.io.DataInputStream;
 import java.io.IOException;

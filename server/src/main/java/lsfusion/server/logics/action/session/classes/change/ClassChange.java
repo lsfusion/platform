@@ -15,8 +15,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.action.session.change.ModifyResult;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
-import lsfusion.server.logics.classes.BaseClass;
-import lsfusion.server.logics.classes.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 
 import java.sql.SQLException;
 

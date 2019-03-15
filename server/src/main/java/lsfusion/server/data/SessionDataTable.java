@@ -24,7 +24,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
-import lsfusion.server.logics.classes.BaseClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.ValueClass;
 
 import java.sql.SQLException;

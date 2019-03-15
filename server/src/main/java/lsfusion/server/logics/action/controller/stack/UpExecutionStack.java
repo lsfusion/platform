@@ -12,7 +12,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 
 import java.sql.SQLException;
 import java.util.List;

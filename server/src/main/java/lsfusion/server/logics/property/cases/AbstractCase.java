@@ -15,7 +15,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.flow.CaseActionProperty;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;

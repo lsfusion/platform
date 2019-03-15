@@ -12,7 +12,7 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
-import lsfusion.server.logics.classes.LogicalClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;

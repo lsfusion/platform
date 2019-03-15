@@ -251,7 +251,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initObjectClassTask" class="lsfusion.server.logics.classes.init.InitObjectClassTask">
+    <bean id="initObjectClassTask" class="lsfusion.server.logics.classes.controller.init.InitObjectClassTask">
         <property name="dependencies">
             <set>
                 <ref bean="initMetaAndClassesTask"/>
@@ -269,7 +269,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initClassDataPropsTask" class="lsfusion.server.logics.classes.init.InitClassDataPropsTask">
+    <bean id="initClassDataPropsTask" class="lsfusion.server.logics.classes.controller.init.InitClassDataPropsTask">
         <property name="dependencies">
             <set>
                 <ref bean="initTablesTask"/> <!-- нужны таблицы, чтобы знать куда раскладывать признаки классов -->
@@ -351,7 +351,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initClassAggrPropsTask" class="lsfusion.server.logics.classes.init.InitClassAggrPropsTask">
+    <bean id="initClassAggrPropsTask" class="lsfusion.server.logics.classes.controller.init.InitClassAggrPropsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeCalcAbstractTask"/>
@@ -379,7 +379,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initClassDataIndicesTask" class="lsfusion.server.logics.classes.init.InitClassDataIndicesTask">
+    <bean id="initClassDataIndicesTask" class="lsfusion.server.logics.classes.controller.init.InitClassDataIndicesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/>  <!-- чисто для хака initStats -->

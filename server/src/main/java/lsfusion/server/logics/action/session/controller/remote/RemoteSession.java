@@ -25,7 +25,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.navigator.controller.env.FormController;

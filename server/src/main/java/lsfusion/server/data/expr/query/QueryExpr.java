@@ -24,7 +24,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
 public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J extends QueryJoin<?, ?, ?, ?>,

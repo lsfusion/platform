@@ -14,7 +14,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.DataClass;
+import lsfusion.server.logics.classes.data.DataClass;
 
 public abstract class CompareWhere<This extends CompareWhere<This>> extends BinaryWhere<This> {
     

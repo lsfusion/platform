@@ -9,7 +9,7 @@ import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.link.LinkClass;
+import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.apache.commons.httpclient.util.URIUtil;
 

@@ -23,10 +23,10 @@ import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.classes.DataClass;
-import lsfusion.server.logics.classes.DateTimeClass;
-import lsfusion.server.logics.classes.IntegerClass;
-import lsfusion.server.logics.classes.StringClass;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.DateTimeClass;
+import lsfusion.server.logics.classes.data.IntegerClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.physics.admin.logging.LogInfo;
 import lsfusion.server.physics.admin.logging.RemoteLoggerAspect;
 

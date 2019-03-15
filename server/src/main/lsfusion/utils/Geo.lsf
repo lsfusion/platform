@@ -42,9 +42,9 @@ longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[10,5] (POI);
 readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[10,5] ();
 readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[10,5] ();
 
-getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
+getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
 getCoordinates(STRING[255] address)  { getCoordinatesAddress(address, calculateMapProvider()); }
-recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.utils.geo.RecalculateDistancePOIActionProperty' (POI);
+recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIActionProperty' (POI);
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
 
@@ -63,7 +63,7 @@ recalculateAllDistances '{geo.recalculate.all.distances}'()  {
 }
 
 // Показать на карте одну точку
-showOnMap '{geo.show.on.map}' INTERNAL  'lsfusion.server.logics.classes.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
+showOnMap '{geo.show.on.map}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
 showOnMap(DOUBLE latitude, DOUBLE longitude, STRING[100] address)  { showOnMap (latitude, longitude, showMapProvider(), address); }
 
 showOnMap '{geo.show.on.map}'(POI POI) { 
@@ -76,11 +76,11 @@ descriptionPath '{geo.description.path.poi}' = DATA LOCAL VARSTRING[200] (POI);
 
 TABLE poiPoi (POI, POI); 
 distancePOIPOI '{geo.distance.poi.poi}' = DATA INTEGER (POI, POI);
-showOnPath '{geo.show.on.path}' INTERNAL  'lsfusion.server.logics.classes.utils.geo.ShowOnMapPathActionProperty' (MapProvider);
+showOnPath '{geo.show.on.path}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.ShowOnMapPathActionProperty' (MapProvider);
 
 inPath '{geo.in.path.poi}' = DATA LOCAL BOOLEAN (POI);
 startPathPOI '{geo.start.path.poi}'= DATA LOCAL POI();
-calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.utils.geo.CalculatePathActionProperty' ();
+calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.CalculatePathActionProperty' ();
 
 EXTEND FORM options
     PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances

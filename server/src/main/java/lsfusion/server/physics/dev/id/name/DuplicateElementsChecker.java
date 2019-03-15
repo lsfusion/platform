@@ -4,7 +4,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.classes.CustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
