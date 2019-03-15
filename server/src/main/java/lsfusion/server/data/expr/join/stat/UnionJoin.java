@@ -20,8 +20,8 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.join.query.QueryJoin;
-import lsfusion.server.data.expr.query.stat.Stat;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.where.Where;
 

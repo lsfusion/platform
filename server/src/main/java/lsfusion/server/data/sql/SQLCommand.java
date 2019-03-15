@@ -9,7 +9,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.sql.statement.PreParsedStatement;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.query.exec.materialize.MaterializedQuery;

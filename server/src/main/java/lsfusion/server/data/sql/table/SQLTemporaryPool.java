@@ -17,7 +17,7 @@ import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.CacheStats;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query.stat;
+package lsfusion.server.data.stat;
 
 import lsfusion.server.physics.admin.Settings;
 

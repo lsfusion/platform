@@ -16,7 +16,7 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
 import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.join.stat.KeyStat;

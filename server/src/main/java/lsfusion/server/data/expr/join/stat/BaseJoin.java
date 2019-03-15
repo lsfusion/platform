@@ -5,8 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
-import lsfusion.server.data.expr.query.stat.Stat;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.stat.StatType;
 
 public interface BaseJoin<K> {
 

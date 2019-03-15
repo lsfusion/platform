@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.struct;
 
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.ValueClass;

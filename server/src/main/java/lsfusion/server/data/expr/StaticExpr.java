@@ -1,9 +1,9 @@
 package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.data.expr.query.stat.PropStat;
-import lsfusion.server.data.expr.query.stat.Stat;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.PropStat;
+import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;

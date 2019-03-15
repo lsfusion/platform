@@ -15,7 +15,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.extra.GreaterWhere;
 import lsfusion.server.data.query.compile.FJData;

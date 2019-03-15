@@ -7,8 +7,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.expr.query.stat.DistinctKeys;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.DistinctKeys;
+import lsfusion.server.data.stat.Stat;
 
 import java.util.Comparator;
 

@@ -16,7 +16,7 @@ import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.data.expr.StaticParamNullableExpr;
 import lsfusion.server.data.expr.*;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.ExprIndexedJoin;
 import lsfusion.server.data.query.compile.FJData;

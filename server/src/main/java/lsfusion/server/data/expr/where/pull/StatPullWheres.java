@@ -6,8 +6,8 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.stat.Stat;
-import lsfusion.server.data.expr.query.stat.StatType;
+import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 

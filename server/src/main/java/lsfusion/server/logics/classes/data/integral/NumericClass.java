@@ -7,7 +7,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.version.NFStaticLazy;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ParseException;

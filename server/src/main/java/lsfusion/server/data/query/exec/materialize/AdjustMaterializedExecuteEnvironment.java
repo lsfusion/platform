@@ -25,7 +25,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.*;
-import lsfusion.server.data.expr.query.stat.Stat;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.expr.join.stat.Cost;
 import lsfusion.server.data.type.ParseInterface;
 

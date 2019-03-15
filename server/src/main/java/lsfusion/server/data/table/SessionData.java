@@ -21,7 +21,7 @@ import lsfusion.server.data.caches.InnerContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.stat.PropStat;
+import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.query.builder.AbstractJoin;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.builder.Join;
