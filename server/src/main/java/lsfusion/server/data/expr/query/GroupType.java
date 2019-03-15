@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.compile.CompileOrder;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.ConcatenateType;

@@ -66,7 +66,7 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.query.Join;
+import lsfusion.server.data.expr.join.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;

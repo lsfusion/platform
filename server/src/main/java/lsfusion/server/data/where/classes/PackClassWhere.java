@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.KeyStat;

@@ -10,7 +10,7 @@ class Decision {
     private final OrWhere whereTrue;
     private final OrWhere whereFalse;
 
-    Decision(AndObjectWhere iCondition, Where iAddTrue, Where iAddFalse, OrWhere iWhereTrue, OrWhere iWhereFalse) {
+    public Decision(AndObjectWhere iCondition, Where iAddTrue, Where iAddFalse, OrWhere iWhereTrue, OrWhere iWhereFalse) {
         condition = iCondition;
         addTrue = iAddTrue;
         addFalse = iAddFalse;
@@ -19,7 +19,7 @@ class Decision {
         whereFalse = iWhereFalse;
     }
 
-    Where pairs(Decision decision2) {
+    public Where pairs(Decision decision2) {
         if(BaseUtils.hashEquals(condition,decision2.condition))
             return OrWhere.orPairs(OrWhere.orPairs(whereTrue,decision2.addTrue).not(),
                 OrWhere.orPairs(whereFalse,decision2.addFalse).not()).not();

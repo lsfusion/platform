@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.service.action;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.query.DynamicExecuteEnvironment;
+import lsfusion.server.data.query.exec.DynamicExecuteEnvironment;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

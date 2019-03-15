@@ -7,7 +7,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.ConcreteClass;

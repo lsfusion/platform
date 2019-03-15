@@ -27,7 +27,7 @@ import lsfusion.server.data.expr.where.cases.MExprCaseList;
 import lsfusion.server.data.expr.where.ifs.IfExpr;
 import lsfusion.server.data.expr.where.ifs.MIfCases;
 import lsfusion.server.data.expr.where.ifs.NullExpr;
-import lsfusion.server.data.query.AbstractSourceJoin;
+import lsfusion.server.data.expr.join.AbstractSourceJoin;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.Query;

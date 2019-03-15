@@ -8,7 +8,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.version.NFStaticLazy;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;

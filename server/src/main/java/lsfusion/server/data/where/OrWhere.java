@@ -18,7 +18,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.extra.GreaterWhere;
-import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.query.innerjoins.KeyEquals;

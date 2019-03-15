@@ -27,7 +27,7 @@ import lsfusion.server.data.expr.query.SubQueryExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.InnerJoin;
+import lsfusion.server.data.expr.join.InnerJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;

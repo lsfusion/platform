@@ -5,7 +5,6 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.MapCase;
 import lsfusion.server.data.expr.where.cases.MapCaseList;
-import lsfusion.server.data.query.AndContext;
 import lsfusion.server.data.where.Where;
 
 public abstract class ExclPullWheres<R, K, W extends AndContext<W>> {

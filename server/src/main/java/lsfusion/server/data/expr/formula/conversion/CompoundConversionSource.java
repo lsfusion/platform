@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.formula.conversion;
 
-import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.data.DataClass;
 

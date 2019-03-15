@@ -9,7 +9,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.EnsureTypeEnvironment;
+import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;

@@ -15,6 +15,11 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.query.compile.CompileSource;
+import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.innerjoins.InnerJoins;
+import lsfusion.server.data.expr.join.AbstractJoin;
+import lsfusion.server.data.expr.join.AbstractSourceJoin;
+import lsfusion.server.data.expr.join.InnerJoin;
 import lsfusion.server.data.query.result.ResultHandler;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -268,7 +273,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     public ImOrderMap<ImMap<KeyField, DataObject>,ImMap<PropertyField, ObjectValue>> read(SQLSession session, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this);
-        lsfusion.server.data.query.Join<PropertyField> tableJoin = join(query.getMapExprs());
+        lsfusion.server.data.expr.join.Join<PropertyField> tableJoin = join(query.getMapExprs());
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.executeClasses(session, baseClass, owner);
@@ -276,7 +281,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     public void readData(SQLSession session, BaseClass baseClass, OperationOwner owner, boolean noFilesAndLogs, ResultHandler<KeyField, PropertyField> result) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this);
-        lsfusion.server.data.query.Join<PropertyField> tableJoin = join(query.getMapExprs());
+        lsfusion.server.data.expr.join.Join<PropertyField> tableJoin = join(query.getMapExprs());
         ImMap<PropertyField, Expr> exprs = tableJoin.getExprs();
         if(noFilesAndLogs)
             exprs = exprs.filterFn(new SFunctionSet<PropertyField>() {
@@ -361,7 +366,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return MapFact.singleton(MapFact.<KeyField, ConcreteClass>EMPTY(), MapFact.<PropertyField, ConcreteClass>EMPTY());
 
         ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-        final lsfusion.server.data.query.Join<PropertyField> tableJoin = join(mapKeys);
+        final lsfusion.server.data.expr.join.Join<PropertyField> tableJoin = join(mapKeys);
 
         ImRevMap<KeyField, KeyExpr> objectMapKeys = mapKeys.filterRev(objectKeys);
         ImRevMap<Field, KeyExpr> classKeys = MapFact.addRevExcl(objectMapKeys, KeyExpr.getMapKeys(objectProps));
@@ -415,7 +420,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
         ImRevMap<KeyField, KeyExpr> objectMapKeys = mapKeys.filterRev(objectKeys);
 
-        final lsfusion.server.data.query.Join<PropertyField> tableJoin = join(mapKeys);
+        final lsfusion.server.data.expr.join.Join<PropertyField> tableJoin = join(mapKeys);
 
         final ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
         GetValue<Expr, Expr> classExpr = new GetValue<Expr, Expr>() {
@@ -483,7 +488,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     public Query<KeyField, PropertyField> getQuery() {
         QueryBuilder<KeyField,PropertyField> query = new QueryBuilder<>(this);
-        lsfusion.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
+        lsfusion.server.data.expr.join.Join<PropertyField> join = join(query.getMapExprs());
         query.and(join.getWhere());
         query.addProperties(join.getExprs());
         return query.getQuery();
@@ -500,19 +505,19 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         getQuery().outClassesSelect(session, baseClass, processor);
     }
 
-    public lsfusion.server.data.query.Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
-        return new AddPullWheres<KeyField, lsfusion.server.data.query.Join<PropertyField>>() {
-            protected MCaseList<lsfusion.server.data.query.Join<PropertyField>, ?, ?> initCaseList(boolean exclusive) {
+    public lsfusion.server.data.expr.join.Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
+        return new AddPullWheres<KeyField, lsfusion.server.data.expr.join.Join<PropertyField>>() {
+            protected MCaseList<lsfusion.server.data.expr.join.Join<PropertyField>, ?, ?> initCaseList(boolean exclusive) {
                 return new MJoinCaseList<>(properties, exclusive);
             }
-            protected lsfusion.server.data.query.Join<PropertyField> initEmpty() {
+            protected lsfusion.server.data.expr.join.Join<PropertyField> initEmpty() {
                 return new NullJoin<>(properties);
             }
-            protected lsfusion.server.data.query.Join<PropertyField> proceedIf(Where ifWhere, lsfusion.server.data.query.Join<PropertyField> resultTrue, lsfusion.server.data.query.Join<PropertyField> resultFalse) {
+            protected lsfusion.server.data.expr.join.Join<PropertyField> proceedIf(Where ifWhere, lsfusion.server.data.expr.join.Join<PropertyField> resultTrue, lsfusion.server.data.expr.join.Join<PropertyField> resultFalse) {
                 return new IfJoin<>(ifWhere, resultTrue, resultFalse);
             }
 
-            protected lsfusion.server.data.query.Join<PropertyField> proceedBase(ImMap<KeyField, BaseExpr> joinBase) {
+            protected lsfusion.server.data.expr.join.Join<PropertyField> proceedBase(ImMap<KeyField, BaseExpr> joinBase) {
                 return joinAnd(joinBase);
             }
         }.proceed(joinImplement);
@@ -563,7 +568,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
     }
 
-    public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, lsfusion.server.data.query.Join<PropertyField> {
+    public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, lsfusion.server.data.expr.join.Join<PropertyField> {
 
         public final ImMap<KeyField, BaseExpr> joins;
 
@@ -738,14 +743,14 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return AbstractJoin.getExprs(this);
         }
 
-        public lsfusion.server.data.query.Join<PropertyField> and(Where where) {
+        public lsfusion.server.data.expr.join.Join<PropertyField> and(Where where) {
             return AbstractJoin.and(this, where);
         }
 
-        public lsfusion.server.data.query.Join<PropertyField> translateValues(MapValuesTranslate translate) {
+        public lsfusion.server.data.expr.join.Join<PropertyField> translateValues(MapValuesTranslate translate) {
             return AbstractJoin.translateValues(this, translate);
         }
-        public lsfusion.server.data.query.Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
+        public lsfusion.server.data.expr.join.Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
             return translateOuter(translate.mapKeys());
         }
         
@@ -768,11 +773,11 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
 
         @ParamLazy
-        public lsfusion.server.data.query.Join<PropertyField> translateExpr(ExprTranslator translator) {
+        public lsfusion.server.data.expr.join.Join<PropertyField> translateExpr(ExprTranslator translator) {
             return join(translator.translate(joins));
         }
 
-        public lsfusion.server.data.query.Join<PropertyField> packFollowFalse(Where falseWhere) {
+        public lsfusion.server.data.expr.join.Join<PropertyField> packFollowFalse(Where falseWhere) {
             ImMap<KeyField, lsfusion.server.data.expr.Expr> packJoins = BaseExpr.packPushFollowFalse(joins, falseWhere);
             if(!BaseUtils.hashEquals(packJoins, joins))
                 return join(packJoins);

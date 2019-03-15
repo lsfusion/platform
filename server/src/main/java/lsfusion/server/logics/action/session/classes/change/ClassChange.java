@@ -7,7 +7,7 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.query.Join;
+import lsfusion.server.data.expr.join.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.query.modify.Modify;

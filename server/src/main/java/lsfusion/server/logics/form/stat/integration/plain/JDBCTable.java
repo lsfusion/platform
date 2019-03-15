@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.ParseException;

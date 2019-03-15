@@ -1,7 +1,7 @@
 package lsfusion.server.data.type;
 
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 import java.sql.ResultSet;

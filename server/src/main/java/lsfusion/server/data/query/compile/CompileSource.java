@@ -2,7 +2,7 @@ package lsfusion.server.data.query.compile;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.table.Table;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.QueryExpr;

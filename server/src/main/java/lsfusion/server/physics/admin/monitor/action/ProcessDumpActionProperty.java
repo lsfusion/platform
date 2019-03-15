@@ -16,7 +16,7 @@ import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.data.*;
-import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
+import lsfusion.server.data.query.exec.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.type.CustomReader;
 import lsfusion.server.data.type.PGObjectReader;
 import lsfusion.server.data.type.ParseInterface;

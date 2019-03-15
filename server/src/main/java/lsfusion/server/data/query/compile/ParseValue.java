@@ -1,7 +1,7 @@
 package lsfusion.server.data.query.compile;
 
 import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.query.EnsureTypeEnvironment;
+import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.ParseInterface;
 

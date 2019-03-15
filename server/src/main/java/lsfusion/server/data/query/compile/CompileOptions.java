@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.query.LimitOptions;
-import lsfusion.server.data.query.SubQueryContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 

@@ -8,7 +8,7 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
-import lsfusion.server.data.query.DynamicExecEnvSnapshot;
+import lsfusion.server.data.query.exec.DynamicExecEnvSnapshot;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
 import lsfusion.server.physics.admin.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -25,7 +25,7 @@ public class SQLSessionLoggerAspect {
         return executeMethodAndLogTime(thisJoinPoint, session, queryString);
     }
 
-    @Around("execution(* lsfusion.server.data.sql.SQLSession.executeCommand(lsfusion.server.data.sql.SQLCommand, lsfusion.server.data.query.DynamicExecEnvSnapshot, ..)) && target(session) && args(command, snap, ..)")
+    @Around("execution(* lsfusion.server.data.sql.SQLSession.executeCommand(lsfusion.server.data.sql.SQLCommand, lsfusion.server.data.query.exec.DynamicExecEnvSnapshot, ..)) && target(session) && args(command, snap, ..)")
     public Object executeSelect(ProceedingJoinPoint thisJoinPoint, SQLSession session, SQLCommand command, DynamicExecEnvSnapshot snap) throws Throwable {
         return executeMethodAndLogTime(thisJoinPoint, session, command.toString());
     }

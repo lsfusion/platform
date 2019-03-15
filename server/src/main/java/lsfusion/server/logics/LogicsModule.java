@@ -26,7 +26,7 @@ import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Time;
 import lsfusion.server.data.type.Union;
-import lsfusion.server.data.expr.StringAggUnionProperty;
+import lsfusion.server.logics.property.classes.data.StringAggUnionProperty;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;

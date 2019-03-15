@@ -3,7 +3,7 @@ package lsfusion.server.data.type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.table.Field;
 import lsfusion.server.data.sql.SQLSession;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 import java.sql.PreparedStatement;
