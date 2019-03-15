@@ -11,7 +11,7 @@ import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.form.interactive.change.ChangedData;
+import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.sql.SQLException;

@@ -25,7 +25,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;

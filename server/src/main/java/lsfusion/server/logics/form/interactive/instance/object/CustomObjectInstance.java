@@ -10,7 +10,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.AndClassSet;
-import lsfusion.server.logics.form.interactive.change.ChangedData;
+import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.IsClassProperty;

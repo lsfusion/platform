@@ -1,8 +1,8 @@
 package lsfusion.server.physics.admin.reflection;
 
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ConcreteCustomClass;

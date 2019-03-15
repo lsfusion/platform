@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.authentication.security.controller.init.policy;
 
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;

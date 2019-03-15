@@ -13,7 +13,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.AbstractParseInterface;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.classes.DataClass;

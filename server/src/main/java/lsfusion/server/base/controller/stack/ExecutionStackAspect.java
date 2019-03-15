@@ -5,8 +5,10 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.interop.ProgressBar;
+import lsfusion.server.base.controller.remote.stack.RmiCallStackItem;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
+import lsfusion.server.logics.action.controller.stack.ExecuteActionStackItem;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
@@ -178,7 +180,7 @@ public class ExecutionStackAspect {
     @Around(RemoteContextAspect.allUserRemoteCalls)
     public Object execute(ProceedingJoinPoint joinPoint, ContextAwarePendingRemoteObject target) throws Throwable {
         assert target == joinPoint.getTarget();
-        RMICallStackItem item = new RMICallStackItem(joinPoint, target);
+        RmiCallStackItem item = new RmiCallStackItem(joinPoint, target);
         return processStackItem(joinPoint, item);
     }
     

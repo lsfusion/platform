@@ -1,6 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.infer.ClassType;

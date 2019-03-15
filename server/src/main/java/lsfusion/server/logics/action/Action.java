@@ -24,7 +24,7 @@ import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;

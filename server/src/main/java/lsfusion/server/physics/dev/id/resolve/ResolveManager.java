@@ -1,8 +1,8 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.language.MetaCodeFragment;
-import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.metacode.MetaCodeFragment;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;

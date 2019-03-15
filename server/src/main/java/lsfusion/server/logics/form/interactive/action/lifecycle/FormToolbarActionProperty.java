@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;

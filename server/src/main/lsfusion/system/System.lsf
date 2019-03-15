@@ -70,11 +70,11 @@ sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepActio
 sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 
-applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyWithoutRecalcActionProperty' ();
-applyOnlyCalc  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyCalcActionProperty' ();
-applyOnlyCheck  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyCheckActionProperty' ();
-applyOnlyData  INTERNAL  'lsfusion.server.logics.action.session.ApplyOnlyDataActionProperty' ();
-applyAll  INTERNAL  'lsfusion.server.logics.action.session.ApplyAllActionProperty' ();
+applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyWithoutRecalcActionProperty' ();
+applyOnlyCalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCalcActionProperty' ();
+applyOnlyCheck  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCheckActionProperty' ();
+applyOnlyData  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyDataActionProperty' ();
+applyAll  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyAllActionProperty' ();
 
 throwException  INTERNAL  'lsfusion.server.logics.action.flow.ThrowExceptionActionProperty' (TEXT);
 
@@ -291,7 +291,7 @@ resetLogicsIcon '{system.logics.icon.reset}'()  { logicsIcon() <- NULL; }
 
 platformVersion = DATA TEXT();
 apiVersion = DATA INTEGER();
-synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.SynchronizeVersionsActionProperty' ();    
+synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
 onStarted() + { synchronizeVersions(); }
 
 META applicationForm(sid, name)

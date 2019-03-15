@@ -15,6 +15,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.logics.action.session.classes.changed.ChangedClasses;
+import lsfusion.server.logics.action.session.classes.changed.ChangedDataClasses;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;

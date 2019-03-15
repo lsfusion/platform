@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;

@@ -16,7 +16,7 @@ import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;

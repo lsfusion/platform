@@ -39,7 +39,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
+import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
 import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.ObjectClassSet;

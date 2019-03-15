@@ -3,10 +3,10 @@ package lsfusion.server.logics.controller.remote;
 import com.google.common.io.Resources;
 import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
-import lsfusion.server.base.controller.remote.RMIManager;
 import lsfusion.server.logics.BusinessLogics;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -23,7 +23,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
 
     public static final String EXPORT_NAME = "RemoteLogicsLoader";
 
-    private RMIManager rmiManager;
+    private RmiManager rmiManager;
 
     private RemoteLogics remoteLogics;
 
@@ -38,7 +38,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
         super(BLLOADER_ORDER);
     }
 
-    public void setRmiManager(RMIManager rmiManager) {
+    public void setRmiManager(RmiManager rmiManager) {
         this.rmiManager = rmiManager;
     }
 

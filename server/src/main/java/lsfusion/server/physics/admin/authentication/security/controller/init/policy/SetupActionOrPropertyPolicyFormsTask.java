@@ -2,8 +2,8 @@ package lsfusion.server.physics.admin.authentication.security.controller.init.po
 
 import lsfusion.base.col.SetFact;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.language.linear.LA;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;

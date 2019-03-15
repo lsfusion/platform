@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.property.Property;

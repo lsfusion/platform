@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.struct.property;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

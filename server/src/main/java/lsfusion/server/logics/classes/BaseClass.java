@@ -17,7 +17,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;

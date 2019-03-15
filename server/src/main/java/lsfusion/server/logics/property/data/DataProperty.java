@@ -22,7 +22,7 @@ import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.IncrementType;
-import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
+import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.BaseClass;
 import lsfusion.server.logics.classes.CustomClass;

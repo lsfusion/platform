@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LA;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;

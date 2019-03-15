@@ -7,7 +7,7 @@ import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
-import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.event.ApplyActionEvent;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

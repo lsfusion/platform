@@ -13,7 +13,7 @@ import lsfusion.interop.form.stat.report.ReportGenerator;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;

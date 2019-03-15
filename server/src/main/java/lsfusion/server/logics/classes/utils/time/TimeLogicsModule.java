@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes.utils.time;
 
 import lsfusion.server.data.Time;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.language.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 

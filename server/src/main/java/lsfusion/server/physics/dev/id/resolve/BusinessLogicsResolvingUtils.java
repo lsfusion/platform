@@ -1,6 +1,6 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.language.linear.LAP;
+import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;

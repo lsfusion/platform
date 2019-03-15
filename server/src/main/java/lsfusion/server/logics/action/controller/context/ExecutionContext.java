@@ -11,6 +11,7 @@ import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ModalityType;
+import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
@@ -19,7 +20,7 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.controller.manager.RestartManager;
@@ -29,8 +30,8 @@ import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.action.session.classes.UpdateCurrentClasses;
-import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
+import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClasses;
+import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.classes.ConcreteCustomClass;
@@ -58,7 +59,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import lsfusion.server.base.controller.remote.RMIManager;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -406,7 +406,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getLogicsInstance().getSecurityManager();
     }
 
-    public RMIManager getRmiManager() {
+    public RmiManager getRmiManager() {
         return getLogicsInstance().getRmiManager();
     }
 

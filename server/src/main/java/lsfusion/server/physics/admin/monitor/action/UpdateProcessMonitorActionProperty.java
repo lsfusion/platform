@@ -22,7 +22,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;

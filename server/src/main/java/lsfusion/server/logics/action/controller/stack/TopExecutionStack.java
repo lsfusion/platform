@@ -8,8 +8,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.Processor;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LP;
-import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
+import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.classes.sets.ResolveClassSet;
 
 import java.sql.SQLException;

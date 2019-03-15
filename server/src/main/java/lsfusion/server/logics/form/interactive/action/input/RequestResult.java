@@ -4,7 +4,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 
 public class RequestResult {
     public final ObjectValue chosenValue;

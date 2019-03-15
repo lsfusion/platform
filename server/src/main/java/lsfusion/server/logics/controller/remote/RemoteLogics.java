@@ -14,6 +14,7 @@ import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.RemoteSessionInterface;
 import lsfusion.interop.session.SessionInfo;
+import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.lifecycle.LifecycleListener;
@@ -27,7 +28,6 @@ import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
-import lsfusion.server.base.controller.remote.RMIManager;
 import lsfusion.server.physics.admin.logging.RemoteLoggerAspect;
 import lsfusion.server.logics.action.session.controller.remote.RemoteSession;
 import org.apache.log4j.Logger;
@@ -46,7 +46,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     protected NavigatorsManager navigatorsManager;
 
-    private RMIManager rmiManager; // for sessions
+    private RmiManager rmiManager; // for sessions
 
     protected RestartManager restartManager;
     
@@ -66,7 +66,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         this.navigatorsManager = navigatorsManager;
     }
 
-    public void setRmiManager(RMIManager rmiManager) {
+    public void setRmiManager(RmiManager rmiManager) {
         this.rmiManager = rmiManager;
     }
 

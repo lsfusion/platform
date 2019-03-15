@@ -9,7 +9,7 @@ import lsfusion.base.file.ReadUtils;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.linear.LP;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.classes.DynamicFormatFileClass;
