@@ -7,7 +7,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.join.SourceJoin;
+import lsfusion.server.data.SourceJoin;
 
 // заменяет expr / join на ключи
 public class JoinExprTranslator extends ExprTranslator {

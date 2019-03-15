@@ -23,7 +23,7 @@ import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
-import lsfusion.server.data.expr.join.AbstractSourceJoin;
+import lsfusion.server.data.AbstractSourceJoin;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.query.innerjoins.GroupSplitWhere;

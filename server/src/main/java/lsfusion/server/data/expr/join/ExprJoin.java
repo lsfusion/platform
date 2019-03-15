@@ -11,6 +11,7 @@ import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.join.where.inner.InnerJoin;
 import lsfusion.server.data.query.innerjoins.InnerJoins;
 import lsfusion.server.data.query.innerjoins.UpWheres;
 import lsfusion.server.data.query.stat.UnionJoin;

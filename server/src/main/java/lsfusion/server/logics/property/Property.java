@@ -18,7 +18,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.pack.PackComplex;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;

@@ -7,7 +7,7 @@ import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.PullExpr;
-import lsfusion.server.data.expr.join.SourceJoin;
+import lsfusion.server.data.SourceJoin;
 
 // заменяет ключы на выражения
 public class KeyExprTranslator extends ExprTranslator {

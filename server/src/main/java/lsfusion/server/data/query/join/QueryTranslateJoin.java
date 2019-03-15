@@ -1,8 +1,9 @@
-package lsfusion.server.data.expr.join;
+package lsfusion.server.data.query.join;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.join.AbstractJoin;
 import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;

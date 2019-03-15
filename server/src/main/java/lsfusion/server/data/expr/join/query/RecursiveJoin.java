@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query;
+package lsfusion.server.data.expr.join.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -12,6 +12,9 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.server.data.expr.query.RecursiveTable;
+import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.caches.OuterContext;
@@ -24,8 +27,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.query.InnerExprFollows;
-import lsfusion.server.data.expr.join.Join;
-import lsfusion.server.data.expr.join.RemapJoin;
+import lsfusion.server.data.query.join.Join;
+import lsfusion.server.data.query.join.RemapJoin;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.translator.MapTranslate;

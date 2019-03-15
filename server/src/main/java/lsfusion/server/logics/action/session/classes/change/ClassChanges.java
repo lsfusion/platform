@@ -35,7 +35,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.StaticClassExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ObjectType;

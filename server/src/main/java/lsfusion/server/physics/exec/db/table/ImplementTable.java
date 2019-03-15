@@ -514,7 +514,7 @@ public class ImplementTable extends DBTable { // последний интерф
         int rows = 0;
         if (!SystemProperties.doNotCalculateStats) {
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.expr.join.Join<PropertyField> join = join(mapKeys);
+            lsfusion.server.data.query.join.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
             MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
@@ -622,7 +622,7 @@ public class ImplementTable extends DBTable { // последний интерф
         if (!SystemProperties.doNotCalculateStats) {
 
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.expr.join.Join<PropertyField> join = join(mapKeys);
+            lsfusion.server.data.query.join.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
             MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();

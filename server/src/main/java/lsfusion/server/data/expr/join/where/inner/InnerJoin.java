@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.join;
+package lsfusion.server.data.expr.join.where.inner;
 
 import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.expr.query.StatType;
