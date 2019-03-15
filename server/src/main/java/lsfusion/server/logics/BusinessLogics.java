@@ -107,7 +107,7 @@ import lsfusion.server.physics.dev.id.name.*;
 import lsfusion.server.physics.dev.id.resolve.*;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import org.apache.log4j.Logger;

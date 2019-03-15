@@ -23,7 +23,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.base.controller.remote.RMIManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;

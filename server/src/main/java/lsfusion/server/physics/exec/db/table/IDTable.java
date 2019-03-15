@@ -20,7 +20,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.DataClass;
 import lsfusion.server.logics.classes.IntegerClass;
 import lsfusion.server.logics.classes.SystemClass;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 

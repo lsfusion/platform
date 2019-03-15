@@ -1,7 +1,7 @@
 package lsfusion.server.logics.controller.init;
 
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.physics.dev.module.init.GroupModuleTask;
+import lsfusion.server.physics.dev.module.controller.init.GroupModuleTask;
 import org.antlr.runtime.RecognitionException;
 
 public class InitMetaAndClassesTask extends GroupModuleTask {

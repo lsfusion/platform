@@ -3,7 +3,7 @@ package lsfusion.server.logics.controller.init;
 import lsfusion.server.base.task.GroupSingleTask;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 

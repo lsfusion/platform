@@ -10,7 +10,6 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.integration.external.to.mail.action.SendEmailActionProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

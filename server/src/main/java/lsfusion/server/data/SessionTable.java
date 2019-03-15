@@ -48,7 +48,7 @@ import lsfusion.server.logics.action.session.classes.RegisterClassRemove;
 import lsfusion.server.logics.action.session.classes.UpdateCurrentClassesSession;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 import lsfusion.server.logics.classes.*;
-import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
