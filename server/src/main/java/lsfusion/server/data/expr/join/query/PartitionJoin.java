@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query;
+package lsfusion.server.data.expr.join.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -12,6 +12,8 @@ import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
+import lsfusion.server.data.expr.query.GroupExprWhereJoins;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;

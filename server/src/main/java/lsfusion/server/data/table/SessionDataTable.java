@@ -26,7 +26,7 @@ import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;

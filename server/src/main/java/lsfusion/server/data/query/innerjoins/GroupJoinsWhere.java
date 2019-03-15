@@ -8,7 +8,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.query.QueryJoin;
+import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;

@@ -9,7 +9,7 @@ import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.query.innerjoins.*;
 import lsfusion.server.data.expr.join.ExprStatJoin;
-import lsfusion.server.data.expr.join.InnerJoin;
+import lsfusion.server.data.expr.join.where.inner.InnerJoin;
 import lsfusion.server.data.table.Table;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;

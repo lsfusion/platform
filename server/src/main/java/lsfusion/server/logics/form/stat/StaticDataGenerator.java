@@ -20,7 +20,7 @@ import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;

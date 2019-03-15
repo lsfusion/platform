@@ -17,6 +17,7 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.expr.join.query.GroupJoin;
 import lsfusion.server.data.expr.where.pull.AndContext;
 import lsfusion.server.data.query.compile.*;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -50,7 +51,7 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin,GroupExpr,GroupExpr.QueryInnerContext> {
+public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoin,GroupExpr,GroupExpr.QueryInnerContext> {
 
     @Override
     protected boolean hasDuplicateOuter() {

@@ -24,7 +24,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.join.AbstractJoin;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.AbstractWhere;

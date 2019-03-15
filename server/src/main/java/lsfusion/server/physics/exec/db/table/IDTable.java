@@ -67,7 +67,7 @@ public class IDTable extends DBTable {
     @IdentityInstanceLazy
     private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));
-        lsfusion.server.data.expr.join.Join<PropertyField> joinTable = join(query.getMapExprs());
+        lsfusion.server.data.query.join.Join<PropertyField> joinTable = join(query.getMapExprs());
         query.and(joinTable.getWhere());
         query.addProperty(value, joinTable.getExpr(value));
         return query.getQuery();

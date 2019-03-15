@@ -13,7 +13,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.DataChanges;

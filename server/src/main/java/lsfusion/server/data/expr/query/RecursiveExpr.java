@@ -15,6 +15,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.join.query.RecursiveJoin;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.translator.ExprTranslator;

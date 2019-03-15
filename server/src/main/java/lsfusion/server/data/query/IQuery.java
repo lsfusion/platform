@@ -10,7 +10,7 @@ import lsfusion.server.data.caches.AbstractInnerContext;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.compile.CompiledQuery;

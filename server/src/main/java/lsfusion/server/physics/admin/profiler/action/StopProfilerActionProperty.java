@@ -27,7 +27,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.physics.admin.profiler.ProfileItem;
 import lsfusion.server.physics.admin.profiler.ProfileObject;

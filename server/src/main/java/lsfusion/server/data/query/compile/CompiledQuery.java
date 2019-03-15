@@ -17,11 +17,12 @@ import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.logging.StringDebugInfoWriter;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.expr.join.query.*;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.exec.*;
 import lsfusion.server.data.query.innerjoins.InnerJoins;
-import lsfusion.server.data.expr.join.InnerJoin;
-import lsfusion.server.data.expr.join.Join;
+import lsfusion.server.data.expr.join.where.inner.InnerJoin;
+import lsfusion.server.data.query.join.Join;
 import lsfusion.server.data.query.result.ResultHandler;
 import lsfusion.server.data.sql.SQLQuery;
 import lsfusion.server.data.sql.SQLSession;
@@ -815,7 +816,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             return result;
         }
 
-        private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query,GroupJoin,GroupExpr> {
+        private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query, GroupJoin,GroupExpr> {
 
             final ImSet<KeyExpr> keys;
 
@@ -1043,7 +1044,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             return BaseUtils.evl(((ImList) (syntax.supportGroupNumbers() ? ListFact.consecutiveList(keySelect.size()) : keySelect.toList())).toString(","), "3+2");
         }
 
-        private class PartitionSelect extends QuerySelect<KeyExpr, PartitionExpr.Query,PartitionJoin,PartitionExpr> {
+        private class PartitionSelect extends QuerySelect<KeyExpr, PartitionExpr.Query, PartitionJoin,PartitionExpr> {
 
             final ImMap<KeyExpr,BaseExpr> mapKeys;
             private PartitionSelect(PartitionJoin partitionJoin) {
@@ -1142,7 +1143,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
         }
 
-        private class SubQuerySelect extends QuerySelect<KeyExpr,Expr,SubQueryJoin,SubQueryExpr> {
+        private class SubQuerySelect extends QuerySelect<KeyExpr,Expr, SubQueryJoin,SubQueryExpr> {
 
             final ImMap<KeyExpr,BaseExpr> mapKeys;
             private SubQuerySelect(SubQueryJoin subQueryJoin) {
@@ -1207,7 +1208,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             return getGroupSelect(fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect, havingSelect, areKeyValues);
         }
 
-        private class RecursiveSelect extends QuerySelect<KeyExpr,RecursiveExpr.Query,RecursiveJoin,RecursiveExpr> {
+        private class RecursiveSelect extends QuerySelect<KeyExpr,RecursiveExpr.Query, RecursiveJoin,RecursiveExpr> {
             private RecursiveSelect(RecursiveJoin recJoin) {
                 super(recJoin);
             }

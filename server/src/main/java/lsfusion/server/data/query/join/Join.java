@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.join;
+package lsfusion.server.data.query.join;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;

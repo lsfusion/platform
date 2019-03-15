@@ -9,6 +9,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractInnerContext;
 import lsfusion.server.data.caches.AbstractInnerHashContext;
 import lsfusion.server.data.caches.OuterContext;
+import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.data.caches.hash.HashContext;

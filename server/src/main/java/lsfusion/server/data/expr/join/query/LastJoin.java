@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query;
+package lsfusion.server.data.expr.join.query;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -7,6 +7,9 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityQuickLazy;
 import lsfusion.server.data.caches.hash.HashContext;
+import lsfusion.server.data.expr.query.DistinctKeys;
+import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;

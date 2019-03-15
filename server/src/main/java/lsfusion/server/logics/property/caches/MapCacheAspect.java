@@ -18,8 +18,8 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.ParamExpr;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.expr.join.Join;
-import lsfusion.server.data.expr.join.AbstractSourceJoin;
+import lsfusion.server.data.query.join.Join;
+import lsfusion.server.data.AbstractSourceJoin;
 import lsfusion.server.data.query.translator.MapJoin;
 import lsfusion.server.data.translator.*;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
@@ -172,7 +172,7 @@ public class MapCacheAspect {
         }
     }
 
-    @Around("execution(lsfusion.server.data.expr.join.Join lsfusion.server.data.query.Query.joinExprs(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.data.translator.MapValuesTranslate)) && target(query) && args(joinExprs,mapValues)")
+    @Around("execution(lsfusion.server.data.query.join.Join lsfusion.server.data.query.Query.joinExprs(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.data.translator.MapValuesTranslate)) && target(query) && args(joinExprs,mapValues)")
     public Object callJoin(ProceedingJoinPoint thisJoinPoint, Query query, ImMap joinExprs, MapValuesTranslate mapValues) throws Throwable {
         return join(query, joinExprs, mapValues, thisJoinPoint);
     }
