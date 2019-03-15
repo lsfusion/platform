@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.init;
 
-import lsfusion.server.logics.init.SimpleBLTask;
+import lsfusion.server.logics.controller.init.SimpleBLTask;
 import org.apache.log4j.Logger;
 
 public class InitClassDataIndicesTask extends SimpleBLTask {

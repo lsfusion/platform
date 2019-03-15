@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.form.stat.report.PrintMessageData;
 import lsfusion.server.logics.form.struct.FormEntity;

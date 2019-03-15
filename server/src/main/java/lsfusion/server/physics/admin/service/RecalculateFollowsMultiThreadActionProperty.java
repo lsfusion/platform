@@ -6,7 +6,7 @@ import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.admin.service.task.RecalculateFollowsTask;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class RecalculateFollowsMultiThreadActionProperty extends MultiThreadActionProperty {
 

@@ -19,9 +19,9 @@ import lsfusion.interop.exception.LoginException;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.logics.action.stack.ExecutionStack;
-import lsfusion.server.base.lifecycle.LifecycleEvent;
-import lsfusion.server.base.lifecycle.LogicsManager;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
+import lsfusion.server.base.controller.lifecycle.LogicsManager;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.NullValue;
 import lsfusion.server.data.ObjectValue;
@@ -48,7 +48,7 @@ import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.physics.exec.db.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -58,7 +58,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;

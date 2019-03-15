@@ -19,7 +19,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;
@@ -133,7 +133,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 

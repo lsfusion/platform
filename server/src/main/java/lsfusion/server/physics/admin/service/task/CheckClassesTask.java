@@ -3,14 +3,14 @@ package lsfusion.server.physics.admin.service.task;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.init.GroupPropertiesSingleTask;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

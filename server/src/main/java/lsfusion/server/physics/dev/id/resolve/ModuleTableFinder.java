@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.resolve;
 
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 public class ModuleTableFinder extends ModuleSingleElementFinder<ImplementTable, Object> {
     @Override

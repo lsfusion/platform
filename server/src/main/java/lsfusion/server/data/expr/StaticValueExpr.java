@@ -4,7 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.ObjectValue;
 import lsfusion.server.data.QueryEnvironment;

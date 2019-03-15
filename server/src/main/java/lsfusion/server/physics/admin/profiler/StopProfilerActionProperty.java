@@ -14,7 +14,7 @@ import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.stack.StackProgress;
+import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;

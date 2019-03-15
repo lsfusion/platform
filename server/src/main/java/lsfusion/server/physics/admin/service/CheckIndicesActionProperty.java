@@ -9,7 +9,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class CheckIndicesActionProperty extends ScriptingAction {
     public CheckIndicesActionProperty(ServiceLogicsModule LM) {

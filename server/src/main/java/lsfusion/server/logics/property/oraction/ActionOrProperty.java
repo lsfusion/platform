@@ -22,7 +22,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Type;

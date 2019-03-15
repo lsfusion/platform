@@ -21,10 +21,10 @@ import lsfusion.server.data.pack.PackComplex;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.base.caches.*;
-import lsfusion.server.logics.action.stack.ExecutionStack;
-import lsfusion.server.base.thread.ThreadLocalContext;
-import lsfusion.server.base.stack.StackMessage;
-import lsfusion.server.base.stack.ThisMessage;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -90,17 +90,17 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.drilldown.DrillDownFormEntity;
 import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.DBManager;
-import lsfusion.server.physics.exec.table.ImplementTable;
-import lsfusion.server.physics.exec.table.MapKeysTable;
-import lsfusion.server.physics.exec.table.TableFactory;
+import lsfusion.server.physics.exec.db.DBManager;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.MapKeysTable;
+import lsfusion.server.physics.exec.db.table.TableFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public abstract class Property<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
 

@@ -56,7 +56,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.AbstractPropertyNameParser;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
-import lsfusion.server.physics.exec.table.TableFactory;
+import lsfusion.server.physics.exec.db.table.TableFactory;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;

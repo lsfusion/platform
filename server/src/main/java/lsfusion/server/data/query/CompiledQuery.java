@@ -23,7 +23,7 @@ import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.IdentityQuickLazy;
 import lsfusion.server.data.caches.OuterContext;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.formula.FormulaExpr;

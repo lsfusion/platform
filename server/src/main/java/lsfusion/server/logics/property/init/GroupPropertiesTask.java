@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.init;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.init.BLGroupSingleSplitTask;
+import lsfusion.server.logics.controller.init.BLGroupSingleSplitTask;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public abstract class GroupPropertiesTask extends BLGroupSingleSplitTask<ActionOrProperty> {

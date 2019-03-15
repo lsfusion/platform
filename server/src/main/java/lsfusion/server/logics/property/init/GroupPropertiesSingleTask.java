@@ -1,12 +1,12 @@
 package lsfusion.server.logics.property.init;
 
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.base.context.Context;
-import lsfusion.server.logics.action.stack.ExecutionStack;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.context.Context;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.init.BLGroupSingleTask;
+import lsfusion.server.logics.controller.init.BLGroupSingleTask;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;

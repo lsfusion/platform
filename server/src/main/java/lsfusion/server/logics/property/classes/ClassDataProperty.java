@@ -25,7 +25,7 @@ import lsfusion.server.logics.property.infer.CalcClassType;
 import lsfusion.server.logics.property.infer.CalcType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
 

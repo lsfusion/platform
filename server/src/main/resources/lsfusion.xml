@@ -144,7 +144,7 @@
     <!--</bean>-->
 
 
-    <bean id="dbManager" class="lsfusion.server.physics.exec.DBManager">
+    <bean id="dbManager" class="lsfusion.server.physics.exec.db.DBManager">
         <property name="adapter" ref="dataAdapter"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="restartManager" ref="restartManager"/>
@@ -242,7 +242,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initMetaAndClassesTask" class="lsfusion.server.logics.init.InitMetaAndClassesTask">
+    <bean id="initMetaAndClassesTask" class="lsfusion.server.logics.controller.init.InitMetaAndClassesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initModuleOrderTask"/> <!-- потому как parser не thread safe, поэтому initModuleRestTask -->
@@ -260,7 +260,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initTablesTask" class="lsfusion.server.physics.exec.init.InitTablesTask">
+    <bean id="initTablesTask" class="lsfusion.server.physics.exec.db.init.InitTablesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initObjectClassTask"/> <!-- нужны все классы, в том числе reflection -->
@@ -278,7 +278,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initFullTablesTask" class="lsfusion.server.physics.exec.init.InitFullSingleTablesTask">
+    <bean id="initFullTablesTask" class="lsfusion.server.physics.exec.db.init.InitFullSingleTablesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initClassDataPropsTask"/> <!-- нужны все классы, в том числе reflection -->
@@ -287,7 +287,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initMainLogicTask" class="lsfusion.server.logics.init.InitMainLogicTask">
+    <bean id="initMainLogicTask" class="lsfusion.server.logics.controller.init.InitMainLogicTask">
         <property name="dependencies">
             <set>
                 <ref bean="initFullTablesTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
@@ -296,7 +296,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
     
-    <bean id="checkDuplicateSystemElements" class="lsfusion.server.logics.init.CheckDuplicateSystemElementsTask">
+    <bean id="checkDuplicateSystemElements" class="lsfusion.server.logics.controller.init.CheckDuplicateSystemElementsTask">
         <property name="dependencies">
             <set>
                 <ref bean="initMainLogicTask"/> 
@@ -323,7 +323,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeActionAbstractTask" class="lsfusion.server.logics.action.init.FinalizeActionAbstractTask">
+    <bean id="finalizeActionAbstractTask" class="lsfusion.server.logics.action.controller.init.FinalizeActionAbstractTask">
         <property name="dependencies">
             <set>
                 <ref bean="fillImplicitCasesTask"/>
@@ -475,7 +475,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
     
-    <bean id="initIndicesTask" class="lsfusion.server.physics.exec.init.InitIndicesTask">
+    <bean id="initIndicesTask" class="lsfusion.server.physics.exec.db.init.InitIndicesTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -510,7 +510,7 @@
     
     <!-- Задачи инициализации reflection manager'а -->
 
-    <bean id="executeOnStartedTask" class="lsfusion.server.logics.init.ExecuteOnStartedTask">
+    <bean id="executeOnStartedTask" class="lsfusion.server.logics.controller.init.ExecuteOnStartedTask">
         <property name="dependencies">
             <set>
                 <ref bean="logLaunchTask"/>
@@ -622,7 +622,7 @@
     </bean>
 
     <!-- Не имеет отношения к reflection manager'у, но желательно чтобы выполнялся после export'а remote объекта -->
-    <bean id="prereadCachesTask" class="lsfusion.server.logics.init.PrereadCachesTask">
+    <bean id="prereadCachesTask" class="lsfusion.server.logics.controller.init.PrereadCachesTask">
         <property name="dependencies">
             <set>
             </set>
@@ -638,7 +638,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.init.FirstRecalculateStatsTask">
+    <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.db.init.FirstRecalculateStatsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncTablesTask"/>
@@ -674,7 +674,7 @@
         </property>
     </bean>
 
-    <bean id="writeModulesHashTask" class="lsfusion.server.logics.init.WriteModulesHashTask">
+    <bean id="writeModulesHashTask" class="lsfusion.server.logics.controller.init.WriteModulesHashTask">
         <property name="dependencies">
             <set>
             </set>
@@ -683,7 +683,7 @@
     </bean>
 
     <!-- Список для переопределения custom-объектов -->
-    <bean id="instanceCustomObjects" class="lsfusion.server.base.lifecycle.SpringListsMergerFactory">
+    <bean id="instanceCustomObjects" class="lsfusion.server.base.controller.lifecycle.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreCustomObjects"/>
@@ -701,7 +701,7 @@
     <util:list id="customObjects"/>
 
     <!-- Remoting -->
-    <bean id="rmiManager" class="lsfusion.server.base.remote.RMIManager">
+    <bean id="rmiManager" class="lsfusion.server.base.controller.remote.RMIManager">
         <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
@@ -709,7 +709,7 @@
         <property name="exportName" value="${rmi.exportName:}"/>
     </bean>
 
-    <bean id="remoteLogics" class="lsfusion.server.logics.remote.RemoteLogics">
+    <bean id="remoteLogics" class="lsfusion.server.logics.controller.remote.RemoteLogics">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="navigatorsManager" ref="navigatorsManager"/>
@@ -719,7 +719,7 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="remoteLogicsLoader" class="lsfusion.server.logics.remote.RemoteLogicsLoader">
+    <bean id="remoteLogicsLoader" class="lsfusion.server.logics.controller.remote.RemoteLogicsLoader">
         <property name="rmiManager" ref="rmiManager"/>
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>
@@ -737,11 +737,11 @@
     </bean>
 
     <!-- Lifecycle Manager setup -->
-    <bean id="lifecycleManager" class="lsfusion.server.base.lifecycle.LifecycleManager">
+    <bean id="lifecycleManager" class="lsfusion.server.base.controller.lifecycle.LifecycleManager">
         <constructor-arg ref="lifecycleListeners"/>
     </bean>
 
-    <bean id="lifecycleListeners" class="lsfusion.server.base.lifecycle.SpringListsMergerFactory">
+    <bean id="lifecycleListeners" class="lsfusion.server.base.controller.lifecycle.SpringListsMergerFactory">
         <property name="listsToMerge">
             <list>
                 <ref bean="coreLifecycleListeners"/>

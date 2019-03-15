@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.service.task;
 
 import lsfusion.interop.exception.ApplyCanceledException;
-import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;

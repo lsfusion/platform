@@ -5,7 +5,7 @@ import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.logics.action.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.physics.exec.db.DBManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;

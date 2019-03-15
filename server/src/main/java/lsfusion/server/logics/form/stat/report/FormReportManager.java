@@ -41,7 +41,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.base.thread.ThreadLocalContext.localize;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public abstract class FormReportManager extends FormDataManager {
     private static final Logger systemLogger = Logger.getLogger("SystemLogger");

@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.authentication;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.logics.action.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.data.DataObject;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;

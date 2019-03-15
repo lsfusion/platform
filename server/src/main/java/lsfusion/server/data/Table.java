@@ -45,7 +45,7 @@ import lsfusion.server.logics.classes.sets.AndClassSet;
 import lsfusion.server.logics.classes.sets.ObjectClassSet;
 import lsfusion.server.logics.classes.sets.OrClassSet;
 import lsfusion.server.logics.classes.sets.OrObjectClassSet;
-import lsfusion.server.physics.exec.table.ImplementTable;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.io.DataInputStream;
 import java.io.IOException;

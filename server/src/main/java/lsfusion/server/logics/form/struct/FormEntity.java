@@ -23,7 +23,7 @@ import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;

@@ -1,11 +1,11 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.base.lifecycle.LifecycleEvent;
-import lsfusion.server.base.lifecycle.LogicsManager;
+import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
+import lsfusion.server.base.controller.lifecycle.LogicsManager;
 import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
-import lsfusion.server.physics.exec.DBManager;
+import lsfusion.server.physics.exec.db.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
