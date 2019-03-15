@@ -9,9 +9,9 @@ import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.UpWhere;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
+import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
@@ -25,7 +25,7 @@ public class NullableKeyExpr extends ParamExpr implements NullableExprInterface 
     }
 
     @Override
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         throw new RuntimeException("not supported");
     }
 

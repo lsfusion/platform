@@ -19,7 +19,7 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.pull.StatPullWheres;
-import lsfusion.server.data.query.InnerExprFollows;
+import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;

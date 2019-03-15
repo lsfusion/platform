@@ -1,8 +1,8 @@
-package lsfusion.server.data.expr.join.where.inner;
+package lsfusion.server.data.expr.join.inner;
 
 import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.InnerFollows;
+import lsfusion.server.data.expr.join.classes.InnerFollows;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
 import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.expr.join.stat.WhereJoin;

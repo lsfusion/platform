@@ -8,13 +8,13 @@ import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.query.stat.PropStat;
 import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
-import lsfusion.server.data.query.compile.JoinData;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.expr.join.stat.ValueJoin;
@@ -71,7 +71,7 @@ public class InconsistentStaticValueExpr extends VariableSingleClassExpr impleme
     }
 
     @Override
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
     }
 
     @Override

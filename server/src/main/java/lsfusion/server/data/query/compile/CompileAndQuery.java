@@ -3,7 +3,7 @@ package lsfusion.server.data.query.compile;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
+import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
 
 public class CompileAndQuery {
 

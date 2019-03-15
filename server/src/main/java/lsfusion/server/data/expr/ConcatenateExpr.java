@@ -14,7 +14,7 @@ import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.stat.FormulaJoin;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;
@@ -27,7 +27,7 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.struct.ConcatenateClassSet;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public class ConcatenateExpr extends VariableClassExpr {
 
@@ -54,7 +54,7 @@ public class ConcatenateExpr extends VariableClassExpr {
         return new ConcatenateExpr(translator.translateDirect(exprs));
     }
 
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         for(BaseExpr param : exprs)
             param.fillJoinWheres(joins, andWhere);
     }

@@ -14,6 +14,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.*;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
+import lsfusion.server.data.expr.join.classes.InnerFollows;
 import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.expr.join.stat.*;
 import lsfusion.server.data.expr.query.stat.PropStat;
@@ -21,11 +22,11 @@ import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.InnerJoins;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.InnerJoins;
 import lsfusion.server.data.query.builder.AbstractJoin;
 import lsfusion.server.data.AbstractSourceJoin;
-import lsfusion.server.data.expr.join.where.inner.InnerJoin;
+import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.query.result.ResultHandler;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -48,8 +49,8 @@ import lsfusion.server.data.expr.where.ifs.IfJoin;
 import lsfusion.server.data.expr.where.ifs.NullJoin;
 import lsfusion.server.data.expr.where.pull.AddPullWheres;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.UpWheres;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
+import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -805,7 +806,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return SetFact.<OuterContext>addExcl(joins.values().toSet(), Table.this);
         }
 
-        public class IsIn extends DataWhere implements JoinData {
+        public class IsIn extends DataWhere implements FJData {
 
             public String getFirstKey(SQLSyntax syntax) {
                 if(isSingle())
@@ -825,7 +826,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this;
             }
 
-            protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+            protected void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
                 joins.add(this,andWhere);
             }
 

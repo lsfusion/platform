@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.innerjoins;
+package lsfusion.server.data.expr.join.where;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -8,9 +8,10 @@ import lsfusion.server.data.caches.hash.HashCodeKeys;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.join.query.QueryJoin;
-import lsfusion.server.data.expr.join.where.inner.InnerJoin;
+import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.stat.WhereJoin;
 import lsfusion.server.data.expr.join.stat.WhereJoins;
+import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 

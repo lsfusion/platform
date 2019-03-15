@@ -29,7 +29,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;

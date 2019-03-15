@@ -2,7 +2,7 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.stat.UnionJoin;
 import lsfusion.server.data.where.Where;
 
@@ -14,12 +14,12 @@ public abstract class UnionExpr extends StaticClassNullableExpr {
     }
 
     @Override
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         fillAndJoinWheres(joins, andWhere);
     }
 
     // мы и так перегрузили fillJoinWheres
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         for(Expr operand : getParams()) // просто гоним по операндам
             operand.fillJoinWheres(joins, andWhere);
     }

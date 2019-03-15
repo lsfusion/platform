@@ -50,8 +50,8 @@ import lsfusion.server.logics.classes.*;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.classes.user.IsClassField;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.IsClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 

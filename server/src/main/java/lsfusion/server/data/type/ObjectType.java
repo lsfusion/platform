@@ -29,7 +29,7 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.CustomDbfRecord;
 import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.json.JSONException;
 

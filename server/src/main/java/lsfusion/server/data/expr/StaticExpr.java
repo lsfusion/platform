@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.data.expr.query.stat.PropStat;
 import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.expr.join.stat.ValueJoin;
@@ -37,7 +37,7 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
         return objectClass.getTypeStat(forJoin);
     }
 
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
     }
 
     public PropStat getStatValue(KeyStat keyStat, StatType type) {

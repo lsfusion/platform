@@ -75,7 +75,7 @@ public class AfterTranslateAspect {
             return thisJoinPoint.proceed();
     }
 
-    @Around("execution(lsfusion.server.data.query.innerjoins.KeyEquals lsfusion.server.data.where.AbstractWhere.calculateKeyEquals()) && target(where)")
+    @Around("execution(lsfusion.server.data.expr.join.where.KeyEquals lsfusion.server.data.where.AbstractWhere.calculateKeyEquals()) && target(where)")
     public Object callCalculateKeyEquals(ProceedingJoinPoint thisJoinPoint, AbstractWhere where) throws Throwable {
 //        Where from = where.getFrom();
 //        MapTranslate translator = where.getTranslator();
@@ -167,7 +167,7 @@ public class AfterTranslateAspect {
         return thisJoinPoint.proceed();
     }
 //    уже не используется
-//    @Around("execution(lsfusion.base.col.interfaces.immutable.ImCol lsfusion.server.data.where.AbstractWhere.getStatJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.expr.query.stat.StatType, lsfusion.server.data.query.innerjoins.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,statType,type,noWhere)")
+//    @Around("execution(lsfusion.base.col.interfaces.immutable.ImCol lsfusion.server.data.where.AbstractWhere.getStatJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.expr.query.stat.StatType, lsfusion.server.data.expr.join.where.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,statType,type,noWhere)")
 //    public Object callGetStatJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean exclusive, ImSet keepStat, StatType statType, GroupStatType type, boolean noWhere) throws Throwable {
 //        if(keepStat.equals(where.getOuterKeys()))
 //            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE, CacheStats.CacheType.OTHER);

@@ -7,9 +7,9 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
+import lsfusion.server.data.expr.join.where.KeyEquals;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 
 
@@ -76,11 +76,11 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         fillDataJoinWheres(joins,andWhere.and(this));
     }
 
-    abstract protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere);
+    abstract protected void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere);
 
     public KeyEquals calculateKeyEquals() {
         return new KeyEquals(this, true);  // в operator'ах никаких equals быть не может

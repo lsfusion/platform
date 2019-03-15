@@ -2,7 +2,7 @@ package lsfusion.server.data.expr.join;
 
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.query.stat.Stat;
-import lsfusion.server.data.query.innerjoins.InnerJoins;
+import lsfusion.server.data.expr.join.where.InnerJoins;
 
 // нужен пока и в будущем для работы с интервалами, сейчас 3 хака:
 // 1. ExprIndexedJoin.fillIntervals - 

@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query;
+package lsfusion.server.data.expr.join.query;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
+import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
 import lsfusion.server.data.translator.ExprTranslator;
 
 public class GroupExprJoinsWhere<K extends Expr> {

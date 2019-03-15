@@ -1,6 +1,7 @@
-package lsfusion.server.data.query.innerjoins;
+package lsfusion.server.data.expr.join.where;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SymmPair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -9,6 +10,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.ImmutableObject;
+import lsfusion.server.data.query.compile.where.UpWhere;
+import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
@@ -27,7 +30,7 @@ import java.util.*;
 // используется только в groupJoinWheres, по сути protected класс
 public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Value, GroupJoinsWheres> implements PackInterface<GroupJoinsWheres> {
 
-    public static enum Type {
+    public enum Type {
         WHEREJOINS, STAT_WITH_WHERE, STAT_ONLY;
         
         public boolean noWhere() {

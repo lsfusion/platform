@@ -18,10 +18,10 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.stat.StatType;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.extra.GreaterWhere;
-import lsfusion.server.data.query.compile.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.KeyEqual;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
+import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
+import lsfusion.server.data.expr.join.where.KeyEqual;
+import lsfusion.server.data.expr.join.where.KeyEquals;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.expr.join.stat.WhereJoins;
 import lsfusion.server.data.translator.ExprTranslator;
@@ -726,7 +726,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     }
     
     // разобъем чисто для оптимизации
-    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
         for(int i=0;i<wheres.length;i++)
             wheres[i].fillJoinWheres(joins,andWhere.and(siblingsWhere(wheres,i).not()));
     }

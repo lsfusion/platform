@@ -27,7 +27,7 @@ import lsfusion.server.data.expr.query.SubQueryExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.expr.join.where.inner.InnerJoin;
+import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -40,7 +40,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 
@@ -160,7 +160,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return classExpr;
     }
 
-    /*    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    /*    public void fillAndJoinWheres(MapWhere<FJData> joins, Where andWhere) {
         joins.add(getJoinExpr(),andWhere);
         expr.fillJoinWheres(joins,andWhere);
     }*/

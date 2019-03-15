@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.innerjoins;
+package lsfusion.server.data.expr.join.where;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;

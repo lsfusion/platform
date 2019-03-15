@@ -18,8 +18,8 @@ import lsfusion.server.data.expr.query.stat.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.property.classes.user.IsClassField;
-import lsfusion.server.logics.property.classes.user.ObjectClassField;
+import lsfusion.server.data.expr.join.classes.IsClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 import java.util.Comparator;
 

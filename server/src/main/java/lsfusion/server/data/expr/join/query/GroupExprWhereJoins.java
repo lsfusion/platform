@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.query;
+package lsfusion.server.data.expr.join.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
@@ -17,8 +17,8 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.stat.StatType;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
-import lsfusion.server.data.query.innerjoins.KeyEqual;
+import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
+import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.join.stat.KeyStat;
 import lsfusion.server.data.expr.join.stat.StatKeys;
 import lsfusion.server.data.expr.join.stat.WhereJoins;

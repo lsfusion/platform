@@ -1,4 +1,4 @@
-package lsfusion.server.data.query;
+package lsfusion.server.data.expr.join.classes;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
@@ -16,7 +16,6 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.property.classes.user.IsClassField;
 import lsfusion.server.physics.exec.db.table.FullTablesInterface;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 

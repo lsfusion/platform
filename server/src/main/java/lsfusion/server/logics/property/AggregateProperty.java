@@ -41,7 +41,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.classes.user.BaseClass;
-import lsfusion.server.logics.property.classes.user.IsClassField;
+import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

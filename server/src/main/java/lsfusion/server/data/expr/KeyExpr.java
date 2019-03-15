@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.where.Where;
 
 public class KeyExpr extends ParamExpr {
@@ -50,7 +50,7 @@ public class KeyExpr extends ParamExpr {
         return source;
     }
 
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
     }
 
     public boolean isIndexed() {

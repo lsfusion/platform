@@ -17,7 +17,7 @@ import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
-import lsfusion.server.data.query.compile.JoinData;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
@@ -105,7 +105,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         return getType();
     }
 
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
