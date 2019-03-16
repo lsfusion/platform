@@ -32,7 +32,7 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
         POIInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
             DataObject poiObject = context.getDataKeyValue(POIInterface);

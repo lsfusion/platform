@@ -25,7 +25,7 @@ public class UrlEncodeActionProperty extends InternalAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             String string = (String) context.getKeyValue(stringInterface).getValue();
             String encoding = (String) context.getKeyValue(encodingInterface).getValue();

@@ -34,7 +34,7 @@ public class DistanceGeoActionProperty extends GeoActionProperty {
         super(LM, classes);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
     }
 
     protected int[] readDistances(int size, String origins, String destinations, boolean useTor, int attempt) throws JSONException, IOException, InterruptedException {

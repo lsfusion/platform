@@ -17,7 +17,7 @@ public class GetAvailablePrintersActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String printerNames = (String) context.requestUserInteraction(new GetAvailablePrintersClientAction());
         context.requestUserInteraction(
                 new MessageClientAction(printerNames.isEmpty() ? "Не найдено доступных принтеров" : printerNames, "Список доступных принтеров"));

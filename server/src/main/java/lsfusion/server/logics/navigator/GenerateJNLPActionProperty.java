@@ -43,7 +43,7 @@ public class GenerateJNLPActionProperty extends InternalAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String memoryLimitMaxHeapSize = (String) context.getKeyValue(maxHeapSizeInterface).getValue();
         String memoryLimitVMArgs = (String) context.getKeyValue(vmargsInterface).getValue();
 

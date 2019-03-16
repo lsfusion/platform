@@ -16,7 +16,7 @@ public class AnalyzeDBActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         context.getDbManager().analyzeDB(context.getSession().sql);
         context.delayUserInterfaction(new MessageClientAction(ThreadLocalContext.localize("{logics.vacuum.analyze.was.completed}"), ThreadLocalContext.localize("{logics.vacuum.analyze}")));

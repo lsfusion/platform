@@ -48,7 +48,7 @@ public class ReadActionProperty extends SystemExplicitAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject sourceProp = context.getSingleDataKeyValue();
         assert sourceProp.getType() instanceof StringClass;
         String sourcePath = (String) sourceProp.object;

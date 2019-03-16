@@ -30,7 +30,7 @@ public class LazyActionProperty extends SystemExplicitAction {
     }
     
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         if(evaluatedProperty == null) {
             evaluatedProperty = context.getBL().LM.addDDAProp(sourceProperty);
         }

@@ -37,7 +37,7 @@ public class ReceiveEmailAccountActionProperty extends InternalAction {
         drawOptions.setImage("email.png");
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         if(context.getDbManager().isServer()) {
 

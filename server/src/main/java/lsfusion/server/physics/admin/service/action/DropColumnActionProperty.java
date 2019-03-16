@@ -18,7 +18,7 @@ public class DropColumnActionProperty extends InternalAction {
         super(LM, classes);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         BusinessLogics BL = context.getBL();
         DataObject dropColumnObject = context.getSingleDataKeyValue();
         String columnName = (String) BL.reflectionLM.sidDropColumn.getOld().read(context, dropColumnObject);

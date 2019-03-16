@@ -19,7 +19,7 @@ public class SetPausableLogUserActionProperty extends InternalAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         List<Object> params = new ArrayList<>();
         for (ClassPropertyInterface classPropertyInterface : context.getKeys().keys()) {
             params.add(context.getKeyObject(classPropertyInterface));

@@ -30,7 +30,7 @@ public class DefaultChangeObjectActionProperty extends SystemExplicitAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         final FormInstance formInstance = context.getFormFlowInstance();
         ObjectInstance objectInstance = formInstance.instanceFactory.getInstance(object);

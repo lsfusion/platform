@@ -27,7 +27,7 @@ public class WriteToFaxActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         String text = (String) context.getDataKeyValue(textInterface).object;
         String faxNumber = (String) context.getDataKeyValue(faxNumberInterface).object;

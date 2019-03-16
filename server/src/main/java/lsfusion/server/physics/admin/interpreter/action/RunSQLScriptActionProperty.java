@@ -24,7 +24,7 @@ public class RunSQLScriptActionProperty extends InternalAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             String script = (String) context.getDataKeyValue(stringInterface).object;
             if(script != null) {

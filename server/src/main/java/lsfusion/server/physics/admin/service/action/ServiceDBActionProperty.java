@@ -22,7 +22,7 @@ public class ServiceDBActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);

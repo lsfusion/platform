@@ -27,7 +27,7 @@ public class RichTextToStringActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getDataKeyValue(richTextInterface).getValue();
         try {
             findProperty("resultString[]").change(value != null ? Jsoup.clean(URLDecoder.decode(value, "UTF-8"), Whitelist.none()) : null, context);

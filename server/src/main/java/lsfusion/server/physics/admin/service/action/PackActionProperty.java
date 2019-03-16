@@ -19,7 +19,7 @@ public class PackActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {

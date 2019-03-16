@@ -23,7 +23,7 @@ public class ReloginUserActionProperty extends InternalAction {
         super(LM, classes);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject user = context.getSingleDataKeyValue();
         if (context.getSession().user.changeCurrentUser(user, context.stack)) {
             context.delayUserInterfaction(new UserChangedClientAction());

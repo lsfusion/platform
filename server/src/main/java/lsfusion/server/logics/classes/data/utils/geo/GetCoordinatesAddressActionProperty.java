@@ -33,7 +33,7 @@ public class GetCoordinatesAddressActionProperty extends GeoActionProperty {
         mapProviderInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataSession session = context.getSession();
             DataObject fullAddress = context.getDataKeyValue(POIInterface);

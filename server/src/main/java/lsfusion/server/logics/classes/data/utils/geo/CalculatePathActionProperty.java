@@ -32,7 +32,7 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
         super(LM);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             boolean useTor = findProperty("useTor[]").read(context) != null;
 

@@ -28,7 +28,7 @@ public class DecimateBackupsActionProperty extends InternalAction {
         super(LM);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
 
             boolean saveFirstDay = findProperty("saveFirstDayBackups[]").read(context) != null;

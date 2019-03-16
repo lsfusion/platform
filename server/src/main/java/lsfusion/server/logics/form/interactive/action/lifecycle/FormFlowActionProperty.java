@@ -24,7 +24,7 @@ public abstract class FormFlowActionProperty extends FormToolbarActionProperty {
     protected boolean isAssertExists() {
         return true;
     }
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormFlowInstance(isAssertExists(), isSameSession());
         if(formInstance != null)
             executeForm(formInstance, context);

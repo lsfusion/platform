@@ -27,7 +27,7 @@ public class WriteToComPortActionProperty extends InternalAction {
         comPortInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FileData file = (FileData) context.getKeyValue(fileInterface).getValue();
         Integer baudRate = (Integer) context.getKeyValue(baudRateInterface).getValue();
         Integer comPort = (Integer) context.getKeyValue(comPortInterface).getValue();

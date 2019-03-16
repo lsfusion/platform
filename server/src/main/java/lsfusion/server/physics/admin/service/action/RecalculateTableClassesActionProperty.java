@@ -28,7 +28,7 @@ public class RecalculateTableClassesActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject tableObject = context.getDataKeyValue(tableInterface);
         boolean disableClasses = context.getBL().reflectionLM.disableClassesTable.read(context, tableObject) != null;
         if (!disableClasses) {

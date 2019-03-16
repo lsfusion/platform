@@ -26,7 +26,7 @@ public class RunCommandActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String command = (String) context.getKeyValue(commandInterface).getValue();
         boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
         if(command != null) {

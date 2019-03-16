@@ -27,7 +27,7 @@ public class OpenPathActionProperty extends InternalAction {
         nameInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             String source = (String) context.getKeyValue(sourceInterface).getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();

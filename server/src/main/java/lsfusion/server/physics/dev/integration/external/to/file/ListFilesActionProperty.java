@@ -29,7 +29,7 @@ public class ListFilesActionProperty extends InternalAction {
         isClientInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         String sourcePath = (String) context.getKeyValue(pathInterface).getValue();
         String charset = (String) context.getKeyValue(charsetInterface).getValue();

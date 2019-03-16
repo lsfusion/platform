@@ -32,7 +32,7 @@ public abstract class ExplicitAction extends BaseAction<ClassPropertyInterface> 
         super(caption, IsClassProperty.getInterfaces(classes));
     }
 
-    protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
+    protected abstract void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
 
     public boolean allowNullValue;
     protected abstract boolean allowNulls();
@@ -56,7 +56,7 @@ public abstract class ExplicitAction extends BaseAction<ClassPropertyInterface> 
                 if (this instanceof InternalAction)
                     ((InternalAction) this).commonExecuteCustomDelegate(context);
                 else
-                    executeCustom(context);
+                    executeInternal(context);
             }
         }
         return FlowResult.FINISH;

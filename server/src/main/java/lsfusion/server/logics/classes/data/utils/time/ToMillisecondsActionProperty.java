@@ -24,7 +24,7 @@ public class ToMillisecondsActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Timestamp timestamp = (Timestamp) context.getKeyValue(timestampInterface).getValue();
         try {
             findProperty("resultMilliseconds[]").change(timestamp != null ? timestamp.getTime() : null, context);

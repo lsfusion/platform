@@ -35,7 +35,7 @@ public class AlterTableColumnsToLongActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         SQLSession sql = context.getSession().sql;
         sql.pushNoReadOnly();

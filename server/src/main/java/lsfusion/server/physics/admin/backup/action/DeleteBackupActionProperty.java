@@ -25,7 +25,7 @@ public class DeleteBackupActionProperty extends InternalAction {
         backupInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
             DataObject backupObject = newContext.getDataKeyValue(backupInterface);
 

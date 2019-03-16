@@ -23,7 +23,7 @@ public class LoadDownloadedFontActionProperty extends InternalAction {
         pathInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject path = context.getDataKeyValue(pathInterface);
         if (path != null) {
             String result = (String) context.requestUserInteraction(new LoadDownloadedFontClientAction((String) path.getValue()));
