@@ -127,7 +127,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
     }
 
     @Override
-    protected void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
+    protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
         ImRevMap<O, ObjectEntity> mapRevResolvedObjects = mapResolvedObjects.reverse();
 
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();

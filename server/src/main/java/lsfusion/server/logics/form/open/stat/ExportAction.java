@@ -34,7 +34,7 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;
 
     @Override
-    protected void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
+    protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
         StaticFormDataManager formDataManager = new StaticFormDataManager(form, mapObjectValues, context);
         FormDataManager.ExportResult exportData = formDataManager.getExportData();
         try {

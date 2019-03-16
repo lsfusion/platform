@@ -1609,7 +1609,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     "    }\n" +
                     "\n" +
                     "    @Override\n" +
-                    "    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {\n" +
+                    "    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {\n" +
                     "        try {\n" +
                     script +
                     "        } catch (Exception e) {\n" +

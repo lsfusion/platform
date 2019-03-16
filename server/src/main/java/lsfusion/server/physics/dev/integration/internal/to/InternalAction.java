@@ -45,8 +45,8 @@ public abstract class InternalAction extends ExplicitAction {
         return result;
     }
 
-    //этот метод нужен для дебаггера, чтобы была общая точка для дебаггинга всех executeCustom
-    public void commonExecuteCustomDelegate(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    //этот метод нужен для дебаггера, чтобы была общая точка для дебаггинга всех executeInternal
+    public void commonExecuteInternalDelegate(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         executeInternal(context);
     }
 
