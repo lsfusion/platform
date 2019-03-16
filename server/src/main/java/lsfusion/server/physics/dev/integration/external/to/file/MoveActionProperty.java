@@ -7,12 +7,12 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.file.client.MoveFileClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class MoveActionProperty extends ScriptingAction {
+public class MoveActionProperty extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface destinationInterface;
     private final ClassPropertyInterface isClientInterface;

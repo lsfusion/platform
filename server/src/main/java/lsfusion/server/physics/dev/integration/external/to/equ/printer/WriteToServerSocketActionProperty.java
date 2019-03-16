@@ -9,7 +9,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.OutputStream;
 import java.net.ConnectException;
@@ -17,7 +17,7 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class WriteToServerSocketActionProperty extends ScriptingAction {
+public class WriteToServerSocketActionProperty extends InternalAction {
     private final ClassPropertyInterface textInterface;
     private final ClassPropertyInterface charsetInterface;
     private final ClassPropertyInterface ipInterface;

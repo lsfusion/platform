@@ -15,14 +15,14 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.awt.*;
 
 import static lsfusion.server.logics.property.PropertyFact.createAnd;
 import static lsfusion.server.logics.property.PropertyFact.createTrue;
 
-public abstract class FormToolbarActionProperty extends ScriptingAction {
+public abstract class FormToolbarActionProperty extends InternalAction {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
 
     public FormToolbarActionProperty(ScriptingLogicsModule lm) {

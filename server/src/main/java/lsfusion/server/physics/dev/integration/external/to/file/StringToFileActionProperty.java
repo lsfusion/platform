@@ -8,12 +8,12 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class StringToFileActionProperty extends ScriptingAction {
+public class StringToFileActionProperty extends InternalAction {
     private final ClassPropertyInterface inputValueInterface;
     private final ClassPropertyInterface charsetInterface;
     private final ClassPropertyInterface extensionInterface;

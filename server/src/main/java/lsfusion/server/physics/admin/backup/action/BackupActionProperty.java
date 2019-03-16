@@ -16,7 +16,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -27,7 +27,7 @@ import java.util.List;
 
 import static lsfusion.base.file.IOUtils.readFileToString;
 
-public class BackupActionProperty extends ScriptingAction {
+public class BackupActionProperty extends InternalAction {
 
     public BackupActionProperty(ScriptingLogicsModule LM) {
         super(LM);

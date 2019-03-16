@@ -9,11 +9,11 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
 import lsfusion.server.physics.admin.scheduler.controller.manager.Scheduler;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class SetupSchedulerActionProperty extends ScriptingAction {
+public class SetupSchedulerActionProperty extends InternalAction {
 
     public SetupSchedulerActionProperty(SchedulerLogicsModule LM) {
         super(LM);

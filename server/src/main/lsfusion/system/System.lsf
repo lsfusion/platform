@@ -63,7 +63,7 @@ formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.inte
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkActionProperty' ();
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseActionProperty' ();
 
-seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekScriptingActionProperty' (Object);
+seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekInternalActionProperty' (Object);
 
 sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepActionProperty' (LONG);
 

@@ -16,7 +16,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -31,7 +31,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.trim;
 
-public class ProcessTemplateActionProperty extends ScriptingAction {
+public class ProcessTemplateActionProperty extends InternalAction {
     public final ClassPropertyInterface templateInterface;
 
     public ProcessTemplateActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

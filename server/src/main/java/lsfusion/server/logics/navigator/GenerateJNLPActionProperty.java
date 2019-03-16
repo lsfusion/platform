@@ -12,7 +12,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.net.URLDecoder;
 import java.sql.SQLException;
@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
-public class GenerateJNLPActionProperty extends ScriptingAction {
+public class GenerateJNLPActionProperty extends InternalAction {
     private static final String DEFAULT_INIT_HEAP_SIZE = "32m";
     private static final String DEFAULT_MAX_HEAP_SIZE = "800m";
     private static final String DEFAULT_MIN_HEAP_FREE_RATIO = "30";

@@ -16,7 +16,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class MakeZipFileActionProperty extends ScriptingAction {
+public class MakeZipFileActionProperty extends InternalAction {
 
     public MakeZipFileActionProperty(UtilsLogicsModule LM) {
         super(LM);

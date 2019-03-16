@@ -7,11 +7,11 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
 import lsfusion.server.physics.admin.scheduler.controller.manager.Scheduler;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class StopSchedulerActionProperty extends ScriptingAction {
+public class StopSchedulerActionProperty extends InternalAction {
 
     public StopSchedulerActionProperty(SchedulerLogicsModule LM) {
         super(LM);

@@ -9,7 +9,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class ServiceDBMultiThreadActionProperty extends ScriptingAction {
+public class ServiceDBMultiThreadActionProperty extends InternalAction {
     private ClassPropertyInterface threadCountInterface;
     ServiceLogicsModule serviceLM;
     public ServiceDBMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {

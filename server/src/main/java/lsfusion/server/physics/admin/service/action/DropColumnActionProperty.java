@@ -8,11 +8,11 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class DropColumnActionProperty extends ScriptingAction {
+public class DropColumnActionProperty extends InternalAction {
 
     public DropColumnActionProperty(ReflectionLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

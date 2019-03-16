@@ -7,13 +7,13 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class PopSettingActionProperty extends ScriptingAction {
+public class PopSettingActionProperty extends InternalAction {
     private ClassPropertyInterface nameInterface;
 
     public PopSettingActionProperty(ServiceLogicsModule LM, ValueClass... classes) {

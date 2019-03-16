@@ -8,7 +8,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.file.client.CheckFileClientAction;
 import lsfusion.server.physics.dev.integration.external.to.file.client.DownloadFileClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.poi.util.IOUtils;
 
@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class DownloadFileActionProperty extends ScriptingAction {
+public class DownloadFileActionProperty extends InternalAction {
     private final ClassPropertyInterface pathInterface;
 
     public DownloadFileActionProperty(BaseLogicsModule LM, ValueClass... classes) {

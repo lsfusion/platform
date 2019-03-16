@@ -7,14 +7,14 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.commons.codec.binary.Base64;
 
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class DecodeBase64ActionProperty extends ScriptingAction {
+public class DecodeBase64ActionProperty extends InternalAction {
     private final ClassPropertyInterface stringInterface;
 
     public DecodeBase64ActionProperty(UtilsLogicsModule LM, ValueClass... classes) {

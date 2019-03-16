@@ -43,7 +43,7 @@ import lsfusion.server.physics.admin.profiler.ProfileItem;
 import lsfusion.server.physics.admin.profiler.ProfileObject;
 import lsfusion.server.physics.admin.profiler.ProfileValue;
 import lsfusion.server.physics.admin.profiler.Profiler;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ import java.util.Map;
 
 import static lsfusion.server.physics.admin.profiler.Profiler.profileData;
 
-public class StopProfilerActionProperty extends ScriptingAction {
+public class StopProfilerActionProperty extends InternalAction {
     private LP totalTime;
     private LP totalSQLTime;
     private LP totalUserInteractionTime;

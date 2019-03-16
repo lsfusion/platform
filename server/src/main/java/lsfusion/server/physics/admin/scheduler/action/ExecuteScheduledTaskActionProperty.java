@@ -11,12 +11,12 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
 import lsfusion.server.physics.admin.scheduler.controller.manager.Scheduler;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ExecuteScheduledTaskActionProperty extends ScriptingAction {
+public class ExecuteScheduledTaskActionProperty extends InternalAction {
     private final ClassPropertyInterface scheduledTask;
 
     public ExecuteScheduledTaskActionProperty(SchedulerLogicsModule LM, ValueClass... classes) {

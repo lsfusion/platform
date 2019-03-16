@@ -11,12 +11,12 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public abstract class MultiThreadActionProperty extends ScriptingAction {
+public abstract class MultiThreadActionProperty extends InternalAction {
     private ClassPropertyInterface threadCountInterface;
     private ClassPropertyInterface propertyTimeoutInterface;
 

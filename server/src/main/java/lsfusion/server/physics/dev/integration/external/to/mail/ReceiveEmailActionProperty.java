@@ -14,7 +14,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.log4j.Logger;
 
 import javax.mail.MessagingException;
@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class ReceiveEmailActionProperty extends ScriptingAction {
+public class ReceiveEmailActionProperty extends InternalAction {
     private final static Logger logger = ServerLoggers.mailLogger;
     EmailLogicsModule emailLM;
 

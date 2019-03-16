@@ -9,13 +9,13 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.physics.dev.integration.external.to.file.client.ListFilesClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 
-public class ListFilesActionProperty extends ScriptingAction {
+public class ListFilesActionProperty extends InternalAction {
     private final ClassPropertyInterface pathInterface;
     private final ClassPropertyInterface charsetInterface;
     private final ClassPropertyInterface isClientInterface;

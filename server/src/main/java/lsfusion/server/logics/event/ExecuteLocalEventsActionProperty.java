@@ -7,11 +7,11 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class ExecuteLocalEventsActionProperty extends ScriptingAction {
+public class ExecuteLocalEventsActionProperty extends InternalAction {
 
     public ExecuteLocalEventsActionProperty(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

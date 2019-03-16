@@ -44,7 +44,7 @@ import lsfusion.server.logics.classes.user.UnknownClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +57,7 @@ import java.util.*;
 
 import static lsfusion.base.BaseUtils.trimToNull;
 
-public class CustomRestoreActionProperty extends ScriptingAction {
+public class CustomRestoreActionProperty extends InternalAction {
     private final ClassPropertyInterface backupInterface;
 
     public CustomRestoreActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

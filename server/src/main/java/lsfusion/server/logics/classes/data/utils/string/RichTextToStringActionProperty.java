@@ -7,7 +7,7 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 
@@ -16,7 +16,7 @@ import java.net.URLDecoder;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class RichTextToStringActionProperty extends ScriptingAction {
+public class RichTextToStringActionProperty extends InternalAction {
     private final ClassPropertyInterface richTextInterface;
 
     public RichTextToStringActionProperty(UtilsLogicsModule LM, ValueClass... classes) {

@@ -34,7 +34,7 @@ import lsfusion.server.physics.admin.monitor.JavaProcess;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
 import lsfusion.server.physics.admin.monitor.sql.SQLProcess;
 import lsfusion.server.physics.admin.monitor.sql.SQLThreadInfo;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -48,7 +48,7 @@ import java.util.Map;
 import static lsfusion.base.BaseUtils.trimToEmpty;
 import static lsfusion.base.BaseUtils.trimToNull;
 
-public abstract class ProcessDumpActionProperty extends ScriptingAction {
+public abstract class ProcessDumpActionProperty extends InternalAction {
 
     public ProcessDumpActionProperty(ScriptingLogicsModule LM) {
         super(LM);

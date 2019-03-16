@@ -9,13 +9,13 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class CheckAggregationsActionProperty extends ScriptingAction {
+public class CheckAggregationsActionProperty extends InternalAction {
     public CheckAggregationsActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }

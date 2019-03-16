@@ -10,13 +10,13 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import javax.swing.*;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CheckCurrentDateDependsActionProperty extends ScriptingAction {
+public class CheckCurrentDateDependsActionProperty extends InternalAction {
 
     private final ClassPropertyInterface propertyInterface;
 

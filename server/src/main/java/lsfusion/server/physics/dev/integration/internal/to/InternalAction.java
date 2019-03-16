@@ -17,7 +17,7 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import java.sql.SQLException;
 
 // !!! ONLY ACTIONS CREATED WITH INTERNAL OPERATOR !!!!
-public abstract class ScriptingAction extends ExplicitAction {
+public abstract class InternalAction extends ExplicitAction {
     protected ScriptingLogicsModule LM;
     
     protected LP<?> is(ValueClass valueClass) {
@@ -28,7 +28,7 @@ public abstract class ScriptingAction extends ExplicitAction {
         return LM.object(valueClass);
     }
 
-    public ScriptingAction(ScriptingLogicsModule LM, ValueClass... classes) {
+    public InternalAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(classes);
         this.LM = LM;
     }

@@ -8,7 +8,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import javax.print.*;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -21,7 +21,7 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class WriteToServerPrinterActionProperty extends ScriptingAction {
+public class WriteToServerPrinterActionProperty extends InternalAction {
     private final ClassPropertyInterface textInterface;
     private final ClassPropertyInterface charsetInterface;
     private final ClassPropertyInterface printerNameInterface;

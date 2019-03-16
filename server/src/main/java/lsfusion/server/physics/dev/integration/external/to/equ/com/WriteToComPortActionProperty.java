@@ -8,12 +8,12 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.equ.com.client.WriteToComPortClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class WriteToComPortActionProperty extends ScriptingAction {
+public class WriteToComPortActionProperty extends InternalAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface baudRateInterface;
     private final ClassPropertyInterface comPortInterface;

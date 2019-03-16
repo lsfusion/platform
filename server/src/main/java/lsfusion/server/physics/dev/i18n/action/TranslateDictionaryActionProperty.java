@@ -9,13 +9,13 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-public class TranslateDictionaryActionProperty extends ScriptingAction {
+public class TranslateDictionaryActionProperty extends InternalAction {
     public final ClassPropertyInterface dictionaryInterface;
     public final ClassPropertyInterface termInterface;
 

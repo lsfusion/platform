@@ -18,13 +18,13 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class SeekScriptingActionProperty extends ScriptingAction {
+public class SeekInternalActionProperty extends InternalAction {
 
-    public SeekScriptingActionProperty(BaseLogicsModule lm, ValueClass... classes) {
+    public SeekInternalActionProperty(BaseLogicsModule lm, ValueClass... classes) {
         super(lm, classes);
     }
 

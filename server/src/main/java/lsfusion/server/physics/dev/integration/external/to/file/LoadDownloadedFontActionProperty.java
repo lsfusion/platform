@@ -8,12 +8,12 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.file.client.LoadDownloadedFontClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class LoadDownloadedFontActionProperty extends ScriptingAction {
+public class LoadDownloadedFontActionProperty extends InternalAction {
     private final ClassPropertyInterface pathInterface;
 
     public LoadDownloadedFontActionProperty(BaseLogicsModule LM, ValueClass... classes) {

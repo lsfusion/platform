@@ -6,13 +6,13 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class UrlEncodeActionProperty extends ScriptingAction {
+public class UrlEncodeActionProperty extends InternalAction {
     private final ClassPropertyInterface stringInterface;
     private final ClassPropertyInterface encodingInterface;
     

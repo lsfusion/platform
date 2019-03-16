@@ -7,13 +7,13 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.net.client.PingClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class PingActionProperty extends ScriptingAction {
+public class PingActionProperty extends InternalAction {
     private final ClassPropertyInterface hostInterface;
     private final ClassPropertyInterface isClientInterface;
 

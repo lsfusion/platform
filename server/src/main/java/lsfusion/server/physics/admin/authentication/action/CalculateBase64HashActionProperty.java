@@ -7,12 +7,12 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.UserInfo;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CalculateBase64HashActionProperty extends ScriptingAction {
+public class CalculateBase64HashActionProperty extends InternalAction {
     AuthenticationLogicsModule LM;
     private final ClassPropertyInterface algorithmInterface;
     private final ClassPropertyInterface passwordInterface;

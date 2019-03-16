@@ -10,7 +10,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ import java.util.Iterator;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
-public class UpdateSettingActionProperty extends ScriptingAction {
+public class UpdateSettingActionProperty extends InternalAction {
     private final ClassPropertyInterface settingInterface;
     private final ClassPropertyInterface userRoleInterface;
     private final ClassPropertyInterface forceCloneInterface; // optimization

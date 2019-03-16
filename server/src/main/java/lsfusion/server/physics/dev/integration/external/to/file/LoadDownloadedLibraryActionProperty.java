@@ -7,12 +7,12 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.file.client.LoadDownloadedLibraryClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class LoadDownloadedLibraryActionProperty extends ScriptingAction {
+public class LoadDownloadedLibraryActionProperty extends InternalAction {
     private final ClassPropertyInterface pathInterface;
 
     public LoadDownloadedLibraryActionProperty(BaseLogicsModule LM, ValueClass... classes) {
