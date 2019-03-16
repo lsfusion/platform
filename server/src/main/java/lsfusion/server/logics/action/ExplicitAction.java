@@ -54,7 +54,7 @@ public abstract class ExplicitAction extends BaseAction<ClassPropertyInterface> 
         else {
             if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys).removeIncl(getNoClassesInterfaces()))) { // если подходит по классам выполнем
                 if (this instanceof InternalAction)
-                    ((InternalAction) this).commonExecuteCustomDelegate(context);
+                    ((InternalAction) this).commonExecuteInternalDelegate(context);
                 else
                     executeInternal(context);
             }
