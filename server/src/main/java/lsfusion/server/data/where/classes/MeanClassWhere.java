@@ -11,7 +11,7 @@ import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.translator.TranslateContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.VariableClassExpr;
+import lsfusion.server.data.expr.classes.VariableClassExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Equal;

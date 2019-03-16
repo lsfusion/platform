@@ -8,7 +8,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

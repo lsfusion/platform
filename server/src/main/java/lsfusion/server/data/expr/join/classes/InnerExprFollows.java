@@ -7,11 +7,11 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.OuterContext;
-import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.query.ExprEnumerator;
+import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.value.Value;
-import lsfusion.server.data.expr.StaticValueExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.ClassWhere;
 
@@ -78,7 +78,7 @@ public class InnerExprFollows<K extends OuterContext> extends InnerFollows<K> im
     public InnerExprFollows<K> translateOuter(MapTranslate translator) {
         return getOuter().translateOuter(translator).getThis();
     }
-    public boolean enumerate(ExprEnumerator enumerator) {
+    public boolean enumerate(ContextEnumerator enumerator) {
         return getOuter().enumerate(enumerator);
     }
     public InnerExprFollows<K> pack() {

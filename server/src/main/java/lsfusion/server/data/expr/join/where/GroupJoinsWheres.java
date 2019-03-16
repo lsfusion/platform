@@ -18,10 +18,8 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.expr.join.stat.KeyStat;
-import lsfusion.server.data.expr.join.stat.StatKeys;
-import lsfusion.server.data.expr.join.stat.WhereJoin;
-import lsfusion.server.data.expr.join.stat.WhereJoins;
+import lsfusion.server.data.stat.KeyStat;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 

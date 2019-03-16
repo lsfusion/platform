@@ -13,8 +13,8 @@ import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.where.DataUpWhere;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.query.compile.where.UpWhere;
-import lsfusion.server.data.expr.join.stat.KeyStat;
-import lsfusion.server.data.expr.join.stat.WhereJoin;
+import lsfusion.server.data.stat.KeyStat;
+import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 

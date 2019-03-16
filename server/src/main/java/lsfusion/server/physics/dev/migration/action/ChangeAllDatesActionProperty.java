@@ -8,7 +8,7 @@ import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingErrorLog;

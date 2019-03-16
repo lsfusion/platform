@@ -13,6 +13,7 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
 
 import java.sql.*;

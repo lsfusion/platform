@@ -17,7 +17,7 @@ import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.ProgressStackItem;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.type.Type;

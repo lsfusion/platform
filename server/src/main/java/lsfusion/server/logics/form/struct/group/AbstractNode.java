@@ -12,7 +12,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
-import lsfusion.server.logics.form.struct.property.ActionOrPropertyClassImplement;
+import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public abstract class AbstractNode extends ImmutableObject {

@@ -6,7 +6,7 @@ import lsfusion.server.data.expr.formula.conversion.*;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.type.ClassReader;
+import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;

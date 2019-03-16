@@ -4,7 +4,7 @@ import com.monitorjbl.xlsx.StreamingReader;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.integration.importing.plain.ImportMatrixIterator;
 import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;

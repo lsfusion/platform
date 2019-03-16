@@ -2,7 +2,7 @@ package lsfusion.server.data.query.compile;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.data.type.Reader;
+import lsfusion.server.data.type.reader.Reader;
 
 public class CompileOrder {
     public final boolean desc;

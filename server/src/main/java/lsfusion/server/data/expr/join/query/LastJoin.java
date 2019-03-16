@@ -12,10 +12,10 @@ import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.join.classes.InnerExprFollows;
-import lsfusion.server.data.expr.join.stat.Cost;
-import lsfusion.server.data.expr.join.stat.StatKeys;
+import lsfusion.server.data.stat.Cost;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
 
 public class LastJoin extends QueryJoin<KeyExpr, LastJoin.Query, LastJoin, LastJoin.QueryOuterContext> {

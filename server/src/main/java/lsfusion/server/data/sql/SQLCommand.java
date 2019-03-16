@@ -7,6 +7,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.sql.statement.PreParsedStatement;
+import lsfusion.server.data.type.parse.ParseInterface;
+import lsfusion.server.data.type.parse.ParsedParamString;
+import lsfusion.server.data.type.parse.ParsedString;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.stat.Stat;
@@ -14,7 +17,7 @@ import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.query.exec.materialize.MaterializedQuery;
 import lsfusion.server.data.query.exec.StaticExecuteEnvironment;
-import lsfusion.server.data.expr.join.stat.Cost;
+import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.*;
 

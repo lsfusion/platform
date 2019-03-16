@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.SQLSession;

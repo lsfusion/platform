@@ -15,7 +15,7 @@ import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.query.compile.where.UpWhere;
-import lsfusion.server.data.expr.join.stat.KeyStat;
+import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.DataWhere;

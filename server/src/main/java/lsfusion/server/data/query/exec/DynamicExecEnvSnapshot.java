@@ -9,7 +9,7 @@ import lsfusion.server.data.sql.SQLQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.parse.ParseInterface;
 
 import java.sql.SQLException;
 import java.sql.Statement;

@@ -54,7 +54,7 @@ import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.data.type.Union;
+import lsfusion.server.logics.property.Union;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;

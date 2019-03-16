@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.stat.integration.hierarchy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 

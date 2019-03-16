@@ -10,7 +10,7 @@ import lsfusion.server.data.stat.DistinctKeys;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.expr.join.stat.TableStatKeys;
+import lsfusion.server.data.stat.TableStatKeys;
 
 public class ValuesTable extends Table {
 

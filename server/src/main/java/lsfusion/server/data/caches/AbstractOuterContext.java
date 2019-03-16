@@ -7,10 +7,10 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.data.expr.StaticValueExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.UnionExpr;
-import lsfusion.server.data.query.ExprEnumerator;
+import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
 
 import java.util.Map;
@@ -140,7 +140,7 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return hash;
     }
 
-    public static Boolean enumerate(OuterContext<?> context, ExprEnumerator enumerator) {
+    public static Boolean enumerate(OuterContext<?> context, ContextEnumerator enumerator) {
         Boolean enumResult = enumerator.enumerate(context);
         if(enumResult!=null && enumResult) // идти внутрь
             for(OuterContext outerDepend : context.getOuterDepends())
@@ -149,13 +149,13 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return enumResult!=null;
     }
 
-    public boolean enumerate(ExprEnumerator enumerator) {
+    public boolean enumerate(ContextEnumerator enumerator) {
         return enumerate(this, enumerator);
     }
 
     public boolean hasUnionExpr() {
         final Result<Boolean> has = new Result<>(false);
-        enumerate(new ExprEnumerator() {
+        enumerate(new ContextEnumerator() {
             public Boolean enumerate(OuterContext join) {
                 if(join instanceof UnionExpr) {
                     has.set(true);

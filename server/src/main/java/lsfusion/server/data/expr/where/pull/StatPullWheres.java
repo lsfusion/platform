@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.expr.join.stat.StatKeys;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 
 public class StatPullWheres extends ExclPullWheres<Stat, Integer, Where> {

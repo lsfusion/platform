@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;

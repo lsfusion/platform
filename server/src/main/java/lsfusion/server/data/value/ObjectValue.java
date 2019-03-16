@@ -9,7 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.Field;
-import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;

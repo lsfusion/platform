@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data.utils.time;
 
-import lsfusion.server.data.type.Time;
+import lsfusion.server.data.expr.value.Time;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.ScriptingLogicsModule;

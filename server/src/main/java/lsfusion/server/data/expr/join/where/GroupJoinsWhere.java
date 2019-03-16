@@ -8,12 +8,10 @@ import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.expr.join.stat.StatKeys;
-import lsfusion.server.data.expr.join.stat.WhereJoin;
-import lsfusion.server.data.expr.join.stat.WhereJoins;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 
 public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {

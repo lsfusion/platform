@@ -9,6 +9,8 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.reader.ClassReader;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;

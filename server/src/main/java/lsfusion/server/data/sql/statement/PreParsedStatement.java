@@ -14,8 +14,8 @@ import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
-import lsfusion.server.data.type.ParsedParamString;
-import lsfusion.server.data.type.ParsedString;
+import lsfusion.server.data.type.parse.ParsedParamString;
+import lsfusion.server.data.type.parse.ParsedString;
 import lsfusion.server.data.type.Type;
 
 import java.sql.Connection;

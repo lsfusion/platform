@@ -1,12 +1,12 @@
 package lsfusion.server.data.caches;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.expr.ParamExpr;
-import lsfusion.server.data.expr.StaticValueExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.pack.PackInterface;
-import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.TranslateContext;
 
@@ -24,5 +24,5 @@ public interface OuterContext<T extends OuterContext<T>> extends PackInterface<T
 
     T translateOuter(MapTranslate translator);
 
-    boolean enumerate(ExprEnumerator enumerator);
+    boolean enumerate(ContextEnumerator enumerator);
 }

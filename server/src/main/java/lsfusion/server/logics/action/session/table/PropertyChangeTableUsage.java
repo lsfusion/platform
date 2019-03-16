@@ -21,7 +21,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.builder.Join;

@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
+import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 

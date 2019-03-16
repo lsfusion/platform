@@ -60,7 +60,7 @@ import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
-import lsfusion.server.logics.property.derived.PullChangeProperty;
+import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;

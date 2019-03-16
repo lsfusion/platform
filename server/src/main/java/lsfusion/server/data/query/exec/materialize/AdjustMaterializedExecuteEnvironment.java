@@ -26,8 +26,8 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.*;
 import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.expr.join.stat.Cost;
-import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.stat.Cost;
+import lsfusion.server.data.type.parse.ParseInterface;
 
 import java.sql.SQLException;
 import java.sql.Statement;

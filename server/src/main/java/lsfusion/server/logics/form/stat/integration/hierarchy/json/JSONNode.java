@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;
 import lsfusion.server.logics.form.stat.integration.importing.hierarchy.json.JSONReader;

@@ -12,7 +12,7 @@ import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.NamedTable;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.query.exec.materialize.NotMaterializable;
-import lsfusion.server.data.expr.join.stat.TableStatKeys;
+import lsfusion.server.data.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.data.DataClass;
 

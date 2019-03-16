@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.PullExpr;
 

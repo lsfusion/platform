@@ -20,6 +20,10 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.key.KeyType;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.query.builder.AbstractJoin;
 import lsfusion.server.data.AbstractSourceJoin;
 import lsfusion.server.data.query.builder.Join;
@@ -38,7 +42,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.translator.*;
 import lsfusion.server.data.type.AbstractType;
-import lsfusion.server.data.type.ClassReader;
+import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -57,7 +61,7 @@ import java.sql.SQLException;
 // запрос JoinSelect
 public class Query<K,V> extends IQuery<K,V> {
 
-    public final ImRevMap<K,KeyExpr> mapKeys;
+    public final ImRevMap<K, KeyExpr> mapKeys;
     public final ImMap<V, Expr> properties;
     public final Where where;
 

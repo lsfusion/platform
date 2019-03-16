@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.stat.integration.hierarchy;
 
 import lsfusion.base.Pair;
-import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.data.type.Type;
 
 // there are two strategies working with hierarchy : JSON - edge-based, и XML - node-based, we'll use edge-based approach, because in xml attr and maps are also more edge-based then node-based  
