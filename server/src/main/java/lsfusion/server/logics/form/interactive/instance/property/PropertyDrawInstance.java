@@ -47,7 +47,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return (PropertyObjectInstance) getValueProperty();
     }
     
-    public boolean isCalcProperty() {
+    public boolean isProperty() {
         return getValueProperty() instanceof PropertyObjectInstance;
     }
 

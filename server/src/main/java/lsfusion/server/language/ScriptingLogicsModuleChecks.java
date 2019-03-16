@@ -374,7 +374,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkForActionPropertyConstraints(boolean isRecursive, List<Integer> oldContext, List<Integer> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkForActionConstraints(boolean isRecursive, List<Integer> oldContext, List<Integer> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (!isRecursive && oldContext.size() == newContext.size()) {
             errLog.emitForActionSameContextError(parser);
         }

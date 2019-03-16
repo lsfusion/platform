@@ -154,7 +154,7 @@ public class InstanceFactory {
 
             propertyDrawInstances.exclAdd(entity, new PropertyDrawInstance<>(
                     entity,
-                    getInstance(entity.getValueProperty()),
+                    getInstance(entity.getValueActionOrProperty()),
                     getInstance(entity.toDraw),
                     columnGroupObjects,
                     entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),

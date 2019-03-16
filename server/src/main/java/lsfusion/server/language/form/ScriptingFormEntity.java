@@ -463,12 +463,12 @@ public class ScriptingFormEntity {
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
         if (hintNoUpdate != null && hintNoUpdate) {
-            form.addHintsNoUpdate(property.getCalcValueProperty().property, version);
+            form.addHintsNoUpdate(property.getValueProperty().property, version);
         }
         
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
-            form.addHintsIncrementTable(version, property.getCalcValueProperty().property);
+            form.addHintsIncrementTable(version, property.getValueProperty().property);
         }
 
         Boolean optimisticAsync = options.getOptimisticAsync();
@@ -650,16 +650,16 @@ public class ScriptingFormEntity {
         }
     }
 
-    public PropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
-        return addCalcPropertyObject(LM, form, property);
+    public PropertyObjectEntity addPropertyObject(ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+        return addPropertyObject(LM, form, property);
     }
 
-    public static PropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public static PropertyObjectEntity addPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedActionOrProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LP)prop.property, prop.mapping);
     }
 
-    public ActionObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionUsage property) throws ScriptingErrorLog.SemanticErrorException {
+    public ActionObjectEntity addActionObject(ScriptingLogicsModule.AbstractFormActionUsage property) throws ScriptingErrorLog.SemanticErrorException {
         MappedActionOrProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
