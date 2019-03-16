@@ -16,7 +16,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectActionProperty;
+import lsfusion.server.logics.form.interactive.action.change.DefaultChangeObjectAction;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -85,7 +85,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @IdentityInstanceLazy
     public ExplicitAction getChangeAction() {
         assert baseClass instanceof CustomClass;
-        return new DefaultChangeObjectActionProperty(baseClass.getBaseClass(), this);
+        return new DefaultChangeObjectAction(baseClass.getBaseClass(), this);
     }
 
     @Override

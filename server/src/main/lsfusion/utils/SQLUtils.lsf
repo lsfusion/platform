@@ -2,9 +2,9 @@ MODULE SQLUtils;
 
 REQUIRE System, Authentication, Service, Utils, Time, ProcessMonitor;
 
-runSQL '{sql.utils.run.sql}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunSQLScriptActionProperty' (TEXT);
+runSQL '{sql.utils.run.sql}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunSQLScriptAction' (TEXT);
 
-runJDBC '{sql.utils.run.jdbc}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunJDBCStatementActionProperty' (VARSTRING[100], TEXT);
+runJDBC '{sql.utils.run.jdbc}'  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunJDBCStatementAction' (VARSTRING[100], TEXT);
 
 vacuumTableAction '{sql.utils.vacuum.table.action}'(Table table)  { 
     runSQL('VACUUM FULL ' + sid(table));
@@ -28,7 +28,7 @@ vacuumTablesAction '{sql.utils.vacuum.tables.action}' ()  {
     MESSAGE '{sql.utils.message.vacuum.tables.action}';
 }
 
-alterTableColumnsToLong '{sql.utils.alter.table.columns.to.long}'  INTERNAL  'lsfusion.server.physics.dev.migration.action.AlterTableColumnsToLongActionProperty' (Table);
+alterTableColumnsToLong '{sql.utils.alter.table.columns.to.long}'  INTERNAL  'lsfusion.server.physics.dev.migration.action.AlterTableColumnsToLongAction' (Table);
 
 EXTEND FORM physicalModel PROPERTIES(t) BEFORE skipVacuum(t) GRID vacuumTableAction, alterTableColumnsToLong;
 EXTEND FORM maintenance PROPERTIES() vacuumTablesAction;
@@ -38,7 +38,7 @@ DESIGN maintenance {
     }
 }
 
-changeAllDates '{sql.utils.change.all.dates}'  INTERNAL  'lsfusion.server.physics.dev.migration.action.ChangeAllDatesActionProperty' () CONFIRM;
+changeAllDates '{sql.utils.change.all.dates}'  INTERNAL  'lsfusion.server.physics.dev.migration.action.ChangeAllDatesAction' () CONFIRM;
 secondsChangeAllDates '{sql.utils.seconds.change.all.dates}' = DATA INTEGER ();
 
 EXTEND FORM maintenance PROPERTIES() changeAllDates, secondsChangeAllDates;

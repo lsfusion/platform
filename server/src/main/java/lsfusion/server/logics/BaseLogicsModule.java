@@ -36,7 +36,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.event.PrevScope;
-import lsfusion.server.logics.form.interactive.action.change.FormAddObjectActionProperty;
+import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.property.ObjectValueProperty;
@@ -57,8 +57,8 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
-import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
-import lsfusion.server.physics.dev.debug.action.WatchActionProperty;
+import lsfusion.server.physics.dev.debug.ActionDebugger;
+import lsfusion.server.physics.dev.debug.action.WatchAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.AbstractPropertyNameParser;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
@@ -403,8 +403,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         vzero = addCProp(DoubleClass.instance, 0.0);
         vnull = addProperty(null, new LP<>(NullValueProperty.instance));
 
-        if(ActionPropertyDebugger.getInstance().isEnabled()) {
-            watch = addProperty(null, new LA<>(WatchActionProperty.instance));
+        if(ActionDebugger.getInstance().isEnabled()) {
+            watch = addProperty(null, new LA<>(WatchAction.instance));
             makeActionPublic(watch, "watch");
         }
 
@@ -756,7 +756,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         CustomClass cls = explicitClass;
         if(explicitClass == null)
             cls = (CustomClass)obj.baseClass;
-        LA result = addAProp(new FormAddObjectActionProperty(cls, obj));
+        LA result = addAProp(new FormAddObjectAction(cls, obj));
         
         setAddActionOptions(result, obj);
         

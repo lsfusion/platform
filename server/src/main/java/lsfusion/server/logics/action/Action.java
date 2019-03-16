@@ -38,7 +38,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.change.GroupChangeActionProperty;
+import lsfusion.server.logics.form.interactive.action.change.GroupChangeAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -66,7 +66,7 @@ import java.util.concurrent.Callable;
 
 public abstract class Action<P extends PropertyInterface> extends ActionOrProperty<P> {
     //просто для быстрого доступа
-    private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
+    private static final ActionDebugger debugger = ActionDebugger.getInstance();
 
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
@@ -533,8 +533,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         ActionMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();
 
-        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty(LocalizedString.NONAME, listInterfaces, changeImplement);
-        return groupChangeActionProperty.getImplement(listInterfaces);
+        GroupChangeAction groupChangeAction = new GroupChangeAction(LocalizedString.NONAME, listInterfaces, changeImplement);
+        return groupChangeAction.getImplement(listInterfaces);
     }
 
     @IdentityLazy

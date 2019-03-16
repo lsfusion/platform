@@ -81,7 +81,7 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeActionProperty;
+import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ChangeProperty;
@@ -1566,7 +1566,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
+        DefaultChangeAction<T> changeActionProperty = new DefaultChangeAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
         return changeActionProperty.getImplement(listInterfaces);
     }
 

@@ -14,9 +14,9 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.logics.action.flow.CaseActionProperty;
+import lsfusion.server.logics.action.flow.CaseAction;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.action.flow.ListActionProperty;
+import lsfusion.server.logics.action.flow.ListAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.changed.IncrementType;
@@ -93,12 +93,12 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = ActionOrPropertyUtils.readImplements(listInterfaces, params);
         ActionMapImplement<?, PropertyInterface> actImpl = (ActionMapImplement<?, PropertyInterface>)readImplements.get(0);
-        if (property instanceof ListActionProperty) {
-            ((ListActionProperty) property).addAction(actImpl, version);
+        if (property instanceof ListAction) {
+            ((ListAction) property).addAction(actImpl, version);
         } else if (hasWhen) {
-            ((CaseActionProperty) property).addCase((PropertyMapImplement<?, PropertyInterface>)readImplements.get(1), actImpl, version);
+            ((CaseAction) property).addCase((PropertyMapImplement<?, PropertyInterface>)readImplements.get(1), actImpl, version);
         } else {
-            ((CaseActionProperty) property).addOperand(actImpl, signature, version);
+            ((CaseAction) property).addOperand(actImpl, signature, version);
         }
     }
 }

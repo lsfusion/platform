@@ -38,7 +38,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.ChangeClassAction;
-import lsfusion.server.logics.action.flow.CaseActionProperty;
+import lsfusion.server.logics.action.flow.CaseAction;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ConcreteClass;
@@ -395,7 +395,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             if(hasPolyForm())
                 return true;
 
-            CaseActionProperty polyAction = (CaseActionProperty) getPolyAction(LM).property;
+            CaseAction polyAction = (CaseAction) getPolyAction(LM).property;
             ImList<ActionCase<PropertyInterface>> cases = polyAction.getOptimizedCases(MapFact.singleton(polyAction.interfaces.single(), getUpSet()), SetFact.<PropertyInterface>EMPTY());
             if(cases.size() > 1) // если есть edit кроме default'ого поведения
                 return true;

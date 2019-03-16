@@ -9,7 +9,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.flow.CaseActionProperty;
+import lsfusion.server.logics.action.flow.CaseAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.changed.OldProperty;
@@ -110,8 +110,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
     }
 
     public Graph<ActionCase<T>> mapAbstractGraph() {
-        if(property instanceof CaseActionProperty) {
-            Graph<ActionCase<PropertyInterface>> absGraph = ((CaseActionProperty) property).getAbstractGraph();
+        if(property instanceof CaseAction) {
+            Graph<ActionCase<PropertyInterface>> absGraph = ((CaseAction) property).getAbstractGraph();
             if(absGraph != null)
                 return absGraph.map(new GetValue<ActionCase<T>, ActionCase<PropertyInterface>>() {
                     public ActionCase<T> getMapValue(ActionCase<PropertyInterface> value) {

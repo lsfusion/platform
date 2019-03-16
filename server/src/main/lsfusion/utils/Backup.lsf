@@ -2,18 +2,18 @@ MODULE Backup;
 
 REQUIRE System, Reflection, SchedulerDefaultData;
 
-makeBackup 'Создать копию' INTERNAL  'lsfusion.server.physics.admin.backup.action.BackupActionProperty' () TOOLBAR;
+makeBackup 'Создать копию' INTERNAL  'lsfusion.server.physics.admin.backup.action.BackupAction' () TOOLBAR;
 makeBackupAction 'Создать копию'  { 
     makeBackup();
     formRefresh();
 }
-makePartialBackup 'Создать копию (оперативно)' INTERNAL  'lsfusion.server.physics.admin.backup.action.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackup 'Создать копию (оперативно)' INTERNAL  'lsfusion.server.physics.admin.backup.action.PartialBackupAction' () TOOLBAR;
 makePartialBackupAction 'Создать копию (оперативно)'  { 
     makePartialBackup();
     formRefresh();
 }
-save 'Скачать' INTERNAL  'lsfusion.server.physics.admin.backup.action.SaveBackupActionProperty' (Backup) TOOLBAR;
-delete 'Удалить' INTERNAL  'lsfusion.server.physics.admin.backup.action.DeleteBackupActionProperty' (Backup);
+save 'Скачать' INTERNAL  'lsfusion.server.physics.admin.backup.action.SaveBackupAction' (Backup) TOOLBAR;
+delete 'Удалить' INTERNAL  'lsfusion.server.physics.admin.backup.action.DeleteBackupAction' (Backup);
 
 deleteAction 'Удалить' (Backup b)  { 
     delete(b);
@@ -30,13 +30,13 @@ WHEN CHANGED(dumpDir()) DO setDumpDir();
 saveMondayBackups '{backup.dave.monday.backups}' = DATA BOOLEAN ();
 saveFirstDayBackups '{backup.first.day.backups}' = DATA BOOLEAN ();
 maxQuantityBackups '{backup.max.quantity.backups}' = DATA INTEGER ();
-decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.server.physics.admin.backup.action.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.server.physics.admin.backup.action.DecimateBackupsAction' () TOOLBAR CONFIRM;
 decimateBackupsAction '{backup.decimate.backups}'  { 
     decimateBackups();
     formRefresh();
 }
 
-customRestore 'Восстановить таблицы'  INTERNAL  'lsfusion.server.physics.admin.backup.action.CustomRestoreActionProperty' (Backup);
+customRestore 'Восстановить таблицы'  INTERNAL  'lsfusion.server.physics.admin.backup.action.CustomRestoreAction' (Backup);
 inCustomRestore 'Вкл' = DATA BOOLEAN (Table);
 restoreObjects 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
 inCustomRestore 'Вкл' = DATA BOOLEAN (TableColumn);

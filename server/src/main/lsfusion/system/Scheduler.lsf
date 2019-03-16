@@ -86,12 +86,12 @@ date '{scheduler.date.scheduled.client.task.log}'= DATA DATETIME (ScheduledClien
 isFailed '{scheduler.is.failed.scheduled.client.task.log}' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF failed(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl);
 isMessages '{scheduler.is.messages.scheduled.client.task.log}' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
-stopScheduler '{scheduler.stop.scheduler}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.StopSchedulerActionProperty' ();
+stopScheduler '{scheduler.stop.scheduler}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.StopSchedulerAction' ();
 stopSchedulerApply '{scheduler.stop.scheduler}'  { 
     stopScheduler();
     apply();
 }
-runSetupScheduler '{scheduler.run.setup.scheduler}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.SetupSchedulerActionProperty' ();
+runSetupScheduler '{scheduler.run.setup.scheduler}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.SetupSchedulerAction' ();
 runSetupSchedulerApply '{scheduler.run.setup.scheduler}'  { 
     runSetupScheduler();
     apply();
@@ -116,8 +116,8 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t
                                          AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                                 
-executeScheduledTask '{scheduler.execute.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
-setupScheduledTask '{scheduler.setup.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         
+executeScheduledTask '{scheduler.execute.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.ExecuteScheduledTaskAction' (ScheduledTask) CONFIRM;                                                                                                                                 
+setupScheduledTask '{scheduler.setup.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.SetupScheduledTaskAction' (ScheduledTask) CONFIRM;                                         
 WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
 WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
            

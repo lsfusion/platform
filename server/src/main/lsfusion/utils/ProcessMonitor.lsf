@@ -21,11 +21,11 @@ CLASS StateProcess '{process.monitor.status.process}' {
     idle '{process.monitor.status.process.idle}'
 }
 
-updateProcessMonitorAction '{process.monitor.update.process.monitor.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.UpdateProcessMonitorActionProperty' () TOOLBAR;
-killJavaProcess '{process.monitor.kill.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillJavaProcessActionProperty' (VARSTRING[10]);
-killSQLProcess '{process.monitor.kill.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillSQLProcessActionProperty' (VARSTRING[10]);
-cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelJavaProcessActionProperty' (VARSTRING[10]);
-cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelSQLProcessActionProperty' (VARSTRING[10]);
+updateProcessMonitorAction '{process.monitor.update.process.monitor.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.UpdateProcessMonitorAction' () TOOLBAR;
+killJavaProcess '{process.monitor.kill.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillJavaProcessAction' (VARSTRING[10]);
+killSQLProcess '{process.monitor.kill.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillSQLProcessAction' (VARSTRING[10]);
+cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelJavaProcessAction' (VARSTRING[10]);
+cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelSQLProcessAction' (VARSTRING[10]);
 
 processType '{process.monitor.process.type}'= DATA LOCAL ProcessType();
 nameProcessType '{process.monitor.process.type}' () = staticName(processType()) CHARWIDTH 15;
@@ -54,7 +54,7 @@ dateTimeCallProcess '{process.monitor.date.time.call.process}' = DATA LOCAL DATE
 idSQLProcess '{process.monitor.id.sql.process}' = DATA LOCAL INTEGER (VARSTRING[10]);
 querySQLProcess '{process.monitor.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
 fullQuerySQLProcess '{process.monitor.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (VARSTRING[10] i)  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
+copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (VARSTRING[10] i)  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CopyFullQuerySQLProcessAction' (VARSTRING[10]);
 copiedFullQuerySQLProcess '{process.monitor.copied.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
 addressUserSQLProcess '{process.monitor.address.user.sql.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 debugInfoSQLProcess '{process.monitor.debug.info.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
