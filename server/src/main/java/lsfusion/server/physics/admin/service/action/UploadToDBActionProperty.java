@@ -11,13 +11,13 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class UploadToDBActionProperty extends ScriptingAction {
+public class UploadToDBActionProperty extends InternalAction {
 
     public UploadToDBActionProperty(ServiceLogicsModule LM) {
         super(LM);

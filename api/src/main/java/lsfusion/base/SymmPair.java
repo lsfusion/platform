@@ -1,6 +1,4 @@
-package lsfusion.server.data.query.innerjoins;
-
-import lsfusion.base.Pair;
+package lsfusion.base;
 
 public class SymmPair<Class1, Class2> {
 

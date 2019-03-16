@@ -11,13 +11,13 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class ReloginUserActionProperty extends ScriptingAction {
+public class ReloginUserActionProperty extends InternalAction {
 
     public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

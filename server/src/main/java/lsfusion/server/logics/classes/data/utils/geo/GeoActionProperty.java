@@ -7,11 +7,11 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class GeoActionProperty extends ScriptingAction {
+public class GeoActionProperty extends InternalAction {
 
     public GeoActionProperty(ScriptingLogicsModule LM) {
         super(LM);

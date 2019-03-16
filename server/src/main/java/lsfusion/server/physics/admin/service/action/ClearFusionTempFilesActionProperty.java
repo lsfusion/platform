@@ -5,13 +5,13 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Calendar;
 
-public class ClearFusionTempFilesActionProperty extends ScriptingAction {
+public class ClearFusionTempFilesActionProperty extends InternalAction {
 
     public ClearFusionTempFilesActionProperty(ServiceLogicsModule LM) {
         super(LM);

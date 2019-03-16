@@ -8,7 +8,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import net.coobird.thumbnailator.Thumbnails;
 
 import java.io.File;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ResizeImageActionProperty extends ScriptingAction {
+public class ResizeImageActionProperty extends InternalAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface scaleInterface;
 

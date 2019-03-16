@@ -7,13 +7,13 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
-public class ToMillisecondsActionProperty extends ScriptingAction {
+public class ToMillisecondsActionProperty extends InternalAction {
     private final ClassPropertyInterface timestampInterface;
 
     public ToMillisecondsActionProperty(UtilsLogicsModule LM, ValueClass... classes) {

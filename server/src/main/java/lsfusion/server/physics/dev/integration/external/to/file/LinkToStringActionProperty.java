@@ -7,14 +7,14 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class LinkToStringActionProperty extends ScriptingAction {
+public class LinkToStringActionProperty extends InternalAction {
     private final ClassPropertyInterface stringInterface;
 
     public LinkToStringActionProperty(UtilsLogicsModule LM, ValueClass... classes) {

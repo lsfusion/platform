@@ -6,7 +6,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 
-public class RunJDBCStatementActionProperty extends ScriptingAction {
+public class RunJDBCStatementActionProperty extends InternalAction {
     private final ClassPropertyInterface connectionStringInterface;
     private final ClassPropertyInterface jdbcStatementInterface;
 

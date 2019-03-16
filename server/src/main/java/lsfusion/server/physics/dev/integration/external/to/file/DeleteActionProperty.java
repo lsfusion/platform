@@ -9,13 +9,13 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.file.client.DeleteFileClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class DeleteActionProperty extends ScriptingAction {
+public class DeleteActionProperty extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface isClientInterface;
 

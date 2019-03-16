@@ -7,13 +7,13 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetVolatileStatsEnabledUserActionProperty extends ScriptingAction {
+public class SetVolatileStatsEnabledUserActionProperty extends InternalAction {
 
     public SetVolatileStatsEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

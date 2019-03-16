@@ -12,7 +12,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
@@ -22,7 +22,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
-public class AlterTableColumnsToLongActionProperty extends ScriptingAction {
+public class AlterTableColumnsToLongActionProperty extends InternalAction {
 
     private final ClassPropertyInterface tableInterface;
 

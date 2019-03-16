@@ -7,12 +7,12 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.equ.fax.client.WriteToFaxClientAction;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class WriteToFaxActionProperty extends ScriptingAction {
+public class WriteToFaxActionProperty extends InternalAction {
     private final ClassPropertyInterface textInterface;
     private final ClassPropertyInterface faxNumberInterface;
 

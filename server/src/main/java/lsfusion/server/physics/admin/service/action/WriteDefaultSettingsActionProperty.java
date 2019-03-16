@@ -8,7 +8,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import lsfusion.server.physics.dev.integration.service.*;
 import org.apache.commons.beanutils.PropertyUtils;
 
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class WriteDefaultSettingsActionProperty extends ScriptingAction {
+public class WriteDefaultSettingsActionProperty extends InternalAction {
 
     public WriteDefaultSettingsActionProperty(ServiceLogicsModule LM) {
         super(LM);

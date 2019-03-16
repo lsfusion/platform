@@ -14,7 +14,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class MakeUnzipFileActionProperty extends ScriptingAction {
+public class MakeUnzipFileActionProperty extends InternalAction {
 
     public MakeUnzipFileActionProperty(UtilsLogicsModule LM) {
         super(LM);

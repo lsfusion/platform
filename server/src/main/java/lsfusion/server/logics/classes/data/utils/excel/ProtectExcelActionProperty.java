@@ -11,7 +11,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ProtectExcelActionProperty extends ScriptingAction {
+public class ProtectExcelActionProperty extends InternalAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface passwordInterface;
 

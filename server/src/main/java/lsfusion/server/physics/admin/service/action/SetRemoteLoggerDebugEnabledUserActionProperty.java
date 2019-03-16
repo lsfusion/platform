@@ -6,13 +6,13 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.logging.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetRemoteLoggerDebugEnabledUserActionProperty extends ScriptingAction {
+public class SetRemoteLoggerDebugEnabledUserActionProperty extends InternalAction {
 
     public SetRemoteLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

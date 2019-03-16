@@ -7,7 +7,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class MakeHeapDumpActionProperty extends ScriptingAction {
+public class MakeHeapDumpActionProperty extends InternalAction {
 
     public MakeHeapDumpActionProperty(ServiceLogicsModule LM) {
         super(LM);

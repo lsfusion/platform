@@ -13,7 +13,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.profiler.Profiler;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -21,7 +21,7 @@ import java.util.HashSet;
 import static lsfusion.server.physics.admin.profiler.Profiler.profileForms;
 import static lsfusion.server.physics.admin.profiler.Profiler.profileUsers;
 
-public class StartProfilerActionProperty extends ScriptingAction {
+public class StartProfilerActionProperty extends InternalAction {
     public StartProfilerActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }

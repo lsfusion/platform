@@ -12,12 +12,12 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class OpenRawFileActionProperty extends ScriptingAction {
+public class OpenRawFileActionProperty extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
 

@@ -4,11 +4,11 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class GarbageCollectorActionProperty extends ScriptingAction {
+public class GarbageCollectorActionProperty extends InternalAction {
     public GarbageCollectorActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }

@@ -7,12 +7,12 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CancelSQLProcessActionProperty extends ScriptingAction {
+public class CancelSQLProcessActionProperty extends InternalAction {
     private final ClassPropertyInterface integerInterface;
 
     public CancelSQLProcessActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {

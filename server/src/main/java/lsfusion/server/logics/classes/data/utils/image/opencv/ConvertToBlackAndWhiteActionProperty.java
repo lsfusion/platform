@@ -7,7 +7,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -17,7 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class ConvertToBlackAndWhiteActionProperty extends ScriptingAction {
+public class ConvertToBlackAndWhiteActionProperty extends InternalAction {
     protected final ClassPropertyInterface imageInterface;
     protected final ClassPropertyInterface thresholdInterface;
 

@@ -4,7 +4,7 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
@@ -14,7 +14,7 @@ import java.util.Date;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public abstract class EmailActionProperty extends ScriptingAction {
+public abstract class EmailActionProperty extends InternalAction {
     EmailLogicsModule emailLM;
     public static Logger logger = ServerLoggers.mailLogger;
 

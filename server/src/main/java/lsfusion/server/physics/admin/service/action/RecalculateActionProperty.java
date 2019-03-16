@@ -8,13 +8,13 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class RecalculateActionProperty extends ScriptingAction {
+public class RecalculateActionProperty extends InternalAction {
     public RecalculateActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }

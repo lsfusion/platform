@@ -9,13 +9,13 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.commons.io.FilenameUtils;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class OpenPathActionProperty extends ScriptingAction {
+public class OpenPathActionProperty extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
 

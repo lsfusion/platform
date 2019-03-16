@@ -7,12 +7,12 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class BeepActionProperty extends ScriptingAction {
+public class BeepActionProperty extends InternalAction {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface asyncInterface;
 

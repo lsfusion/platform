@@ -10,7 +10,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -18,7 +18,7 @@ import java.util.Set;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class RecalculateTableStatsActionProperty extends ScriptingAction {
+public class RecalculateTableStatsActionProperty extends InternalAction {
 
     private final ClassPropertyInterface tableInterface;
 
