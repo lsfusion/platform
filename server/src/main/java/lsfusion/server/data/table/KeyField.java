@@ -1,8 +1,8 @@
 package lsfusion.server.data.table;
 
-import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 
 import java.io.DataInputStream;

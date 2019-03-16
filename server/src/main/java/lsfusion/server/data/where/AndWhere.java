@@ -6,19 +6,19 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.where.KeyEquals;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.stat.KeyStat;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
+import lsfusion.server.physics.admin.Settings;
 
 
 public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {

@@ -1,11 +1,11 @@
 package lsfusion.server.logics.classes.data.integral;
 
 import lsfusion.interop.form.property.DataType;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.PreparedStatement;

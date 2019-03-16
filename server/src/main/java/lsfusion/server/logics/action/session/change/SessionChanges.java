@@ -1,11 +1,11 @@
 package lsfusion.server.logics.action.session.change;
 
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

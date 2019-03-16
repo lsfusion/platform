@@ -12,19 +12,19 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NullableExpr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
+import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.key.KeyType;
+import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
-import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public abstract class StaticClassNullableExpr extends NullableExpr implements StaticClassExprInterface {
     

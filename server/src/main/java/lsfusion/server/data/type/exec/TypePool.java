@@ -3,10 +3,10 @@ package lsfusion.server.data.type.exec;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.type.TypeFunc;
-import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.TypeFunc;
+import lsfusion.server.logics.classes.data.ArrayClass;
 
 import java.sql.SQLException;
 

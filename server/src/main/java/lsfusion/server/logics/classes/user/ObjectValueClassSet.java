@@ -2,10 +2,10 @@ package lsfusion.server.logics.classes.user;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
+import lsfusion.server.logics.classes.ValueClassSet;
+import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 
 public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
 

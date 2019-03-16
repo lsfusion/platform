@@ -1,8 +1,8 @@
 package lsfusion.server.data.type.reader;
 
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

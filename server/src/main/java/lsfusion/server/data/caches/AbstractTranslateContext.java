@@ -10,10 +10,10 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashObject;
 import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.translator.MapObject;
+import lsfusion.server.data.value.Value;
 
 // assert что T instanceof AbstractTranslateContext но заколебешься его протаскивать
 public abstract class AbstractTranslateContext<T, M extends MapObject, H extends HashObject> extends AbstractHashContext<H> implements PackInterface<T> {

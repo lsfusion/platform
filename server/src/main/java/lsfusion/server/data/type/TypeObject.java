@@ -1,11 +1,11 @@
 package lsfusion.server.data.type;
 
+import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.table.Field;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.parse.AbstractParseInterface;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.table.Field;
-import lsfusion.server.data.sql.SQLSession;
-import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.sql.syntax.SQLSyntax;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

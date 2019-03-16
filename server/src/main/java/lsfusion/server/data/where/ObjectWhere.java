@@ -6,11 +6,11 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.where.KeyEquals;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.stat.KeyStat;
+import lsfusion.server.data.stat.StatType;
 
 
 public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {

@@ -3,21 +3,21 @@ package lsfusion.server.data.expr.value;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.AbstractSourceJoin;
-import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.data.AbstractSourceJoin;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StaticValueExpr extends AbstractValueExpr<StaticClass> {

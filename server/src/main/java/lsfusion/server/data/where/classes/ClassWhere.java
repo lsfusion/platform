@@ -10,11 +10,11 @@ import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {

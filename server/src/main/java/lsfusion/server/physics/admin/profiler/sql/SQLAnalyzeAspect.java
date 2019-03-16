@@ -2,12 +2,12 @@ package lsfusion.server.physics.admin.profiler.sql;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.query.exec.DynamicExecEnvSnapshot;
 import lsfusion.server.data.sql.SQLCommand;
 import lsfusion.server.data.sql.SQLDML;
 import lsfusion.server.data.sql.SQLSession;
-import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.query.exec.DynamicExecEnvSnapshot;
 import lsfusion.server.data.type.parse.ParseInterface;
+import lsfusion.server.physics.admin.Settings;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

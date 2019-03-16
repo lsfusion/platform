@@ -1,7 +1,7 @@
 package lsfusion.server.language.property;
 
-import lsfusion.server.logics.event.Event;
 import lsfusion.server.language.property.oraction.ActionOrPropertySettings;
+import lsfusion.server.logics.event.Event;
 import lsfusion.server.physics.dev.debug.BooleanDebug;
 
 public class PropertySettings extends ActionOrPropertySettings {

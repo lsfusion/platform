@@ -3,10 +3,10 @@ package lsfusion.server.data.translator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.SourceJoin;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.SourceJoin;
+import lsfusion.server.data.expr.key.ParamExpr;
 
 // транслятор в тот же контекст как правило
 public class PartialKeyExprTranslator extends KeyExprTranslator {

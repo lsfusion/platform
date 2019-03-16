@@ -5,20 +5,20 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.ArrayInstancer;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.where.KeyEquals;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.stat.KeyStat;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
+import lsfusion.server.physics.admin.Settings;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 

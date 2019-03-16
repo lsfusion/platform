@@ -11,11 +11,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashCodeValues;
 import lsfusion.server.data.caches.hash.HashMapValues;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.value.Value;
 
 public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends AbstractTranslateContext<U, MapValuesTranslate, HashValues> implements ValuesContext<U> {
 

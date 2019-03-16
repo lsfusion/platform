@@ -12,9 +12,9 @@ import lsfusion.server.data.expr.query.order.PartitionCalc;
 import lsfusion.server.data.expr.query.order.PartitionParam;
 import lsfusion.server.data.expr.query.order.PartitionToken;
 import lsfusion.server.data.query.compile.CompileOrder;
-import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.where.Where;
 
 import java.util.HashMap;

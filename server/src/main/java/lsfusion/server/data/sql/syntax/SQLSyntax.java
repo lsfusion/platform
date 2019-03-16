@@ -2,14 +2,16 @@ package lsfusion.server.data.sql.syntax;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.compile.CompileOrder;
-import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
+import lsfusion.server.data.table.SessionTable;
+import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.FunctionType;
+import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.type.*;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
 

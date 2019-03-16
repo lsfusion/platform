@@ -3,8 +3,8 @@ package lsfusion.server.data.expr;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.classes.StaticClassNullableExpr;
-import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.expr.join.base.UnionJoin;
+import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.where.Where;
 
 // выражение для оптимизации, разворачивание которого в case'ы даст экспоненту

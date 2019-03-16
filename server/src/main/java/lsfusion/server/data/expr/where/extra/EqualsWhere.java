@@ -4,16 +4,16 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.select.ExprEqualsJoin;
 import lsfusion.server.data.expr.join.select.ExprStatJoin;
 import lsfusion.server.data.expr.join.where.KeyEquals;
 import lsfusion.server.data.expr.join.where.WhereJoin;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.query.compile.CompileSource;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.where.Where;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {

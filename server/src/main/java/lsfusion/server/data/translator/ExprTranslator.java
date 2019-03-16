@@ -6,8 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.SourceJoin;
+import lsfusion.server.data.expr.Expr;
 
 public abstract class ExprTranslator extends TwinImmutableObject {
 

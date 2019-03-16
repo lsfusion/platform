@@ -11,14 +11,14 @@ import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
+import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.base.UnionJoin;
-import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
-import lsfusion.server.data.stat.*;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
+import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.query.compile.where.UpWheres;
+import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translator.MapTranslate;
 
 public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> implements WhereJoin<Integer, ExprEqualsJoin> {

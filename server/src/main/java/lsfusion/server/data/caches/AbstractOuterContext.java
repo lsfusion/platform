@@ -5,13 +5,13 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.value.Value;
+import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.caches.hash.HashContext;
+import lsfusion.server.data.expr.UnionExpr;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
-import lsfusion.server.data.expr.UnionExpr;
-import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.value.Value;
 
 import java.util.Map;
 import java.util.TreeMap;

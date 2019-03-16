@@ -1,11 +1,11 @@
 package lsfusion.server.physics.dev.id.resolve;
 
-import lsfusion.server.language.metacode.MetaCodeFragment;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.language.metacode.MetaCodeFragment;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;

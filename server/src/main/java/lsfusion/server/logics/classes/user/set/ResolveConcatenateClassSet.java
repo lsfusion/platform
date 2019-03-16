@@ -2,9 +2,9 @@ package lsfusion.server.logics.classes.user.set;
 
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.struct.ConcatenateClassSet;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 
 import java.util.Arrays;

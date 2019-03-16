@@ -8,8 +8,8 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.expr.inner.InnerExpr;
-import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.expr.join.base.UnionJoin;
+import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.where.DataWhere;
 
 public abstract class NullableExpr extends VariableSingleClassExpr implements NullableExprInterface {

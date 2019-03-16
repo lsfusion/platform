@@ -3,8 +3,8 @@ package lsfusion.server.logics.action.session.classes.change;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.classes.user.BaseClass;
 

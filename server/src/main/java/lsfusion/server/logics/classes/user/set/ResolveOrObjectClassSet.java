@@ -7,8 +7,8 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 
 // по большому счету только для class data props

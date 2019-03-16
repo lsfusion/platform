@@ -7,11 +7,11 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
-import lsfusion.server.data.stat.KeyStat;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.KeyStat;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.OrObjectWhere;
 import lsfusion.server.data.where.Where;
 

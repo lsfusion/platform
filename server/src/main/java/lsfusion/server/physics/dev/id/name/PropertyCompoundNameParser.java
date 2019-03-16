@@ -4,8 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils.ParseException;
 

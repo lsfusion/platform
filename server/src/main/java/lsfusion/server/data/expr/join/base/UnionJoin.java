@@ -12,16 +12,16 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.data.ContextEnumerator;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
-import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.join.query.QueryJoin;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.where.Where;
 
 public class UnionJoin extends CalculateJoin<BaseExpr> {

@@ -7,7 +7,6 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.property.classes.data.FormulaUnionProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.StringAggUnionDrillDownFormEntity;

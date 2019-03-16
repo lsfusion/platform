@@ -5,10 +5,10 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.base.serialization.BinarySerializable;
-import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

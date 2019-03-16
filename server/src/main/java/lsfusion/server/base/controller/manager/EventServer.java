@@ -1,9 +1,9 @@
 package lsfusion.server.base.controller.manager;
 
 import lsfusion.server.base.controller.lifecycle.LifecycleAdapter;
+import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
 import lsfusion.server.logics.action.controller.stack.TopExecutionStack;
-import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.session.DataSession;
 
 import java.sql.SQLException;

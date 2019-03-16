@@ -7,9 +7,9 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 
 public class NullReader extends AbstractReader<Object> implements ClassReader<Object> {
 

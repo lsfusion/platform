@@ -3,10 +3,10 @@ package lsfusion.server.data.sql.connection;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.sql.SQLSession;
-import lsfusion.server.data.sql.table.SQLTemporaryPool;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.sql.table.SQLTemporaryPool;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 import org.postgresql.PGConnection;
 
 import java.lang.ref.WeakReference;

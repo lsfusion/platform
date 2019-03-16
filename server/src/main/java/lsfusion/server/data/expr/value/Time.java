@@ -2,9 +2,9 @@ package lsfusion.server.data.expr.value;
 
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
 
 public enum Time {
     EPOCH, HOUR, MINUTE, DATETIME;
