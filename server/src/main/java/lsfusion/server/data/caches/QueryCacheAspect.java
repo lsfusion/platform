@@ -124,7 +124,7 @@ public class QueryCacheAspect {
         }
     }
 
-    @Around("execution(@ContextTwin * *.*(..)) && target(query)")
+    @Around("execution(@lsfusion.server.base.caches.ContextTwin * *.*(..)) && target(query)")
     public Object callContextTwinMethod(ProceedingJoinPoint thisJoinPoint, Query query) throws Throwable {
         IQuery cache = cacheTwin(query);
         if(cache!=query) {

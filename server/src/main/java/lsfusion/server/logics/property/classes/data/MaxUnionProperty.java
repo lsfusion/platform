@@ -9,7 +9,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.IncrementUnionProperty;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.MaxUnionDrillDownFormEntity;

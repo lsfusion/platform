@@ -13,7 +13,7 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.ValueFormulaProperty;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

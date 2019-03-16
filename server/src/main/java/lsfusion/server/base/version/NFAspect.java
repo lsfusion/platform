@@ -7,7 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class NFAspect {
 
-    @Around("execution(@NFLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.version.NFLazy * *.*(..)) && target(object)")
     public Object callSynchronizedMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         synchronized (object) {
             return thisJoinPoint.proceed();

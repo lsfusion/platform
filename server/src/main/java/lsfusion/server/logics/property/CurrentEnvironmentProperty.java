@@ -7,7 +7,6 @@ import lsfusion.server.data.expr.value.CurrentEnvironmentExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.property.classes.infer.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

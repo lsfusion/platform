@@ -141,7 +141,7 @@ public class AfterTranslateAspect {
         return true;        
     }
 
-    @Around("execution(* PropertyChange.getQuery()) && target(change)")
+    @Around("execution(* lsfusion.server.logics.action.session.change.PropertyChange.getQuery()) && target(change)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, PropertyChange change) throws Throwable {
         return test(thisJoinPoint, change);
     }

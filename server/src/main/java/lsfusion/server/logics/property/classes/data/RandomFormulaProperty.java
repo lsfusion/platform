@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.value.RandomExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

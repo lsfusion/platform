@@ -10,6 +10,7 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

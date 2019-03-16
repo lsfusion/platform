@@ -24,7 +24,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;

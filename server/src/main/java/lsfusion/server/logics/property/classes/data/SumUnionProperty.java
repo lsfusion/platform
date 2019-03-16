@@ -12,7 +12,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.IncrementUnionProperty;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;

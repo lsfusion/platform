@@ -7,7 +7,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class PropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
