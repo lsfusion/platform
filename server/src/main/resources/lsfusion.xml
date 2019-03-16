@@ -388,7 +388,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finishLogInitTask" class="lsfusion.server.physics.admin.logging.controller.init.FinishLogInitTask">
+    <bean id="finishLogInitTask" class="lsfusion.server.physics.admin.log.controller.init.FinishLogInitTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как логи - часть reflection'а-->
@@ -613,7 +613,7 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="logLaunchTask" class="lsfusion.server.physics.admin.logging.controller.init.LogLaunchTask">
+    <bean id="logLaunchTask" class="lsfusion.server.physics.admin.log.controller.init.LogLaunchTask">
         <property name="dependencies">
             <set>
             </set>

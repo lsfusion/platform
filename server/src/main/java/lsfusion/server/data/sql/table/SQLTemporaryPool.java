@@ -17,7 +17,7 @@ import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;

@@ -5,7 +5,7 @@ import lsfusion.base.remote.RMIUtils;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

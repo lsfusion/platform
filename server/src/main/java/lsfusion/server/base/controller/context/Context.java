@@ -22,7 +22,7 @@ import lsfusion.server.logics.form.interactive.property.checked.PullChangeProper
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.physics.admin.logging.LogInfo;
+import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;

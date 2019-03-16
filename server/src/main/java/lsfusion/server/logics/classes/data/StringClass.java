@@ -12,7 +12,7 @@ import lsfusion.server.logics.classes.data.file.CSVClass;
 import lsfusion.server.logics.classes.data.file.HTMLClass;
 import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.XMLClass;
-import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.integration.export.plain.dbf.OverJDBField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;

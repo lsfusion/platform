@@ -86,7 +86,7 @@ import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.sql.SQLException;
 import java.util.*;

@@ -46,7 +46,7 @@ import lsfusion.server.physics.admin.authentication.LDAPParameters;
 import lsfusion.server.physics.admin.authentication.UserInfo;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;

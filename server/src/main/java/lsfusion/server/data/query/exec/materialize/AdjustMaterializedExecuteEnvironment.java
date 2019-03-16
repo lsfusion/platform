@@ -27,7 +27,7 @@ import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.sql.SQLException;
 import java.sql.Statement;

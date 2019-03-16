@@ -38,7 +38,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import sun.management.jmxremote.LocalRMIServerSocketFactory;

@@ -8,7 +8,7 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

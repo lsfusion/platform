@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.integration.hierarchy.Node;
-import lsfusion.server.logics.form.stat.integration.importing.hierarchy.json.JSONReader;
+import lsfusion.server.logics.form.stat.integration.imports.hierarchy.json.JSONReader;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

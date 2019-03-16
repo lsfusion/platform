@@ -3,29 +3,28 @@ package lsfusion.server.logics;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ManageSessionType;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.filter.ContextFilter;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.base.controller.context.AbstractContext;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
+import lsfusion.server.logics.form.interactive.property.checked.PullChangeProperty;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilter;
+import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
-import lsfusion.server.physics.admin.logging.LogInfo;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.physics.admin.log.LogInfo;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.Locale;
 
-import static lsfusion.server.physics.admin.logging.ServerLoggers.systemLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.systemLogger;
 
 public class LogicsInstanceContext extends AbstractContext {
     private static final Logger logger = Logger.getLogger(LogicsInstanceContext.class);

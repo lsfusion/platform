@@ -7,7 +7,7 @@ import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.value.Value;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.lang.ref.WeakReference;
 

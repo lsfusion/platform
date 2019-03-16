@@ -1,7 +1,7 @@
 package lsfusion.server.data;
 
 import lsfusion.server.base.controller.thread.AssertSynchronized;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 public abstract class OperationOwner {
     

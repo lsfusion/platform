@@ -23,7 +23,7 @@ import lsfusion.server.data.type.exec.TypePool;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
 

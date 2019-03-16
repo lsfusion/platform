@@ -31,7 +31,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
 
 import java.io.IOException;

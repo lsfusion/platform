@@ -27,7 +27,7 @@ import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnectionContext;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
-import lsfusion.server.physics.admin.logging.LogInfo;
+import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.sql.SQLException;
 import java.util.Locale;
