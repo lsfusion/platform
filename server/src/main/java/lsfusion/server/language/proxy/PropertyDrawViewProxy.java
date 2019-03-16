@@ -42,7 +42,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setPattern(LocalizedString lPattern) {
         String pattern = lPattern.getSourceString();
-        if(target.isCalcProperty()) {
+        if(target.isProperty()) {
             Type type = target.getType();
             if (type instanceof IntegralClass) {
                 target.format = new DecimalFormat(pattern);

@@ -102,8 +102,8 @@ public class PropertyDrawView extends ComponentView {
         return entity.getType();
     }
 
-    public boolean isCalcProperty() {
-        return entity.isCalcProperty();
+    public boolean isProperty() {
+        return entity.isProperty();
     }
 
     public Type getChangeType(ServerContext context) {
@@ -230,7 +230,7 @@ public class PropertyDrawView extends ComponentView {
 
         if(defaultCompare != null)
             defaultCompare.serialize(outStream);
-        else if(Settings.get().isDefaultCompareForStringContains() && isCalcProperty() && getType() instanceof StringClass)
+        else if(Settings.get().isDefaultCompareForStringContains() && isProperty() && getType() instanceof StringClass)
             Compare.CONTAINS.serialize(outStream);
         else
             outStream.writeByte(-1);
@@ -256,7 +256,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(hide);
 
         //entity часть
-        if(isCalcProperty())
+        if(isProperty())
             TypeSerializer.serializeType(outStream, getType());
         else {
             outStream.writeByte(1);
@@ -307,13 +307,13 @@ public class PropertyDrawView extends ComponentView {
             pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
         }
 
-        outStream.writeBoolean(isCalcProperty());
+        outStream.writeBoolean(isProperty());
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);
 
         pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
 
-        MapKeysTable<? extends PropertyInterface> mapTable = isCalcProperty() ?
+        MapKeysTable<? extends PropertyInterface> mapTable = isProperty() ?
                         ((Property<?>)debugBinding).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
 
@@ -463,7 +463,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean isHorizontalValueFlex() {
         if(valueFlex != null)
             return valueFlex;
-        return isCalcProperty() && getType().isFlex();
+        return isProperty() && getType().isFlex();
     }
 
     public String getAskConfirmMessage() {
@@ -472,7 +472,7 @@ public class PropertyDrawView extends ComponentView {
             return entity.askConfirmMessage;
         
         LocalizedString msg;
-        if (isCalcProperty()) {
+        if (isProperty()) {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.edit.property}");
         } else {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");

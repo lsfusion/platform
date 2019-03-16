@@ -1630,7 +1630,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return properties.filterList(new SFunctionSet<PropertyDrawInstance>() {
             public boolean contains(PropertyDrawInstance property) {
                 Boolean isShownValue = isShown.get(property);
-                return isShownValue != null && isShownValue && property.isCalcProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
+                return isShownValue != null && isShownValue && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
             }
         }).toOrderExclSet().mapOrderSetValues(new GetValue<PropertyDrawEntity, PropertyDrawInstance>() {
             @Override
@@ -2159,7 +2159,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public ImSet<PropertyDrawInstance> getCalcProperties() {
         return properties.toOrderSet().getSet().filterFn(new SFunctionSet<PropertyDrawInstance>() {
                 public boolean contains(PropertyDrawInstance property) {
-                    return property.isCalcProperty();
+                    return property.isProperty();
                 }
             });
     }

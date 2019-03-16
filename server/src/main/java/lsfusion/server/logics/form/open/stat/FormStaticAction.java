@@ -66,7 +66,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                     for (PropertyReaderEntity reader : mReaders.immutable())
                         mProps.add((Property) reader.getPropertyObjectEntity().property);
                 } else 
-                    mProps.add(propertyDraw.getCalcValueProperty().property);
+                    mProps.add(propertyDraw.getValueProperty().property);
             }
             return mProps.immutable().toMap(false);
         }

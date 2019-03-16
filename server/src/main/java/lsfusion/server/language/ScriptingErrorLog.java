@@ -354,11 +354,11 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, String.format("error '%s' occurred during creation of %s instance", exceptionMessage, className));
     }
 
-    public void emitNotActionPropertyError(ScriptParser parser) throws SemanticErrorException {
+    public void emitNotActionError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "should be an action here");
     }
 
-    public void emitNotCalculationPropertyError(ScriptParser parser) throws SemanticErrorException {
+    public void emitNotPropertyError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "should be a property here");
     }
 

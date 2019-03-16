@@ -268,16 +268,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getRequestInputType(CHANGE_WYS, policy, true); // wys is optimistic by default
     }
     
-    public boolean isCalcProperty() {
-        return getValueProperty() instanceof PropertyObjectEntity;
+    public boolean isProperty() {
+        return getValueActionOrProperty() instanceof PropertyObjectEntity;
     }
 
     public OrderEntity<?> getOrder() {
-        return getCalcValueProperty();
+        return getValueProperty();
     }
 
     public DataClass getRequestInputType(String actionSID, SecurityPolicy policy, boolean optimistic) {
-        if (isCalcProperty()) { // optimization
+        if (isProperty()) { // optimization
             ActionObjectEntity<?> changeAction = getEditAction(actionSID, policy);
 
             if (changeAction != null) {
@@ -545,7 +545,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         MSet<ObjectEntity> mObjects = SetFact.mSet();
         for(int i=0,size=propertyObjects.size();i<size;i++)
             mObjects.addAll(propertyObjects.get(i).getObjectInstances());
-        mObjects.addAll(getValueProperty().getObjectInstances());
+        mObjects.addAll(getValueActionOrProperty().getObjectInstances());
         if(toDraw != null)
             mObjects.add(toDraw.getOrderObjects().get(0));
         return mObjects.immutable();
@@ -613,7 +613,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public Type getType() {
-        return getCalcValueProperty().property.getType();
+        return getValueProperty().property.getType();
     }
 
     public LocalizedString getCaption() {
@@ -646,17 +646,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // for getExpr, getType purposes
-    public ActionOrPropertyObjectEntity<?, ?> getValueProperty() {
+    public ActionOrPropertyObjectEntity<?, ?> getValueActionOrProperty() {
         return propertyObject;
     }
 
-    public PropertyObjectEntity<?> getCalcValueProperty() {
-        return (PropertyObjectEntity) getValueProperty();
+    public PropertyObjectEntity<?> getValueProperty() {
+        return (PropertyObjectEntity) getValueActionOrProperty();
     }
 
     @Override
     public PropertyObjectEntity getPropertyObjectEntity() {
-        return getCalcValueProperty();
+        return getValueProperty();
     }
 
     // presentation info, probably should be merged with inheritDrawOptions mechanism

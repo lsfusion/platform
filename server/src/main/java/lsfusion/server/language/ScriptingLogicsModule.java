@@ -2358,7 +2358,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ActionDebugger.watchHack.set(true);
         }
 
-        checks.checkForActionPropertyConstraints(recursive, usedParams, allParams);
+        checks.checkForActionConstraints(recursive, usedParams, allParams);
 
         List<LAPWithParams> allCreationParams = new ArrayList<>();
         for (int usedParam : usedParams) {
@@ -2380,7 +2380,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(result, usedParams);
     }
 
-    public LAWithParams getTerminalFlowActionProperty(boolean isBreak) {
+    public LAWithParams getTerminalFlowAction(boolean isBreak) {
         return new LAWithParams(isBreak ? new LA<>(new BreakAction()) : new LA<>(new ReturnAction()), new ArrayList<Integer>());
     }
 
@@ -3044,7 +3044,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }});
         doAction = extendDoParams(doAction, newContext, paramOld, !noParams, importParamProps, nulls, assignProps); // row parameter consider to be external (it will be proceeded separately)
         if(!noParams) { // adding row parameter
-            modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext, false);
+            modifyContextFlowActionDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext, false);
 
             doAction = addScriptedForAProp(oldContext, new LPWithParams(whereLCP, oldContext.size()), Collections.singletonList(new LPWithParams(oldContext.size())), doAction,
                     elseAction, null, null, false, false, false, Collections.<LPWithParams>emptyList(), false);
@@ -3134,7 +3134,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             boolean paramNoNull = nulls != null && !nulls.get(paramNum - paramOld);
             LAWithParams nullExec = paramNoNull ? null : nullExec(doAction, paramNum); // передает NULL в качестве параметра
             if(paramNoNull || nullExec != null) { // нет параметра нет проблемы
-                modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, currentContext, removedContext, false);
+                modifyContextFlowActionDefinitionBodyCreated(doAction, currentContext, removedContext, false);
 
                 LP resultProp = resultProps.get(paramNum - paramOld);
                 LPWithParams resultLP = isLastParamRow ? new LPWithParams(resultProp, paramOld - 1) : new LPWithParams(resultProp);
@@ -3378,13 +3378,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(addFocusActionProp(property), new ArrayList<Integer>());
     }
 
-    public LAWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedReadAction(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = getValueClassByParamProperty(sourcePathProp, params);
         LP<?> targetProp = propUsage == null ? baseLM.readFile : findLPNoParamsByPropertyUsage(propUsage);
         return addScriptedJoinAProp(addAProp(new ReadAction(sourceProp, targetProp, clientAction, dialog)), Collections.singletonList(sourcePathProp));
     }
 
-    public LAWithParams addScriptedWriteActionProperty(LPWithParams sourceProp, LPWithParams pathProp, List<TypedParameter> params, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedWriteAction(LPWithParams sourceProp, LPWithParams pathProp, List<TypedParameter> params, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new WriteAction(getTypeByParamProperty(sourceProp, params),
                 clientAction, dialog, append, getValueClassByParamProperty(sourceProp, params), getValueClassByParamProperty(pathProp, params))),
                 Arrays.asList(sourceProp, pathProp));
@@ -3394,10 +3394,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
-    public LAWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
-                                                        List<LPWithParams> exprs, LPWithParams whereProperty, NamedPropertyUsage fileProp, LPWithParams rootProperty, LPWithParams tagProperty,
-                                                        String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
-                                                        List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
+                                                List<LPWithParams> exprs, LPWithParams whereProperty, NamedPropertyUsage fileProp, LPWithParams rootProperty, LPWithParams tagProperty,
+                                                String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
         LP<?> targetProp = fileProp != null ? findLPNoParamsByPropertyUsage(fileProp) : null;
         if(targetProp == null)
@@ -3477,7 +3477,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return usedClasses;
     }
 
-    public LAWithParams addScriptedNewThreadActionProperty(LAWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedNewThreadAction(LAWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LAPWithParams> propParams = BaseUtils.<LAPWithParams>toList(actionProp);
         if (periodProp != null) {
             propParams.add(periodProp);
@@ -3493,7 +3493,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(property, allParams);
     }
 
-    public LAWithParams addScriptedNewExecutorActionProperty(LAWithParams actionProp, LPWithParams threadsProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedNewExecutorAction(LAWithParams actionProp, LPWithParams threadsProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LAPWithParams> propParams = Arrays.asList(actionProp, threadsProp);
         List<Integer> allParams = mergeAllParams(propParams);
         LA<?> property = addNewExecutorAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
@@ -3575,11 +3575,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return format;
     }
 
-    public LAWithParams addScriptedImportActionProperty(FormIntegrationType format, LPWithParams fileProp, List<String> ids, List<Boolean> literals, List<NamedPropertyUsage> propUsages,
-                                                        List<Boolean> nulls, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext,
-                                                        NamedPropertyUsage wherePropertyUsage, LPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, boolean noEscape,
-                                                        String charset, LPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
-                                                        LPWithParams whereProp, LPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedImportAction(FormIntegrationType format, LPWithParams fileProp, List<String> ids, List<Boolean> literals, List<NamedPropertyUsage> propUsages,
+                                                List<Boolean> nulls, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext,
+                                                NamedPropertyUsage wherePropertyUsage, LPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, boolean noEscape,
+                                                String charset, LPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
+                                                LPWithParams whereProp, LPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
         if(fileProp == null)
             fileProp = new LPWithParams(baseLM.importFile);
@@ -3640,9 +3640,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mResult.immutableList();
     }
 
-    public LAWithParams addScriptedImportFormActionProperty(FormIntegrationType format, List<TypedParameter> context, LPWithParams fileProp, OrderedMap<GroupObjectEntity, LPWithParams> fileProps,
-                                                            FormEntity formEntity, LPWithParams sheet, boolean sheetAll, boolean noHeader, boolean noEscape, boolean attr, String charset, String separator,
-                                                            LPWithParams rootProp, LPWithParams whereProp, LPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedImportFormAction(FormIntegrationType format, List<TypedParameter> context, LPWithParams fileProp, OrderedMap<GroupObjectEntity, LPWithParams> fileProps,
+                                                    FormEntity formEntity, LPWithParams sheet, boolean sheetAll, boolean noHeader, boolean noEscape, boolean attr, String charset, String separator,
+                                                    LPWithParams rootProp, LPWithParams whereProp, LPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
         format = adjustImportFormatFromFileType(format, fileProp, fileProps, context);
 
         List<LPWithParams> params = new ArrayList<>();
@@ -4188,7 +4188,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void actionPropertyDefinitionBodyCreated(LAWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate) throws ScriptingErrorLog.SemanticErrorException {
+    public void actionDefinitionBodyCreated(LAWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate) throws ScriptingErrorLog.SemanticErrorException {
         if (lpWithParams.getLP() != null) {
             setDebugInfo(lpWithParams, startPoint, endPoint, modifyContext, needToCreateDelegate);
         }
@@ -4221,7 +4221,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void topContextActionPropertyDefinitionBodyCreated(LAWithParams lpWithParams) throws ScriptingErrorLog.SemanticErrorException {
+    public void topContextActionDefinitionBodyCreated(LAWithParams lpWithParams) throws ScriptingErrorLog.SemanticErrorException {
         boolean isDebug = debugger.isEnabled();
 
         if(isDebug) {
@@ -4234,9 +4234,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAWithParams modifyContextFlowActionPropertyDefinitionBodyCreated(LAWithParams lpWithParams,
-                                                                             List<TypedParameter> newContext, List<TypedParameter> oldContext,
-                                                                             boolean needFullContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams modifyContextFlowActionDefinitionBodyCreated(LAWithParams lpWithParams,
+                                                                     List<TypedParameter> newContext, List<TypedParameter> oldContext,
+                                                                     boolean needFullContext) throws ScriptingErrorLog.SemanticErrorException {
         boolean isDebug = debugger.isEnabled();
 
         if(isDebug || needFullContext) {
