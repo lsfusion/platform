@@ -7,7 +7,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 public abstract class GroupPropertiesTask extends BLGroupSingleSplitTask<ActionOrProperty> {
 
     protected ImSet<ActionOrProperty> getObjects() {
-        return getBL().getOrderProperties().getSet();
+        return getBL().getOrderActionOrProperties().getSet();
     }
 
 }

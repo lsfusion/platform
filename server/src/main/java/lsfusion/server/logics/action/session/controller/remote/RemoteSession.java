@@ -134,11 +134,11 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         checkEnableApi(anonymous, false);
     }
 
-    public void writeRequestInfo(DataSession session, Action<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {
-        if (actionProperty.uses(businessLogics.LM.headers.property)) {
+    public void writeRequestInfo(DataSession session, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
+        if (action.uses(businessLogics.LM.headers.property)) {
             ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
         }
-        if (actionProperty.uses(businessLogics.LM.cookies.property)) {
+        if (action.uses(businessLogics.LM.cookies.property)) {
             ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.cookies, request.headerNames, request.headerValues);
         }
         if (request.url != null) {

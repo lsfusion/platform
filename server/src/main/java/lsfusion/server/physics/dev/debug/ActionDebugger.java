@@ -160,7 +160,7 @@ public class ActionDebugger implements DebuggerService {
             "package " + DELEGATES_HOLDER_CLASS_PACKAGE + ";\n" +
             "\n" +
             "import lsfusion.server.data.sql.exception.SQLHandledException;\n" +
-            "import lsfusion.server.logics.action.ActionProperty;\n" +
+            "import lsfusion.server.logics.action.Action;\n" +
             "import lsfusion.server.logics.property.Property;\n" +
             "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
             "import lsfusion.server.logics.property.data.DataProperty;\n" +

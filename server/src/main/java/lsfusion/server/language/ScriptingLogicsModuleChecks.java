@@ -432,15 +432,15 @@ public class ScriptingLogicsModuleChecks {
         String firstPropertyName = null;
         for (ScriptingLogicsModule.LPWithParams lp : lps) {
             if (lp.getLP() != null) {
-                Property<?> calcProperty = lp.getLP().property;
-                String name = calcProperty.getName();
-                if (!calcProperty.isStored()) {
+                Property<?> property = lp.getLP().property;
+                String name = property.getName();
+                if (!property.isStored()) {
                     errLog.emitShouldBeStoredError(parser, name);
                 }
                 if (table == null) {
-                    table = calcProperty.mapTable.table;
+                    table = property.mapTable.table;
                     firstPropertyName = name;
-                } else if (table != calcProperty.mapTable.table) {
+                } else if (table != property.mapTable.table) {
                     errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, name);
                 }
             }

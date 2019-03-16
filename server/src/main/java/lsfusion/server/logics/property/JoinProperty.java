@@ -310,9 +310,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 ValueClass aggClass = ((PropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
-                DefaultChangeAggAction<T> aggChangeActionProperty =
+                DefaultChangeAggAction<T> aggChangeAction =
                         new DefaultChangeAggAction<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
-                return aggChangeActionProperty.getImplement(listInterfaces);
+                return aggChangeAction.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
                 return implement.mapping.singleValue().mapEditAction(editActionSID, aggProp);

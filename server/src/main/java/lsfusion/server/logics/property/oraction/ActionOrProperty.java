@@ -315,7 +315,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return hasChild(prop);
     }
     
-    public ImOrderSet<ActionOrProperty> getProperties() {
+    public ImOrderSet<ActionOrProperty> getActionOrProperties() {
         return SetFact.singletonOrder((ActionOrProperty) this);
     }
     
@@ -362,7 +362,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
 
     // вся оптимизация в общем то для drillDown
-    protected ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
+    protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
         if(valueClasses.size() == 1) { // доп оптимизация для DrillDown
             if(interfaces.size() == 1 && isInInterface(MapFact.singleton(interfaces.single(), valueClasses.single().valueClass.getUpSet()), true))
                 return ListFact.<ActionOrPropertyClassImplement>singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
@@ -390,7 +390,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             }
         }
         
-        ImList<ActionOrPropertyClassImplement> result = getProperties(FormEntity.getSubsets(valueClasses));
+        ImList<ActionOrPropertyClassImplement> result = getActionOrProperties(FormEntity.getSubsets(valueClasses));
         
         entry.result = result;
         synchronized (col) {
@@ -400,7 +400,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return result;
     }
     
-    private ImList<ActionOrPropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists) {
+    private ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImCol<ImSet<ValueClassWrapper>> classLists) {
         MList<ActionOrPropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (interfaces.size() == classes.size()) {

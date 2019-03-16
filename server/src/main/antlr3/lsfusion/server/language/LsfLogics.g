@@ -1728,7 +1728,7 @@ abstractActionDefinition returns [LA property, List<ResolveClassSet> signature]
 @after {
 	if (inMainParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
+		$property = self.addScriptedAbstractAction(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
 	}
 }
 	:	'ABSTRACT'
@@ -3069,9 +3069,9 @@ customActionDefinitionBody returns [LA property, List<ResolveClassSet> signature
 @after {
 	if (inMainParseState()) {
 	    if($code.val == null)
-	        $property = self.addScriptedCustomActionProp($classN.val, classes, allowNullValue);
+	        $property = self.addScriptedCustomAction($classN.val, classes, allowNullValue);
 	    else
-		    $property = self.addScriptedCustomActionProp($code.val, allowNullValue);
+		    $property = self.addScriptedCustomAction($code.val, allowNullValue);
 		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
 	}
 }
@@ -3090,15 +3090,15 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 @after {
 	if (inMainParseState()) {
       if($type.format == ExternalFormat.DB) {
-        $property = self.addScriptedExternalDBActionProp($type.conStr, $type.exec, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalDBAction($type.conStr, $type.exec, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.DBF) {
-        $property = self.addScriptedExternalDBFActionProp($type.conStr, $type.charset, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalDBFAction($type.conStr, $type.charset, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.JAVA) {
-        $property = self.addScriptedExternalJavaActionProp(params, context, $tl.propUsages);
+        $property = self.addScriptedExternalJavaAction(params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPActionProp($type.method, $type.conStr, $type.bodyUrl, $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalHTTPAction($type.method, $type.conStr, $type.bodyUrl, $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
-        $property = self.addScriptedExternalLSFActionProp($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalLSFAction($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
 	}
 }
@@ -3303,7 +3303,7 @@ evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedEvalActionProp($expr.property, $exprList.props, context, action);
+		$property = self.addScriptedEvalAction($expr.property, $exprList.props, context, action);
 	}
 }
 	:	'EVAL' ('ACTION' { action = true; })? expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
@@ -3312,7 +3312,7 @@ evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedDrillDownActionProp($expr.property);
+		$property = self.addScriptedDrillDownAction($expr.property);
 	}
 }
 	:	'DRILLDOWN' expr=propertyExpression[context, dynamic]
@@ -3395,7 +3395,7 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 	    if(form != null)
 		    $property = self.addScriptedActivateAProp(form, component);
         else
-            $property = self.addScriptedFocusActionProp(propertyDraw);
+            $property = self.addScriptedFocusAction(propertyDraw);
 	}
 }
 	:	'ACTIVATE'
@@ -4363,7 +4363,7 @@ componentPropertyValue returns [Object value]
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
-	|   calcProp=designPropertyObject { $value = $calcProp.property; }
+	|   prop=designPropertyObject { $value = $prop.property; }
 	;
 
 
