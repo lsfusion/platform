@@ -17,9 +17,9 @@ import java.sql.SQLException;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class UploadToDBActionProperty extends InternalAction {
+public class UploadToDBAction extends InternalAction {
 
-    public UploadToDBActionProperty(ServiceLogicsModule LM) {
+    public UploadToDBAction(ServiceLogicsModule LM) {
         super(LM);
     }
 

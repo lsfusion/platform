@@ -12,9 +12,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetLoggerDebugEnabledUserActionProperty extends InternalAction {
+public class SetLoggerDebugEnabledUserAction extends InternalAction {
 
-    public SetLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+    public SetLoggerDebugEnabledUserAction(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
     }
 
