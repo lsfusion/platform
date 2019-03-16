@@ -44,7 +44,7 @@ import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 import org.apache.log4j.Logger;

@@ -5,7 +5,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

@@ -1,7 +1,7 @@
 package lsfusion.server.base.controller.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.thavam.util.concurrent.BlockingHashMap;
 import org.thavam.util.concurrent.BlockingMap;
 

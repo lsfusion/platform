@@ -41,7 +41,7 @@ import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.PreparedStatement;

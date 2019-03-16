@@ -7,7 +7,7 @@ import org.aspectj.lang.annotation.DeclarePrecedence;
 @Aspect
 @DeclarePrecedence("lsfusion.server.base.controller.remote.context.RemoteContextAspect, " +
                    "lsfusion.server.base.controller.remote.RemoteExceptionsAspect, " +
-                   "lsfusion.server.physics.admin.logging.RemoteLoggerAspect, " +
+                   "lsfusion.server.physics.admin.log.RemoteLoggerAspect, " +
                    "lsfusion.server.data.pack.PackComplexityAspect, " +
                    "lsfusion.server.base.caches.CacheAspect, " +
                    "lsfusion.server.data.translator.AfterTranslateAspect, " +

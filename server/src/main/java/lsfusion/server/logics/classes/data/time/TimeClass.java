@@ -8,8 +8,8 @@ import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
-import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSWriter;
+import lsfusion.server.logics.form.stat.integration.export.plain.dbf.OverJDBField;
+import lsfusion.server.logics.form.stat.integration.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.poi.ss.usermodel.Cell;
 

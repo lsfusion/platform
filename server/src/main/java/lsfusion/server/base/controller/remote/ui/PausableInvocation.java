@@ -2,7 +2,7 @@ package lsfusion.server.base.controller.remote.ui;
 
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
 import lsfusion.server.physics.admin.profiler.Profiler;
 

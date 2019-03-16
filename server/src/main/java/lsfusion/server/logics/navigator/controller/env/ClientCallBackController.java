@@ -4,7 +4,7 @@ import lsfusion.interop.navigator.callback.ClientCallBackInterface;
 import lsfusion.interop.navigator.callback.LifecycleMessage;
 import lsfusion.interop.navigator.callback.PushMessage;
 import lsfusion.server.base.controller.remote.RemoteObject;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.rmi.RemoteException;
 import java.rmi.server.Unreferenced;

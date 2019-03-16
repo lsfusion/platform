@@ -6,7 +6,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;

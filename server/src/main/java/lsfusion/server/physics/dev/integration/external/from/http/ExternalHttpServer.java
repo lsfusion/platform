@@ -15,7 +15,7 @@ import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;

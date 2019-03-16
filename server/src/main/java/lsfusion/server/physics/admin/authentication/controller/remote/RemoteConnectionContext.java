@@ -2,7 +2,7 @@ package lsfusion.server.physics.admin.authentication.controller.remote;
 
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.physics.admin.logging.LogInfo;
+import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.util.Locale;
 

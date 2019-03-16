@@ -46,7 +46,7 @@ changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extensi
 
 // --------------------------------- Logging --------------------------------- //
 
-printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.logging.action.PrintToLogAction' (TEXT);
+printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.log.action.PrintToLogAction' (TEXT);
 logToFile (VARSTRING[1000] file, TEXT message) {
     appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message, '\n')); 
 }

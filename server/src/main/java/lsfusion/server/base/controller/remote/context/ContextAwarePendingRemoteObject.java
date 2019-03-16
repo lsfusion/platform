@@ -15,7 +15,7 @@ import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
 import lsfusion.server.logics.action.controller.stack.SyncExecutionStack;
 import lsfusion.server.logics.action.controller.stack.TopExecutionStack;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
 import org.apache.log4j.Logger;
 

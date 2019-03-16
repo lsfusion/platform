@@ -14,7 +14,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.JavaProcess;
 import lsfusion.server.physics.admin.monitor.sql.SQLProcess;
 import lsfusion.server.physics.admin.monitor.sql.SQLThreadInfo;

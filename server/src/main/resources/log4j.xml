@@ -233,7 +233,7 @@
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
             <param name="maxFileSize" value="990485760"/> <!-- 90MB -->
         </triggeringPolicy>
-        <layout class="lsfusion.server.physics.admin.logging.SimpleLayout">
+        <layout class="lsfusion.server.physics.admin.log.SimpleLayout">
         </layout>
     </appender>
 

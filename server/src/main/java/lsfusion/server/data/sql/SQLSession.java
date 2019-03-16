@@ -81,7 +81,7 @@ import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.logics.form.stat.integration.plain.JDBCTable;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
 import lsfusion.server.physics.admin.monitor.ThreadDebugInfo;
 import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
@@ -110,7 +110,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.server.physics.admin.logging.ServerLoggers.explainLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> implements AutoCloseable {
     private PreparedStatement executingStatement;
