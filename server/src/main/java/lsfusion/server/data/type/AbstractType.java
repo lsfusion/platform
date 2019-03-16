@@ -4,6 +4,8 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.reader.AbstractReader;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSWriter;

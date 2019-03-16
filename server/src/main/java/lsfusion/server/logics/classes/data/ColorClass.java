@@ -3,7 +3,6 @@ package lsfusion.server.logics.classes.data;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.type.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;

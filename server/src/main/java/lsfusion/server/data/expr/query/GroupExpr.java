@@ -17,8 +17,13 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.join.query.GroupJoin;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.key.KeyType;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.expr.where.pull.AndContext;
@@ -38,12 +43,12 @@ import lsfusion.server.data.expr.join.where.GroupSplitWhere;
 import lsfusion.server.data.expr.join.where.GroupStatType;
 import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.join.where.KeyEquals;
-import lsfusion.server.data.expr.join.stat.StatKeys;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.type.ClassReader;
+import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.OrWhere;
@@ -135,7 +140,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         Where where = getInner().getFullWhere();
 
 /*            final QuickSet<KeyExpr> keepKeys = new QuickSet<KeyExpr>();
-            groupExpr.enumerate(new ExprEnumerator() {
+            groupExpr.enumerate(new ContextEnumerator() {
                 public boolean enumerate(OuterContext join) {
                     if(join instanceof QueryExpr) {
                         keepKeys.addAll(join.getOuterKeys());

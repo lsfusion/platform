@@ -7,7 +7,7 @@ import lsfusion.server.data.sql.SQLDML;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.query.exec.DynamicExecEnvSnapshot;
-import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.parse.ParseInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

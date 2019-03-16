@@ -6,7 +6,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.type.Type;

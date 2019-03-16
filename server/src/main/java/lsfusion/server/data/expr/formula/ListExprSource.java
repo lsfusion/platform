@@ -2,7 +2,7 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyType;
+import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;

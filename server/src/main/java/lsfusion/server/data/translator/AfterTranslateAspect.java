@@ -9,11 +9,11 @@ import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.NullableExpr;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.expr.join.stat.StatKeys;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.MeanClassWheres;
@@ -118,7 +118,7 @@ public class AfterTranslateAspect {
             return thisJoinPoint.proceed();
     }
 
-    @Around("execution(* lsfusion.server.data.where.AbstractWhere.getPushedStatKeys(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.stat.StatType, lsfusion.server.data.expr.join.stat.StatKeys)) && target(where) && args(groups, type, pushedStatKeys)")
+    @Around("execution(* lsfusion.server.data.where.AbstractWhere.getPushedStatKeys(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.stat.StatType, lsfusion.server.data.stat.StatKeys)) && target(where) && args(groups, type, pushedStatKeys)")
     public Object callPushedStatKeys(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, ImSet groups, StatType type, StatKeys pushedStatKeys) throws Throwable {
 //        Where from = where.getFrom();
 //        MapTranslate translator = where.getTranslator();

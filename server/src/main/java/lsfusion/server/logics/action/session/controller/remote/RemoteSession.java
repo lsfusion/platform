@@ -16,7 +16,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.language.ScriptingErrorLog;

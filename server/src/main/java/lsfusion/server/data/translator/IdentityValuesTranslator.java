@@ -5,7 +5,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashCodeValues;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.value.Value;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 
 public class IdentityValuesTranslator extends MapValuesTranslator {
 

@@ -13,7 +13,7 @@ import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.language.property.LP;

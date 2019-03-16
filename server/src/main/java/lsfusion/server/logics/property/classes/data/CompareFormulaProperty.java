@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.LogicalClass;

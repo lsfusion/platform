@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;

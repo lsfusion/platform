@@ -37,7 +37,7 @@ public class ImportTableIterator extends ImportPlainIterator {
     }
 
     @Override
-    protected Object getPropValue(String name, Type type) throws lsfusion.server.data.type.ParseException, ParseException {
+    protected Object getPropValue(String name, Type type) throws lsfusion.server.logics.classes.data.ParseException, ParseException {
         return type.read(row.get(name));
     }
 

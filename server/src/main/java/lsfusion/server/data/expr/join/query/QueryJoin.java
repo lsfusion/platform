@@ -8,17 +8,21 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.*;
-import lsfusion.server.data.expr.join.stat.*;
-import lsfusion.server.data.stat.DistinctKeys;
-import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.stat.StatType;
+import lsfusion.server.data.expr.inner.InnerExpr;
+import lsfusion.server.data.expr.join.base.BaseJoin;
+import lsfusion.server.data.expr.join.base.UnionJoin;
+import lsfusion.server.data.expr.join.where.WhereJoin;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
+import lsfusion.server.data.ContextEnumerator;
+import lsfusion.server.data.stat.*;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
-import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
-import lsfusion.server.data.expr.join.where.InnerJoins;
+import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
@@ -139,7 +143,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     public ImSet<OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
-    public boolean enumerate(ExprEnumerator enumerator) {
+    public boolean enumerate(ContextEnumerator enumerator) {
         return getOuter().enumerate(enumerator);
     }
     protected long calculateComplexity(boolean outer) {

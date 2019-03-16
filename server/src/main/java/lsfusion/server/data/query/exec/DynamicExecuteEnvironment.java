@@ -10,7 +10,7 @@ import lsfusion.server.data.sql.SQLQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 
 import java.sql.SQLException;

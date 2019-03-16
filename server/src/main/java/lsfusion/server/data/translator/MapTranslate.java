@@ -1,13 +1,13 @@
 package lsfusion.server.data.translator;
 
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.VariableClassExpr;
-import lsfusion.server.data.expr.VariableSingleClassExpr;
+import lsfusion.server.data.expr.classes.VariableClassExpr;
+import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.where.classes.ClassWhere;
 
 public interface MapTranslate extends MapObject {

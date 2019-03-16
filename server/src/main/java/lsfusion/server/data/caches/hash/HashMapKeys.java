@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.translator.MapTranslate;
 

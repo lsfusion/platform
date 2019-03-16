@@ -9,11 +9,11 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.OuterContext;
-import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.value.Value;
-import lsfusion.server.data.expr.StaticValueExpr;
-import lsfusion.server.data.query.ExprEnumerator;
+import lsfusion.server.data.expr.value.StaticValueExpr;
+import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.CheckWhere;
@@ -106,7 +106,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
     public ImSet<lsfusion.server.data.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
-    public boolean enumerate(ExprEnumerator enumerator) {
+    public boolean enumerate(ContextEnumerator enumerator) {
         return getOuter().enumerate(enumerator);
     }
     public long getComplexity(boolean outer) {

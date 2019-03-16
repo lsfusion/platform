@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.classes.data;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.RandomExpr;
+import lsfusion.server.data.expr.value.RandomExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;

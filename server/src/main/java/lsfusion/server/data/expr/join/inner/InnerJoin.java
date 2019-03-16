@@ -1,11 +1,10 @@
 package lsfusion.server.data.expr.join.inner;
 
-import lsfusion.server.data.expr.InnerExpr;
+import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.expr.join.classes.InnerFollows;
-import lsfusion.server.data.expr.join.stat.InnerBaseJoin;
-import lsfusion.server.data.expr.join.stat.StatKeys;
-import lsfusion.server.data.expr.join.stat.WhereJoin;
+import lsfusion.server.data.stat.StatKeys;
+import lsfusion.server.data.expr.join.where.WhereJoin;
 
 public interface InnerJoin<K, IJ extends InnerJoin<K, IJ>> extends WhereJoin<K, IJ>, InnerBaseJoin<K> {
 

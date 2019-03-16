@@ -14,7 +14,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.language.property.LP;

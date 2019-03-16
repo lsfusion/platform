@@ -17,7 +17,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFStaticLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -209,7 +209,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
 
 //    public static boolean checkSession(OuterContext context) {
 //        final Result<Boolean> found = new Result<>(false);
-//        context.enumerate(new ExprEnumerator() {
+//        context.enumerate(new ContextEnumerator() {
 //            @Override
 //            public Boolean enumerate(OuterContext join) {
 //                if(join instanceof Table.Join && !((Table.Join) join).isSession()) {

@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.parse.ParseInterface;
 
 import java.util.Locale;
 

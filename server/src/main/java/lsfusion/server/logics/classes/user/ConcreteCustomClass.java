@@ -15,7 +15,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.StaticValueExpr;
+import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.DataSession;

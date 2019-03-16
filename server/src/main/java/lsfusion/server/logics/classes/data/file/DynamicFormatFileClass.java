@@ -4,7 +4,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.type.ParseException;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 import org.apache.commons.net.util.Base64;

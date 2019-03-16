@@ -17,13 +17,24 @@ import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.logging.StringDebugInfoWriter;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.data.expr.classes.IsClassExpr;
+import lsfusion.server.data.expr.formula.ConcatenateExpr;
+import lsfusion.server.data.expr.inner.InnerExpr;
+import lsfusion.server.data.expr.join.base.BaseJoin;
+import lsfusion.server.data.expr.join.where.WhereJoin;
+import lsfusion.server.data.expr.join.where.WhereJoins;
 import lsfusion.server.data.expr.join.query.*;
-import lsfusion.server.data.expr.join.stat.*;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.key.KeyType;
+import lsfusion.server.data.expr.value.StaticValueExpr;
+import lsfusion.server.data.expr.value.StaticValueNullableExpr;
+import lsfusion.server.data.stat.Cost;
+import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.exec.*;
-import lsfusion.server.data.expr.join.where.InnerJoins;
+import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.result.ResultHandler;
@@ -35,6 +46,11 @@ import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.Table;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.data.type.parse.LogicalParseInterface;
+import lsfusion.server.data.type.parse.ParseInterface;
+import lsfusion.server.data.type.parse.StringParseInterface;
+import lsfusion.server.data.type.reader.ClassReader;
+import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
@@ -47,8 +63,8 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.formula.FormulaExpr;
-import lsfusion.server.data.expr.order.PartitionCalc;
-import lsfusion.server.data.expr.order.PartitionToken;
+import lsfusion.server.data.expr.query.order.PartitionCalc;
+import lsfusion.server.data.expr.query.order.PartitionToken;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
@@ -1739,7 +1755,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         if(Settings.get().getInnerGroupExprs() > 0) { // если не одни joinData
             final MAddSet<GroupExpr> groupExprs = SetFact.mAddSet(); final Result<Integer> repeats = new Result<>(0);
             for(Expr property : compiledProps.valueIt())
-                property.enumerate(new ExprEnumerator() {
+                property.enumerate(new ContextEnumerator() {
                     public Boolean enumerate(OuterContext join) {
                         if (join instanceof FJData) { // если FJData то что внутри не интересует
                             if (join instanceof GroupExpr && !compile.isInner(((GroupExpr) join).getInnerJoin()) && !groupExprs.add((GroupExpr) join))

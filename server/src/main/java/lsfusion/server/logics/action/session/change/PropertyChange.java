@@ -14,6 +14,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.caches.AbstractInnerContext;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -54,7 +57,7 @@ import static lsfusion.base.BaseUtils.hashEquals;
 public class PropertyChange<T extends PropertyInterface> extends AbstractInnerContext<PropertyChange<T>> {
     private final ImMap<T, DataObject> mapValues; // для оптимизации в общем-то, важно чтобы проходили через ветку execute
 
-    private final ImRevMap<T,KeyExpr> mapKeys;
+    private final ImRevMap<T, KeyExpr> mapKeys;
     public final Expr expr;
     public final Where where;
 

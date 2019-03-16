@@ -9,7 +9,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.caches.hash.HashMapKeys;
 import lsfusion.server.data.caches.hash.HashValues;
-import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
 
 public abstract class AbstractInnerHashContext extends AbstractHashContext<HashValues> implements InnerHashContext {
 

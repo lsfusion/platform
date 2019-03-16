@@ -4,13 +4,13 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
-import lsfusion.server.data.expr.ParamExpr;
+import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.VariableClassExpr;
-import lsfusion.server.data.expr.VariableSingleClassExpr;
+import lsfusion.server.data.expr.classes.VariableClassExpr;
+import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.where.classes.ClassWhere;
 
 public abstract class AbstractMapTranslator extends TwinImmutableObject implements MapTranslate {

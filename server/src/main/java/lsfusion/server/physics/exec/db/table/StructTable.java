@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.table.Field;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.stat.PropStat;
-import lsfusion.server.data.expr.join.stat.TableStatKeys;
+import lsfusion.server.data.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 

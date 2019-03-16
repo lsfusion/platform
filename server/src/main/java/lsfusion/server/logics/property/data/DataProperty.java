@@ -11,7 +11,7 @@ import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.modify.Modify;

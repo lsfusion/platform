@@ -3,6 +3,7 @@ package lsfusion.server.data.sql.syntax;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.Settings;
