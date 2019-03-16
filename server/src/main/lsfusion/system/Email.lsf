@@ -167,11 +167,11 @@ lastError '{email.last.error.attachment.email}' = DATA TEXT (AttachmentEmail);
 importErrors '{email.import.errors}' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
 
 // Receive actions
-receiveEmailAction '{email.receive.email.action}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ReceiveEmailActionProperty' ();
-receiveEmailAction '{email.receive.email.action.account}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ReceiveEmailAccountActionProperty' (Account);
+receiveEmailAction '{email.receive.email.action}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ReceiveEmailAction' ();
+receiveEmailAction '{email.receive.email.action.account}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ReceiveEmailAccountAction' (Account);
 
-receiveEML '{email.receive.eml}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ReceiveEMLActionProperty' (Account);
-importEML '{email.import.eml}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ImportEMLActionProperty' (Account, LONG, FILE);
+receiveEML '{email.receive.eml}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ReceiveEMLAction' (Account);
+importEML '{email.import.eml}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.mail.ImportEMLAction' (Account, LONG, FILE);
 
 emlFile '{email.eml.file}' = DATA LOCAL FILE (LONG);
 

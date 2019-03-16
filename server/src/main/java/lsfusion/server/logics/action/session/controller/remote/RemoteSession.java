@@ -32,7 +32,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -102,7 +102,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
         writeRequestInfo(dataSession, property.property, request);
 
-        property.execute(dataSession, getStack(), ExternalHTTPActionProperty.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
+        property.execute(dataSession, getStack(), ExternalHTTPAction.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
 
         return readResult(request.returnNames, property.property);
     }
@@ -136,10 +136,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     public void writeRequestInfo(DataSession session, Action<?> actionProperty, ExternalRequest request) throws SQLException, SQLHandledException {
         if (actionProperty.uses(businessLogics.LM.headers.property)) {
-            ExternalHTTPActionProperty.writePropertyValues(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
+            ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
         }
         if (actionProperty.uses(businessLogics.LM.cookies.property)) {
-            ExternalHTTPActionProperty.writePropertyValues(session, businessLogics.LM.cookies, request.headerNames, request.headerValues);
+            ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.cookies, request.headerNames, request.headerValues);
         }
         if (request.url != null) {
             businessLogics.LM.url.change(request.url, session);
@@ -179,10 +179,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             returns.add(formatReturnValue(objectValue.getValue(), resultProp.result));
         }
 
-        ImOrderMap<String, String> headers = ExternalHTTPActionProperty.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
+        ImOrderMap<String, String> headers = ExternalHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
         String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
         String[] headerValues = headers.valuesList().toArray(new String[headers.size()]);
-        ImOrderMap<String, String> cookies = ExternalHTTPActionProperty.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
+        ImOrderMap<String, String> cookies = ExternalHTTPAction.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
         String[] cookieNames = cookies.keyOrderSet().toArray(new String[cookies.size()]);
         String[] cookieValues = cookies.valuesList().toArray(new String[cookies.size()]);
         return new ExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues);

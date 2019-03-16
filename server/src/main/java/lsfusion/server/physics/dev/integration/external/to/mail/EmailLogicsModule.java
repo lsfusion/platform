@@ -83,7 +83,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public LA<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params) {
-        return addProperty(group, new LA<>(new SendEmailActionProperty(caption, params)));
+        return addProperty(group, new LA<>(new SendEmailAction(caption, params)));
     }
 
 }

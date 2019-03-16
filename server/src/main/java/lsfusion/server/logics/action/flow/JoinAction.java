@@ -21,7 +21,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
-import lsfusion.server.physics.dev.debug.action.WatchActionProperty;
+import lsfusion.server.physics.dev.debug.action.WatchAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
@@ -135,7 +135,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
-        if(action.property instanceof WatchActionProperty)
+        if(action.property instanceof WatchAction)
             return super.getDelegationType(modifyContext);
         return ActionDelegationType.IN_DELEGATE; // jump to another LSF
     }
