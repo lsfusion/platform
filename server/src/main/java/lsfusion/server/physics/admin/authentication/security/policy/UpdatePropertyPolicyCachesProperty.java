@@ -16,7 +16,7 @@ public class UpdatePropertyPolicyCachesProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.getSecurityManager().updatePropertyPolicyCaches(context, context.getSingleDataKeyValue());
     }
 }

@@ -29,7 +29,7 @@ public class UserLogsActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         Map<String, RawFileData> logFiles = (Map<String, RawFileData>) context.requestUserInteraction(new UserLogsClientAction());
         if (logFiles != null && !logFiles.isEmpty()) {

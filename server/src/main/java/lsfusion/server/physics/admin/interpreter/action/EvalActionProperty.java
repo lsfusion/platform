@@ -51,7 +51,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String script = getScript(context);
 
         try {

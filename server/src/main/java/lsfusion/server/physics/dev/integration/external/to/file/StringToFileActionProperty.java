@@ -27,7 +27,7 @@ public class StringToFileActionProperty extends InternalAction {
         extensionInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         String inputValue = (String) context.getKeyValue(inputValueInterface).getValue();
         String charset = (String) context.getKeyValue(charsetInterface).getValue();

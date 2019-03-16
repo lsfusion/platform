@@ -47,7 +47,7 @@ public abstract class InternalAction extends ExplicitAction {
 
     //этот метод нужен для дебаггера, чтобы была общая точка для дебаггинга всех executeCustom
     public void commonExecuteCustomDelegate(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        executeCustom(context);
+        executeInternal(context);
     }
 
     protected LA<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {

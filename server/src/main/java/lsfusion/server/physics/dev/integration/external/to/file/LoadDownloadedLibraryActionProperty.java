@@ -22,7 +22,7 @@ public class LoadDownloadedLibraryActionProperty extends InternalAction {
         pathInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject path = context.getDataKeyValue(pathInterface);
         if (path != null)
             context.requestUserInteraction(new LoadDownloadedLibraryClientAction((String) path.getValue()));

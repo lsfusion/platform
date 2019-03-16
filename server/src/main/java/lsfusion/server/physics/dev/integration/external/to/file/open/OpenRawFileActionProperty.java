@@ -29,7 +29,7 @@ public class OpenRawFileActionProperty extends InternalAction {
         nameInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             ObjectValue sourceObject = context.getKeyValue(sourceInterface);
             RawFileData source = (RawFileData) sourceObject.getValue();

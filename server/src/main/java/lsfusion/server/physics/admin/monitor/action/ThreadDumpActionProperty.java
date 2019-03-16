@@ -22,7 +22,7 @@ public class ThreadDumpActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         RawFileData threadDump = (RawFileData) context.requestUserInteraction(new ThreadDumpClientAction());
         if (threadDump != null) {

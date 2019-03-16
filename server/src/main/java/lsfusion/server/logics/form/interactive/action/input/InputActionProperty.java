@@ -34,7 +34,7 @@ public class InputActionProperty extends SystemExplicitAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue userValue = context.inputUserData(dataClass, context.getSingleKeyValue().getValue());
         context.writeRequested(RequestResult.get(userValue, dataClass, targetProp));
     }

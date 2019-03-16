@@ -31,7 +31,7 @@ public class ShowOnMapActionProperty extends GeoActionProperty {
         addressInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataObject latitude = context.getDataKeyValue(latitudeInterface);
             DataObject longitude = context.getDataKeyValue(longitudeInterface);

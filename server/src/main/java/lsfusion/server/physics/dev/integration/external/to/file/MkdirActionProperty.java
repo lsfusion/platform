@@ -28,7 +28,7 @@ public class MkdirActionProperty extends InternalAction {
         isClientInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             String directory = BaseUtils.trimToNull((String) context.getKeyValue(directoryInterface).getValue());
             boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;

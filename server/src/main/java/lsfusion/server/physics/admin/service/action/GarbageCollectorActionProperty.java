@@ -13,7 +13,7 @@ public class GarbageCollectorActionProperty extends InternalAction {
         super(LM);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         System.runFinalization();
         System.gc();
     }

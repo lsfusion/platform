@@ -83,7 +83,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         ImMap<ClassPropertyInterface,DataObject> keys = context.getDataKeys();
         Modifier modifier = context.getModifier();

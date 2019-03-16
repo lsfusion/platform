@@ -19,7 +19,7 @@ public class StopSchedulerActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks();
         try {
             findProperty("isStartedScheduler[]").change((Boolean) null, context);

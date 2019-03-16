@@ -27,7 +27,7 @@ public class CheckCurrentDateDependsActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         BusinessLogics BL = context.getBL();
 

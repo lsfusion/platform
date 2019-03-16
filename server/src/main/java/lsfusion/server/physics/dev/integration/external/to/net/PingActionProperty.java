@@ -26,7 +26,7 @@ public class PingActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String host = (String) context.getKeyValue(hostInterface).getValue();
         boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
 

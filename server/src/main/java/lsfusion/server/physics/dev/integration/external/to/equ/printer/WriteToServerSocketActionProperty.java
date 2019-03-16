@@ -34,7 +34,7 @@ public class WriteToServerSocketActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         String text = (String) context.getDataKeyValue(textInterface).object;
         String charset = (String) context.getDataKeyValue(charsetInterface).object;

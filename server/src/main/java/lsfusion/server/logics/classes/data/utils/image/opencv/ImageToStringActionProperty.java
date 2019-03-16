@@ -32,7 +32,7 @@ public class ImageToStringActionProperty extends InternalAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         FileData imageObject = (FileData) context.getKeyValue(imageInterface).getValue();
 
         if (imageObject != null) {

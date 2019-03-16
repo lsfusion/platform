@@ -19,7 +19,7 @@ public class RecalculateFollowsActionProperty extends InternalAction {
         super(LM);
     }
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ServiceDBActionProperty.runData(context, new RunServiceData() {
             public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);

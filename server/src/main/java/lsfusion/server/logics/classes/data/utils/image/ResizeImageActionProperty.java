@@ -29,7 +29,7 @@ public class ResizeImageActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
             RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();

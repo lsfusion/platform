@@ -23,7 +23,7 @@ public class PopSettingActionProperty extends InternalAction {
         nameInterface = i.next();
     }
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
             String name = (String) context.getDataKeyValue(nameInterface).getValue();

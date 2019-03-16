@@ -21,7 +21,7 @@ public class SetupSchedulerActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             boolean isServer = context.getDbManager().isServer();
             if (isServer) {

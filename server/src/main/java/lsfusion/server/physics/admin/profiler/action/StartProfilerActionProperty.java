@@ -27,7 +27,7 @@ public class StartProfilerActionProperty extends InternalAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             KeyExpr userKey = new KeyExpr("User");
             QueryBuilder<Object, Object> queryU = new QueryBuilder<>(MapFact.singletonRev((Object) "User", userKey));

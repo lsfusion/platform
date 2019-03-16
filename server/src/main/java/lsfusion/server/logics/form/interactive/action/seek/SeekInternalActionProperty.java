@@ -35,7 +35,7 @@ public class SeekInternalActionProperty extends InternalAction {
         return super.hasFlow(type);
     }
 
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance form = context.getFormInstance(false, true);
 
         ImSet<ObjectInstance> objects;

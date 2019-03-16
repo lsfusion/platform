@@ -25,7 +25,7 @@ public class EncodeBase64ActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getDataKeyValue(stringInterface).getValue();
         try {
             String encoded = new String(Base64.encodeBase64(value.getBytes()), Charset.forName("UTF-8"));

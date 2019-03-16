@@ -16,7 +16,7 @@ public class SetReupdateModeActionProperty extends InternalAction {
         super(LM, classes);
     }
 
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Object value = context.getSingleKeyObject();
         DBManager.PROPERTY_REUPDATE = value!=null;
     }

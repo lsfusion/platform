@@ -17,7 +17,7 @@ public class SynchronizeVersionsAction extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             findProperty("platformVersion[]").change(BaseUtils.getPlatformVersion(), context);
             findProperty("apiVersion[]").change(BaseUtils.getApiVersion(), context);

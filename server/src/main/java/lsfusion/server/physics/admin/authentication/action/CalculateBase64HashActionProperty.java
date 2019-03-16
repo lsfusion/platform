@@ -26,7 +26,7 @@ public class CalculateBase64HashActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String algorithm = String.valueOf(context.getDataKeyValue(algorithmInterface).getValue());
         String password = String.valueOf(context.getDataKeyValue(passwordInterface).getValue()).trim();
 

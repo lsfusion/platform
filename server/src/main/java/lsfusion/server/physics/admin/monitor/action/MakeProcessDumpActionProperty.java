@@ -30,7 +30,7 @@ public class MakeProcessDumpActionProperty extends ProcessDumpActionProperty {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         try {
             boolean readAllocatedBytes = Settings.get().isReadAllocatedBytes();

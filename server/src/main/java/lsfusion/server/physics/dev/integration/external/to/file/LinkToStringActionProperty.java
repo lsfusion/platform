@@ -25,7 +25,7 @@ public class LinkToStringActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getKeyValue(stringInterface).getValue();
         try {
             findProperty("resultString[]").change(value != null ? URLDecoder.decode(value, "UTF-8") : null, context);

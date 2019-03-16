@@ -30,7 +30,7 @@ public abstract class MultiThreadActionProperty extends InternalAction {
 
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
         GroupPropertiesSingleTask task = createTask();
         task.setBL(context.getBL());

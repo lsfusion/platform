@@ -18,7 +18,7 @@ public class ClearFusionTempFilesActionProperty extends InternalAction {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             Integer countDays = (Integer) findProperty("countDaysClearFusionTempFiles").read(context);
             if (countDays != null) {

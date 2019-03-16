@@ -21,7 +21,7 @@ public class CheckClassesActionProperty extends InternalAction {
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         final Result<String> message = new Result<>();
         ServiceDBActionProperty.run(context, new RunService() {
             @Override
