@@ -326,7 +326,7 @@ defaultNumber '{security.default.forms.number}' = DATA INTEGER (UserRole, Naviga
 defaultNumber (User user, NavigatorElement navigatorElement) = 
     GROUP MIN defaultNumber(UserRole userRole, navigatorElement) IF has(user, userRole) AND permit(userRole, navigatorElement);
 
-maximizeForm  INTERNAL 'lsfusion.server.logics.form.interactive.action.MaximizeFormActionProperty' ();
+maximizeForm  INTERNAL 'lsfusion.server.logics.form.interactive.action.MaximizeFormAction' ();
 
 copy (UserRole from, UserRole to) +{
     defaultForms(to) <- defaultForms(from);
@@ -600,7 +600,7 @@ DESIGN propertyPolicy {
     }
 }
 
-checkCurrentDateDependsAction  INTERNAL  'lsfusion.server.physics.admin.authentication.action.CheckCurrentDateDependsActionProperty' (Property);
+checkCurrentDateDependsAction  INTERNAL  'lsfusion.server.physics.admin.authentication.action.CheckCurrentDateDependsAction' (Property);
 WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO checkCurrentDateDependsAction(p);
 
 // - Action - //
@@ -644,7 +644,7 @@ minHeapFreeRatio '{security.client.min.heap.free.ratio}' = DATA VARSTRING[100]()
 maxHeapFreeRatio '{security.client.max.heap.free.ratio}' = DATA VARSTRING[100]();
 vmargs '{security.client.vm.args}' = DATA VARSTRING[100]();
 
-generateJnlp INTERNAL 'lsfusion.server.logics.navigator.GenerateJNLPActionProperty' (VARSTRING[10], VARSTRING[1000]) NULL @@noauth;
+generateJnlp INTERNAL 'lsfusion.server.logics.navigator.GenerateJNLPAction' (VARSTRING[10], VARSTRING[1000]) NULL @@noauth;
 
 // ------------------ Memory limits ---------------- //
 CLASS MemoryLimit '{security.memory.limit}';

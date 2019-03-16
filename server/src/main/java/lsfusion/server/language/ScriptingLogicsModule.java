@@ -50,9 +50,9 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExplicitAction;
-import lsfusion.server.logics.action.flow.BreakActionProperty;
+import lsfusion.server.logics.action.flow.BreakAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
-import lsfusion.server.logics.action.flow.ReturnActionProperty;
+import lsfusion.server.logics.action.flow.ReturnAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
@@ -83,8 +83,8 @@ import lsfusion.server.logics.event.SessionEnvEvent;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.focus.ActivateActionProperty;
-import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormActionProperty;
+import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
+import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -127,13 +127,13 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
-import lsfusion.server.physics.dev.integration.external.to.ExternalDBActionProperty;
-import lsfusion.server.physics.dev.integration.external.to.ExternalDBFActionProperty;
-import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.ExternalDBAction;
+import lsfusion.server.physics.dev.integration.external.to.ExternalDBFAction;
+import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHttpMethod;
-import lsfusion.server.physics.dev.integration.external.to.file.ReadActionProperty;
-import lsfusion.server.physics.dev.integration.external.to.file.WriteActionProperty;
-import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailActionProperty;
+import lsfusion.server.physics.dev.integration.external.to.file.ReadAction;
+import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
+import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailAction;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.ANTLRFileStream;
@@ -1689,12 +1689,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedExternalDBActionProp(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalDBActionProperty(getTypesForExternalProp(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
+        return addScriptedJoinAProp(addAProp(new ExternalDBAction(getTypesForExternalProp(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.mergeList(Arrays.asList(connectionString, exec), params));
     }
 
     public LAWithParams addScriptedExternalDBFActionProp(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalDBFActionProperty(getTypesForExternalProp(params, context), charset, findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
+        return addScriptedJoinAProp(addAProp(new ExternalDBFAction(getTypesForExternalProp(params, context), charset, findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.addList(connectionString, params));
     }
 
@@ -1705,7 +1705,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP cookiesProperty = cookies != null ? findLPStringParamByPropertyUsage(cookies) : null;
         LP headersToProperty = headersTo != null ? findLPStringParamByPropertyUsage(headersTo) : null;
         LP cookiesToProperty = cookiesTo != null ? findLPStringParamByPropertyUsage(cookiesTo) : null;
-        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(method != null ? method : ExternalHttpMethod.POST,
+        return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(method != null ? method : ExternalHttpMethod.POST,
                         getTypesForExternalProp(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
                         headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
@@ -1764,7 +1764,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass[] eaClasses = Property.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
         LA<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses);
-        SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;
+        SendEmailAction eaProp = (SendEmailAction) eaPropLP.property;
 
         ImList<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
 
@@ -1937,7 +1937,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (changeProp == null)
             changeProp = oldValue;
 
-        // optimization. we don't use files on client side (see also DefaultChangeActionProperty.executeCustom()) 
+        // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom()) 
         if (oldValue == null || getTypeByParamProperty(oldValue, oldContext) instanceof FileClass)
             oldValue = new LPWithParams(baseLM.vnull);
         LAWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
@@ -1961,11 +1961,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedActiveFormAProp(String formName) throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = findForm(formName);
-        return new LAWithParams(addAProp(null, new IsActiveFormActionProperty(LocalizedString.NONAME, form, baseLM.getIsActiveFormProperty())), new ArrayList<Integer>());
+        return new LAWithParams(addAProp(null, new IsActiveFormAction(LocalizedString.NONAME, form, baseLM.getIsActiveFormProperty())), new ArrayList<Integer>());
     }
 
     public LAWithParams addScriptedActivateAProp(FormEntity form, ComponentView component) throws ScriptingErrorLog.SemanticErrorException {
-        return new LAWithParams(addAProp(null, new ActivateActionProperty(LocalizedString.NONAME, form, component)), new ArrayList<Integer>());
+        return new LAWithParams(addAProp(null, new ActivateAction(LocalizedString.NONAME, form, component)), new ArrayList<Integer>());
     }
 
     public List<LP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames,
@@ -2354,8 +2354,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        if(ActionPropertyDebugger.watchHack.get() != null && extParams.size() > 1) {
-            ActionPropertyDebugger.watchHack.set(true);
+        if(ActionDebugger.watchHack.get() != null && extParams.size() > 1) {
+            ActionDebugger.watchHack.set(true);
         }
 
         checks.checkForActionPropertyConstraints(recursive, usedParams, allParams);
@@ -2381,7 +2381,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams getTerminalFlowActionProperty(boolean isBreak) {
-        return new LAWithParams(isBreak ? new LA<>(new BreakActionProperty()) : new LA<>(new ReturnActionProperty()), new ArrayList<Integer>());
+        return new LAWithParams(isBreak ? new LA<>(new BreakAction()) : new LA<>(new ReturnAction()), new ArrayList<Integer>());
     }
 
     private List<Integer> getParamsAssertList(List<LPWithParams> list) {
@@ -3381,11 +3381,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = getValueClassByParamProperty(sourcePathProp, params);
         LP<?> targetProp = propUsage == null ? baseLM.readFile : findLPNoParamsByPropertyUsage(propUsage);
-        return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, clientAction, dialog)), Collections.singletonList(sourcePathProp));
+        return addScriptedJoinAProp(addAProp(new ReadAction(sourceProp, targetProp, clientAction, dialog)), Collections.singletonList(sourcePathProp));
     }
 
     public LAWithParams addScriptedWriteActionProperty(LPWithParams sourceProp, LPWithParams pathProp, List<TypedParameter> params, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new WriteActionProperty(getTypeByParamProperty(sourceProp, params),
+        return addScriptedJoinAProp(addAProp(new WriteAction(getTypeByParamProperty(sourceProp, params),
                 clientAction, dialog, append, getValueClassByParamProperty(sourceProp, params), getValueClassByParamProperty(pathProp, params))),
                 Arrays.asList(sourceProp, pathProp));
     }

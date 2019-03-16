@@ -12,7 +12,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
-import lsfusion.server.logics.action.flow.CaseActionProperty;
+import lsfusion.server.logics.action.flow.CaseAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -345,7 +345,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
         if(lp instanceof LP)
             return ((LP) lp).property instanceof CaseUnionProperty && ((CaseUnionProperty)((LP) lp).property).isAbstract() && ((CaseUnionProperty)((LP) lp).property).getAbstractType() == CaseUnionProperty.Type.MULTI;
         else
-            return ((LA) lp).property instanceof CaseActionProperty && ((CaseActionProperty)((LA) lp).property).isAbstract() && ((CaseActionProperty)((LA) lp).property).getAbstractType() == ListCaseAction.AbstractType.MULTI;
+            return ((LA) lp).property instanceof CaseAction && ((CaseAction)((LA) lp).property).isAbstract() && ((CaseAction)((LA) lp).property).getAbstractType() == ListCaseAction.AbstractType.MULTI;
     }
     
     private static boolean match(List<ResolveClassSet> absSignature, List<ResolveClassSet> concSignature) {
@@ -408,7 +408,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             if (impLP instanceof LA) {
                 LA<I> impLA = (LA) impLP;
                 ActionMapImplement<I, PropertyInterface> mapAbsImp = impLA.getImplement(absLA.listInterfaces.toArray(new PropertyInterface[absLA.listInterfaces.size()]));
-                ((CaseActionProperty) absLA.property).addImplicitCase(mapAbsImp, impSignature, sameNamespace, impVersion);
+                ((CaseAction) absLA.property).addImplicitCase(mapAbsImp, impSignature, sameNamespace, impVersion);
             }
         }
     }

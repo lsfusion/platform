@@ -41,12 +41,12 @@ import lsfusion.server.logics.action.change.SetAction;
 import lsfusion.server.logics.action.flow.*;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
-import lsfusion.server.logics.action.interactive.ConfirmActionProperty;
+import lsfusion.server.logics.action.interactive.ConfirmAction;
 import lsfusion.server.logics.action.interactive.MessageAction;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.action.ApplyAction;
-import lsfusion.server.logics.action.session.action.CancelActionProperty;
-import lsfusion.server.logics.action.session.action.NewSessionActionProperty;
+import lsfusion.server.logics.action.session.action.CancelAction;
+import lsfusion.server.logics.action.session.action.NewSessionAction;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -63,33 +63,33 @@ import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.focus.FocusActionProperty;
-import lsfusion.server.logics.form.interactive.action.input.InputActionProperty;
+import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
+import lsfusion.server.logics.form.interactive.action.input.InputAction;
 import lsfusion.server.logics.form.interactive.action.input.RequestAction;
-import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectActionProperty;
-import lsfusion.server.logics.form.interactive.action.seek.SeekObjectActionProperty;
+import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
+import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.open.interactive.FormInteractiveActionProperty;
-import lsfusion.server.logics.form.open.stat.ExportActionProperty;
+import lsfusion.server.logics.form.open.interactive.FormInteractiveAction;
+import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.ImportAction;
-import lsfusion.server.logics.form.open.stat.PrintActionProperty;
+import lsfusion.server.logics.form.open.stat.PrintAction;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import lsfusion.server.logics.form.stat.integration.IntegrationFormEntity;
-import lsfusion.server.logics.form.stat.integration.exporting.hierarchy.json.ExportJSONActionProperty;
-import lsfusion.server.logics.form.stat.integration.exporting.hierarchy.xml.ExportXMLActionProperty;
-import lsfusion.server.logics.form.stat.integration.exporting.plain.csv.ExportCSVActionProperty;
-import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.ExportDBFActionProperty;
-import lsfusion.server.logics.form.stat.integration.exporting.plain.table.ExportTableActionProperty;
-import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSActionProperty;
-import lsfusion.server.logics.form.stat.integration.importing.hierarchy.json.ImportJSONActionProperty;
-import lsfusion.server.logics.form.stat.integration.importing.hierarchy.xml.ImportXMLActionProperty;
-import lsfusion.server.logics.form.stat.integration.importing.plain.csv.ImportCSVActionProperty;
-import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.ImportDBFActionProperty;
-import lsfusion.server.logics.form.stat.integration.importing.plain.table.ImportTableActionProperty;
-import lsfusion.server.logics.form.stat.integration.importing.plain.xls.ImportXLSActionProperty;
+import lsfusion.server.logics.form.stat.integration.exporting.hierarchy.json.ExportJSONAction;
+import lsfusion.server.logics.form.stat.integration.exporting.hierarchy.xml.ExportXMLAction;
+import lsfusion.server.logics.form.stat.integration.exporting.plain.csv.ExportCSVAction;
+import lsfusion.server.logics.form.stat.integration.exporting.plain.dbf.ExportDBFAction;
+import lsfusion.server.logics.form.stat.integration.exporting.plain.table.ExportTableAction;
+import lsfusion.server.logics.form.stat.integration.exporting.plain.xls.ExportXLSAction;
+import lsfusion.server.logics.form.stat.integration.importing.hierarchy.json.ImportJSONAction;
+import lsfusion.server.logics.form.stat.integration.importing.hierarchy.xml.ImportXMLAction;
+import lsfusion.server.logics.form.stat.integration.importing.plain.csv.ImportCSVAction;
+import lsfusion.server.logics.form.stat.integration.importing.plain.dbf.ImportDBFAction;
+import lsfusion.server.logics.form.stat.integration.importing.plain.table.ImportTableAction;
+import lsfusion.server.logics.form.stat.integration.importing.plain.xls.ImportXLSAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
@@ -118,12 +118,12 @@ import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.ValueProperty;
-import lsfusion.server.physics.admin.drilldown.action.LazyActionProperty;
+import lsfusion.server.physics.admin.drilldown.action.LazyAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
-import lsfusion.server.physics.admin.interpreter.action.EvalActionProperty;
+import lsfusion.server.physics.admin.interpreter.action.EvalAction;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
+import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
-import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -152,7 +152,7 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 public abstract class LogicsModule {
     protected static final Logger logger = Logger.getLogger(LogicsModule.class);
 
-    protected static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
+    protected static final ActionDebugger debugger = ActionDebugger.getInstance();
 
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
@@ -582,34 +582,34 @@ public abstract class LogicsModule {
         return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<Property>EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
     }
     protected <O extends ObjectSelector> LA addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<Property> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
-        return addProperty(group, new LA<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
+        return addProperty(group, new LA<>(new FormInteractiveAction<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
     protected <O extends ObjectSelector> LA<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, Property printerProperty, LP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, Property passwordProperty, LP targetProp, boolean removeNullsAndDuplicates) {
-        return addProperty(group, new LA<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNullsAndDuplicates)));
+        return addProperty(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNullsAndDuplicates)));
     }
     protected <O extends ObjectSelector> LA addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, Property root, Property tag, LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles) {
-        ExportActionProperty<O> exportAction;
+        ExportAction<O> exportAction;
         switch(staticType) {
             case XML:
-                exportAction = new ExportXMLActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset, root, tag);
+                exportAction = new ExportXMLAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset, root, tag);
                 break;
             case JSON:
-                exportAction = new ExportJSONActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
+                exportAction = new ExportJSONAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, noHeader, separator, noEscape);
+                exportAction = new ExportCSVAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, noHeader, separator, noEscape);
                 break;
             case XLS:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false, noHeader);
+                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false, noHeader);
                 break;
             case XLSX:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true, noHeader);
+                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true, noHeader);
                 break;
             case DBF:
-                exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
+                exportAction = new ExportDBFAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
                 break;
             case TABLE:
-                exportAction = new ExportTableActionProperty<>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
+                exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
                 break;
             default:
                 throw new UnsupportedOperationException();                
@@ -648,24 +648,24 @@ public abstract class LogicsModule {
         switch (format) {
             // hierarchical
             case XML:
-                importAction = new ImportXMLActionProperty(paramsCount, formEntity, charset);
+                importAction = new ImportXMLAction(paramsCount, formEntity, charset);
                 break;
             case JSON:
-                importAction = new ImportJSONActionProperty(paramsCount, formEntity, charset);
+                importAction = new ImportJSONAction(paramsCount, formEntity, charset);
                 break;
             // plain
             case CSV:
-                importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, noEscape, separator);
+                importAction = new ImportCSVAction(paramsCount, groupFiles, formEntity, charset, noHeader, noEscape, separator);
                 break;
             case DBF:
-                importAction = new ImportDBFActionProperty(paramsCount, groupFiles, formEntity, charset, hasWhere);
+                importAction = new ImportDBFAction(paramsCount, groupFiles, formEntity, charset, hasWhere);
                 break;
             case XLS:
             case XLSX:
-                importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, sheetAll);
+                importAction = new ImportXLSAction(paramsCount, groupFiles, formEntity, charset, noHeader, sheetAll);
                 break;
             case TABLE:
-                importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity, charset);
+                importAction = new ImportTableAction(paramsCount, groupFiles, formEntity, charset);
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -759,13 +759,13 @@ public abstract class LogicsModule {
     }
     protected LA addListAProp(AbstractGroup group, int removeLast, LocalizedString caption, ImSet<SessionDataProperty> localsInScope, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        return addProperty(group, new LA<>(new ListActionProperty(caption, listInterfaces,
+        return addProperty(group, new LA<>(new ListAction(caption, listInterfaces,
                 readActionImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params), localsInScope)));
     }
 
     protected LA addAbstractListAProp(boolean isChecked, boolean isLast, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LA<>(new ListActionProperty(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LA<>(new ListAction(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- Try action ----------------- //
@@ -796,7 +796,7 @@ public abstract class LogicsModule {
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 2 && readImplements.size() <= 3;
 
-        return addProperty(group, new LA(CaseActionProperty.createIf(caption, not, listInterfaces, (PropertyInterfaceImplement<PropertyInterface>) readImplements.get(0),
+        return addProperty(group, new LA(CaseAction.createIf(caption, not, listInterfaces, (PropertyInterfaceImplement<PropertyInterface>) readImplements.get(0),
                 (ActionMapImplement<?, PropertyInterface>) readImplements.get(1), readImplements.size() == 3 ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(2) : null)));
     }
 
@@ -813,7 +813,7 @@ public abstract class LogicsModule {
         if(readImplements.size() % 2 != 0) {
             mCases.add(new ActionCase<>(PropertyFact.createTrue(), (ActionMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
         }
-        return addProperty(null, new LA<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, mCases.immutableList())));
+        return addProperty(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, listInterfaces, mCases.immutableList())));
     }
 
     protected LA addMultiAProp(boolean isExclusive, Object... params) {
@@ -824,12 +824,12 @@ public abstract class LogicsModule {
         for (int i = 0; i < readImplements.size(); i++) {
             mCases.add((ActionMapImplement) readImplements.get(i));
         }
-        return addProperty(null, new LA<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, mCases.immutableList(), listInterfaces)));
+        return addProperty(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
     protected LA addAbstractCaseAProp(ListCaseAction.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LA<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LA<>(new CaseAction(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- For action ----------------- //
@@ -897,7 +897,7 @@ public abstract class LogicsModule {
 
     protected LA addCancelAProp(AbstractGroup group, LocalizedString caption, FunctionSet<SessionDataProperty> keepSessionProps) {
 
-        CancelActionProperty applyAction = new CancelActionProperty(caption, keepSessionProps);
+        CancelAction applyAction = new CancelAction(caption, keepSessionProps);
         return addProperty(group, new LA<>(applyAction));
     }
 
@@ -931,7 +931,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        NewSessionActionProperty actionProperty = new NewSessionActionProperty(
+        NewSessionAction actionProperty = new NewSessionAction(
                 LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
         
         actionProperty.drawOptions.inheritDrawOptions(action.property.drawOptions);
@@ -946,13 +946,13 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement connection = withConnection ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement period = hasPeriod ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement delay = hasDelay ? (PropertyInterfaceImplement) readImplements.get(hasPeriod ? 2 : 1) : null;
-        return addProperty(group, new LA(new NewThreadActionProperty(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection)));
+        return addProperty(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection)));
     }
 
     protected LA addNewExecutorAProp(AbstractGroup group, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
-        return addProperty(group, new LA(new NewExecutorActionProperty(caption, listInterfaces,
+        return addProperty(group, new LA(new NewExecutorAction(caption, listInterfaces,
                 (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1))));
     }
 
@@ -977,7 +977,7 @@ public abstract class LogicsModule {
     }
     @IdentityStrongLazy
     protected LA addInputAProp(DataClass dataClass, Property targetProp) { // так как у LP нет 
-        return addProperty(null, new LA(new InputActionProperty(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null)));
+        return addProperty(null, new LA(new InputAction(LocalizedString.create("Input"), dataClass, targetProp != null ? new LP(targetProp) : null)));
     }
 
     // ------------------- Constant ----------------- //
@@ -1612,7 +1612,7 @@ public abstract class LogicsModule {
     }
 
     public LA addFocusActionProp(PropertyDrawEntity propertyDrawEntity) {
-        return addProperty(null, new LA(new FocusActionProperty(propertyDrawEntity)));
+        return addProperty(null, new LA(new FocusAction(propertyDrawEntity)));
     }
 
     // ------------------- CONFIRM ----------------- //
@@ -1628,7 +1628,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     protected LA addConfirmAProp(String title, boolean yesNo, Property property) {
-        return addProperty(null, new LA(new ConfirmActionProperty(LocalizedString.create("Confirm"), title, yesNo, property != null ? new LP(property) : null)));
+        return addProperty(null, new LA(new ConfirmAction(LocalizedString.create("Confirm"), title, yesNo, property != null ? new LP(property) : null)));
     }
 
     // ------------------- Async Update Action ----------------- //
@@ -1653,7 +1653,7 @@ public abstract class LogicsModule {
     // ------------------- EVAL ----------------- //
 
     public LA addEvalAProp(LP<?> scriptSource, List<LP<?>> params, boolean action) {
-        return addAProp(null, new EvalActionProperty(LocalizedString.NONAME, scriptSource, params, action));
+        return addAProp(null, new EvalAction(LocalizedString.NONAME, scriptSource, params, action));
     }
 
     // ------------------- DRILLDOWN ----------------- //
@@ -1699,7 +1699,7 @@ public abstract class LogicsModule {
     }
 
     public LA<?> addLazyAProp(Property property) {
-        LA result = addAProp(null, new LazyActionProperty(LocalizedString.create("{logics.property.drilldown.action}"), property));
+        LA result = addAProp(null, new LazyAction(LocalizedString.create("{logics.property.drilldown.action}"), property));
         if (property.isNamed()) {
             List<ResolveClassSet> signature = new ArrayList<>();
             String name = nameForDrillDownAction(property, signature);
@@ -1947,7 +1947,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy // для ID
     public LA addOSAProp(ObjectEntity object, UpdateType type) {
-        SeekObjectActionProperty seekProperty = new SeekObjectActionProperty(object, type);
+        SeekObjectAction seekProperty = new SeekObjectAction(object, type);
         return addProperty(null, new LA<>(seekProperty));
     }
 
@@ -1965,7 +1965,7 @@ public abstract class LogicsModule {
         for (ObjectEntity obj : objects) {
             objectClasses.add(obj.baseClass);
         }
-        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty(object, objects, type, objectClasses.toArray(new ValueClass[objectClasses.size()]));
+        SeekGroupObjectAction seekProperty = new SeekGroupObjectAction(object, objects, type, objectClasses.toArray(new ValueClass[objectClasses.size()]));
         return addProperty(null, new LA<>(seekProperty));
     }
 

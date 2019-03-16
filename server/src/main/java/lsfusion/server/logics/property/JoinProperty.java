@@ -21,7 +21,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggActionProperty;
+import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAggAction;
 import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
@@ -310,8 +310,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 ValueClass aggClass = ((PropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
-                DefaultChangeAggActionProperty<T> aggChangeActionProperty =
-                        new DefaultChangeAggActionProperty<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
+                DefaultChangeAggAction<T> aggChangeActionProperty =
+                        new DefaultChangeAggAction<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeActionProperty.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)

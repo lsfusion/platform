@@ -2,18 +2,18 @@ MODULE Backup;
 
 REQUIRE System, Reflection, SchedulerDefaultData;
 
-makeBackup '{backup.make.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.BackupActionProperty' () TOOLBAR;
+makeBackup '{backup.make.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.BackupAction' () TOOLBAR;
 makeBackupAction '{backup.make.backup}'  { 
     makeBackup();
     formRefresh();
 }
-makePartialBackup '{backup.make.partial.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackup '{backup.make.partial.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.PartialBackupAction' () TOOLBAR;
 makePartialBackupAction '{backup.make.partial.backup}'  { 
     makePartialBackup();
     formRefresh();
 }
-save '{backup.save.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.SaveBackupActionProperty' (Backup) TOOLBAR;
-delete '{backup.delete.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.DeleteBackupActionProperty' (Backup);
+save '{backup.save.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.SaveBackupAction' (Backup) TOOLBAR;
+delete '{backup.delete.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.DeleteBackupAction' (Backup);
 
 deleteAction '{backup.delete.backup}' (Backup b)  { 
     delete(b);
@@ -23,13 +23,13 @@ deleteAction '{backup.delete.backup}' (Backup b)  {
 saveMondayBackups '{backup.dave.monday.backups}' = DATA BOOLEAN ();
 saveFirstDayBackups '{backup.first.day.backups}' = DATA BOOLEAN ();
 maxQuantityBackups '{backup.max.quantity.backups}' = DATA INTEGER ();
-decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.server.physics.admin.backup.action.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.server.physics.admin.backup.action.DecimateBackupsAction' () TOOLBAR CONFIRM;
 decimateBackupsAction '{backup.decimate.backups}'  { 
     decimateBackups();
     formRefresh();
 }
 
-customRestore '{backup.custom.restore}'  INTERNAL  'lsfusion.server.physics.admin.backup.action.CustomRestoreActionProperty' (Backup);
+customRestore '{backup.custom.restore}'  INTERNAL  'lsfusion.server.physics.admin.backup.action.CustomRestoreAction' (Backup);
 inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (Table);
 restoreObjects '{backup.restore.objects}' = DATA BOOLEAN (Table);
 inCustomRestore '{backup.in.custom.restore}' = DATA BOOLEAN (TableColumn);

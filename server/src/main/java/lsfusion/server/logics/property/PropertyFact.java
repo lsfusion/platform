@@ -17,10 +17,10 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.change.SetAction;
-import lsfusion.server.logics.action.flow.CaseActionProperty;
+import lsfusion.server.logics.action.flow.CaseAction;
 import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.flow.JoinAction;
-import lsfusion.server.logics.action.flow.ListActionProperty;
+import lsfusion.server.logics.action.flow.ListAction;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.LocalNestedType;
@@ -767,13 +767,13 @@ public class PropertyFact {
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, PropertyMapImplement<?, L> where, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        Action actionProperty = CaseActionProperty.createIf(LocalizedString.NONAME, false, listInterfaces, where, action, elseAction);
+        Action actionProperty = CaseAction.createIf(LocalizedString.NONAME, false, listInterfaces, where, action, elseAction);
         return actionProperty.getImplement(listInterfaces);
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createCaseAction(ImSet<L> innerInterfaces, boolean isExclusive, ImList<ActionCase<L>> cases) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        Action actionProperty = new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
+        Action actionProperty = new CaseAction(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
         return actionProperty.getImplement(listInterfaces);
     }
 
@@ -790,7 +790,7 @@ public class PropertyFact {
             return actions.single();
 
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ListActionProperty actionProperty = new ListActionProperty(LocalizedString.NONAME, listInterfaces, actions, localsInScope);
+        ListAction actionProperty = new ListAction(LocalizedString.NONAME, listInterfaces, actions, localsInScope);
         return actionProperty.getImplement(listInterfaces);
     }
 

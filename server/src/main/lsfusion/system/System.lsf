@@ -55,28 +55,28 @@ lsfStackTraceCaughtException = DATA LOCAL TEXT();
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
-formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyActionProperty' ();
-formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelActionProperty' ();
-formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.EditReportActionProperty' ();
-formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.DropActionProperty' ();
-formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.RefreshActionProperty' ();
-formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkActionProperty' ();
-formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseActionProperty' ();
+formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyAction' ();
+formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelAction' ();
+formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.EditReportAction' ();
+formDrop '{action.form.drop}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.DropAction' ();
+formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.RefreshAction' ();
+formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.OkAction' ();
+formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.CloseAction' ();
 
-seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekInternalActionProperty' (Object);
+seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.seek.SeekInternalAction' (Object);
 
-sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepActionProperty' (LONG);
+sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepAction' (LONG);
 
 sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 
-applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyWithoutRecalcActionProperty' ();
-applyOnlyCalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCalcActionProperty' ();
-applyOnlyCheck  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCheckActionProperty' ();
-applyOnlyData  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyDataActionProperty' ();
-applyAll  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyAllActionProperty' ();
+applyOnlyWithoutRecalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyWithoutRecalcAction' ();
+applyOnlyCalc  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCalcAction' ();
+applyOnlyCheck  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyCheckAction' ();
+applyOnlyData  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyOnlyDataAction' ();
+applyAll  INTERNAL  'lsfusion.server.logics.action.session.action.ApplyAllAction' ();
 
-throwException  INTERNAL  'lsfusion.server.logics.action.flow.ThrowExceptionActionProperty' (TEXT);
+throwException  INTERNAL  'lsfusion.server.logics.action.flow.ThrowExceptionAction' (TEXT);
 
 setNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(true); }>;
 dropNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(false); }>;
@@ -94,7 +94,7 @@ check()  {
     }    
 }
 
-executeLocalEvents  INTERNAL  'lsfusion.server.logics.event.ExecuteLocalEventsActionProperty' (TEXT);
+executeLocalEvents  INTERNAL  'lsfusion.server.logics.event.ExecuteLocalEventsAction' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
 staticName '{system.static.name.object}' = DATA STRING[250] (Object); // temporary for migration
@@ -131,24 +131,24 @@ reportToStretch '{system.report.to.stretch}' = NOT reportNotToStretch();
 
 hashModules '{system.hash.modules}' = DATA VARSTRING[200] ();
 
-checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.action.CheckIsServerActionProperty' ();
+checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.action.CheckIsServerAction' ();
 isServer = DATA LOCAL BOOLEAN ();
 
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenPathAction' (VARISTRING[255], VARISTRING[255]);
 open '{system.open.file}' (VARSTRING[255] source)  { open(source, NULL); }
 //source file, name
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileActionProperty' (FILE, VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, VARISTRING[255]);
 open '{system.open.file}' (FILE source)  { open(source, NULL); }
 //source rawFile, name
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, VARISTRING[255]);
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }
 //source link
-open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkActionProperty' (LINK);
+open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (LINK);
 //source rawLink
-open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawLinkActionProperty' (RAWLINK);
+open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawLinkAction' (RAWLINK);
   
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
@@ -199,10 +199,10 @@ readFile = DATA LOCAL FILE ();
 getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
 getExtension = getFileExtension(FILE(file));
 
-downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileActionProperty' (VARSTRING[100]); 
+downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (VARSTRING[100]); 
 
-loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
-loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedFontActionProperty' (VARSTRING[100]);
+loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedLibraryAction' (VARSTRING[100]);
+loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedFontAction' (VARSTRING[100]);
 
 loadLibrary '{system.load.library}' (path)   { 
     downloadFile(path);
@@ -316,7 +316,7 @@ END
 @applicationForm(migrationData, '{navigator.migration}');
 
 networkPath '{system.network.path}' = DATA LOCAL NESTED VARSTRING[500] ();
-loadNetworkPath '{system.load.network.path}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.input.LoadLinkActionProperty' ();
+loadNetworkPath '{system.load.network.path}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.input.LoadLinkAction' ();
 FORM networkPathForm '{system.form.network.path.form}'
     PROPERTIES() networkPath, loadNetworkPath;
 
