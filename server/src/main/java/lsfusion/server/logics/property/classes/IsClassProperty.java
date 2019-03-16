@@ -38,6 +38,7 @@ import lsfusion.server.logics.classes.user.UnknownClass;
 import lsfusion.server.logics.event.ChangeEvent;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.SimpleIncrementProperty;

@@ -290,23 +290,23 @@ public class CacheAspect {
     public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint, Type type, CacheStats.CacheType cacheType) throws Throwable {
         return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false, type, cacheType);
     }
-    @Around("execution(@IdentityLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.IdentityLazy * *.*(..)) && target(object)")
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint, Type.SIMPLE, CacheStats.CacheType.IDENTITY_LAZY);
     }
-    @Around("execution(@IdentityStartLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.IdentityStartLazy * *.*(..)) && target(object)")
     public Object callStartMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint, Type.START, CacheStats.CacheType.OTHER);
     }
-    @Around("execution(@IdentityInstanceLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.IdentityInstanceLazy * *.*(..)) && target(object)")
     public Object callInstanceMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint, Type.SIMPLE, CacheStats.CacheType.OTHER); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
     }
-    @Around("execution(@IdentityStrongLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.IdentityStrongLazy * *.*(..)) && target(object)")
     public Object callStrongMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint, Type.STRONG, CacheStats.CacheType.OTHER);
     }
-    @Around("execution(@IdentityQuickLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.IdentityQuickLazy * *.*(..)) && target(object)")
     public Object callQuickMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint, Type.QUICK, CacheStats.CacheType.QUICK_LAZY);
     }
@@ -319,13 +319,13 @@ public class CacheAspect {
 
         return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs, false, type, CacheStats.CacheType.PARAM_LAZY);
     }
-    @Around("execution(@ParamLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.ParamLazy * *.*(..)) && target(object)")
     public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callParamMethod(object, thisJoinPoint, Type.SIMPLE);
     }
 
     //@net.jcip.annotations.Immutable
-    @Around("execution(@SynchronizedLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.SynchronizedLazy * *.*(..)) && target(object)")
     public Object callSynchronizedMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         synchronized (object) {
             return callMethod(thisJoinPoint, object);
@@ -372,7 +372,7 @@ public class CacheAspect {
         return result;
     }
 
-    @Around("execution(@TwinLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.TwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false, Type.SIMPLE, CacheStats.CacheType.TWIN_LAZY);
@@ -397,7 +397,7 @@ public class CacheAspect {
         return lazyTwinManualExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }*/
     
-    @Around("execution(@ParamTwinLazy * *.*(..)) && target(object)")
+    @Around("execution(@lsfusion.server.base.caches.ParamTwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
     // не synchronized, но не используется
     public Object callParamTwinMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {

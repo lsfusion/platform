@@ -1593,14 +1593,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             String javaClass = "import lsfusion.server.data.sql.exception.SQLHandledException;\n" +
                     "import lsfusion.server.logics.property.classes.ClassPropertyInterface;\n" +
                     "import lsfusion.server.logics.action.controller.context.ExecutionContext;\n" +
-                    "import lsfusion.server.language.ScriptingActionProperty;\n" +
+                    "import lsfusion.server.physics.dev.integration.internal.to.InternalAction;\n" +
                     "import lsfusion.server.language.ScriptingLogicsModule;\n" +
                     "\n" +
                     "import java.sql.SQLException;\n" +
                     "\n" +
-                    "public class ExecuteActionProperty extends ScriptingActionProperty {\n" +
+                    "public class ExecuteAction extends InternalAction {\n" +
                     "\n" +
-                    "    public ExecuteActionProperty(ScriptingLogicsModule LM) {\n" +
+                    "    public ExecuteAction(ScriptingLogicsModule LM) {\n" +
                     "        super(LM);\n" +
                     "    }\n" +
                     "\n" +
@@ -1616,7 +1616,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(javaClass);
-            Class<?> executeClass = sc.getClassLoader().loadClass("ExecuteActionProperty");
+            Class<?> executeClass = sc.getClassLoader().loadClass("ExecuteAction");
 
             Action instance = (Action) executeClass.getConstructor(ScriptingLogicsModule.class).newInstance(this);
             if (instance instanceof ExplicitAction && allowNullValue) {

@@ -13,7 +13,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 public class PackComplexityAspect {
 
 //    lsfusion.server.data.query.IQuery
-    @Around("execution(@Pack * lsfusion.server.data.query.Query.*(..)) && target(query)")
+    @Around("execution(@lsfusion.server.data.pack.Pack * lsfusion.server.data.query.Query.*(..)) && target(query)")
     public Object callPackMethod(ProceedingJoinPoint thisJoinPoint, Query query) throws Throwable {
         IQuery pack = ((Query<?,?>)query).pack();
         if(pack!=query) {
@@ -23,7 +23,7 @@ public class PackComplexityAspect {
         return thisJoinPoint.proceed();
     }
 
-    @Around("execution(@PackComplex * *.*(..))")
+    @Around("execution(@lsfusion.server.data.pack.PackComplex * *.*(..))")
     public Object callPackComplexMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         PackInterface result = (PackInterface) thisJoinPoint.proceed();
         if(Settings.get().getPackOnCacheComplexity() > 0 && result.getComplexity(false) > Settings.get().getPackOnCacheComplexity())

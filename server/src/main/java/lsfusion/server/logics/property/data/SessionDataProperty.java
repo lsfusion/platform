@@ -9,7 +9,7 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.CalcClassType;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class SessionDataProperty extends DataProperty {

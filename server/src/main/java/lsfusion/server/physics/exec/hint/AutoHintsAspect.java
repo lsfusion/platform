@@ -37,7 +37,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyQueryType;
 import lsfusion.server.logics.property.caches.MapCacheAspect;
 import lsfusion.server.logics.property.classes.infer.AlgType;
-import lsfusion.server.logics.property.classes.infer.CalcType;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -234,16 +234,16 @@ public class AutoHintsAspect {
         }
     }
 
-    @Around("execution(* lsfusion.server.logics.property.Property.getExpr(lsfusion.base.col.interfaces.immutable.ImMap, Modifier, lsfusion.server.data.where.WhereBuilder)) && target(property) && args(map, modifier, changedWhere)")
+    @Around("execution(* lsfusion.server.logics.property.Property.getExpr(lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.logics.action.session.change.modifier.Modifier, lsfusion.server.data.where.WhereBuilder)) && target(property) && args(map, modifier, changedWhere)")
     public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap map, Modifier modifier, WhereBuilder changedWhere) throws Throwable {
         return callAutoHint(thisJoinPoint, property, map, modifier);
     }
-    @Around("execution(* lsfusion.server.logics.property.Property.getIncrementChange(Modifier)) && target(property) && args(modifier)")
+    @Around("execution(* lsfusion.server.logics.property.Property.getIncrementChange(lsfusion.server.logics.action.session.change.modifier.Modifier)) && target(property) && args(modifier)")
     public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
         return callAutoHint(thisJoinPoint, property, null, modifier);
     }
 
-    @Around("execution(* lsfusion.server.logics.property.Property.getQuery(CalcType,PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(calcType, propChanges, queryType, interfaceValues)")
+    @Around("execution(* lsfusion.server.logics.property.Property.getQuery(lsfusion.server.logics.property.CalcType,lsfusion.server.logics.action.session.change.PropertyChanges,lsfusion.server.logics.property.PropertyQueryType,*)) && target(property) && args(calcType, propChanges, queryType, interfaceValues)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
         return getQuery(thisJoinPoint, property, calcType, propChanges, queryType, interfaceValues);
     }
@@ -314,7 +314,7 @@ public class AutoHintsAspect {
 
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,CalcType,PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
+    @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.CalcType,lsfusion.server.logics.action.session.change.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть

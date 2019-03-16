@@ -159,19 +159,19 @@ public class ExecutionStackAspect {
     private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
     public static ThreadLocal<ExecutionTimeCounter> executionTime = new ThreadLocal<>();
     
-    @Around("execution(lsfusion.server.logics.action.flow.FlowResult lsfusion.server.logics.action.ActionProperty.execute(lsfusion.server.logics.action.controller.context.ExecutionContext))")
+    @Around("execution(lsfusion.server.logics.action.flow.FlowResult lsfusion.server.logics.action.Action.execute(lsfusion.server.logics.action.controller.context.ExecutionContext))")
     public Object execution(final ProceedingJoinPoint joinPoint) throws Throwable {
         ExecuteActionStackItem item = new ExecuteActionStackItem(joinPoint);
         return processStackItem(joinPoint, item);
     }
 
-    @Around("execution(@StackMessage * *.*(..))")
+    @Around("execution(@lsfusion.server.base.controller.stack.StackMessage * *.*(..))")
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         AspectStackItem item = new AspectStackItem(thisJoinPoint);
         return processStackItem(thisJoinPoint, item);
     }
 
-    @Around("execution(@StackProgress * *.*(..))")
+    @Around("execution(@lsfusion.server.base.controller.stack.StackProgress * *.*(..))")
     public Object callTwinMethod2(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         ProgressStackItem item = new ProgressStackItem(thisJoinPoint);
         return processStackItem(thisJoinPoint, item);

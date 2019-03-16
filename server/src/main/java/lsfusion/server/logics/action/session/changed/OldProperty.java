@@ -10,6 +10,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

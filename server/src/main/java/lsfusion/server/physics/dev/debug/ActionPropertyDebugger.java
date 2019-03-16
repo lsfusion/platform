@@ -63,7 +63,7 @@ import static java.util.Arrays.asList;
 import static lsfusion.server.physics.dev.debug.ActionDelegationType.*;
 
 public class ActionPropertyDebugger implements DebuggerService {
-    public static final String DELEGATES_HOLDER_CLASS_PACKAGE = "lsfusion.server.logics.debug";
+    public static final String DELEGATES_HOLDER_CLASS_PACKAGE = "lsfusion.server.physics.dev.debug";
     public static final String DELEGATES_HOLDER_CLASS_NAME_PREFIX = "DebugDelegatesHolder_";
     public static final String DELEGATES_HOLDER_CLASS_FQN_PREFIX = DELEGATES_HOLDER_CLASS_PACKAGE + "." + DELEGATES_HOLDER_CLASS_NAME_PREFIX;
 
@@ -166,9 +166,9 @@ public class ActionPropertyDebugger implements DebuggerService {
             "import lsfusion.server.logics.property.data.DataProperty;\n" +
             "import lsfusion.server.logics.action.controller.context.ExecutionContext;\n" +
             "import lsfusion.server.logics.action.flow.FlowResult;\n" +
-            "import ClassChange;\n" +
-            "import DataSession;\n" +
-            "import PropertyChange;\n" +
+            "import lsfusion.server.logics.action.session.classes.change.ClassChange;\n" +
+            "import lsfusion.server.logics.action.session.DataSession;\n" +
+            "import lsfusion.server.logics.action.session.change.PropertyChange;\n" +
             "\n" +
             "import java.sql.SQLException;\n" +
             "\n" +
@@ -181,7 +181,7 @@ public class ActionPropertyDebugger implements DebuggerService {
                 ActionDebugInfo actionDebugInfo = (ActionDebugInfo) info;
                 String body = (actionDebugInfo.delegationType == IN_DELEGATE ? "return action.executeImpl(context);" : "return null;");
                 sourceString +=
-                        "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
+                        "    public static FlowResult " + methodName + "(Action action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
                         "        " + body + "\n" +
                         "    }\n";
             } else if (info instanceof PropertyDebugInfo) {
