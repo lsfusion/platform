@@ -117,10 +117,10 @@ public class AbstractGroup extends AbstractNode {
         return false;
     }
 
-    public ImOrderSet<ActionOrProperty> getProperties() {
+    public ImOrderSet<ActionOrProperty> getActionOrProperties() {
         MOrderSet<ActionOrProperty> result = SetFact.mOrderSet();
         for (AbstractNode child : getChildrenListIt()) {
-            result.addAll(child.getProperties());
+            result.addAll(child.getActionOrProperties());
         }
         return result.immutableOrder();
     }
@@ -152,10 +152,10 @@ public class AbstractGroup extends AbstractNode {
     }
 
     @Override
-    protected ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
+    protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
         MList<ActionOrPropertyClassImplement> mResult = ListFact.mList();
         for (AbstractNode child : getNFChildrenListIt(version)) {
-            mResult.addAll(child.getProperties(valueClasses, mapClasses, version));
+            mResult.addAll(child.getActionOrProperties(valueClasses, mapClasses, version));
         }
         return mResult.immutableList();
     }

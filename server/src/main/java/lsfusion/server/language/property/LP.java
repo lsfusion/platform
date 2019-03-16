@@ -217,12 +217,12 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
             property.setLogValueProperty(logValueProperty);
             property.setLogWhereProperty(ownerModule.addLWhereProp(logValueProperty, logDropProperty));
         }
-        if (property.getLogFormProperty() == null) {
+        if (property.getLogFormAction() == null) {
             LogFormEntity logFormEntity = new LogFormEntity(null,
                                                             LocalizedString.create("{logics.property.log.form}"),
                                                             this, property.getLogValueProperty(), property.getLogWhereProperty(), systemEventsLM);
             systemEventsLM.addFormEntity(logFormEntity);
-            property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
+            property.setLogFormAction(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
         }
     }
 

@@ -46,7 +46,7 @@ public class UploadToDBAction extends InternalAction {
                 throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
             }
     
-            ServiceDBActionProperty.run(context, new RunService() {
+            ServiceDBAction.run(context, new RunService() {
                 public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                     try {
                         context.getDbManager().uploadToDB(session, isolatedTransaction, adapter);

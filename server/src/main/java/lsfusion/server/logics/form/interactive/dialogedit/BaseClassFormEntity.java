@@ -23,7 +23,7 @@ public abstract class BaseClassFormEntity extends FormEntity {
 
         object = addSingleGroupObject(cls, version);
 
-        ImList<ActionOrPropertyClassImplement> idProps = LM.getRecognizeGroup().getProperties(cls, version);
+        ImList<ActionOrPropertyClassImplement> idProps = LM.getRecognizeGroup().getActionOrProperties(cls, version);
         if(idProps.isEmpty()) {
             // we need at least one prop (otherwise there will be no grid in dialog)
             LP objValueProp = LM.getObjValueProp(this, object);

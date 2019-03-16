@@ -510,9 +510,9 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         try {
             List<List<Object>> dataProperty = new ArrayList<>();
-            for (ActionOrProperty property : businessLogics.getOrderProperties()) {
-                if (needsToBeSynchronized(property)) {
-                    if((property instanceof Action) != actions)
+            for (ActionOrProperty actionOrProperty : businessLogics.getOrderActionOrProperties()) {
+                if (needsToBeSynchronized(actionOrProperty)) {
+                    if((actionOrProperty instanceof Action) != actions)
                         continue;
                     
                     String returnClass = null;
@@ -521,27 +521,27 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     Long complexityProperty = null;
 
                     try {
-                        classProperty = property.getClass().getSimpleName();
+                        classProperty = actionOrProperty.getClass().getSimpleName();
                         
-                        if(property instanceof Property) {
-                            Property calcProperty = (Property)property;
-                            complexityProperty = calcProperty.getComplexity();
-                            if (calcProperty.mapTable != null) {
-                                tableSID = calcProperty.mapTable.table.getName();
+                        if(actionOrProperty instanceof Property) {
+                            Property property = (Property)actionOrProperty;
+                            complexityProperty = property.getComplexity();
+                            if (property.mapTable != null) {
+                                tableSID = property.mapTable.table.getName();
                             } else {
                                 tableSID = "";
                             }
 
-                            returnClass = ((Property)property).getValueClass(ClassType.syncPolicy).getSID();
+                            returnClass = ((Property)actionOrProperty).getValueClass(ClassType.syncPolicy).getSID();
                         }
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), ThreadLocalContext.localize(property.caption), property instanceof Property && ((Property)property).isLoggable() ? true : null,
-                            property instanceof Property && ((Property) property).isStored() ? true : null,
-                            property instanceof Property && ((Property) property).reflectionNotNull ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, property.annotation, 
-                            (Settings.get().isDisableSyncStatProps() || !(property instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty((Property)property))));
+                    dataProperty.add(asList(actionOrProperty.getCanonicalName(),(Object) actionOrProperty.getDBName(), ThreadLocalContext.localize(actionOrProperty.caption), actionOrProperty instanceof Property && ((Property)actionOrProperty).isLoggable() ? true : null,
+                            actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
+                            actionOrProperty instanceof Property && ((Property) actionOrProperty).reflectionNotNull ? true : null,
+                            returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotation, 
+                            (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty((Property)actionOrProperty))));
                 }
             }
 
@@ -592,7 +592,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
 
         List<List<Object>> dataParent = new ArrayList<>();
-        for (ActionOrProperty property : businessLogics.getOrderProperties()) {
+        for (ActionOrProperty property : businessLogics.getOrderActionOrProperties()) {
             if (needsToBeSynchronized(property)) {
                 if((property instanceof Action) != actions)
                     continue;

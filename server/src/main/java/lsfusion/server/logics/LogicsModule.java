@@ -933,18 +933,18 @@ public abstract class LogicsModule {
     // ------------------- NEWSESSION ----------------- //
 
     protected LA addNewSessionAProp(AbstractGroup group,
-                                    LA action, boolean isNested, boolean singleApply, boolean newSQL,
+                                    LA la, boolean isNested, boolean singleApply, boolean newSQL,
                                     FunctionSet<SessionDataProperty> migrateSessionProps) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
-        ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(la.listInterfaces.size());
+        ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(la, listInterfaces);
 
-        NewSessionAction actionProperty = new NewSessionAction(
+        NewSessionAction action = new NewSessionAction(
                 LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
         
-        actionProperty.drawOptions.inheritDrawOptions(action.property.drawOptions);
-        actionProperty.inheritCaption(action.property);
+        action.drawOptions.inheritDrawOptions(la.property.drawOptions);
+        action.inheritCaption(la.property);
         
-        return addProperty(group, new LA<>(actionProperty));
+        return addProperty(group, new LA<>(action));
     }
 
     protected LA addNewThreadAProp(AbstractGroup group, LocalizedString caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, Object... params) {
@@ -1612,7 +1612,7 @@ public abstract class LogicsModule {
         return addProperty(null, new LA(new MessageAction(LocalizedString.create("Message"), title, noWait)));
     }
 
-    public LA addFocusActionProp(PropertyDrawEntity propertyDrawEntity) {
+    public LA addFocusAction(PropertyDrawEntity propertyDrawEntity) {
         return addProperty(null, new LA(new FocusAction(propertyDrawEntity)));
     }
 
@@ -2032,32 +2032,32 @@ public abstract class LogicsModule {
         addEventAction(innerInterfaces.getSet(), (ActionMapImplement<?, PropertyInterface>) listImplements.get(0), (PropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, noInlineInterfaces, forceInline, false, debugPoint);
     }
 
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(Action<P> actionProperty, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve, DebugInfo.DebugPoint debugPoint) {
-        addEventAction(actionProperty.interfaces, actionProperty.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.<P>EMPTY(), false, resolve, debugPoint);
+    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(Action<P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve, DebugInfo.DebugPoint debugPoint) {
+        addEventAction(action.interfaces, action.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.<P>EMPTY(), false, resolve, debugPoint);
     }
 
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> actionProperty, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, DebugInfo.DebugPoint debugPoint) {
+    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, DebugInfo.DebugPoint debugPoint) {
         if(!(whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, event.getScope());
 
-        Action<? extends PropertyInterface> action =
+        Action<? extends PropertyInterface> eventAction =
                 innerInterfaces.isEmpty() ?
-                    PropertyFact.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
-                    PropertyFact.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
+                    PropertyFact.createIfAction(innerInterfaces, whereImplement, action, null).property :
+                    PropertyFact.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, action, null, false, noInline, forceInline).property;
 
         if(debugPoint != null) { // создано getEventDebugPoint
-            if(debugger.isEnabled()) // topContextActionPropertyDefinitionBodyCreated
-                debugger.setNewDebugStack(action);
+            if(debugger.isEnabled()) // topContextActionDefinitionBodyCreated
+                debugger.setNewDebugStack(eventAction);
 
-            assert action.getDelegationType(true) == ActionDelegationType.AFTER_DELEGATE;
-            ScriptingLogicsModule.setDebugInfo(true, debugPoint, action); // actionPropertyDefinitionBodyCreated
+            assert eventAction.getDelegationType(true) == ActionDelegationType.AFTER_DELEGATE;
+            ScriptingLogicsModule.setDebugInfo(true, debugPoint, eventAction); // actionDefinitionBodyCreated
         }
 
 //        action.setStrongUsed(whereImplement.property); // добавить сильную связь, уже не надо поддерживается более общий механизм - смотреть на Session Calc
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
-        addProp(action);
+        addProp(eventAction);
 
-        addBaseEvent(action, event, resolve, false);
+        addBaseEvent(eventAction, event, resolve, false);
     }
 
     public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean resolve, boolean single) {

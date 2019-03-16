@@ -551,9 +551,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void initClassAggrProps() {
         MOrderExclSet<Property> queue = SetFact.mOrderExclSet();
 
-        for(Property calcProperty : getCalcProperties()) {
-            if(calcProperty.isAggr())
-                queue.exclAdd(calcProperty);
+        for(Property property : getProperties()) {
+            if(property.isAggr())
+                queue.exclAdd(property);
         }
 
         MAddExclMap<CustomClass, MSet<Property>> classAggrProps = MapFact.mAddExclMap();
@@ -698,18 +698,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private void finishLogInit() {
         // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
         // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь
-        for (Property property : getCalcProperties()) {
+        for (Property property : getProperties()) {
             finishLogInit(property);
         }
     }
 
     public <P extends PropertyInterface> void finishLogInit(Property property) {
         if (property.isLoggable()) {
-            Action<P> logActionProperty = (Action<P>) property.getLogFormProperty().property;
+            Action<P> logAction = (Action<P>) property.getLogFormAction().property;
 
             //добавляем в контекстное меню пункт для показа формы
-            property.setContextMenuAction(property.getSID(), logActionProperty.caption);
-            property.setEditAction(property.getSID(), logActionProperty.getImplement(property.getReflectionOrderInterfaces()));
+            property.setContextMenuAction(property.getSID(), logAction.caption);
+            property.setEditAction(property.getSID(), logAction.getImplement(property.getReflectionOrderInterfaces()));
         }
     }
 
@@ -747,36 +747,36 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         securityManager.initSecret();
     }
 
-    public ImOrderSet<ActionOrProperty> getOrderProperties() {
-        return LM.getRootGroup().getProperties();
+    public ImOrderSet<ActionOrProperty> getOrderActionOrProperties() {
+        return LM.getRootGroup().getActionOrProperties();
     }
 
-    public ImSet<ActionOrProperty> getProperties() {
-        return getOrderProperties().getSet();
+    public ImSet<ActionOrProperty> getActionOrProperties() {
+        return getOrderActionOrProperties().getSet();
     }
 
-    public ImOrderSet<Property> getCalcOrderProperties() {
-        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
+    public ImOrderSet<Property> getOrderProperties() {
+        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
             public boolean contains(ActionOrProperty element) {
                 return element instanceof Property;
             }
         }));
     }
 
-    public ImSet<Property> getCalcProperties() {
-        return getCalcOrderProperties().getSet();
+    public ImSet<Property> getProperties() {
+        return getOrderProperties().getSet();
     }
 
-    public ImOrderSet<Action> getActionOrderProperties() {
-        return BaseUtils.immutableCast(getOrderProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
+    public ImOrderSet<Action> getOrderActions() {
+        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
             public boolean contains(ActionOrProperty element) {
                 return element instanceof Action;
             }
         }));
     }
 
-    public ImSet<Action> getActionProperties() {
-        return getActionOrderProperties().getSet();
+    public ImSet<Action> getActions() {
+        return getOrderActions().getSet();
     }
 
     public Iterable<LP<?>> getNamedProperties() {
@@ -937,7 +937,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
-        for (Action property : getActionOrderProperties()) {
+        for (Action property : getOrderActions()) {
             if (!property.getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
@@ -947,7 +947,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private void dropActionChangeProps() { // для экономии памяти - симметричное удаление ссылок
-        for (Action property : getActionOrderProperties()) {
+        for (Action property : getOrderActions()) {
             if (!property.getEvents().isEmpty()) {
                 ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++)
@@ -1349,7 +1349,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         boolean found = false; // оптимизация, так как showDep не так часто используется
 
-        for (ActionOrProperty property : getOrderProperties())
+        for (ActionOrProperty property : getOrderActionOrProperties())
             if (property.showDep != null) {
                 if(!found) {
                     fillActionChangeProps();
@@ -1427,7 +1427,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         // сначала бежим по Action'ам с cancel'ами
         HSet<ActionOrProperty> cancelActions = new HSet<>();
         HSet<ActionOrProperty> rest = new HSet<>();
-        for (ActionOrProperty property : getOrderProperties())
+        for (ActionOrProperty property : getOrderActionOrProperties())
             if(filter.contains(property)) {
                 if (ApplyFilter.isCheck(property))
                     cancelActions.add(property);

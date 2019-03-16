@@ -1566,8 +1566,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeAction<T> changeActionProperty = new DefaultChangeAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
-        return changeActionProperty.getImplement(listInterfaces);
+        DefaultChangeAction<T> changeAction = new DefaultChangeAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
+        return changeAction.getImplement(listInterfaces);
     }
 
     public boolean setNotNull;
@@ -2023,7 +2023,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     private boolean loggable;
 
-    public LA logFormProperty;
+    public LA logFormAction;
 
     public void setLoggable(boolean loggable) {
         this.loggable = loggable;
@@ -2033,12 +2033,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return loggable;
     }
 
-    public void setLogFormProperty(LA logFormProperty) {
-        this.logFormProperty = logFormProperty;
+    public void setLogFormAction(LA logFormAction) {
+        this.logFormAction = logFormAction;
     }
 
-    public LA getLogFormProperty() {
-        return logFormProperty;
+    public LA getLogFormAction() {
+        return logFormAction;
     }
     
     private boolean aggr;

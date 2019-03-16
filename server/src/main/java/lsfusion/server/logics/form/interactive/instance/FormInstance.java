@@ -2153,10 +2153,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @Deprecated
     public FormData getFormData(int orderTop) throws SQLException, SQLHandledException {
-        return getFormData(getCalcProperties(), getGroups(), orderTop);
+        return getFormData(getProperties(), getGroups(), orderTop);
     }
 
-    public ImSet<PropertyDrawInstance> getCalcProperties() {
+    public ImSet<PropertyDrawInstance> getProperties() {
         return properties.toOrderSet().getSet().filterFn(new SFunctionSet<PropertyDrawInstance>() {
                 public boolean contains(PropertyDrawInstance property) {
                     return property.isProperty();

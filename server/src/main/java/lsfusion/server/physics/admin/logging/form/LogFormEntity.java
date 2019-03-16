@@ -98,7 +98,7 @@ public class LogFormEntity extends FormEntity {
         addPropertyDraw(logValueProperty, version, entities);
 
         ImList<ActionOrPropertyClassImplement> recognizePropImpls =
-                systemEventsLM.baseLM.getRecognizeGroup().getProperties(property.property.getValueClass(ClassType.logPolicy), version);
+                systemEventsLM.baseLM.getRecognizeGroup().getActionOrProperties(property.property.getValueClass(ClassType.logPolicy), version);
 
         for (ActionOrPropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof PropertyClassImplement) {

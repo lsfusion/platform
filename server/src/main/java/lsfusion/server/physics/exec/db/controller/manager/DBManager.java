@@ -1360,17 +1360,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private void updateAggregationStats(DataSession session, List<Property> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
-        Map<ImplementTable, List<Property>> calcPropertiesMap; // статистика для новых свойств
+        Map<ImplementTable, List<Property>> propertiesMap; // статистика для новых свойств
         if (Settings.get().isGroupByTables()) {
-            calcPropertiesMap = new HashMap<>();
+            propertiesMap = new HashMap<>();
             for (Property property : recalculateProperties) {
-                List<Property> entry = calcPropertiesMap.get(property.mapTable.table);
+                List<Property> entry = propertiesMap.get(property.mapTable.table);
                 if (entry == null)
                     entry = new ArrayList<>();
                 entry.add(property);
-                calcPropertiesMap.put(property.mapTable.table, entry);
+                propertiesMap.put(property.mapTable.table, entry);
             }
-            for(Map.Entry<ImplementTable, List<Property>> entry : calcPropertiesMap.entrySet())
+            for(Map.Entry<ImplementTable, List<Property>> entry : propertiesMap.entrySet())
                 recalculateAndUpdateStat(session, entry.getKey(), entry.getValue());
         }
     }

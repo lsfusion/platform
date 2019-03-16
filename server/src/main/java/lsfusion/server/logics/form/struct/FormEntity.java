@@ -523,7 +523,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         // here can be more precise heuristics than implemented in FormDataManager.getPrintTable (calculating expr and putting expr itself (not its values)  in a set)
 
         ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
-        for (ActionOrPropertyClassImplement implement : group.getProperties(valueClasses, version)) {
+        for (ActionOrPropertyClassImplement implement : group.getActionOrProperties(valueClasses, version)) {
             ImSet<ValueClassWrapper> wrappers = implement.mapping.valuesSet();
             ImOrderSet<ObjectEntity> filterObjects = objects.filterOrderIncl(objectToClass.filterValuesRev(wrappers).keys());
             addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrappers), prev), version, filterObjects);

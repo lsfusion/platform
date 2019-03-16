@@ -22,7 +22,7 @@ import java.util.*;
 
 public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { // 1 - excl, ImplementTable
     public static int RECALC_TIL = -1;
-    Map<ImplementTable, List<Property>> calcPropertiesMap;
+    Map<ImplementTable, List<Property>> propertiesMap;
     private boolean groupByTables;
 
     public RecalculateClassesTask() {
@@ -84,15 +84,15 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
             throw Throwables.propagate(e);
         }
         if(groupByTables) {
-            calcPropertiesMap = new HashMap<>();
+            propertiesMap = new HashMap<>();
             for (Property property : storedDataPropertiesList) {
-                List<Property> entry = calcPropertiesMap.get(property.mapTable.table);
+                List<Property> entry = propertiesMap.get(property.mapTable.table);
                 if (entry == null)
                     entry = new ArrayList<>();
                 entry.add(property);
-                calcPropertiesMap.put(property.mapTable.table, entry);
+                propertiesMap.put(property.mapTable.table, entry);
             }
-            for (Map.Entry<ImplementTable, List<Property>> entry : calcPropertiesMap.entrySet()) {
+            for (Map.Entry<ImplementTable, List<Property>> entry : propertiesMap.entrySet()) {
                 java.util.Collections.sort(entry.getValue(), COMPARATOR);
             }
         }
@@ -115,7 +115,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     protected ImSet<Object> getDependElements(Object key) {
         ImSet<Object> depends = SetFact.EMPTY();
         if(key instanceof Property && groupByTables) {
-            List<Property> entry = calcPropertiesMap.get(((Property) key).mapTable.table);
+            List<Property> entry = propertiesMap.get(((Property) key).mapTable.table);
             if(entry != null) {
                 int index = entry.indexOf(key);
                 if(index > 0)

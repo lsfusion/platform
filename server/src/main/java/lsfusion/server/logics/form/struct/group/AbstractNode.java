@@ -29,18 +29,18 @@ public abstract class AbstractNode extends ImmutableObject {
 
     public abstract boolean hasNFChild(ActionOrProperty prop, Version version);
 
-    public abstract ImOrderSet<ActionOrProperty> getProperties();
+    public abstract ImOrderSet<ActionOrProperty> getActionOrProperties();
     
-    protected abstract ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version);
+    protected abstract ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version);
     
-    public ImList<ActionOrPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classLists, Version version) {
-        return getProperties(classLists, classLists.group(new BaseUtils.Group<ValueClass, ValueClassWrapper>() { // для "кэширования" mapClasses так как очень часто вызывается
+    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> classLists, Version version) {
+        return getActionOrProperties(classLists, classLists.group(new BaseUtils.Group<ValueClass, ValueClassWrapper>() { // для "кэширования" mapClasses так как очень часто вызывается
             public ValueClass group(ValueClassWrapper key) {
                 return key.valueClass;
             }}), version);
     }
     
-    public ImList<ActionOrPropertyClassImplement> getProperties(ValueClass valueClass, Version version) {
-        return getProperties(valueClass != null ? SetFact.singleton(new ValueClassWrapper(valueClass)) : SetFact.<ValueClassWrapper>EMPTY(), version);
+    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ValueClass valueClass, Version version) {
+        return getActionOrProperties(valueClass != null ? SetFact.singleton(new ValueClassWrapper(valueClass)) : SetFact.<ValueClassWrapper>EMPTY(), version);
     }
 }

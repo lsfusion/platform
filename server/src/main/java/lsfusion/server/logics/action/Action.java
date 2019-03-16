@@ -252,8 +252,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     protected ImSet<Pair<String, Integer>> getRecInnerDebugActions() {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
-        for (Action actionProperty : getDependActions()) {
-            result.addAll(actionProperty.getInnerDebugActions());
+        for (Action action : getDependActions()) {
+            result.addAll(action.getInnerDebugActions());
         }
         return result.immutable();
     }

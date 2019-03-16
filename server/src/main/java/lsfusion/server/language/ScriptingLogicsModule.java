@@ -813,7 +813,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.NONAME, value, params);
     }
 
-    public LA addScriptedAbstractActionProp(ListCaseAction.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
@@ -1564,7 +1564,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LA addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LA addScriptedCustomAction(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             Action instance;
             if (classes == null || classes.isEmpty()) {
@@ -1588,7 +1588,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public LA addScriptedCustomActionProp(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LA addScriptedCustomAction(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         String script = "";
         try {
 
@@ -1688,23 +1688,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
-    public LAWithParams addScriptedExternalJavaActionProp(List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) {
+    public LAWithParams addScriptedExternalJavaAction(List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) {
         throw new UnsupportedOperationException("EXTERNAL JAVA not supported");
     }
 
-    public LAWithParams addScriptedExternalDBActionProp(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExternalDBAction(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new ExternalDBAction(getTypesForExternalProp(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.mergeList(Arrays.asList(connectionString, exec), params));
     }
 
-    public LAWithParams addScriptedExternalDBFActionProp(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExternalDBFAction(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new ExternalDBFAction(getTypesForExternalProp(params, context), charset, findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.addList(connectionString, params));
     }
 
-    public LAWithParams addScriptedExternalHTTPActionProp(ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl,
-                                                          NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
-                                                          List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExternalHTTPAction(ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl,
+                                                      NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
+                                                      List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LP headersProperty = headers != null ? findLPStringParamByPropertyUsage(headers) : null;
         LP cookiesProperty = cookies != null ? findLPStringParamByPropertyUsage(cookies) : null;
         LP headersToProperty = headersTo != null ? findLPStringParamByPropertyUsage(headersTo) : null;
@@ -1715,9 +1715,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
     }
 
-    public LAWithParams addScriptedExternalLSFActionProp(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
-        return addScriptedExternalHTTPActionProp(ExternalHttpMethod.POST,
+        return addScriptedExternalHTTPAction(ExternalHttpMethod.POST,
                 addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
                 null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }
@@ -2099,7 +2099,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAWithParams addScriptedEvalActionProp(LPWithParams property, List<LPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedEvalAction(LPWithParams property, List<LPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {
         Type exprType = getTypeByParamProperty(property, contextParams);
         if (!(exprType instanceof StringClass)) {
             errLog.emitEvalExpressionError(parser);
@@ -2118,7 +2118,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(res, new ArrayList<>(allParams));
     }
 
-    public LAWithParams addScriptedDrillDownActionProp(LPWithParams property) {
+    public LAWithParams addScriptedDrillDownAction(LPWithParams property) {
         LA<?> res = addDrillDownAProp(property.getLP());
         return new LAWithParams(res, property.usedParams);
     }
@@ -3367,8 +3367,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LP<>(new CanonicalNameProperty(findLPByActionOrPropertyUsage(propertyUsage)));
     }
 
-    public LAWithParams addScriptedFocusActionProp(PropertyDrawEntity property) {
-        return new LAWithParams(addFocusActionProp(property), new ArrayList<Integer>());
+    public LAWithParams addScriptedFocusAction(PropertyDrawEntity property) {
+        return new LAWithParams(addFocusAction(property), new ArrayList<Integer>());
     }
 
     public LAWithParams addScriptedReadAction(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
@@ -3471,8 +3471,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return usedClasses;
     }
 
-    public LAWithParams addScriptedNewThreadAction(LAWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) {
-        List<LAPWithParams> propParams = BaseUtils.<LAPWithParams>toList(actionProp);
+    public LAWithParams addScriptedNewThreadAction(LAWithParams action, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) {
+        List<LAPWithParams> propParams = BaseUtils.<LAPWithParams>toList(action);
         if (periodProp != null) {
             propParams.add(periodProp);
         }
@@ -3487,8 +3487,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(property, allParams);
     }
 
-    public LAWithParams addScriptedNewExecutorAction(LAWithParams actionProp, LPWithParams threadsProp) {
-        List<LAPWithParams> propParams = Arrays.asList(actionProp, threadsProp);
+    public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp) {
+        List<LAPWithParams> propParams = Arrays.asList(action, threadsProp);
         List<Integer> allParams = mergeAllParams(propParams);
         LA<?> property = addNewExecutorAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
         return new LAWithParams(property, allParams);
@@ -3812,14 +3812,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         findLPByActionOrPropertyUsage(property).property.showDep = findLPByActionOrPropertyUsage(propFrom).property;
     }
 
-    public void addScriptedAspect(NamedPropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedAspect(NamedPropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams action, boolean before) throws ScriptingErrorLog.SemanticErrorException {
         LA mainProp = findLAByPropertyUsage(mainPropUsage, mainPropParams);
         checks.checkParamCount(mainProp, mainPropParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(mainPropParams));
 
         LA<PropertyInterface> mainActionLP = (LA<PropertyInterface>) mainProp;
 
-        List<Object> params = getParamsPlainList(Collections.singletonList(actionProp));
+        List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(mainActionLP.listInterfaces, params.toArray());
         addAspectEvent(mainActionLP.property, actionImplements.get(0), before);
     }
@@ -4171,14 +4171,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     } 
     public void propertyDefinitionCreated(LP<?> property, DebugInfo.DebugPoint point) {
         if(property != null) { // can be null if property is param
-            Property calcProp = property.property;
-            boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && calcProp instanceof DataProperty;
-            if (calcProp.getDebugInfo() == null) { // при использовании в propertyExpression оптимизированных join свойств, не нужно им переустанавливать DebugInfo
+            Property prop = property.property;
+            boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && prop instanceof DataProperty;
+            if (prop.getDebugInfo() == null) { // при использовании в propertyExpression оптимизированных join свойств, не нужно им переустанавливать DebugInfo
                 PropertyDebugInfo debugInfo = new PropertyDebugInfo(point, needToCreateDelegate);
                 if (needToCreateDelegate) {
                     debugger.addDelegate(debugInfo);
                 }
-                calcProp.setDebugInfo(debugInfo);
+                prop.setDebugInfo(debugInfo);
             }
         }
     }
