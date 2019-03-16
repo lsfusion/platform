@@ -125,7 +125,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.logging.LogTime;
 import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
-import lsfusion.server.physics.dev.debug.ActionPropertyDebugger;
+import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ClassDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -746,7 +746,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public static void delegateToDebugger(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) throws SQLException, SQLHandledException {
-        ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
+        ActionDebugger debugger = ActionDebugger.getInstance();
         if (debugger.isEnabled()) {
             for (CustomClass addClass : addClasses) {
                 ClassDebugInfo debugInfo = addClass.getDebugInfo();
@@ -816,7 +816,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
         if (property.getDebugInfo() != null && property.getDebugInfo().needToCreateDelegate()) {
-            ActionPropertyDebugger.getInstance().delegate(this, property, change);
+            ActionDebugger.getInstance().delegate(this, property, change);
         } else {
             changePropertyImpl(property, change);
         } 

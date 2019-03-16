@@ -3,11 +3,11 @@ MODULE Printer;
 REQUIRE System;
 
 //text, charset, printerName
-writeToPrinter '{printer.write.to.printer}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
-writeToServerPrinter '{printer.write.to.server.printer}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToServerPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+writeToPrinter '{printer.write.to.printer}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToPrinterAction' (TEXT, VARSTRING[255], VARISTRING[255]);
+writeToServerPrinter '{printer.write.to.server.printer}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToServerPrinterAction' (TEXT, VARSTRING[255], VARISTRING[255]);
 printed '{printer.printed}' = DATA LOCAL BOOLEAN ();
 
-getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.GetAvailablePrintersActionProperty' ();
+getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.GetAvailablePrintersAction' ();
 
 //text, charset, ip, port
-writeToSocketAction  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToServerSocketActionProperty' (TEXT, VARSTRING[10], VARSTRING[30], INTEGER);
+writeToSocketAction  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToServerSocketAction' (TEXT, VARSTRING[10], VARSTRING[30], INTEGER);
