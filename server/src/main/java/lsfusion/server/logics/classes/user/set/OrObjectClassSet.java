@@ -12,14 +12,14 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.logics.classes.user.*;
-import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.data.expr.join.classes.IsClassField;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.expr.join.classes.IsClassField;
-import lsfusion.server.data.expr.join.classes.ObjectClassField;
+import lsfusion.server.logics.classes.user.*;
+import lsfusion.server.physics.admin.Settings;
 
 import java.util.Comparator;
 
@@ -64,21 +64,21 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     private static void addAll(MSet<ConcreteCustomClass> mTo, ImSet<ConcreteCustomClass> set, UpClassSet up) {
         for(int i=0,size=set.size();i<size;i++) {
             ConcreteCustomClass nodeSet = set.get(i);
-            if(up.has(nodeSet))
+            if(up.has((CustomClass)nodeSet))
                 mTo.add(nodeSet);
         }
     }
 
     private static boolean inSet(ImSet<ConcreteCustomClass> to, UpClassSet up,ImSet<ConcreteCustomClass> set) {
         for(int i=0,size=to.size();i<size;i++)
-            if(!up.has(to.get(i)) && !set.contains(to.get(i))) return false;
+            if(!up.has((CustomClass)to.get(i)) && !set.contains(to.get(i))) return false;
         return true;
     }
 
     private static ImSet<ConcreteCustomClass> remove(ImSet<ConcreteCustomClass> to, final UpClassSet up) {
         return to.filterFn(new SFunctionSet<ConcreteCustomClass>() {
             public boolean contains(ConcreteCustomClass nodeSet) {
-                return !up.has(nodeSet);
+                return !up.has((CustomClass) nodeSet);
             }
         });
     }

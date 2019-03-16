@@ -12,10 +12,11 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
+import lsfusion.server.data.expr.join.inner.InnerBaseJoin;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
-import lsfusion.server.data.expr.join.inner.InnerBaseJoin;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -25,7 +26,6 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 // нужно только для определения статистики для создания связи ключ-ключ
 public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {

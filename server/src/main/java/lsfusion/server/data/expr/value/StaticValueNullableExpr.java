@@ -5,16 +5,16 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.value.Value;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.query.exec.materialize.NotMaterializable;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.FunctionType;
-import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.TypeObject;
+import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
+import lsfusion.server.data.type.parse.ParseInterface;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 
 // по факту не nullable, но тут есть архитектурный нюанс, если не возвращать NotNull непонятно как класс заведомо определенный делать

@@ -14,19 +14,19 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.inner.InnerExpr;
-import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.join.query.RecursiveJoin;
-import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 
 public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, RecursiveJoin, RecursiveExpr, RecursiveExpr.QueryInnerContext> {
 

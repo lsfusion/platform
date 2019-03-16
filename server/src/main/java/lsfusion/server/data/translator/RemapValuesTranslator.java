@@ -6,8 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashTranslateValues;
 import lsfusion.server.data.caches.hash.HashValues;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.value.ValueExpr;
+import lsfusion.server.data.value.Value;
 
 public class RemapValuesTranslator extends MapValuesTranslator {
 

@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.name;
 
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 
 import java.util.regex.Matcher;

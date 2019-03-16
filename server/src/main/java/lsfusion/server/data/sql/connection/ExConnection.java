@@ -1,10 +1,10 @@
 package lsfusion.server.data.sql.connection;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.data.sql.table.SQLTemporaryPool;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.sql.table.SQLTemporaryPool;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 
 import java.sql.Connection;
 import java.sql.SQLException;

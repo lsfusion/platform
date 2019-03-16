@@ -10,15 +10,17 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.NullableExpr;
+import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.inner.InnerExpr;
+import lsfusion.server.data.expr.join.base.UnionJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
+import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.compile.where.UpWheres;
-import lsfusion.server.data.expr.join.base.UnionJoin;
-import lsfusion.server.data.expr.join.where.WhereJoin;
 
 public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterContext<T> implements WhereJoin<Integer, T> {
 

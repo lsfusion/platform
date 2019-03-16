@@ -12,8 +12,8 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

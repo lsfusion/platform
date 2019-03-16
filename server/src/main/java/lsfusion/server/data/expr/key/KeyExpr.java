@@ -6,10 +6,10 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.map.GlobalInteger;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.physics.admin.SystemProperties;
 
 public class KeyExpr extends ParamExpr {
 

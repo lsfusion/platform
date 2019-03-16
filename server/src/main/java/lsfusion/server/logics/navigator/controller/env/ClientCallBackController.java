@@ -3,8 +3,8 @@ package lsfusion.server.logics.navigator.controller.env;
 import lsfusion.interop.navigator.callback.ClientCallBackInterface;
 import lsfusion.interop.navigator.callback.LifecycleMessage;
 import lsfusion.interop.navigator.callback.PushMessage;
-import lsfusion.server.physics.admin.logging.ServerLoggers;
 import lsfusion.server.base.controller.remote.RemoteObject;
+import lsfusion.server.physics.admin.logging.ServerLoggers;
 
 import java.rmi.RemoteException;
 import java.rmi.server.Unreferenced;

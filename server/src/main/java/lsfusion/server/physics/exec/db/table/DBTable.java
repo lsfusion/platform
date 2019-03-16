@@ -5,8 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.table.Field;
 import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.table.NamedTable;
+import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.where.classes.ClassWhere;
 
 public abstract class DBTable extends NamedTable {

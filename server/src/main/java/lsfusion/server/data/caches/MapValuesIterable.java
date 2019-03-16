@@ -5,10 +5,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.comb.map.MapIterable;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.caches.hash.HashCodeValues;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.value.Value;
 
 import java.util.Iterator;
 

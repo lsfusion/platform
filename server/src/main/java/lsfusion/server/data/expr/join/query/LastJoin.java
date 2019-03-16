@@ -7,16 +7,12 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityQuickLazy;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.stat.DistinctKeys;
-import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.join.classes.InnerExprFollows;
-import lsfusion.server.data.stat.Cost;
-import lsfusion.server.data.stat.StatKeys;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.value.Value;
 
 public class LastJoin extends QueryJoin<KeyExpr, LastJoin.Query, LastJoin, LastJoin.QueryOuterContext> {
 

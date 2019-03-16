@@ -2,8 +2,8 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.expr.value.CurrentEnvironmentExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.value.CurrentEnvironmentExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.user.set.AndClassSet;

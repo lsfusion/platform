@@ -6,12 +6,12 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.logics.classes.user.*;
-import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.stat.Stat;
-import lsfusion.server.logics.classes.*;
 import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
+import lsfusion.server.data.stat.Stat;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.user.*;
+import lsfusion.server.physics.admin.Settings;
 
 // не ExtraIntSetWhere потому как intersect несколько, а не один элемент возвращает
 public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueClassSet {

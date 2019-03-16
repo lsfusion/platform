@@ -1,10 +1,10 @@
 package lsfusion.server.physics.exec.db.controller.init;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.controller.init.SimpleBLTask;
+import lsfusion.server.physics.admin.SystemProperties;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;

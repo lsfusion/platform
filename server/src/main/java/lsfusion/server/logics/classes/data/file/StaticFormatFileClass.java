@@ -4,11 +4,11 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
 import org.apache.commons.net.util.Base64;
 

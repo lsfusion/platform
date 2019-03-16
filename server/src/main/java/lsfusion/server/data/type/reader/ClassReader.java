@@ -5,8 +5,8 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 
 public interface ClassReader<T> extends Reader<T> {
     void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass);

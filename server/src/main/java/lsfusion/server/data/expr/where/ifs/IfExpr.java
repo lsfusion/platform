@@ -13,21 +13,21 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassType;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyType;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.ValueClassSet;
-import lsfusion.server.data.expr.join.classes.ObjectClassField;
+import lsfusion.server.logics.classes.data.DataClass;
 
 public class IfExpr extends Expr {
 

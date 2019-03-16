@@ -12,29 +12,29 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.expr.query.RecursiveTable;
-import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.stat.StatType;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
-import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.table.PropertyField;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.expr.join.classes.InnerExprFollows;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.query.RecursiveTable;
 import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.query.translator.RemapJoin;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatKeys;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.stat.TableStatKeys;
+import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.physics.admin.Settings;
 
 public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, RecursiveJoin, RecursiveJoin.QueryOuterContext> {
 

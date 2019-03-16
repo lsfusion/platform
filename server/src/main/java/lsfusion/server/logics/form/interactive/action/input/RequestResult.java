@@ -2,8 +2,8 @@ package lsfusion.server.logics.form.interactive.action.input;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 
 public class RequestResult {

@@ -7,14 +7,15 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.expr.formula.LinearExpr;
+import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.classes.*;
+import lsfusion.server.logics.classes.ConcreteClass;
+import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.data.expr.join.classes.ObjectClassField;
 
 public abstract class StaticClassExpr extends BaseExpr implements StaticClassExprInterface {
 

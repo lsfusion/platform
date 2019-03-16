@@ -1,8 +1,8 @@
 package lsfusion.server.physics.dev.integration.service;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 

@@ -4,10 +4,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.comb.GroupPairs;
 import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.translator.RemapValuesTranslator;
+import lsfusion.server.data.value.Value;
+import lsfusion.server.physics.admin.Settings;
 
 public class ValuePairs extends GroupPairs<GlobalObject, Value, MapValuesTranslate> {
 

@@ -12,14 +12,14 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
-import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

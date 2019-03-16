@@ -4,23 +4,23 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.ArrayInstancer;
-import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.query.exec.StaticExecuteEnvironmentImpl;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.caches.AbstractOuterContext;
-import lsfusion.server.data.expr.key.ParamExpr;
-import lsfusion.server.data.query.compile.ParseValue;
-import lsfusion.server.data.table.Table;
-import lsfusion.server.data.value.Value;
 import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.KeyType;
+import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.query.QueryExpr;
+import lsfusion.server.data.query.compile.CompileSource;
+import lsfusion.server.data.query.compile.ParseValue;
+import lsfusion.server.data.query.exec.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.sql.adapter.DataAdapter;
+import lsfusion.server.data.table.Table;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.physics.admin.Settings;
 
 abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends AbstractOuterContext<T> implements SourceJoin<T> {
 

@@ -1,6 +1,5 @@
 package lsfusion.server.data.sql.adapter;
 
-import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.syntax.MySQLSQLSyntax;
 
 import java.sql.Connection;

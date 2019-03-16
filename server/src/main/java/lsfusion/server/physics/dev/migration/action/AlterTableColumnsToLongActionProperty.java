@@ -8,11 +8,11 @@ import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.internal.to.ScriptingAction;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;

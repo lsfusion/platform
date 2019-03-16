@@ -1,13 +1,13 @@
 package lsfusion.server.physics.admin.authentication.security.controller.init.policy;
 
 import lsfusion.base.col.SetFact;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesTask;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class SetupActionOrPropertyPolicyFormsTask extends GroupPropertiesTask {

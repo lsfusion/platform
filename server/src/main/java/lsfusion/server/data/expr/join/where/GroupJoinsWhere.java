@@ -4,15 +4,15 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.query.compile.where.UpWheres;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.join.query.QueryJoin;
-import lsfusion.server.data.stat.StatType;
+import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.StatKeys;
+import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.physics.admin.Settings;
 
 public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 

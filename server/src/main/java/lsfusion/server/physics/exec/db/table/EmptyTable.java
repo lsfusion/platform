@@ -2,10 +2,10 @@ package lsfusion.server.physics.exec.db.table;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.TableStatKeys;
+import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.logics.classes.data.SystemClass;
 
 public class EmptyTable extends DBTable {
