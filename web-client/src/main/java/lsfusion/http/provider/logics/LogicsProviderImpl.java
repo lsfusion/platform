@@ -130,7 +130,7 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
             if(logicsSessionObject.serverSettings != null && logicsSessionObject.serverSettings.anonymousUI)
                 logicsSessionObject.serverSettings = null;
             throw e;
-        } catch (RemoteException e) { // it's important that this exception should not be suppressed (for example in ExternalRequestHandler)
+        } catch (RemoteException e) { // it's important that this exception should not be suppressed (for example in ExternalLogicsRequestHandler)
             invalidateLogicsSessionObject(logicsSessionObject);
             throw e;
         }

@@ -10,6 +10,7 @@ import lsfusion.interop.form.user.FormGrouping;
 import lsfusion.interop.form.user.FormUserPreferences;
 import lsfusion.interop.form.user.GroupObjectUserPreferences;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
@@ -112,4 +113,10 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
     ServerResponse refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID, String[] propSids) throws RemoteException;
     
     ColorPreferences getColorPreferences() throws RemoteException;
+
+    // external
+
+    ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, String value) throws IOException;
+
+    void closeExternal() throws RemoteException;
 }

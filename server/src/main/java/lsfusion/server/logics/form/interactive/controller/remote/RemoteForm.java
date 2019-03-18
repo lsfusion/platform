@@ -700,44 +700,68 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             @Override
             public void run(ExecutionStack stack) throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
-
-                ObjectValue pushChangeObject = null;
-                DataClass pushChangeType = null;
-                if (pushChange != null) {
-                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.securityPolicy);
-                    Object objectPushChange = deserializeObject(pushChange);
-                    if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
-                        ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
-                    else 
-                        pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
-                }
-
-                DataObject pushAddObject = null;
-                if (pushAdd != null) {
-                    pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
-                }
-
-                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
-
-                if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-                    if (keys.size() > 0) {
-                        logger.trace("   columnKeys: ");
-                        for (int i = 0, size = keys.size(); i < size; i++) {
-                            logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
-                        }
-                    }
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("   current object's values: ");
-                        for (ObjectInstance obj : form.getObjects()) {
-                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                        }
-                    }
-
-                }
+                changeProperty(stack, propertyDraw, fullKey, pushChange, pushAdd);
             }
         });
+    }
+
+    @Override
+    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final String value) throws IOException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
+            @Override
+            public void run(ExecutionStack stack) throws Exception {
+                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+                changeProperty(stack, propertyDraw, null, BaseUtils.serializeObject(propertyDraw.getType().parseString(value)), null);
+            }
+        });
+    }
+
+    private void changeProperty(ExecutionStack stack, final PropertyDrawInstance propertyDraw, final byte[] fullKey, final byte[] pushChange, final Long pushAdd) throws SQLHandledException, SQLException, IOException {
+        ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+
+        ObjectValue pushChangeObject = null;
+        DataClass pushChangeType = null;
+        if (pushChange != null) {
+            pushChangeType = propertyDraw.getEntity().getRequestInputType(form.securityPolicy);
+            Object objectPushChange = deserializeObject(pushChange);
+            if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
+                ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
+            else
+                pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
+        }
+
+        DataObject pushAddObject = null;
+        if (pushAdd != null) {
+            pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
+        }
+
+        form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
+
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+            if (keys.size() > 0) {
+                logger.trace("   columnKeys: ");
+                for (int i = 0, size = keys.size(); i < size; i++) {
+                    logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
+                }
+            }
+            if (logger.isTraceEnabled()) {
+                logger.trace("   current object's values: ");
+                for (ObjectInstance obj : form.getObjects()) {
+                    logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                }
+            }
+
+        }
+    }
+
+    @Override
+    public void closeExternal() {
+        try {
+            form.explicitClose();
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }
     }
 
     public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {

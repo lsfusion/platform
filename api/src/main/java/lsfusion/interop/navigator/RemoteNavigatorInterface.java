@@ -16,6 +16,8 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     // main interface
 
+    ServerResponse executeNavigatorAction(String script) throws RemoteException;
+
     ServerResponse executeNavigatorAction(String actionSID, int type) throws RemoteException;
 
     ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException;

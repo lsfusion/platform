@@ -56,6 +56,24 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         }
     }
 
+    @Override
+    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, String value) {
+        try {
+            return target.changePropertyExternal(requestIndex, lastReceivedRequestIndex, propertyID, value);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    public void closeExternal() {
+        try {
+            target.closeExternal();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     @ImmutableMethod
     public byte[] getRichDesignByteArray() throws RemoteException {
         try {

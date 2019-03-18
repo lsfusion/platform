@@ -62,6 +62,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
+    public ServerResponse executeNavigatorAction(String script) throws RemoteException {
+        return target.executeNavigatorAction(script);
+    }
+
+    @Override
     public ServerResponse executeNavigatorAction(String navigatorActionSID, int type) throws RemoteException {
         return target.executeNavigatorAction(navigatorActionSID, type);
     }
