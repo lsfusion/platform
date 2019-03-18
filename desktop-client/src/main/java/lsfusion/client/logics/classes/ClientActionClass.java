@@ -9,7 +9,7 @@ import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.property.classes.editor.ActionPropertyEditor;
 import lsfusion.client.form.property.classes.renderer.ActionPropertyRenderer;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 
 import java.text.ParseException;

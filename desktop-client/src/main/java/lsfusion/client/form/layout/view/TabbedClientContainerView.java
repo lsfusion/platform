@@ -5,7 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.layout.ClientContainer;
-import lsfusion.client.form.object.grid.GridTable;
+import lsfusion.client.form.object.table.grid.GridTable;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.CachableLayout;

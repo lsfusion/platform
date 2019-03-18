@@ -14,6 +14,10 @@ import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.client.form.layout.view.TabbedClientContainerView;
 import lsfusion.client.form.object.*;
+import lsfusion.client.form.object.table.GroupObjectController;
+import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.user.ItemAdapter;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
@@ -31,7 +35,7 @@ import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.property.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.user.preferences.GridUserPreferences;
-import lsfusion.client.form.object.tree.TreeGroupController;
+import lsfusion.client.form.object.table.tree.TreeGroupController;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientActionClass;
 import lsfusion.client.logics.classes.ClientObjectClass;
@@ -103,7 +107,7 @@ public class ClientFormController implements AsyncListener {
 
     private volatile RemoteFormInterface remoteForm;
 
-    private final ClientForm form;
+    public final ClientForm form;
     private final ClientNavigator clientNavigator;
     private final ClientFormActionDispatcher actionDispatcher;
 
@@ -291,20 +295,20 @@ public class ClientFormController implements AsyncListener {
         FormUserPreferences preferences = remoteForm.getUserPreferences();
         
         for (ClientTreeGroup treeGroup : form.treeGroups) {
-            TreeGroupController controller = new TreeGroupController(treeGroup, form, this, formLayout);
+            TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
             treeControllers.put(treeGroup, controller);
         }
 
         for (ClientGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                GroupObjectController controller = new GroupObjectController(group, form, this, formLayout, extractGridUserPreferences(preferences, group));
+                GroupObjectController controller = new GroupObjectController(group, this, formLayout, extractGridUserPreferences(preferences, group));
                 controllers.put(group, controller);
             }
         }
 
         for (ClientPropertyDraw properties : form.getPropertyDraws()) {
             if (properties.groupObject == null) {
-                GroupObjectController controller = new GroupObjectController(form, this, formLayout);
+                GroupObjectController controller = new GroupObjectController(this, formLayout);
                 controllers.put(null, controller);
                 break;
             }

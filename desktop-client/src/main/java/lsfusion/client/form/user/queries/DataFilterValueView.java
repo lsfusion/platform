@@ -2,10 +2,10 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.object.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
 import lsfusion.client.form.filter.ClientDataFilterValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientLogicalClass;
 
 import javax.swing.*;
@@ -79,7 +79,7 @@ public abstract class DataFilterValueView extends FilterValueView {
     }
 
     public ClientFormController getForm() {
-        return logicsSupplier.getForm();
+        return logicsSupplier.getFormController();
     }
 
     public abstract void applyQuery();

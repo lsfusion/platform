@@ -3,7 +3,7 @@ package lsfusion.client.logics.filter;
 import lsfusion.client.form.filter.ClientFilterValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;
 
 import java.io.DataOutputStream;

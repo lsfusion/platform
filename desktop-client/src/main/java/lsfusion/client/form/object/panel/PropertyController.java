@@ -6,7 +6,7 @@ import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexConstraints;
 

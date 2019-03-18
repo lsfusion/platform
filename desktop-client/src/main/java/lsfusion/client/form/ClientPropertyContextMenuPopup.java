@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;

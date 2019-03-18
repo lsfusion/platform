@@ -1,9 +1,9 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.object.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 
 import javax.swing.*;
@@ -182,7 +182,7 @@ abstract class QueryController {
     }
 
     private void applyQuery() {
-        if (!logicsSupplier.getForm().commitCurrentEditing()) {
+        if (!logicsSupplier.getFormController().commitCurrentEditing()) {
             return;
         }
 

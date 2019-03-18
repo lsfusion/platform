@@ -1,6 +1,6 @@
 package lsfusion.client.logics.classes;
 
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;

@@ -2,7 +2,7 @@ package lsfusion.client.form.property.classes.renderer;
 
 import lsfusion.base.file.FileData;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 public class DynamicFormatFileRenderer extends FilePropertyRenderer {
 

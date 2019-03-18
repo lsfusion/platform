@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell;
 
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;

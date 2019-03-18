@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.preferences;
 
 import lsfusion.client.form.object.ClientGroupObject;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.user.ColumnUserPreferences;
 import lsfusion.interop.form.user.GroupObjectUserPreferences;

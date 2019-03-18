@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.ERunnable;
-import lsfusion.client.form.object.TableTransferHandler;
+import lsfusion.client.form.object.table.TableTransferHandler;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.interop.form.event.KeyStrokes;

@@ -2,7 +2,7 @@ package lsfusion.client.form.property.classes.renderer.link;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 public class DynamicFormatLinkRenderer extends LinkPropertyRenderer {
 

@@ -3,7 +3,7 @@ package lsfusion.client.form.object;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.logics.ClientClassChooser;
+import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.logics.classes.ClientClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.client.serialization.ClientIdentitySerializable;

@@ -1,6 +1,6 @@
 package lsfusion.client.logics.classes.link;
 
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientDataClass;
 import lsfusion.client.logics.classes.ClientTypeClass;
 import lsfusion.interop.form.property.Compare;

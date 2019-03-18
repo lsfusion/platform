@@ -13,6 +13,8 @@ import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.layout.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.serialization.ClientCustomSerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractForm;
@@ -25,8 +27,7 @@ import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
-public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
-                                                                 ClientCustomSerializable,
+public class ClientForm extends ContextIdentityObject implements ClientCustomSerializable,
                                                                  AbstractForm<ClientContainer, ClientComponent, String>,
                                                                  ApplicationContextHolder {
 

@@ -5,7 +5,7 @@ import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.editor.FilePropertyEditor;
 import lsfusion.client.form.property.classes.renderer.CSVPropertyRenderer;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 
 public class ClientCSVClass extends ClientStaticFormatFileClass {
