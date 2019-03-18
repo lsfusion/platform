@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
@@ -26,13 +26,13 @@ abstract class QueryController {
 
     private final QueryView view;
 
-    private final GroupObjectLogicsSupplier logicsSupplier;
+    private final TableController logicsSupplier;
     private final JButton toolbarButton;
 
     private State state;
     private State hiddenState;
 
-    QueryController(GroupObjectLogicsSupplier logicsSupplier) {
+    QueryController(TableController logicsSupplier) {
         this.logicsSupplier = logicsSupplier;
 
         view = createView();

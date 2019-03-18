@@ -1,7 +1,6 @@
 package lsfusion.client.form.object.table.grid;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.object.table.GroupObjectController;
 import lsfusion.client.form.property.cell.InternalEditEvent;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.user.preferences.GridUserPreferences;
@@ -25,7 +24,7 @@ import java.util.Map;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
-public class GridController {
+public class GridTableController {
 
     private static final ImageIcon PRINT_XLS_ICON = new ImageIcon(FilterView.class.getResource("/images/excelbw.png"));
 
@@ -41,11 +40,11 @@ public class GridController {
 
     private final ClientFormController form;
 
-    private final GroupObjectController groupController;
+    private final lsfusion.client.form.object.table.GridController groupController;
 
     private boolean forceHidden = false;
 
-    public GridController(GroupObjectController igroupController, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
+    public GridTableController(lsfusion.client.form.object.table.GridController igroupController, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         groupController = igroupController;
         clientGrid = groupController.getGroupObject().grid;
         form = iform;
@@ -319,7 +318,7 @@ public class GridController {
         this.forceHidden = forceHidden;
     }
 
-    public GroupObjectController getGroupController() {
+    public lsfusion.client.form.object.table.GridController getGroupController() {
         return groupController;
     }
 

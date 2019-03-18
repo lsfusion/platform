@@ -5,7 +5,7 @@ import lsfusion.base.lambda.Callback;
 import lsfusion.base.Pair;
 import lsfusion.client.ArrayListTransferHandler;
 import lsfusion.client.Main;
-import lsfusion.client.form.object.table.GroupObjectController;
+import lsfusion.client.form.object.table.GridController;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.object.table.grid.GridTable;
 import lsfusion.client.form.user.queries.TitledPanel;
@@ -31,7 +31,7 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class UserPreferencesDialog extends JDialog {
     
-    private GroupObjectController goController;
+    private GridController goController;
     private GridTable initialTable;
 
     private UserPreferencesPropertyListModel visibleListModel, invisibleListModel;
@@ -44,7 +44,7 @@ public abstract class UserPreferencesDialog extends JDialog {
     private JTextField columnCaptionField;
     private JTextField columnPatternField;
 
-    public UserPreferencesDialog(Frame owner, final GridTable initialTable, GroupObjectController goController, final boolean canBeSaved) {
+    public UserPreferencesDialog(Frame owner, final GridTable initialTable, GridController goController, final boolean canBeSaved) {
         super(owner, getString("form.grid.preferences"), true);
         this.initialTable = initialTable;
         this.goController = goController;

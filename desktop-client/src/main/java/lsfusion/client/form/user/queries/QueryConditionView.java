@@ -5,7 +5,7 @@ import lsfusion.client.form.filter.ClientDataFilterValue;
 import lsfusion.client.form.filter.ClientFilterValue;
 import lsfusion.client.form.filter.ClientObjectFilterValue;
 import lsfusion.client.form.filter.ClientPropertyFilterValue;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.user.ItemAdapter;
 import lsfusion.client.base.RmiQueue;
@@ -49,7 +49,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     private JCheckBox negationView;
     private JComboBox junctionView;
 
-    public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier, UIHandlers iuiHandlers) {
+    public QueryConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandlers iuiHandlers) {
 
         setAlignmentX(LEFT_ALIGNMENT);
 
