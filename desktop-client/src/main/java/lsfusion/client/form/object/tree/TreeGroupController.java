@@ -2,7 +2,7 @@ package lsfusion.client.form.object.tree;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.AbstractGroupObjectController;
+import lsfusion.client.form.object.AbstractGroupObjectController;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.LogicsSupplier;
 import lsfusion.client.form.RmiQueue;

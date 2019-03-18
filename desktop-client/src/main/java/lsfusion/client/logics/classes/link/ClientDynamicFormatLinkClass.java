@@ -1,8 +1,8 @@
 package lsfusion.client.logics.classes.link;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.PropertyEditor;
-import lsfusion.client.form.PropertyRenderer;
+import lsfusion.client.form.property.classes.editor.PropertyEditor;
+import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.editor.LinkPropertyEditor;
 import lsfusion.client.form.property.classes.renderer.link.DynamicFormatLinkRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;

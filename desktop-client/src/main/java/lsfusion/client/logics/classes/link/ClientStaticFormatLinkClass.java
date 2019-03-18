@@ -1,6 +1,6 @@
 package lsfusion.client.logics.classes.link;
 
-import lsfusion.client.form.PropertyEditor;
+import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.editor.LinkPropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
 

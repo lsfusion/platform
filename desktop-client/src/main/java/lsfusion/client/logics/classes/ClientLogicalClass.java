@@ -2,8 +2,8 @@ package lsfusion.client.logics.classes;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.PropertyEditor;
-import lsfusion.client.form.PropertyRenderer;
+import lsfusion.client.form.property.classes.editor.PropertyEditor;
+import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.editor.LogicalPropertyEditor;
 import lsfusion.client.form.property.classes.renderer.LogicalPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;

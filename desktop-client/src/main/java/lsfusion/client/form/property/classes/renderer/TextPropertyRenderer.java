@@ -1,7 +1,6 @@
 package lsfusion.client.form.property.classes.renderer;
 
 import lsfusion.client.Main;
-import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.property.classes.editor.rich.RichEditorKit;
 import lsfusion.client.form.property.classes.editor.rich.RichEditorPane;
 import lsfusion.client.logics.ClientPropertyDraw;

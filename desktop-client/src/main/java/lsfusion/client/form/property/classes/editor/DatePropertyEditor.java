@@ -6,7 +6,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientPropertyTableEditorComponent;
-import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 import lsfusion.interop.form.design.ComponentDesign;
 

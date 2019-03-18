@@ -1,6 +1,5 @@
 package lsfusion.client.form.property.classes.renderer;
 
-import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;

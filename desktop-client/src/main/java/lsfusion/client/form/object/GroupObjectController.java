@@ -1,8 +1,11 @@
-package lsfusion.client.form;
+package lsfusion.client.form.object;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.LogicsSupplier;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.user.queries.CalculationsView;
 import lsfusion.client.form.object.grid.GridController;
 import lsfusion.client.form.user.preferences.GridUserPreferences;

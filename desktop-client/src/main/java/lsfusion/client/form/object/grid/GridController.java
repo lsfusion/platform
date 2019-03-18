@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.grid;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.object.GroupObjectController;
 import lsfusion.client.form.InternalEditEvent;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.user.preferences.GridUserPreferences;

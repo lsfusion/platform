@@ -1,4 +1,4 @@
-package lsfusion.client.form;
+package lsfusion.client.form.object;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.object.grid.GridTable;

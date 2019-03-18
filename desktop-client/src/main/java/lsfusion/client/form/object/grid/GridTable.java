@@ -8,7 +8,7 @@ import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientPropertyTable;
-import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.object.GroupObjectController;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.user.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;

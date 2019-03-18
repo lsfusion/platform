@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
 import lsfusion.client.form.ItemAdapter;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.logics.*;

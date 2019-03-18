@@ -4,6 +4,8 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import lsfusion.client.form.object.GroupObjectController;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.interop.form.stat.report.ReportGenerator;

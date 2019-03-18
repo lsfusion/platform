@@ -1,7 +1,7 @@
 package lsfusion.client.logics.classes.link;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.PropertyRenderer;
+import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.link.CSVLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;

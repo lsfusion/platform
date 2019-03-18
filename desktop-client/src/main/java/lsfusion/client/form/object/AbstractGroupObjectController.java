@@ -1,5 +1,7 @@
-package lsfusion.client.form;
+package lsfusion.client.form.object;
 
+import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.LogicsSupplier;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.object.panel.PanelController;
 import lsfusion.client.form.object.panel.ToolbarView;
