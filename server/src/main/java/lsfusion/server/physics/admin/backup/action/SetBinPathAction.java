@@ -1,4 +1,4 @@
-package lsfusion.utils.backup;
+package lsfusion.server.physics.admin.backup.action;
 
 import com.google.common.base.Throwables;
 import lsfusion.server.data.sql.adapter.DataAdapter;
@@ -12,9 +12,9 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-public class SetDumpDirAction extends InternalAction {
+public class SetBinPathAction extends InternalAction {
 
-    public SetDumpDirAction(ScriptingLogicsModule LM) {
+    public SetBinPathAction(ScriptingLogicsModule LM) {
         super(LM);
     }
 
@@ -22,10 +22,10 @@ public class SetDumpDirAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
-            String dumpDir = ((String) findProperty("dumpDir[]").read(context));
+            String binPath = ((String) findProperty("binPath[]").read(context));
                 DataAdapter adapter = context.getDbManager().getAdapter();
                 if(adapter instanceof PostgreDataAdapter) {
-                    ((PostgreDataAdapter) adapter).setDumpDir(dumpDir);
+                    ((PostgreDataAdapter) adapter).setBinPath(binPath);
                 }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);

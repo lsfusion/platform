@@ -24,28 +24,28 @@
     <build>
         <plugins>
             <!-- compiling gwt-->
-            <!--<plugin>-->
-                <!--<groupId>org.codehaus.mojo</groupId>-->
-                <!--<artifactId>gwt-maven-plugin</artifactId>-->
-                <!--<configuration>-->
-                    <!--&lt;!&ndash;it seems because it needs full path, rename-to is not applied here&ndash;&gt;-->
-                    <!--<module>lsfusion.gwt.main</module>-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <configuration>
+                    <!--it seems because it needs full path, rename-to is not applied here-->
+                    <module>lsfusion.gwt.main</module>
 
-                    <!--<webappDirectory>${war.explodedDir}</webappDirectory>-->
-                    <!--<force>true</force>-->
-                    <!--<draftCompile>false</draftCompile>-->
-                    <!--<optimizationLevel>2</optimizationLevel>-->
-                    <!--<style>OBFUSCATED</style>-->
-                <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>compile</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>compile</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+                    <webappDirectory>${war.explodedDir}</webappDirectory>
+                    <force>true</force>
+                    <draftCompile>false</draftCompile>
+                    <optimizationLevel>2</optimizationLevel>
+                    <style>OBFUSCATED</style>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- desktop embedding -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
