@@ -25,7 +25,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
-import lsfusion.server.logics.form.stat.integration.plain.JDBCTable;
+import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.io.IOException;
