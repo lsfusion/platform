@@ -8,7 +8,7 @@ import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.ClientStringClass;
+import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;

@@ -6,8 +6,8 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.classes.ClientClass;
 import lsfusion.client.classes.ClientTypeSerializer;
-import lsfusion.client.serialization.ClientIdentitySerializable;
-import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.client.form.remote.serialization.ClientIdentitySerializable;
+import lsfusion.client.form.remote.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

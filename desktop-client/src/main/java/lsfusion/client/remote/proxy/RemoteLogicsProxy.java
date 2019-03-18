@@ -1,5 +1,7 @@
 package lsfusion.client.remote.proxy;
 
+import lsfusion.client.navigator.remote.proxy.RemoteNavigatorProxy;
+import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.navigator.NavigatorInfo;

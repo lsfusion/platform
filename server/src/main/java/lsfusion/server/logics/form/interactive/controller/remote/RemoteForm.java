@@ -45,8 +45,8 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
-import lsfusion.server.logics.form.interactive.serialization.ServerContext;
-import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;

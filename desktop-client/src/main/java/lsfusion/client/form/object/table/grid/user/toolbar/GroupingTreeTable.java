@@ -3,11 +3,11 @@ package lsfusion.client.form.object.table.grid.user.toolbar;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.Main;
+import lsfusion.client.classes.data.*;
 import lsfusion.client.form.property.classes.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.link.ImageLinkPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.*;
-import lsfusion.client.classes.link.ClientImageLinkClass;
+import lsfusion.client.classes.data.link.ClientImageLinkClass;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 

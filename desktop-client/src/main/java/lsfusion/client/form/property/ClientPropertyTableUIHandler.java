@@ -5,8 +5,8 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.property.classes.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.link.ImageLinkPropertyRenderer;
-import lsfusion.client.classes.ClientImageClass;
-import lsfusion.client.classes.link.ClientImageLinkClass;
+import lsfusion.client.classes.data.ClientImageClass;
+import lsfusion.client.classes.data.link.ClientImageLinkClass;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;

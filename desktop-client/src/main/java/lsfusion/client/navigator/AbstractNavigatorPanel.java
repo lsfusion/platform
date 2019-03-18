@@ -1,5 +1,8 @@
 package lsfusion.client.navigator;
 
+import lsfusion.client.navigator.view.NavigatorTree;
+import lsfusion.client.navigator.view.NavigatorTreeNode;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -28,7 +31,7 @@ public abstract class AbstractNavigatorPanel extends JPanel {
         clientNavigator.openAction(action, 0);
     }
 
-    protected List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {
+    public List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {
         return element.children;
     }
 

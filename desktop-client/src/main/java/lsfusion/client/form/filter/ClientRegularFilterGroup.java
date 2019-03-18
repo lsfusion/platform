@@ -3,7 +3,7 @@ package lsfusion.client.form.filter;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
-import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.client.form.remote.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

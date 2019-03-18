@@ -18,7 +18,7 @@ import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.classes.ClientActionClass;
-import lsfusion.client.classes.ClientFileClass;
+import lsfusion.client.classes.data.ClientFileClass;
 import lsfusion.gwt.shared.view.GAlignment;
 import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.shared.view.GKeyStroke;

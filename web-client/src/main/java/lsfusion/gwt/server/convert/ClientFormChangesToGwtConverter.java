@@ -9,7 +9,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.client.classes.ClientImageClass;
+import lsfusion.client.classes.data.ClientImageClass;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.view.GClassViewType;

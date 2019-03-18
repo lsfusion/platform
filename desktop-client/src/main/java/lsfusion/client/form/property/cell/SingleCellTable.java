@@ -6,7 +6,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyTable;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.ClientStringClass;
+import lsfusion.client.classes.data.ClientStringClass;
 
 import javax.swing.table.TableCellEditor;
 import java.awt.*;

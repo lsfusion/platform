@@ -5,7 +5,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.Main;
-import lsfusion.client.ReconnectWorker;
+import lsfusion.client.remote.ReconnectWorker;
 import lsfusion.client.remote.proxy.RemoteLogicsProxy;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.exception.*;

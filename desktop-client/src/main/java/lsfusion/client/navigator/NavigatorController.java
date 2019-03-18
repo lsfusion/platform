@@ -1,6 +1,7 @@
 package lsfusion.client.navigator;
 
 import bibliothek.gui.dock.common.SingleCDockable;
+import lsfusion.client.navigator.view.NavigatorView;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 
 import javax.swing.*;

@@ -15,7 +15,7 @@ import lsfusion.client.form.property.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.edit.EditPropertyHandler;
-import lsfusion.client.classes.ClientStringClass;
+import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.interop.form.event.KeyStrokes;
 

@@ -6,7 +6,6 @@ import lsfusion.base.context.ApplicationContextHolder;
 import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.client.Main;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.LogicsSupplier;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.layout.ClientComponent;
@@ -15,8 +14,8 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.serialization.ClientCustomSerializable;
-import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.client.form.remote.serialization.ClientCustomSerializable;
+import lsfusion.client.form.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractForm;
 
 import javax.swing.*;

@@ -2,7 +2,7 @@ package lsfusion.client.form.layout;
 
 import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.base.serialization.IdentitySerializable;
-import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.client.form.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.layout.AbstractComponent;
 import lsfusion.interop.form.layout.FlexAlignment;

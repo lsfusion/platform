@@ -2,7 +2,8 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.client.classes.*;
-import lsfusion.client.classes.link.*;
+import lsfusion.client.classes.data.*;
+import lsfusion.client.classes.data.link.*;
 import lsfusion.gwt.shared.view.GExtInt;
 import lsfusion.gwt.shared.view.classes.*;
 import lsfusion.gwt.shared.view.classes.link.*;

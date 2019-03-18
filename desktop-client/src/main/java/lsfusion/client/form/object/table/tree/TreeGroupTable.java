@@ -21,7 +21,7 @@ import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.ClientStringClass;
+import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.interop.form.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
