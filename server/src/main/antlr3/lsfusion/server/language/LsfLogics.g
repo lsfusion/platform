@@ -57,7 +57,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
-    import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
+    import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
     import lsfusion.server.logics.form.struct.object.GroupObjectEntity;

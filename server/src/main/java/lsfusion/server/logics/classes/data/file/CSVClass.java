@@ -7,7 +7,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
+import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 
 import java.util.ArrayList;
 import java.util.Collection;

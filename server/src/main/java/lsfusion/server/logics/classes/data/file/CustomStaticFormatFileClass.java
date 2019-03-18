@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.property.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.stat.integration.FormIntegrationType;
+import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

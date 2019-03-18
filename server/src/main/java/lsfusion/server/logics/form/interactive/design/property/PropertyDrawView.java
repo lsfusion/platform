@@ -16,7 +16,7 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
+import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;

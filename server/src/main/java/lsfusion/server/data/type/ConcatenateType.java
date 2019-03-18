@@ -24,7 +24,7 @@ import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.struct.ConcatenateClassSet;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.form.stat.report.design.ReportDrawField;
+import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -18,7 +18,7 @@ import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.data.time.TimeClass;
-import lsfusion.server.logics.form.stat.integration.plain.JDBCTable;
+import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import org.xBaseJ.DBF;
 import org.xBaseJ.fields.CharField;
