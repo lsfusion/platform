@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.builder;
+package lsfusion.server.data.query.build;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;

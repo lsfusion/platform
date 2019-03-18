@@ -25,7 +25,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;

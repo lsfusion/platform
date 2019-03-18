@@ -34,7 +34,7 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.builder.QueryBuilder;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -529,7 +529,7 @@ public class ImplementTable extends DBTable { // последний интерф
         int rows = 0;
         if (!SystemProperties.doNotCalculateStats) {
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.query.builder.Join<PropertyField> join = join(mapKeys);
+            lsfusion.server.data.query.build.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
             MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
@@ -641,7 +641,7 @@ public class ImplementTable extends DBTable { // последний интерф
         if (!SystemProperties.doNotCalculateStats) {
 
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-            lsfusion.server.data.query.builder.Join<PropertyField> join = join(mapKeys);
+            lsfusion.server.data.query.build.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
             MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();

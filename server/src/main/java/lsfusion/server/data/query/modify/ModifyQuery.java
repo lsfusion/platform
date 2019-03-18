@@ -13,7 +13,7 @@ import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.builder.QueryBuilder;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.sql.SQLDML;

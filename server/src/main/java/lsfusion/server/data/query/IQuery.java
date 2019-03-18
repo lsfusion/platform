@@ -11,7 +11,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.AbstractInnerContext;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.compile.CompiledQuery;

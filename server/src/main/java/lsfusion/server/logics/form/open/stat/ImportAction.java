@@ -18,7 +18,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;

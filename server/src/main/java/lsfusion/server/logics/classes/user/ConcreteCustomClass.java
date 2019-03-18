@@ -15,7 +15,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.value.StaticValueExpr;
-import lsfusion.server.data.query.builder.QueryBuilder;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;

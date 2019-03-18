@@ -13,7 +13,7 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.compile.CompiledQuery;

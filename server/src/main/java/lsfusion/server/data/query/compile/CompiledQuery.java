@@ -46,7 +46,7 @@ import lsfusion.server.data.expr.value.StaticValueNullableExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.query.LimitOptions;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.query.exec.*;
 import lsfusion.server.data.query.result.ResultHandler;
