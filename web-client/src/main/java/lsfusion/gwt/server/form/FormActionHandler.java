@@ -23,7 +23,7 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
         getFormProvider().removeFormSessionObject(formSessionID);
     }
 
-    protected final static int defaultLastReceivedRequestIndex = -2;
+    public final static int defaultLastReceivedRequestIndex = -2;
 
     @Override
     protected String getActionDetails(A action) {
