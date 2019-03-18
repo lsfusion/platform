@@ -25,7 +25,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.stat.Stat;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.Value;

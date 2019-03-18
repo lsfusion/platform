@@ -11,8 +11,8 @@ import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.join.where.WhereJoins;
 import lsfusion.server.data.query.compile.where.UpWheres;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 
 public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
 

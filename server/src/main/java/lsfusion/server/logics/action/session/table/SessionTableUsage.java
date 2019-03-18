@@ -22,7 +22,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.builder.QueryBuilder;
 import lsfusion.server.data.query.modify.Modify;
-import lsfusion.server.data.query.translator.RemapJoin;
+import lsfusion.server.data.query.translate.RemapJoin;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.*;

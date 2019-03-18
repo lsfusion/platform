@@ -1,4 +1,4 @@
-package lsfusion.server.data.translator;
+package lsfusion.server.data.translate;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;

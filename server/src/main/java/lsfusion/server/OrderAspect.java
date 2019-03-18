@@ -10,7 +10,7 @@ import org.aspectj.lang.annotation.DeclarePrecedence;
                    "lsfusion.server.physics.admin.log.RemoteLoggerAspect, " +
                    "lsfusion.server.data.pack.PackComplexityAspect, " +
                    "lsfusion.server.base.caches.CacheAspect, " +
-                   "lsfusion.server.data.translator.AfterTranslateAspect, " +
+                   "lsfusion.server.data.translate.AfterTranslateAspect, " +
                    "lsfusion.server.physics.exec.hint.AutoHintsAspect, " +
                    "lsfusion.server.data.caches.QueryCacheAspect, " +
                    "lsfusion.server.logics.property.caches.MapCacheAspect, " +

@@ -2,7 +2,7 @@ package lsfusion.server.data.query.compile.where;
 
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.translator.JoinExprTranslator;
+import lsfusion.server.data.translate.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 
 public abstract class AbstractUpWhere<T extends AbstractUpWhere<T>> extends TwinImmutableObject<T> implements UpWhere {

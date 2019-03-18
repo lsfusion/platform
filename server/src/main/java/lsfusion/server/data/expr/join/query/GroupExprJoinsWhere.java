@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.where.GroupJoinsWhere;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translate.ExprTranslator;
 
 public class GroupExprJoinsWhere<K extends Expr> {
 

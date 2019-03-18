@@ -2,7 +2,7 @@ package lsfusion.server.data.expr.classes;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 

@@ -7,7 +7,7 @@ import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.CurrentEnvironmentExpr;
 import lsfusion.server.data.expr.where.classes.IsClassWhere;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;

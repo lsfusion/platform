@@ -7,8 +7,8 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseJoin;
 import lsfusion.server.data.expr.where.ifs.IfJoin;
-import lsfusion.server.data.query.translator.MapJoin;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.query.translate.MapJoin;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 
 public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U> {

@@ -17,9 +17,9 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.translator.ExprTranslator;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.PartialKeyExprTranslator;
+import lsfusion.server.data.translate.ExprTranslator;
+import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.translate.PartialKeyExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 

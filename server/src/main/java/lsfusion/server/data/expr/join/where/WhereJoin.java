@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.join.base.UnionJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.query.compile.where.UpWheres;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 
 public interface WhereJoin<K, T extends WhereJoin<K, T>> extends BaseJoin<K>, OuterContext<T> {
 

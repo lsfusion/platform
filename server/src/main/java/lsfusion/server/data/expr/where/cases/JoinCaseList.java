@@ -6,8 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.builder.Join;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 
 public class JoinCaseList<U> extends CaseList<Join<U>, Join<U>,JoinCase<U>> {

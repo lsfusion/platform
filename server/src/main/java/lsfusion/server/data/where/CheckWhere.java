@@ -1,6 +1,6 @@
 package lsfusion.server.data.where;
 
-import lsfusion.server.data.translator.TranslateContext;
+import lsfusion.server.data.translate.TranslateContext;
 
 public interface CheckWhere<T extends TranslateContext<T>> extends TranslateContext<T> {
 

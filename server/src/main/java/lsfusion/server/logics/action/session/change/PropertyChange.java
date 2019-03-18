@@ -34,7 +34,7 @@ import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.SessionTable;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;

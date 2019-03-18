@@ -5,7 +5,7 @@ import lsfusion.base.col.WrapMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.join.where.WhereJoin;
-import lsfusion.server.data.translator.JoinExprTranslator;
+import lsfusion.server.data.translate.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 
 public class UpWheres<J extends WhereJoin> extends WrapMap<J, UpWhere> {

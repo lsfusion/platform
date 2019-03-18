@@ -29,8 +29,8 @@ import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 

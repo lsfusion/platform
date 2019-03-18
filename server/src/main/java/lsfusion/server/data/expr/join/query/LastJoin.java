@@ -11,7 +11,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.value.Value;
 
 public class LastJoin extends QueryJoin<KeyExpr, LastJoin.Query, LastJoin, LastJoin.QueryOuterContext> {

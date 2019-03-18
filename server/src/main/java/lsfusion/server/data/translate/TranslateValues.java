@@ -1,4 +1,4 @@
-package lsfusion.server.data.translator;
+package lsfusion.server.data.translate;
 
 public interface TranslateValues<T extends TranslateValues<T>> {
 

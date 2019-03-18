@@ -22,8 +22,8 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.translator.ExprTranslator;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.ExprTranslator;
+import lsfusion.server.data.translate.MapTranslate;
 
 public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<GroupExprWhereJoins<K>> {
 

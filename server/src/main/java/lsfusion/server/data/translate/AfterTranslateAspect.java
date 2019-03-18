@@ -1,4 +1,4 @@
-package lsfusion.server.data.translator;
+package lsfusion.server.data.translate;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -229,7 +229,7 @@ public class AfterTranslateAspect {
     }
     @DeclareParents(value="@TranslateExprLazy *",defaultImpl=TranslateExprLazyImplement.class)
     private TranslateExprLazyInterface translateExprLazy;
-    @AfterReturning(pointcut="call(lsfusion.server.data.expr.Expr lsfusion.server.data.expr.Expr.translateOuter(lsfusion.server.data.translator.MapTranslate)) && target(expr) && args(translator)",returning="transExpr")
+    @AfterReturning(pointcut="call(lsfusion.server.data.expr.Expr lsfusion.server.data.expr.Expr.translateOuter(lsfusion.server.data.translate.MapTranslate)) && target(expr) && args(translator)",returning="transExpr")
     public void afterExprTranslate(Expr expr, MapTranslate translator, TranslateExprLazyInterface transExpr) {
         transExpr.initTranslate(expr,translator,transExpr);
     }
@@ -248,7 +248,7 @@ public class AfterTranslateAspect {
     @DeclareParents(value="lsfusion.server.data.where.DataWhere+",defaultImpl=TranslateClassWhereLazyImplement.class)
     private TranslateClassWhereLazyInterface translateClassWhereLazy;
 
-    @AfterReturning(pointcut="call(lsfusion.server.data.where.Where lsfusion.server.data.where.Where.translateOuter(lsfusion.server.data.translator.MapTranslate)) && target(where) && args(translator)",returning="transWhere")
+    @AfterReturning(pointcut="call(lsfusion.server.data.where.Where lsfusion.server.data.where.Where.translateOuter(lsfusion.server.data.translate.MapTranslate)) && target(where) && args(translator)",returning="transWhere")
     public void afterDataWhereTranslate(AbstractWhere where, MapTranslate translator, TranslateClassWhereLazyInterface transWhere) {
         if(!(transWhere instanceof InnerExpr.NotNull)) // он уже обработан
            transWhere.initTranslate(where,translator,transWhere);
@@ -267,7 +267,7 @@ public class AfterTranslateAspect {
     }
     @DeclareParents(value="lsfusion.server.data.where.FormulaWhere+",defaultImpl=TranslateMeanWhereLazyImplement.class)
     private TranslateMeanWhereLazyInterface translateMeanWhereLazy;
-    @AfterReturning(pointcut="call(lsfusion.server.data.where.Where lsfusion.server.data.where.Where.translateOuter(lsfusion.server.data.translator.MapTranslate)) && target(where) && args(translator)",returning="transWhere")
+    @AfterReturning(pointcut="call(lsfusion.server.data.where.Where lsfusion.server.data.where.Where.translateOuter(lsfusion.server.data.translate.MapTranslate)) && target(where) && args(translator)",returning="transWhere")
     public void afterFormulaWhereTranslate(AbstractWhere where, MapTranslate translator, TranslateMeanWhereLazyInterface transWhere) {
         transWhere.initTranslate(where,translator,transWhere);
     }
@@ -285,7 +285,7 @@ public class AfterTranslateAspect {
     }
     @DeclareParents(value="lsfusion.server.data.where.classes.MeanClassWheres+",defaultImpl=TranslateMeanClassWhereLazyImplement.class)
     private TranslateMeanClassWhereLazyInterface translateMeanClassWhereLazy;
-    @AfterReturning(pointcut="call(lsfusion.server.data.where.classes.MeanClassWheres lsfusion.server.data.where.classes.MeanClassWheres.translateOuter(lsfusion.server.data.translator.MapTranslate)) && target(where) && args(translator)",returning="transWhere")
+    @AfterReturning(pointcut="call(lsfusion.server.data.where.classes.MeanClassWheres lsfusion.server.data.where.classes.MeanClassWheres.translateOuter(lsfusion.server.data.translate.MapTranslate)) && target(where) && args(translator)",returning="transWhere")
     public void afterMeanClassWhereTranslate(MeanClassWheres where, MapTranslate translator, TranslateMeanClassWhereLazyInterface transWhere) {
         transWhere.initTranslate(where,translator,transWhere);
     }

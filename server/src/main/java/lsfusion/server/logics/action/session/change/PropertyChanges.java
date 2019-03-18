@@ -14,7 +14,7 @@ import lsfusion.server.data.caches.AbstractValuesContext;
 import lsfusion.server.data.caches.MapValuesIterable;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.table.SessionTable;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;

@@ -2,7 +2,7 @@ package lsfusion.server.data.caches.hash;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.key.ParamExpr;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 
 public interface HashKeys {
 

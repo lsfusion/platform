@@ -17,8 +17,8 @@ import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.translator.ExprTranslator;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.ExprTranslator;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 
