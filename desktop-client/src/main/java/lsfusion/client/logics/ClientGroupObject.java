@@ -7,7 +7,7 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.property.ClassViewType;

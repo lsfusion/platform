@@ -2,7 +2,11 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.TableTransferHandler;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
+import lsfusion.client.form.property.classes.editor.PropertyEditor;
+import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.interop.form.event.KeyStrokes;

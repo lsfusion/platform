@@ -1,6 +1,5 @@
 package lsfusion.client.form.property.classes.editor;
 
-import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 
 import javax.swing.*;

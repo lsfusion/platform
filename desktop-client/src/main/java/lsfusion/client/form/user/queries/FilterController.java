@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.form.layout.ClientFormLayout;
-import lsfusion.client.form.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientFilter;
 
 public abstract class FilterController extends QueryController {

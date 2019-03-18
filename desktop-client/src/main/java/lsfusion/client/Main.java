@@ -6,7 +6,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.client.navigator.window.dock.DockableMainFrame;
 import lsfusion.client.exception.ClientExceptionManager;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.SavingThread;
+import lsfusion.client.form.print.SavingThread;
 import lsfusion.client.form.property.classes.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.remote.ConnectionLostManager;

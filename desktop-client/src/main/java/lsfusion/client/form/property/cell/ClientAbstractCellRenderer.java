@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.cell;
 
-import lsfusion.client.form.PropertyRenderer;
+import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.StringPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 

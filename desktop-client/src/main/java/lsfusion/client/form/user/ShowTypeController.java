@@ -3,7 +3,7 @@ package lsfusion.client.form.user;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.ClientFormLayout;
-import lsfusion.client.form.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientShowType;
 import lsfusion.interop.form.property.ClassViewType;

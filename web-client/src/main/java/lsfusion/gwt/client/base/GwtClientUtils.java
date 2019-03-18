@@ -265,7 +265,7 @@ public class GwtClientUtils {
     }
 
     /**
-     * should always be consistent with lsfusion.client.form.TableTransferHandler#getClipboardTable(java.lang.String)
+     * should always be consistent with lsfusion.client.form.object.TableTransferHandler#getClipboardTable(java.lang.String)
      */
     public static List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<>();

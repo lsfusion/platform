@@ -1,4 +1,4 @@
-package lsfusion.client.form;
+package lsfusion.client.form.property.classes.editor;
 
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 

@@ -5,7 +5,7 @@ import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.TableTransferHandler;
+import lsfusion.client.form.object.TableTransferHandler;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;

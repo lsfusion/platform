@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.preferences;
 
 import lsfusion.client.Main;
-import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.object.GroupObjectController;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.object.grid.GridTable;
 import lsfusion.client.form.user.queries.FilterView;

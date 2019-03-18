@@ -5,6 +5,7 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
 import lsfusion.client.form.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.classes.editor.DialogBasedPropertyEditor;
+import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;

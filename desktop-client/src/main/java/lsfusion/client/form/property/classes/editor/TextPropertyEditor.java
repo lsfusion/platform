@@ -4,7 +4,6 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientPropertyTableEditorComponent;
-import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.event.KeyStrokes;

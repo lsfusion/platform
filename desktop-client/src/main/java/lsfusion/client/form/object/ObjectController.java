@@ -1,6 +1,7 @@
-package lsfusion.client.form;
+package lsfusion.client.form.object;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.classes.ClassChooserController;
 import lsfusion.client.form.classes.ClassChooserView;
 import lsfusion.client.form.layout.ClientFormLayout;

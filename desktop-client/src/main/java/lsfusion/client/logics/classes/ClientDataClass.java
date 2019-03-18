@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.EditBindingMap;
-import lsfusion.client.form.PropertyEditor;
+import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.cell.DataPanelView;
 import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.logics.ClientGroupObjectValue;

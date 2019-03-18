@@ -1,7 +1,7 @@
 package lsfusion.client.logics;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
 
 import java.util.Map;
 

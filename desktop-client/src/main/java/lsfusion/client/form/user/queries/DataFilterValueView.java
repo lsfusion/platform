@@ -2,7 +2,7 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientDataFilterValue;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
