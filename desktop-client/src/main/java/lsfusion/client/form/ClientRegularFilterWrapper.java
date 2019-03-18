@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.client.logics.ClientRegularFilter;
+import lsfusion.client.form.filter.ClientRegularFilter;
 
 public class ClientRegularFilterWrapper {
     public ClientRegularFilter filter;

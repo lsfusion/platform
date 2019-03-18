@@ -1,5 +1,6 @@
 package lsfusion.client.form;
 
+import lsfusion.client.base.RmiQueue;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.RemoteFormInterface;
 

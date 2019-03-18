@@ -1,8 +1,8 @@
 package lsfusion.client.form.user;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.RmiQueue;
-import lsfusion.client.form.layout.JComponentPanel;
+import lsfusion.client.base.RmiQueue;
+import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.client.form.user.queries.ToolbarGridButton;
 import lsfusion.client.logics.ClientShowType;
 import lsfusion.interop.form.property.ClassViewType;

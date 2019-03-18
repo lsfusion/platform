@@ -1,7 +1,8 @@
 package lsfusion.client.form;
 
-import lsfusion.client.logics.ClientRegularFilter;
-import lsfusion.client.logics.ClientRegularFilterGroup;
+import lsfusion.client.base.RmiQueue;
+import lsfusion.client.form.filter.ClientRegularFilter;
+import lsfusion.client.form.filter.ClientRegularFilterGroup;
 
 import javax.swing.*;
 import java.awt.*;

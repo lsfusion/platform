@@ -2,6 +2,14 @@ package lsfusion.gwt.server.convert;
 
 import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.form.EditBindingMap;
+import lsfusion.client.form.filter.ClientFilter;
+import lsfusion.client.form.filter.ClientRegularFilter;
+import lsfusion.client.form.filter.ClientRegularFilterGroup;
+import lsfusion.client.form.layout.ClientComponent;
+import lsfusion.client.form.layout.ClientContainer;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.user.queries.ClientCalculations;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientActionClass;
 import lsfusion.client.logics.classes.ClientFileClass;

@@ -1,6 +1,6 @@
 package lsfusion.client.form.object.panel;
 
-import lsfusion.client.form.layout.JComponentPanel;
+import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.client.logics.ClientToolbar;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexAlignment;

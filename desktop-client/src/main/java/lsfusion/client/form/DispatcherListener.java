@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.client.form.dispatch.DispatcherInterface;
+import lsfusion.client.base.dispatch.DispatcherInterface;
 
 public interface DispatcherListener {
     void dispatchingEnded();

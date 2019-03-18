@@ -1,6 +1,6 @@
 package lsfusion.client.form.user.queries;
 
-import lsfusion.client.form.layout.JComponentPanel;
+import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.layout.FlexConstraints;

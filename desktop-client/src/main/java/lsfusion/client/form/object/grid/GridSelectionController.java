@@ -2,7 +2,7 @@ package lsfusion.client.form.object.grid;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import java.math.BigDecimal;

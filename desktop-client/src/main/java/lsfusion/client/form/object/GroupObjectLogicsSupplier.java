@@ -2,8 +2,6 @@ package lsfusion.client.form.object;
 
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.LogicsSupplier;
-import lsfusion.client.logics.ClientGroupObject;
-import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.user.Order;
 

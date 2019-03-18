@@ -2,11 +2,12 @@ package lsfusion.client.form.property.cell;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.SwingUtils;
+import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.*;
-import lsfusion.client.form.dispatch.EditPropertyDispatcher;
+import lsfusion.client.form.property.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.classes.editor.DialogBasedPropertyEditor;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.action.ServerResponse;

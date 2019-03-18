@@ -3,8 +3,8 @@ package lsfusion.client.form.object.tree;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import lsfusion.base.BaseUtils;
-import lsfusion.client.logics.ClientGroupObject;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import java.util.List;

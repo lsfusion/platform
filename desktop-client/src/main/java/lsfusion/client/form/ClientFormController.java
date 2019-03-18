@@ -4,8 +4,17 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.client.form.object.GroupObjectController;
-import lsfusion.client.form.object.GroupObjectLogicsSupplier;
+import lsfusion.client.base.RmiQueue;
+import lsfusion.client.base.RmiRequest;
+import lsfusion.client.form.filter.ClientRegularFilter;
+import lsfusion.client.form.filter.ClientRegularFilterGroup;
+import lsfusion.client.form.layout.*;
+import lsfusion.client.form.layout.view.ClientContainerView;
+import lsfusion.client.form.layout.view.ClientFormLayout;
+import lsfusion.client.form.layout.view.JComponentPanel;
+import lsfusion.client.form.layout.view.TabbedClientContainerView;
+import lsfusion.client.form.object.*;
+import lsfusion.client.form.user.ItemAdapter;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.interop.form.stat.report.ReportGenerator;
@@ -20,12 +29,8 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.navigator.window.dock.ClientFormDockable;
 import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
-import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
+import lsfusion.client.form.property.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.user.preferences.GridUserPreferences;
-import lsfusion.client.form.layout.ClientContainerView;
-import lsfusion.client.form.layout.ClientFormLayout;
-import lsfusion.client.form.layout.JComponentPanel;
-import lsfusion.client.form.layout.TabbedClientContainerView;
 import lsfusion.client.form.object.tree.TreeGroupController;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientActionClass;
@@ -45,9 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
@@ -1213,6 +1216,13 @@ public class ClientFormController implements AsyncListener {
         applyCurrentFilters();
     }
 
+    public static byte[] serializeClientFilter(ClientPropertyFilter filter) throws IOException {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        filter.serialize(new DataOutputStream(outStream));
+        return outStream.toByteArray();
+    }
+
     private void applyCurrentFilters() throws IOException {
         commitOrCancelCurrentEditing();
 
@@ -1221,7 +1231,7 @@ public class ClientFormController implements AsyncListener {
         for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
             for (ClientPropertyFilter filter : groupFilters) {
                 if (!(filter.property.baseType instanceof ClientActionClass))
-                    filters.add(Serializer.serializeClientFilter(filter));
+                    filters.add(serializeClientFilter(filter));
             }
         }
 

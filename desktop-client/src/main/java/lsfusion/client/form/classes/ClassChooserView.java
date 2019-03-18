@@ -2,9 +2,9 @@ package lsfusion.client.form.classes;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.RmiQueue;
-import lsfusion.client.form.layout.JComponentPanel;
-import lsfusion.client.logics.ClientObject;
+import lsfusion.client.base.RmiQueue;
+import lsfusion.client.form.layout.view.JComponentPanel;
+import lsfusion.client.form.object.ClientObject;
 
 import javax.swing.*;
 import java.awt.*;

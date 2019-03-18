@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.navigator.handlers;
 
 import com.google.common.base.Throwables;
-import lsfusion.client.logics.DeSerializer;
+import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.server.MainDispatchServlet;
@@ -29,9 +29,9 @@ public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigator
         ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(getLogicsName(action));
 
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
-        DeSerializer.NavigatorData navigatorData = null;
+        NavigatorData navigatorData = null;
         try {
-            navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
+            navigatorData = NavigatorData.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

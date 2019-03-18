@@ -2,8 +2,8 @@ package lsfusion.client.form.object.grid;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import lsfusion.client.logics.ClientGroupObject;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.table.AbstractTableModel;

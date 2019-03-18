@@ -1,6 +1,8 @@
 package lsfusion.client.logics;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.layout.ClientComponent;
+import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
