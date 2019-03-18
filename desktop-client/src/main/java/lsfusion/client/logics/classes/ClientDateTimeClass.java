@@ -3,8 +3,8 @@ package lsfusion.client.logics.classes;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.editor.DateTimePropertyEditor;
-import lsfusion.client.form.renderer.DateTimePropertyRenderer;
+import lsfusion.client.form.property.classes.editor.DateTimePropertyEditor;
+import lsfusion.client.form.property.classes.renderer.DateTimePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 

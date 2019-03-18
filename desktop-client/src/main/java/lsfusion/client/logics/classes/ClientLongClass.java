@@ -3,7 +3,7 @@ package lsfusion.client.logics.classes;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.PropertyEditor;
-import lsfusion.client.form.editor.IntegerPropertyEditor;
+import lsfusion.client.form.property.classes.editor.IntegerPropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 

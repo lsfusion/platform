@@ -8,9 +8,9 @@ import lsfusion.base.lambda.Provider;
 import lsfusion.client.ClientLoggers;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.exceptions.ClientExceptionManager;
+import lsfusion.client.exception.ClientExceptionManager;
 import lsfusion.client.form.dispatch.DispatcherInterface;
-import lsfusion.client.rmi.ConnectionLostManager;
+import lsfusion.client.remote.ConnectionLostManager;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.interop.exception.FatalRemoteClientException;
 import lsfusion.interop.exception.RemoteAbandonedException;
@@ -27,7 +27,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static lsfusion.client.exceptions.ClientExceptionManager.getRemoteExceptionCause;
+import static lsfusion.client.exception.ClientExceptionManager.getRemoteExceptionCause;
 
 public class RmiQueue implements DispatcherListener {
     private static final Logger logger = ClientLoggers.invocationLogger;

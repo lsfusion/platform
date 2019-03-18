@@ -1,8 +1,8 @@
 package lsfusion.client.navigator;
 
 import lsfusion.client.Main;
-import lsfusion.client.tree.ClientTree;
-import lsfusion.client.tree.ClientTreeNode;
+import lsfusion.client.navigator.tree.ClientTree;
+import lsfusion.client.navigator.tree.ClientTreeNode;
 
 import javax.swing.*;
 

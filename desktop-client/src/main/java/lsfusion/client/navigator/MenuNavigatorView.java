@@ -1,5 +1,7 @@
 package lsfusion.client.navigator;
 
+import lsfusion.client.navigator.window.ClientMenuNavigatorWindow;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;

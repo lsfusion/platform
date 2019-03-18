@@ -1,11 +1,8 @@
 package lsfusion.client.navigator;
 
-import lsfusion.client.dock.ClientFormDockable;
-import lsfusion.client.dock.DockableManager;
+import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import net.sf.jasperreports.engine.JRException;
 
-import java.io.IOException;
 import java.util.Map;
 
 public abstract class ClientNavigator {

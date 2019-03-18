@@ -1,7 +1,7 @@
 package lsfusion.client;
 
 import com.jhlabs.image.BlurFilter;
-import lsfusion.client.dock.ClientFormDockable;
+import lsfusion.client.navigator.window.dock.ClientFormDockable;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.stat.report.ReportGenerationData;

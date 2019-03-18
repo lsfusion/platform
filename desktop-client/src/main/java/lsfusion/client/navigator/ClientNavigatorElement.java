@@ -5,6 +5,7 @@ import lsfusion.base.serialization.SerializationUtil;
 import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.client.Main;
 import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.client.navigator.window.ClientNavigatorWindow;
 
 import java.io.DataInputStream;
 import java.io.IOException;

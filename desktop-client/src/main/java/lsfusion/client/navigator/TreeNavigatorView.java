@@ -1,10 +1,11 @@
 package lsfusion.client.navigator;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.tree.ClientTree;
-import lsfusion.client.tree.ClientTreeAction;
-import lsfusion.client.tree.ClientTreeActionEvent;
-import lsfusion.client.tree.ClientTreeNode;
+import lsfusion.client.navigator.tree.ClientTree;
+import lsfusion.client.navigator.tree.ClientTreeAction;
+import lsfusion.client.navigator.tree.ClientTreeActionEvent;
+import lsfusion.client.navigator.tree.ClientTreeNode;
+import lsfusion.client.navigator.window.ClientNavigatorWindow;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

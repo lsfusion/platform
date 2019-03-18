@@ -2,7 +2,7 @@ package lsfusion.client.logics.classes.link;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.renderer.link.PDFLinkPropertyRenderer;
+import lsfusion.client.form.property.classes.renderer.link.PDFLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 

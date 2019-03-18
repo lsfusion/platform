@@ -3,7 +3,7 @@ package lsfusion.client.logics.classes;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
 import lsfusion.client.form.PropertyEditor;
-import lsfusion.client.form.editor.DoublePropertyEditor;
+import lsfusion.client.form.property.classes.editor.DoublePropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 
