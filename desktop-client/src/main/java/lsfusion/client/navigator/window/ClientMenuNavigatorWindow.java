@@ -1,7 +1,7 @@
 package lsfusion.client.navigator.window;
 
 import lsfusion.client.navigator.INavigatorController;
-import lsfusion.client.navigator.MenuNavigatorView;
+import lsfusion.client.navigator.view.MenuNavigatorView;
 
 import java.io.DataInputStream;
 import java.io.IOException;

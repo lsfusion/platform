@@ -2,6 +2,7 @@ package lsfusion.client.authentication;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.*;
+import lsfusion.client.remote.ReconnectWorker;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.logics.RemoteLogicsLoaderInterface;

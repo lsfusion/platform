@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.design.filter;
 
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
-import lsfusion.server.logics.form.interactive.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

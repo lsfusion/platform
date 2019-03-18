@@ -1,7 +1,7 @@
 package lsfusion.client.form.layout;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.client.form.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractContainer;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerType;

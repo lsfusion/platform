@@ -1,0 +1,17 @@
+package lsfusion.client.classes.data.link;
+
+import lsfusion.client.form.property.classes.editor.PropertyEditor;
+import lsfusion.client.form.property.classes.editor.LinkPropertyEditor;
+import lsfusion.client.form.property.ClientPropertyDraw;
+
+public abstract class ClientStaticFormatLinkClass extends ClientLinkClass {
+
+    protected ClientStaticFormatLinkClass(boolean multiple) {
+        super(multiple);
+    }
+
+    @Override
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new LinkPropertyEditor(property, value);
+    }
+}

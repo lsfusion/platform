@@ -1,21 +1,15 @@
 package lsfusion.client.remote.proxy;
 
-import com.google.common.base.Throwables;
-import lsfusion.base.lambda.EProvider;
 import lsfusion.client.base.log.ClientLoggers;
-import lsfusion.client.Main;
-import lsfusion.client.base.BusyDialogDisplayer;
-import lsfusion.client.base.BusyDisplayer;
-import lsfusion.interop.PendingMethodInvocation;
+import lsfusion.client.base.utils.ContentLengthException;
+import lsfusion.client.base.utils.ContentLengthOutputStream;
 import lsfusion.interop.PendingRemoteInterface;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,68 +26,6 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
 
     public RemoteObjectProxy(T target) {
         this.target = target;
-    }
-
-    @Override
-    public Object[] createAndExecute(final PendingMethodInvocation creator, final PendingMethodInvocation[] invocations) throws RemoteException {
-        logRemoteMethodStartCall("createAndExecute");
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("  Creator in createAndExecute: " + creator.toString());
-            for (PendingMethodInvocation invocation : invocations) {
-                logger.debug("  Invocation in createAndExecute: " + invocation.toString());
-            }
-        }
-
-        if (!Main.busyDialog) {
-            final BusyDisplayer busyDisplayer = new BusyDisplayer(new EProvider<String>() {
-                @Override
-                public String getExceptionally() throws RemoteException {
-                    return target.getRemoteActionMessage();
-                }
-                @Override
-                public void interrupt(boolean cancelable) throws RemoteException {
-                    target.interrupt(cancelable);
-                }
-            });
-            busyDisplayer.start();
-
-            Object[] result;
-            try {
-                result = target.createAndExecute(creator, invocations);
-                logRemoteMethodEndCall("createAndExecute", result);
-                return result;
-            } catch (Exception e) {
-                Throwables.propagateIfPossible(e, RemoteException.class);
-                throw Throwables.propagate(e);
-            } finally {
-                busyDisplayer.stop();
-            }
-        } else {
-            final BusyDialogDisplayer busyDisplayer = new BusyDialogDisplayer(new EProvider<List<Object>>() {
-                @Override
-                public List<Object> getExceptionally() throws RemoteException {
-                    return target.getRemoteActionMessageList();
-                }
-                @Override
-                public void interrupt(boolean cancelable) throws RemoteException {
-                    target.interrupt(cancelable);
-                }
-            });
-            busyDisplayer.start();
-
-            Object[] result;
-            try {
-                result = target.createAndExecute(creator, invocations);
-                logRemoteMethodEndCall("createAndExecute", result);
-                return result;
-            } catch (Exception e) {
-                Throwables.propagateIfPossible(e, RemoteException.class);
-                throw Throwables.propagate(e);
-            } finally {
-                busyDisplayer.stop();
-            }
-        }
     }
 
     @Override
@@ -166,20 +98,4 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
         logRemoteMethodEndCall(methodName, null);
     }
 
-    protected static List<PendingMethodInvocation> getImmutableMethodInvocations(Class clazz) {
-        List<PendingMethodInvocation> invocations = new ArrayList<>();
-        for (Method method : clazz.getMethods()) {
-            if (method.getAnnotation(ImmutableMethod.class) == null) {
-                continue;
-            }
-
-            // естественно, разрешены только функи без параметров
-            assert method.getParameterTypes().length == 0;
-
-            PendingMethodInvocation invocation = new PendingMethodInvocation(method.getName(), new Class[0], new Object[0], method.getReturnType());
-            invocations.add(invocation);
-        }
-
-        return invocations;
-    }
 }

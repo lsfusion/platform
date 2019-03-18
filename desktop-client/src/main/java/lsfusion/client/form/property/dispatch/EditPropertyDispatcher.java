@@ -5,7 +5,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.lambda.Callback;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.base.dispatch.DispatcherListener;
+import lsfusion.client.dispatch.DispatcherListener;
 import lsfusion.client.form.property.edit.EditPropertyHandler;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
