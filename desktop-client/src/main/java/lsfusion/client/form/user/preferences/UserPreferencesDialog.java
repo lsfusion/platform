@@ -5,12 +5,12 @@ import lsfusion.base.lambda.Callback;
 import lsfusion.base.Pair;
 import lsfusion.client.ArrayListTransferHandler;
 import lsfusion.client.Main;
-import lsfusion.client.form.object.GroupObjectController;
+import lsfusion.client.form.object.table.GroupObjectController;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.object.grid.GridTable;
+import lsfusion.client.form.object.table.grid.GridTable;
 import lsfusion.client.form.user.queries.TitledPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.design.FontInfo;
 
 import javax.swing.*;

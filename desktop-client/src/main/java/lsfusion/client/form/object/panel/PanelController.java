@@ -3,7 +3,7 @@ package lsfusion.client.form.object.panel;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;

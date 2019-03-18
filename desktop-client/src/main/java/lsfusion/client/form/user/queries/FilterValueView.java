@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;

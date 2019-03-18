@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.classes.editor;
 
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.awt.*;
 import java.util.EventObject;

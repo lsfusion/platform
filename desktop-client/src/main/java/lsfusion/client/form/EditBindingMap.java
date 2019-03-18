@@ -1,6 +1,7 @@
 package lsfusion.client.form;
 
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.InternalEditEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.action.ServerResponse;
 

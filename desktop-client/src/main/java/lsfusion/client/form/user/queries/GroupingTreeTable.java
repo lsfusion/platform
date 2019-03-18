@@ -5,7 +5,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.client.Main;
 import lsfusion.client.form.property.classes.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.link.ImageLinkPropertyRenderer;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.logics.classes.link.ClientImageLinkClass;
 import org.jdesktop.swingx.JXTreeTable;

@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.editor.DoublePropertyEditor;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 
 import java.text.DecimalFormat;

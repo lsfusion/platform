@@ -1,6 +1,6 @@
 package lsfusion.client.form.user.queries;
 
-import lsfusion.client.form.object.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
 import lsfusion.client.form.user.ItemAdapter;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.filter.ClientObjectFilterValue;

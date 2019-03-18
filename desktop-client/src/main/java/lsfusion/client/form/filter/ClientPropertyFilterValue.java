@@ -1,7 +1,7 @@
 package lsfusion.client.form.filter;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

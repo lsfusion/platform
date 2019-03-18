@@ -3,9 +3,9 @@ package lsfusion.client.form.user;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.view.ClientFormLayout;
-import lsfusion.client.form.object.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
 import lsfusion.client.form.object.ClientGroupObject;
-import lsfusion.client.logics.ClientShowType;
+import lsfusion.client.form.object.ClientShowType;
 import lsfusion.interop.form.property.ClassViewType;
 
 import java.io.IOException;

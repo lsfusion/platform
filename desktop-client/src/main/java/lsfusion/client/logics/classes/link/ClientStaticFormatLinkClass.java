@@ -2,7 +2,7 @@ package lsfusion.client.logics.classes.link;
 
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.editor.LinkPropertyEditor;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 public abstract class ClientStaticFormatLinkClass extends ClientLinkClass {
 

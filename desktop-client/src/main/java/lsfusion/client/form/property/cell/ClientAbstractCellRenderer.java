@@ -2,7 +2,7 @@ package lsfusion.client.form.property.cell;
 
 import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.StringPropertyRenderer;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

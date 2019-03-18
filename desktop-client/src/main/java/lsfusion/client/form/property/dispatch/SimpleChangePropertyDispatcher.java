@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.user.UserInputResult;

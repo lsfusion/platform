@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.classes.renderer;
 
 import lsfusion.client.SwingUtils;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 public class JSONPropertyRenderer extends FilePropertyRenderer {
 

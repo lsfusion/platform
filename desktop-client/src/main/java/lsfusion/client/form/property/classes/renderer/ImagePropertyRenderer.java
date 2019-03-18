@@ -3,7 +3,7 @@ package lsfusion.client.form.property.classes.renderer;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.Main;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;

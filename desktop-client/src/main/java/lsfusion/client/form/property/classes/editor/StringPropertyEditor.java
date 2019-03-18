@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.classes.editor;
 
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;

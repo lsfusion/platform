@@ -2,12 +2,12 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.SwingUtils;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.object.GroupObjectLogicsSupplier;
-import lsfusion.client.form.object.TableTransferHandler;
+import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableTransferHandler;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -71,7 +71,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
     @Override
     public boolean editCellAt(int row, int column, EventObject e) {
-        if (!logicsSupplier.getForm().commitCurrentEditing()) {
+        if (!logicsSupplier.getFormController().commitCurrentEditing()) {
             return false;
         }
 
@@ -90,7 +90,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
             }
             if (editor != null) {
                 editor.requestFocusInWindow();
-                logicsSupplier.getForm().setCurrentEditingTable(this);
+                logicsSupplier.getFormController().setCurrentEditingTable(this);
             }
         }
 
@@ -100,13 +100,13 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     @Override
     public void editingStopped(ChangeEvent e) {
         super.editingStopped(e);
-        logicsSupplier.getForm().clearCurrentEditingTable(this);
+        logicsSupplier.getFormController().clearCurrentEditingTable(this);
     }
 
     @Override
     public void editingCanceled(ChangeEvent e) {
         super.editingCanceled(e);
-        logicsSupplier.getForm().clearCurrentEditingTable(this);
+        logicsSupplier.getFormController().clearCurrentEditingTable(this);
     }
 
     @Override

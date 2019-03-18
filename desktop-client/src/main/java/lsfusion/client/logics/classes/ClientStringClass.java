@@ -12,7 +12,7 @@ import lsfusion.client.form.property.classes.editor.TextPropertyEditor;
 import lsfusion.client.form.property.classes.editor.rich.RichTextPropertyEditor;
 import lsfusion.client.form.property.classes.renderer.StringPropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.TextPropertyRenderer;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.DataType;
 

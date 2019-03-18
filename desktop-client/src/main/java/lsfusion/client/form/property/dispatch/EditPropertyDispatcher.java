@@ -9,7 +9,7 @@ import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.form.EditPropertyHandler;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
