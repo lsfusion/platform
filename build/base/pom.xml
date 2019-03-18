@@ -251,7 +251,7 @@
                     <version>1.5</version>
                     <configuration>
                         <!--для вывода в консоль при дебаге-->
-                        <showWeaveInfo>true</showWeaveInfo>
+                        <!--<showWeaveInfo>true</showWeaveInfo>-->
                         
                         <complianceLevel>${maven.compiler.source}</complianceLevel>
                     </configuration>
