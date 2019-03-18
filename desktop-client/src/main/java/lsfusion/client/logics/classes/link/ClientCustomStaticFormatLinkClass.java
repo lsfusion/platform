@@ -3,7 +3,7 @@ package lsfusion.client.logics.classes.link;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.renderer.link.CustomStaticFormatLinkRenderer;
+import lsfusion.client.form.property.classes.renderer.link.CustomStaticFormatLinkRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 

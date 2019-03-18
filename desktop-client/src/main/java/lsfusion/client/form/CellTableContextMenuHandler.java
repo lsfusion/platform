@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.client.form.cell.CellTableInterface;
+import lsfusion.client.form.property.cell.CellTableInterface;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;

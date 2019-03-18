@@ -1,5 +1,7 @@
 package lsfusion.client.navigator;
 
+import lsfusion.client.navigator.window.ClientNavigatorWindow;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Set;

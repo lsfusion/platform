@@ -1,6 +1,7 @@
 package lsfusion.client.navigator;
 
 import lsfusion.client.ClientNavigatorFolder;
+import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.layout.FlexConstraints;

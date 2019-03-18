@@ -4,7 +4,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.cell.PanelView;
+import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;

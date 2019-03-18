@@ -2,7 +2,7 @@ package lsfusion.gwt.server.navigator.handlers;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.logics.DeSerializer;
-import lsfusion.client.navigator.ClientNavigatorWindow;
+import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;

@@ -2,9 +2,9 @@ package lsfusion.client.logics;
 
 import lsfusion.client.logics.classes.ClientClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
-import lsfusion.client.navigator.ClientAbstractWindow;
+import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.ClientNavigatorElement;
-import lsfusion.client.navigator.ClientNavigatorWindow;
+import lsfusion.client.navigator.window.ClientNavigatorWindow;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

@@ -1,7 +1,7 @@
 package lsfusion.client.navigator;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.tree.*;
+import lsfusion.client.navigator.tree.*;
 
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;

@@ -1,9 +1,9 @@
 package lsfusion.client.navigator;
 
 import bibliothek.gui.dock.common.SingleCDockable;
+import lsfusion.client.navigator.window.ClientNavigatorWindow;
 
 import javax.swing.*;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;

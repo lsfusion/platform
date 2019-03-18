@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.client.form.cell.PropertyTableCellEditor;
+import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 
 import java.awt.*;
 import java.util.EventObject;

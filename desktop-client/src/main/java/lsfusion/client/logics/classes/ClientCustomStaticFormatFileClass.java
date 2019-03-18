@@ -4,8 +4,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.editor.FilePropertyEditor;
-import lsfusion.client.form.renderer.CustomStaticFormatFileRenderer;
+import lsfusion.client.form.property.classes.editor.FilePropertyEditor;
+import lsfusion.client.form.property.classes.renderer.CustomStaticFormatFileRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 
