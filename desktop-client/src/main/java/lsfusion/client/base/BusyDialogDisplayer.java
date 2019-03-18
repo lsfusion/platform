@@ -2,7 +2,6 @@ package lsfusion.client.base;
 
 import lsfusion.base.lambda.InterruptibleProvider;
 import lsfusion.client.Main;
-import lsfusion.client.SwingUtils;
 
 import javax.swing.*;
 import java.awt.*;

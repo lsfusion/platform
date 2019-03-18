@@ -1,7 +1,7 @@
 package lsfusion.client.form.object;
 
 import com.google.common.base.Throwables;
-import lsfusion.client.logics.ClientForm;
+import lsfusion.client.form.ClientForm;
 
 import java.io.*;
 import java.util.*;

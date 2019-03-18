@@ -1,6 +1,6 @@
 package lsfusion.http.provider.form;
 
-import lsfusion.client.logics.ClientForm;
+import lsfusion.client.form.ClientForm;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.interop.form.RemoteFormInterface;

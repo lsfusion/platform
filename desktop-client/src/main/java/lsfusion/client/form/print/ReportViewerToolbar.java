@@ -2,7 +2,6 @@ package lsfusion.client.form.print;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
-import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.base.RmiQueue;
 import net.sf.jasperreports.engine.JRException;
@@ -23,7 +22,7 @@ import java.awt.print.*;
 import java.rmi.RemoteException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.SwingUtils.showConfirmDialog;
+import static lsfusion.client.base.SwingUtils.showConfirmDialog;
 
 public class ReportViewerToolbar extends JRViewerToolbar {
     private final ReportViewer reportViewer;

@@ -1,7 +1,7 @@
 package lsfusion.client.navigator;
 
-import lsfusion.client.FlatRolloverButton;
-import lsfusion.client.form.user.queries.TitledPanel;
+import lsfusion.client.base.view.FlatRolloverButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.TitledPanel;
 import lsfusion.client.navigator.window.ClientPanelNavigatorWindow;
 import org.jdesktop.swingx.VerticalLayout;
 

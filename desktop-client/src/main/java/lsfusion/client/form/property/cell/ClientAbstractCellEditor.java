@@ -6,7 +6,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import javax.swing.*;
 import java.awt.*;
 
-import static lsfusion.client.SwingUtils.computeAbsoluteLocation;
+import static lsfusion.client.base.SwingUtils.computeAbsoluteLocation;
 
 public class ClientAbstractCellEditor extends AbstractCellEditor implements PropertyTableCellEditor {
     private final JTable jTable;

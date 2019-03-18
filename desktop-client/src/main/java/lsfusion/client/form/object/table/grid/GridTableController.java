@@ -1,16 +1,20 @@
 package lsfusion.client.form.object.table.grid;
 
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.object.table.grid.user.toolbar.CalculateSumButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.CountQuantityButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.GroupingButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
 import lsfusion.client.form.property.cell.InternalEditEvent;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.user.preferences.GridUserPreferences;
-import lsfusion.client.form.user.preferences.UserPreferencesButton;
+import lsfusion.client.form.filter.user.FilterView;
+import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
+import lsfusion.client.form.object.table.grid.user.design.UserPreferencesButton;
 import lsfusion.client.form.layout.view.ClientFormLayout;
-import lsfusion.client.form.user.queries.*;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.logics.classes.ClientIntegralClass;
+import lsfusion.client.classes.ClientIntegralClass;
 import lsfusion.interop.form.user.FormGrouping;
 import lsfusion.interop.form.user.Order;
 import lsfusion.interop.action.ServerResponse;
@@ -40,11 +44,11 @@ public class GridTableController {
 
     private final ClientFormController form;
 
-    private final lsfusion.client.form.object.table.GridController groupController;
+    private final GridController groupController;
 
     private boolean forceHidden = false;
 
-    public GridTableController(lsfusion.client.form.object.table.GridController igroupController, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
+    public GridTableController(GridController igroupController, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         groupController = igroupController;
         clientGrid = groupController.getGroupObject().grid;
         form = iform;
@@ -318,7 +322,7 @@ public class GridTableController {
         this.forceHidden = forceHidden;
     }
 
-    public lsfusion.client.form.object.table.GridController getGroupController() {
+    public GridController getGroupController() {
         return groupController;
     }
 

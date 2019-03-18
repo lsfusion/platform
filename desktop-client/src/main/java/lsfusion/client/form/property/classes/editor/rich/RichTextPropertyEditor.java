@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.classes.editor.rich;
 
-import lsfusion.client.form.ClientPropertyTableEditorComponent;
+import lsfusion.client.form.property.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 import lsfusion.interop.form.design.ComponentDesign;

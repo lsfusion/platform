@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.table.grid;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.user.preferences.GridUserPreferences;
+import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.layout.view.JComponentPanel;
 
 import javax.swing.*;

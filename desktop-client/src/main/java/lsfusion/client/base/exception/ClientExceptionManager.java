@@ -1,9 +1,9 @@
 package lsfusion.client.base.exception;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.client.Log;
+import lsfusion.client.base.Log;
 import lsfusion.client.Main;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.remote.ConnectionLostManager;
 import lsfusion.interop.exception.NonFatalRemoteClientException;
 import lsfusion.interop.exception.RemoteAbandonedException;

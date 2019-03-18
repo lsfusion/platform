@@ -2,6 +2,7 @@ package lsfusion.client.form.object.table.tree;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.object.table.AbstractTableController;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.base.RmiQueue;
@@ -11,8 +12,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.panel.PanelController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.client.form.user.queries.FilterController;
-import lsfusion.client.logics.*;
+import lsfusion.client.form.filter.user.FilterController;
 import lsfusion.interop.form.user.Order;
 
 import java.awt.*;

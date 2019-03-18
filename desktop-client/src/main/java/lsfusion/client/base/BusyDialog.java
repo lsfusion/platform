@@ -2,7 +2,6 @@ package lsfusion.client.base;
 
 import lsfusion.interop.ProgressBar;
 import lsfusion.client.Main;
-import lsfusion.client.SwingUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

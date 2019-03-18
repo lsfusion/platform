@@ -1,7 +1,7 @@
 package lsfusion.http.provider.form;
 
-import lsfusion.client.logics.ClientForm;
-import lsfusion.client.logics.ClientFormChanges;
+import lsfusion.client.form.ClientForm;
+import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;

@@ -8,7 +8,7 @@ import bibliothek.gui.dock.common.event.CDockableLocationEvent;
 import bibliothek.gui.dock.common.event.CDockableLocationListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
-import lsfusion.client.EditReportInvoker;
+import lsfusion.client.form.print.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.navigator.ClientNavigator;

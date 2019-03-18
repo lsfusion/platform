@@ -3,7 +3,7 @@ package lsfusion.client.form.property.classes.editor;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
