@@ -2304,8 +2304,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedCancelAProp(List<NamedPropertyUsage> keepSessionProps, boolean keepAllSessionProps)
             throws ScriptingErrorLog.SemanticErrorException {
-        LAP result = addCancelAProp(null, LocalizedString.NONAME, getMigrateProps(keepSessionProps, keepAllSessionProps));
-        return new LAPWithParams(result, new ArrayList<Integer>());
+        LA result = addCancelAProp(null, LocalizedString.NONAME, getMigrateProps(keepSessionProps, keepAllSessionProps));
+        return new LAWithParams(result, new ArrayList<Integer>());
     }
 
     private FunctionSet<SessionDataProperty> getMigrateProps(List<NamedPropertyUsage> keepSessionProps, boolean keepAllSessionProps) throws ScriptingErrorLog.SemanticErrorException {

@@ -41,7 +41,6 @@ import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
 import javax.tools.*;
 import java.io.File;
@@ -53,14 +52,10 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static lsfusion.server.context.ThreadLocalContext.getRmiManager;
 import static lsfusion.server.physics.dev.debug.ActionDelegationType.*;
 
 public class ActionDebugger implements DebuggerService {

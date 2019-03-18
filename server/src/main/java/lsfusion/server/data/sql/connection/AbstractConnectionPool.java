@@ -1,7 +1,6 @@
 package lsfusion.server.data.sql.connection;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.mutability.MutableObject;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.mutability.MutableObject;

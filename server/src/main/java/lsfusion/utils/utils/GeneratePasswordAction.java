@@ -2,26 +2,25 @@ package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.language.ScriptingActionProperty;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.UtilsLogicsModule;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.Random;
 
-public class GeneratePasswordActionProperty extends ScriptingActionProperty {
+public class GeneratePasswordAction extends InternalAction {
     private final ClassPropertyInterface lengthInterface;
     private final ClassPropertyInterface useAtLeastOneDigitInterface;
     private final ClassPropertyInterface useBothRegistersInterface;
 
     private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    public GeneratePasswordActionProperty(UtilsLogicsModule LM, ValueClass... classes) {
+    public GeneratePasswordAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
@@ -31,7 +30,7 @@ public class GeneratePasswordActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Integer length = (Integer) context.getKeyValue(lengthInterface).getValue();
         boolean useAtLeastOneDigit = context.getKeyValue(useAtLeastOneDigitInterface).getValue() != null;
         boolean useBothRegisters = context.getKeyValue(useBothRegistersInterface).getValue() != null;

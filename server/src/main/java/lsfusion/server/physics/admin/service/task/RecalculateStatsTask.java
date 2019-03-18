@@ -20,7 +20,6 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

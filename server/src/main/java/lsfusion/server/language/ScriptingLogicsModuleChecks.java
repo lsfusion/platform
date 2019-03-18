@@ -21,10 +21,6 @@ import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -600,7 +596,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkSessionPropertyParameter(LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkSessionPropertyParameter(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.getLP() == null) {
             errLog.emitSessionOperatorParameterError(parser);
         }

@@ -7,7 +7,6 @@ import lsfusion.base.file.IOUtils;
 import lsfusion.server.base.task.GroupSplitTask;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.base.task.GroupSplitTask;
 import lsfusion.server.physics.dev.debug.DebuggerService;
 import lsfusion.server.physics.dev.debug.LocalhostClientSocketFactory;
 import org.apache.log4j.Logger;
@@ -18,7 +17,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import static lsfusion.server.context.ThreadLocalContext.getRmiManager;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.getRmiManager;
 
 public class InitActionDebuggerTask extends GroupSplitTask<String> {
     @Override
@@ -53,7 +52,7 @@ public class InitActionDebuggerTask extends GroupSplitTask<String> {
         try {
             sourceDir = IOUtils.createTempDirectory("lsfusiondebug");
 
-            DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(ActionPropertyDebugger.getInstance(), 0, new LocalhostClientSocketFactory(), new LocalRMIServerSocketFactory());
+            DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(ActionDebugger.getInstance(), 0, new LocalhostClientSocketFactory(), new LocalRMIServerSocketFactory());
             int port = getRmiManager().getDebuggerPort();
             Registry registry = LocateRegistry.createRegistry(port);
             registry.bind("lsfDebuggerService", stub);

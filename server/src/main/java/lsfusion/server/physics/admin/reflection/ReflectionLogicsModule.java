@@ -161,16 +161,16 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP notNullQuantityTableColumn;
     public LA recalculateAggregationTableColumn;
 
-    public LCP disableClassesTable;
-    public LCP disableStatsTable;
-    public LCP disableAggregationsTableColumn;
-    public LCP disableClassesTableColumn;
-    public LCP disableStatsTableColumn;
+    public LP disableClassesTable;
+    public LP disableStatsTable;
+    public LP disableAggregationsTableColumn;
+    public LP disableClassesTableColumn;
+    public LP disableStatsTableColumn;
 
-    public LCP disableClassesTableSID;
-    public LCP disableStatsTableSID;
-    public LCP disableAggregationsTableColumnSID;
-    public LCP disableStatsTableColumnSID;
+    public LP disableClassesTableSID;
+    public LP disableStatsTableSID;
+    public LP disableAggregationsTableColumnSID;
+    public LP disableStatsTableColumnSID;
 
     public LP<?> sidTableDropColumn;
     public LP<?> sidDropColumn;

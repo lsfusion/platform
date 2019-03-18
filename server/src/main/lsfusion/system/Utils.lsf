@@ -99,7 +99,7 @@ protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.server.logics.classes.
 // ---------------------------------- Генерация паролей  ---------------------------------- //
 generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
 //length, use at least one digit requirement, use both registers requirement
-generatePassword 'Сгенерировать пароль' INTERNAL 'lsfusion.utils.utils.GeneratePasswordActionProperty' (INTEGER, BOOLEAN, BOOLEAN);
+generatePassword 'Сгенерировать пароль' INTERNAL 'lsfusion.utils.utils.GeneratePasswordAction' (INTEGER, BOOLEAN, BOOLEAN);
 
 // --------------------------------------------- Работа со строками --------------------------------- //
 
