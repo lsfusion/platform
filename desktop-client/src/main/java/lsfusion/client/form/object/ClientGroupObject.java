@@ -10,7 +10,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.filter.ClientFilter;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.object.table.ClientToolbar;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyReader;
@@ -195,7 +195,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             return true;
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateRowBackgroundValues(readKeys);
         }
 
@@ -217,7 +217,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             return true;
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateRowForegroundValues(readKeys);
         }
 

@@ -1,18 +1,16 @@
 package lsfusion.client.form.object.table;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.LogicsSupplier;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.panel.PanelController;
 import lsfusion.client.form.user.queries.FilterController;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.logics.ClientForm;
 
 import java.awt.*;
 import java.util.List;
 
-public abstract class AbstractGroupObjectController implements GroupObjectLogicsSupplier {
+public abstract class AbstractTableController implements TableController {
     protected final ClientFormController formController;
     protected final ClientFormLayout formLayout;
 
@@ -20,7 +18,7 @@ public abstract class AbstractGroupObjectController implements GroupObjectLogics
     protected final ToolbarView toolbarView;
     protected FilterController filter;
 
-    public AbstractGroupObjectController(ClientFormController formController, ClientFormLayout formLayout, ClientToolbar toolbar) {
+    public AbstractTableController(ClientFormController formController, ClientFormLayout formLayout, ClientToolbar toolbar) {
         this.formController = formController;
         this.formLayout = formLayout;
 

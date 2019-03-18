@@ -8,10 +8,10 @@ import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.object.table.grid.GridTableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.client.form.user.queries.CalculationsView;
-import lsfusion.client.form.object.table.grid.GridController;
 import lsfusion.client.form.user.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.panel.PanelController;
@@ -35,10 +35,10 @@ import java.util.List;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
-public class GroupObjectController extends AbstractGroupObjectController {
+public class GridController extends AbstractTableController {
     private final ClientGroupObject groupObject;
 
-    public GridController grid;
+    public GridTableController grid;
 
     protected CalculationsView calculationsView;
     public ShowTypeController showType;
@@ -47,17 +47,17 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public ClassViewType classView = ClassViewType.DEFAULT;
 
-    public GroupObjectController(ClientFormController formController, ClientFormLayout formLayout) throws IOException {
+    public GridController(ClientFormController formController, ClientFormLayout formLayout) throws IOException {
         this(null, formController, formLayout, null);
     }
 
-    public GroupObjectController(ClientGroupObject igroupObject, ClientFormController formController, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
+    public GridController(ClientGroupObject igroupObject, ClientFormController formController, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
         super(formController, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
 
-        panel = new PanelController(GroupObjectController.this.formController, formLayout) {
+        panel = new PanelController(GridController.this.formController, formLayout) {
             protected void addGroupObjectActions(final JComponent comp) {
-                GroupObjectController.this.addGroupObjectActions(comp);
+                GridController.this.addGroupObjectActions(comp);
                 if(filter != null) {
                     filter.getView().addActionsToPanelInputMap(comp);
                 }
@@ -75,7 +75,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
                             @Override
                             public void run() {
                                 try {
-                                    GroupObjectController.this.formController.changeFilter(groupObject, getConditions());
+                                    GridController.this.formController.changeFilter(groupObject, getConditions());
                                     grid.table.requestFocusInWindow();
                                 } catch (IOException e) {
                                     throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
@@ -94,7 +94,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
             }
 
             // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
-            grid = new GridController(this, this.formController, userPreferences);
+            grid = new GridTableController(this, this.formController, userPreferences);
             addGroupObjectActions(grid.getGridView());
             if (filter != null) {
                 filter.getView().addActionsToInputMap(grid.table);

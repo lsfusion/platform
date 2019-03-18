@@ -1,6 +1,6 @@
 package lsfusion.client.form.user.queries;
 
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.user.ItemAdapter;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.filter.ClientPropertyFilterValue;
@@ -13,7 +13,7 @@ public class PropertyFilterValueView extends FilterValueView {
 
     private final ClientPropertyFilterValue filterValue;
 
-    public PropertyFilterValueView(FilterValueListener ilistener, ClientPropertyFilterValue ifilterValue, GroupObjectLogicsSupplier logicsSupplier) {
+    public PropertyFilterValueView(FilterValueListener ilistener, ClientPropertyFilterValue ifilterValue, TableController logicsSupplier) {
         super(ilistener);
 
         filterValue = ifilterValue;

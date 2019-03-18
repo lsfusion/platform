@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.preferences;
 
 import lsfusion.client.Main;
-import lsfusion.client.form.object.table.GroupObjectController;
+import lsfusion.client.form.object.table.GridController;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.object.table.grid.GridTable;
 import lsfusion.client.form.user.queries.FilterView;
@@ -19,7 +19,7 @@ public class UserPreferencesButton extends ToolbarGridButton {
     public static final ImageIcon PREFERENCES_UNSAVED_ICON = new ImageIcon(FilterView.class.getResource("/images/userPreferences.png"));
     private GridTable table;
 
-    public UserPreferencesButton(final GridTable table, final GroupObjectController groupController) {
+    public UserPreferencesButton(final GridTable table, final GridController groupController) {
         super(table.hasUserPreferences() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON, null);
         this.table = table;
         updateTooltip();

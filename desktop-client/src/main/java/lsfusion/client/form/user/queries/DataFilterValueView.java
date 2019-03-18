@@ -2,7 +2,7 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.filter.ClientDataFilterValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -17,9 +17,9 @@ public abstract class DataFilterValueView extends FilterValueView {
     private final DataFilterValueViewTable valueTable;
 
     // нужен для получения текущих значений в таблице
-    private final GroupObjectLogicsSupplier logicsSupplier;
+    private final TableController logicsSupplier;
 
-    public DataFilterValueView(FilterValueListener listener, ClientDataFilterValue ifilterValue, ClientPropertyDraw property, GroupObjectLogicsSupplier ilogicsSupplier) {
+    public DataFilterValueView(FilterValueListener listener, ClientDataFilterValue ifilterValue, ClientPropertyDraw property, TableController ilogicsSupplier) {
         super(listener);
 
         filterValue = ifilterValue;

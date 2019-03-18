@@ -3,7 +3,7 @@ package lsfusion.client.form.user;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.view.ClientFormLayout;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientShowType;
 import lsfusion.interop.form.property.ClassViewType;
@@ -13,11 +13,11 @@ import java.io.IOException;
 public class ShowTypeController {
 
     private final ClientShowType showType;
-    private final GroupObjectLogicsSupplier logicsSupplier;
+    private final TableController logicsSupplier;
     private final ClientFormController form;
     private final ShowTypeView view;
 
-    public ShowTypeController(ClientGroupObject groupObject, final GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
+    public ShowTypeController(ClientGroupObject groupObject, final TableController logicsSupplier, final ClientFormController form) {
         this.showType = groupObject.showType;
         this.logicsSupplier = logicsSupplier;
         this.form = form;

@@ -9,7 +9,7 @@ import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.renderer.FormatPropertyRenderer;
@@ -485,7 +485,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+    public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
         controller.updateDrawPropertyValues(this, readKeys, updateKeys);
     }
 
@@ -584,7 +584,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
         }
 
@@ -606,7 +606,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
             controller.updateShowIfs(ClientPropertyDraw.this, values);
         }
 
@@ -628,7 +628,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return false;
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
         }
 
         public int getID() {
@@ -649,7 +649,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateReadOnlyValues(ClientPropertyDraw.this, readKeys);
         }
 
@@ -671,7 +671,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateCellBackgroundValues(ClientPropertyDraw.this, readKeys);
         }
 
@@ -693,7 +693,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
             controller.updateCellForegroundValues(ClientPropertyDraw.this, readKeys);
         }
 

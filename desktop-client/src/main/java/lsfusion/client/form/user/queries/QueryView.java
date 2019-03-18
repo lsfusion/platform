@@ -1,7 +1,7 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.property.cell.DataPanelView;
 import lsfusion.client.form.layout.view.JComponentPanel;
@@ -183,7 +183,7 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
     }
 
     // действия, вызываемые контроллером
-    void addCondition(ClientPropertyFilter condition, GroupObjectLogicsSupplier logicsSupplier) {
+    void addCondition(ClientPropertyFilter condition, TableController logicsSupplier) {
         QueryConditionView condView = new QueryConditionView(condition, logicsSupplier, this);
         condViews.put(condition, condView);
 

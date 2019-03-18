@@ -8,7 +8,7 @@ import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientPropertyTable;
-import lsfusion.client.form.object.table.GroupObjectController;
+import lsfusion.client.form.object.table.GridController;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.user.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.view.ClientFormLayout;
@@ -97,8 +97,8 @@ public class GridTable extends ClientPropertyTable {
 
     private boolean isInternalNavigating = false;
 
-    private final GridController gridController;
-    private final GroupObjectController groupController;
+    private final GridTableController gridController;
+    private final GridController groupController;
 
     private boolean tabVertical = false;
 

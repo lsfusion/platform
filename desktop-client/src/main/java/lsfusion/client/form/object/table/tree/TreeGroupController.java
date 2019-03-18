@@ -2,7 +2,7 @@ package lsfusion.client.form.object.table.tree;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.object.table.AbstractGroupObjectController;
+import lsfusion.client.form.object.table.AbstractTableController;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.layout.view.ClientFormLayout;
@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class TreeGroupController extends AbstractGroupObjectController {
+public class TreeGroupController extends AbstractTableController {
     public final ClientTreeGroup treeGroup;
     private final TreeView view;
 

@@ -12,14 +12,14 @@ public class GridView extends JComponentPanel {
 
     private final ClientGrid grid;
     private final GridTable gridTable;
-    private final GridController gridController;
+    private final GridTableController gridController;
 
     @Override
     public Dimension getMaxPreferredSize() { // ради этого вся ветка maxPreferredSize и делалась
         return gridTable.getMaxPreferredSize(getPreferredSize());
     }
 
-    public GridView(GridController igridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
+    public GridView(GridTableController igridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {
         gridController = igridController;
 
         grid = gridController.getGroupController().getGroupObject().grid;
@@ -80,7 +80,7 @@ public class GridView extends JComponentPanel {
         add(pane, BorderLayout.CENTER);
     }
 
-    public GridController getGridController() {
+    public GridTableController getGridController() {
         return gridController;
     }
 

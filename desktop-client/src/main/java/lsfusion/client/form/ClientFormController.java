@@ -14,8 +14,8 @@ import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.client.form.layout.view.TabbedClientContainerView;
 import lsfusion.client.form.object.*;
-import lsfusion.client.form.object.table.GroupObjectController;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.GridController;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.user.ItemAdapter;
@@ -120,7 +120,7 @@ public class ClientFormController implements AsyncListener {
 
     private final ClientFormLayout formLayout;
 
-    private final Map<ClientGroupObject, GroupObjectController> controllers = new HashMap<>();
+    private final Map<ClientGroupObject, GridController> controllers = new HashMap<>();
     private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new HashMap<>();
 
     private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
@@ -301,14 +301,14 @@ public class ClientFormController implements AsyncListener {
 
         for (ClientGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                GroupObjectController controller = new GroupObjectController(group, this, formLayout, extractGridUserPreferences(preferences, group));
+                GridController controller = new GridController(group, this, formLayout, extractGridUserPreferences(preferences, group));
                 controllers.put(group, controller);
             }
         }
 
         for (ClientPropertyDraw properties : form.getPropertyDraws()) {
             if (properties.groupObject == null) {
-                GroupObjectController controller = new GroupObjectController(this, formLayout);
+                GridController controller = new GridController(this, formLayout);
                 controllers.put(null, controller);
                 break;
             }
@@ -498,10 +498,10 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public GroupObjectLogicsSupplier getGroupObjectLogicsSupplier(ClientGroupObject group) {
-        GroupObjectController groupObjectController = controllers.get(group);
-        if (groupObjectController != null) {
-            return groupObjectController;
+    public TableController getGroupObjectLogicsSupplier(ClientGroupObject group) {
+        GridController gridController = controllers.get(group);
+        if (gridController != null) {
+            return gridController;
         }
 
         return group.parent != null
@@ -594,7 +594,7 @@ public class ClientFormController implements AsyncListener {
             //применяем пользовательские свойства
             boolean hasUserOrders = false;
             Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> defaultOrders = null;
-            for (GroupObjectController controller : controllers.values()) {
+            for (GridController controller : controllers.values()) {
                 OrderedMap<ClientPropertyDraw, Boolean> objectUserOrders = controller.getUserOrders();
                 if(objectUserOrders != null) {
                     if(defaultOrders == null)
@@ -619,25 +619,25 @@ public class ClientFormController implements AsyncListener {
         return form.getDefaultOrders(groupObject);
     }
 
-    public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders, GroupObjectController groupObjectController) throws IOException {
+    public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders, GridController gridController) throws IOException {
         Set<ClientGroupObject> wasOrder = new HashSet<>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
             ClientGroupObject groupObject = property.getGroupObject();
-            assert groupObjectController == null || groupObject.equals(groupObjectController.getGroupObject());
-            GroupObjectLogicsSupplier groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
-            if (groupObjectLogicsSupplier != null) {
-                groupObjectLogicsSupplier.changeOrder(property, !wasOrder.contains(groupObject) ? REPLACE : ADD);
+            assert gridController == null || groupObject.equals(gridController.getGroupObject());
+            TableController tableController = getGroupObjectLogicsSupplier(groupObject);
+            if (tableController != null) {
+                tableController.changeOrder(property, !wasOrder.contains(groupObject) ? REPLACE : ADD);
                 wasOrder.add(groupObject);
                 if (!entry.getValue()) {
-                    groupObjectLogicsSupplier.changeOrder(property, DIR);
+                    tableController.changeOrder(property, DIR);
                 }
             }
         }
-        if(groupObjectController != null) {
-            ClientGroupObject groupObject = groupObjectController.getGroupObject();
+        if(gridController != null) {
+            ClientGroupObject groupObject = gridController.getGroupObject();
             if(!wasOrder.contains(groupObject)) {
-                groupObjectController.clearOrders();
+                gridController.clearOrders();
             }
         }
     }
@@ -684,7 +684,7 @@ public class ClientFormController implements AsyncListener {
 
         modifyFormChangesWithChangePropertyAsyncs(requestIndex, formChanges);
 
-        for (GroupObjectController controller : controllers.values()) {
+        for (GridController controller : controllers.values()) {
             controller.processFormChanges(formChanges, currentGridObjects);
         }
 
@@ -866,7 +866,7 @@ public class ClientFormController implements AsyncListener {
 //                ExceptionUtils.dumpStack();
 //                System.out.println("------------------------");
 
-                GroupObjectController controller = controllers.get(property.groupObject);
+                GridController controller = controllers.get(property.groupObject);
 
                 ClientGroupObjectValue propertyKey = controller != null && !controller.hasPanelProperty(property)
                                                      ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey)
@@ -892,7 +892,7 @@ public class ClientFormController implements AsyncListener {
 
     public boolean isAsyncModifyObject(ClientPropertyDraw property) {
         if (property.addRemove != null) {
-            GroupObjectController controller = controllers.get(property.addRemove.first.groupObject);
+            GridController controller = controllers.get(property.addRemove.first.groupObject);
             if (controller != null && controller.isGrid()) {
                 return true;
             }
@@ -908,7 +908,7 @@ public class ClientFormController implements AsyncListener {
         final ClientObject object = property.addRemove.first;
         final boolean add = property.addRemove.second;
 
-        final GroupObjectController controller = controllers.get(object.groupObject);
+        final GridController controller = controllers.get(object.groupObject);
 
         final long ID;
         final ClientGroupObjectValue value;
@@ -943,7 +943,7 @@ public class ClientFormController implements AsyncListener {
     public ClientGroupObjectValue getFullCurrentKey() {
         ClientGroupObjectValue fullKey = new ClientGroupObjectValue();
 
-        for (GroupObjectController group : controllers.values()) {
+        for (GridController group : controllers.values()) {
             fullKey.putAll(group.getCurrentObject());
         }
 
@@ -1368,7 +1368,7 @@ public class ClientFormController implements AsyncListener {
     public FormUserPreferences getUserPreferences() {
         List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
         List<GroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
-        for (GroupObjectController controller : controllers.values()) {
+        for (GridController controller : controllers.values()) {
             if (controller.getGroupObject() != null) {
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
                 groupObjectGeneralPreferencesList.add(controller.getGeneralGridPreferences());
@@ -1394,7 +1394,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void runSingleGroupReport(final GroupObjectController groupController) {
+    public void runSingleGroupReport(final GridController groupController) {
         commitOrCancelCurrentEditing();
         try {
             rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupReport") {
@@ -1415,7 +1415,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void runSingleGroupXlsExport(final GroupObjectController groupController) {
+    public void runSingleGroupXlsExport(final GridController groupController) {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupXlsExport") {
             @Override

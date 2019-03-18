@@ -1,6 +1,6 @@
 package lsfusion.client.form.user.queries;
 
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.user.ItemAdapter;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.filter.ClientObjectFilterValue;
@@ -15,7 +15,7 @@ class ObjectFilterValueView extends FilterValueView {
 
     private final JComboBox objectView;
 
-    public ObjectFilterValueView(FilterValueListener ilistener, ClientObjectFilterValue ifilterValue, GroupObjectLogicsSupplier logicsSupplier) {
+    public ObjectFilterValueView(FilterValueListener ilistener, ClientObjectFilterValue ifilterValue, TableController logicsSupplier) {
         super(ilistener);
 
         filterValue = ifilterValue;

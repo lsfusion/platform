@@ -2,7 +2,7 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.SwingUtils;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.object.table.GroupObjectLogicsSupplier;
+import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.object.table.TableTransferHandler;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
@@ -27,9 +27,9 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     private DataFilterValueView valueFilterView;
     private final Model model;
     private EventObject editEvent;
-    private final GroupObjectLogicsSupplier logicsSupplier;
+    private final TableController logicsSupplier;
 
-    public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, GroupObjectLogicsSupplier ilogicsSupplier) {
+    public DataFilterValueViewTable(DataFilterValueView valueFilterView, ClientPropertyDraw property, TableController ilogicsSupplier) {
         super(new Model());
 
         logicsSupplier = ilogicsSupplier;
