@@ -1,7 +1,7 @@
 package lsfusion.client.form.filter;
 
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 

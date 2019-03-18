@@ -1,7 +1,6 @@
 package lsfusion.client.form.property.cell;
 
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.ClientPropertyContextMenuPopup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;

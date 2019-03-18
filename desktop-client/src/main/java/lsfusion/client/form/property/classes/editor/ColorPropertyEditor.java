@@ -3,7 +3,7 @@ package lsfusion.client.form.property.classes.editor;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.logics.classes.ClientColorClass;
+import lsfusion.client.classes.ClientColorClass;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

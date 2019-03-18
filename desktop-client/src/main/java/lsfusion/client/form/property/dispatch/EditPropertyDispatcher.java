@@ -3,14 +3,14 @@ package lsfusion.client.form.property.dispatch;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.lambda.Callback;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.DispatcherListener;
-import lsfusion.client.form.EditPropertyHandler;
+import lsfusion.client.base.dispatch.DispatcherListener;
+import lsfusion.client.form.property.edit.EditPropertyHandler;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.logics.classes.ClientType;
+import lsfusion.client.classes.ClientType;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.EventObject;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
-import static lsfusion.client.logics.classes.ClientTypeSerializer.deserializeClientType;
+import static lsfusion.client.classes.ClientTypeSerializer.deserializeClientType;
 
 public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     protected final EditPropertyHandler handler;

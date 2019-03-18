@@ -4,7 +4,7 @@ import bibliothek.gui.dock.common.event.CKeyboardListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import com.google.common.base.Throwables;
 import lsfusion.interop.form.stat.report.ReportGenerator;
-import lsfusion.client.EditReportInvoker;
+import lsfusion.client.form.print.EditReportInvoker;
 import lsfusion.client.form.print.ReportViewer;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;

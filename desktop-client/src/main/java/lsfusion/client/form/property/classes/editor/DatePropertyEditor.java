@@ -4,8 +4,8 @@ import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
-import lsfusion.client.SwingUtils;
-import lsfusion.client.form.ClientPropertyTableEditorComponent;
+import lsfusion.client.base.SwingUtils;
+import lsfusion.client.form.property.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
 import lsfusion.interop.form.design.ComponentDesign;
 

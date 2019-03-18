@@ -14,7 +14,7 @@ import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.client.form.user.queries.ClientCalculations;
+import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.property.ClassViewType;

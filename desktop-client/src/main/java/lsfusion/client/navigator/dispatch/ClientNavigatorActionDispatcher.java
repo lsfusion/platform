@@ -1,6 +1,6 @@
 package lsfusion.client.navigator.dispatch;
 
-import lsfusion.client.form.DispatcherListener;
+import lsfusion.client.base.dispatch.DispatcherListener;
 import lsfusion.client.base.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.action.ServerResponse;

@@ -1,6 +1,5 @@
 package lsfusion.client.form.print;
 
-import lsfusion.client.EditReportInvoker;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.swing.JRViewer;
 import net.sf.jasperreports.swing.JRViewerPanel;

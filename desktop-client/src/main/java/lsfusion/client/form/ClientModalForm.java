@@ -12,7 +12,7 @@ import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 import java.util.EventObject;
 
-import static lsfusion.client.SwingUtils.*;
+import static lsfusion.client.base.SwingUtils.*;
 
 public class ClientModalForm extends JDialog {
 

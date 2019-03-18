@@ -1,9 +1,9 @@
 package lsfusion.client.form.classes;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.SwingUtils;
-import lsfusion.client.logics.classes.ClientClass;
-import lsfusion.client.logics.classes.ClientObjectClass;
+import lsfusion.client.base.SwingUtils;
+import lsfusion.client.classes.ClientClass;
+import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;

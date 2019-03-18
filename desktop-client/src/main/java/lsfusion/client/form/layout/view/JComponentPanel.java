@@ -6,7 +6,7 @@ import lsfusion.interop.form.layout.FlexLayout;
 import javax.swing.*;
 import java.awt.*;
 
-import static lsfusion.client.SwingUtils.overrideSize;
+import static lsfusion.client.base.SwingUtils.overrideSize;
 
 // выполняет роль FlexPanel в web
 public class JComponentPanel extends JPanel {

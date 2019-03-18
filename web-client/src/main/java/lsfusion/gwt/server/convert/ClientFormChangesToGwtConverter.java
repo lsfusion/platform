@@ -2,14 +2,14 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.client.logics.*;
-import lsfusion.client.logics.classes.ClientImageClass;
+import lsfusion.client.classes.ClientImageClass;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.shared.view.GClassViewType;

@@ -4,7 +4,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.panel.PanelController;
-import lsfusion.client.form.user.queries.FilterController;
+import lsfusion.client.form.filter.user.FilterController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.awt.*;

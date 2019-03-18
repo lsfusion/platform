@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.classes.renderer;
 
 import lsfusion.base.file.RawFileData;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 

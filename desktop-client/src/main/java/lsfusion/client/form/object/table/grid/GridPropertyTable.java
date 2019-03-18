@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.table.grid;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;

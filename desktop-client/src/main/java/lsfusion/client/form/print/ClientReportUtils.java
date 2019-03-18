@@ -2,7 +2,7 @@ package lsfusion.client.form.print;
 
 import lsfusion.interop.form.stat.report.ReportGenerator;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Log;
+import lsfusion.client.base.Log;
 import lsfusion.client.base.exception.ClientExceptionManager;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;

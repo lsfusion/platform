@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.classes.renderer;
 
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 public class HTMLPropertyRenderer extends FilePropertyRenderer {

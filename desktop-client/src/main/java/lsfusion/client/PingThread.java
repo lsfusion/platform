@@ -1,6 +1,7 @@
 package lsfusion.client;
 
 import lsfusion.client.base.RmiQueue;
+import lsfusion.client.navigator.ClientCallBackProcessor;
 import lsfusion.client.remote.ConnectionLostManager;
 import lsfusion.interop.navigator.callback.ClientCallBackInterface;
 import lsfusion.interop.navigator.callback.LifecycleMessage;

@@ -2,7 +2,6 @@ package lsfusion.client.navigator;
 
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.serialization.SerializationUtil;
-import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.client.Main;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;

@@ -1,9 +1,8 @@
 package lsfusion.client.form.property.cell;
 
 import lsfusion.base.SystemUtils;
-import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.Main;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.property.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.dispatch.SimpleChangePropertyDispatcher;

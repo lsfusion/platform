@@ -1,15 +1,16 @@
 package lsfusion.client.form.property.cell;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.*;
+import lsfusion.client.form.property.edit.EditPropertyHandler;
 import lsfusion.client.form.property.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.classes.editor.DialogBasedPropertyEditor;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.logics.classes.ClientType;
+import lsfusion.client.classes.ClientType;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexConstraints;
@@ -20,8 +21,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
-import static lsfusion.client.SwingUtils.overrideSize;
-import static lsfusion.client.form.EditBindingMap.getPropertyKeyPressActionSID;
+import static lsfusion.client.base.SwingUtils.overrideSize;
+import static lsfusion.client.form.property.edit.EditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;

@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.classes.renderer.link;
 
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import org.fit.cssbox.swingbox.BrowserPane;

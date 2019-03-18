@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.classes.renderer.link;
 
-import lsfusion.client.SwingUtils;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 public class JSONLinkPropertyRenderer extends LinkPropertyRenderer {

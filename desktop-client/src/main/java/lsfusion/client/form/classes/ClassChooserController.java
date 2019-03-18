@@ -3,7 +3,7 @@ package lsfusion.client.form.classes;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientObject;
-import lsfusion.client.logics.classes.ClientObjectClass;
+import lsfusion.client.classes.ClientObjectClass;
 
 import java.io.IOException;
 

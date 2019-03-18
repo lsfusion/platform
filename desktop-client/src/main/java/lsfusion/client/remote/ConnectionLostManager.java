@@ -6,6 +6,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.client.*;
 import lsfusion.client.MainFrame;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.exception.ClientExceptionManager;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.base.DaemonThreadFactory;

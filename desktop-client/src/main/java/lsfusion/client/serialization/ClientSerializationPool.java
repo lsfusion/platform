@@ -2,6 +2,7 @@ package lsfusion.client.serialization;
 
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.serialization.SerializationPool;
+import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.form.filter.ClientFilter;
 import lsfusion.client.form.filter.ClientRegularFilter;
@@ -15,8 +16,7 @@ import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.user.queries.ClientCalculations;
-import lsfusion.client.logics.*;
+import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 
 
 public class ClientSerializationPool extends SerializationPool<ClientForm> {

@@ -2,9 +2,9 @@ package lsfusion.client.form.property.classes.editor.rich;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.client.Log;
+import lsfusion.client.base.Log;
 import lsfusion.client.Main;
-import lsfusion.client.form.user.ShowTypeView;
+import lsfusion.client.form.object.ShowTypeView;
 import net.atlanticbb.tantlinger.ui.DefaultAction;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;
 import net.atlanticbb.tantlinger.ui.text.HTMLUtils;

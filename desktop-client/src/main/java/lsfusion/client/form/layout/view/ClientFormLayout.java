@@ -1,6 +1,8 @@
 package lsfusion.client.form.layout.view;
 
 import lsfusion.client.*;
+import lsfusion.client.base.focus.ContainerFocusListener;
+import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.layout.ClientContainer;

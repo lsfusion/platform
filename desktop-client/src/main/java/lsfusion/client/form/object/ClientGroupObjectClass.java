@@ -1,8 +1,8 @@
 package lsfusion.client.form.object;
 
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.client.logics.classes.ClientClass;
-import lsfusion.client.logics.classes.ClientTypeSerializer;
+import lsfusion.client.classes.ClientClass;
+import lsfusion.client.classes.ClientTypeSerializer;
 
 import java.io.DataInputStream;
 import java.io.IOException;

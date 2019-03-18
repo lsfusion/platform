@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.client.base.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.navigator.window.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.DispatcherListener;
+import lsfusion.client.base.dispatch.DispatcherListener;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.action.ServerResponse;
