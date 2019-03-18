@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.cell;
 
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.table.AbstractTableModel;

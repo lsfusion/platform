@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.client.logics.ClientObject;
+import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import java.util.List;

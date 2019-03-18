@@ -1,7 +1,5 @@
 package lsfusion.gwt.shared.view;
 
-import lsfusion.client.logics.ClientGroupObject;
-
 import java.util.ArrayList;
 import java.util.List;
 

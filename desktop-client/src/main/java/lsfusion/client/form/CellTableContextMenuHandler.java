@@ -1,5 +1,6 @@
 package lsfusion.client.form;
 
+import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.property.cell.CellTableInterface;
 import lsfusion.client.logics.ClientPropertyDraw;
 

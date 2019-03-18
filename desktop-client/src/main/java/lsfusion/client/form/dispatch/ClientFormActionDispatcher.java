@@ -1,6 +1,7 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
+import lsfusion.client.base.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.navigator.window.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;

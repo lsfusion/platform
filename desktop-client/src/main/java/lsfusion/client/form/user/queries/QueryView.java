@@ -2,9 +2,9 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.object.GroupObjectLogicsSupplier;
-import lsfusion.client.form.RmiQueue;
+import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.property.cell.DataPanelView;
-import lsfusion.client.form.layout.JComponentPanel;
+import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.interop.form.event.KeyStrokes;

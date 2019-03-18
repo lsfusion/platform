@@ -18,7 +18,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 // уничтожаемые формы
-abstract class ClientDockable extends DefaultMultipleCDockable {
+public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private String canonicalName;
 

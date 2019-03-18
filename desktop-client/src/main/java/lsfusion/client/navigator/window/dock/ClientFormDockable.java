@@ -3,7 +3,7 @@ package lsfusion.client.navigator.window.dock;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.RmiQueue;
+import lsfusion.client.base.RmiQueue;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
 

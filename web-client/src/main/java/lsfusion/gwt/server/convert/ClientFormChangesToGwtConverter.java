@@ -2,6 +2,10 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.client.form.layout.ClientComponent;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.gwt.server.FileUtils;

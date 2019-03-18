@@ -2,7 +2,7 @@ package lsfusion.client.form.user.queries;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.object.GroupObjectLogicsSupplier;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 

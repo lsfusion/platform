@@ -1,9 +1,13 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.filter.ClientDataFilterValue;
+import lsfusion.client.form.filter.ClientFilterValue;
+import lsfusion.client.form.filter.ClientObjectFilterValue;
+import lsfusion.client.form.filter.ClientPropertyFilterValue;
 import lsfusion.client.form.object.GroupObjectLogicsSupplier;
-import lsfusion.client.form.ItemAdapter;
-import lsfusion.client.form.RmiQueue;
+import lsfusion.client.form.user.ItemAdapter;
+import lsfusion.client.base.RmiQueue;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.interop.form.property.Compare;

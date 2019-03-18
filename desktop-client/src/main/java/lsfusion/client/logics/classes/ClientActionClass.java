@@ -8,7 +8,7 @@ import lsfusion.client.form.property.cell.ActionPanelView;
 import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.property.classes.editor.ActionPropertyEditor;
 import lsfusion.client.form.property.classes.renderer.ActionPropertyRenderer;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 

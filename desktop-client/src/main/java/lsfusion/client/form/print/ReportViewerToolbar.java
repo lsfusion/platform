@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
-import lsfusion.client.form.RmiQueue;
+import lsfusion.client.base.RmiQueue;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperPrintManager;

@@ -2,10 +2,10 @@ package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.lambda.EProvider;
-import lsfusion.client.ClientLoggers;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.Main;
-import lsfusion.client.form.BusyDialogDisplayer;
-import lsfusion.client.form.BusyDisplayer;
+import lsfusion.client.base.BusyDialogDisplayer;
+import lsfusion.client.base.BusyDisplayer;
 import lsfusion.interop.PendingMethodInvocation;
 import lsfusion.interop.PendingRemoteInterface;
 import org.apache.log4j.Logger;

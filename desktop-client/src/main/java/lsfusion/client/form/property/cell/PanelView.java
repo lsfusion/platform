@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.cell;
 
-import lsfusion.client.form.dispatch.EditPropertyDispatcher;
+import lsfusion.client.form.property.dispatch.EditPropertyDispatcher;
 
 import javax.swing.*;
 import java.awt.*;

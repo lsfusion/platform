@@ -1,9 +1,9 @@
 package lsfusion.client.form.user.queries;
 
 import lsfusion.client.form.object.GroupObjectLogicsSupplier;
-import lsfusion.client.form.ItemAdapter;
+import lsfusion.client.form.user.ItemAdapter;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.client.logics.ClientPropertyFilterValue;
+import lsfusion.client.form.filter.ClientPropertyFilterValue;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;

@@ -1,8 +1,8 @@
 package lsfusion.client.form.classes;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.layout.ClientFormLayout;
-import lsfusion.client.logics.ClientObject;
+import lsfusion.client.form.layout.view.ClientFormLayout;
+import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.logics.classes.ClientObjectClass;
 
 import java.io.IOException;

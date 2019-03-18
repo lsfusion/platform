@@ -1,8 +1,8 @@
 package lsfusion.client.logics.filter;
 
-import lsfusion.client.logics.ClientFilterValue;
-import lsfusion.client.logics.ClientGroupObject;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.filter.ClientFilterValue;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;
 

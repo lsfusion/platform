@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
 

@@ -1,8 +1,8 @@
 package lsfusion.client.form.object.panel;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.layout.ClientFormLayout;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.layout.view.ClientFormLayout;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;

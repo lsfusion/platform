@@ -2,11 +2,10 @@ package lsfusion.client.form.object;
 
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.LogicsSupplier;
-import lsfusion.client.form.layout.ClientFormLayout;
+import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.panel.PanelController;
 import lsfusion.client.form.object.panel.ToolbarView;
 import lsfusion.client.form.user.queries.FilterController;
-import lsfusion.client.logics.ClientObject;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.ClientToolbar;
 

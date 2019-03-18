@@ -1,7 +1,7 @@
 package lsfusion.client.form.classes;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.RmiQueue;
+import lsfusion.client.base.RmiQueue;
 import lsfusion.client.logics.classes.ClientClass;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.navigator.tree.*;

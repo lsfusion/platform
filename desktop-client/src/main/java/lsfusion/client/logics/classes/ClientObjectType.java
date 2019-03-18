@@ -9,7 +9,7 @@ import lsfusion.client.form.property.cell.DataPanelView;
 import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.property.classes.editor.IntegerPropertyEditor;
 import lsfusion.client.form.property.classes.renderer.IntegralPropertyRenderer;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.DataType;
