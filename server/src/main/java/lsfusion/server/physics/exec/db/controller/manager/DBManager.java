@@ -34,7 +34,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.builder.QueryBuilder;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.query.result.ReadBatchResultHandler;
 import lsfusion.server.data.query.result.ResultHandler;

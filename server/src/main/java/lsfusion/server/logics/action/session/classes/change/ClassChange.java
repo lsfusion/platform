@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.query.modify.Modify;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;

@@ -15,7 +15,7 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
-import lsfusion.server.data.query.builder.QueryBuilder;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.SQLSyntax;

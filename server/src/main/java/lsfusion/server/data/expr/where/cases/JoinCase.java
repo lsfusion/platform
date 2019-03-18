@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.where.cases;
 
 import lsfusion.server.data.expr.where.Case;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.where.Where;
 
 public class JoinCase<U> extends Case<Join<U>> {

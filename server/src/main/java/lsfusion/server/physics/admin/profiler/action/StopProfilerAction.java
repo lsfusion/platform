@@ -16,7 +16,7 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.query.builder.Join;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.KeyField;
