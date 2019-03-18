@@ -17,7 +17,7 @@ import lsfusion.server.data.caches.InnerContext;
 import lsfusion.server.data.caches.MapValuesIterable;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
+import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.modify.Modify;

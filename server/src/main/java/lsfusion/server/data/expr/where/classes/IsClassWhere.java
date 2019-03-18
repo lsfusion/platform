@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.where.extra;
+package lsfusion.server.data.expr.where.classes;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;

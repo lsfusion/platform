@@ -18,7 +18,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.select.ExprEqualsJoin;
 import lsfusion.server.data.expr.key.ParamExpr;
-import lsfusion.server.data.expr.where.extra.EqualsWhere;
+import lsfusion.server.data.expr.where.classes.data.EqualsWhere;
 import lsfusion.server.data.query.compile.where.DataUpWhere;
 import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.query.compile.where.UpWheres;

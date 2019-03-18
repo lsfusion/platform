@@ -21,7 +21,7 @@ import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.expr.join.query.PartitionJoin;
 import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
+import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;

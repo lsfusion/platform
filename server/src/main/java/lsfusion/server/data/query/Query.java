@@ -30,7 +30,7 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
+import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.pack.Pack;
 import lsfusion.server.data.query.builder.AbstractJoin;

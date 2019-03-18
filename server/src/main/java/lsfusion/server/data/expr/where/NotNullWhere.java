@@ -15,7 +15,7 @@ import lsfusion.server.data.expr.NullableExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.join.select.ExprIndexedJoin;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
-import lsfusion.server.data.expr.where.extra.BinaryWhere;
+import lsfusion.server.data.expr.where.classes.data.BinaryWhere;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.stat.KeyStat;

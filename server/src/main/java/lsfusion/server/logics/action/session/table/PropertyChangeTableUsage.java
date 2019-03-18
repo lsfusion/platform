@@ -13,7 +13,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
+import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.builder.Join;

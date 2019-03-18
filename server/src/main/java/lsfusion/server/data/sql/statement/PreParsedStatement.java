@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.data.expr.where.extra.BinaryWhere;
+import lsfusion.server.data.expr.where.classes.data.BinaryWhere;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;

@@ -1,4 +1,4 @@
-package lsfusion.server.data.expr.where.extra;
+package lsfusion.server.data.expr.where.classes.data;
 
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.hash.HashContext;

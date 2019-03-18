@@ -26,7 +26,7 @@ import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
+import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.builder.Join;

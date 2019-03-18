@@ -33,7 +33,7 @@ import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
-import lsfusion.server.data.expr.where.extra.EqualsWhere;
+import lsfusion.server.data.expr.where.classes.data.EqualsWhere;
 import lsfusion.server.data.expr.where.pull.AndContext;
 import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;

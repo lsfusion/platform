@@ -28,7 +28,7 @@ import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.query.SubQueryExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
-import lsfusion.server.data.expr.where.extra.IsClassWhere;
+import lsfusion.server.data.expr.where.classes.IsClassWhere;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.PropStat;

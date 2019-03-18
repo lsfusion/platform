@@ -43,7 +43,7 @@ import lsfusion.server.data.expr.query.order.PartitionCalc;
 import lsfusion.server.data.expr.query.order.PartitionToken;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.StaticValueNullableExpr;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
+import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.query.LimitOptions;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.builder.Join;

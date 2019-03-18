@@ -3,7 +3,7 @@ package lsfusion.server.data.where;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.where.extra.BinaryWhere;
+import lsfusion.server.data.expr.where.classes.data.BinaryWhere;
 
 public class EqualMap extends HMap<BaseExpr,Equal> {
 
