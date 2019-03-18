@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 
 public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
 

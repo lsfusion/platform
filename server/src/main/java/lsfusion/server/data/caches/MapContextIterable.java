@@ -4,10 +4,10 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.comb.EmptyIterator;
 import lsfusion.server.data.expr.key.ParamExpr;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.MapTranslator;
-import lsfusion.server.data.translator.MapValuesTranslate;
-import lsfusion.server.data.translator.MapValuesTranslator;
+import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.translate.MapTranslator;
+import lsfusion.server.data.translate.MapValuesTranslate;
+import lsfusion.server.data.translate.MapValuesTranslator;
 import lsfusion.server.data.value.Value;
 
 import java.util.Iterator;

@@ -25,7 +25,7 @@ import lsfusion.server.data.query.compile.where.AbstractUpWhere;
 import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.physics.admin.Settings;
 
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {

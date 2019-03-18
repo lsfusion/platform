@@ -9,7 +9,7 @@ import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.exec.materialize.NotMaterializable;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;

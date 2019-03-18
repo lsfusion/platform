@@ -15,8 +15,8 @@ import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.inner.InnerBaseJoin;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.translator.ExprTranslator;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.ExprTranslator;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.type.Type;
 
 public abstract class ParamExpr extends VariableSingleClassExpr implements InnerBaseJoin<Object> {

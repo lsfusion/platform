@@ -3,7 +3,7 @@ package lsfusion.server.data.query.compile.where;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.inner.InnerExpr;
-import lsfusion.server.data.translator.JoinExprTranslator;
+import lsfusion.server.data.translate.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 
 public class InnerUpWhere extends AbstractUpWhere<InnerUpWhere> {

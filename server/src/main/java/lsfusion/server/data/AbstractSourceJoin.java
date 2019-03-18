@@ -15,7 +15,7 @@ import lsfusion.server.data.query.compile.ParseValue;
 import lsfusion.server.data.query.exec.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.table.Table;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.Value;

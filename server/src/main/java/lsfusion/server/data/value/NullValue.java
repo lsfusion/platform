@@ -8,7 +8,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.parse.AbstractParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;

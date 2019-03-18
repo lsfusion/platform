@@ -15,13 +15,13 @@ import lsfusion.server.data.expr.NullableExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.join.select.ExprIndexedJoin;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
-import lsfusion.server.data.expr.where.extra.BinaryWhere;
+import lsfusion.server.data.expr.where.classes.data.BinaryWhere;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.translator.ExprTranslator;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.ExprTranslator;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 

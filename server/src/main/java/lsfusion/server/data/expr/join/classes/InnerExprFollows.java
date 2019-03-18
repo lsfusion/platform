@@ -11,7 +11,7 @@ import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.classes.ClassWhere;
 

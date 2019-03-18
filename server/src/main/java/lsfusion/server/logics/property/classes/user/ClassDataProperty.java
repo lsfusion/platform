@@ -11,7 +11,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.SingleClassExpr;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.expr.where.extra.IsClassWhere;
+import lsfusion.server.data.expr.where.classes.IsClassWhere;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;

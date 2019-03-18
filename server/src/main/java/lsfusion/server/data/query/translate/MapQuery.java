@@ -1,4 +1,4 @@
-package lsfusion.server.data.query.translator;
+package lsfusion.server.data.query.translate;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -17,8 +17,8 @@ import lsfusion.server.data.query.builder.Join;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.compile.CompiledQuery;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;

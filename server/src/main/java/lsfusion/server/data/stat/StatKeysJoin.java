@@ -17,7 +17,7 @@ import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.query.compile.where.UpWheres;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 
 public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatKeysJoin<K>> implements WhereJoin<K, StatKeysJoin<K>> {
     

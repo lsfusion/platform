@@ -6,8 +6,8 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.pack.PackInterface;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.TranslateContext;
+import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.translate.TranslateContext;
 import lsfusion.server.data.value.Value;
 
 public interface OuterContext<T extends OuterContext<T>> extends PackInterface<T>, TranslateContext<T> {

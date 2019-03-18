@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.builder.AbstractJoin;
 import lsfusion.server.data.query.builder.Join;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 
 public class NullJoin<U> extends AbstractJoin<U> {

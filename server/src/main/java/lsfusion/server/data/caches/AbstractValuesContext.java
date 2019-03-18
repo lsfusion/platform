@@ -14,7 +14,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.hash.HashCodeValues;
 import lsfusion.server.data.caches.hash.HashMapValues;
 import lsfusion.server.data.caches.hash.HashValues;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
 
 public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends AbstractTranslateContext<U, MapValuesTranslate, HashValues> implements ValuesContext<U> {

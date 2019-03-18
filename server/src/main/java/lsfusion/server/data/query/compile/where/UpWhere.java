@@ -1,6 +1,6 @@
 package lsfusion.server.data.query.compile.where;
 
-import lsfusion.server.data.translator.JoinExprTranslator;
+import lsfusion.server.data.translate.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 
 public interface UpWhere {

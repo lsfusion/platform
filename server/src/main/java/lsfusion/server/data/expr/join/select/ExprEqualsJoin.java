@@ -19,7 +19,7 @@ import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 
 public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> implements WhereJoin<Integer, ExprEqualsJoin> {
 

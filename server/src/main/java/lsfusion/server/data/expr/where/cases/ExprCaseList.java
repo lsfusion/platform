@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translate.MapTranslate;
 
 public class ExprCaseList extends CaseList<Expr, Expr, ExprCase> {
 

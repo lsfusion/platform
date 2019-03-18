@@ -11,7 +11,7 @@ import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
