@@ -13,6 +13,16 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class ReportLayout {
+    public static class ReportFieldJasperElement { 
+        public JRDesignTextField caption;
+        public JRDesignTextField textField;
+        
+        public ReportFieldJasperElement(JRDesignTextField caption, JRDesignTextField textField) {
+            this.caption = caption;
+            this.textField = textField;  
+        }
+    }
+    
     protected int rowHeight;
     
     public ReportLayout(int rowHeight) {
@@ -20,30 +30,26 @@ public abstract class ReportLayout {
     }
 
     protected List<ReportDrawField> reportFields = new ArrayList<>();
-    protected Map<ReportDrawField, JRDesignTextField> captions = new HashMap<>();
-    protected Map<ReportDrawField, JRDesignTextField> textFields = new HashMap<>();
+    protected Map<ReportDrawField, ReportFieldJasperElement> textFields = new HashMap<>();
 
     public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
         reportFields.add(reportField);
-        captions.put(reportField, caption);
-        textFields.put(reportField, text);
+        textFields.put(reportField, new ReportFieldJasperElement(caption, text));
     }
 
     public int doLayout(int pageWidth) {
-
-        int rowCount = AbstractRowLayout.doLayout(reportFields, pageWidth, false);
+        int rowCount = AbstractRowLayout.doLayout(reportFields, pageWidth);
 
         for (ReportDrawField reportField : reportFields) {
+            textFields.get(reportField).caption.setX(reportField.left);
+            textFields.get(reportField).caption.setY(reportField.row * rowHeight);
+            textFields.get(reportField).caption.setWidth(reportField.width);
+            textFields.get(reportField).caption.setHeight(rowHeight);
 
-            captions.get(reportField).setX(reportField.left);
-            captions.get(reportField).setY(reportField.row * rowHeight);
-            captions.get(reportField).setWidth(reportField.width);
-            captions.get(reportField).setHeight(rowHeight);
-
-            textFields.get(reportField).setX(reportField.left);
-            textFields.get(reportField).setY(reportField.row * rowHeight);
-            textFields.get(reportField).setWidth(reportField.width);
-            textFields.get(reportField).setHeight(rowHeight);
+            textFields.get(reportField).textField.setX(reportField.left);
+            textFields.get(reportField).textField.setY(reportField.row * rowHeight);
+            textFields.get(reportField).textField.setWidth(reportField.width);
+            textFields.get(reportField).textField.setHeight(rowHeight);
         }
 
         return rowCount;
@@ -122,35 +128,62 @@ class ReportGroupRowLayout extends ReportGroupLayout {
         groupBand.addElement(text);
     }
 
+    private static class ReportDrawFieldWithCaption implements AbstractRowLayoutElement {
+        private ReportDrawField field;
+        
+        public ReportDrawFieldWithCaption(ReportDrawField field) {
+            this.field = field;    
+        }
+        
+        @Override
+        public int getMinimumWidth() {
+            return field.getMinimumWidth() + field.getCaptionWidth();    
+        }
+
+        @Override
+        public int getPreferredWidth() {
+            return field.getPreferredWidth() + field.getCaptionWidth();
+        }
+
+        @Override
+        public void setLeft(int left) {
+            field.setLeft(left);
+        }
+
+        @Override
+        public void setWidth(int width) {
+            field.setWidth(width);
+        }
+
+        @Override
+        public void setRow(int row) {
+            field.setRow(row);
+        }
+    }
+    
     @Override
     public int doLayout(int pageWidth) {
-
-        int captionWidth = 0;
-        for (ReportDrawField reportField : reportFields)
-            captionWidth += reportField.getCaptionWidth();
-
-        int rowCount = AbstractRowLayout.doLayout(reportFields, pageWidth - captionWidth, false);
-
-        int left = 0, width = 0;
+        List<ReportDrawFieldWithCaption> fields = new ArrayList<>();
         for (ReportDrawField reportField : reportFields) {
+            fields.add(new ReportDrawFieldWithCaption(reportField));
+        }
 
-            captions.get(reportField).setX(left);
-            captions.get(reportField).setY(reportField.row * rowHeight);
-            captions.get(reportField).setWidth(reportField.getCaptionWidth());
-            captions.get(reportField).setHeight(rowHeight);
+        int rowCount = AbstractRowLayout.doLayout(fields, pageWidth);
 
-            width += reportField.getCaptionWidth();
+        for (ReportDrawFieldWithCaption reportFieldWithCaption : fields) {
+            ReportDrawField reportField = reportFieldWithCaption.field;
+            textFields.get(reportField).caption.setX(reportField.left);
+            textFields.get(reportField).caption.setY(reportField.row * rowHeight);
+            textFields.get(reportField).caption.setWidth(reportField.getCaptionWidth());
+            textFields.get(reportField).caption.setHeight(rowHeight);
 
-            textFields.get(reportField).setX(width + reportField.left);
-            textFields.get(reportField).setY(reportField.row * rowHeight);
-            textFields.get(reportField).setWidth(reportField.width);
-            textFields.get(reportField).setHeight(rowHeight);
-
-            left = width + reportField.left + reportField.width;
+            textFields.get(reportField).textField.setX(reportField.getCaptionWidth() + reportField.left);
+            textFields.get(reportField).textField.setY(reportField.row * rowHeight);
+            textFields.get(reportField).textField.setWidth(reportField.width - reportField.getCaptionWidth());
+            textFields.get(reportField).textField.setHeight(rowHeight);
         }
 
         groupBand.setHeight(rowCount * rowHeight);
-
         return rowCount;
     }
 }
