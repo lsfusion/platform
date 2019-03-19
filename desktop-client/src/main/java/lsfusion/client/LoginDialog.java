@@ -208,14 +208,14 @@ public class LoginDialog extends JDialog {
     }
 
     public void loadServerSettings(String host, String port, String dataBase) {
-        if (host != null && port != null && dataBase != null) {
-            String logicsName = null;
-            String logicsDisplayName = null;
-            String iconBase64 = null;
-            String logoBase64 = null;
-            boolean hasAnonymousUI = false;
-            String error = null;
-            try {
+        String logicsName = null;
+        String logicsDisplayName = null;
+        String iconBase64 = null;
+        String logoBase64 = null;
+        boolean hasAnonymousUI = false;
+        String error = null;
+        try {
+            if (host != null && port != null && dataBase != null) {
                 RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(host, port, dataBase).connect(false);
                 RemoteLogicsInterface remoteLogics = remoteLoader.getLogics();
 
@@ -228,30 +228,29 @@ public class LoginDialog extends JDialog {
                 String serverPlatformVersion = trimToNull(serverSettings.optString("platformVersion"));
                 Integer serverApiVersion = serverSettings.optInt("apiVersion");
 
-                error = BaseUtils.checkClientVersion(serverPlatformVersion, serverApiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion());
-
-            } catch (Throwable e) {
-                logger.error("Failed to load server settings", e);
+                error = BaseUtils.checkClientVersion(serverPlatformVersion, serverApiVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
             }
-
-            Main.logicsName = logicsName;
-
-            Main.logicsDisplayName = logicsDisplayName;
-            setTitle(Main.getMainTitle());
-
-            Main.logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
-            setIconImages(Main.getMainIcons());
-
-            Main.logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
-            imageLabel.setIcon(Main.getLogo());
-
-            useAnonymousUICheckBox.setVisible(hasAnonymousUI);
-            updateAnonymousUIActivity();
-
-            setWarningMsg(error);
-            checkVersionError = error;
-            pack();
+        } catch (Throwable e) {
+            logger.error("Failed to load server settings", e);
         }
+
+        Main.logicsName = logicsName;
+
+        Main.logicsDisplayName = logicsDisplayName;
+        setTitle(Main.getMainTitle());
+
+        Main.logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
+        setIconImages(Main.getMainIcons());
+
+        Main.logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
+        imageLabel.setIcon(Main.getLogo());
+
+        useAnonymousUICheckBox.setVisible(hasAnonymousUI);
+        updateAnonymousUIActivity();
+
+        setWarningMsg(error);
+        checkVersionError = error;
+        pack();
     }
 
     private void updateAnonymousUIActivity() {
