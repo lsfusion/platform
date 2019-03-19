@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 import static java.util.Collections.list;
 
@@ -67,7 +68,7 @@ public class ExternalLogicsRequestHandler extends ExternalRequestHandler {
                     ? sessionObject.connection.host : request.getServerName();
 
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, request.getRequestURL().toString(), 
-                    request.getRequestURI(), query, request.getInputStream(), contentType, headerNames, headerValues, cookieNames, cookieValues,
+                    request.getRequestURI(), query, request.getInputStream(), new HashMap<String, String[]>(), contentType, headerNames, headerValues, cookieNames, cookieValues,
                     logicsHost, sessionObject.connection.port, sessionObject.connection.exportName);
 
             if (responseHttpEntity.response != null) {
