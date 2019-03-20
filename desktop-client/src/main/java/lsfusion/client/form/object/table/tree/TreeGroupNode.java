@@ -10,7 +10,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import java.util.List;
 import java.util.Map;
 
-class TreeGroupNode extends DefaultMutableTreeTableNode {
+public class TreeGroupNode extends DefaultMutableTreeTableNode {
     public final ClientGroupObject group;
     public final ClientGroupObjectValue key;
     private boolean expandable;

@@ -1,8 +1,8 @@
 package lsfusion.client.form.object.table.grid.user.design;
 
-import lsfusion.client.form.object.table.grid.GridController;
+import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.object.table.grid.GridTable;
+import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
 import lsfusion.client.view.MainFrame;

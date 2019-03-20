@@ -13,7 +13,7 @@
     <name>Desktop Client</name>
 
     <properties>
-        <assemble.mainClass>lsfusion.client.Main</assemble.mainClass>
+        <assemble.mainClass>lsfusion.client.controller.MainController</assemble.mainClass>
         <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
     </properties>
     

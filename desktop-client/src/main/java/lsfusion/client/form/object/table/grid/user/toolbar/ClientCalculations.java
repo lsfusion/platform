@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.table.grid.user.toolbar;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.layout.ClientComponent;
+import lsfusion.client.form.design.ClientComponent;
 
 public class ClientCalculations extends ClientComponent {
     public ClientCalculations() {}

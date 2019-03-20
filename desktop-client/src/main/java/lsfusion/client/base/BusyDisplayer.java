@@ -2,7 +2,7 @@ package lsfusion.client.base;
 
 import lsfusion.base.lambda.Provider;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Main;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
@@ -99,7 +99,7 @@ public class BusyDisplayer extends TimerTask {
             int loadingTextWidth = gr.getFontMetrics(loadingTextFont).stringWidth(loadingText);
             int loadingTextHeight = gr.getFontMetrics(loadingTextFont).getHeight();
 
-            if (Main.configurationAccessAllowed) {
+            if (MainController.configurationAccessAllowed) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - lastUpdateTime >= UPDATE_PERIOD) {
                     try {
@@ -130,7 +130,7 @@ public class BusyDisplayer extends TimerTask {
             gr.fillRoundRect(rectX, rectY, rectWidth + 2, rectHeight + 2, 5, 5);
             gr.setColor(Color.WHITE);
             gr.fillRoundRect(rectX, rectY, rectWidth, rectHeight, 5, 5);
-            if (Main.configurationAccessAllowed) {
+            if (MainController.configurationAccessAllowed) {
                 gr.fillRoundRect(messageRectX, messageRectY, messageRectWidth, messageRectHeight, 5, 5);
             }
             gr.setColor(Color.BLACK);

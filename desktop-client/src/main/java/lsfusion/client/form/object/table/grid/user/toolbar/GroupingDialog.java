@@ -16,7 +16,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.base.ItemAdapter;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.object.table.grid.GridTable;
+import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.object.table.grid.GridTableModel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;

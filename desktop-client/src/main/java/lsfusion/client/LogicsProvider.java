@@ -1,11 +1,8 @@
 package lsfusion.client;
 
-import lsfusion.client.base.remote.proxy.RemoteLogicsProxy;
+import lsfusion.client.controller.remote.proxy.RemoteLogicsProxy;
 import lsfusion.interop.exception.AppServerNotAvailableException;
-import lsfusion.interop.exception.AuthenticationException;
 import lsfusion.interop.logics.*;
-
-import java.rmi.RemoteException;
 
 public class LogicsProvider extends AbstractLogicsProviderImpl {
     

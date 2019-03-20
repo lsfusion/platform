@@ -4,18 +4,18 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.context.ApplicationContextHolder;
 import lsfusion.base.context.ContextIdentityObject;
-import lsfusion.client.Main;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
-import lsfusion.client.form.layout.ClientComponent;
-import lsfusion.client.form.layout.ClientContainer;
+import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.remote.serialization.ClientCustomSerializable;
-import lsfusion.client.form.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.controller.remote.serialization.ClientCustomSerializable;
+import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractForm;
 
 import javax.swing.*;
@@ -162,7 +162,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     }
 
     public String getTooltip() {
-        return Main.configurationAccessAllowed ?
+        return MainController.configurationAccessAllowed ?
                 String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +

@@ -27,7 +27,7 @@
                         <configuration>
                             <exportAntProperties>true</exportAntProperties>
                             <target>
-                                <java classpathref="maven.runtime.classpath" classname="lsfusion.client.Main" fork="true" clonevm="true" failonerror="true">
+                                <java classpathref="maven.runtime.classpath" classname="lsfusion.client.controller.MainController" fork="true" clonevm="true" failonerror="true">
                                     <jvmarg value="-Xms512m" />
                                     <jvmarg value="-Xmx1200m" />
                                     <jvmarg value="-ea" />

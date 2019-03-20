@@ -7,6 +7,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.*;
+import lsfusion.client.controller.MainController;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.logics.*;
@@ -231,13 +232,13 @@ public class LoginDialog extends JDialog {
             boolean hasAnonymousUI = false;
             String checkVersionError = null;
 
-            ServerSettings serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, Main.getSessionInfo(), null);
+            ServerSettings serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, MainController.getSessionInfo(), null);
 
-            setTitle(Main.getMainTitle(serverSettings));
+            setTitle(MainController.getMainTitle(serverSettings));
 
-            setIconImages(Main.getMainIcons(serverSettings));
+            setIconImages(MainController.getMainIcons(serverSettings));
 
-            imageLabel.setIcon(Main.getLogo(serverSettings));
+            imageLabel.setIcon(MainController.getLogo(serverSettings));
 
             checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
 
@@ -260,7 +261,7 @@ public class LoginDialog extends JDialog {
             }
             FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
             try {
-                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, Main.getSessionInfo(), "Authentication.syncUsers[VARISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{Main.computerName, fileData}));
+                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getSessionInfo(), "Authentication.syncUsers[VARISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{MainController.computerName, fileData}));
                 JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
                 List<Object> currentUsers = unlockedUsers.toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
@@ -411,7 +412,7 @@ public class LoginDialog extends JDialog {
 
     private void onCancel() {
         dispose();
-        Main.shutdown();
+        MainController.shutdown();
     }
 
     public void setWarningMsg(String msg) {

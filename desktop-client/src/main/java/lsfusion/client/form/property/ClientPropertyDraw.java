@@ -2,26 +2,26 @@ package lsfusion.client.form.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.client.Main;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientFormatClass;
 import lsfusion.client.classes.data.ClientIntegralClass;
 import lsfusion.client.classes.data.ClientLongClass;
 import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.layout.ClientComponent;
+import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
-import lsfusion.client.form.object.table.TableController;
-import lsfusion.client.form.property.cell.PanelView;
-import lsfusion.client.form.property.classes.editor.PropertyEditor;
-import lsfusion.client.form.property.classes.renderer.FormatPropertyRenderer;
-import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
-import lsfusion.client.form.property.edit.EditBindingMap;
+import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.cell.controller.EditBindingMap;
 import lsfusion.client.classes.*;
-import lsfusion.client.form.remote.serialization.ClientIdentitySerializable;
-import lsfusion.client.form.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
+import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -549,7 +549,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, SwingUtils.getKeyStrokeCaption(editKey));
 
-        if (!Main.configurationAccessAllowed) {
+        if (!MainController.configurationAccessAllowed) {
             return String.format(TOOL_TIP_FORMAT, propCaption, editKeyText);
         } else {
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);

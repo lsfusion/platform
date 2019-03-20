@@ -4,27 +4,29 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.base.AsyncListener;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.base.RmiRequest;
-import lsfusion.client.base.dispatch.DispatcherListener;
+import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
+import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
-import lsfusion.client.form.filter.SingleFilterBox;
-import lsfusion.client.form.layout.*;
-import lsfusion.client.form.layout.view.ClientContainerView;
-import lsfusion.client.form.layout.view.ClientFormLayout;
-import lsfusion.client.form.layout.view.JComponentPanel;
-import lsfusion.client.form.layout.view.TabbedClientContainerView;
+import lsfusion.client.form.filter.view.SingleFilterBox;
+import lsfusion.client.form.design.view.ClientContainerView;
+import lsfusion.client.form.design.view.ClientFormLayout;
+import lsfusion.client.form.design.view.JComponentPanel;
+import lsfusion.client.form.design.view.TabbedClientContainerView;
 import lsfusion.client.form.object.*;
-import lsfusion.client.form.object.table.grid.GridController;
-import lsfusion.client.form.object.table.TableController;
+import lsfusion.client.form.object.table.grid.controller.GridController;
+import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.edit.TableManager;
+import lsfusion.client.base.TableManager;
 import lsfusion.client.base.ItemAdapter;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.stat.report.FormPrintType;
@@ -36,19 +38,18 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.base.lambda.ERunnable;
-import lsfusion.client.Main;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.view.ClientFormDockable;
-import lsfusion.client.form.property.cell.PanelView;
-import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
-import lsfusion.client.form.property.dispatch.SimpleChangePropertyDispatcher;
+import lsfusion.client.form.property.panel.view.PanelView;
+import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
+import lsfusion.client.form.property.cell.controller.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
-import lsfusion.client.form.object.table.tree.TreeGroupController;
+import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.navigator.ClientNavigator;
-import lsfusion.client.form.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.*;
 import lsfusion.interop.form.property.ClassViewType;
@@ -75,7 +76,7 @@ import static lsfusion.interop.form.user.Order.*;
 
 public class ClientFormController implements AsyncListener {
 
-    private static final ImageIcon loadingIcon = new ImageIcon(Main.class.getResource("/images/loading.gif"));
+    private static final ImageIcon loadingIcon = new ImageIcon(MainController.class.getResource("/images/loading.gif"));
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
 
@@ -920,7 +921,7 @@ public class ClientFormController implements AsyncListener {
         final long ID;
         final ClientGroupObjectValue value;
         if(add) {
-            ID = Main.generateID();
+            ID = MainController.generateID();
             value = new ClientGroupObjectValue(object, ID);
         } else {
             value = controller.getCurrentObject();
@@ -1395,7 +1396,7 @@ public class ClientFormController implements AsyncListener {
 
     public void runEditReport(List<ReportPath> customReportPathList) {
         try {
-            Main.editReportPathList(customReportPathList);
+            MainController.editReportPathList(customReportPathList);
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.printing.form"), e);
         }
@@ -1465,7 +1466,7 @@ public class ClientFormController implements AsyncListener {
 
     public void onAsyncStarted() {
         if (asyncView != null) {
-            asyncTimer = new Timer(Main.asyncTimeOut, new ActionListener() {
+            asyncTimer = new Timer(MainController.asyncTimeOut, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     asyncPrevIcon = asyncView.getIcon();
                     asyncView.setIcon(loadingIcon);

@@ -1,8 +1,8 @@
 package lsfusion.client.base;
 
 import lsfusion.base.Pair;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.base.log.ClientLoggers;
-import lsfusion.client.Main;
 import lsfusion.interop.action.ServerResponse;
 import org.apache.log4j.Logger;
 
@@ -75,7 +75,7 @@ public abstract class RmiRequest<T> {
             if(serverSpent >= 0) {
                 long totalSpent = System.currentTimeMillis() - started;
                 long commSpent = totalSpent - serverSpent;
-                if (commSpent > Main.timeDiffServerClientLog)
+                if (commSpent > MainController.timeDiffServerClientLog)
                     logger.debug("Request communication time threshold exceeded (" + commSpent + " ms) : " + this);
             }
         }

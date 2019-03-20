@@ -5,13 +5,12 @@ import lsfusion.base.*;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.InterruptibleProvider;
 import lsfusion.base.lambda.Provider;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.base.log.ClientLoggers;
-import lsfusion.client.Main;
 import lsfusion.client.base.exception.ClientExceptionManager;
-import lsfusion.client.base.dispatch.DispatcherInterface;
-import lsfusion.client.base.dispatch.DispatcherListener;
-import lsfusion.client.form.property.edit.TableManager;
-import lsfusion.client.base.remote.ConnectionLostManager;
+import lsfusion.client.controller.dispatch.DispatcherInterface;
+import lsfusion.client.controller.dispatch.DispatcherListener;
+import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.interop.exception.FatalRemoteClientException;
 import lsfusion.interop.exception.RemoteAbandonedException;
@@ -78,7 +77,7 @@ public class RmiQueue implements DispatcherListener {
     }
 
     public static void waitOnEdtSyncBlocker(boolean busyDialog) throws InterruptedException {
-        waitOnEdtSyncBlocker(busyDialog ? Main.busyDialogTimeout : 1000); // проблема в том что сейчас пара wait / notify не синхронизирована, поэтому на всякий случай вставим timeout
+        waitOnEdtSyncBlocker(busyDialog ? MainController.busyDialogTimeout : 1000); // проблема в том что сейчас пара wait / notify не синхронизирована, поэтому на всякий случай вставим timeout
     }
 
     public static void waitOnEdtSyncBlocker(long timeout) throws InterruptedException {
@@ -118,7 +117,7 @@ public class RmiQueue implements DispatcherListener {
                 if(abandoned.get()) // не вызываем call если уже клиент перестартовывает
                     throw new RemoteAbandonedException();
                 try {
-                    if (Main.useRequestTimeout && timeoutParams != null && futureInterface != null) {
+                    if (MainController.useRequestTimeout && timeoutParams != null && futureInterface != null) {
                         Future<T> future = executorService.submit(request);
                         while (true) {
                             double timeout = getTimeout(timeoutParams, exponent);
@@ -215,7 +214,7 @@ public class RmiQueue implements DispatcherListener {
 
     private <T> T blockingRequest(final RmiRequest<T> request, final boolean direct) {
 
-        if(!Main.busyDialog) {
+        if(!MainController.busyDialog) {
             SwingUtils.assertDispatchThread();
 
             if (!direct && syncsDepth != 0) {
@@ -285,7 +284,7 @@ public class RmiQueue implements DispatcherListener {
                 }
 
                 while ((direct && !rmiFuture.isDone()) || (!direct && !isRmiFutureExecuted(rmiFuture))) { // ждём до тех пор, пока наш запрос не выполнится и не уйдёт из очереди.
-                    long timeout = Main.busyDialogTimeout - (System.currentTimeMillis() - start);
+                    long timeout = MainController.busyDialogTimeout - (System.currentTimeMillis() - start);
 
                     boolean flush = !direct;
 

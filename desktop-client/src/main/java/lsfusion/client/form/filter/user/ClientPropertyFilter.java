@@ -1,6 +1,5 @@
 package lsfusion.client.form.filter.user;
 
-import lsfusion.client.form.filter.ClientFilterValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;

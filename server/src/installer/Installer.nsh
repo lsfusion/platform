@@ -493,11 +493,11 @@ Function createShortcuts
     ${if} ${SectionIsSelected} ${SecClient}
         CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\lsFusion Client.lnk" \
                         "$javaHome\bin\javaw.exe" \
-                        "-Xmx300m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
+                        "-Xmx300m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.controller.MainController" \
                         "$INSTDIR\resources\lsfusion.ico"
         CreateShortCut "$DESKTOP\lsFusion Client.lnk" \
                         "$javaHome\bin\javaw.exe" \
-                        "-Xmx300m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
+                        "-Xmx300m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.controller.MainController" \
                         "$INSTDIR\resources\lsfusion.ico"
     ${endIf}
 

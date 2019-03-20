@@ -2,7 +2,7 @@ package lsfusion.client.navigator;
 
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.serialization.SerializationUtil;
-import lsfusion.client.Main;
+import lsfusion.client.controller.MainController;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 
@@ -123,7 +123,7 @@ public abstract class ClientNavigatorElement {
     }
 
     public String getTooltip() {
-        return Main.configurationAccessAllowed && creationPath != null ?
+        return MainController.configurationAccessAllowed && creationPath != null ?
                 String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +

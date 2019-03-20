@@ -6,8 +6,6 @@ import com.google.common.base.Throwables;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.base.view.DockableManager;
 import lsfusion.interop.form.stat.report.ReportGenerator;
-import lsfusion.client.form.print.EditReportInvoker;
-import lsfusion.client.form.print.ReportViewer;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;

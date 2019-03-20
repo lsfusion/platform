@@ -8,9 +8,9 @@ import bibliothek.gui.dock.common.event.CDockableLocationEvent;
 import bibliothek.gui.dock.common.event.CDockableLocationListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.view.ClientFormDockable;
-import lsfusion.client.form.print.EditReportInvoker;
-import lsfusion.client.Main;
+import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.view.MainFrame;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.navigator.ClientNavigator;
@@ -94,7 +94,7 @@ public class DockableManager {
 
     public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
         ClientFormDockable page = null;
-        if (Main.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
+        if (MainController.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
             ClientDockable dockable = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
             if (dockable instanceof ClientFormDockable)
                 page = (ClientFormDockable) dockable; 
