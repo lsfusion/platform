@@ -2,8 +2,8 @@ package lsfusion.client.classes.data.link;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
-import lsfusion.client.form.property.classes.renderer.link.CustomStaticFormatLinkRenderer;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.cell.classes.view.link.CustomStaticFormatLinkRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 

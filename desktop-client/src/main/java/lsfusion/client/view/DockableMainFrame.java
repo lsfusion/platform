@@ -17,17 +17,17 @@ import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
 import lsfusion.base.lambda.EProvider;
 import lsfusion.base.lambda.ERunnable;
-import lsfusion.client.*;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.base.*;
-import lsfusion.client.form.print.EditReportInvoker;
-import lsfusion.client.form.property.edit.TableManager;
+import lsfusion.client.controller.MainController;
+import lsfusion.client.form.print.view.EditReportInvoker;
+import lsfusion.client.base.TableManager;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.controller.NavigatorController;
-import lsfusion.client.navigator.dispatch.ClientNavigatorActionDispatcher;
-import lsfusion.client.form.property.classes.editor.EditorEventQueue;
+import lsfusion.client.navigator.controller.dispatch.ClientNavigatorActionDispatcher;
+import lsfusion.client.form.property.cell.classes.controller.EditorEventQueue;
 import lsfusion.client.navigator.*;
-import lsfusion.client.form.print.ReportDialog;
+import lsfusion.client.form.print.view.ReportDialog;
 import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.form.view.ClientFormDockable;
@@ -322,7 +322,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             @Override
             public void invokeAddReport() throws RemoteException {
                 try {
-                    Main.addReportPathList(customReportPathList, formSID);
+                    MainController.addReportPathList(customReportPathList, formSID);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
@@ -331,7 +331,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             @Override
             public void invokeRecreateReport() throws RemoteException {
                 try {
-                    Main.recreateReportPathList(customReportPathList, formSID);
+                    MainController.recreateReportPathList(customReportPathList, formSID);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
@@ -340,7 +340,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             @Override
             public void invokeEditReport() throws RemoteException {
                 try {
-                    Main.editReportPathList(customReportPathList);
+                    MainController.editReportPathList(customReportPathList);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
@@ -349,7 +349,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             @Override
             public void invokeDeleteReport() throws RemoteException {
                 try {
-                    Main.deleteReportPathList(customReportPathList);
+                    MainController.deleteReportPathList(customReportPathList);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
@@ -529,12 +529,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 Container contentPane = dialog.getContentPane();
                 contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 
-                JLabel label = new JLabel(Main.getLogo());
+                JLabel label = new JLabel(MainController.getLogo());
                 label.setBorder(new EmptyBorder(10, 10, 10, 10));
                 contentPane.add(label);
                 contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
 
-                String text = Main.getHelpTitle();
+                String text = MainController.getHelpTitle();
                 JLabel labelName = new JLabel(text);
                 labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, MainFrame.getIntUIFontSize(12)));
                 contentPane.add(labelName);

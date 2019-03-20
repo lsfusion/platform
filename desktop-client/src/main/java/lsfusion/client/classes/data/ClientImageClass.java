@@ -1,10 +1,10 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.property.classes.editor.PropertyEditor;
-import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
-import lsfusion.client.form.property.classes.editor.FilePropertyEditor;
-import lsfusion.client.form.property.classes.renderer.ImagePropertyRenderer;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
+import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.DataType;
 

@@ -3,10 +3,10 @@ package lsfusion.client.form.object.table.grid.user.design;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.Callback;
 import lsfusion.base.Pair;
-import lsfusion.client.Main;
-import lsfusion.client.form.object.table.grid.GridController;
+import lsfusion.client.controller.MainController;
+import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.object.table.grid.GridTable;
+import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.object.table.grid.user.toolbar.TitledPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -310,19 +310,19 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private JPanel createArrowsPanel() {
-        JButton showSelectedButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowLeftOne.png")));
+        JButton showSelectedButton = new JButton(new ImageIcon(MainController.class.getResource("/images/arrowLeftOne.png")));
         showSelectedButton.setBorder(null);
         showSelectedButton.addActionListener(createMoveSelectedButtonListener(invisibleList, visibleListModel));
 
-        JButton hideSelectedButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowRightOne.png")));
+        JButton hideSelectedButton = new JButton(new ImageIcon(MainController.class.getResource("/images/arrowRightOne.png")));
         hideSelectedButton.setBorder(null);
         hideSelectedButton.addActionListener(createMoveSelectedButtonListener(visibleList, invisibleListModel));
 
-        JButton showAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowLeft.png")));
+        JButton showAllButton = new JButton(new ImageIcon(MainController.class.getResource("/images/arrowLeft.png")));
         showAllButton.setBorder(null);
         showAllButton.addActionListener(createMoveAllButtonListener(invisibleListModel, visibleListModel));
 
-        JButton hideAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowRight.png")));
+        JButton hideAllButton = new JButton(new ImageIcon(MainController.class.getResource("/images/arrowRight.png")));
         hideAllButton.setBorder(null);
         hideAllButton.addActionListener(createMoveAllButtonListener(visibleListModel, invisibleListModel));
 

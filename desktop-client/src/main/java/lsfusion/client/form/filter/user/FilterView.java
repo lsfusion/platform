@@ -1,5 +1,7 @@
 package lsfusion.client.form.filter.user;
 
+import lsfusion.client.form.filter.user.controller.QueryController;
+import lsfusion.client.form.filter.user.view.QueryView;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -10,15 +12,15 @@ public class FilterView extends QueryView {
 
     private static final ImageIcon addConditionIcon = new ImageIcon(FilterView.class.getResource("/images/filtadd.png"));
 
-    FilterView(QueryController controller) {
+    public FilterView(QueryController controller) {
         super(controller);
     }
 
-    protected Icon getApplyIcon() {
+    public Icon getApplyIcon() {
         return applyIcon;
     }
 
-    protected Icon getAddConditionIcon() {
+    public Icon getAddConditionIcon() {
         return addConditionIcon;
     }
 

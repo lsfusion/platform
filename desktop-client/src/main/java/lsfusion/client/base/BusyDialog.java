@@ -2,7 +2,7 @@ package lsfusion.client.base;
 
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.ProgressBar;
-import lsfusion.client.Main;
+import lsfusion.client.controller.MainController;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -65,7 +65,7 @@ class BusyDialog extends JDialog {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         
-        if (Main.configurationAccessAllowed) {
+        if (MainController.configurationAccessAllowed) {
             btnCopy = new JButton(getString("form.loading.copy"));
             buttonPanel.add(btnCopy);
         }
@@ -102,7 +102,7 @@ class BusyDialog extends JDialog {
 
         int screenWidth = MainFrame.instance.getRootPane().getWidth();
         int screenHeight = MainFrame.instance.getRootPane().getHeight();
-        if (Main.configurationAccessAllowed) {
+        if (MainController.configurationAccessAllowed) {
             setMinimumSize(new Dimension((int) (screenWidth * 0.50), (int) (screenHeight * 0.50)));
         } else {
             setMinimumSize(new Dimension((int) (screenWidth * 0.30), getMinimumSize().height));
@@ -124,7 +124,7 @@ class BusyDialog extends JDialog {
     }
 
     private void initUIHandlers(final BusyDialog dialog) {
-        if (Main.configurationAccessAllowed) {
+        if (MainController.configurationAccessAllowed) {
             btnCopy.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -139,7 +139,7 @@ class BusyDialog extends JDialog {
                 if (answer == JOptionPane.NO_OPTION) {
                     return;
                 }
-                Main.shutdown();
+                MainController.shutdown();
             }
         });
         btnReconnect.addActionListener(new ActionListener() {
@@ -149,7 +149,7 @@ class BusyDialog extends JDialog {
                 if (answer == JOptionPane.NO_OPTION) {
                     return;
                 }
-                Main.reconnect();
+                MainController.reconnect();
             }
         });
 
@@ -182,7 +182,7 @@ class BusyDialog extends JDialog {
             }
         });
 
-        longActionTimer = new Timer(Main.configurationAccessAllowed ? 5000 : 60000, new ActionListener() {
+        longActionTimer = new Timer(MainController.configurationAccessAllowed ? 5000 : 60000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnExit.setEnabled(true);
@@ -197,7 +197,7 @@ class BusyDialog extends JDialog {
     public void updateBusyDialog(List<Object> input) {
         Object[] lines = input.toArray();
 
-        if (Main.configurationAccessAllowed)
+        if (MainController.configurationAccessAllowed)
             setStackMessageDevMode(lines);
         else
             setStackMessage(lines);

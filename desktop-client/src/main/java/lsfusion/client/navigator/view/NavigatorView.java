@@ -10,8 +10,8 @@ import java.util.Set;
 
 public abstract class NavigatorView {
     public ClientNavigatorWindow window;
-    JComponent component;
-    INavigatorController controller;
+    protected JComponent component;
+    protected INavigatorController controller;
 
     public NavigatorView(ClientNavigatorWindow window, JComponent iComponent, INavigatorController controller) {
         this.window = window;

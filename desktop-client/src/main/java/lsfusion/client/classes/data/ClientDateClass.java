@@ -2,10 +2,10 @@ package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientTypeClass;
-import lsfusion.client.form.property.classes.editor.PropertyEditor;
-import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
-import lsfusion.client.form.property.classes.editor.DatePropertyEditor;
-import lsfusion.client.form.property.classes.renderer.DatePropertyRenderer;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.cell.classes.controller.DatePropertyEditor;
+import lsfusion.client.form.property.cell.classes.view.DatePropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.property.DataType;
@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat;
 
 import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.DateConverter.safeDateToSql;
-import static lsfusion.client.form.property.edit.EditBindingMap.EditEventFilter;
+import static lsfusion.client.form.property.cell.controller.EditBindingMap.EditEventFilter;
 
 public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 

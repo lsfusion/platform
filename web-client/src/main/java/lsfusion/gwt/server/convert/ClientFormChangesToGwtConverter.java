@@ -3,7 +3,7 @@ package lsfusion.gwt.server.convert;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.ClientFormChanges;
-import lsfusion.client.form.layout.ClientComponent;
+import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;

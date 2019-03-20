@@ -1,10 +1,10 @@
 package lsfusion.client.classes;
 
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.property.edit.EditBindingMap;
-import lsfusion.client.form.property.classes.editor.PropertyEditor;
-import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
-import lsfusion.client.form.property.cell.PanelView;
+import lsfusion.client.form.property.cell.controller.EditBindingMap;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;

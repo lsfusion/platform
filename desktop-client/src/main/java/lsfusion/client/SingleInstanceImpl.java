@@ -1,5 +1,6 @@
 package lsfusion.client;
 
+import lsfusion.client.controller.MainController;
 import org.apache.log4j.Logger;
 
 import javax.jnlp.ServiceManager;
@@ -11,7 +12,7 @@ public class SingleInstanceImpl implements SingleInstance {
 
     static SingleInstanceService sis;
     static SingleInstanceListener sisL;
-    private final static Logger logger = Logger.getLogger(Main.class);
+    private final static Logger logger = Logger.getLogger(MainController.class);
 
     @Override
     public void register() {

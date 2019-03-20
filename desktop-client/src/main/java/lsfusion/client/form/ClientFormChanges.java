@@ -1,7 +1,7 @@
 package lsfusion.client.form;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.form.layout.ClientComponent;
+import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;

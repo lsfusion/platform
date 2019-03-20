@@ -2,8 +2,8 @@ package lsfusion.client.form.filter;
 
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.remote.serialization.ClientIdentitySerializable;
-import lsfusion.client.form.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
+import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 
 import javax.swing.*;
 import java.io.DataInputStream;

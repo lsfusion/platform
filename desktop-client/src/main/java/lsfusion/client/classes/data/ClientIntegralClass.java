@@ -1,9 +1,9 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.form.property.classes.editor.PropertyEditor;
-import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
-import lsfusion.client.form.property.classes.renderer.IntegralPropertyRenderer;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.cell.classes.view.IntegralPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 import java.text.*;
@@ -11,7 +11,7 @@ import java.util.EventObject;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
-import static lsfusion.client.form.property.edit.EditBindingMap.EditEventFilter;
+import static lsfusion.client.form.property.cell.controller.EditBindingMap.EditEventFilter;
 import static lsfusion.interop.form.event.KeyStrokes.isSuitableNumberEditEvent;
 
 abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat> {

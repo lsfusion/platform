@@ -3,7 +3,7 @@ package lsfusion.client.form.property;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.object.table.TableController;
+import lsfusion.client.form.object.table.controller.TableController;
 
 import java.util.Map;
 

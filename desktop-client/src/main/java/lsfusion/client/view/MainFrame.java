@@ -5,14 +5,14 @@ import com.jhlabs.image.BlurFilter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.base.SystemUtils;
-import lsfusion.client.Main;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.SplashScreen;
-import lsfusion.client.base.remote.ConnectionLostManager;
-import lsfusion.client.base.remote.ReconnectWorker;
-import lsfusion.client.base.remote.proxy.RemoteLogicsProxy;
+import lsfusion.client.controller.remote.ConnectionLostManager;
+import lsfusion.client.controller.remote.ReconnectWorker;
+import lsfusion.client.controller.remote.proxy.RemoteLogicsProxy;
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.print.EditReportInvoker;
-import lsfusion.client.form.remote.proxy.RemoteFormProxy;
+import lsfusion.client.form.print.view.EditReportInvoker;
+import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.connection.LocalePreferences;
@@ -51,7 +51,7 @@ import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class MainFrame extends JFrame {
-    private final static Logger logger = Logger.getLogger(Main.class);
+    private final static Logger logger = Logger.getLogger(MainController.class);
     
     public static MainFrame instance;
     public static void load() {
@@ -61,10 +61,10 @@ public abstract class MainFrame extends JFrame {
                 remoteNavigator = new ReconnectWorker<>(new Callable<RemoteNavigatorInterface>() {
                     public RemoteNavigatorInterface call() throws Exception {
                         try {
-                            return Main.runRequest(new LogicsRunnable<RemoteNavigatorInterface>() {
+                            return MainController.runRequest(new LogicsRunnable<RemoteNavigatorInterface>() {
                                 public RemoteNavigatorInterface run(LogicsSessionObject sessionObject) throws RemoteException {
-                                    Main.remoteLogics = new RemoteLogicsProxy(sessionObject.remoteLogics);
-                                    return Main.remoteLogics.createNavigator(Main.authToken, getNavigatorInfo());
+                                    MainController.remoteLogics = new RemoteLogicsProxy(sessionObject.remoteLogics);
+                                    return MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
                                 }
                             });
                         } catch (AppServerNotAvailableException e) { // suppress and try again
@@ -73,8 +73,8 @@ public abstract class MainFrame extends JFrame {
                     }
                 }).connect();
             } catch (AuthenticationException throwable) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
-                Main.authToken = null;
-                Main.authAndLoadMainFrame(throwable.getMessage(), null);
+                MainController.authToken = null;
+                MainController.authAndLoadMainFrame(throwable.getMessage(), null);
                 return;
             }
 
@@ -84,11 +84,11 @@ public abstract class MainFrame extends JFrame {
 
             LocalePreferences userPreferences = clientSettings.localePreferences;
             fontSize = clientSettings.fontSize;
-            Main.busyDialog = clientSettings.busyDialog;
-            Main.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
-            Main.useRequestTimeout = clientSettings.useRequestTimeout;
-            Main.configurationAccessAllowed = clientSettings.configurationAccessAllowed;
-            Main.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
+            MainController.busyDialog = clientSettings.busyDialog;
+            MainController.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
+            MainController.useRequestTimeout = clientSettings.useRequestTimeout;
+            MainController.configurationAccessAllowed = clientSettings.configurationAccessAllowed;
+            MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
 
             Locale userLocale = userPreferences.locale;
             if (userLocale != null) {
@@ -132,7 +132,7 @@ public abstract class MainFrame extends JFrame {
         } catch (Throwable e) {
             closeSplashScreen();
             logger.error(getString("client.error.application.initialization"), e);
-            Main.restart();
+            MainController.restart();
         }
     }
 
@@ -218,7 +218,7 @@ public abstract class MainFrame extends JFrame {
     private static void startSplashScreen() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                SplashScreen.start(Main.getLogo());
+                SplashScreen.start(MainController.getLogo());
             }
         });
     }
@@ -259,7 +259,7 @@ public abstract class MainFrame extends JFrame {
             screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
         }
 
-        return new NavigatorInfo(Main.getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
+        return new NavigatorInfo(MainController.getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
                 maximumMemory, freeMemory, javaVersion, screenSize, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
@@ -296,7 +296,7 @@ public abstract class MainFrame extends JFrame {
 
     public boolean clientExceptionLog(Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.logClientException("", Main.computerName, t);
+            remoteNavigator.logClientException("", MainController.computerName, t);
             return true;
         }
         return false;
@@ -337,7 +337,7 @@ public abstract class MainFrame extends JFrame {
 
         this.remoteNavigator = remoteNavigator;
 
-        setIconImages(Main.getMainIcons());
+        setIconImages(MainController.getMainIcons());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         updateUser(userName);
@@ -382,7 +382,7 @@ public abstract class MainFrame extends JFrame {
                                                               getString("quit.confirmation"),
                                                               JOptionPane.YES_NO_OPTION);
                 if (confirmed == JOptionPane.YES_OPTION) {
-                    Main.shutdown();
+                    MainController.shutdown();
                 }
             }
 
@@ -396,7 +396,7 @@ public abstract class MainFrame extends JFrame {
     }
 
     private void loadLayout() {
-        baseDir = Main.getBaseDir();
+        baseDir = MainController.getBaseDir();
 
         try {
             File layoutFile = new File(baseDir, "dimension.txt");
@@ -429,7 +429,7 @@ public abstract class MainFrame extends JFrame {
     }
 
     public void updateUser(String userName) {
-        setTitle(Main.getMainTitle() + " - " + userName + " (" + Main.serverInfo.host + ":" + Main.serverInfo.port + ")");
+        setTitle(MainController.getMainTitle() + " - " + userName + " (" + MainController.serverInfo.host + ":" + MainController.serverInfo.port + ")");
     }
 
     public abstract Integer runReport(List<ReportPath> customReportPathList, String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException;

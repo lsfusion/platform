@@ -15,7 +15,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-class GroupTreeTableModel extends DefaultTreeTableModel {
+public class GroupTreeTableModel extends DefaultTreeTableModel {
     private final Map<ClientGroupObject, Set<TreeGroupNode>> groupNodes = new HashMap<>();
     public final List<ClientPropertyDraw> properties = new ArrayList<>();
     public final List<ClientPropertyDraw> columnProperties = new ArrayList<>();
