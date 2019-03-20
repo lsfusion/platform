@@ -202,5 +202,11 @@
             <scope>system</scope>
             <systemPath>${java.home}/lib/javaws.jar</systemPath>
         </dependency>
+        <!-- for html link renderer -->
+        <dependency>
+            <groupId>net.sf.cssbox</groupId>
+            <artifactId>swingbox</artifactId>
+            <version>1.1</version>
+        </dependency>
     </dependencies>
 </project>

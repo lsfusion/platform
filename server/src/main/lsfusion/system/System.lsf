@@ -149,6 +149,26 @@ open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }
 open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (LINK);
 //source rawLink
 open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawLinkAction' (RAWLINK);
+
+// ----------------------------------- open html link in tab ----------------------------------- //
+
+htmlLinkInTab '' = DATA LOCAL HTMLLINK();
+FORM htmlLinkInTab 'Web Page'
+PROPERTIES() READONLY htmlLinkInTab;
+DESIGN htmlLinkInTab {
+    NEW panel {
+        fill = 1;
+        type = CONTAINERH;
+        MOVE PROPERTY(htmlLinkInTab()) {
+            fill = 1;
+        }
+    };
+    REMOVE TOOLBARBOX;
+}
+htmlLinkInTab(HTMLLINK htmlLink) {
+    htmlLinkInTab() <- htmlLink;
+    SHOW htmlLinkInTab DOCKED;
+}
   
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();

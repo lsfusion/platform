@@ -1,18 +1,54 @@
 package lsfusion.client.form.renderer.link;
 
-import lsfusion.client.SwingUtils;
+import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
+import org.fit.cssbox.swingbox.BrowserPane;
 
-public class HTMLLinkPropertyRenderer extends LinkPropertyRenderer {
+import java.awt.*;
+import java.io.IOException;
+
+public class HTMLLinkPropertyRenderer extends PropertyRenderer {
+    private BrowserPane browserPane;
 
     public HTMLLinkPropertyRenderer(ClientPropertyDraw property) {
         super(property);
     }
 
-    public void setValue(Object value) {
-        if (value != null) {
-            getComponent().setIcon(SwingUtils.getSystemIcon("html"));
+    @Override
+    public BrowserPane getComponent() {
+        if (browserPane == null) {
+            browserPane = new BrowserPane();
         }
-        super.setValue(value);
+        return browserPane;
+    }
+
+    @Override
+    public void setValue(final Object value) {
+        if (value != null) {
+            try {
+                browserPane.setPage((String) value);
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    @Override
+    protected void drawBackground(boolean isInFocusedRow, boolean hasFocus, Color conditionalBackground) {
+        //do nothing
+    }
+
+    @Override
+    protected void drawForeground(Color conditionalForeground) {
+        //do nothing
+    }
+
+    @Override
+    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus) {
+        //do nothing
+    }
+
+    @Override
+    protected void paintAsSelected() {
+        //do nothing
     }
 }
