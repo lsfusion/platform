@@ -1,7 +1,7 @@
 package lsfusion.http.provider.session;
 
 import com.google.gwt.core.client.GWT;
-import lsfusion.http.LSFAuthenticationToken;
+import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.logics.RemoteLogicsInterface;
 import lsfusion.interop.connection.AuthenticationToken;

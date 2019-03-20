@@ -2,7 +2,7 @@ package lsfusion.client.form.property.cell;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyTable;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -19,7 +19,7 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.form.ClientFormController.PasteData;
+import static lsfusion.client.form.controller.ClientFormController.PasteData;
 
 public abstract class SingleCellTable extends ClientPropertyTable {
 

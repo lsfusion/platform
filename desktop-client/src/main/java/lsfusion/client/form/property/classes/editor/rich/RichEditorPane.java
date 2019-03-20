@@ -2,9 +2,9 @@ package lsfusion.client.form.property.classes.editor.rich;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.client.base.Log;
-import lsfusion.client.Main;
+import lsfusion.client.base.log.Log;
 import lsfusion.client.form.object.ShowTypeView;
+import lsfusion.client.view.MainFrame;
 import net.atlanticbb.tantlinger.ui.DefaultAction;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;
 import net.atlanticbb.tantlinger.ui.text.HTMLUtils;
@@ -181,7 +181,7 @@ public class RichEditorPane extends JPanel {
 //        addActionToToolbar(new SpecialCharAction(););
         addActionToToolbar(new HTMLImageAction(), Icons.image);
 
-        Font comboFont = new Font("Dialog", Font.PLAIN, Main.getIntUIFontSize(12));
+        Font comboFont = new Font("Dialog", Font.PLAIN, MainFrame.getIntUIFontSize(12));
 
 //        toolbar.addSeparator();
 //        createParagraphCombo(comboFont);

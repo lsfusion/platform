@@ -1,14 +1,11 @@
 package lsfusion.http.provider.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.interop.exception.AuthenticationException;
-import lsfusion.interop.logics.RemoteLogicsInterface;
-import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableDispatchException;
+import lsfusion.http.provider.navigator.NavigatorProviderImpl;
+import lsfusion.interop.exception.AppServerNotAvailableException;
+import lsfusion.interop.logics.*;
 import lsfusion.base.remote.RMIUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -16,17 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import java.net.MalformedURLException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.base.BaseUtils.nvl;
 
 // singleton, one for whole application
 // needed for custom handler requests + RemoteAuthenticationManager (where gwt is not used)
-public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
+public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements InitializingBean, LogicsProvider {
 
     protected final static Logger logger = Logger.getLogger(LogicsProviderImpl.class);
 
@@ -65,64 +58,20 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         setExportName(exportName);
     }
 
-    public String getHost() {
-        return host;
-    }
-
     public void setHost(String host) {
         this.host = host;
-    }
-
-    public int getPort() {
-        return port;
     }
 
     public void setPort(int port) {
         this.port = port;
     }
 
-    public String getExportName() {
-        return exportName;
-    }
-
     public void setExportName(String exportName) {
         this.exportName = exportName;
     }
 
-    private final Map<LogicsConnection, LogicsSessionObject> currentLogics = new ConcurrentHashMap<>();
-
-    // not like in other providers, getter shouldn't be called directly to ensure invalidating reference if we get RemoteException
-    private static LogicsSessionObject createLogicsSessionObject(LogicsConnection connection) throws AppServerNotAvailableException {
-        LogicsSessionObject logicsSessionObject;
-        RemoteLogicsInterface logics;
-        try {
-            RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(connection.host, connection.port, connection.exportName, "RemoteLogicsLoader");
-            logics = loader.getLogics();
-        } catch (MalformedURLException e) {
-            throw Throwables.propagate(e);
-        } catch (NotBoundException | RemoteException e) {
-            throw new AppServerNotAvailableException("Application server [" + connection.host + ":" + connection.port + "(" + connection.exportName + ")] is not available. Reason : " + ExceptionUtils.copyMessage(e));
-        }
-        logicsSessionObject = new LogicsSessionObject(logics, connection);
-        return logicsSessionObject;
-    }
-
-    private LogicsSessionObject createOrGetLogicsSessionObject(String host, Integer port, String exportName) throws AppServerNotAvailableException {
-        LogicsConnection connection = new LogicsConnection(host != null ? host : this.host, port != null ? port : this.port, exportName != null ? exportName : this.exportName); 
-        LogicsSessionObject logicsSessionObject = currentLogics.get(connection);
-        if(logicsSessionObject == null) { // no sync, it's no big deal if we'll lost some cache
-            logicsSessionObject = createLogicsSessionObject(connection);
-            currentLogics.put(connection, logicsSessionObject);
-        }
-        return logicsSessionObject;
-    }
-
-    private void invalidateLogicsSessionObject(LogicsSessionObject sessionObject) { // should be called if logics remote method call fails with remoteException
-        currentLogics.remove(sessionObject.connection);
-    }
-    
-    public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
-        LogicsSessionObject logicsSessionObject = createOrGetLogicsSessionObject(host, port, exportName);
+    // needed to recode exception
+    private <R> R runRequestDispatch(LogicsConnection logicsConnection, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
         try {
             return runnable.run(logicsSessionObject);
         } catch (AuthenticationException e) {
@@ -133,27 +82,31 @@ public class LogicsProviderImpl implements InitializingBean, LogicsProvider {
         } catch (RemoteException e) { // it's important that this exception should not be suppressed (for example in ExternalLogicsRequestHandler)
             invalidateLogicsSessionObject(logicsSessionObject);
             throw e;
+            return runRequest(logicsConnection, runnable);
+        } catch (AppServerNotAvailableException e) {
+            throw new AppServerNotAvailableDispatchException(e.getMessage());
         }
     }
 
-    @Override
+    private LogicsConnection getLogicsConnection(String host, Integer port, String exportName) {
+        return new LogicsConnection(host != null ? host : this.host, port != null ? port : this.port, exportName != null ? exportName : this.exportName);
+    }
+
+    private LogicsConnection getLogicsConnection(HttpServletRequest request) {
+        return getLogicsConnection(request != null ? request.getParameter("host") : null,
+                                   request != null ? BaseUtils.parseInt(request.getParameter("port")) : null,
+                                   request != null ? request.getParameter("exportName") : null);
+    }
+
     public ServerSettings getServerSettings(final HttpServletRequest request) {
-        try {
-            return runRequest(this, request, new LogicsRunnable<ServerSettings>() {
-                public ServerSettings run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return sessionObject.getServerSettings(request);
-                }
-            });
-        } catch (Exception e) {
-            return null;
-        }
+        return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath());
     }
 
-    public static <R> R runRequest(LogicsProvider logicsProvider, HttpServletRequest request, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
-        return logicsProvider.runRequest(
-                request != null ? request.getParameter("host") : null,
-                request != null ? BaseUtils.parseInt(request.getParameter("port")) : null,
-                request != null ? request.getParameter("exportName") : null,
-                runnable);
+    public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
+        return runRequestDispatch(getLogicsConnection(host, port, exportName), runnable);
+    }
+
+    public <R> R runRequest(HttpServletRequest request, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
+        return runRequestDispatch(getLogicsConnection(request), runnable);
     }
 }

@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.panel;
 
 import lsfusion.base.lambda.Callback;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.cell.PanelView;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.layout.view.JComponentPanel;

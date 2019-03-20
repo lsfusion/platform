@@ -1,12 +1,12 @@
 package lsfusion.client.form.layout.view;
 
-import lsfusion.client.*;
 import lsfusion.client.base.focus.ContainerFocusListener;
 import lsfusion.client.base.focus.FormFocusTraversalPolicy;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.layout.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -64,7 +64,7 @@ public class ClientFormLayout extends JPanel {
         focusListener = new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 form.gainedFocus();
-                Main.setCurrentForm(form);
+                MainFrame.instance.setCurrentForm(form);
             }
         };
 
@@ -82,7 +82,7 @@ public class ClientFormLayout extends JPanel {
     @Override
     public void removeNotify() {
         super.removeNotify();
-        Main.dropCurrentForm(form);
+        MainFrame.instance.dropCurrentForm(form);
     }
 
     public ClientContainerView getContainerView(ClientContainer container) {

@@ -1,10 +1,10 @@
 package lsfusion.client.form.property.classes.editor;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Main;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.property.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.property.cell.PropertyTableCellEditor;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -43,7 +43,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         setViewportView(textArea);
         setPreferredSize(new Dimension(200, 200));
         dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
-        textArea.setFont(new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(12)));
+        textArea.setFont(new Font("Tahoma", Font.PLAIN, MainFrame.getIntUIFontSize(12)));
         if (design != null) {
             design.designCell(textArea);
         }

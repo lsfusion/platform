@@ -5,7 +5,7 @@ import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.Pair;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.editor.StringPropertyEditor;

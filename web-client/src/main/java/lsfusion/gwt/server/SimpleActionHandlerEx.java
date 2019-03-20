@@ -1,7 +1,7 @@
 package lsfusion.gwt.server;
 
 import lsfusion.base.ServerUtils;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.shared.exceptions.WrappedRemoteDispatchException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.server.SimpleActionHandler;
@@ -39,7 +39,7 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
         return result;
     }
 
-    public abstract R executeEx(A action, ExecutionContext context) throws RemoteException, AppServerNotAvailableException; // last exception throws only LogicsActionHandler
+    public abstract R executeEx(A action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException; // last exception throws only LogicsActionHandler
 
     protected String getActionDetails(A action) {
         return " by " + ServerUtils.getAuthorizedUserName() + ": " + action.getClass().getSimpleName();

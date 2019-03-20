@@ -2,7 +2,7 @@ package lsfusion.client.navigator.view;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.navigator.ClientNavigatorElement;
-import lsfusion.client.navigator.INavigatorController;
+import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.tree.ClientTree;
 import lsfusion.client.navigator.tree.ClientTreeAction;
 import lsfusion.client.navigator.tree.ClientTreeActionEvent;

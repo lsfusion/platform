@@ -8,7 +8,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
-import static lsfusion.client.form.ClientFormController.colorPreferences;
+import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
 
 public abstract class PropertyRenderer {
     public static final String EMPTY_STRING = ClientResourceBundle.getString("form.renderer.not.defined");

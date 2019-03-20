@@ -3,7 +3,7 @@ package lsfusion.client.form.property.cell;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.RmiQueue;
-import lsfusion.client.form.*;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.edit.EditPropertyHandler;
 import lsfusion.client.form.property.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.classes.editor.DialogBasedPropertyEditor;

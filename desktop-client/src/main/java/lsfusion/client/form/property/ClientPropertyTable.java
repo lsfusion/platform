@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.edit.EditBindingMap;
 import lsfusion.client.form.object.table.TableTransferHandler;
 import lsfusion.client.form.property.cell.CellTableContextMenuHandler;

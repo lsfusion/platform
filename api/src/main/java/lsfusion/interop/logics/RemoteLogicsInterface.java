@@ -36,6 +36,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     long generateID() throws RemoteException;
     void ping() throws RemoteException;
     void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
+    byte[] findClass(String name) throws RemoteException;
 
     List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 }

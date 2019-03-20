@@ -1,10 +1,10 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
-import lsfusion.client.dispatch.SwingClientActionDispatcher;
+import lsfusion.client.base.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.form.view.ClientFormDockable;
-import lsfusion.client.form.ClientFormController;
-import lsfusion.client.dispatch.DispatcherListener;
+import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.base.dispatch.DispatcherListener;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.action.ServerResponse;

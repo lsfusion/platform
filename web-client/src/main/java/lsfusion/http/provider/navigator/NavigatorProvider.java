@@ -1,6 +1,7 @@
 package lsfusion.http.provider.navigator;
 
-import lsfusion.http.provider.logics.LogicsSessionObject;
+
+import lsfusion.interop.logics.LogicsSessionObject;
 
 import javax.servlet.http.HttpServletRequest;
 import java.rmi.RemoteException;

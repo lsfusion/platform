@@ -1,8 +1,7 @@
 package lsfusion.client.form.view;
 
-import lsfusion.client.Main;
-import lsfusion.client.MainFrame;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.view.MainFrame;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.base.view.ClientDockable;
@@ -84,8 +83,8 @@ public class ClientFormDockable extends ClientDockable {
 
     @Override
     public void onOpened() {
-        if (clientForm != null)
-            Main.setCurrentForm(clientForm);
+        if (clientForm != null) 
+            MainFrame.instance.setCurrentForm(clientForm);
     }
 
 }

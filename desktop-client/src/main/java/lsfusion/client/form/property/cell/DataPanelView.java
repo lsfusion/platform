@@ -1,14 +1,14 @@
 package lsfusion.client.form.property.cell;
 
 import lsfusion.base.SystemUtils;
-import lsfusion.client.Main;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.property.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.ValueEvent;
 import lsfusion.interop.form.event.ValueEventListener;
 import lsfusion.interop.form.layout.*;
@@ -86,7 +86,7 @@ public class DataPanelView extends JPanel implements PanelView {
                     });
                 }
             };
-            Main.eventBus.addListener(valueEventListener, property.eventID);
+            MainFrame.instance.eventBus.addListener(valueEventListener, property.eventID);
         } else {
             valueEventListener = null;
         }

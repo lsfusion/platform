@@ -1,7 +1,7 @@
 package lsfusion.client.navigator.remote.proxy;
 
 import com.google.common.base.Throwables;
-import lsfusion.client.remote.proxy.RemoteObjectProxy;
+import lsfusion.client.base.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;

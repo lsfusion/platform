@@ -11,7 +11,7 @@ import bibliothek.gui.dock.common.mode.ExtendedMode;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.print.EditReportInvoker;
 import lsfusion.client.Main;
-import lsfusion.client.MainFrame;
+import lsfusion.client.view.MainFrame;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;

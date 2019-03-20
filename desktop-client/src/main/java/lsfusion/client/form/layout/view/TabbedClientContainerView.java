@@ -2,7 +2,7 @@ package lsfusion.client.form.layout.view;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.layout.ClientContainer;
 import lsfusion.client.form.object.table.grid.GridTable;

@@ -4,12 +4,12 @@ package lsfusion.http.provider.navigator;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.BaseUtils;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.http.LSFAuthenticationToken;
-import lsfusion.http.provider.logics.LogicsSessionObject;
+import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.connection.AuthenticationToken;
 import org.springframework.beans.factory.DisposableBean;
@@ -75,7 +75,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
         RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request));
 
-        return addLogicsAndNavigatorSessionObject(new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName(request)));
+        return addLogicsAndNavigatorSessionObject(new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName(getSessionInfo(request))));
     }
 
     @Override

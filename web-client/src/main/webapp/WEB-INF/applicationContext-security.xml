@@ -48,19 +48,19 @@
     </b:bean>
 
     <!-- read app token from authentication:bearer -->
-    <b:bean id="tokenFilter" class="lsfusion.http.LSFAuthTokenFilter"/>
+    <b:bean id="tokenFilter" class="lsfusion.http.authentication.LSFAuthTokenFilter"/>
     <!-- authenticate user when anonymousUI is enabled, and no auth provided -->
-    <b:bean id="anonymousFilter" class="lsfusion.http.LSFAuthAnonymousFilter"/>
+    <b:bean id="anonymousFilter" class="lsfusion.http.authentication.LSFAuthAnonymousFilter"/>
 
     <b:bean id="entryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
         <b:constructor-arg value="/login"/>
         <b:property name="useForward" value="true"/>
     </b:bean>
 
-    <b:bean id="successLoginHandler" class="lsfusion.http.LSFAuthenticationSuccessHandler"/>
-    <b:bean id="failureLoginHandler" class="lsfusion.http.LSFAuthenticationFailureHandler"/>
+    <b:bean id="successLoginHandler" class="lsfusion.http.authentication.LSFAuthenticationSuccessHandler"/>
+    <b:bean id="failureLoginHandler" class="lsfusion.http.authentication.LSFAuthenticationFailureHandler"/>
 
-    <b:bean id="successLogoutHandler" class="lsfusion.http.LSFSimpleUrlLogoutSuccessHandler" >
+    <b:bean id="successLogoutHandler" class="lsfusion.http.authentication.LSFSimpleUrlLogoutSuccessHandler" >
     </b:bean>
 
     <!-- Authentication configuration -->
@@ -69,6 +69,6 @@
         <authentication-provider ref="authenticationProvider"/>
     </authentication-manager>
 
-    <b:bean id="authenticationProvider" class="lsfusion.http.LSFRemoteAuthenticationProvider"/>
+    <b:bean id="authenticationProvider" class="lsfusion.http.authentication.LSFRemoteAuthenticationProvider"/>
 
 </b:beans>

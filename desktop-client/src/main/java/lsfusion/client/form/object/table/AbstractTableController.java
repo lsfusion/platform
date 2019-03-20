@@ -1,6 +1,6 @@
 package lsfusion.client.form.object.table;
 
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.panel.PanelController;

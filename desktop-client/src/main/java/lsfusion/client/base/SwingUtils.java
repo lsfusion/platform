@@ -4,10 +4,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.lambda.ERunnable;
-import lsfusion.client.Main;
 import lsfusion.client.form.object.table.TableTransferHandler;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyStrokes;
 import org.jdesktop.swingx.SwingXUtilities;
 import sun.swing.SwingUtilities2;
@@ -54,7 +54,7 @@ public class SwingUtils {
             comp = comp.getParent();
         }
 
-        return comp == null ? Main.frame : (Window) comp;
+        return comp == null ? MainFrame.instance : (Window) comp;
     }
 
     public static void assertDispatchThread() {

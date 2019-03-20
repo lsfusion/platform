@@ -1,11 +1,11 @@
 package lsfusion.client.form.object.table.grid.user.design;
 
-import lsfusion.client.Main;
 import lsfusion.client.form.object.table.grid.GridController;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.object.table.grid.GridTable;
 import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
+import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -26,7 +26,7 @@ public class UserPreferencesButton extends ToolbarGridButton {
 
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                UserPreferencesDialog dialog = new UserPreferencesDialog(Main.frame, table, groupController, groupController.getFormController().hasCanonicalName()) {
+                UserPreferencesDialog dialog = new UserPreferencesDialog(MainFrame.instance, table, groupController, groupController.getFormController().hasCanonicalName()) {
                     @Override
                     public void preferencesChanged() {
                         RmiQueue.runAction(new Runnable() {

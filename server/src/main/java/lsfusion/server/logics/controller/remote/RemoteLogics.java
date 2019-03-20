@@ -1,6 +1,7 @@
 package lsfusion.server.logics.controller.remote;
 
 import com.google.common.base.Throwables;
+import com.google.common.io.Resources;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.CallableWithParam;
@@ -34,9 +35,12 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
     protected final static Logger logger = ServerLoggers.remoteLogger;
@@ -210,6 +214,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public Object getProfiledObject() {
         return "l";
+    }
+
+    public byte[] findClass(String name) throws RemoteException {
+        try {
+            return Resources.toByteArray(Resources.getResource(name.replace('.', '/') + ".class"));
+        } catch (IOException e) {
+            throw new RuntimeException(localize("{logics.error.reading.class.on.the.server}"), e);
+        }
     }
 }
 

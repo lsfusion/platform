@@ -1,6 +1,6 @@
 package lsfusion.client.form.object.table.grid;
 
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.table.grid.user.toolbar.CalculateSumButton;
 import lsfusion.client.form.object.table.grid.user.toolbar.CountQuantityButton;
 import lsfusion.client.form.object.table.grid.user.toolbar.GroupingButton;

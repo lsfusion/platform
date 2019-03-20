@@ -1,7 +1,7 @@
 package lsfusion.client.form.object;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.layout.view.ClientFormLayout;
 import lsfusion.client.form.object.table.TableController;
 import lsfusion.interop.form.property.ClassViewType;

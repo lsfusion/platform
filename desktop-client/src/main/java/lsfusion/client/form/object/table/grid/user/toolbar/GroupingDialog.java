@@ -55,8 +55,8 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.Main.getIntUIFontSize;
-import static lsfusion.client.Main.getUIFontSize;
+import static lsfusion.client.view.MainFrame.getIntUIFontSize;
+import static lsfusion.client.view.MainFrame.getUIFontSize;
 
 public abstract class GroupingDialog extends JDialog {
     private final int RECORD_QUANTITY_ID = -1;

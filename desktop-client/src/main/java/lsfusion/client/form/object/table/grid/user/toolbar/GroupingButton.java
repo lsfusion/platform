@@ -1,9 +1,9 @@
 package lsfusion.client.form.object.table.grid.user.toolbar;
 
-import lsfusion.client.Main;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.object.table.grid.GridTable;
 import lsfusion.client.form.filter.user.FilterView;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.user.FormGrouping;
 
 import javax.swing.*;
@@ -30,7 +30,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        dialog = new GroupingDialog(Main.frame, grid, readGroupings(), grid.getForm().hasCanonicalName()) {
+                        dialog = new GroupingDialog(MainFrame.instance, grid, readGroupings(), grid.getForm().hasCanonicalName()) {
 
                             @Override
                             protected void savePressed(FormGrouping grouping) {
