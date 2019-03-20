@@ -1,5 +1,6 @@
 package lsfusion.client.base;
 
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.ProgressBar;
 import lsfusion.client.Main;
 
@@ -99,8 +100,8 @@ class BusyDialog extends JDialog {
 
         setModal(modal);
 
-        int screenWidth = Main.frame.getRootPane().getWidth();
-        int screenHeight = Main.frame.getRootPane().getHeight();
+        int screenWidth = MainFrame.instance.getRootPane().getWidth();
+        int screenHeight = MainFrame.instance.getRootPane().getHeight();
         if (Main.configurationAccessAllowed) {
             setMinimumSize(new Dimension((int) (screenWidth * 0.50), (int) (screenHeight * 0.50)));
         } else {
@@ -177,7 +178,7 @@ class BusyDialog extends JDialog {
         btnHide.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Main.hide();
+                MainFrame.instance.setState(Frame.ICONIFIED);
             }
         });
 

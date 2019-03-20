@@ -3,7 +3,7 @@ package lsfusion.client.navigator.view;
 import lsfusion.client.base.view.FlatRolloverButton;
 import lsfusion.client.form.object.table.grid.user.toolbar.TitledPanel;
 import lsfusion.client.navigator.ClientNavigatorElement;
-import lsfusion.client.navigator.INavigatorController;
+import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientPanelNavigatorWindow;
 import org.jdesktop.swingx.VerticalLayout;
 

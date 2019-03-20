@@ -1,7 +1,7 @@
 package lsfusion.client.form.filter.user;
 
 import lsfusion.client.form.property.cell.CaptureKeyEventsDispatcher;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.table.TableController;
 import lsfusion.client.form.filter.ClientDataFilterValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;

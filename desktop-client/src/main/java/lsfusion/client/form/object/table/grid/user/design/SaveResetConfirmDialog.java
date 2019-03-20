@@ -2,6 +2,7 @@ package lsfusion.client.form.object.table.grid.user.design;
 
 import lsfusion.base.lambda.Callback;
 import lsfusion.client.Main;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
@@ -17,7 +18,7 @@ public class SaveResetConfirmDialog extends JDialog {
     private final boolean save;
 
     public SaveResetConfirmDialog(boolean save) {
-        super(Main.frame, getString(save ? "form.grid.preferences.saving" : "form.grid.preferences.resetting"), true);
+        super(MainFrame.instance, getString(save ? "form.grid.preferences.saving" : "form.grid.preferences.resetting"), true);
         this.save = save;
 
         ActionListener escListener = new ActionListener() {

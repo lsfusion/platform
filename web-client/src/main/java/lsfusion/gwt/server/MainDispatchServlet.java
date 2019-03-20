@@ -208,7 +208,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
             } catch (WrappedRemoteDispatchException e) {
                 throw e.remoteException;
             }
-        } catch (Throwable e) { // mainly AppServerNotAvailableException, but in theory can be some InvalidSessionException
+        } catch (Throwable e) { // mainly AppServerNotAvailableDispatchException, but in theory can be some InvalidSessionException
             DispatchException ed = fromWebServerToWebClient(e);
             
             logException(action, ed);
@@ -219,7 +219,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
     // result throwable class should exist on client
     public static DispatchException fromWebServerToWebClient(Throwable e) {
-        if(e instanceof DispatchException) // mainly AppServerNotAvailableException, but in theory can be some InvalidSessionException
+        if(e instanceof DispatchException) // mainly AppServerNotAvailableDispatchException, but in theory can be some InvalidSessionException
             return (DispatchException) e;
         if(e instanceof AuthenticationException) // we need to wrap this exception, otherwise it will be treated like RemoteInternalDispatchException (unknown server exception)
             return new AuthenticationDispatchException(e.getMessage());

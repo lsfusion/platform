@@ -5,7 +5,7 @@ import lsfusion.client.classes.data.ClientColorClass;
 
 import java.awt.*;
 
-import static lsfusion.client.form.ClientFormController.colorPreferences;
+import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
 
 public class ColorPropertyRenderer extends LabelPropertyRenderer {
     Color value;

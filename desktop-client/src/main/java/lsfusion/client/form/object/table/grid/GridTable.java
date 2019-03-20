@@ -4,9 +4,8 @@ import com.google.common.base.Throwables;
 import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.client.Main;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyTable;
 import lsfusion.client.base.RmiQueue;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -19,6 +18,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientStringClass;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.user.Order;
@@ -53,7 +53,7 @@ import static java.lang.String.valueOf;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.base.SwingUtils.paintRightBottomCornerTriangle;
-import static lsfusion.client.form.ClientFormController.PasteData;
+import static lsfusion.client.form.controller.ClientFormController.PasteData;
 
 public class GridTable extends ClientPropertyTable {
 
@@ -1478,7 +1478,7 @@ public class GridTable extends ClientPropertyTable {
 
                             onSuccess.run();
 
-                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.reset.success"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(MainFrame.instance, getString("form.grid.preferences.reset.success"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
                         }
                     });
                 }
@@ -1528,7 +1528,7 @@ public class GridTable extends ClientPropertyTable {
 
                             onSuccess.run();
 
-                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.success"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(MainFrame.instance, getString("form.grid.preferences.save.success"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
                         }
                     });
 

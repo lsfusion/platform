@@ -1,26 +1,38 @@
 package lsfusion.client.authentication;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
+import lsfusion.base.SystemUtils;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.*;
-import lsfusion.client.remote.ReconnectWorker;
+import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.logics.RemoteLogicsInterface;
-import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.interop.logics.*;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.castor.core.util.Base64Decoder;
-import org.json.JSONObject;
+import org.json.JSONArray;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
-
-import static lsfusion.base.BaseUtils.trimToNull;
-import static lsfusion.client.StartupProperties.LSFUSION_CLIENT_HOSTPORT;
+import java.util.Scanner;
 
 public class LoginDialog extends JDialog {
     private final static Logger logger = Logger.getLogger(LoginDialog.class);
+    private static final String CONFIG_FILE_NAME = "login.dialog.cfg";
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -36,69 +48,65 @@ public class LoginDialog extends JDialog {
     private JComboBox serverDBComboBox;
     private JLabel loginLabel;
     private JLabel passwordLabel;
-    private LoginInfo loginInfo;
-    private boolean autoLogin = false;
     private JLabel imageLabel;
-    private List<UserInfo> userInfos;
 
-    public LoginDialog(LoginInfo defaultLoginInfo, List<UserInfo> userInfos) {
+    private List<UserInfo> userInfos; // needed for passwords
+    
+    public String getCurrentItem(JComboBox comboBox) {
+        return (String)comboBox.getEditor().getItem(); // not getSelectedItem, because we want to see edited (not selected) text
+    }
+
+    // result
+    private LogicsConnection serverInfo;
+    private UserInfo userInfo;
+
+    private LoginDialog(String warningMsg, LogicsConnection serverInfo, UserInfo currentUserInfo, List<UserInfo> userInfos) {
         super(null, null, java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
-        this.userInfos = userInfos;
-        setupUI();
-        loadServerSettings(defaultLoginInfo);
 
-        loginInfo = defaultLoginInfo;
+        setupUI();
         setAlwaysOnTop(true);
         setModal(true);
         setResizable(false);
 
+        initServerSettings(serverInfo);
+
+        initUserSettings(currentUserInfo, userInfos);
+
         initUIHandlers();
 
-        savePasswordCheckBox.setSelected(loginInfo.getSavePwd());
+        setLocationRelativeTo(null);
+        loginBox.requestFocusInWindow();
+        getRootPane().setDefaultButton(buttonOK);
+        
+        setWarningMsg(warningMsg);
+    }
 
-        if (loginInfo.getServerHost() != null) {
-            StringBuilder server = new StringBuilder(loginInfo.getServerHost());
-            if (loginInfo.getServerPort() != null) {
-                server.append(":");
-                server.append(loginInfo.getServerPort());
-            }
-            String item = server.toString();
-            ((MutableComboBoxModel<String>) serverHostComboBox.getModel()).addElement(item);
-            serverHostComboBox.setSelectedItem(item);
+    private void initServerSettings(LogicsConnection serverInfo) {
+        StringBuilder server = new StringBuilder(serverInfo.host);
+        if (serverInfo.port != 0) {
+            server.append(":");
+            server.append(serverInfo.port);
         }
+        String item = server.toString();
+        ((MutableComboBoxModel<String>) serverHostComboBox.getModel()).addElement(item);
+        serverHostComboBox.setSelectedItem(item);
 
-        String db = loginInfo.getServerDB();
-        if (db != null) {
-            if (serverDBComboBox.getItemCount() == 0)
-                ((MutableComboBoxModel<String>) serverDBComboBox.getModel()).addElement(db);
-            serverDBComboBox.setSelectedItem(db);
-        }
+        String db = serverInfo.exportName;
+        if (serverDBComboBox.getItemCount() == 0)
+            ((MutableComboBoxModel<String>) serverDBComboBox.getModel()).addElement(db);
+        serverDBComboBox.setSelectedItem(db);
 
+        updateServerSettings();
+        initServerSettingsListeners();
+    }
+
+    private void initUserSettings(UserInfo currentUserInfo, List<UserInfo> userInfos) {
         for (UserInfo userInfo : userInfos) {
             ((MutableComboBoxModel<String>)loginBox.getModel()).addElement(userInfo.name);
         }
-        if (loginInfo.getUserName() != null) {
-            loginBox.setSelectedItem(loginInfo.getUserName());
-        }
-
-        if (loginInfo.getSavePwd() && loginInfo.getPassword() != null) { // чтобы при повторном показе диалога ("Выход") сбрасывался несохранённый пароль 
-            passwordField.setText(loginInfo.getPassword());
-        }
-
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-        initServerSettingsListeners();
+        loginBox.setSelectedItem(currentUserInfo.name);
+        this.userInfos = userInfos; // need to store them for passwords
+        updatePassword(currentUserInfo);
     }
 
     private void initUIHandlers() {
@@ -118,27 +126,27 @@ public class LoginDialog extends JDialog {
 
         serverHostComboBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                update();
+                updateOK();
             }
         });
 
         serverHostComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                update();
+                updateOK();
             }
         });
 
         KeyListener updateKeyListener = new KeyListener() {
             public void keyTyped(KeyEvent e) {
-                update();
+                updateOK();
             }
 
             public void keyPressed(KeyEvent e) {
-                update();
+                updateOK();
             }
 
             public void keyReleased(KeyEvent e) {
-                update();
+                updateOK();
             }
         };
         serverHostComboBox.getEditor().getEditorComponent().addKeyListener(updateKeyListener);
@@ -146,12 +154,11 @@ public class LoginDialog extends JDialog {
         loginBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    UserInfo info = getUserInfo((String) loginBox.getModel().getSelectedItem());
+                    UserInfo info = getUserInfo(getCurrentItem(loginBox));
                     if (info != null) {
-                        savePasswordCheckBox.setSelected(info.savePassword);
-                        passwordField.setText(info.savePassword ? info.password : "");
+                        updatePassword(info);
                     }
-                    update();
+                    updateOK();
                 }
             }
         });
@@ -178,6 +185,24 @@ public class LoginDialog extends JDialog {
                 updateAnonymousUIActivity();
             }
         });
+
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        contentPane.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+
+    public void updatePassword(UserInfo info) {
+        savePasswordCheckBox.setSelected(info.savePassword);
+        passwordField.setText(info.savePassword ? info.password : "");
     }
 
     private void initServerSettingsListeners() {
@@ -185,7 +210,7 @@ public class LoginDialog extends JDialog {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if(e.getStateChange() == ItemEvent.DESELECTED) {
-                    loadServerSettings();
+                    updateServerSettings();
                 }
             }
         });
@@ -194,65 +219,127 @@ public class LoginDialog extends JDialog {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if(e.getStateChange() == ItemEvent.DESELECTED) {
-                    loadServerSettings();
+                    updateServerSettings();
                 }
             }
         });
     }
 
-    public void loadServerSettings(LoginInfo defaultLoginInfo) {
-        loadServerSettings(defaultLoginInfo.getServerHost(), defaultLoginInfo.getServerPort(), defaultLoginInfo.getServerDB());
-    }
+    public void updateServerSettings() {
+        LogicsConnection serverInfo = getServerInfo();
+        if (isValid(serverInfo)) {
+            boolean hasAnonymousUI = false;
+            String checkVersionError = null;
 
-    public void loadServerSettings() {
-        ServerInfo serverInfo = getServerInfo(String.valueOf(serverHostComboBox.getSelectedItem()));
-        loadServerSettings(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), (String) serverDBComboBox.getSelectedItem());
-    }
+            ServerSettings serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, Main.getSessionInfo(), null);
 
-    public void loadServerSettings(String host, String port, String dataBase) {
-        String logicsName = null;
-        String logicsDisplayName = null;
-        String iconBase64 = null;
-        String logoBase64 = null;
-        boolean hasAnonymousUI = false;
-        String error = null;
-        try {
-            if (host != null && port != null && dataBase != null) {
-                RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(host, port, dataBase).connect(false);
-                RemoteLogicsInterface remoteLogics = remoteLoader.getLogics();
+            setTitle(Main.getMainTitle(serverSettings));
 
-                JSONObject serverSettings = Main.getServerSettings(remoteLogics);
-                logicsName = trimToNull(serverSettings.optString("logicsName"));
-                logicsDisplayName = trimToNull(serverSettings.optString("displayName"));
-                iconBase64 = trimToNull(serverSettings.optString("logicsIcon"));
-                logoBase64 = trimToNull(serverSettings.optString("logicsLogo"));
-                hasAnonymousUI = serverSettings.optBoolean("anonymousUI");
-                String serverPlatformVersion = trimToNull(serverSettings.optString("platformVersion"));
-                Integer serverApiVersion = serverSettings.optInt("apiVersion");
+            setIconImages(Main.getMainIcons(serverSettings));
 
-                error = BaseUtils.checkClientVersion(serverPlatformVersion, serverApiVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
-            }
-        } catch (Throwable e) {
-            logger.error("Failed to load server settings", e);
+            imageLabel.setIcon(Main.getLogo(serverSettings));
+
+            checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
+
+            hasAnonymousUI = serverSettings != null && serverSettings.anonymousUI;
+
+            useAnonymousUICheckBox.setVisible(hasAnonymousUI);
+            updateAnonymousUIActivity();
+
+            setWarningMsg(checkVersionError);
+            this.checkVersionError = checkVersionError;
+            pack();
         }
+    }
 
-        Main.logicsName = logicsName;
+    private static void syncUsers(RemoteLogicsInterface remoteLogics, Result<List<UserInfo>> userInfos) {
+        if (remoteLogics != null) {
+            JSONArray users = new JSONArray();
+            for (UserInfo userInfo : userInfos.result) {
+                users.put(userInfo.name);
+            }
+            FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
+            try {
+                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, Main.getSessionInfo(), "Authentication.syncUsers[VARISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{Main.computerName, fileData}));
+                JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+                List<Object> currentUsers = unlockedUsers.toList();
+                List<UserInfo> newUserInfos = new ArrayList<>();
+                for (UserInfo userInfo : userInfos.result) {
+                    if (currentUsers.remove(userInfo.name)) {
+                        newUserInfos.add(userInfo);
+                    }
+                }
+                for (Object user : currentUsers) {
+                    newUserInfos.add(new UserInfo(user.toString(), false, null));
+                }
+                userInfos.set(newUserInfos);
+            } catch (RemoteException e) {
+                logger.error("Error synchronizing users", e);
+            }
+        }
+    }
+    
+    private static void storeServerData(LogicsConnection serverInfo, UserInfo currentUserInfo, List<UserInfo> userInfos) {
+        try {
+            FileWriter fileWr = new FileWriter(SystemUtils.getUserFile(CONFIG_FILE_NAME));
+            fileWr.write(serverInfo.host + '\n');
+            fileWr.write(serverInfo.port + '\n');
 
-        Main.logicsDisplayName = logicsDisplayName;
-        setTitle(Main.getMainTitle());
+            // reordering users (to make current first) and saving + important that here userInfos
+            List<UserInfo> newUserList = new ArrayList<>();
+            newUserList.add(currentUserInfo);
+            StringBuilder usersString = new StringBuilder(currentUserInfo.toString());
+            for (UserInfo userInfo : userInfos) {
+                if (!userInfo.name.equals(currentUserInfo.name)) {
+                    usersString.append("\t").append(userInfo);
+                    newUserList.add(userInfo);
+                }
+            }
+            userInfos = newUserList;
+            fileWr.write(usersString + "\n");
 
-        Main.logicsMainIcon = iconBase64 != null ? Base64Decoder.decode(iconBase64) : null;
-        setIconImages(Main.getMainIcons());
+            fileWr.write(serverInfo.exportName + '\n');
+            fileWr.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        Main.logicsLogo = logoBase64 != null ? Base64Decoder.decode(logoBase64) : null;
-        imageLabel.setIcon(Main.getLogo());
-
-        useAnonymousUICheckBox.setVisible(hasAnonymousUI);
-        updateAnonymousUIActivity();
-
-        setWarningMsg(error);
-        checkVersionError = error;
-        pack();
+    private static Pair<LogicsConnection, List<UserInfo>> restoreServerAndUserInfos() {
+        try {
+            File file = SystemUtils.getUserFile(CONFIG_FILE_NAME, false);
+            if (file.exists() && file.length() < 10000) { // don't restore if cfg file has grown large: most likely it's damaged
+                FileReader fileRd = new FileReader(file);
+                Scanner scanner = new Scanner(fileRd);
+                String serverHost = scanner.hasNextLine() ? scanner.nextLine() : "";
+                int serverPort = scanner.hasNextLine() ? Integer.parseInt(scanner.nextLine()) : 0;
+                List<UserInfo> userInfos = new ArrayList<>();
+                if (scanner.hasNextLine()) {
+                    String users = scanner.nextLine();
+                    if (!users.isEmpty()) {
+                        Scanner usersScanner = new Scanner(users);
+                        usersScanner.useDelimiter("\\t");
+                        while (usersScanner.hasNext()) {
+                            String name = usersScanner.next().trim();
+                            boolean save = false;
+                            String pass = null;
+                            if (usersScanner.hasNext()) {
+                                save = Boolean.parseBoolean(usersScanner.next());
+                            }
+                            if (save && usersScanner.hasNext()) {
+                                pass = new String(Base64.decodeBase64(usersScanner.next()));
+                            }
+                            userInfos.add(new UserInfo(name, save, pass));
+                        }
+                    }
+                }
+                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "default";
+                return new Pair<>(new LogicsConnection(serverHost, serverPort, serverDB), userInfos);
+            }
+        } catch (IOException e) { // some problems with file
+            return null;
+        }
+        return null;
     }
 
     private void updateAnonymousUIActivity() {
@@ -272,66 +359,57 @@ public class LoginDialog extends JDialog {
         }
         return null;
     }
+    
+    private boolean isValid(LogicsConnection connection) {
+        return connection.port != 0 && !connection.host.isEmpty() && !connection.exportName.isEmpty();
+    }
 
-    private boolean isValid(String server) {
-        int pos = server.indexOf(':');
-        if (pos != -1) {
-            if (pos == 0) {
-                return false;
-            }
-            try {
-                Integer.parseInt(server.substring(pos + 1));
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return !server.isEmpty();
+    private boolean isValid(UserInfo userInfo) {
+        return !userInfo.name.isEmpty();
     }
 
     private boolean isOkEnabled() {
-        Object item = serverHostComboBox.getEditor().getItem();
-        return checkVersionError == null && !((String) loginBox.getEditor().getItem()).isEmpty()
-                && (item instanceof ServerInfo || isValid(item.toString()));
+        return checkVersionError == null && !isValid(getUserInfo()) && isValid(getServerInfo());
     }
 
-    private void update() {
+    private void updateOK() {
         buttonOK.setEnabled(isOkEnabled());
     }
 
     private void onOK() {
-        Object item = serverHostComboBox.getSelectedItem();
-        ServerInfo serverInfo;
-        if (item instanceof ServerInfo) {
-            serverInfo = (ServerInfo) item;
-        } else {
-            serverInfo = getServerInfo(item.toString());
-        }
-        loginInfo = new LoginInfo(
-                serverInfo.getHostName(),
-                String.valueOf(serverInfo.getPort()),
-                (String) serverDBComboBox.getSelectedItem(),
-                new UserInfo((String) loginBox.getSelectedItem(), savePasswordCheckBox.isSelected(), new String(passwordField.getPassword())),
-                useAnonymousUI()
-        );
-
+        this.serverInfo = getServerInfo();
+        this.userInfo = getUserInfo(); 
         setVisible(false);
+    }
+
+    private UserInfo getUserInfo() {
+        return useAnonymousUI() ? UserInfo.ANONYMOUS : new UserInfo(getCurrentItem(loginBox), savePasswordCheckBox.isSelected(), new String(passwordField.getPassword()));
     }
 
     private boolean useAnonymousUI() {
         return useAnonymousUICheckBox.isVisible() && useAnonymousUICheckBox.isSelected();
     }
 
-    private ServerInfo getServerInfo(String server) {
+    private LogicsConnection getServerInfo() {
+        Pair<String, Integer> host = parseHost(getCurrentItem(serverHostComboBox));
+        return new LogicsConnection(host.first, host.second, getCurrentItem(serverDBComboBox));
+    }
+
+    private Pair<String, Integer> parseHost(String server) {
         int pos = server.indexOf(':');
-        if (pos == -1) {
-            return new ServerInfo(server, server, Integer.parseInt(System.getProperty(LSFUSION_CLIENT_HOSTPORT, "7652")));
+        if (pos == -1)
+            return new Pair<>(server, 0);
+
+        int port = 0;
+        try {
+            port = Integer.parseInt(server.substring(pos + 1));
+        } catch (NumberFormatException e) {
         }
 
-        return new ServerInfo(server, server.substring(0, pos), Integer.parseInt(server.substring(pos + 1)));
+        return new Pair<>(server.substring(0, pos), port);
     }
 
     private void onCancel() {
-        loginInfo = null;
         dispose();
         Main.shutdown();
     }
@@ -344,20 +422,51 @@ public class LoginDialog extends JDialog {
         }
     }
 
-    public void setAutoLogin(boolean autoLogin) {
-        this.autoLogin = autoLogin;
-    }
+    public static Pair<LogicsConnection, UserInfo> login(LogicsConnection serverInfo, UserInfo userInfo, String warningMsg) {
 
-    public LoginInfo login() {
-        boolean needData = loginInfo.getServerHost() == null || loginInfo.getServerPort() == null ||
-                loginInfo.getUserName() == null || loginInfo.getPassword() == null;
-        if (!autoLogin || needData) {
-            setLocationRelativeTo(null);
-            loginBox.requestFocusInWindow();
-            getRootPane().setDefaultButton(buttonOK);
-            setVisible(true);
+        // restoring saved server and user info (if no initializing empty)
+        Pair<LogicsConnection, List<UserInfo>> restoredData = restoreServerAndUserInfos();
+        List<UserInfo> userInfos;
+        if(restoredData != null) {
+            if(serverInfo == null)
+                serverInfo = restoredData.first;
+            userInfos = restoredData.second;
+        } else
+            userInfos = new ArrayList<>();
+        if(serverInfo == null)
+            serverInfo = new LogicsConnection("", 0, "");
+        if(userInfo == null) {
+            if(!userInfos.isEmpty())
+                userInfo = userInfos.get(0);
+            else
+                userInfo = new UserInfo("", false, "");
         }
-        return loginInfo;
+
+        LoginDialog loginDialog = new LoginDialog(warningMsg, serverInfo, userInfo, userInfos);
+        loginDialog.setVisible(true);
+        
+        if(loginDialog.serverInfo == null)
+            return null;            
+        
+        Pair<LogicsConnection, UserInfo> result = new Pair<>(loginDialog.serverInfo, loginDialog.userInfo);
+
+        // synchronizing userInfos
+        final Result<List<UserInfo>> rUserInfos = new Result<>(userInfos);
+        try {
+            LogicsProvider.instance.runRequest(serverInfo, new LogicsRunnable<Object>() {
+                public Object run(LogicsSessionObject sessionObject) throws RemoteException {
+                    syncUsers(sessionObject.remoteLogics, rUserInfos);
+                    return null;
+                }
+            });
+        } catch (Throwable e) {
+            logger.error("Failed to synchronize users", e);
+        }
+
+        // saving server and user info
+        storeServerData(result.first, result.second, rUserInfos.result);
+
+        return result;
     }
 
     private void setupUI() {

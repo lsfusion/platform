@@ -37,14 +37,14 @@
 
     <!-- Custom request handlers -->
 
-    <bean id="fileUploadHandler" class="lsfusion.http.UploadFileRequestHandler" />
+    <bean id="fileUploadHandler" class="lsfusion.http.controller.file.UploadFileRequestHandler" />
 
-    <bean id="fileDownloadHandler" class="lsfusion.http.DownloadFileRequestHandler" />
+    <bean id="fileDownloadHandler" class="lsfusion.http.controller.file.DownloadFileRequestHandler" />
 
-    <bean id="externalHandler" class="lsfusion.http.ExternalLogicsRequestHandler"/>
+    <bean id="externalHandler" class="lsfusion.http.controller.ExternalLogicsRequestHandler"/>
 
     <bean id="externalFormHandler" class="lsfusion.http.ExternalFormRequestHandler"/>
 
     <!-- for backward compatibility -->
-    <bean id="jnlpHandler" class="lsfusion.http.ClientJNLPRequestHandler" />
+    <bean id="jnlpHandler" class="lsfusion.http.controller.ClientJNLPRequestHandler" />
 </beans>

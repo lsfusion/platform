@@ -1,10 +1,10 @@
 package lsfusion.client.base.exception;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.client.base.Log;
-import lsfusion.client.Main;
+import lsfusion.client.base.log.Log;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.remote.ConnectionLostManager;
+import lsfusion.client.base.remote.ConnectionLostManager;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.exception.NonFatalRemoteClientException;
 import lsfusion.interop.exception.RemoteAbandonedException;
 import lsfusion.interop.exception.RemoteClientException;
@@ -88,7 +88,7 @@ public class ClientExceptionManager {
             synchronized (unreportedThrowables) {
                 boolean reported = false;
                 try {
-                    reported = Main.clientExceptionLog(exception);
+                    reported = clientExceptionLog(exception);
                 } catch (ConnectException ex) {
                     logger.error("Error reporting client connect exception: " + exception, ex);
                 } catch (Throwable ex) {
@@ -100,13 +100,19 @@ public class ClientExceptionManager {
         }
     }
 
+    public static boolean clientExceptionLog(Throwable exception) throws RemoteException {
+        if(MainFrame.instance != null)
+            return MainFrame.instance.clientExceptionLog(exception);
+        return false;        
+    }
+
     public static void flushUnreportedThrowables() {
         synchronized (unreportedThrowables) {
             for (Iterator<Throwable> iterator = unreportedThrowables.iterator(); iterator.hasNext(); ) {
                 Throwable t = iterator.next();
                 boolean reported = false;
                 try {
-                    reported = Main.clientExceptionLog(t);
+                    reported = clientExceptionLog(t);
                 } catch (Throwable e) {
                     logger.error("Error reporting unreported client exception: " + t, e);
                 }

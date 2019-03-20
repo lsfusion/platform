@@ -1,6 +1,6 @@
 package lsfusion.client.form.object.table.tree;
 
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.layout.view.JComponentPanel;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;

@@ -2,7 +2,7 @@ package lsfusion.client.navigator.view;
 
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
-import lsfusion.client.navigator.INavigatorController;
+import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexAlignment;

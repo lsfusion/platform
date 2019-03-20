@@ -150,7 +150,7 @@
     <!-- sets lsf user locale for request -->
     <filter>
         <filter-name>LSFLocaleFilter</filter-name>
-        <filter-class>lsfusion.http.LSFLocaleFilter</filter-class>
+        <filter-class>lsfusion.http.authentication.LSFLocaleFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>LSFLocaleFilter</filter-name>

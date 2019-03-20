@@ -1,6 +1,6 @@
 package lsfusion.client.session.remote.proxy;
 
-import lsfusion.client.remote.proxy.RemoteObjectProxy;
+import lsfusion.client.base.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.RemoteSessionInterface;

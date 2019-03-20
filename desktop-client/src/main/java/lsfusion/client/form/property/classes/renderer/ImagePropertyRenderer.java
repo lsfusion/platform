@@ -2,8 +2,8 @@ package lsfusion.client.form.property.classes.renderer;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
-import lsfusion.client.Main;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.view.MainFrame;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -98,7 +98,7 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         if (value != null) {
             Image image = convertValue(value); 
             if (image != null) {
-                final JDialog dialog = new JDialog(Main.frame, true);
+                final JDialog dialog = new JDialog(MainFrame.instance, true);
 
                 ActionListener escListener = new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
@@ -108,7 +108,7 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
                 KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
                 dialog.getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-                final Rectangle bounds = Main.frame.getBounds();
+                final Rectangle bounds = MainFrame.instance.getBounds();
                 bounds.x += 30;
                 bounds.y += 30;
                 bounds.width -= 60;

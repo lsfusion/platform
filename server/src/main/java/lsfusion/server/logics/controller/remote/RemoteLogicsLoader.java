@@ -82,12 +82,4 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     public RemoteLogicsInterface getLogics() throws RemoteException {
         return remoteLogics;
     }
-
-    public byte[] findClass(String name) throws RemoteException {
-        try {
-            return Resources.toByteArray(Resources.getResource(name.replace('.', '/') + ".class"));
-        } catch (IOException e) {
-            throw new RuntimeException(localize("{logics.error.reading.class.on.the.server}"), e);
-        }
-    }
 }

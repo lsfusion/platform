@@ -7,6 +7,7 @@ import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.editor.DateTimePropertyEditor;
 import lsfusion.client.form.property.classes.renderer.DateTimePropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.property.DataType;
 
 import java.awt.*;
@@ -18,7 +19,6 @@ import java.util.Date;
 
 import static lsfusion.base.DateConverter.createDateTimeEditFormat;
 import static lsfusion.base.DateConverter.dateToStamp;
-import static lsfusion.client.Main.*;
 import static lsfusion.client.form.property.edit.EditBindingMap.EditEventFilter;
 
 public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
@@ -30,7 +30,7 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
 
     @Override
     protected Object getDefaultWidthValue() {
-        return wideFormattableDateTime;
+        return MainFrame.wideFormattableDateTime;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
     }
 
     public Format getDefaultFormat() {
-        return dateTimeFormat;
+        return MainFrame.dateTimeFormat;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
 
     public Object parseString(String s) throws ParseException {
         try {
-            return dateToStamp((Date) dateTimeFormat.parseObject(s));
+            return dateToStamp((Date) MainFrame.dateTimeFormat.parseObject(s));
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
@@ -74,7 +74,7 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
     @Override
     public String formatString(Object obj) {
         if (obj != null) {
-            return dateTimeFormat.format(obj);
+            return MainFrame.dateTimeFormat.format(obj);
         }
         else return "";
     }

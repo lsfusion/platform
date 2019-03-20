@@ -1,8 +1,7 @@
 package lsfusion.client.form.remote.proxy;
 
 import com.google.common.base.Throwables;
-import lsfusion.client.remote.proxy.ImmutableMethod;
-import lsfusion.client.remote.proxy.RemoteObjectProxy;
+import lsfusion.client.base.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;

@@ -1,6 +1,6 @@
 package lsfusion.client.navigator.window;
 
-import lsfusion.client.navigator.INavigatorController;
+import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.view.PanelNavigatorView;
 
 import java.io.DataInputStream;

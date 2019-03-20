@@ -1,6 +1,6 @@
 package lsfusion.client.form.layout.view;
 
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

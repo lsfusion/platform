@@ -6,7 +6,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.filter.ClientFilter;
 import lsfusion.client.form.layout.ClientComponent;
 import lsfusion.client.form.object.table.ClientToolbar;

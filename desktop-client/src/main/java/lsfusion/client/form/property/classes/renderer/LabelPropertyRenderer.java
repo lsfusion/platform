@@ -8,7 +8,7 @@ import java.awt.*;
 
 import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
-import static lsfusion.client.form.ClientFormController.colorPreferences;
+import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
 
 // renderer идет в виде label
 public abstract class LabelPropertyRenderer extends PropertyRenderer {

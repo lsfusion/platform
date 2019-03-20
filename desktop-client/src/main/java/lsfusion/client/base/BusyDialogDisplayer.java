@@ -1,7 +1,7 @@
 package lsfusion.client.base;
 
 import lsfusion.base.lambda.InterruptibleProvider;
-import lsfusion.client.Main;
+import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +25,7 @@ public class BusyDialogDisplayer extends TimerTask {
     public void start() {
         drawingWindow = SwingUtils.getActiveVisibleWindow();
         if (drawingWindow == null) {
-            drawingWindow = Main.frame;
+            drawingWindow = MainFrame.instance;
         }
 
         try {

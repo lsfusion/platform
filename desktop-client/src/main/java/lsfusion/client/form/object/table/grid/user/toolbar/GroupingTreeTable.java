@@ -2,12 +2,12 @@ package lsfusion.client.form.object.table.grid.user.toolbar;
 
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.RawFileData;
-import lsfusion.client.Main;
 import lsfusion.client.classes.data.*;
 import lsfusion.client.form.property.classes.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.property.classes.renderer.link.ImageLinkPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.classes.data.link.ClientImageLinkClass;
+import lsfusion.client.view.MainFrame;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 
@@ -56,7 +56,7 @@ public class GroupingTreeTable extends JXTreeTable {
         setDefaultRenderer(Timestamp.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
-                super.setValue(value != null ? Main.dateTimeFormat.format(value) : null);
+                super.setValue(value != null ? MainFrame.dateTimeFormat.format(value) : null);
             }
         });
         
@@ -64,7 +64,7 @@ public class GroupingTreeTable extends JXTreeTable {
         
         JTableHeader header = getTableHeader();
         header.setReorderingAllowed(false);
-        header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), Main.getUIFontSize(10)));
+        header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), MainFrame.getUIFontSize(10)));
         header.addMouseListener(new ColumnListener());  //для сортировки
 
         addMouseListener(new MouseAdapter() {
@@ -105,7 +105,7 @@ public class GroupingTreeTable extends JXTreeTable {
             }
         }
         // специально для картинок увеличиваем высоту рядов
-        setRowHeight(Main.getIntUIFontSize(needToExpandRows ? EXPANDED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT));
+        setRowHeight(MainFrame.getIntUIFontSize(needToExpandRows ? EXPANDED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT));
     }
     
     private void setDefaultOrder(java.util.List<ClientPropertyDraw> columnProperties) {

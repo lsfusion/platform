@@ -8,6 +8,7 @@ import lsfusion.client.form.property.classes.renderer.PropertyRenderer;
 import lsfusion.client.form.property.classes.editor.TimePropertyEditor;
 import lsfusion.client.form.property.classes.renderer.TimePropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.property.DataType;
 
 import java.sql.Time;
@@ -17,7 +18,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static lsfusion.client.Main.*;
 import static lsfusion.client.form.property.edit.EditBindingMap.EditEventFilter;
 
 public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
@@ -26,7 +26,7 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
 
     @Override
     protected Object getDefaultWidthValue() {
-        return wideFormattableDateTime;
+        return MainFrame.wideFormattableDateTime;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
     }
 
     public Format getDefaultFormat() {
-        return timeFormat;
+        return MainFrame.timeFormat;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
 
     public Time parseString(String s) throws ParseException {
         try {
-            return new Time(((Date) timeFormat.parseObject(s)).getTime());
+            return new Time(((Date) MainFrame.timeFormat.parseObject(s)).getTime());
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.time"), 0);
         }
@@ -61,7 +61,7 @@ public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> impleme
 
     public String formatString(Object obj) {
         if (obj != null) {
-            return timeFormat.format(obj);
+            return MainFrame.timeFormat.format(obj);
         }
         else return "";
     }

@@ -1,16 +1,16 @@
 package lsfusion.client.form.property.classes.renderer;
 
-import lsfusion.client.Main;
 import lsfusion.client.form.property.classes.editor.rich.RichEditorKit;
 import lsfusion.client.form.property.classes.editor.rich.RichEditorPane;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;
 
 import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
-import static lsfusion.client.form.ClientFormController.colorPreferences;
+import static lsfusion.client.form.controller.ClientFormController.colorPreferences;
 
 
 public class TextPropertyRenderer extends PropertyRenderer {
@@ -24,7 +24,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
         this.rich = rich;
 
         getComponent().setOpaque(true);
-        getComponent().setFont(new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(10)));
+        getComponent().setFont(new Font("Tahoma", Font.PLAIN, MainFrame.getIntUIFontSize(10)));
         getComponent().setEditable(false);
         getComponent().setEditorKitForContentType("text/html", new RichEditorKit());
 

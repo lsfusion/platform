@@ -2,7 +2,7 @@ package lsfusion.client.classes;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.data.ClientLongClass;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.edit.EditBindingMap;
 import lsfusion.client.form.property.classes.editor.PropertyEditor;
 import lsfusion.client.form.property.classes.renderer.PropertyRenderer;

@@ -1,7 +1,7 @@
 package lsfusion.client.form.print;
 
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.stat.report.ReportGenerator;
-import lsfusion.client.Main;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
@@ -37,7 +37,7 @@ public class ReportDialog extends JDialog {
 
     public static Integer showReportDialog(ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         try {
-            ReportDialog dlg = new ReportDialog(Main.frame, generationData, printerName, editInvoker);
+            ReportDialog dlg = new ReportDialog(MainFrame.instance, generationData, printerName, editInvoker);
             dlg.setVisible(true);
             return pageCount;
         } catch (JRException e) {
