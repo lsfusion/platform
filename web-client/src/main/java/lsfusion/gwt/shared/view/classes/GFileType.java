@@ -1,10 +1,10 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.form.ui.grid.EditManager;
-import lsfusion.gwt.client.form.ui.grid.editor.FileGridCellEditor;
-import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.ui.grid.renderer.FileGridCellRenderer;
-import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.classes.controller.FileGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.FileGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.GWidthStringProcessor;
@@ -12,7 +12,6 @@ import lsfusion.gwt.shared.view.filter.GCompare;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.List;
 
 import static lsfusion.gwt.shared.view.filter.GCompare.EQUALS;
 import static lsfusion.gwt.shared.view.filter.GCompare.NOT_EQUALS;

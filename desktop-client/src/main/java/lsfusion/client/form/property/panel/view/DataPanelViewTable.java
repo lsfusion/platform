@@ -2,7 +2,7 @@ package lsfusion.client.form.property.panel.view;
 
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.property.cell.controller.EditBindingMap;
+import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 

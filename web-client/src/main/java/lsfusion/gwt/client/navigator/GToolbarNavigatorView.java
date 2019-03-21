@@ -8,10 +8,10 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.client.form.ui.TooltipManager;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.shared.view.GNavigatorElement;
-import lsfusion.gwt.client.form.ui.panel.ImageButton;
+import lsfusion.gwt.client.base.ui.ImageButton;
 import lsfusion.gwt.shared.view.GNavigatorFolder;
 import lsfusion.gwt.shared.view.window.GToolbarNavigatorWindow;
 

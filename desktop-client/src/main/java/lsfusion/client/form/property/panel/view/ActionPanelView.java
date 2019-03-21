@@ -23,7 +23,7 @@ import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.base.SwingUtils.overrideSize;
-import static lsfusion.client.form.property.cell.controller.EditBindingMap.getPropertyKeyPressActionSID;
+import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;

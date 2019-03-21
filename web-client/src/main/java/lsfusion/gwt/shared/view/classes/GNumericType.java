@@ -2,11 +2,11 @@ package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.ui.grid.EditManager;
-import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.ui.grid.editor.NumericGridCellEditor;
-import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.form.ui.grid.renderer.NumberGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.NumericGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.NumberGridCellRenderer;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.math.BigDecimal;

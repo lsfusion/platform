@@ -18,7 +18,7 @@ import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.cell.controller.EditBindingMap;
+import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.classes.*;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;

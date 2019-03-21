@@ -3,14 +3,14 @@ package lsfusion.gwt.client.form.object.table.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.ui.GPanelController;
-import lsfusion.gwt.client.form.ui.GToolbarView;
-import lsfusion.gwt.client.form.ui.filter.GFilterController;
+import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
+import lsfusion.gwt.client.form.object.table.GToolbarView;
+import lsfusion.gwt.client.form.filter.user.filter.controller.GFilterController;
 import lsfusion.gwt.client.form.design.GFormLayout;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.client.form.ui.grid.EditEvent;
+import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.shared.view.reader.GFooterReader;
 

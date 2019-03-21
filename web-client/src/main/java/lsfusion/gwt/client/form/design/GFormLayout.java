@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.design;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
-import lsfusion.gwt.client.form.ui.DefaultFocusReceiver;
+import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.shared.view.GComponent;
 import lsfusion.gwt.shared.view.GContainer;

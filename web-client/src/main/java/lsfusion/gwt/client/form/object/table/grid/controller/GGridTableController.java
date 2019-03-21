@@ -7,9 +7,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFormLayout;
 import lsfusion.gwt.client.form.design.GFormLayoutImpl;
 import lsfusion.gwt.client.form.object.table.grid.GGridTable;
-import lsfusion.gwt.client.form.ui.DefaultFocusReceiver;
-import lsfusion.gwt.client.form.ui.GGroupObjectController;
-import lsfusion.gwt.client.form.ui.toolbar.preferences.GGridUserPreferences;
+import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
+import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 
@@ -91,7 +90,7 @@ public class GGridTableController {
         }
     }
 
-    void restoreScrollPosition() {
+    public void restoreScrollPosition() {
         table.restoreScrollPosition();
     }
 
@@ -99,7 +98,7 @@ public class GGridTableController {
         table.beforeHiding();
     }
 
-    void afterShowing() {
+    public void afterShowing() {
         table.afterShowing();
     }
 

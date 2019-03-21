@@ -10,10 +10,10 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.form.FormDockable;
-import lsfusion.gwt.client.form.ui.dialog.GResizableModalForm;
-import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.client.form.ModalForm;
+import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
 import lsfusion.gwt.shared.view.GForm;
-import lsfusion.gwt.client.form.ui.grid.EditEvent;
+import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.shared.view.window.GModalityType;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public abstract class DefaultFormsController implements FormsController {
             form.caption += "(" + form.sID + ")";
         }
         if (modalityType.isModalWindow()) {
-            GResizableModalForm modalForm = showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
+            ModalForm modalForm = showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
             setCurForm(modalForm.getForm());
         } else {
             if (dockable == null) {
@@ -110,10 +110,10 @@ public abstract class DefaultFormsController implements FormsController {
         tabsPanel.selectTab(formsList.indexOf(formCanonicalName));
     }
 
-    private GResizableModalForm showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
+    private ModalForm showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
         assert modality.isModalWindow();
 
-        return GResizableModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);
+        return ModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);
     }
 
     private FormDockable addDockable(FormDockable dockable, String formSID) {

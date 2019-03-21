@@ -6,7 +6,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.controller.EditBindingMap;
+import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.view.ClientAbstractCellRenderer;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
@@ -30,7 +30,7 @@ import java.awt.event.MouseListener;
 import java.text.ParseException;
 import java.util.EventObject;
 
-import static lsfusion.client.form.property.cell.controller.EditBindingMap.*;
+import static lsfusion.client.form.property.cell.EditBindingMap.*;
 
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;

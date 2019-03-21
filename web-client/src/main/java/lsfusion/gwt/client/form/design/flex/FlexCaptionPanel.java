@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.design.flex;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.ui.GCaptionPanel;
+import lsfusion.gwt.client.base.ui.GCaptionPanel;
 
 public class FlexCaptionPanel extends GCaptionPanel {
     public FlexCaptionPanel(String title, Widget content) {

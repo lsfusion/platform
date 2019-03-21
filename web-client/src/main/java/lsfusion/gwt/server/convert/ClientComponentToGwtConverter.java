@@ -2,7 +2,7 @@ package lsfusion.gwt.server.convert;
 
 import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.form.ClientForm;
-import lsfusion.client.form.property.cell.controller.EditBindingMap;
+import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.ClientRegularFilter;

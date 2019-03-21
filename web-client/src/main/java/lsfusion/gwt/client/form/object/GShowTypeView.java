@@ -8,7 +8,7 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFormLayout;
-import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GClassViewType;
 import lsfusion.gwt.shared.view.GGroupObject;
 
