@@ -12,13 +12,13 @@ import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import static lsfusion.interop.form.filter.user.Compare.*;
+import static lsfusion.interop.form.property.Compare.*;
 
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 
