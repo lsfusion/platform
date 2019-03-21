@@ -10,9 +10,9 @@ import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 import lsfusion.gwt.shared.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
-import lsfusion.gwt.client.form.property.panel.DataPanelRenderer;
-import lsfusion.gwt.client.form.property.panel.PanelRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.panel.view.DataPanelRenderer;
+import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.io.Serializable;
 import java.text.ParseException;

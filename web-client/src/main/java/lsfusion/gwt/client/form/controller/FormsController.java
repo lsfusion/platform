@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.shared.navigator.GNavigatorAction;
 import lsfusion.gwt.shared.form.GForm;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;

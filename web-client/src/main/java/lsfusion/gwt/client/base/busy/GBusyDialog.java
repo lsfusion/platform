@@ -8,10 +8,10 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.MainFrame;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.*;
-import lsfusion.gwt.shared.base.GProgressBar;
+import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.GProgressBar;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

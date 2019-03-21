@@ -8,12 +8,12 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.MainFrame;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.AtomicBoolean;
 import lsfusion.gwt.client.base.AtomicLong;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
-import lsfusion.gwt.client.base.ui.WindowBox;
+import lsfusion.gwt.client.base.view.WindowBox;
 
 public class GConnectionLostManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();

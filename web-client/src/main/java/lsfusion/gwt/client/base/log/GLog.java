@@ -4,8 +4,8 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 
 import java.util.ArrayList;
 import java.util.Date;

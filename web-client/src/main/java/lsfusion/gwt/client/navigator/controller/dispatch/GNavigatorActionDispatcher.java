@@ -1,11 +1,11 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.client.MainFrame;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
-import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
-import lsfusion.gwt.client.navigator.window.WindowsController;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.navigator.ContinueNavigatorAction;
 import lsfusion.gwt.shared.actions.navigator.ThrowInNavigatorAction;

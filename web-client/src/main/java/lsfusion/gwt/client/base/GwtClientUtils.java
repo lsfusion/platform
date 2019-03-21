@@ -10,7 +10,7 @@ import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.ui.HasMaxPreferredSize;
+import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.shared.GwtSharedUtils;
 
 import java.util.*;

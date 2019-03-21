@@ -3,8 +3,8 @@ package lsfusion.gwt.shared.navigator.window;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.client.navigator.GNavigatorView;
-import lsfusion.gwt.client.navigator.GToolbarNavigatorView;
+import lsfusion.gwt.client.navigator.view.GNavigatorView;
+import lsfusion.gwt.client.navigator.view.GToolbarNavigatorView;
 
 public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public static final float TOP_ALIGNMENT = 0.0f;

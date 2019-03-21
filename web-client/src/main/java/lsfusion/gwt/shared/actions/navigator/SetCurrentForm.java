@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.actions.navigator;
 
-import lsfusion.gwt.shared.base.result.VoidResult;
+import lsfusion.gwt.client.base.result.VoidResult;
 
 public class SetCurrentForm extends NavigatorAction<VoidResult> {
     public String formID;

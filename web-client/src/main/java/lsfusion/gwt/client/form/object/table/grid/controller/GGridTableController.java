@@ -2,11 +2,11 @@ package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Panel;
-import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GFormLayout;
-import lsfusion.gwt.client.form.design.GFormLayoutImpl;
-import lsfusion.gwt.client.form.object.table.grid.GGridTable;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.shared.form.design.GFont;

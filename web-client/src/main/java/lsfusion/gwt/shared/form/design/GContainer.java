@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.form.design;
 
-import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.shared.form.object.table.grid.GGrid;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 import lsfusion.gwt.shared.form.object.table.tree.GTreeGroup;

@@ -7,10 +7,8 @@ import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper.OptionType;
-import lsfusion.gwt.shared.base.exception.RemoteInternalDispatchException;
-import lsfusion.gwt.shared.base.exception.RemoteRetryException;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.DialogBoxHelper.OptionType;
 
 public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     private static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";

@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.form;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.MainFrame;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.form.design.GContainer;
 import lsfusion.gwt.shared.form.design.GFont;

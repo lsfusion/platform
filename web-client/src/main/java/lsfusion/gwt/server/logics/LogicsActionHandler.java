@@ -3,7 +3,7 @@ package lsfusion.gwt.server.logics;
 import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.shared.actions.logics.LogicsAction;
-import lsfusion.gwt.shared.base.exception.AppServerNotAvailableDispatchException;
+import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.interop.logics.LogicsRunnable;
 import net.customware.gwt.dispatch.shared.Result;
 

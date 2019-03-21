@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.ui.cellview.DataGrid;
-import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
-import lsfusion.gwt.client.form.object.table.GGridPropertyTable;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.shared.form.design.GFont;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;

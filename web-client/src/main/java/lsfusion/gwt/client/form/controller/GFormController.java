@@ -22,32 +22,33 @@ import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.jsni.Function2;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
-import lsfusion.gwt.client.ServerMessageProvider;
+import lsfusion.gwt.client.view.ServerMessageProvider;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.property.cell.controller.dispatch.GSimpleChangePropertyDispatcher;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import lsfusion.gwt.client.form.property.table.GPropertyTable;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
-import lsfusion.gwt.client.form.classes.ClassChosenHandler;
-import lsfusion.gwt.client.form.classes.GResizableClassDialog;
-import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
+import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
+import lsfusion.gwt.client.form.classes.view.GClassDialog;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.design.GAbstractContainerView;
-import lsfusion.gwt.client.form.design.GFormLayout;
-import lsfusion.gwt.client.form.design.TabbedContainerView;
-import lsfusion.gwt.client.form.property.panel.PanelRenderer;
+import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.design.view.TabbedContainerView;
+import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.actions.form.*;
 import lsfusion.gwt.shared.actions.logics.GenerateID;
 import lsfusion.gwt.shared.actions.logics.GenerateIDResult;
-import lsfusion.gwt.shared.base.result.ListResult;
-import lsfusion.gwt.shared.base.result.NumberResult;
-import lsfusion.gwt.shared.base.result.VoidResult;
+import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.base.result.NumberResult;
+import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.shared.form.GForm;
 import lsfusion.gwt.shared.form.design.GComponent;
 import lsfusion.gwt.shared.form.design.GContainer;
@@ -646,7 +647,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-        GResizableClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
+        GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
 
     public void changeGroupObject(final GGroupObject group, GGroupObjectValue key) {

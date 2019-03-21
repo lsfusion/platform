@@ -1,16 +1,16 @@
 package lsfusion.gwt.shared.form.property;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.MainFrame;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.FormatGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
-import lsfusion.gwt.client.form.property.panel.PanelRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.FormatGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.base.ImageDescription;
+import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.shared.classes.GActionType;
 import lsfusion.gwt.shared.classes.GClass;
 import lsfusion.gwt.shared.classes.GObjectType;

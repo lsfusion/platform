@@ -5,7 +5,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.object.GShowTypeView;
+import lsfusion.gwt.client.form.object.view.GShowTypeView;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculateSumButton;

@@ -1,11 +1,11 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.classes.ClassChosenHandler;
-import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
+import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.shared.action.*;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;

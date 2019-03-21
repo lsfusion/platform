@@ -5,8 +5,8 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.DoubleGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.DoubleGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 import java.text.ParseException;

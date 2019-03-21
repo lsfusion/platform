@@ -1,14 +1,14 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.client.form.design.GFormLayoutImpl;
+import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.panel.PanelRenderer;
+import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.HashMap;
 import java.util.List;
