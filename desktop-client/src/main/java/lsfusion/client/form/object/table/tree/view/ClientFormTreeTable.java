@@ -1,12 +1,12 @@
 package lsfusion.client.form.object.table.tree.view;
 
+import lsfusion.client.base.SwingUtils;
+import lsfusion.client.form.property.table.view.TableTransferHandler;
+import lsfusion.interop.form.event.KeyStrokes;
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableModel;
-import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.property.table.view.TableTransferHandler;
-import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

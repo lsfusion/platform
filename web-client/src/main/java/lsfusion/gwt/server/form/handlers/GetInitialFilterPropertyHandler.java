@@ -1,10 +1,10 @@
 package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.gwt.client.base.result.NumberResult;
-import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.gwt.client.controller.remote.action.form.GetInitialFilterProperty;
+import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.gwt.server.form.FormActionHandler;
+import lsfusion.http.provider.form.FormSessionObject;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

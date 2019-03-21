@@ -1,6 +1,7 @@
 package lsfusion.base.prim;
 
-import java.util.*; // For HashMap
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Prim {
     /**

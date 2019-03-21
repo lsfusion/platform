@@ -1,12 +1,15 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.cell.classes.view.IntegralPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.classes.view.IntegralPropertyRenderer;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
 
-import java.text.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
 import java.util.EventObject;
 
 import static java.lang.Math.pow;

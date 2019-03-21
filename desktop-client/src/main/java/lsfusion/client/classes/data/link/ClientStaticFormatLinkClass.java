@@ -1,8 +1,8 @@
 package lsfusion.client.classes.data.link;
 
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.classes.controller.LinkPropertyEditor;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.controller.LinkPropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 
 public abstract class ClientStaticFormatLinkClass extends ClientLinkClass {
 

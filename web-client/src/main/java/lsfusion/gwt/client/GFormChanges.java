@@ -2,11 +2,11 @@ package lsfusion.gwt.client;
 
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.GPropertyReader;
+import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;

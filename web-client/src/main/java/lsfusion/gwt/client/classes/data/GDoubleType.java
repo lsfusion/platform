@@ -2,12 +2,12 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.DoubleGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.controller.DoubleGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.view.DoubleGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.text.ParseException;
 

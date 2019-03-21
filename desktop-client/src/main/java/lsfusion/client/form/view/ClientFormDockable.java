@@ -1,11 +1,11 @@
 package lsfusion.client.form.view;
 
-import lsfusion.client.view.MainFrame;
-import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.base.view.ClientDockable;
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.FormsController;
+import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.io.IOException;

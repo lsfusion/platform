@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.filter.user.GObjectFilterValue;
+import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 public class GObjectFilterValueView extends GFilterValueView {

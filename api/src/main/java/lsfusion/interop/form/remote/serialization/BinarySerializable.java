@@ -1,7 +1,5 @@
 package lsfusion.interop.form.remote.serialization;
 
-import lsfusion.base.col.interfaces.immutable.ImList;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 

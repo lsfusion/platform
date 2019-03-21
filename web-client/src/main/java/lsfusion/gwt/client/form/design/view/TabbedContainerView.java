@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.client.base.GwtClientUtils.scheduleOnResize;
 import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {

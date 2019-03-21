@@ -6,13 +6,13 @@ import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.SimplePanel;
+import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
-import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
+import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 
 import java.util.Set;

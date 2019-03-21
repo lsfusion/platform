@@ -1,8 +1,8 @@
 package lsfusion.client.classes.data.link;
 
-import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.classes.ClientTypeClass;
+import lsfusion.client.classes.data.ClientDataClass;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;

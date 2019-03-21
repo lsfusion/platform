@@ -3,9 +3,9 @@ package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 
 public class GUserPreferencesButton extends GToolbarButton {
     private final ClientMessages messages = ClientMessages.Instance.get();

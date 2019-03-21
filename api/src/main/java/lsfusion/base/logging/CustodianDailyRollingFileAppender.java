@@ -39,24 +39,18 @@ package lsfusion.base.logging;
  * limitations under the License.
  */
 
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.File;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Layout;
+import org.apache.log4j.helpers.LogLog;
+import org.apache.log4j.spi.LoggingEvent;
+
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Calendar;
-import java.util.TimeZone;
-import java.util.Locale;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 //We have to import the log4j package because this class used to be in it and references other classes in that package.
-import org.apache.log4j.*;
-import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.spi.LoggingEvent;
 
 public class CustodianDailyRollingFileAppender extends FileAppender {
     // The code assumes that the following constants are in a increasing

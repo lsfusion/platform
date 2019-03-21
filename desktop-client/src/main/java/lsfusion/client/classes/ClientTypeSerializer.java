@@ -1,9 +1,9 @@
 package lsfusion.client.classes;
 
 import lsfusion.client.classes.data.*;
-import lsfusion.interop.form.property.ExtInt;
 import lsfusion.client.classes.data.link.*;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.property.ExtInt;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

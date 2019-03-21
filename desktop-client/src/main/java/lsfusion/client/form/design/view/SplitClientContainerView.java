@@ -2,9 +2,9 @@ package lsfusion.client.form.design.view;
 
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.design.CachableLayout;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneUI;

@@ -2,11 +2,11 @@ package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientTypeClass;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.cell.classes.controller.ColorPropertyEditor;
-import lsfusion.client.form.property.cell.classes.view.ColorPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.controller.ColorPropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.classes.view.ColorPropertyRenderer;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
 import java.awt.*;

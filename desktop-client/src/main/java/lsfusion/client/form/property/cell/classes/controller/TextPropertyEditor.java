@@ -2,8 +2,8 @@ package lsfusion.client.form.property.cell.classes.controller;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
+import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.event.KeyStrokes;

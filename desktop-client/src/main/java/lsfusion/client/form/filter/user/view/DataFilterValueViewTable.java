@@ -1,14 +1,14 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.table.view.TableTransferHandler;
-import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.data.ClientStringClass;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
+import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;

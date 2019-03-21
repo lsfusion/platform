@@ -7,7 +7,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.interop.form.print.ReportConstants.*;
+import static lsfusion.interop.form.print.ReportConstants.beginIndexMarker;
+import static lsfusion.interop.form.print.ReportConstants.endIndexMarker;
 
 public class ClientPropertyData {
 

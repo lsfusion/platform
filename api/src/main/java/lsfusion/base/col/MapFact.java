@@ -1,6 +1,7 @@
 package lsfusion.base.col;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;

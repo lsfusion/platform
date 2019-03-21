@@ -5,9 +5,9 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.classes.data.GTimeType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
-import lsfusion.gwt.client.classes.data.GTimeType;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 

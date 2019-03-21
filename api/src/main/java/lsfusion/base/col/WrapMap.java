@@ -1,9 +1,11 @@
 package lsfusion.base.col;
 
 import lsfusion.base.col.implementations.abs.AMap;
-import lsfusion.base.col.implementations.simple.FilterRevValueMap;
-import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class WrapMap<K, V> extends AMap<K, V> implements ImMap<K, V> {
 

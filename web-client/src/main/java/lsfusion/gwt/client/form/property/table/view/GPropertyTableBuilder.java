@@ -3,17 +3,17 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.panel.view.GSinglePropertyTable;
 
 import java.util.List;
 
 /**
- * Based on lsfusion.gwt.client.form.ui.cellview.DefaultDataGridBuilder
+ * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
  */
 public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T> {
     private final String rowStyle;

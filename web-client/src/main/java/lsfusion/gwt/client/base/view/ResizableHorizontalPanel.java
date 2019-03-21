@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;

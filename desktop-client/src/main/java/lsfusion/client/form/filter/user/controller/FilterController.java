@@ -1,10 +1,10 @@
 package lsfusion.client.form.filter.user.controller;
 
 import lsfusion.client.form.design.view.ClientFormLayout;
+import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.filter.user.view.QueryView;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.filter.user.ClientFilter;
 
 public abstract class FilterController extends QueryController {
 

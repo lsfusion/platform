@@ -1,7 +1,5 @@
 package lsfusion.interop.base.exception;
 
-import java.rmi.RemoteException;
-
 // ошибка связи
 public abstract class RemoteClientException extends RuntimeException {
 

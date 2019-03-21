@@ -3,11 +3,11 @@ package lsfusion.client.classes.data;
 import lsfusion.base.DateConverter;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientTypeClass;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.controller.TimePropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.TimePropertyRenderer;
-import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 

@@ -1,10 +1,10 @@
 package lsfusion.client.controller.remote;
 
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakLinkedHashSet;
-import lsfusion.client.StartupProperties;
 import lsfusion.base.remote.CompressedStreamObserver;
 import lsfusion.base.remote.CountZipSocket;
 import lsfusion.base.remote.ZipSocketFactory;
+import lsfusion.client.StartupProperties;
 
 import java.io.IOException;
 

@@ -1,13 +1,13 @@
 package lsfusion.client.form.filter.user.view;
 
-import lsfusion.client.form.filter.user.FilterValueListener;
-import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
-import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.filter.user.ClientDataFilterValue;
-import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.classes.data.ClientLogicalClass;
+import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.filter.user.ClientDataFilterValue;
+import lsfusion.client.form.filter.user.FilterValueListener;
+import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.table.controller.TableController;
+import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 
 import javax.swing.*;
 import java.awt.*;

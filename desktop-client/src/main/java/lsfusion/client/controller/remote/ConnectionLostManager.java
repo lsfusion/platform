@@ -1,21 +1,24 @@
 package lsfusion.client.controller.remote;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
-import lsfusion.client.*;
-import lsfusion.client.controller.MainController;
-import lsfusion.client.view.MainFrame;
+import lsfusion.client.StartupProperties;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.exception.ClientExceptionManager;
-import lsfusion.base.DaemonThreadFactory;
+import lsfusion.client.controller.MainController;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.exception.NonFatalRemoteClientException;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -3,8 +3,6 @@ package lsfusion.interop.connection;
 import java.io.Serializable;
 import java.util.Locale;
 
-import static lsfusion.base.BaseUtils.nvl;
-
 public class LocalePreferences implements Serializable {
     public Locale locale;
     public String timeZone;

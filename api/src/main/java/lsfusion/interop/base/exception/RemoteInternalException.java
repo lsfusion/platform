@@ -3,8 +3,6 @@ package lsfusion.interop.base.exception;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 
-import static lsfusion.base.ApiResourceBundle.getString;
-
 // this class is needed to make throwable serializable and of specific class
 public class RemoteInternalException extends RemoteServerException {
     

@@ -1,19 +1,5 @@
 package lsfusion.base.mutability;
 
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.implementations.abs.ACol;
-import lsfusion.base.col.implementations.abs.ASet;
-import lsfusion.base.col.implementations.simple.FilterValueMap;
-import lsfusion.base.col.implementations.simple.SingletonOrderMap;
-import lsfusion.base.col.implementations.simple.SingletonRevMap;
-import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
-
-import java.util.*;
-
 public abstract class ImmutableObject { // implements ImSet<Object>, ImList<Object>, ImOrderSet<Object> {
     
 /*    private class SingleIterator implements Iterator<Object> {

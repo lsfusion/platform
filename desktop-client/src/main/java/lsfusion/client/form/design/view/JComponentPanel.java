@@ -1,7 +1,7 @@
 package lsfusion.client.form.design.view;
 
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.base.view.FlexLayout;
+import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,16 +1,16 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.classes.data.GDataType;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GWidthStringProcessor;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.controller.LongGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.controller.LongGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
-import lsfusion.gwt.client.classes.data.GDataType;
-import lsfusion.gwt.client.form.filter.user.GCompare;
 
 import java.text.ParseException;
 

@@ -1,9 +1,9 @@
 package lsfusion.base.col.interfaces.immutable;
 
-import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.lambda.set.FunctionSet;
 
 import java.util.Comparator;
 import java.util.Map;

@@ -1,14 +1,14 @@
 package lsfusion.interop.form.remote;
 
-import lsfusion.interop.form.print.ReportGenerationData;
-import lsfusion.interop.form.print.FormPrintType;
-import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
-import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
+import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.property.ClassViewType;
 
 import java.io.IOException;
 import java.rmi.RemoteException;

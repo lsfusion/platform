@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.view;
 
-import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
+import lsfusion.gwt.client.base.result.ListResult;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public interface ServerMessageProvider {

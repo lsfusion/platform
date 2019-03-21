@@ -1,12 +1,12 @@
 package lsfusion.client.form.object.table.tree;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.filter.user.ClientFilter;
-import lsfusion.client.form.design.ClientComponent;
-import lsfusion.client.form.object.ClientGroupObject;
-import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.design.ClientComponent;
+import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 
 import java.io.DataInputStream;

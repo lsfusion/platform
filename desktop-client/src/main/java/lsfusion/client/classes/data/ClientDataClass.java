@@ -6,12 +6,12 @@ import lsfusion.client.classes.ClientClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.property.panel.view.PanelView;
-import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;

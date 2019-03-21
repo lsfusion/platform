@@ -10,13 +10,13 @@ import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.controller.MainController;
-import lsfusion.client.form.view.ClientFormDockable;
-import lsfusion.client.form.print.view.EditReportInvoker;
-import lsfusion.client.view.MainFrame;
 import lsfusion.client.form.print.view.ClientReportDockable;
+import lsfusion.client.form.print.view.EditReportInvoker;
+import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
-import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.File;

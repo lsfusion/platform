@@ -1,6 +1,5 @@
 package lsfusion.http.authentication;
 
-import lsfusion.http.authentication.LSFAuthenticationToken;
 import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;

@@ -5,7 +5,6 @@ import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
-import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;

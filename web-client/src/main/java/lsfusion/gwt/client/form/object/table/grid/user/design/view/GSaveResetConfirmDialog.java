@@ -9,11 +9,11 @@ import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.view.MainFrame;
 
 @SuppressWarnings("GWTStyleCheck")
 public class GSaveResetConfirmDialog {

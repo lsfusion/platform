@@ -9,12 +9,12 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableFocusPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;

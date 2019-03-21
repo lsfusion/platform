@@ -1,13 +1,13 @@
 package lsfusion.gwt.server.navigator;
 
-import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.gwt.client.controller.remote.action.navigator.CloseNavigator;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorAction;
+import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorSessionObject;
-import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.rmi.RemoteException;

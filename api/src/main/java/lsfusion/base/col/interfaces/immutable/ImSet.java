@@ -1,11 +1,12 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.lambda.set.FunctionSet;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Set;
 
 public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
 

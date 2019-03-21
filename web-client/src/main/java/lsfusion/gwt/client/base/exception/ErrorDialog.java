@@ -5,9 +5,9 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
 
 @SuppressWarnings("GWTStyleCheck")
 public class ErrorDialog extends ResizableModalWindow {

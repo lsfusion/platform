@@ -1,12 +1,12 @@
 package lsfusion.client.form.object.table.controller;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.classes.controller.ClassChooserController;
 import lsfusion.client.form.classes.view.ClassChooserView;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
-import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.filter.user.view.QueryConditionView;
+import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 
 import javax.swing.*;

@@ -2,21 +2,21 @@ package lsfusion.client.form.object.table.tree.controller;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.ClientFormChanges;
-import lsfusion.client.form.object.table.controller.AbstractTableController;
-import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.ClientFormChanges;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
+import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.panel.controller.PanelController;
+import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.TreeGroupNode;
-import lsfusion.client.form.object.table.tree.view.TreeView;
 import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
+import lsfusion.client.form.object.table.tree.view.TreeView;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.interop.form.order.user.Order;
 
 import java.awt.*;

@@ -1,21 +1,21 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.classes.ClientTypeClass;
-import lsfusion.interop.form.property.ExtInt;
 import lsfusion.base.Pair;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.controller.ClientFormController;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.controller.StringPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.TextPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichTextPropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.StringPropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.TextPropertyRenderer;
-import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.ExtInt;
 
 import java.awt.*;
 import java.io.DataOutputStream;

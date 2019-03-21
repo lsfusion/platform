@@ -1,10 +1,10 @@
 package lsfusion.base.comb;
 
-import org.apache.log4j.Logger;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 

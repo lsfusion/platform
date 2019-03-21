@@ -1,7 +1,9 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.MIMETypeUtils;
-import lsfusion.client.classes.*;
+import lsfusion.client.classes.ClientActionClass;
+import lsfusion.client.classes.ClientObjectClass;
+import lsfusion.client.classes.ClientObjectType;
 import lsfusion.client.classes.data.*;
 import lsfusion.client.classes.data.link.*;
 import lsfusion.gwt.client.classes.GActionType;

@@ -2,8 +2,8 @@ package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
 import java.util.Set;

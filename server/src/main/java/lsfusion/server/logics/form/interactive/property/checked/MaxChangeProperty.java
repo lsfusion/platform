@@ -18,8 +18,8 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.CalcType;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

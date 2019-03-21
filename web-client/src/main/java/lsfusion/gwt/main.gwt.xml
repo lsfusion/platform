@@ -88,12 +88,12 @@
     <inherits name="com.google.gwt.user.UserAgent"/>
 
     <!-- Standard CellBasedWidgetImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplStandard">
+    <replace-with class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImplStandard">
         <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
     </replace-with>
 
     <!-- IE-specific CellBasedWidgetImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplTrident">
+    <replace-with class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImplTrident">
         <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
         <any>
             <when-property-is name="user.agent" value="ie6"/>
@@ -112,16 +112,16 @@
     </replace-with>
 
     <!-- Mozilla-specific CellTable implementation. -->
-    <replace-with class="lsfusion.gwt.client.form.ui.cellview.DataGridImplMozilla">
-        <when-type-is class="lsfusion.gwt.client.form.ui.cellview.DataGridImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.view.grid.DataGridImplMozilla">
+        <when-type-is class="lsfusion.gwt.client.base.view.grid.DataGridImpl"/>
         <any>
             <when-property-is name="user.agent" value="gecko1_8"/>
         </any>
     </replace-with>
 
     <!-- IE-specific CellTable implementation. -->
-    <replace-with class="lsfusion.gwt.client.form.ui.cellview.DataGridImplTrident">
-        <when-type-is class="lsfusion.gwt.client.form.ui.cellview.DataGridImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.view.grid.DataGridImplTrident">
+        <when-type-is class="lsfusion.gwt.client.base.view.grid.DataGridImpl"/>
         <any>
             <when-property-is name="user.agent" value="ie6"/>
             <when-property-is name="user.agent" value="ie8"/>

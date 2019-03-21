@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.controller.LongGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.controller.LongGridCellEditor;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.text.ParseException;
 

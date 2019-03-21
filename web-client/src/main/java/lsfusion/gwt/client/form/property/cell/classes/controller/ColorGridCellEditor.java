@@ -10,10 +10,10 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
+import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import net.auroris.ColorPicker.client.ColorPicker;
 
 public class ColorGridCellEditor extends PopupBasedGridCellEditor {

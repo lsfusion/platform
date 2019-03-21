@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
-import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

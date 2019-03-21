@@ -1,13 +1,13 @@
 package lsfusion.interop.logics.remote;
 
+import lsfusion.interop.action.ReportPath;
+import lsfusion.interop.base.remote.PendingRemoteInterface;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.navigator.NavigatorInfo;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
-import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.session.SessionInfo;
-import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
-import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.session.remote.RemoteSessionInterface;
 
 import java.rmi.RemoteException;

@@ -2,12 +2,12 @@ package lsfusion.client.form.property.panel.view;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.property.panel.SingleCellTableModel;
-import lsfusion.client.form.property.table.view.ClientPropertyTable;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.data.ClientStringClass;
+import lsfusion.client.form.property.panel.SingleCellTableModel;
+import lsfusion.client.form.property.table.view.ClientPropertyTable;
 
 import javax.swing.table.TableCellEditor;
 import java.awt.*;

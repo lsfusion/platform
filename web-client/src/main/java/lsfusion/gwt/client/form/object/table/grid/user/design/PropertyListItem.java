@@ -8,7 +8,7 @@ public class PropertyListItem {
     public GPropertyDraw property;
     private String userCaption;
     private String userPattern;
-    Boolean inGrid; // false - panel, null - hidden through showIf
+    public Boolean inGrid; // false - panel, null - hidden through showIf
     private boolean visibleList;
 
     public PropertyListItem(GPropertyDraw property, String userCaption, String userPattern, Boolean inGrid) {

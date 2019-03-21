@@ -1,7 +1,5 @@
 package lsfusion.base.lambda.set;
 
-import lsfusion.base.lambda.set.FunctionSet;
-
 public class RemoveFunctionSet<T> implements FunctionSet<T> {
 
     private final FunctionSet<T> set1;

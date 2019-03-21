@@ -1,8 +1,8 @@
 package lsfusion.client.form.property.cell.classes.view.link;
 
 import lsfusion.base.file.RawFileData;
-import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 
 import javax.swing.*;
 import java.awt.*;

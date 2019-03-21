@@ -1,14 +1,14 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.QueryController;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.form.property.panel.view.DataPanelView;
-import lsfusion.client.form.design.view.JComponentPanel;
-import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
+import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;

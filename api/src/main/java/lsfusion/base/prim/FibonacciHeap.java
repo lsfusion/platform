@@ -53,7 +53,9 @@ package lsfusion.base.prim;
         * dequeueMin to extract it.
         */
 
-        import java.util.*; // For ArrayList
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * A class representing a Fibonacci heap.

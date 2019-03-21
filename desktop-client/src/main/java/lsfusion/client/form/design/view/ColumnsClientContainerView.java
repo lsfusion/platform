@@ -2,10 +2,10 @@ package lsfusion.client.form.design.view;
 
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
+import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import java.awt.*;

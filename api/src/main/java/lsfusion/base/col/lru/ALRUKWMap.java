@@ -1,7 +1,6 @@
 package lsfusion.base.col.lru;
 
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 
 // у кого ключ в weak придется сохранять хэш, потому как иначе не найдешь в таблице 
 public abstract class ALRUKWMap<W, E extends ALRUKWMap.AEntry<W, E>, S extends ALRUKWMap.ASegment> extends ALRUWMap<W, E, S> {

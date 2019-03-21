@@ -1,9 +1,5 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.BaseUtils;
-
-import java.lang.ref.ReferenceQueue;
-
 import static lsfusion.base.col.lru.LRUUtil.hash;
 
 public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.ASegment> {

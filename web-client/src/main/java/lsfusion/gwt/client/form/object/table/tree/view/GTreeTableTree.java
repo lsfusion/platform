@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.object.GGroupObject;
-import lsfusion.gwt.client.form.object.GObject;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
+import lsfusion.gwt.client.form.object.GObject;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
 

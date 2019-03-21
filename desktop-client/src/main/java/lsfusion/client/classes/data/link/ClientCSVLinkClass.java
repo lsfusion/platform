@@ -1,9 +1,9 @@
 package lsfusion.client.classes.data.link;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.cell.classes.view.link.CSVLinkPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.link.CSVLinkPropertyRenderer;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
 public class ClientCSVLinkClass extends ClientStaticFormatLinkClass {

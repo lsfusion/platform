@@ -1,8 +1,8 @@
 package lsfusion.client.base.busy;
 
 import lsfusion.base.lambda.InterruptibleProvider;
-import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.view.MainFrame;
 
 import javax.swing.*;

@@ -3,8 +3,8 @@ package lsfusion.gwt.client.form.design;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import java.io.Serializable;
 

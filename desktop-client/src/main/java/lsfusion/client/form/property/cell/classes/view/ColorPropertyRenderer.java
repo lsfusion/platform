@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
-import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.classes.data.ClientColorClass;
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.LabelPropertyRenderer;
 
 import java.awt.*;

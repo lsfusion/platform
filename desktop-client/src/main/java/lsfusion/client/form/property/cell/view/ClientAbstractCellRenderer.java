@@ -1,7 +1,7 @@
 package lsfusion.client.form.property.cell.view;
 
-import lsfusion.client.form.property.cell.classes.view.StringPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.StringPropertyRenderer;
 import lsfusion.client.form.property.table.view.CellTableInterface;
 
 import javax.swing.*;

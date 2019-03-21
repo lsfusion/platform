@@ -2,11 +2,11 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.object.AbstractGroupObject;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

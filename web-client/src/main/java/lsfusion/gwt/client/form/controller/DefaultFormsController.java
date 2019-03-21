@@ -8,13 +8,13 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.view.MainFrame;
+import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.HashMap;

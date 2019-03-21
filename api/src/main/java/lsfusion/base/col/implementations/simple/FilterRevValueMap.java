@@ -1,13 +1,10 @@
 package lsfusion.base.col.implementations.simple;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class FilterRevValueMap<K, V> implements ImFilterRevValueMap<K, V> {
 
