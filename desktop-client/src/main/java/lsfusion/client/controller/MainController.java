@@ -126,10 +126,15 @@ public class MainController {
         if(Boolean.parseBoolean(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_AUTOLOGIN)))
             authToken = AuthenticationToken.ANONYMOUS;
 
-        String serverHost = BaseUtils.nvl(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTNAME), "localhost");
-        int serverPort = BaseUtils.nvl(Integer.parseInt(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT)), 7652);
-        String serverDB = BaseUtils.nvl(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME), "default");
-        setServerInfo(new LogicsConnection(serverHost, serverPort, serverDB));
+        String serverHost = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTNAME);
+        if(serverHost != null) {
+            String serverPortString = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT);
+            int serverPort = 0;
+            if (serverPortString != null) 
+                serverPort = BaseUtils.nvl(Integer.parseInt(serverPortString), 7652);
+            String serverDB = BaseUtils.nvl(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME), "default");
+            setServerInfo(new LogicsConnection(serverHost, serverPort, serverDB));
+        }
 
         UserInfo userInfo = null;
         String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);

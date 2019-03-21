@@ -232,30 +232,29 @@ public class LoginDialog extends JDialog {
     }
 
     public void updateServerSettings() {
+
+        boolean hasAnonymousUI = false;
+        String checkVersionError = null;
+
         LogicsConnection serverInfo = getServerInfo();
-        if (isValid(serverInfo)) {
-            boolean hasAnonymousUI = false;
-            String checkVersionError = null;
+        ServerSettings serverSettings = isValid(serverInfo) ? LogicsProvider.instance.getServerSettings(serverInfo, MainController.getSessionInfo(), null) : null;
 
-            ServerSettings serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, MainController.getSessionInfo(), null);
+        setTitle(MainController.getMainTitle(serverSettings));
 
-            setTitle(MainController.getMainTitle(serverSettings));
+        setIconImages(MainController.getMainIcons(serverSettings));
 
-            setIconImages(MainController.getMainIcons(serverSettings));
+        imageLabel.setIcon(MainController.getLogo(serverSettings));
 
-            imageLabel.setIcon(MainController.getLogo(serverSettings));
+        checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
 
-            checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
+        hasAnonymousUI = serverSettings != null && serverSettings.anonymousUI;
 
-            hasAnonymousUI = serverSettings != null && serverSettings.anonymousUI;
+        useAnonymousUICheckBox.setVisible(hasAnonymousUI);
+        updateAnonymousUIActivity();
 
-            useAnonymousUICheckBox.setVisible(hasAnonymousUI);
-            updateAnonymousUIActivity();
-
-            setWarningMsg(checkVersionError);
-            this.checkVersionError = checkVersionError;
-            pack();
-        }
+        setWarningMsg(checkVersionError);
+        this.checkVersionError = checkVersionError;
+        pack();
     }
 
     private static void syncUsers(RemoteLogicsInterface remoteLogics, Result<List<UserInfo>> userInfos) {
@@ -371,7 +370,7 @@ public class LoginDialog extends JDialog {
     }
 
     private boolean isValid(UserInfo userInfo) {
-        return !userInfo.name.isEmpty();
+        return userInfo.isAnonymous() || !userInfo.name.isEmpty();
     }
 
     private boolean isOkEnabled() {
@@ -440,7 +439,7 @@ public class LoginDialog extends JDialog {
         } else
             userInfos = new ArrayList<>();
         if(serverInfo == null)
-            serverInfo = new LogicsConnection("", 0, "");
+            serverInfo = new LogicsConnection("localhost", 7652, "default");
         if(userInfo == null) {
             if(!userInfos.isEmpty())
                 userInfo = userInfos.get(0);
