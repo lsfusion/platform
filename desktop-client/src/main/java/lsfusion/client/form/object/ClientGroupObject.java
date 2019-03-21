@@ -19,7 +19,7 @@ import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerial
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
-import lsfusion.interop.form.layout.AbstractGroupObject;
+import lsfusion.interop.form.object.AbstractGroupObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

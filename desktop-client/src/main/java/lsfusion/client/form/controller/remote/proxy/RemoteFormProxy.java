@@ -2,15 +2,15 @@ package lsfusion.client.form.controller.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
-import lsfusion.interop.form.stat.report.ReportGenerationData;
+import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.interop.form.user.ColorPreferences;
-import lsfusion.interop.form.user.FormGrouping;
-import lsfusion.interop.form.stat.report.FormPrintType;
-import lsfusion.interop.form.*;
-import lsfusion.interop.form.user.FormUserPreferences;
-import lsfusion.interop.form.user.GroupObjectUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
+import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
+import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;

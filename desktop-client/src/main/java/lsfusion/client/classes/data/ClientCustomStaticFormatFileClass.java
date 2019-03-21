@@ -7,7 +7,7 @@ import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.CustomStaticFormatFileRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

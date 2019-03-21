@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data.time;
 
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

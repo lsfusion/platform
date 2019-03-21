@@ -11,7 +11,7 @@ import lsfusion.client.form.property.cell.classes.controller.ActionPropertyEdito
 import lsfusion.client.form.property.cell.classes.view.ActionPropertyRenderer;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.text.ParseException;
 

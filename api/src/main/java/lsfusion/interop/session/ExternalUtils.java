@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.connection.AuthenticationToken;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;

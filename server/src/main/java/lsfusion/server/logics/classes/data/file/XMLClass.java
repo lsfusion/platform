@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;

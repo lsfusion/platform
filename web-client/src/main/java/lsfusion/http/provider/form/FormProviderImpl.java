@@ -13,10 +13,10 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.http.provider.navigator.NavigatorProvider;
-import lsfusion.interop.form.user.ColumnUserPreferences;
-import lsfusion.interop.form.user.FormUserPreferences;
-import lsfusion.interop.form.user.GroupObjectUserPreferences;
-import lsfusion.interop.form.RemoteFormInterface;
+import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;

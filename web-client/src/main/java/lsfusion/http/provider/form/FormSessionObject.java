@@ -3,7 +3,7 @@ package lsfusion.http.provider.form;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
-import lsfusion.interop.form.RemoteFormInterface;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.io.File;
 import java.util.ArrayList;

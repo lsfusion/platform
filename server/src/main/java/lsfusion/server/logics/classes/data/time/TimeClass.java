@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.data.time;
 
 import com.hexiong.jdbf.JDBFException;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;

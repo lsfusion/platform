@@ -3,7 +3,7 @@ package lsfusion.server.base.controller.remote.context;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
-import lsfusion.interop.exception.RemoteInternalException;
+import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.remote.PendingRemoteObject;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;

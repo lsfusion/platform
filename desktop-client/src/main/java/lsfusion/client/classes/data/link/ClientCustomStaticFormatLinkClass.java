@@ -5,7 +5,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.link.CustomStaticFormatLinkRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

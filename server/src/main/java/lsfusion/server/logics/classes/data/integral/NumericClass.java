@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes.data.integral;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.version.NFStaticLazy;
 import lsfusion.server.data.sql.syntax.SQLSyntax;

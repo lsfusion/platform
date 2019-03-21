@@ -9,9 +9,13 @@ import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.base.view.FlexConstraints;
+import lsfusion.interop.base.view.FlexLayout;
+import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.form.design.CachableLayout;
 import lsfusion.interop.form.event.ValueEvent;
 import lsfusion.interop.form.event.ValueEventListener;
-import lsfusion.interop.form.layout.*;
 
 import javax.swing.*;
 import java.awt.*;

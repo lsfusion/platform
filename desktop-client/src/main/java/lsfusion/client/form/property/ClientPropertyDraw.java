@@ -22,10 +22,10 @@ import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.classes.*;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.filter.user.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.*;
 import java.awt.*;

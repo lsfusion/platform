@@ -6,7 +6,7 @@ import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.ExcelPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 public class ClientExcelClass extends ClientStaticFormatFileClass {
 

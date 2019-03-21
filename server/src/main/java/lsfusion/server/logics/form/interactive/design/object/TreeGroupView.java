@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
-import lsfusion.interop.form.layout.AbstractTreeGroup;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;

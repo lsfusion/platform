@@ -2,9 +2,9 @@ package lsfusion.client.form.design;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.AbstractContainer;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.interop.form.design.AbstractContainer;
+import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.form.design.ContainerType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.interop.form.layout.ContainerType.*;
+import static lsfusion.interop.form.design.ContainerType.*;
 
 public class ClientContainer extends ClientComponent implements AbstractContainer<ClientComponent, String> {
 

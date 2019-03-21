@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.interop.navigator.WindowType.*;
+import static lsfusion.interop.navigator.window.WindowType.*;
 
 public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
     public List<ClientNavigatorElement> elements = new ArrayList<>();

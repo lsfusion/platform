@@ -5,7 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.exception.RemoteInternalException;
+import lsfusion.interop.base.exception.RemoteInternalException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

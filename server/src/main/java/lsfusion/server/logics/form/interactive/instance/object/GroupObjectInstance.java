@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.filter.user.Compare;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.server.base.caches.IdentityLazy;

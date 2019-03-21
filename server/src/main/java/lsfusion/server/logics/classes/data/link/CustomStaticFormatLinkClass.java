@@ -2,7 +2,7 @@ package lsfusion.server.logics.classes.data.link;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 
 import java.io.DataOutputStream;

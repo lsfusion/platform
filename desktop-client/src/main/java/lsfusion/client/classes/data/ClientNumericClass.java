@@ -5,7 +5,7 @@ import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.DoublePropertyEditor;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

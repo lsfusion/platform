@@ -9,7 +9,7 @@ import lsfusion.client.form.property.cell.classes.controller.TimePropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.TimePropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.sql.Time;
 import java.text.DateFormat;

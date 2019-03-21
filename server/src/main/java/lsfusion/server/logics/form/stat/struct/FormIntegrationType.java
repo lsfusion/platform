@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.stat.struct;
 
-import lsfusion.interop.form.stat.FormStaticType;
+import lsfusion.interop.form.print.FormStaticType;
 
 public enum FormIntegrationType implements FormStaticType {
     XLS, XLSX, DBF, CSV, XML, JSON, TABLE;

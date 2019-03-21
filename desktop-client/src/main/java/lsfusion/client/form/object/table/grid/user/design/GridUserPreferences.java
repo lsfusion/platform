@@ -3,8 +3,8 @@ package lsfusion.client.form.object.table.grid.user.design;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.user.ColumnUserPreferences;
-import lsfusion.interop.form.user.GroupObjectUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 
 import java.util.Comparator;
 import java.util.HashMap;

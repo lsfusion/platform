@@ -7,8 +7,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.stat.report.FormPrintType;
-import lsfusion.interop.form.stat.report.ReportConstants;
+import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.print.ReportConstants;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.interop.form.stat.report.ReportConstants.*;
+import static lsfusion.interop.form.print.ReportConstants.*;
 import static lsfusion.server.logics.form.stat.GroupObjectHierarchy.ReportNode;
 
 public class ReportDesignGenerator {

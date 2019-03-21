@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.interop.exception.ApplyCanceledException;
+import lsfusion.interop.base.exception.ApplyCanceledException;
 import lsfusion.server.base.MutableClosedObject;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.sql.exception.SQLHandledException;

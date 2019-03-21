@@ -1,7 +1,7 @@
 package lsfusion.server.base.controller.remote;
 
 import lsfusion.interop.PendingMethodInvocation;
-import lsfusion.interop.PendingRemoteInterface;
+import lsfusion.interop.base.remote.PendingRemoteInterface;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -1,6 +1,6 @@
 package lsfusion.client.navigator.window;
 
-import lsfusion.interop.navigator.WindowType;
+import lsfusion.interop.navigator.window.WindowType;
 
 import javax.swing.*;
 import java.io.DataInputStream;

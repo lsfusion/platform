@@ -5,10 +5,10 @@ import lsfusion.client.base.log.Log;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.exception.NonFatalRemoteClientException;
-import lsfusion.interop.exception.RemoteAbandonedException;
-import lsfusion.interop.exception.RemoteClientException;
-import lsfusion.interop.exception.RemoteServerException;
+import lsfusion.interop.base.exception.NonFatalRemoteClientException;
+import lsfusion.interop.base.exception.RemoteAbandonedException;
+import lsfusion.interop.base.exception.RemoteClientException;
+import lsfusion.interop.base.exception.RemoteServerException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

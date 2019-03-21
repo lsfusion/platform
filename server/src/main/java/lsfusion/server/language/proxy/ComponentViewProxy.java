@@ -2,7 +2,7 @@ package lsfusion.server.language.proxy;
 
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

@@ -6,8 +6,8 @@ import lsfusion.gwt.client.controller.remote.action.navigator.CloseNavigator;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorAction;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorSessionObject;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.navigator.callback.ClientCallBackInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.rmi.RemoteException;

@@ -1,7 +1,7 @@
 package lsfusion.interop.action;
 
-import lsfusion.interop.form.stat.report.FormPrintType;
-import lsfusion.interop.form.stat.report.ReportGenerationData;
+import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.print.ReportGenerationData;
 
 import java.io.IOException;
 import java.util.List;

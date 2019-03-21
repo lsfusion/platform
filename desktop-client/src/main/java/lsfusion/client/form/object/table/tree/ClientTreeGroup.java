@@ -7,7 +7,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.AbstractTreeGroup;
+import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

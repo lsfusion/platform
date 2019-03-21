@@ -11,7 +11,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.GetNavigatorInfoRe
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.io.IOException;

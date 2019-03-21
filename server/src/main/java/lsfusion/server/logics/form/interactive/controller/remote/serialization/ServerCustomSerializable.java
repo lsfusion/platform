@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.interactive.controller.remote.serialization;
 
-import lsfusion.base.serialization.CustomSerializable;
+import lsfusion.interop.form.remote.serialization.CustomSerializable;
 
 public interface ServerCustomSerializable extends CustomSerializable<ServerSerializationPool> {
 }

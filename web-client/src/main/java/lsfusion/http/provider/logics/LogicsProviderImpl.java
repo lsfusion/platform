@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
-import lsfusion.interop.exception.AppServerNotAvailableException;
+import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.logics.*;
 import lsfusion.base.remote.RMIUtils;
 import org.apache.log4j.Logger;

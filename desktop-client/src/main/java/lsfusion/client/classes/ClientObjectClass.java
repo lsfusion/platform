@@ -1,6 +1,6 @@
 package lsfusion.client.classes;
 
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

@@ -2,7 +2,7 @@ package lsfusion.client.controller.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.controller.MainController;
-import lsfusion.interop.form.stat.report.ReportGenerator;
+import lsfusion.interop.form.print.ReportGenerator;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -21,7 +21,7 @@ import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.print.ClientReportUtils;
-import lsfusion.interop.form.stat.report.FormPrintType;
+import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.event.EventBus;

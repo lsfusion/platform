@@ -6,7 +6,7 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.form.controller.FormsController;
-import lsfusion.interop.form.RemoteFormInterface;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.io.IOException;
 

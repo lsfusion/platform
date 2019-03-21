@@ -1,6 +1,6 @@
 package lsfusion.server.language.navigator.window;
 
-import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.design.Alignment;
 
 public class NavigatorWindowOptions {
 

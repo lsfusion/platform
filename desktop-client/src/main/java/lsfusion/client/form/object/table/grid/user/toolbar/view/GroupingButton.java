@@ -4,7 +4,7 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.form.user.FormGrouping;
+import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

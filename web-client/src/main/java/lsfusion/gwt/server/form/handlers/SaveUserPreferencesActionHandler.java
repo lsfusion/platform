@@ -8,8 +8,8 @@ import lsfusion.gwt.client.controller.remote.action.form.SaveUserPreferencesActi
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.interop.form.user.ColumnUserPreferences;
-import lsfusion.interop.form.user.GroupObjectUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

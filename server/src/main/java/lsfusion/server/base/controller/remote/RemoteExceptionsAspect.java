@@ -1,9 +1,9 @@
 package lsfusion.server.base.controller.remote;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.interop.exception.RemoteInternalException;
-import lsfusion.interop.exception.RemoteMessageException;
-import lsfusion.interop.exception.RemoteServerException;
+import lsfusion.interop.base.exception.RemoteInternalException;
+import lsfusion.interop.base.exception.RemoteMessageException;
+import lsfusion.interop.base.exception.RemoteServerException;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;

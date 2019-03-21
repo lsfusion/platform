@@ -1,0 +1,10 @@
+package lsfusion.interop.form.remote.serialization;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+public interface CustomSerializable<P extends SerializationPool> {
+    void customSerialize(P pool, DataOutputStream outStream) throws IOException;
+    void customDeserialize(P pool, DataInputStream inStream) throws IOException;
+}

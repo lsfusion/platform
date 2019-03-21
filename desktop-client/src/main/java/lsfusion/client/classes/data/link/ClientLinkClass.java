@@ -3,15 +3,15 @@ package lsfusion.client.classes.data.link;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.classes.ClientTypeClass;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.filter.user.Compare;
 
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 
-import static lsfusion.interop.form.property.Compare.EQUALS;
-import static lsfusion.interop.form.property.Compare.NOT_EQUALS;
+import static lsfusion.interop.form.filter.user.Compare.EQUALS;
+import static lsfusion.interop.form.filter.user.Compare.NOT_EQUALS;
 
 public abstract class ClientLinkClass extends ClientDataClass implements ClientTypeClass {
 

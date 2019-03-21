@@ -1,7 +1,7 @@
 package lsfusion.client.form.controller;
 
 
-import lsfusion.base.serialization.SerializationUtil;
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

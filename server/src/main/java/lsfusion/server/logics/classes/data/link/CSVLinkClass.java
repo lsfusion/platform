@@ -1,6 +1,6 @@
 package lsfusion.server.logics.classes.data.link;
 
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 
 import java.util.ArrayList;

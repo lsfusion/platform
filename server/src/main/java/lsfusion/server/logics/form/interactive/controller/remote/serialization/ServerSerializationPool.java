@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.interactive.controller.remote.serialization;
 
-import lsfusion.base.serialization.SerializationPool;
+import lsfusion.interop.form.remote.serialization.SerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;

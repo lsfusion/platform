@@ -15,8 +15,8 @@ import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.view.MainFrame;
 import lsfusion.client.form.print.view.ClientReportDockable;
 import lsfusion.client.navigator.ClientNavigator;
-import lsfusion.interop.form.RemoteFormInterface;
-import lsfusion.interop.form.stat.report.ReportGenerationData;
+import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.form.print.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.File;
