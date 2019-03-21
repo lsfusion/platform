@@ -1,8 +1,8 @@
 package lsfusion.gwt.shared.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.classes.ImageGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.ImageGridCellRenderer;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 public class GImageType extends GFileType {

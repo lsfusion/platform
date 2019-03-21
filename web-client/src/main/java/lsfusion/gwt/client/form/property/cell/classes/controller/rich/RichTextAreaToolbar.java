@@ -13,7 +13,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.RichTextAreaImpl;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.view.FlexPanel;
 
 public class RichTextAreaToolbar extends Composite {
     private Images images = GWT.create(Images.class);

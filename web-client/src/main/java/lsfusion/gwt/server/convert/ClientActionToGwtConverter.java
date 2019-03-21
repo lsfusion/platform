@@ -7,7 +7,7 @@ import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
-import lsfusion.gwt.shared.base.GProgressBar;
+import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;

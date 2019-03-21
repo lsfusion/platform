@@ -9,10 +9,10 @@ import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.MainFrame;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.shared.form.event.GKeyStroke;
 
 @SuppressWarnings("GWTStyleCheck")

@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.user.design;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.object.table.grid.GGridTable;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
 

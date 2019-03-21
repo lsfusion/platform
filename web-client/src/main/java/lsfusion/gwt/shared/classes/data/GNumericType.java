@@ -5,8 +5,8 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.NumericGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.classes.NumberGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 import java.math.BigDecimal;

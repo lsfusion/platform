@@ -1,8 +1,8 @@
 package lsfusion.gwt.shared.navigator.window;
 
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.client.navigator.GMenuNavigatorView;
-import lsfusion.gwt.client.navigator.GNavigatorView;
+import lsfusion.gwt.client.navigator.view.GMenuNavigatorView;
+import lsfusion.gwt.client.navigator.view.GNavigatorView;
 
 public class GMenuNavigatorWindow extends GNavigatorWindow {
     public int showLevel;

@@ -1,13 +1,13 @@
 package lsfusion.gwt.client.form.object.table.tree.controller;
 
 import com.google.gwt.user.client.ui.Panel;
-import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GFormLayoutImpl;
+import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
-import lsfusion.gwt.client.form.object.table.tree.GTreeTable;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
-import lsfusion.gwt.client.form.object.table.tree.GTreeGridRecord;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.shared.form.GForm;
 import lsfusion.gwt.shared.form.design.GComponent;
 import lsfusion.gwt.shared.form.design.GFont;

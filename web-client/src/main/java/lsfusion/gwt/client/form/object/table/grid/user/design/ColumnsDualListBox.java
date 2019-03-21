@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.ui.CaptionPanel;
+import lsfusion.gwt.client.base.view.CaptionPanel;
 
 import java.util.ArrayList;
 

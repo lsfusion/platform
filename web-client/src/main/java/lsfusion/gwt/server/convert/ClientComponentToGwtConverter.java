@@ -33,7 +33,7 @@ import lsfusion.gwt.shared.form.object.table.grid.user.toolbar.GCalculations;
 import lsfusion.gwt.shared.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.shared.form.property.*;
 import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.shared.form.event.GKeyStroke;
 import lsfusion.gwt.shared.classes.GClass;
 import lsfusion.gwt.shared.form.filter.user.GCompare;

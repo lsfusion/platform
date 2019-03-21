@@ -59,21 +59,21 @@
     <inherits name="com.bfr.client.Selection"/>
 
     <!-- Standard FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplStandard">
-        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.view.FlexPanelImplStandard">
+        <when-type-is class="lsfusion.gwt.client.base.view.FlexPanelImpl"/>
     </replace-with>
 
     <!-- IE-10 FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplIE">
-        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.view.FlexPanelImplIE">
+        <when-type-is class="lsfusion.gwt.client.base.view.FlexPanelImpl"/>
         <any>
             <when-property-is name="user.agent" value="ie10"/>
         </any>
     </replace-with>
 
     <!-- Webkit FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplWebkit">
-        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.view.FlexPanelImplWebkit">
+        <when-type-is class="lsfusion.gwt.client.base.view.FlexPanelImpl"/>
         <any>
             <when-property-is name="user.agent" value="opera"/>
         </any>
@@ -89,12 +89,12 @@
 
     <!-- Standard CellBasedWidgetImpl implementation. -->
     <replace-with class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplStandard">
-        <when-type-is class="lsfusion.gwt.client.base.ui.cellview.CellBasedWidgetImpl"/>
+        <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
     </replace-with>
 
     <!-- IE-specific CellBasedWidgetImpl implementation. -->
     <replace-with class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplTrident">
-        <when-type-is class="lsfusion.gwt.client.base.ui.cellview.CellBasedWidgetImpl"/>
+        <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
         <any>
             <when-property-is name="user.agent" value="ie6"/>
             <when-property-is name="user.agent" value="ie8"/>
@@ -102,8 +102,8 @@
     </replace-with>
 
     <!-- StandardBase CellBasedWidgetImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.ui.cellview.CellBasedWidgetImplStandardBase">
-        <when-type-is class="lsfusion.gwt.client.base.ui.cellview.CellBasedWidgetImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImplStandardBase">
+        <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
         <any>
             <when-property-is name="user.agent" value="safari"/>
             <when-property-is name="user.agent" value="ie9"/>
@@ -132,7 +132,7 @@
 
     <!-- - - - - - - - - - - MAIN - - - - - - - - - - - - - - - - -->
 
-    <entry-point class='lsfusion.gwt.client.MainFrame'/>
+    <entry-point class='lsfusion.gwt.client.view.MainFrame'/>
 
     <!--  GWT dispatch -->
     <inherits name='net.customware.gwt.dispatch.Dispatch' />
@@ -169,8 +169,8 @@
 
     <!-- отключил лэйаут через таблицы по причине резкого снижения скорости отрисовки в Chrome 56 и Firefox ~51  -->
     <!-- GFormLayout implementation using flex css syntax. -->
-    <replace-with class="lsfusion.gwt.client.form.design.flex.FlexFormLayoutImpl">
-        <when-type-is class="lsfusion.gwt.client.form.design.GFormLayoutImpl"/>
+    <replace-with class="lsfusion.gwt.client.form.design.view.flex.FlexFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.client.form.design.view.GFormLayoutImpl"/>
         <!--<none>-->
             <!--<when-property-is name="user.agent" value="gecko1_8" />-->
             <!--<when-property-is name="user.agent" value="safari" />-->

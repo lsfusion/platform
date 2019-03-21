@@ -2,8 +2,8 @@ package lsfusion.gwt.shared.actions.navigator;
 
 import com.google.gwt.core.shared.SerializableThrowable;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
-import lsfusion.gwt.shared.base.exception.NonFatalHandledException;
-import lsfusion.gwt.shared.base.result.VoidResult;
+import lsfusion.gwt.client.base.exception.NonFatalHandledException;
+import lsfusion.gwt.client.base.result.VoidResult;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
 public class LogClientExceptionAction extends NavigatorAction<VoidResult> {

@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
 import com.google.gwt.dom.client.DivElement;
-import lsfusion.gwt.client.base.ui.cellview.DataGrid;
-import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 public abstract class AbstractGridCellEditor implements GridCellEditor {
     @Override

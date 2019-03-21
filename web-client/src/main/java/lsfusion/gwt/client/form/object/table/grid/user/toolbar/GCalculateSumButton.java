@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 import java.math.BigDecimal;

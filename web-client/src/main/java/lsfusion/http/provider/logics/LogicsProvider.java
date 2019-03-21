@@ -1,6 +1,6 @@
 package lsfusion.http.provider.logics;
 
-import lsfusion.gwt.shared.base.exception.AppServerNotAvailableDispatchException;
+import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.ServerSettings;
 

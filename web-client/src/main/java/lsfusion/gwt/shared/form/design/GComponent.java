@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.shared.form.property.cell.classes.ColorDTO;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 
 import java.io.Serializable;
 

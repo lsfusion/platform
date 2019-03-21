@@ -2,7 +2,7 @@ package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
-import lsfusion.gwt.client.form.property.cell.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.form.design.GFont;
 import lsfusion.gwt.shared.form.object.table.grid.user.design.GColumnUserPreferences;

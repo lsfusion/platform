@@ -7,11 +7,11 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.MainFrame;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.client.ServerMessageProvider;
+import lsfusion.gwt.client.view.ServerMessageProvider;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class LoadingBlocker extends LoadingManager {

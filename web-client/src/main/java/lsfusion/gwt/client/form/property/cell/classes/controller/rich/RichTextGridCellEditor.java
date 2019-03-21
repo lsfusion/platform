@@ -12,12 +12,12 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DialogBasedGridCellEditor;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 public class RichTextGridCellEditor extends DialogBasedGridCellEditor {

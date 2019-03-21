@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.base.result.NumberResult;
+import lsfusion.gwt.client.base.result.NumberResult;
 
 public class CountRecords extends FormRequestIndexCountingAction<NumberResult> {
     public int groupObjectID;

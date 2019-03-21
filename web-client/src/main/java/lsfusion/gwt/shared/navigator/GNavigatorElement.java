@@ -1,10 +1,10 @@
 package lsfusion.gwt.shared.navigator;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.MainFrame;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.navigator.window.GNavigatorWindow;
-import lsfusion.gwt.shared.base.ImageDescription;
+import lsfusion.gwt.client.base.ImageDescription;
 
 import java.io.Serializable;
 import java.util.ArrayList;
