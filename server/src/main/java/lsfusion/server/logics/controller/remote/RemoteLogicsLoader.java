@@ -1,8 +1,7 @@
 package lsfusion.server.logics.controller.remote;
 
-import com.google.common.io.Resources;
-import lsfusion.interop.logics.RemoteLogicsInterface;
-import lsfusion.interop.logics.RemoteLogicsLoaderInterface;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.controller.remote.RmiManager;
@@ -12,7 +11,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 

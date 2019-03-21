@@ -1,6 +1,6 @@
 package lsfusion.client.form.controller.remote.serialization;
 
-import lsfusion.base.serialization.IdentitySerializable;
+import lsfusion.interop.form.remote.serialization.IdentitySerializable;
 
 //вообще должно быть так:
 //public interface ClientIdentitySerializable extends ClientCustomSerializable, IdentitySerializable<ClientSerializationPool> {

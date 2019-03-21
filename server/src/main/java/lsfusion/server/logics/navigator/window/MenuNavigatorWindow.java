@@ -1,6 +1,6 @@
 package lsfusion.server.logics.navigator.window;
 
-import lsfusion.interop.navigator.WindowType;
+import lsfusion.interop.navigator.window.WindowType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;

@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.LogicsModule;

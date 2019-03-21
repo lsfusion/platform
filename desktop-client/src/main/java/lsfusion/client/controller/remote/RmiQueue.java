@@ -15,8 +15,8 @@ import lsfusion.client.base.exception.ClientExceptionManager;
 import lsfusion.client.controller.dispatch.DispatcherInterface;
 import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.base.DaemonThreadFactory;
-import lsfusion.interop.exception.FatalRemoteClientException;
-import lsfusion.interop.exception.RemoteAbandonedException;
+import lsfusion.interop.base.exception.FatalRemoteClientException;
+import lsfusion.interop.base.exception.RemoteAbandonedException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

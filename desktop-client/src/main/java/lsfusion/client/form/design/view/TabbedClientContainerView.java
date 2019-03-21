@@ -7,9 +7,9 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.CachableLayout;
-import lsfusion.interop.form.layout.FlexConstraints;
+import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.form.design.CachableLayout;
+import lsfusion.interop.base.view.FlexConstraints;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

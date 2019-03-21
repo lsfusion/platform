@@ -6,7 +6,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.filter.user.Compare;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.MonitorServer;

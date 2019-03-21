@@ -7,7 +7,7 @@ import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.controller.ColorPropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.ColorPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
 import java.text.ParseException;

@@ -16,7 +16,7 @@ import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.controller.remote.serialization.ClientCustomSerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.AbstractForm;
+import lsfusion.interop.form.AbstractForm;
 
 import javax.swing.*;
 import java.io.DataInputStream;

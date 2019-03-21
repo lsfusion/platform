@@ -3,13 +3,13 @@ package lsfusion.interop.logics;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.castor.core.util.Base64Decoder;
 import org.json.JSONObject;
 
-import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 

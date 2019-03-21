@@ -24,7 +24,7 @@ import lsfusion.client.form.object.controller.ShowTypeController;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.order.user.Order;
-import lsfusion.interop.form.user.GroupObjectUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 
 import javax.swing.*;
 import java.awt.*;

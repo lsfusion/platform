@@ -3,7 +3,7 @@ package lsfusion.client.form.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import java.awt.*;

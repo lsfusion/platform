@@ -1,7 +1,7 @@
 package lsfusion.client.form.controller.remote.serialization;
 
 import lsfusion.base.context.ApplicationContext;
-import lsfusion.base.serialization.SerializationPool;
+import lsfusion.interop.form.remote.serialization.SerializationPool;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.classes.ClientClassChooser;
 import lsfusion.client.form.filter.user.ClientFilter;

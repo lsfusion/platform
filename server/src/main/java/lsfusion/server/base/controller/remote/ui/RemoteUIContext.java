@@ -7,7 +7,7 @@ import lsfusion.interop.action.ChooseClassClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.interop.form.user.UserInputResult;
+import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;

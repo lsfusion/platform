@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.interactive.design.filter;
 
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 

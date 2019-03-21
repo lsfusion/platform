@@ -16,7 +16,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.logging.DebugInfoWriter;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.filter.user.Compare;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;

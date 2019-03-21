@@ -1,8 +1,8 @@
 package lsfusion.server.logics.form.interactive.instance;
 
-import lsfusion.interop.form.stat.report.FormPrintType;
-import lsfusion.interop.form.stat.report.ReportGenerationData;
-import lsfusion.interop.form.user.FormUserPreferences;
+import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.InteractiveFormReportInterface;

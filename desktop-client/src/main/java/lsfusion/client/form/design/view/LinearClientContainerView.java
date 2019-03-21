@@ -2,7 +2,7 @@ package lsfusion.client.form.design.view;
 
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.interop.form.layout.FlexConstraints;
+import lsfusion.interop.base.view.FlexConstraints;
 
 public class LinearClientContainerView extends AbstractClientContainerView {
 

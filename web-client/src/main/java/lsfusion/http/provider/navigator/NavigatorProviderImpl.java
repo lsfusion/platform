@@ -10,7 +10,7 @@ import lsfusion.interop.session.SessionInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.connection.AuthenticationToken;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.i18n.LocaleContextHolder;

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.interop.form.layout.AbstractGroupObject;
+import lsfusion.interop.form.object.AbstractGroupObject;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;

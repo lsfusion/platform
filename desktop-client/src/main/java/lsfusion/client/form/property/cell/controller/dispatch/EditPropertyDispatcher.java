@@ -15,7 +15,7 @@ import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.user.UserInputResult;
+import lsfusion.interop.form.property.cell.UserInputResult;
 
 import javax.swing.*;
 import java.io.IOException;

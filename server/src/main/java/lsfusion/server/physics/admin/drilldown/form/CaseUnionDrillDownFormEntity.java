@@ -2,7 +2,7 @@ package lsfusion.server.physics.admin.drilldown.form;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;

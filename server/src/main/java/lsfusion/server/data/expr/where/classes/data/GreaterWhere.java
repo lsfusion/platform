@@ -3,7 +3,7 @@ package lsfusion.server.data.expr.where.classes.data;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.filter.user.Compare;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;

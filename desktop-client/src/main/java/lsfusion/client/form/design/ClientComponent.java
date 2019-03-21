@@ -1,11 +1,11 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.context.ContextIdentityObject;
-import lsfusion.base.serialization.IdentitySerializable;
+import lsfusion.interop.form.remote.serialization.IdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.interop.form.design.ComponentDesign;
-import lsfusion.interop.form.layout.AbstractComponent;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.design.AbstractComponent;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.*;
 import javax.swing.border.Border;

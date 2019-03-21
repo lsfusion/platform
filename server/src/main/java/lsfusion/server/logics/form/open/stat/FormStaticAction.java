@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.form.stat.FormStaticType;
+import lsfusion.interop.form.print.FormStaticType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.property.LP;

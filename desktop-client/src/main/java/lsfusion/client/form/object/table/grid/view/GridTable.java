@@ -28,8 +28,8 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.order.user.Order;
-import lsfusion.interop.form.user.Scroll;
-import lsfusion.interop.form.user.GroupObjectUserPreferences;
+import lsfusion.interop.form.order.Scroll;
+import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.action.ServerResponse;
 import sun.swing.UIAction;
 

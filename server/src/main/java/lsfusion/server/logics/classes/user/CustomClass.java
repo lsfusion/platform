@@ -15,7 +15,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.ImmutableObject;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;

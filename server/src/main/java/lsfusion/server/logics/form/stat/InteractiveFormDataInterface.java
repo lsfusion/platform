@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
-import lsfusion.interop.form.user.FormUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;

@@ -3,7 +3,7 @@ package lsfusion.server.data.type;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.DataClass;

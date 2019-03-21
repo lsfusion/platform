@@ -7,7 +7,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.user.UserInputResult;
+import lsfusion.interop.form.property.cell.UserInputResult;
 
 import java.io.IOException;
 

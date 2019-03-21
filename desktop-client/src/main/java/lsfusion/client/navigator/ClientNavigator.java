@@ -1,7 +1,7 @@
 package lsfusion.client.navigator;
 
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 
 import java.util.Map;
 

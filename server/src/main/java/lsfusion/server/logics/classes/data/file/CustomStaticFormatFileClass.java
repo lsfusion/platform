@@ -3,7 +3,7 @@ package lsfusion.server.logics.classes.data.file;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 

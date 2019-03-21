@@ -40,9 +40,9 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.property.PropertyEditType;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.form.design.ContainerType;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;

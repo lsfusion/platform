@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.base.serialization.BinarySerializable;
+import lsfusion.interop.form.remote.serialization.BinarySerializable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;

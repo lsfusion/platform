@@ -1,7 +1,7 @@
 package lsfusion.interop.action;
 
 import lsfusion.interop.form.ModalityType;
-import lsfusion.interop.form.RemoteFormInterface;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.io.IOException;
 

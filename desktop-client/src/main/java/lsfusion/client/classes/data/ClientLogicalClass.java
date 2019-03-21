@@ -8,7 +8,7 @@ import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.controller.LogicalPropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.LogicalPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
 import java.text.ParseException;

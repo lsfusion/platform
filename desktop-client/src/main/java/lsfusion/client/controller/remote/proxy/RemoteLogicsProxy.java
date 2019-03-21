@@ -6,11 +6,11 @@ import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.session.SessionInfo;
-import lsfusion.interop.logics.RemoteLogicsInterface;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.action.ReportPath;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.session.RemoteSessionInterface;
+import lsfusion.interop.session.remote.RemoteSessionInterface;
 
 import java.rmi.RemoteException;
 import java.util.List;

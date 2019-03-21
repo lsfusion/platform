@@ -1,10 +1,10 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.interop.form.layout.AbstractContainer;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.ContainerAdder;
-import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.interop.form.design.AbstractContainer;
+import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.form.design.ContainerAdder;
+import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -17,7 +17,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import static lsfusion.interop.form.layout.ContainerType.*;
+import static lsfusion.interop.form.design.ContainerType.*;
 
 public class ContainerView extends ComponentView implements AbstractContainer<ComponentView, LocalizedString> {
 

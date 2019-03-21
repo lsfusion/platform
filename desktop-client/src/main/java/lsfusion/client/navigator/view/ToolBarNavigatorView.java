@@ -4,10 +4,10 @@ import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.interop.form.layout.FlexConstraints;
-import lsfusion.interop.form.layout.FlexLayout;
+import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.base.view.FlexConstraints;
+import lsfusion.interop.base.view.FlexLayout;
 
 import javax.swing.*;
 import java.awt.*;

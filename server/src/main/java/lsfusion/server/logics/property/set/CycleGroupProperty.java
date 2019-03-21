@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.filter.user.Compare;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;

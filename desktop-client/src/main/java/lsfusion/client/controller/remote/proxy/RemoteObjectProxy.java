@@ -3,7 +3,7 @@ package lsfusion.client.controller.remote.proxy;
 import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.utils.ContentLengthException;
 import lsfusion.client.base.utils.ContentLengthOutputStream;
-import lsfusion.interop.PendingRemoteInterface;
+import lsfusion.interop.base.remote.PendingRemoteInterface;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;

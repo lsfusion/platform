@@ -6,7 +6,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.IntegerPropertyEditor;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.text.NumberFormat;
 import java.text.ParseException;

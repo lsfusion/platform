@@ -7,8 +7,8 @@ import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.layout.Alignment;
-import lsfusion.interop.form.layout.FlexConstraints;
+import lsfusion.interop.form.design.Alignment;
+import lsfusion.interop.base.view.FlexConstraints;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

@@ -1,7 +1,7 @@
 package lsfusion.http.provider.navigator;
 
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.navigator.callback.ClientCallBackInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 
 import java.rmi.RemoteException;
 

@@ -18,7 +18,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
-import lsfusion.interop.form.stat.report.ReportConstants;
+import lsfusion.interop.form.print.ReportConstants;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.Version;

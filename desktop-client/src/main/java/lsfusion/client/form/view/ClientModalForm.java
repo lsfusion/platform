@@ -3,7 +3,7 @@ package lsfusion.client.form.view;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.RemoteFormInterface;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;

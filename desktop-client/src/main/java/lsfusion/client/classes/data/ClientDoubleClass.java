@@ -6,7 +6,7 @@ import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.DoublePropertyEditor;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

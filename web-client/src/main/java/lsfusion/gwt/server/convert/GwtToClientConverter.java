@@ -16,10 +16,10 @@ import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.user.ColumnUserPreferences;
-import lsfusion.interop.form.user.FormUserPreferences;
-import lsfusion.interop.form.user.GroupObjectUserPreferences;
-import lsfusion.interop.form.user.UserInputResult;
+import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
+import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
+import lsfusion.interop.form.property.cell.UserInputResult;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;

@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.link.ExcelLinkPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 public class ClientExcelLinkClass extends ClientStaticFormatLinkClass {
 

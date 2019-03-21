@@ -8,7 +8,7 @@ import lsfusion.client.form.property.cell.classes.controller.DateTimePropertyEdi
 import lsfusion.client.form.property.cell.classes.view.DateTimePropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.form.property.DataType;
+import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
 import java.text.DateFormat;

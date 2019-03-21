@@ -24,7 +24,7 @@ import lsfusion.client.classes.data.ClientImageClass;
 import lsfusion.client.classes.data.ClientIntegralClass;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.link.ClientImageLinkClass;
-import lsfusion.interop.form.user.FormGrouping;
+import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.event.KeyStrokes;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Workbook;

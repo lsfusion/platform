@@ -4,8 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.navigator.callback.ClientCallBackInterface;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 
 import java.rmi.RemoteException;
 import java.util.concurrent.Callable;

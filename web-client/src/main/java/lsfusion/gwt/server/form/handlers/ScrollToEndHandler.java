@@ -6,7 +6,7 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.client.controller.remote.action.form.ScrollToEnd;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
-import lsfusion.interop.form.user.Scroll;
+import lsfusion.interop.form.order.Scroll;
 
 import java.rmi.RemoteException;
 

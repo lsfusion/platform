@@ -12,9 +12,9 @@ import lsfusion.gwt.client.controller.remote.action.navigator.LogClientException
 import lsfusion.gwt.client.base.exception.NonFatalHandledException;
 import lsfusion.gwt.client.base.exception.RemoteInternalDispatchException;
 import lsfusion.gwt.client.base.result.VoidResult;
-import lsfusion.interop.exception.NonFatalRemoteClientException;
-import lsfusion.interop.exception.RemoteInternalException;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.base.exception.NonFatalRemoteClientException;
+import lsfusion.interop.base.exception.RemoteInternalException;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

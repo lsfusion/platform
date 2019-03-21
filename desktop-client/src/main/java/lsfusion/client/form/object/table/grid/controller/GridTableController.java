@@ -18,7 +18,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.classes.data.ClientIntegralClass;
-import lsfusion.interop.form.user.FormGrouping;
+import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.action.ServerResponse;
 
