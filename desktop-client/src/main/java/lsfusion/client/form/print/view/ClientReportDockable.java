@@ -4,7 +4,7 @@ import bibliothek.gui.dock.common.event.CKeyboardListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import com.google.common.base.Throwables;
 import lsfusion.client.base.view.ClientDockable;
-import lsfusion.client.base.view.DockableManager;
+import lsfusion.client.form.controller.FormsController;
 import lsfusion.interop.form.stat.report.ReportGenerator;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
@@ -22,8 +22,8 @@ import java.io.IOException;
 
 public class ClientReportDockable extends ClientDockable {
     public Integer pageCount;
-    public ClientReportDockable(ReportGenerationData generationData, DockableManager dockableManager, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
-        super(null, dockableManager);
+    public ClientReportDockable(ReportGenerationData generationData, FormsController formsController, String printerName, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
+        super(null, formsController);
 
         try {
             final JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
@@ -58,8 +58,8 @@ public class ClientReportDockable extends ClientDockable {
     }
 
     // из файла
-    public ClientReportDockable(File file, DockableManager dockableManager) throws JRException {
-        super(null, dockableManager);
+    public ClientReportDockable(File file, FormsController formsController) throws JRException {
+        super(null, formsController);
         setContent(file.getName(), prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(file))));
     }
 

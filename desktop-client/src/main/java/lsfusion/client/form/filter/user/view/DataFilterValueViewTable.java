@@ -1,7 +1,7 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;

@@ -3,7 +3,7 @@ package lsfusion.client.form.print.view;
 import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.controller.MainController;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperPrintManager;

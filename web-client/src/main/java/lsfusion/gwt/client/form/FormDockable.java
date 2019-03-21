@@ -5,12 +5,14 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.form.ui.GFormController;
+import lsfusion.gwt.client.form.controller.DefaultFormsController;
+import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.ui.TooltipManager;
 import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.shared.view.GForm;
 
-final class FormDockable {
+public final class FormDockable {
     private TabWidget tabWidget;
     private ContentWidget contentWidget;
     private Widget blockingWidget; //GFormController

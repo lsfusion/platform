@@ -2,7 +2,7 @@ package lsfusion.client.form.property.table.view;
 
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.link.ImageLinkPropertyRenderer;

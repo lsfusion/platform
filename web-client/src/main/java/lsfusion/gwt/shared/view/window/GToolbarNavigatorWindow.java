@@ -2,7 +2,7 @@ package lsfusion.gwt.shared.view.window;
 
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.client.navigator.GINavigatorController;
+import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.GNavigatorView;
 import lsfusion.gwt.client.navigator.GToolbarNavigatorView;
 

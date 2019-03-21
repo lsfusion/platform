@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.window;
 
-import lsfusion.gwt.client.navigator.GINavigatorController;
+import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.GMenuNavigatorView;
 import lsfusion.gwt.client.navigator.GNavigatorView;
 

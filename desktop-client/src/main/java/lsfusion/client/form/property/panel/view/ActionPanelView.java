@@ -2,7 +2,7 @@ package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;

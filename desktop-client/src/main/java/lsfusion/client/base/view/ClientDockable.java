@@ -9,6 +9,7 @@ import bibliothek.gui.dock.common.event.CFocusListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.control.focus.DefaultFocusRequest;
 import com.jhlabs.image.PointFilter;
+import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.view.ClientFormDockable;
 import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
@@ -31,8 +32,8 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private final CustomCloseAction closeAction;
 
-    protected ClientDockable(String canonicalName, DockableManager dockableManager) {
-        super(dockableManager.getDockableFactory());
+    protected ClientDockable(String canonicalName, FormsController formsController) {
+        super(formsController.getDockableFactory());
 
         this.canonicalName = canonicalName;
 
@@ -42,7 +43,7 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
         setRemoveOnClose(true);
         setCloseable(true);
 
-        putAction(ACTION_KEY_CLOSE, closeAction = new CustomCloseAction(dockableManager.getControl()));
+        putAction(ACTION_KEY_CLOSE, closeAction = new CustomCloseAction(formsController.getControl()));
 
         addCDockableStateListener(new CDockableAdapter() {
             @Override

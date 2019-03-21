@@ -16,15 +16,20 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
-import lsfusion.gwt.client.dispatch.LogicsDispatchAsync;
-import lsfusion.gwt.client.dispatch.NavigatorDispatchAsync;
-import lsfusion.gwt.client.form.DefaultFormsController;
-import lsfusion.gwt.client.form.ServerMessageProvider;
-import lsfusion.gwt.client.form.dispatch.GwtActionDispatcher;
-import lsfusion.gwt.client.form.ui.GFormController;
-import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.client.navigator.GNavigatorController;
-import lsfusion.gwt.client.window.WindowsController;
+import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
+import lsfusion.gwt.client.base.busy.LoadingBlocker;
+import lsfusion.gwt.client.base.busy.LoadingManager;
+import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
+import lsfusion.gwt.client.base.log.GLog;
+import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
+import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
+import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
+import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
+import lsfusion.gwt.client.form.controller.DefaultFormsController;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
+import lsfusion.gwt.client.navigator.window.WindowsController;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.actions.CreateNavigatorAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
@@ -35,9 +40,7 @@ import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.shared.view.GNavigatorAction;
 import lsfusion.gwt.shared.view.actions.GAction;
-import lsfusion.gwt.shared.view.actions.GActivateFormAction;
 import lsfusion.gwt.shared.view.actions.GFormAction;
-import lsfusion.gwt.shared.view.actions.GMaximizeFormAction;
 import lsfusion.gwt.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.shared.view.window.GNavigatorWindow;
 import net.customware.gwt.dispatch.shared.Result;
@@ -56,24 +59,14 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static LogicsDispatchAsync logicsDispatchAsync;
     public static NavigatorDispatchAsync navigatorDispatchAsync;
 
+    // settings    
     public static boolean devMode;
-
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
     public static boolean busyDialog;
     public static long busyDialogTimeout;
-
-    private GNavigatorController navigatorController;
-    private WindowsController windowsController;
-    private DefaultFormsController formsController;
-
-    public GAbstractWindow formsWindow;
-    public Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
-
-    public GNavigatorActionDispatcher actionDispatcher = new GNavigatorActionDispatcher();
-
     private static Boolean shouldRepeatPingRequest = true;
-    
+
     private final String tabSID = GwtSharedUtils.randomString(25);
 
     private LoadingManager loadingManager;
@@ -147,21 +140,12 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         });
     }
+    
+    private static class Linker<T> {
+        private T link;
+    }
 
     public void initializeFrame() {
-        Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
-            @Override
-            public void onWindowClosing(Window.ClosingEvent event) {
-                try {
-                    if (windowsController != null) {
-                        windowsController.storeWindowsSizes();
-                    }
-                } finally {
-                    clean();
-                }
-            }
-        });
-
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
@@ -169,7 +153,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         });
 
-        formsController = new DefaultFormsController(tabSID) {
+        final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
+        final DefaultFormsController formsController = new DefaultFormsController(tabSID) {
             @Override
             public void executeNavigatorAction(GNavigatorAction action, final NativeEvent event) {
                 syncDispatch(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
@@ -180,7 +165,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                                 if (action instanceof GFormAction)
                                     ((GFormAction) action).forbidDuplicate = false;
                         }
-                        actionDispatcher.dispatchResponse(result);
+                        actionDispatcherLink.link.dispatchResponse(result);
                     }
                 });
             }
@@ -190,7 +175,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 syncDispatch(new ExecuteNavigatorAction(actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
-                        actionDispatcher.dispatchResponse(result);
+                        actionDispatcherLink.link.dispatchResponse(result);
                     }
                 });
             }
@@ -201,22 +186,38 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         };
 
-        windowsController = new WindowsController() {
+        final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
+        final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink = new Linker<>();        
+        final Linker<GNavigatorController> navigatorControllerLink = new Linker<>();
+        final WindowsController windowsController = new WindowsController() {
             @Override
             public Widget getWindowView(GAbstractWindow window) {
                 Widget view;
-                if (window.equals(formsWindow)) {
+                if (window.equals(formsWindowLink.link)) {
                     view = formsController.getView();
                 } else if (window instanceof GNavigatorWindow) {
-                    view = navigatorController.getNavigatorView((GNavigatorWindow) window).getView();
+                    view = navigatorControllerLink.link.getNavigatorView((GNavigatorWindow) window).getView();
                 } else {
-                    view = commonWindows.get(window);
+                    view = commonWindowsLink.link.get(window);
                 }
                 return view;
             }
         };
 
-        navigatorController = new GNavigatorController(formsController) {
+        actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController);
+
+        Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
+            @Override
+            public void onWindowClosing(Window.ClosingEvent event) {
+                try {
+                    windowsController.storeWindowsSizes();
+                } finally {
+                    clean();
+                }
+            }
+        });
+
+        GNavigatorController navigatorController = new GNavigatorController(formsController) {
             @Override
             public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {
                 windowsController.updateVisibility(windows);
@@ -227,6 +228,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 windowsController.setInitialSize(window, width, height);
             }
         };
+        navigatorControllerLink.link = navigatorController;
 
         navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
@@ -240,7 +242,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         });
 
-        initializeWindows();
+        initializeWindows(formsController, windowsController, navigatorController, formsWindowLink, commonWindowsLink);
 
         GConnectionLostManager.start();
 
@@ -316,15 +318,18 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    private void initializeWindows() {
+    private void initializeWindows(final DefaultFormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
         navigatorDispatchAsync.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
             @Override
             public void success(GetNavigatorInfoResult result) {
                 GwtClientUtils.removeLoaderFromHostedPage();
 
-                formsWindow = result.forms;
+                GAbstractWindow formsWindow = result.forms;
+                formsWindowLink.link = formsWindow;
+                Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
                 commonWindows.put(result.log, GLog.createLogPanel(result.log.visible));
                 commonWindows.put(result.status, new Label(result.status.caption));
+                commonWindowsLink.link = commonWindows;
 
                 // пока прячем всё, что не поддерживается
                 result.status.visible = false;
@@ -351,40 +356,4 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         System.gc();
     }
 
-    private class GNavigatorActionDispatcher extends GwtActionDispatcher {
-        @Override
-        protected void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback) {
-            navigatorDispatchAsync.execute(new ThrowInNavigatorAction(t), callback);
-        }
-
-        @Override
-        protected void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-            navigatorDispatchAsync.execute(new ContinueNavigatorAction(actionResults), callback);
-        }
-
-        @Override
-        public void execute(final GFormAction action) {
-            if (action.modalityType.isModal()) {
-                pauseDispatching();
-            }
-            formsController.openForm(action.form, action.modalityType, action.forbidDuplicate, null, new WindowHiddenHandler() {
-                @Override
-                public void onHidden() {
-                    if (action.modalityType.isModal()) {
-                        continueDispatching();
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void execute(final GActivateFormAction action) {
-            formsController.selectTab(action.formCanonicalName);
-        }
-
-        @Override
-        public void execute(final GMaximizeFormAction action) {
-            windowsController.setFullScreenMode(true);
-        }
-    }
 }

@@ -5,6 +5,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
+import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.shared.view.GNavigatorElement;
 import lsfusion.gwt.shared.view.window.GTreeNavigatorWindow;
 

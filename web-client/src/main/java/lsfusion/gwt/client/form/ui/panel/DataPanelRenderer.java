@@ -14,7 +14,7 @@ import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.client.base.ui.ResizableComplexPanel;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.client.form.ui.GFormController;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.ui.GSinglePropertyTable;
 import lsfusion.gwt.client.form.ui.TooltipManager;
 import lsfusion.gwt.shared.view.GEditBindingMap;
@@ -24,7 +24,7 @@ import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.client.HotkeyManager.Binding;
+import static lsfusion.gwt.client.form.controller.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
     public final GPropertyDraw property;
