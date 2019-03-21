@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.shared.form.design.GComponent;
-import lsfusion.gwt.shared.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 
 public class ScrollContainerView extends GAbstractContainerView {
 

@@ -3,11 +3,11 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.property.cell.classes.GTimeDTO;
-import lsfusion.gwt.shared.classes.data.GTimeType;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
+import lsfusion.gwt.client.classes.data.GTimeType;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 

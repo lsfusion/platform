@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.Pair;
-import lsfusion.gwt.shared.action.*;
+import lsfusion.gwt.client.action.*;
 import lsfusion.interop.ProgressBar;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.form.ClientFormChanges;
@@ -11,10 +11,10 @@ import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.gwt.shared.form.GFormChangesDTO;
-import lsfusion.gwt.shared.classes.GObjectClass;
-import lsfusion.gwt.shared.classes.GType;
-import lsfusion.gwt.shared.navigator.window.GModalityType;
+import lsfusion.gwt.client.GFormChangesDTO;
+import lsfusion.gwt.client.classes.GObjectClass;
+import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
 

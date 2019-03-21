@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.HashMap;
 

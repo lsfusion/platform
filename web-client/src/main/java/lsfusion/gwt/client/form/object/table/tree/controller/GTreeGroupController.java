@@ -8,16 +8,16 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
-import lsfusion.gwt.shared.form.GForm;
-import lsfusion.gwt.shared.form.design.GComponent;
-import lsfusion.gwt.shared.form.design.GFont;
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.object.table.tree.GTreeGroup;
-import lsfusion.gwt.shared.form.order.GOrder;
-import lsfusion.gwt.shared.form.property.*;
-import lsfusion.gwt.shared.form.GFormChanges;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.shared.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.order.user.GOrder;
+import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 
 import java.util.ArrayList;
 import java.util.HashMap;

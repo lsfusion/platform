@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.view.ServerMessageProvider;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 

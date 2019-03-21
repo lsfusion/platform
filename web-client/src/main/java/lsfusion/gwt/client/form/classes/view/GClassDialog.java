@@ -8,7 +8,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.shared.classes.GObjectClass;
+import lsfusion.gwt.client.classes.GObjectClass;
 
 public class GClassDialog extends ResizableModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.navigator.controller.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
-import lsfusion.gwt.shared.actions.navigator.NavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorAction;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Result;
 

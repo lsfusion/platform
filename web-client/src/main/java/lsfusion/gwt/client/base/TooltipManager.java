@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 
-import static lsfusion.gwt.shared.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
 public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();

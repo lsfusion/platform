@@ -13,7 +13,7 @@ import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.controller.ObjectController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
-import lsfusion.client.form.object.table.grid.user.toolbar.CalculationsView;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.CalculationsView;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.panel.controller.PanelController;
@@ -23,7 +23,7 @@ import lsfusion.client.form.property.cell.classes.view.link.ImageLinkPropertyRen
 import lsfusion.client.form.object.controller.ShowTypeController;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.user.GroupObjectUserPreferences;
 
 import javax.swing.*;

@@ -7,17 +7,17 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.shared.form.event.GKeyStroke;
-import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.object.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.shared.form.event.GKeyStroke.isPossibleEditKeyEvent;
-import static lsfusion.gwt.shared.GwtSharedUtils.getFromDoubleMap;
-import static lsfusion.gwt.shared.GwtSharedUtils.putToDoubleMap;
+import static lsfusion.gwt.client.form.event.GKeyStroke.isPossibleEditKeyEvent;
+import static lsfusion.gwt.client.base.GwtSharedUtils.getFromDoubleMap;
+import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleMap;
 
 public class HotkeyManager {
     public interface Binding {

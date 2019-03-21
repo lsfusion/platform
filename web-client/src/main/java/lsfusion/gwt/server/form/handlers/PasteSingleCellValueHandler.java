@@ -5,8 +5,8 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.gwt.shared.actions.form.PasteSingleCellValue;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.client.controller.remote.action.form.PasteSingleCellValue;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.io.IOException;

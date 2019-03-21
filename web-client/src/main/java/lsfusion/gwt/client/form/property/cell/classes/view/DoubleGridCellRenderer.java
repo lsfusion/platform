@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.math.BigDecimal;
 

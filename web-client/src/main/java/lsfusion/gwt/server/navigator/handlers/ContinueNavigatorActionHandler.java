@@ -3,8 +3,8 @@ package lsfusion.gwt.server.navigator.handlers;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.navigator.NavigatorServerResponseActionHandler;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.actions.navigator.ContinueNavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

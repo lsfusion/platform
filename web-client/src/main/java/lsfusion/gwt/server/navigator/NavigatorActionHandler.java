@@ -2,8 +2,8 @@ package lsfusion.gwt.server.navigator;
 
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.SimpleActionHandlerEx;
-import lsfusion.gwt.shared.actions.navigator.CloseNavigator;
-import lsfusion.gwt.shared.actions.navigator.NavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.CloseNavigator;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorAction;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorSessionObject;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;

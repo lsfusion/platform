@@ -4,7 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.design.view.SplitContainerView;
 import lsfusion.gwt.client.form.design.view.SplitPanelBase;
-import lsfusion.gwt.shared.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GContainer;
 
 public class FlexSplitContainerView extends SplitContainerView<FlexPanel> {
     public FlexSplitContainerView(GContainer container) {

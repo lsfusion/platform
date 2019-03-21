@@ -7,7 +7,7 @@ import lsfusion.client.form.classes.view.ClassChooserView;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.filter.user.view.QueryConditionView;
-import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

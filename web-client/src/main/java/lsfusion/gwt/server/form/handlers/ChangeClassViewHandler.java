@@ -5,9 +5,9 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.shared.actions.form.ChangeClassView;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.property.GClassViewType;
+import lsfusion.gwt.client.controller.remote.action.form.ChangeClassView;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.interop.form.property.ClassViewType;
 
 import java.rmi.RemoteException;

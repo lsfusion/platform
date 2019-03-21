@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.shared.form.GForm;
+import lsfusion.gwt.client.GForm;
 
 public final class FormDockable {
     private TabWidget tabWidget;

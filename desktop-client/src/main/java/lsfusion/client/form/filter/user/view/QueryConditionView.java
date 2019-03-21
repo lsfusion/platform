@@ -11,7 +11,7 @@ import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.controller.remote.RmiQueue;
-import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;

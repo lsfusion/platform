@@ -5,7 +5,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.order.user.Order;
 
 import java.io.IOException;
 import java.util.List;

@@ -8,7 +8,7 @@ import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.base.SystemUtils;
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.connection.AuthenticationToken;

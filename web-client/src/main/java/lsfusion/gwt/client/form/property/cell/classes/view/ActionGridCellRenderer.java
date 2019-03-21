@@ -6,9 +6,9 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
-import lsfusion.gwt.shared.form.design.GFont;
-import lsfusion.gwt.shared.form.design.GFontMetrics;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     public ActionGridCellRenderer(GPropertyDraw property) {

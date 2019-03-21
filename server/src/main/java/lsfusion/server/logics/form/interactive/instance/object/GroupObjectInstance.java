@@ -13,7 +13,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyReadType;
-import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.order.user.Order;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;

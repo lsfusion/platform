@@ -4,7 +4,7 @@ import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.form.FormActionHandler;
-import lsfusion.gwt.shared.actions.form.Interrupt;
+import lsfusion.gwt.client.controller.remote.action.form.Interrupt;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

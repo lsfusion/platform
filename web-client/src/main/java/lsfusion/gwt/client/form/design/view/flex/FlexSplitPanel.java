@@ -6,7 +6,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.design.view.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.SplitPanelBase;
-import lsfusion.gwt.shared.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 
 import java.util.ArrayList;

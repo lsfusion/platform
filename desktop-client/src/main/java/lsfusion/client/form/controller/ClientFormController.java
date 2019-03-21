@@ -29,6 +29,7 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;
 import lsfusion.interop.form.stat.report.ReportGenerator;
@@ -72,7 +73,7 @@ import java.util.concurrent.TimeUnit;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.interop.form.user.Order.*;
+import static lsfusion.interop.form.order.user.Order.*;
 
 public class ClientFormController implements AsyncListener {
 

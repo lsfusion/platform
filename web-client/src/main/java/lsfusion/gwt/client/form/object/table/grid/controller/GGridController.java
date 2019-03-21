@@ -8,26 +8,26 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.view.GShowTypeView;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCalculateSumButton;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GCountQuantityButton;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSumButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
-import lsfusion.gwt.client.form.object.table.grid.user.design.GUserPreferencesButton;
-import lsfusion.gwt.shared.form.design.GComponent;
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.gwt.shared.form.order.GOrder;
-import lsfusion.gwt.shared.form.property.*;
-import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.shared.form.GFormChanges;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.shared.classes.data.GIntegralType;
-import lsfusion.gwt.shared.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferencesButton;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.order.user.GOrder;
+import lsfusion.gwt.client.form.property.*;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.classes.data.GIntegralType;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 
 import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.shared.form.property.GClassViewType.DEFAULT;
+import static lsfusion.gwt.client.form.property.GClassViewType.DEFAULT;
 
 public class GGridController extends GAbstractTableController {
     private final ClientMessages messages = ClientMessages.Instance.get();

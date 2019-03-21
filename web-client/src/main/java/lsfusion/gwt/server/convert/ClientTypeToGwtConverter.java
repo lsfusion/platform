@@ -4,12 +4,12 @@ import lsfusion.base.MIMETypeUtils;
 import lsfusion.client.classes.*;
 import lsfusion.client.classes.data.*;
 import lsfusion.client.classes.data.link.*;
-import lsfusion.gwt.shared.classes.GActionType;
-import lsfusion.gwt.shared.classes.GObjectClass;
-import lsfusion.gwt.shared.classes.GObjectType;
-import lsfusion.gwt.shared.classes.data.*;
-import lsfusion.gwt.shared.classes.data.link.*;
-import lsfusion.gwt.shared.form.property.GExtInt;
+import lsfusion.gwt.client.classes.GActionType;
+import lsfusion.gwt.client.classes.GObjectClass;
+import lsfusion.gwt.client.classes.GObjectType;
+import lsfusion.gwt.client.classes.data.*;
+import lsfusion.gwt.client.classes.data.link.*;
+import lsfusion.gwt.client.form.property.GExtInt;
 
 import java.util.ArrayList;
 

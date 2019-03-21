@@ -3,7 +3,7 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 
 public class ImageButton extends Button {

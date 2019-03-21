@@ -6,11 +6,11 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.logging.impl.StackTracePrintStream;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
-import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
-import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import net.customware.gwt.dispatch.shared.Action;
 
 import java.io.PrintStream;

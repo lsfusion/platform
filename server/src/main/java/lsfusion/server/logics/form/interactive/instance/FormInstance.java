@@ -129,7 +129,7 @@ import java.util.Map.Entry;
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
 import static lsfusion.interop.action.ServerResponse.*;
-import static lsfusion.interop.form.user.Order.*;
+import static lsfusion.interop.form.order.user.Order.*;
 import static lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance.*;
 
 // класс в котором лежит какие изменения произошли

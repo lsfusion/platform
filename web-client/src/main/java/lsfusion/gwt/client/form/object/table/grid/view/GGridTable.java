@@ -32,18 +32,18 @@ import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.view.GridEditableCell;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedGridCellEditor;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
-import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.design.GFont;
-import lsfusion.gwt.shared.form.event.GKeyStroke;
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.gwt.shared.form.order.GOrder;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.shared.form.object.GGroupObjectValueBuilder;
-import lsfusion.gwt.shared.classes.GObjectType;
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.client.form.order.user.GOrder;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
+import lsfusion.gwt.client.classes.GObjectType;
 
 import java.util.*;
 
@@ -52,7 +52,7 @@ import static java.lang.Math.min;
 import static java.lang.String.valueOf;
 import static java.util.Collections.singleton;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.shared.GwtSharedUtils.*;
+import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
