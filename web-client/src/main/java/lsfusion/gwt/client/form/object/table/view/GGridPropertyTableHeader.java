@@ -16,7 +16,7 @@ import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
 public class GGridPropertyTableHeader extends Header<String> {
     private static final int ANCHOR_WIDTH = 10;

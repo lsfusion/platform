@@ -9,7 +9,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 
 public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox.Caption {
     private static final ClientMessages messages = ClientMessages.Instance.get();

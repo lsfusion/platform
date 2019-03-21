@@ -8,9 +8,9 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.form.property.GClassViewType;
-import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.property.GClassViewType;
+import lsfusion.gwt.client.form.object.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.List;

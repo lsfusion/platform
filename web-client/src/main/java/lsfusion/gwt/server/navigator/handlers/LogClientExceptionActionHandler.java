@@ -8,7 +8,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.base.exception.NonFatalHandledException;
 import lsfusion.gwt.client.base.exception.RemoteInternalDispatchException;
 import lsfusion.gwt.client.base.result.VoidResult;

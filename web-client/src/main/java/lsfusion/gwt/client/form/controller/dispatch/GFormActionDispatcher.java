@@ -7,11 +7,11 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.base.log.GLog;
-import lsfusion.gwt.shared.action.*;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.classes.GObjectClass;
+import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.shared.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GModalityType;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;

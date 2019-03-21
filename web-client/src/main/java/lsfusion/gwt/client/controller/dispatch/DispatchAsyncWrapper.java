@@ -11,7 +11,7 @@ import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.shared.actions.RequestAction;
+import lsfusion.gwt.client.controller.remote.action.RequestAction;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchService;

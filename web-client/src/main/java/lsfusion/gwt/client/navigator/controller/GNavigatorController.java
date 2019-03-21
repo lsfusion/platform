@@ -3,10 +3,10 @@ package lsfusion.gwt.client.navigator.controller;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
-import lsfusion.gwt.shared.navigator.GNavigatorAction;
-import lsfusion.gwt.shared.navigator.GNavigatorElement;
-import lsfusion.gwt.shared.navigator.window.GAbstractWindow;
-import lsfusion.gwt.shared.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.GNavigatorAction;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.navigator.window.GAbstractWindow;
+import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
 import java.util.*;
 

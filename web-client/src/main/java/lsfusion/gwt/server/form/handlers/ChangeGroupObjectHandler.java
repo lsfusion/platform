@@ -5,8 +5,8 @@ import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.shared.actions.form.ChangeGroupObject;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.client.controller.remote.action.form.ChangeGroupObject;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 
 import java.rmi.RemoteException;
 

@@ -2,10 +2,10 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.DivElement;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import static lsfusion.gwt.shared.GwtSharedUtils.isRedundantString;
-import static lsfusion.gwt.shared.GwtSharedUtils.multiplyString;
+import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.client.base.GwtSharedUtils.multiplyString;
 
 public class StringGridCellRenderer extends TextBasedGridCellRenderer<String> {
     private boolean echoSymbols;

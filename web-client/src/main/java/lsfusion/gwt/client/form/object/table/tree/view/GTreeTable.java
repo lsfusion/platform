@@ -24,13 +24,13 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.view.GridEditableCell;
-import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.form.GForm;
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.object.table.tree.GTreeGroup;
-import lsfusion.gwt.shared.form.order.GOrder;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.order.user.GOrder;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.*;
 

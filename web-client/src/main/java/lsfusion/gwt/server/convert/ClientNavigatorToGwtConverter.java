@@ -4,11 +4,11 @@ import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.*;
 import lsfusion.client.navigator.window.*;
 import lsfusion.client.navigator.tree.window.ClientTreeNavigatorWindow;
-import lsfusion.gwt.shared.navigator.window.*;
-import lsfusion.gwt.shared.navigator.GNavigatorAction;
-import lsfusion.gwt.shared.navigator.GNavigatorFolder;
-import lsfusion.gwt.shared.navigator.GNavigatorElement;
-import lsfusion.gwt.shared.action.GAction;
+import lsfusion.gwt.client.navigator.window.*;
+import lsfusion.gwt.client.navigator.GNavigatorAction;
+import lsfusion.gwt.client.navigator.GNavigatorFolder;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.action.GAction;
 import lsfusion.interop.action.ClientAction;
 
 import java.util.ArrayList;

@@ -5,8 +5,8 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.shared.form.design.GComponent;
-import lsfusion.gwt.shared.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 
 import java.util.ArrayList;
 import java.util.HashMap;

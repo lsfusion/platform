@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.design.view.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.shared.form.design.GComponent;
-import lsfusion.gwt.shared.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 
 public class FlexLinearContainerView extends GAbstractContainerView {
     private final FlexPanel panel;

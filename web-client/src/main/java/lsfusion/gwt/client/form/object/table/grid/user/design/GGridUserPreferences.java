@@ -1,10 +1,8 @@
 package lsfusion.gwt.client.form.object.table.grid.user.design;
 
-import lsfusion.gwt.shared.form.design.GFont;
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.object.table.grid.user.design.GColumnUserPreferences;
-import lsfusion.gwt.shared.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.Comparator;
 import java.util.HashMap;

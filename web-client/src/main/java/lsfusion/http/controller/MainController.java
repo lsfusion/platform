@@ -4,7 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.logics.ServerSettings;

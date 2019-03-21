@@ -2,7 +2,7 @@ package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.shared.actions.navigator.GetRemoteNavigatorActionMessage;
+import lsfusion.gwt.client.controller.remote.action.navigator.GetRemoteNavigatorActionMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 

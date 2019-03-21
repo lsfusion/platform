@@ -6,14 +6,14 @@ import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.GEditPropertyHandler;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.shared.action.GRequestUserInputAction;
-import lsfusion.gwt.shared.action.GUpdateEditValueAction;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.shared.classes.GType;
+import lsfusion.gwt.client.action.GRequestUserInputAction;
+import lsfusion.gwt.client.action.GUpdateEditValueAction;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.classes.GType;
 
 public class GEditPropertyDispatcher extends GFormActionDispatcher {
 

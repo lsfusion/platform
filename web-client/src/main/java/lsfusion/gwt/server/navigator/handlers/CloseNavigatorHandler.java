@@ -3,7 +3,7 @@ package lsfusion.gwt.server.navigator.handlers;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.shared.actions.navigator.CloseNavigator;
+import lsfusion.gwt.client.controller.remote.action.navigator.CloseNavigator;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

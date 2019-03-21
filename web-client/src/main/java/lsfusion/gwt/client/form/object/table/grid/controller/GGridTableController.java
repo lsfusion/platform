@@ -9,12 +9,12 @@ import lsfusion.gwt.client.form.design.view.GFormLayoutImpl;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
-import lsfusion.gwt.shared.form.design.GFont;
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.object.table.grid.GGrid;
-import lsfusion.gwt.shared.form.order.GOrder;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.order.user.GOrder;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.List;
 import java.util.Map;

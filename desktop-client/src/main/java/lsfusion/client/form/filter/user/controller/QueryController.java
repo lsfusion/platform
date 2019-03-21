@@ -6,7 +6,7 @@ import lsfusion.client.form.filter.user.view.QueryView;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

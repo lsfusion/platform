@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.user.design;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class PropertyListItem {
     private static final ClientMessages messages = ClientMessages.Instance.get();

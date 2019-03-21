@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.ArrayList;
 import java.util.List;

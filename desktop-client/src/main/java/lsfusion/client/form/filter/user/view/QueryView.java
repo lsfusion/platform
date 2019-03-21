@@ -8,7 +8,7 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;

@@ -7,7 +7,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.client.base.ImageDescription;
-import lsfusion.gwt.shared.form.property.cell.classes.GFilesDTO;
+import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.interop.form.stat.report.ReportGenerationData;

@@ -17,7 +17,7 @@ import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.client.form.filter.user.controller.FilterController;
-import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.order.user.Order;
 
 import java.awt.*;
 import java.io.IOException;

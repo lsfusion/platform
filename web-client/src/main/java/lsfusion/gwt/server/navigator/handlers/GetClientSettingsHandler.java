@@ -2,8 +2,8 @@ package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.shared.actions.navigator.GetClientSettings;
-import lsfusion.gwt.shared.actions.navigator.GetClientSettingsResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.GetClientSettings;
+import lsfusion.gwt.client.controller.remote.action.navigator.GetClientSettingsResult;
 import lsfusion.interop.navigator.ClientSettings;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 

@@ -3,8 +3,8 @@ package lsfusion.gwt.server.navigator;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.actions.navigator.NavigatorRequestAction;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.interop.action.ServerResponse;
 
 public abstract class NavigatorServerResponseActionHandler<A extends NavigatorRequestAction> extends NavigatorActionHandler<A, ServerResponseResult> {

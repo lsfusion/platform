@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
-import lsfusion.gwt.shared.form.object.GGroupObject;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.HashMap;
 import java.util.Map;

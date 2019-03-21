@@ -17,6 +17,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.RemoteFormInterface;
+import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.stat.report.FormPrintType;
 import lsfusion.interop.form.stat.report.ReportGenerationData;

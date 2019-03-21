@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import lsfusion.gwt.client.base.view.ResizableLayoutPanel;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.shared.form.filter.user.GDataFilterValue;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 

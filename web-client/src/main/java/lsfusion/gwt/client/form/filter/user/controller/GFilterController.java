@@ -9,10 +9,10 @@ import lsfusion.gwt.client.form.filter.user.view.GFilterDialogHeader;
 import lsfusion.gwt.client.form.filter.user.view.GFilterView;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.base.view.ImageButton;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.shared.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 import java.util.ArrayList;

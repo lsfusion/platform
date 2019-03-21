@@ -5,7 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.order.user.Order;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

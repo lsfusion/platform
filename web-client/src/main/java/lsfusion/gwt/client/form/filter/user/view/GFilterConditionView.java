@@ -9,10 +9,10 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
+import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.form.filter.user.*;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 import java.util.HashMap;

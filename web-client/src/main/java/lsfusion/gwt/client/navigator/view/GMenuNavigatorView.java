@@ -2,8 +2,8 @@ package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.shared.navigator.GNavigatorElement;
-import lsfusion.gwt.shared.navigator.window.GMenuNavigatorWindow;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.navigator.window.GMenuNavigatorWindow;
 
 import java.util.Set;
 

@@ -6,12 +6,12 @@ import com.google.gwt.user.client.Window;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.shared.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.shared.form.GForm;
+import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 

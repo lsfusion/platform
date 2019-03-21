@@ -26,7 +26,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.classes.ClientType;
-import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.order.user.Order;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;

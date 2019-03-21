@@ -14,15 +14,15 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
-import lsfusion.gwt.shared.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.CellPreviewEvent;
-import lsfusion.gwt.shared.form.design.GFont;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 
@@ -34,7 +34,7 @@ import java.util.Map;
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.shared.form.property.cell.GEditBindingMap.EditEventFilter;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.EditEventFilter;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css

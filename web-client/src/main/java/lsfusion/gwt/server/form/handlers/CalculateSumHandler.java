@@ -6,7 +6,7 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.shared.actions.form.CalculateSum;
+import lsfusion.gwt.client.controller.remote.action.form.CalculateSum;
 
 import java.rmi.RemoteException;
 

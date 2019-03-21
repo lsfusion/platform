@@ -8,18 +8,18 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.ImageButton;
-import lsfusion.gwt.shared.form.event.GKeyStroke;
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.property.cell.controller.GEditPropertyHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.base.ImageDescription;
-import lsfusion.gwt.shared.form.object.GGroupObjectValue;
-import lsfusion.gwt.shared.classes.GType;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DialogBasedGridCellEditor;
@@ -28,9 +28,9 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.PopupBasedGridC
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.form.controller.HotkeyManager.Binding;
-import static lsfusion.gwt.shared.form.property.cell.GEditBindingMap.getPropertyKeyPressActionSID;
+import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
 

@@ -8,8 +8,8 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.view.flex.FlexCaptionPanel;
 import lsfusion.gwt.client.form.design.view.flex.FlexFormLayoutImpl;
 import lsfusion.gwt.client.form.design.view.table.TableCaptionPanel;
-import lsfusion.gwt.shared.form.design.GComponent;
-import lsfusion.gwt.shared.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.GContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Map;
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtClientUtils.calculateMaxPreferredSize;
 import static lsfusion.gwt.client.base.GwtClientUtils.enlargeDimension;
-import static lsfusion.gwt.shared.GwtSharedUtils.relativePosition;
+import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public abstract class GAbstractContainerView {
     protected final GContainer container;

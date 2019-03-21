@@ -27,7 +27,7 @@ import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.interop.form.user.Order;
+import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.user.Scroll;
 import lsfusion.interop.form.user.GroupObjectUserPreferences;
 import lsfusion.interop.action.ServerResponse;
