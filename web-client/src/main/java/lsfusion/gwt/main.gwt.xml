@@ -169,8 +169,8 @@
 
     <!-- отключил лэйаут через таблицы по причине резкого снижения скорости отрисовки в Chrome 56 и Firefox ~51  -->
     <!-- GFormLayout implementation using flex css syntax. -->
-    <replace-with class="lsfusion.gwt.client.form.ui.layout.flex.FlexFormLayoutImpl">
-        <when-type-is class="lsfusion.gwt.client.form.ui.layout.GFormLayoutImpl"/>
+    <replace-with class="lsfusion.gwt.client.form.design.flex.FlexFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.client.form.design.GFormLayoutImpl"/>
         <!--<none>-->
             <!--<when-property-is name="user.agent" value="gecko1_8" />-->
             <!--<when-property-is name="user.agent" value="safari" />-->

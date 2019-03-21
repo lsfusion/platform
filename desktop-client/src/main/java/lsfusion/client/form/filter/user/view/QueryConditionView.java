@@ -9,8 +9,8 @@ import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.FilterValueListener;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.base.ItemAdapter;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.base.view.ItemAdapter;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
 import lsfusion.interop.form.property.Compare;
 

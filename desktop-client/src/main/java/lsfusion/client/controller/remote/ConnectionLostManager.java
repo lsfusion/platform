@@ -9,7 +9,6 @@ import lsfusion.client.controller.MainController;
 import lsfusion.client.view.MainFrame;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.exception.ClientExceptionManager;
-import lsfusion.client.base.RmiQueue;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.interop.exception.NonFatalRemoteClientException;
 import lsfusion.interop.navigator.callback.ClientCallBackInterface;

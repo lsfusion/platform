@@ -2,7 +2,7 @@ package lsfusion.gwt.shared.view;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.MainFrame;
-import lsfusion.gwt.client.form.ui.GFormController;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.renderer.FormatGridCellRenderer;

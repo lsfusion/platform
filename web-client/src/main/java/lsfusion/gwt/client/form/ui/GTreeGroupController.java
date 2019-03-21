@@ -2,7 +2,10 @@ package lsfusion.gwt.client.form.ui;
 
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
-import lsfusion.gwt.client.form.ui.layout.GFormLayoutImpl;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFormLayoutImpl;
+import lsfusion.gwt.client.form.object.table.controller.GAbstractGroupObjectController;
+import lsfusion.gwt.client.form.object.table.tree.GTreeTable;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GFormChanges;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
@@ -105,7 +108,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         update();
     }
 
-    void restoreScrollPosition() {
+    public void restoreScrollPosition() {
         tree.restoreScrollPosition();
     }
 

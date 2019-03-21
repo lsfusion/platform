@@ -20,6 +20,10 @@ import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.base.*;
 import lsfusion.client.controller.MainController;
+import lsfusion.client.controller.remote.AsyncListener;
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.controller.remote.RmiRequest;
+import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.navigator.NavigatorData;
@@ -35,7 +39,6 @@ import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.base.view.ClientDockable;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.window.view.ClientWindowDockable;
-import lsfusion.client.base.view.DockableManager;
 import lsfusion.interop.navigator.WindowType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ExceptionClientAction;
@@ -70,7 +73,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
     private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<>();
     private final CControl mainControl;
-    private final DockableManager dockableManager;
+    private final FormsController formsController;
 
     private final NavigatorController navigatorController;
     private final ClientNavigator mainNavigator;
@@ -139,7 +142,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         mainControl = new CControl(this);
 
-        dockableManager = new DockableManager(mainControl, mainNavigator);
+        formsController = new FormsController(mainControl, mainNavigator);
 
         initDockStations(navigatorData);
 
@@ -226,7 +229,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 try {
                     mainControl.save("default");
                     DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
-                    dockableManager.getForms().write(out);
+                    formsController.getForms().write(out);
                     mainControl.getResources().writeStream(out);
                     out.close();
                 } catch (IOException e) {
@@ -237,7 +240,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     public void clearForms() {
-        dockableManager.getForms().clear();
+        formsController.getForms().clear();
     }
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
@@ -298,7 +301,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             DataInputStream in = null;
             try {
                 in = new DataInputStream(new FileInputStream(layoutFile));
-                dockableManager.getForms().read(in);
+                formsController.getForms().read(in);
                 mainControl.getResources().readStream(in);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -365,14 +368,14 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         if (isModal) {
             return ReportDialog.showReportDialog(generationData, printerName, editInvoker);
         } else {
-            return dockableManager.openReport(generationData, printerName, editInvoker);
+            return formsController.openReport(generationData, printerName, editInvoker);
         }
     }
 
     @Override
     public ClientFormDockable runForm(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
-            return dockableManager.openForm(mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
+            return formsController.openForm(mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed();
@@ -413,7 +416,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
         }
 
-        windowDockables.put(dockableManager.getFormArea(), formsWindow);
+        windowDockables.put(formsController.getFormArea(), formsWindow);
     }
 
     private void setupMenu() {
@@ -494,7 +497,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 chooser.addChoosableFileFilter(new FileNameExtensionFilter(getString("layout.menu.file.jasperReports.reports"), "jrprint"));
                 if (chooser.showOpenDialog(DockableMainFrame.this) == JFileChooser.APPROVE_OPTION) {
                     try {
-                        dockableManager.openReport(chooser.getSelectedFile());
+                        formsController.openReport(chooser.getSelectedFile());
                     } catch (JRException e) {
                         throw new RuntimeException(getString("layout.menu.file.error.opening.saved.report"), e);
                     }
@@ -554,7 +557,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     public void activateForm(String formCanonicalName) {
-        for (ClientDockable openedForm : dockableManager.openedForms) {
+        for (ClientDockable openedForm : formsController.openedForms) {
             if (openedForm.getCanonicalName() != null && openedForm.getCanonicalName().equals(formCanonicalName)) {
                 openedForm.toFront();
                 openedForm.requestFocusInWindow();
@@ -566,8 +569,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
     public void maximizeForm() {
         //setExtendedMode вызывается для одной формы, но влияет на все
-        if(!dockableManager.openedForms.isEmpty()) {
-            dockableManager.openedForms.get(0).setExtendedMode(ExtendedMode.MAXIMIZED);
+        if(!formsController.openedForms.isEmpty()) {
+            formsController.openedForms.get(0).setExtendedMode(ExtendedMode.MAXIMIZED);
         }
     }
 }

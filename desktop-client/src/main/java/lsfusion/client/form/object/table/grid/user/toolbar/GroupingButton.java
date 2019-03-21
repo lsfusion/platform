@@ -1,6 +1,6 @@
 package lsfusion.client.form.object.table.grid.user.toolbar;
 
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.view.MainFrame;

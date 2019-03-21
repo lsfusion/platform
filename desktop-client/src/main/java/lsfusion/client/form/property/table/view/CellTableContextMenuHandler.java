@@ -1,6 +1,6 @@
 package lsfusion.client.form.property.table.view;
 
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;

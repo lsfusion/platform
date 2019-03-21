@@ -9,7 +9,7 @@ import lsfusion.client.form.object.table.grid.user.toolbar.CountQuantityButton;
 import lsfusion.client.form.object.table.grid.user.toolbar.GroupingButton;
 import lsfusion.client.form.object.table.grid.user.toolbar.ToolbarGridButton;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.grid.user.design.UserPreferencesButton;

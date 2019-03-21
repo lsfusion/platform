@@ -11,8 +11,8 @@ import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.dispatch.GEditPropertyHandler;
-import lsfusion.gwt.client.form.ui.GFormController;
-import lsfusion.gwt.client.form.ui.GPropertyContextMenuPopup;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.table.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.form.ui.TooltipManager;
 import lsfusion.gwt.shared.view.GEditBindingMap;
 import lsfusion.gwt.shared.view.GPropertyDraw;
@@ -28,7 +28,7 @@ import lsfusion.gwt.client.form.ui.grid.editor.PopupBasedGridCellEditor;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
-import static lsfusion.gwt.client.HotkeyManager.Binding;
+import static lsfusion.gwt.client.form.controller.HotkeyManager.Binding;
 import static lsfusion.gwt.shared.view.GEditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {

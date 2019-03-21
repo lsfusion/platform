@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.actions.navigator;
 
 import com.google.gwt.core.shared.SerializableThrowable;
-import lsfusion.gwt.client.GExceptionManager;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.shared.result.VoidResult;
 import net.customware.gwt.dispatch.shared.DispatchException;

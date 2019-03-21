@@ -5,7 +5,7 @@ import lsfusion.base.lambda.Callback;
 import lsfusion.base.Pair;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.object.table.grid.controller.GridController;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.object.table.grid.user.toolbar.TitledPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;

@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.ui.GFormController;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.ui.grid.renderer.ActionGridCellRenderer;
 import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.client.form.ui.panel.ActionPanelRenderer;

@@ -4,6 +4,10 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.GShowTypeView;
+import lsfusion.gwt.client.form.object.table.controller.GAbstractGroupObjectController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridTableController;
 import lsfusion.gwt.client.form.ui.toolbar.GCalculateSumButton;
 import lsfusion.gwt.client.form.ui.toolbar.GCountQuantityButton;
 import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
@@ -25,7 +29,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private final ClientMessages messages = ClientMessages.Instance.get();
     public GGroupObject groupObject;
 
-    private GGridController grid;
+    private GGridTableController grid;
     private GShowTypeView showTypeView;
 
     private GClassViewType classView = DEFAULT;
@@ -42,7 +46,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         groupObject = igroupObject;
 
         if (groupObject != null) {
-            grid = new GGridController(groupObject.grid, formController, this, userPreferences);
+            grid = new GGridTableController(groupObject.grid, formController, this, userPreferences);
             grid.addToLayout(getFormLayout());
 
             showTypeView = new GShowTypeView(formController, groupObject);
@@ -53,7 +57,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
     }
     
-    public GGridController getGrid() {
+    public GGridTableController getGrid() {
         return grid;
     }
 
@@ -370,7 +374,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
     }
 
-    void restoreScrollPosition() {
+    public void restoreScrollPosition() {
         if (grid != null) {
             grid.restoreScrollPosition();
         }

@@ -2,7 +2,7 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.form.filter.user.FilterValueListener;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.base.ItemAdapter;
+import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.filter.user.ClientPropertyFilterValue;
 

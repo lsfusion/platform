@@ -10,7 +10,7 @@ import lsfusion.gwt.client.base.ui.CopyPasteUtils;
 import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.client.form.ui.cellview.DataGrid;
 import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
-import lsfusion.gwt.client.form.ui.GGridPropertyTable;
+import lsfusion.gwt.client.form.object.table.GGridPropertyTable;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.ui.grid.EditEvent;

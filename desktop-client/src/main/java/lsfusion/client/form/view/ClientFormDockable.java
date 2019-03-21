@@ -2,10 +2,10 @@ package lsfusion.client.form.view;
 
 import lsfusion.client.view.MainFrame;
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.base.view.ClientDockable;
-import lsfusion.client.base.view.DockableManager;
+import lsfusion.client.form.controller.FormsController;
 import lsfusion.interop.form.RemoteFormInterface;
 
 import java.io.IOException;
@@ -14,8 +14,8 @@ public class ClientFormDockable extends ClientDockable {
 
     private ClientFormController clientForm;
 
-    public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) throws IOException {
-        super(canonicalName, dockableManager);
+    public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, FormsController formsController, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) throws IOException {
+        super(canonicalName, formsController);
 
         clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator) {
             @Override

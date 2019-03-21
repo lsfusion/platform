@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.exceptions;
 
 import com.google.gwt.core.shared.SerializableThrowable;
-import lsfusion.gwt.client.GExceptionManager;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
 // wrapper for RemoteInternalException to make it serializable to browser (gwt-client) and of specific class

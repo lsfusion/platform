@@ -13,7 +13,7 @@ import lsfusion.client.form.object.table.grid.controller.GridSelectionController
 import lsfusion.client.form.object.table.grid.controller.GridTableController;
 import lsfusion.client.form.object.table.view.GridPropertyTable;
 import lsfusion.client.form.property.table.view.ClientPropertyTable;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.order.user.MultiLineHeaderRenderer;

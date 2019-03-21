@@ -6,7 +6,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.GroupTreeTableModel;

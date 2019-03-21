@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
+import lsfusion.gwt.client.form.object.table.tree.GTreeTable;
 import lsfusion.gwt.client.form.ui.cellview.cell.AbstractCell;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;

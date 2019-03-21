@@ -4,7 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.QueryController;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.base.RmiQueue;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.property.ClientPropertyDraw;
