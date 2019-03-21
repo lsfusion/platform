@@ -1,22 +1,22 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.Pair;
-import lsfusion.gwt.client.action.*;
-import lsfusion.interop.ProgressBar;
 import lsfusion.base.file.WriteClientAction;
-import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
-import lsfusion.gwt.client.base.GProgressBar;
-import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.client.form.ClientFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
+import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.navigator.window.GModalityType;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
+import lsfusion.interop.form.ModalityType;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

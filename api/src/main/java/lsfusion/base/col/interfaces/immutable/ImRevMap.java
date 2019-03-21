@@ -1,8 +1,11 @@
 package lsfusion.base.col.interfaces.immutable;
 
-import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.Result;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.lambda.set.FunctionSet;
 
 public interface ImRevMap<K,V> extends ImMap<K, V> {
     

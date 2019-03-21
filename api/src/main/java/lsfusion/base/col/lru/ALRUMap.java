@@ -1,9 +1,9 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.lambda.Processor;
-import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
+import lsfusion.base.lambda.Processor;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;

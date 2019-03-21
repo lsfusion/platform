@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.filter.user;
 
 import lsfusion.gwt.client.form.object.GGroupObject;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class GPropertyFilter {
     public GGroupObject groupObject;

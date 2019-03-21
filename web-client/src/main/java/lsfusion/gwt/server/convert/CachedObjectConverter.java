@@ -1,8 +1,8 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.gwt.client.base.ImageDescription;
+import lsfusion.gwt.server.FileUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

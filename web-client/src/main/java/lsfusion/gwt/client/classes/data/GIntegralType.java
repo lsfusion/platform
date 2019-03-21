@@ -2,10 +2,10 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.NumberGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 import java.text.ParseException;
 

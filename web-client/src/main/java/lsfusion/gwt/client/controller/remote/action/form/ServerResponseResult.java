@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-import net.customware.gwt.dispatch.shared.Result;
 import lsfusion.gwt.client.action.GAction;
+import net.customware.gwt.dispatch.shared.Result;
 
 public class ServerResponseResult implements Result {
     public GAction[] actions;

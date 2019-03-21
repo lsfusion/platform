@@ -10,8 +10,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class ClientTree extends JTree {
     private final PopupTrigger popupTrigger = new PopupTrigger();

@@ -1,8 +1,8 @@
 package lsfusion.client.form.property.cell.classes.view;
 
+import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorKit;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
-import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.client.view.MainFrame;
 

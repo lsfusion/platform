@@ -1,11 +1,11 @@
 package lsfusion.client.classes.data.link;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.view.PropertyRenderer;
-import lsfusion.client.form.property.cell.classes.controller.LinkPropertyEditor;
-import lsfusion.client.form.property.cell.classes.view.link.DynamicFormatLinkRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.controller.LinkPropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.classes.view.link.DynamicFormatLinkRenderer;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
 public class ClientDynamicFormatLinkClass extends ClientLinkClass {

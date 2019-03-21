@@ -1,6 +1,5 @@
 package lsfusion.gwt.client;
 
-import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
@@ -12,6 +11,7 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
 import java.util.*;

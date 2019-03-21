@@ -1,7 +1,7 @@
 package lsfusion.gwt.client;
 
-import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 
 import java.io.Serializable;

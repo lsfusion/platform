@@ -1,16 +1,16 @@
 package lsfusion.client.form.object.table.grid.user.design.view;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.lambda.Callback;
 import lsfusion.base.Pair;
+import lsfusion.base.lambda.Callback;
 import lsfusion.client.controller.MainController;
-import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
 import lsfusion.client.form.object.table.grid.user.design.UserPreferencesPropertyListItem;
-import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.TitledPanel;
-import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.table.grid.view.GridTable;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.interop.form.design.FontInfo;
 

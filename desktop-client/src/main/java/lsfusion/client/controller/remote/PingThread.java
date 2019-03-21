@@ -1,10 +1,10 @@
 package lsfusion.client.controller.remote;
 
-import lsfusion.client.controller.MainController;
 import lsfusion.client.StartupProperties;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.controller.remote.ClientCallBackProcessor;
-import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.LifecycleMessage;
+import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

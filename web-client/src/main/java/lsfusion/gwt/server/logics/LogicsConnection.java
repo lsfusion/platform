@@ -1,7 +1,5 @@
 package lsfusion.gwt.server.logics;
 
-import java.util.Objects;
-
 public class LogicsConnection {
 
     public final String host;

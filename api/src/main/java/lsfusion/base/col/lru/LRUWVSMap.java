@@ -2,7 +2,8 @@ package lsfusion.base.col.lru;
 
 import java.lang.ref.ReferenceQueue;
 
-import static lsfusion.base.col.lru.LRUUtil.*;
+import static lsfusion.base.col.lru.LRUUtil.Strategy;
+import static lsfusion.base.col.lru.LRUUtil.hash;
 
 public class LRUWVSMap<W, V> extends ALRUKWMap<W, LRUWVSMap.AEntry<W, V>, LRUWVSMap.ASegment> {
 

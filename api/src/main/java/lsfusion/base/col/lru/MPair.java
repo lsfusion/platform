@@ -1,7 +1,5 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.Pair;
-
 public class MPair<Class1, Class2> {
 
     public Class1 first;

@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.interactive.design;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerAdder;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

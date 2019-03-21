@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-
 public class InternalEditEvent extends EditEvent {
     private final String action;
 

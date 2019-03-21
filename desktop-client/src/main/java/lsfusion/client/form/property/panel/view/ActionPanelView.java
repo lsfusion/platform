@@ -2,20 +2,20 @@ package lsfusion.client.form.property.panel.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.classes.ClientType;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
-import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
-import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
-import lsfusion.client.form.property.cell.classes.controller.DialogBasedPropertyEditor;
-import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.classes.ClientType;
+import lsfusion.client.form.property.cell.classes.controller.DialogBasedPropertyEditor;
+import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
+import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
+import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
+import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.base.view.FlexConstraints;
 import lsfusion.interop.base.view.FlexLayout;
+import lsfusion.interop.form.design.Alignment;
 
 import javax.swing.*;
 import java.awt.*;

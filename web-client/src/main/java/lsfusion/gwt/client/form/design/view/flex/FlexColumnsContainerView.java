@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.form.design.view.ColumnsContainerView;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.ColumnsContainerView;
 
 public class FlexColumnsContainerView extends ColumnsContainerView<FlexPanel> {
     public FlexColumnsContainerView(GContainer container) {

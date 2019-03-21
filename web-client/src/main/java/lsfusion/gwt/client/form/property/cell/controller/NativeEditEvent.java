@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.controller;
 
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 
 public class NativeEditEvent extends EditEvent {
     private final NativeEvent nativeEvent;

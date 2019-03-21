@@ -1,8 +1,8 @@
 package lsfusion.client.form.property.cell.classes.controller;
 
-import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
-import lsfusion.client.form.property.cell.classes.view.ActionPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.classes.view.ActionPropertyRenderer;
+import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 
 import java.awt.*;
 import java.awt.event.FocusAdapter;

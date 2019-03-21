@@ -1,7 +1,5 @@
 package lsfusion.client.navigator;
 
-import lsfusion.client.navigator.ClientNavigatorElement;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 

@@ -3,10 +3,10 @@ package lsfusion.client.form.filter.user.controller;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.view.QueryView;
-import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
-import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
+import lsfusion.client.form.property.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

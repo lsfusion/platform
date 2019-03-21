@@ -2,8 +2,8 @@ package lsfusion.client.form.property.cell;
 
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.table.view.InternalEditEvent;
-import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

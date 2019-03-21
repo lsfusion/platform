@@ -7,8 +7,8 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.design.GWidthStringProcessor;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.form.filter.user.GCompare.*;
 

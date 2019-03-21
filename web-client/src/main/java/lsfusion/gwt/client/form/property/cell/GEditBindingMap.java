@@ -1,11 +1,11 @@
 package lsfusion.gwt.client.form.property.cell;
 
 import com.google.gwt.dom.client.NativeEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.InternalEditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 
 import java.io.Serializable;
 import java.util.HashMap;

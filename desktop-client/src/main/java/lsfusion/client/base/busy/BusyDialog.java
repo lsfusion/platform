@@ -1,9 +1,9 @@
 package lsfusion.client.base.busy;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.ProgressBar;
-import lsfusion.client.controller.MainController;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -1,11 +1,11 @@
 package lsfusion.gwt.server.navigator.handlers;
 
-import lsfusion.interop.ProgressBar;
 import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.GetRemoteNavigatorActionMessageList;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.client.controller.remote.action.navigator.GetRemoteNavigatorActionMessageList;
+import lsfusion.interop.ProgressBar;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;

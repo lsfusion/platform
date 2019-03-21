@@ -2,13 +2,13 @@ package lsfusion.client.form.object.panel.controller;
 
 import lsfusion.base.lambda.Callback;
 import lsfusion.client.form.controller.ClientFormController;
-import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.design.Alignment;
+import lsfusion.client.form.property.panel.view.PanelView;
 import lsfusion.interop.base.view.FlexConstraints;
+import lsfusion.interop.form.design.Alignment;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

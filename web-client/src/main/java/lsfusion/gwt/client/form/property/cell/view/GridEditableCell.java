@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.view.grid.cell.AbstractCell;
-import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 

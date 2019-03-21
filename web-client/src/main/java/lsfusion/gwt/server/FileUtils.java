@@ -1,16 +1,16 @@
 package lsfusion.gwt.server;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
-import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.form.print.FormPrintType;
-import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.print.ReportGenerator;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

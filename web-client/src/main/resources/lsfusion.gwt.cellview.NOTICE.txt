@@ -1,4 +1,4 @@
-lsfusion\gwt\cellview package contains patched version of com\google\gwt\user\cellview package from GWT-2.5.0.
+lsfusion\gwt\client\base\view\grid contains patched version of com\google\gwt\user\cellview package from GWT-2.5.0.
 
 Patched files:
     com\google\gwt\user\cellview\client\AbstractCellTable.java

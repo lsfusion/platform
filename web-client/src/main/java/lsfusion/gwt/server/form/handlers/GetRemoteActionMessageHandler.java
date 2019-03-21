@@ -1,11 +1,11 @@
 package lsfusion.gwt.server.form.handlers;
 
+import lsfusion.gwt.client.controller.remote.action.form.GetRemoteActionMessage;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormActionHandler;
+import lsfusion.http.provider.form.FormSessionObject;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.general.StringResult;
-import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.gwt.client.controller.remote.action.form.GetRemoteActionMessage;
 
 import java.rmi.RemoteException;
 

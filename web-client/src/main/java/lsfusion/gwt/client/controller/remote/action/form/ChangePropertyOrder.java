@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.order.user.GOrder;
 
 public class ChangePropertyOrder extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int propertyID;

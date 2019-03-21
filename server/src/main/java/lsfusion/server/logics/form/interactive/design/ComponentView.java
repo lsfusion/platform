@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.interop.form.design.ComponentDesign;
-import lsfusion.interop.form.design.AbstractComponent;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.design.AbstractComponent;
+import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;

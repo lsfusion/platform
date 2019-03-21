@@ -1,15 +1,15 @@
 package lsfusion.base.col.implementations.abs;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.base.lambda.set.NotFunctionSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.NotFunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Iterator;
 

@@ -4,14 +4,14 @@ package lsfusion.http.provider.navigator;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.logics.LogicsSessionObject;
-import lsfusion.interop.navigator.NavigatorInfo;
-import lsfusion.interop.session.SessionInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
-import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.navigator.NavigatorInfo;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.SessionInfo;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;

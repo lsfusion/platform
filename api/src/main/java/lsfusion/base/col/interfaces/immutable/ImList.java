@@ -1,8 +1,11 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
 import java.util.List;
 

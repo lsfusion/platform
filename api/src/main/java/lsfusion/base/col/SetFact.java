@@ -1,8 +1,10 @@
 package lsfusion.base.col;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.base.col.implementations.*;
+import lsfusion.base.col.implementations.ArIndexedMap;
+import lsfusion.base.col.implementations.ArIndexedSet;
+import lsfusion.base.col.implementations.ArSet;
+import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.implementations.order.ArOrderSet;
 import lsfusion.base.col.implementations.order.HOrderSet;
 import lsfusion.base.col.implementations.simple.EmptyOrderSet;
@@ -12,6 +14,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.lambda.set.FunctionSet;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,7 +1,5 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.BaseUtils;
-
 import java.lang.ref.ReferenceQueue;
 
 import static lsfusion.base.col.lru.LRUUtil.hash;

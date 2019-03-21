@@ -4,8 +4,8 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.view.JComponentPanel;
 import lsfusion.client.form.object.ClientShowType;
-import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.object.controller.ShowTypeController;
+import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.interop.form.property.ClassViewType;
 
 import javax.swing.*;

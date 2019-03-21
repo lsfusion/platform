@@ -2,23 +2,23 @@ package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GClassViewType;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
-import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
+import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 
 import java.awt.*;

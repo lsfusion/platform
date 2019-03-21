@@ -7,19 +7,19 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
-import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.cell.view.GridEditableCell;
-import lsfusion.gwt.client.form.property.cell.controller.*;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.base.view.grid.cell.HasCell;
-import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.controller.*;
+import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
+import lsfusion.gwt.client.form.property.cell.view.GridEditableCell;
 
 import java.util.List;
 

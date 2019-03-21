@@ -1,8 +1,8 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.Alignment;
 import lsfusion.interop.form.design.ContainerType;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;

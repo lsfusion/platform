@@ -2,7 +2,6 @@ package lsfusion.base.tree;
 
 import lsfusion.base.prim.Prim;
 import lsfusion.base.prim.UndirectedGraph;
-import lsfusion.base.tree.SpanningTreeWithBlackjack;
 import org.junit.Assert;
 import org.junit.Test;
 

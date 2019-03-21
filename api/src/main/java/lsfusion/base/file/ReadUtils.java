@@ -2,7 +2,8 @@ package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.SystemUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTP;

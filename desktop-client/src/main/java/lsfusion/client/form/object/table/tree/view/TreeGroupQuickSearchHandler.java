@@ -1,7 +1,5 @@
 package lsfusion.client.form.object.table.tree.view;
 
-import lsfusion.client.form.object.table.tree.view.TreeGroupTable;
-
 import javax.swing.*;
 import javax.swing.text.Position;
 import javax.swing.tree.TreePath;

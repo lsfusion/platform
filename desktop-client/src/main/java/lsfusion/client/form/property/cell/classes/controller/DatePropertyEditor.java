@@ -5,8 +5,8 @@ import com.toedter.calendar.JTextFieldDateEditor;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
+import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 import lsfusion.interop.form.design.ComponentDesign;
 
 import javax.swing.*;

@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.navigator.window;
 
+import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
 
 import java.util.ArrayList;
 import java.util.List;

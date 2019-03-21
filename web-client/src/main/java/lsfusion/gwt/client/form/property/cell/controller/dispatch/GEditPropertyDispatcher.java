@@ -1,19 +1,19 @@
 package lsfusion.gwt.client.form.property.cell.controller.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
-import lsfusion.gwt.client.base.view.DialogBoxHelper;
-import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
-import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.cell.controller.GEditPropertyHandler;
-import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.action.GUpdateEditValueAction;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.controller.GEditPropertyHandler;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 
 public class GEditPropertyDispatcher extends GFormActionDispatcher {
 

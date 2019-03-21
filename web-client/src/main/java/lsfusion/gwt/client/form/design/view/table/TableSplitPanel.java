@@ -6,8 +6,8 @@ import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
-import lsfusion.gwt.client.form.design.view.SplitPanelBase;
 import lsfusion.gwt.client.form.design.GComponent;
+import lsfusion.gwt.client.form.design.view.SplitPanelBase;
 
 public class TableSplitPanel extends SplitPanelBase<CellPanel> {
 

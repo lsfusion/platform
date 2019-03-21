@@ -1,17 +1,17 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.form.controller.DefaultFormsController;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.client.navigator.window.view.WindowsController;
-import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
-import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
-import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
 import lsfusion.gwt.client.action.GActivateFormAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GMaximizeFormAction;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
+import lsfusion.gwt.client.form.controller.DefaultFormsController;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     

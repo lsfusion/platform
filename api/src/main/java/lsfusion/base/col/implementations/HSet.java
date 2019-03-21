@@ -8,7 +8,8 @@ import lsfusion.base.col.implementations.order.HOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class HSet<T> extends AMSet<T> {
     public int size;

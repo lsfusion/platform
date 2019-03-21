@@ -1,9 +1,9 @@
 package lsfusion.client.form.classes.view;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.classes.ClientClass;
 import lsfusion.client.classes.ClientObjectClass;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.navigator.tree.*;
 
 import javax.swing.*;

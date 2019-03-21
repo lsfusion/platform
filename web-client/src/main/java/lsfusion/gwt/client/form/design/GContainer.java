@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.design;
 
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
 import java.util.List;

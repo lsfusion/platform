@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
-import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.order.user.GOrder;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.*;
 
 import java.util.List;
 import java.util.Map;

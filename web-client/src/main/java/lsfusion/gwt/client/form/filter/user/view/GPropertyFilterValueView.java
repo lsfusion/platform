@@ -2,9 +2,9 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.List;
 

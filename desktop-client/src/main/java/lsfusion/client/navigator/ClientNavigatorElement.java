@@ -1,10 +1,10 @@
 package lsfusion.client.navigator;
 
 import lsfusion.base.file.IOUtils;
-import lsfusion.interop.form.remote.serialization.SerializationUtil;
-import lsfusion.client.controller.MainController;
 import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
 import java.io.IOException;
