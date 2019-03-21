@@ -11,7 +11,7 @@ import java.util.EventObject;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
-import static lsfusion.client.form.property.cell.controller.EditBindingMap.EditEventFilter;
+import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
 import static lsfusion.interop.form.event.KeyStrokes.isSuitableNumberEditEvent;
 
 abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat> {

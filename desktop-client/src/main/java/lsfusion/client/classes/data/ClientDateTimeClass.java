@@ -19,7 +19,7 @@ import java.util.Date;
 
 import static lsfusion.base.DateConverter.createDateTimeEditFormat;
 import static lsfusion.base.DateConverter.dateToStamp;
-import static lsfusion.client.form.property.cell.controller.EditBindingMap.EditEventFilter;
+import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
 
 public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
     public final static ClientDateTimeClass instance = new ClientDateTimeClass();

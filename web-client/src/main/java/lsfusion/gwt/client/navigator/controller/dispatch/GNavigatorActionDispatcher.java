@@ -4,7 +4,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
-import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
 import lsfusion.gwt.client.navigator.window.WindowsController;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.navigator.ContinueNavigatorAction;

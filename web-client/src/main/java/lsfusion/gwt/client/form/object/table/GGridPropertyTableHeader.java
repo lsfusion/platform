@@ -6,11 +6,10 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.object.table.GGridPropertyTable;
-import lsfusion.gwt.client.form.ui.TooltipManager;
-import lsfusion.gwt.client.form.ui.cellview.Column;
-import lsfusion.gwt.client.form.ui.cellview.Header;
-import lsfusion.gwt.client.form.ui.cellview.HeaderPanel;
+import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.ui.cellview.Column;
+import lsfusion.gwt.client.base.ui.cellview.Header;
+import lsfusion.gwt.client.base.ui.cellview.HeaderPanel;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;

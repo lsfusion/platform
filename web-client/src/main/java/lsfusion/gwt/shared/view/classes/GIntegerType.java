@@ -1,9 +1,9 @@
 package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.ui.grid.EditManager;
-import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.ui.grid.editor.IntegerGridCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.IntegerGridCellEditor;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.text.ParseException;

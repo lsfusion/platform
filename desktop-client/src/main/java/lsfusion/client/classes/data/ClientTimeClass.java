@@ -18,7 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static lsfusion.client.form.property.cell.controller.EditBindingMap.EditEventFilter;
+import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
 
 public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 

@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat;
 
 import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.DateConverter.safeDateToSql;
-import static lsfusion.client.form.property.cell.controller.EditBindingMap.EditEventFilter;
+import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
 
 public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 

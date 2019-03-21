@@ -8,8 +8,8 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.controller.DefaultFormsController;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.ui.TooltipManager;
-import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
 import lsfusion.gwt.shared.view.GForm;
 
 public final class FormDockable {

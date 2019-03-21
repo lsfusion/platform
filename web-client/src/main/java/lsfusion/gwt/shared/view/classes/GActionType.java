@@ -2,10 +2,10 @@ package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.ui.grid.renderer.ActionGridCellRenderer;
-import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.form.ui.panel.ActionPanelRenderer;
-import lsfusion.gwt.client.form.ui.panel.PanelRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.ActionGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.GridCellRenderer;
+import lsfusion.gwt.client.form.property.panel.ActionPanelRenderer;
+import lsfusion.gwt.client.form.property.panel.PanelRenderer;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 

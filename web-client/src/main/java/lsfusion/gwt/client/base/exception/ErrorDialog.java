@@ -5,12 +5,12 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.form.ui.dialog.GResizableModalWindow;
+import lsfusion.gwt.client.base.ui.ResizableModalWindow;
 import lsfusion.gwt.client.form.design.flex.FlexTabbedPanel;
 import lsfusion.gwt.shared.view.GFlexAlignment;
 
 @SuppressWarnings("GWTStyleCheck")
-public class ErrorDialog extends GResizableModalWindow {
+public class ErrorDialog extends ResizableModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private FlexPanel mainPane;
     private Button closeButton;
