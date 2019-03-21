@@ -10,8 +10,8 @@ import lsfusion.gwt.client.base.ui.cellview.DataGrid;
 import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.object.table.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.cell.AbstractGridCellRenderer;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.classes.GImageType;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.classes.data.GImageType;
 
 import static lsfusion.gwt.client.form.property.cell.classes.FileGridCellRenderer.ICON_EMPTY;
 

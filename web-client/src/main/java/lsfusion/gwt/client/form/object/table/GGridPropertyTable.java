@@ -11,18 +11,18 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractGroupObjectController;
+import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.table.GPropertyTable;
-import lsfusion.gwt.shared.view.GKeyStroke;
+import lsfusion.gwt.shared.form.event.GKeyStroke;
 import lsfusion.gwt.client.base.ui.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.ui.cellview.Column;
 import lsfusion.gwt.client.base.ui.cellview.DataGrid;
 import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.base.ui.cellview.cell.CellPreviewEvent;
-import lsfusion.gwt.shared.view.GFont;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.design.GFont;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 
@@ -34,7 +34,7 @@ import java.util.Map;
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.shared.view.GEditBindingMap.EditEventFilter;
+import static lsfusion.gwt.shared.form.property.cell.GEditBindingMap.EditEventFilter;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
@@ -125,7 +125,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 }
             }
         } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
-            GAbstractGroupObjectController goController = getGroupController();
+            GAbstractTableController goController = getGroupController();
             if (goController.filter != null && goController.filter.hasConditions()) {
                 stopPropagation(event);
                 goController.removeFilters();
@@ -219,7 +219,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract GGroupObjectValue getCurrentKey();
     public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
     public abstract void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
-    public abstract GAbstractGroupObjectController getGroupController();
+    public abstract GAbstractTableController getGroupController();
     public abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     public abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
 

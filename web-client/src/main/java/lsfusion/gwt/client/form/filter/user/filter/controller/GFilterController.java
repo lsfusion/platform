@@ -10,10 +10,10 @@ import lsfusion.gwt.client.form.filter.user.filter.GFilterView;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.base.ui.ImageButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.shared.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +34,13 @@ public abstract class GFilterController {
     private State state = State.REMOVED;
     private State hiddenState;
 
-    private GGroupObjectLogicsSupplier logicsSupplier;
+    private GTableController logicsSupplier;
 
     private enum State {
         HIDDEN, REMOVED, COLLAPSED, EXPANDED
     }
 
-    public GFilterController(GGroupObjectLogicsSupplier logicsSupplier) {
+    public GFilterController(GTableController logicsSupplier) {
         this.logicsSupplier = logicsSupplier;
 
         toolbarButton = new GToolbarButton(ADD_FILTER) {

@@ -4,16 +4,16 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGroupObjectController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.table.GPropertyTable;
-import lsfusion.gwt.shared.view.GKeyStroke;
+import lsfusion.gwt.shared.form.event.GKeyStroke;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.base.ui.cellview.Column;
 import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
-import lsfusion.gwt.shared.view.GFontMetrics;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
+import lsfusion.gwt.shared.form.design.GFontMetrics;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.shared.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.GridEditableCell;
 
 import java.util.Arrays;
@@ -203,7 +203,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
 
     @Override
     protected void onBrowserEvent2(Event event) {
-        GGroupObjectController groupController = form.getController(property.groupObject);
+        GGridController groupController = form.getController(property.groupObject);
         if (groupController != null) {
             if (GKeyStroke.isAddFilterEvent(event)) {
                 stopPropagation(event);

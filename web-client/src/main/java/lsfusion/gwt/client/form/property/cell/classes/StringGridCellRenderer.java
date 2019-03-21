@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes;
 
 import com.google.gwt.dom.client.DivElement;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.shared.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.shared.GwtSharedUtils.multiplyString;

@@ -11,9 +11,9 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.filter.*;
-import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.form.filter.user.*;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
     private Map<GFilterValue, GFilterValueView> valueViews;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GGroupObjectLogicsSupplier logicsSupplier, final UIHandler handler) {
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler handler) {
         this.condition = iCondition;
         this.handler = handler;
 

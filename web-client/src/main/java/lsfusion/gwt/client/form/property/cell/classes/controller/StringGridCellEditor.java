@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 public class StringGridCellEditor extends TextBasedGridCellEditor {

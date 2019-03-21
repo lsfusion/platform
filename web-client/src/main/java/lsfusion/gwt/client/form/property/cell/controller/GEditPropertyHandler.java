@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
-import lsfusion.gwt.shared.view.classes.GType;
+import lsfusion.gwt.shared.classes.GType;
 
 public interface GEditPropertyHandler {
     void requestValue(GType valueType, Object oldValue);

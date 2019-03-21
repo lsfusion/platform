@@ -9,15 +9,15 @@ import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.base.ui.GCaptionPanel;
+import lsfusion.gwt.client.base.ui.CaptionPanel;
 import lsfusion.gwt.client.form.object.table.grid.GGridTable;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGroupObjectController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.base.ui.ResizableModalWindow;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.view.GFlexAlignment;
-import lsfusion.gwt.shared.view.GFont;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.shared.form.design.GFont;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,15 +25,15 @@ import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
-import static lsfusion.gwt.shared.view.GFont.DEFAULT_FONT_FAMILY;
-import static lsfusion.gwt.shared.view.GFont.DEFAULT_FONT_SIZE;
+import static lsfusion.gwt.shared.form.design.GFont.DEFAULT_FONT_FAMILY;
+import static lsfusion.gwt.shared.form.design.GFont.DEFAULT_FONT_SIZE;
 
 @SuppressWarnings("GWTStyleCheck")
 public abstract class GUserPreferencesDialog extends ResizableModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 
-    private GGroupObjectController groupController;
+    private GGridController groupController;
     private GGridTable grid;
 
     private FocusPanel focusPanel;
@@ -48,7 +48,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
     private TextBox columnCaptionBox;
     private TextBox columnPatternBox;
 
-    public GUserPreferencesDialog(GGridTable grid, GGroupObjectController groupController, boolean canBeSaved) {
+    public GUserPreferencesDialog(GGridTable grid, GGridController groupController, boolean canBeSaved) {
         super(messages.formGridPreferences());
 
         this.groupController = groupController;
@@ -144,7 +144,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
         gridSettingsPanel.setSpacing(2);
         gridSettingsPanel.add(pageSizePanel);
         gridSettingsPanel.add(headerHeightPanel);
-        gridSettingsPanel.add(new GCaptionPanel(messages.formGridPreferencesFont(), fontPanel));
+        gridSettingsPanel.add(new CaptionPanel(messages.formGridPreferencesFont(), fontPanel));
 
         Button saveButton = null;
         Button resetButton = null; 
@@ -200,9 +200,9 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
         preferencesPanel.add(columnsDualListBox);
         preferencesPanel.setCellHeight(columnsDualListBox, "100%");
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(3));
-        preferencesPanel.add(new GCaptionPanel(messages.formGridPreferencesSelectedColumnSettings(), columnSettingsPanel));
+        preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesSelectedColumnSettings(), columnSettingsPanel));
         preferencesPanel.add(createVerticalStrut(3));
-        preferencesPanel.add(new GCaptionPanel(messages.formGridPreferencesGridSettings(), gridSettingsPanel));
+        preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesGridSettings(), gridSettingsPanel));
         preferencesPanel.add(createVerticalStrut(5));
         if (canBeSaved) {
             preferencesPanel.add(saveButton);

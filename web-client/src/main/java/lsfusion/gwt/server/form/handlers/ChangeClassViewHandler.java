@@ -7,7 +7,7 @@ import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ChangeClassView;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.view.GClassViewType;
+import lsfusion.gwt.shared.form.property.GClassViewType;
 import lsfusion.interop.form.property.ClassViewType;
 
 import java.rmi.RemoteException;

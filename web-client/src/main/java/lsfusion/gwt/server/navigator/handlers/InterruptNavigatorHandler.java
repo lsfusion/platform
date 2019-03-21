@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.navigator.handlers;
 
-import lsfusion.gwt.shared.result.VoidResult;
+import lsfusion.gwt.shared.base.result.VoidResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.actions.navigator.InterruptNavigator;

@@ -19,9 +19,9 @@ import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.form.object.table.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.object.table.GridDataRecord;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractGroupObjectController;
+import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridTableController;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGroupObjectController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.base.ui.cellview.Column;
 import lsfusion.gwt.client.base.ui.cellview.DataGrid;
@@ -34,10 +34,16 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedGridCe
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.view.*;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValueBuilder;
-import lsfusion.gwt.shared.view.classes.GObjectType;
+import lsfusion.gwt.shared.form.design.GFont;
+import lsfusion.gwt.shared.form.event.GKeyStroke;
+import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.shared.form.object.table.grid.user.design.GGroupObjectUserPreferences;
+import lsfusion.gwt.shared.form.order.GOrder;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.shared.form.object.GGroupObjectValueBuilder;
+import lsfusion.gwt.shared.classes.GObjectType;
 
 import java.util.*;
 
@@ -81,7 +87,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private GridTableKeyboardSelectionHandler keyboardSelectionHandler;
 
-    private GGroupObjectController groupObjectController;
+    private GGridController groupObjectController;
     
     private GGridUserPreferences generalGridPreferences;
     private GGridUserPreferences userGridPreferences;
@@ -102,7 +108,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return autoSize;
     }
 
-    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridTableController gridController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
+    public GGridTable(GFormController iform, GGridController igroupController, GGridTableController gridController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
         super(iform, null, igroupController.groupObject.grid.headerHeight);
 
         this.groupObjectController = igroupController;
@@ -655,7 +661,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     @Override
-    public GAbstractGroupObjectController getGroupController() {
+    public GAbstractTableController getGroupController() {
         return groupObjectController;
     }
 

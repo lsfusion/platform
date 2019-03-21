@@ -1,20 +1,20 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.Pair;
+import lsfusion.gwt.shared.action.*;
 import lsfusion.interop.ProgressBar;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
-import lsfusion.gwt.shared.view.GProgressBar;
+import lsfusion.gwt.shared.base.GProgressBar;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.gwt.shared.view.actions.*;
-import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
-import lsfusion.gwt.shared.view.classes.GObjectClass;
-import lsfusion.gwt.shared.view.classes.GType;
-import lsfusion.gwt.shared.view.window.GModalityType;
+import lsfusion.gwt.shared.form.GFormChangesDTO;
+import lsfusion.gwt.shared.classes.GObjectClass;
+import lsfusion.gwt.shared.classes.GType;
+import lsfusion.gwt.shared.navigator.window.GModalityType;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.action.*;
 

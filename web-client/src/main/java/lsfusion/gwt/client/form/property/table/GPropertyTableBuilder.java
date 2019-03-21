@@ -8,7 +8,7 @@ import lsfusion.gwt.client.base.ui.cellview.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.ui.cellview.Column;
 import lsfusion.gwt.client.base.ui.cellview.DataGrid;
 import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 import java.util.List;
 

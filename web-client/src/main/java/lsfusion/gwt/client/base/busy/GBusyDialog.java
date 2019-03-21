@@ -11,7 +11,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.*;
-import lsfusion.gwt.shared.view.GProgressBar;
+import lsfusion.gwt.shared.base.GProgressBar;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

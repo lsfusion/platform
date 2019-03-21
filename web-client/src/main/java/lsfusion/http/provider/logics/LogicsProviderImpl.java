@@ -2,7 +2,7 @@ package lsfusion.http.provider.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableDispatchException;
+import lsfusion.gwt.shared.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.exception.AppServerNotAvailableException;
 import lsfusion.interop.logics.*;

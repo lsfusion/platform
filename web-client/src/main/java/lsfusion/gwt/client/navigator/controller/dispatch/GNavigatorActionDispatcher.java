@@ -9,9 +9,9 @@ import lsfusion.gwt.client.navigator.window.WindowsController;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.navigator.ContinueNavigatorAction;
 import lsfusion.gwt.shared.actions.navigator.ThrowInNavigatorAction;
-import lsfusion.gwt.shared.view.actions.GActivateFormAction;
-import lsfusion.gwt.shared.view.actions.GFormAction;
-import lsfusion.gwt.shared.view.actions.GMaximizeFormAction;
+import lsfusion.gwt.shared.action.GActivateFormAction;
+import lsfusion.gwt.shared.action.GFormAction;
+import lsfusion.gwt.shared.action.GMaximizeFormAction;
 
 public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     

@@ -12,9 +12,9 @@ import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.form.FormDockable;
 import lsfusion.gwt.client.form.ModalForm;
 import lsfusion.gwt.client.base.ui.WindowHiddenHandler;
-import lsfusion.gwt.shared.view.GForm;
+import lsfusion.gwt.shared.form.GForm;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.shared.view.window.GModalityType;
+import lsfusion.gwt.shared.navigator.window.GModalityType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

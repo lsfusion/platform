@@ -7,13 +7,13 @@ import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.GEditPropertyHandler;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.view.GEditBindingMap;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.GUserInputResult;
-import lsfusion.gwt.shared.view.actions.GRequestUserInputAction;
-import lsfusion.gwt.shared.view.actions.GUpdateEditValueAction;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.classes.GType;
+import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.GUserInputResult;
+import lsfusion.gwt.shared.action.GRequestUserInputAction;
+import lsfusion.gwt.shared.action.GUpdateEditValueAction;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.shared.classes.GType;
 
 public class GEditPropertyDispatcher extends GFormActionDispatcher {
 

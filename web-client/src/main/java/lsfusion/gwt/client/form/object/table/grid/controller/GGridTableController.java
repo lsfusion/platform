@@ -9,8 +9,12 @@ import lsfusion.gwt.client.form.design.GFormLayoutImpl;
 import lsfusion.gwt.client.form.object.table.grid.GGridTable;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
-import lsfusion.gwt.shared.view.*;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.design.GFont;
+import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.shared.form.object.table.grid.GGrid;
+import lsfusion.gwt.shared.form.order.GOrder;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 
 import java.util.List;
 import java.util.Map;
@@ -23,10 +27,10 @@ public class GGridTableController {
     private GGrid grid;
     private Panel gridView;
     private GGridTable table;
-    private GGroupObjectController groupController;
+    private GGridController groupController;
     private boolean forceHidden = false;
 
-    public GGridTableController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject, GGridUserPreferences[] userPreferences) {
+    public GGridTableController(GGrid igrid, GFormController iformController, GGridController igroupObject, GGridUserPreferences[] userPreferences) {
         grid = igrid;
         groupController = igroupObject;
 

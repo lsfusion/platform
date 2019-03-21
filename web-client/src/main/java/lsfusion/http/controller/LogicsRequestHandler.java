@@ -1,9 +1,8 @@
 package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableDispatchException;
+import lsfusion.gwt.shared.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.http.provider.logics.LogicsProvider;
-import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.interop.logics.LogicsRunnable;
 import org.springframework.beans.factory.annotation.Autowired;
 

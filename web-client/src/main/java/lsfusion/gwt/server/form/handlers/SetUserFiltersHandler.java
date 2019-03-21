@@ -9,7 +9,7 @@ import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.form.SetUserFilters;
-import lsfusion.gwt.shared.view.changes.dto.GPropertyFilterDTO;
+import lsfusion.gwt.shared.form.filter.user.GPropertyFilterDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

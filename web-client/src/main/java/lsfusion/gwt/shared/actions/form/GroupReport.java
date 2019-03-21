@@ -1,7 +1,6 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.view.GFormUserPreferences;
-import net.customware.gwt.dispatch.shared.general.StringResult;
+import lsfusion.gwt.shared.form.object.table.grid.user.design.GFormUserPreferences;
 
 public class GroupReport extends FormRequestIndexCountingAction<GroupReportResult> {
     public Integer groupObjectID;

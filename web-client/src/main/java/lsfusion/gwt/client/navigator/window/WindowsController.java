@@ -3,7 +3,7 @@ package lsfusion.gwt.client.navigator.window;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.shared.view.window.GAbstractWindow;
+import lsfusion.gwt.shared.navigator.window.GAbstractWindow;
 
 import java.util.*;
 

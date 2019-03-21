@@ -17,8 +17,8 @@ import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DialogBasedGridCellEditor;
-import lsfusion.gwt.shared.view.GFlexAlignment;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();

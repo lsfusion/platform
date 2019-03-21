@@ -6,8 +6,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.design.GFormLayoutImpl;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.panel.PanelRenderer;
 
 import java.util.HashMap;

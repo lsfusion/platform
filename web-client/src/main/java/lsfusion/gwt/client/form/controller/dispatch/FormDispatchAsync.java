@@ -8,7 +8,7 @@ import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.shared.actions.form.FormAction;
 import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
-import lsfusion.gwt.shared.view.GForm;
+import lsfusion.gwt.shared.form.GForm;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;

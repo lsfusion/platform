@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.navigator.controller;
 
 import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.shared.view.GNavigatorElement;
-import lsfusion.gwt.shared.view.window.GAbstractWindow;
+import lsfusion.gwt.shared.navigator.GNavigatorElement;
+import lsfusion.gwt.shared.navigator.window.GAbstractWindow;
 
 import java.util.Map;
 

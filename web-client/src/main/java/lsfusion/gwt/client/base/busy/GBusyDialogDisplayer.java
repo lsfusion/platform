@@ -5,7 +5,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.MainFrame;
-import lsfusion.gwt.shared.result.ListResult;
+import lsfusion.gwt.shared.base.result.ListResult;
 import lsfusion.gwt.client.ServerMessageProvider;
 
 import java.util.List;

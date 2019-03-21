@@ -8,8 +8,8 @@ import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
+import lsfusion.gwt.shared.action.*;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.view.actions.*;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;

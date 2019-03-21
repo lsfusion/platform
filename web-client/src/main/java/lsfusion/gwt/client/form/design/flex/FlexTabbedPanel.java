@@ -5,7 +5,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.ui.FixFlexBasisComposite;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.client.form.design.BeforeSelectionTabHandler;
 
 import java.util.ArrayList;

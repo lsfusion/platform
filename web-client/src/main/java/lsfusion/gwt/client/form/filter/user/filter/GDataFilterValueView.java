@@ -1,22 +1,22 @@
 package lsfusion.gwt.client.form.filter.user.filter;
 
 import lsfusion.gwt.client.base.ui.ResizableLayoutPanel;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.filter.GDataFilterValue;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.shared.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 import java.io.Serializable;
 
 public class GDataFilterValueView extends GFilterValueView {
     private GDataFilterValue filterValue;
-    private GGroupObjectLogicsSupplier logicsSupplier;
+    private GTableController logicsSupplier;
     private GDataFilterValueViewTable valueTable;
 
     private ResizableLayoutPanel tablePanel;
 
-    public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GGroupObjectLogicsSupplier logicsSupplier) {
+    public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GTableController logicsSupplier) {
         super(listener);
         this.filterValue = filterValue;
         this.logicsSupplier = logicsSupplier;

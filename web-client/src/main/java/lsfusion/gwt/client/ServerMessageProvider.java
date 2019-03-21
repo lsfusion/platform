@@ -1,6 +1,6 @@
 package lsfusion.gwt.client;
 
-import lsfusion.gwt.shared.result.ListResult;
+import lsfusion.gwt.shared.base.result.ListResult;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 

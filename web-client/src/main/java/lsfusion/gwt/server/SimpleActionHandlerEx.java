@@ -1,8 +1,8 @@
 package lsfusion.gwt.server;
 
 import lsfusion.base.ServerUtils;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableDispatchException;
-import lsfusion.gwt.shared.exceptions.WrappedRemoteDispatchException;
+import lsfusion.gwt.shared.base.exception.AppServerNotAvailableDispatchException;
+import lsfusion.gwt.shared.base.exception.WrappedRemoteDispatchException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.server.SimpleActionHandler;
 import net.customware.gwt.dispatch.shared.Action;

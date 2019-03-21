@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.design.flex;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.client.form.design.ColumnsContainerView;
-import lsfusion.gwt.shared.view.GContainer;
+import lsfusion.gwt.shared.form.design.GContainer;
 
 public class FlexColumnsContainerView extends ColumnsContainerView<FlexPanel> {
     public FlexColumnsContainerView(GContainer container) {
