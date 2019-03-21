@@ -1,4 +1,4 @@
-package lsfusion.interop.form.filter.user;
+package lsfusion.interop.form.property;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

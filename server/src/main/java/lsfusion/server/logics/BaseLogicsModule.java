@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.WindowFormType;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.NFFact;

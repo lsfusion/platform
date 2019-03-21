@@ -28,7 +28,7 @@ import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPrefer
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.stack.ParamMessage;

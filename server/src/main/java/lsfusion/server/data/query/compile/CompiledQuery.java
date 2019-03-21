@@ -16,7 +16,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.logging.StringDebugInfoWriter;
 import lsfusion.base.mutability.ImmutableObject;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityQuickLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.ContextEnumerator;

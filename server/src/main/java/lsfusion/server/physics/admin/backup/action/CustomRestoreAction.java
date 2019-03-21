@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.Join;

@@ -15,7 +15,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.MigrationScriptLexer;
 import lsfusion.server.MigrationScriptParser;

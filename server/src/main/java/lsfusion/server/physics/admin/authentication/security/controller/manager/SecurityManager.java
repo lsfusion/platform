@@ -16,7 +16,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.data.expr.Expr;

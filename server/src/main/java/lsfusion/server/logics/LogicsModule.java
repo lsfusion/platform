@@ -16,7 +16,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.property.ClassViewType;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;

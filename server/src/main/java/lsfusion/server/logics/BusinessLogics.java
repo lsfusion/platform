@@ -23,7 +23,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.logging.DebugInfoWriter;
 import lsfusion.base.logging.StringDebugInfoWriter;
 import lsfusion.interop.base.exception.ApplyCanceledException;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;
 import lsfusion.server.base.caches.IdentityLazy;

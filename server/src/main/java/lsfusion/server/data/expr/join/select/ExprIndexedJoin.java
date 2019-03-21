@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.NullableExprInterface;

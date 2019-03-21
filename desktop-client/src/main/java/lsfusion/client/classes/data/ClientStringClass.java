@@ -14,7 +14,7 @@ import lsfusion.client.form.property.cell.classes.controller.rich.RichTextProper
 import lsfusion.client.form.property.cell.classes.view.StringPropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.TextPropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.classes.DataType;
 
 import java.awt.*;
@@ -26,8 +26,8 @@ import java.util.Map;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
-import static lsfusion.interop.form.filter.user.Compare.CONTAINS;
-import static lsfusion.interop.form.filter.user.Compare.EQUALS;
+import static lsfusion.interop.form.property.Compare.CONTAINS;
+import static lsfusion.interop.form.property.Compare.EQUALS;
 
 public class ClientStringClass extends ClientDataClass {
 

@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.Expr;

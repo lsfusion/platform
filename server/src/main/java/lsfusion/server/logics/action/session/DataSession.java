@@ -27,7 +27,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.form.filter.user.Compare;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
