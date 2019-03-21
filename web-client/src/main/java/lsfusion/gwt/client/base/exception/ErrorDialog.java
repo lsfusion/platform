@@ -7,7 +7,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.client.base.ui.ResizableModalWindow;
 import lsfusion.gwt.client.form.design.flex.FlexTabbedPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
 
 @SuppressWarnings("GWTStyleCheck")
 public class ErrorDialog extends ResizableModalWindow {

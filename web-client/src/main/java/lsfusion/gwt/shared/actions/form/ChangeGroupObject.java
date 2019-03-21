@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.actions.form;
 
 
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 
 public class ChangeGroupObject extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int groupId;

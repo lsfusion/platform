@@ -13,7 +13,7 @@ import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.shared.view.GKeyStroke;
+import lsfusion.gwt.shared.form.event.GKeyStroke;
 
 @SuppressWarnings("GWTStyleCheck")
 public class GSaveResetConfirmDialog {

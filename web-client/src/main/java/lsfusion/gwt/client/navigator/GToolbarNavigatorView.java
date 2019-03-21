@@ -10,10 +10,10 @@ import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.shared.view.GNavigatorElement;
+import lsfusion.gwt.shared.navigator.GNavigatorElement;
 import lsfusion.gwt.client.base.ui.ImageButton;
-import lsfusion.gwt.shared.view.GNavigatorFolder;
-import lsfusion.gwt.shared.view.window.GToolbarNavigatorWindow;
+import lsfusion.gwt.shared.navigator.GNavigatorFolder;
+import lsfusion.gwt.shared.navigator.window.GToolbarNavigatorWindow;
 
 import java.util.Set;
 

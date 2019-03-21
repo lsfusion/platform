@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.shared.view.GFlexAlignment;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;
 

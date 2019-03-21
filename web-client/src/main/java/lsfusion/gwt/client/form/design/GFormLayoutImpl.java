@@ -5,9 +5,9 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.shared.view.GContainer;
-import lsfusion.gwt.shared.view.GGrid;
-import lsfusion.gwt.shared.view.GTreeGroup;
+import lsfusion.gwt.shared.form.design.GContainer;
+import lsfusion.gwt.shared.form.object.table.grid.GGrid;
+import lsfusion.gwt.shared.form.object.table.tree.GTreeGroup;
 
 public abstract class GFormLayoutImpl {
     private static GFormLayoutImpl impl;

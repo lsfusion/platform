@@ -4,12 +4,12 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.client.form.design.flex.FlexCaptionPanel;
 import lsfusion.gwt.client.form.design.flex.FlexFormLayoutImpl;
 import lsfusion.gwt.client.form.design.table.TableCaptionPanel;
-import lsfusion.gwt.shared.view.GComponent;
-import lsfusion.gwt.shared.view.GContainer;
+import lsfusion.gwt.shared.form.design.GComponent;
+import lsfusion.gwt.shared.form.design.GContainer;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -9,7 +9,7 @@ import lsfusion.gwt.client.base.ui.WindowBox;
 import lsfusion.gwt.client.base.ui.cellview.DataGrid;
 import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.property.cell.controller.AbstractGridCellEditor;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 

@@ -4,15 +4,20 @@ import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFormLayoutImpl;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractGroupObjectController;
+import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.tree.GTreeTable;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGridRecord;
-import lsfusion.gwt.shared.view.*;
-import lsfusion.gwt.shared.view.changes.GFormChanges;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.shared.view.reader.*;
+import lsfusion.gwt.shared.form.GForm;
+import lsfusion.gwt.shared.form.design.GComponent;
+import lsfusion.gwt.shared.form.design.GFont;
+import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.shared.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.shared.form.order.GOrder;
+import lsfusion.gwt.shared.form.property.*;
+import lsfusion.gwt.shared.form.GFormChanges;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.shared.form.filter.user.GPropertyFilter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +27,7 @@ import java.util.Map;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
-public class GTreeGroupController extends GAbstractGroupObjectController {
+public class GTreeGroupController extends GAbstractTableController {
     private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
     
     private final GTreeGroup treeGroup;

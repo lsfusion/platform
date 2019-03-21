@@ -12,9 +12,9 @@ import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.filter.user.filter.controller.GFilterController;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -85,7 +85,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         }
     }
 
-    public void addCondition(GPropertyFilter condition, GGroupObjectLogicsSupplier logicsSupplier) {
+    public void addCondition(GPropertyFilter condition, GTableController logicsSupplier) {
         GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this);
         conditionViews.put(condition, conditionView);
         filterContainer.add(conditionView);

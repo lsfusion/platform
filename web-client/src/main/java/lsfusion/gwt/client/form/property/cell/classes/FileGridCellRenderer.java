@@ -8,7 +8,7 @@ import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.ui.cellview.DataGrid;
 import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.property.cell.AbstractGridCellRenderer;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 public class FileGridCellRenderer extends AbstractGridCellRenderer {
     public static final String ICON_EMPTY = "static/images/empty.png";

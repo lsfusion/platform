@@ -8,9 +8,9 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.shared.actions.navigator.GetNavigatorInfo;
 import lsfusion.gwt.shared.actions.navigator.GetNavigatorInfoResult;
-import lsfusion.gwt.shared.view.GNavigatorElement;
-import lsfusion.gwt.shared.view.window.GAbstractWindow;
-import lsfusion.gwt.shared.view.window.GNavigatorWindow;
+import lsfusion.gwt.shared.navigator.GNavigatorElement;
+import lsfusion.gwt.shared.navigator.window.GAbstractWindow;
+import lsfusion.gwt.shared.navigator.window.GNavigatorWindow;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 

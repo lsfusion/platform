@@ -3,8 +3,8 @@ package lsfusion.gwt.client.navigator;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.shared.view.GNavigatorElement;
-import lsfusion.gwt.shared.view.window.GNavigatorWindow;
+import lsfusion.gwt.shared.navigator.GNavigatorElement;
+import lsfusion.gwt.shared.navigator.window.GNavigatorWindow;
 
 import java.util.Set;
 

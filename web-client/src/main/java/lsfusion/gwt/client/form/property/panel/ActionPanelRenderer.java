@@ -8,18 +8,18 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.ImageButton;
-import lsfusion.gwt.shared.view.GKeyStroke;
+import lsfusion.gwt.shared.form.event.GKeyStroke;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.cell.controller.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.property.cell.controller.GEditPropertyHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.table.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.shared.view.GEditBindingMap;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.ImageDescription;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.classes.GType;
+import lsfusion.gwt.shared.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.base.ImageDescription;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
+import lsfusion.gwt.shared.classes.GType;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.NativeEditEvent;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DialogBasedGridCellEditor;
@@ -30,7 +30,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.form.controller.HotkeyManager.Binding;
-import static lsfusion.gwt.shared.view.GEditBindingMap.getPropertyKeyPressActionSID;
+import static lsfusion.gwt.shared.form.property.cell.GEditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
 

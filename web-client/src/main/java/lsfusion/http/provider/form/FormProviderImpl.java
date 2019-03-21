@@ -6,8 +6,13 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
+import lsfusion.gwt.shared.form.GForm;
+import lsfusion.gwt.shared.form.design.GFont;
+import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.shared.form.object.table.grid.user.design.GColumnUserPreferences;
+import lsfusion.gwt.shared.form.object.table.grid.user.design.GFormUserPreferences;
+import lsfusion.gwt.shared.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.http.provider.navigator.NavigatorProvider;
-import lsfusion.gwt.shared.view.*;
 import lsfusion.interop.form.user.ColumnUserPreferences;
 import lsfusion.interop.form.user.FormUserPreferences;
 import lsfusion.interop.form.user.GroupObjectUserPreferences;

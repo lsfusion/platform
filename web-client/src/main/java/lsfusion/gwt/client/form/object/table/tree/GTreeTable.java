@@ -13,7 +13,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.object.table.GridDataRecord;
-import lsfusion.gwt.client.form.object.table.controller.GAbstractGroupObjectController;
+import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.base.ui.cellview.Column;
@@ -25,8 +25,12 @@ import lsfusion.gwt.client.base.ui.cellview.cell.CellPreviewEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.GridEditableCell;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.view.*;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.GForm;
+import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.shared.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.shared.form.order.GOrder;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 
 import java.util.*;
 
@@ -461,7 +465,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public GAbstractGroupObjectController getGroupController() {
+    public GAbstractTableController getGroupController() {
         return treeGroupController;
     }
 

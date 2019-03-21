@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.view.GOrder;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.order.GOrder;
+import lsfusion.gwt.shared.form.object.GGroupObjectValue;
 
 public class ChangePropertyOrder extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int propertyID;

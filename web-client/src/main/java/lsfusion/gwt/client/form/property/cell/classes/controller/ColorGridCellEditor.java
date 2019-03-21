@@ -12,8 +12,8 @@ import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.client.base.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.cell.classes.ColorDTO;
 import net.auroris.ColorPicker.client.ColorPicker;
 
 public class ColorGridCellEditor extends PopupBasedGridCellEditor {

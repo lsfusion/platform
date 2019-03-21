@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.order.user;
 
 import lsfusion.gwt.client.form.object.table.GGridPropertyTable;
-import lsfusion.gwt.shared.view.GGroupObject;
-import lsfusion.gwt.shared.view.GOrder;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.object.GGroupObject;
+import lsfusion.gwt.shared.form.order.GOrder;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

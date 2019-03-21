@@ -4,7 +4,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.object.table.grid.GGridTable;
-import lsfusion.gwt.client.form.object.table.grid.controller.GGroupObjectController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.GToolbarButton;
 
 public class GUserPreferencesButton extends GToolbarButton {
@@ -14,9 +14,9 @@ public class GUserPreferencesButton extends GToolbarButton {
 
     private final boolean canBeSaved;
     private final GGridTable table;
-    private final GGroupObjectController groupController;
+    private final GGridController groupController;
     
-    public GUserPreferencesButton(GGridTable table, GGroupObjectController groupController, boolean canBeSaved) {
+    public GUserPreferencesButton(GGridTable table, GGridController groupController, boolean canBeSaved) {
         super(table.hasUserPreferences() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON, "");
         this.table = table;
         this.groupController = groupController;

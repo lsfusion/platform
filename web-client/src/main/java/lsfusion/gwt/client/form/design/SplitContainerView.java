@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.shared.view.GComponent;
-import lsfusion.gwt.shared.view.GContainer;
+import lsfusion.gwt.shared.form.design.GComponent;
+import lsfusion.gwt.shared.form.design.GContainer;
 
 import java.util.Map;
 

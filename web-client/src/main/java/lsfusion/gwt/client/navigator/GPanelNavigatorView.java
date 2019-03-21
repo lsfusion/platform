@@ -7,11 +7,11 @@ import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.client.base.ui.GCaptionPanel;
+import lsfusion.gwt.client.base.ui.CaptionPanel;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.shared.view.GNavigatorElement;
+import lsfusion.gwt.shared.navigator.GNavigatorElement;
 import lsfusion.gwt.client.base.ui.ImageButton;
-import lsfusion.gwt.shared.view.window.GPanelNavigatorWindow;
+import lsfusion.gwt.shared.navigator.window.GPanelNavigatorWindow;
 
 import java.util.Set;
 
@@ -45,7 +45,7 @@ public class GPanelNavigatorView extends GNavigatorView {
             }
         }
 
-        GCaptionPanel titledPanel = new GCaptionPanel(element.caption, insidePanel);
+        CaptionPanel titledPanel = new CaptionPanel(element.caption, insidePanel);
         titledPanel.setSize("100%", "100%");
         container.add(titledPanel);
     }

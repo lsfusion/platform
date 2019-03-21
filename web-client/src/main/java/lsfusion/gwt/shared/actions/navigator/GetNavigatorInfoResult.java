@@ -1,8 +1,8 @@
 package lsfusion.gwt.shared.actions.navigator;
 
-import lsfusion.gwt.shared.view.GNavigatorElement;
-import lsfusion.gwt.shared.view.window.GAbstractWindow;
-import lsfusion.gwt.shared.view.window.GNavigatorWindow;
+import lsfusion.gwt.shared.navigator.GNavigatorElement;
+import lsfusion.gwt.shared.navigator.window.GAbstractWindow;
+import lsfusion.gwt.shared.navigator.window.GNavigatorWindow;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.ArrayList;

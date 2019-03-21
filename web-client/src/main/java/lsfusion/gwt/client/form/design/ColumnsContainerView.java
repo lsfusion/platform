@@ -5,10 +5,10 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
-import lsfusion.gwt.shared.view.GComponent;
-import lsfusion.gwt.shared.view.GContainer;
+import lsfusion.gwt.shared.form.design.GComponent;
+import lsfusion.gwt.shared.form.design.GContainer;
 
 import java.util.ArrayList;
 import java.util.List;

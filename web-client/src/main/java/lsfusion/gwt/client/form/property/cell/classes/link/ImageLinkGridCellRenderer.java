@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.link;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.ImageElement;
 import lsfusion.gwt.client.form.property.cell.classes.ImageGridCellRenderer;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.property.GPropertyDraw;
 
 import static lsfusion.gwt.client.form.property.cell.classes.FileGridCellRenderer.ICON_EMPTY;
 

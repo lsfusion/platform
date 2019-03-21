@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.ui.GCaptionPanel;
+import lsfusion.gwt.client.base.ui.CaptionPanel;
 
 import java.util.ArrayList;
 
@@ -73,11 +73,11 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
 
         DockLayoutPanel buttonsAndRightPanel = new DockLayoutPanel(Style.Unit.EM);
         buttonsAndRightPanel.addWest(buttonsPanelAligner, 5);
-        buttonsAndRightPanel.add(new GCaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel));
+        buttonsAndRightPanel.add(new CaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel));
 
         DockLayoutPanel dockContainer = new DockLayoutPanel(Style.Unit.PCT);
         dockContainer.setSize("100%", "100%");
-        dockContainer.addWest(new GCaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel), 43);
+        dockContainer.addWest(new CaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel), 43);
         dockContainer.add(buttonsAndRightPanel);
 
         add(dockContainer);
