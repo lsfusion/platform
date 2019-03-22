@@ -58,7 +58,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
             throwable = fromWebServerToAppServer(throwable);
 
             try {
-                navigator.logClientException("", null, throwable);
+                navigator.logClientException(null, throwable);
             } finally {
                 int newCount = count == null ? 1 : count + 1;
                 exceptionCounter.put(navigator, newCount);

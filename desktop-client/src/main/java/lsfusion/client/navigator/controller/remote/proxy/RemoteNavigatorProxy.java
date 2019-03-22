@@ -16,8 +16,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         super(target);
     }
 
-    public void logClientException(String title, String hostname, Throwable t) throws RemoteException {
-        target.logClientException(title, hostname, t);
+    public void logClientException(String hostname, Throwable t) throws RemoteException {
+        target.logClientException(hostname, t);
     }
 
     public void close() throws RemoteException {
