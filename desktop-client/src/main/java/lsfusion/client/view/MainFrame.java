@@ -305,7 +305,7 @@ public abstract class MainFrame extends JFrame {
 
     public boolean clientExceptionLog(Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.logClientException("", MainController.computerName, t);
+            remoteNavigator.logClientException(MainController.computerName, t);
             return true;
         }
         return false;

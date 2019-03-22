@@ -24,7 +24,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException;
 
-    void logClientException(String title, String hostname, Throwable t) throws RemoteException;
+    void logClientException(String hostname, Throwable t) throws RemoteException;
 
     void close() throws RemoteException;
 

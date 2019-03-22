@@ -141,7 +141,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return currentInvocation.pauseForUserInteraction(actions);
     }
 
-    public void logClientException(String title, String hostname, Throwable t) {
+    public void logClientException(String hostname, Throwable t) {
         boolean web = false;
         if (hostname == null) { // считается, что Web
             web = true;
