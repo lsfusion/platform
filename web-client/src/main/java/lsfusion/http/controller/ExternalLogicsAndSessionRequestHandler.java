@@ -1,15 +1,17 @@
-package lsfusion.http;
+package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.http.provider.logics.LogicsSessionObject;
+import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.controller.ExternalRequestHandler;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
-import lsfusion.interop.exception.AuthenticationException;
-import lsfusion.interop.exception.RemoteInternalException;
+import lsfusion.interop.base.exception.AuthenticationException;
+import lsfusion.interop.base.exception.RemoteInternalException;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.lang.StringUtils;
@@ -24,7 +26,7 @@ import java.util.Enumeration;
 
 import static java.util.Collections.list;
 
-public class ExternalLogicsRequestHandler extends ExternalRequestHandler {
+public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandler {
     
     @Autowired
     SessionProvider sessionProvider;

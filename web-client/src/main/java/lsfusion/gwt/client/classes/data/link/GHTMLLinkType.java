@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.classes.data.link;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.form.ui.grid.renderer.HTMLGridCellRenderer;
-import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.view.HTMLGridCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
 
 public class GHTMLLinkType extends GLinkType {
     @Override

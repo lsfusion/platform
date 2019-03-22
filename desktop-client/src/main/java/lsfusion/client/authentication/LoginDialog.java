@@ -204,6 +204,8 @@ public class LoginDialog extends JDialog {
                 onCancel();
             }
         }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        
+        updateOK();
     }
 
     public void updatePassword(UserInfo info) {
@@ -287,23 +289,18 @@ public class LoginDialog extends JDialog {
     private static void storeServerData(LogicsConnection serverInfo, UserInfo currentUserInfo, List<UserInfo> userInfos) {
         try {
             FileWriter fileWr = new FileWriter(SystemUtils.getUserFile(CONFIG_FILE_NAME));
-            fileWr.write(serverInfo.host + '\n');
-            fileWr.write(serverInfo.port + '\n');
+            fileWr.write(serverInfo.host + "\n");
+            fileWr.write(serverInfo.port + "\n");
 
             // reordering users (to make current first) and saving + important that here userInfos
-            List<UserInfo> newUserList = new ArrayList<>();
-            newUserList.add(currentUserInfo);
             StringBuilder usersString = new StringBuilder(currentUserInfo.toString());
             for (UserInfo userInfo : userInfos) {
-                if (!userInfo.name.equals(currentUserInfo.name)) {
+                if (!userInfo.name.equals(currentUserInfo.name))
                     usersString.append("\t").append(userInfo);
-                    newUserList.add(userInfo);
-                }
             }
-            userInfos = newUserList;
             fileWr.write(usersString + "\n");
 
-            fileWr.write(serverInfo.exportName + '\n');
+            fileWr.write(serverInfo.exportName + "\n");
             fileWr.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -374,7 +371,7 @@ public class LoginDialog extends JDialog {
     }
 
     private boolean isOkEnabled() {
-        return checkVersionError == null && !isValid(getUserInfo()) && isValid(getServerInfo());
+        return checkVersionError == null && isValid(getUserInfo()) && isValid(getServerInfo());
     }
 
     private void updateOK() {

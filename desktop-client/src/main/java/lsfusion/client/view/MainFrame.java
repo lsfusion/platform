@@ -9,6 +9,7 @@ import lsfusion.client.SplashScreen;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.controller.remote.ReconnectWorker;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.controller.remote.proxy.RemoteLogicsProxy;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
@@ -49,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.base.DateConverter.createDateTimeEditFormat;
 import static lsfusion.base.DateConverter.createTimeEditFormat;
@@ -64,16 +66,20 @@ public abstract class MainFrame extends JFrame {
             try {
                 remoteNavigator = new ReconnectWorker<>(new Callable<RemoteNavigatorInterface>() {
                     public RemoteNavigatorInterface call() throws Exception {
-                        try {
-                            return MainController.runRequest(new LogicsRunnable<RemoteNavigatorInterface>() {
-                                public RemoteNavigatorInterface run(LogicsSessionObject sessionObject) throws RemoteException {
-                                    MainController.remoteLogics = new RemoteLogicsProxy(sessionObject.remoteLogics);
-                                    return MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
+                        return RmiQueue.runRetryableRequest(new Callable<RemoteNavigatorInterface>() { // we need to retry request (at leastbecause remoteLogics ref can be invalid), just like in logicsDispatchAsync in web-client
+                            public RemoteNavigatorInterface call() throws Exception {
+                                try {
+                                    return MainController.runRequest(new LogicsRunnable<RemoteNavigatorInterface>() {
+                                        public RemoteNavigatorInterface run(LogicsSessionObject sessionObject) throws RemoteException {
+                                            MainController.remoteLogics = sessionObject.remoteLogics;
+                                            return MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
+                                        }
+                                    });
+                                } catch (AppServerNotAvailableException e) { // suppress and try again
+                                    return null;
                                 }
-                            });
-                        } catch (AppServerNotAvailableException e) { // suppress and try again
-                            return null;
-                        }
+                            }
+                        }, new AtomicBoolean());
                     }
                 }).connect();
             } catch (AuthenticationException throwable) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
@@ -136,7 +142,7 @@ public abstract class MainFrame extends JFrame {
         } catch (Throwable e) {
             closeSplashScreen();
             logger.error(getString("client.error.application.initialization"), e);
-            MainController.restart();
+            throw Throwables.propagate(e);
         }
     }
 
@@ -313,7 +319,6 @@ public abstract class MainFrame extends JFrame {
         try {
             remoteNavigator.close();
         } catch (RemoteException e) {
-            throw Throwables.propagate(e);
         }
 
         RemoteFormProxy.dropCaches();

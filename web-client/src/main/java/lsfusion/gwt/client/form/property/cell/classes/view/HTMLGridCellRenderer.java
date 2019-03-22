@@ -1,8 +1,9 @@
-package lsfusion.gwt.client.form.ui.grid.renderer;
+package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.DivElement;
-import lsfusion.gwt.client.form.ui.cellview.DataGrid;
-import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.property.cell.view.AbstractGridCellRenderer;
 
 public class HTMLGridCellRenderer extends AbstractGridCellRenderer {
 
