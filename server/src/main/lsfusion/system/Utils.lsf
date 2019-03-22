@@ -165,7 +165,7 @@ min = FORMULA '($1+$2-ABS($1-$2))/2';
 max = FORMULA '($1+$2+ABS($1-$2))/2';
 trunc = FORMULA 'trunc($1,$2)';
 
-sqr = FORMULA '($1)*($1)';
+sqr(a) = a*a;
 sqrt = FORMULA 'sqrt($1)';
 power = FORMULA 'power($1, $2)';
 percent = FORMULA '(($1)*($2)/100)';
