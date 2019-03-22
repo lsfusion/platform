@@ -367,22 +367,22 @@ public class Words {
 
     //TODO: поскольку метод пока используется только для "руб-коп", не параметризуем female. Но в будущем может понадобиться.
     public static String toStringCustom(BigDecimal numObject, String decPostfix, String fractPostfix, boolean upcase, boolean numericFraction) {
-        return toStringCustom(numObject, decPostfix, fractPostfix, 2, upcase, numericFraction);
+        return toStringCustom(numObject, decPostfix, fractPostfix, 2, null, upcase, numericFraction);
     }
 
-    public static String toStringCustom(BigDecimal numObject, String decPostfix, String fractPostfix, int numOfFractDigits, boolean upcase, boolean numericFraction) {
-        String result = numObject == null ? toStringCustom(null, decPostfix, fractPostfix, numOfFractDigits, numericFraction) : toStringCustom(numObject.doubleValue(), decPostfix, fractPostfix, numOfFractDigits, numericFraction);
+    public static String toStringCustom(BigDecimal numObject, String decPostfix, String fractPostfix, int numOfFractDigits, Integer forceNumOfFractDigits, boolean upcase, boolean numericFraction) {
+        String result = numObject == null ? toStringCustom(null, decPostfix, fractPostfix, numOfFractDigits, forceNumOfFractDigits, numericFraction) : toStringCustom(numObject.doubleValue(), decPostfix, fractPostfix, numOfFractDigits, forceNumOfFractDigits, numericFraction);
         if (result != null && upcase)
             result = result.substring(0, 1).toUpperCase() + result.substring(1);
         return result;
     }
 
-    private static String toStringCustom(Double numObject, String decPostfix, String fractPostfix, int numOfFractDigits, boolean numericFraction) {
+    private static String toStringCustom(Double numObject, String decPostfix, String fractPostfix, int numOfFractDigits, Integer forceNumOfFractDigits, boolean numericFraction) {
         double num = numObject == null ? 0.0 : numObject;
         long fract = numOfFractDigits <= 0 ? 0 : Math.round(num * Math.pow(10, numOfFractDigits) - ((long) num) * Math.pow(10, numOfFractDigits));
         String result;
-        if (fract != 0)
-            result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false) + toStringCustom(fract, decPostfix, fractPostfix, numOfFractDigits, true, numericFraction);
+        if (fract != 0 || (forceNumOfFractDigits != null && forceNumOfFractDigits > 0))
+            result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false) + toStringCustom(fract, decPostfix, fractPostfix, forceNumOfFractDigits != null ? Math.max(numOfFractDigits, forceNumOfFractDigits) : numOfFractDigits, true, numericFraction);
         else
             result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false);
         return result;
