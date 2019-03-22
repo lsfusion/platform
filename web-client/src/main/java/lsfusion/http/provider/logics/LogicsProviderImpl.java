@@ -76,15 +76,6 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     // needed to recode exception
     private <R> R runRequestDispatch(LogicsConnection logicsConnection, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
         try {
-            return runnable.run(logicsSessionObject);
-        } catch (AuthenticationException e) {
-            // if there is an AuthenticationException and server has anonymousUI, that means that the mode has changed, so we we'll drop serverSettings cache
-            if(logicsSessionObject.serverSettings != null && logicsSessionObject.serverSettings.anonymousUI)
-                logicsSessionObject.serverSettings = null;
-            throw e;
-        } catch (RemoteException e) { // it's important that this exception should not be suppressed (for example in ExternalLogicsRequestHandler)
-            invalidateLogicsSessionObject(logicsSessionObject);
-            throw e;
             return runRequest(logicsConnection, runnable);
         } catch (AppServerNotAvailableException e) {
             throw new AppServerNotAvailableDispatchException(e.getMessage());

@@ -75,9 +75,11 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -930,7 +932,11 @@ public class ClientFormController implements AsyncListener {
         final long ID;
         final ClientGroupObjectValue value;
         if(add) {
-            ID = MainController.generateID();
+            ID = rmiQueue.runRetryableRequest(new Callable<Long>() {
+                public Long call() throws Exception {
+                    return MainController.generateID();
+                }
+            });
             value = new ClientGroupObjectValue(object, ID);
         } else {
             value = controller.getCurrentObject();

@@ -16,6 +16,7 @@ import lsfusion.client.base.log.Log;
 import lsfusion.client.controller.remote.ClientRMIClassLoaderSpi;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.controller.remote.RMITimeoutSocketFactory;
+import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.controller.remote.proxy.RemoteLogicsProxy;
 import lsfusion.client.form.print.SavingThread;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
@@ -49,6 +50,8 @@ import java.rmi.server.RMIClassLoader;
 import java.security.AccessController;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.remote.RMIUtils.initRMI;
@@ -449,7 +452,7 @@ public class MainController {
             final UserInfo fUserInfo = userInfo;
             authToken = runRequest(new LogicsRunnable<AuthenticationToken>() {
                 public AuthenticationToken run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : new RemoteLogicsProxy(sessionObject.remoteLogics).authenticateUser(fUserInfo.name, fUserInfo.password);
+                    return fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(fUserInfo.name, fUserInfo.password);
                 }
             });
         } catch (Exception e) {

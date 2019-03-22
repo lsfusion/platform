@@ -1,8 +1,8 @@
 package lsfusion.http.provider.form;
 
 import lsfusion.client.form.ClientForm;
-import lsfusion.client.logics.ClientGroupObject;
-import lsfusion.client.logics.ClientGroupObjectValue;
+import lsfusion.client.form.object.ClientGroupObject;
+import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.io.File;

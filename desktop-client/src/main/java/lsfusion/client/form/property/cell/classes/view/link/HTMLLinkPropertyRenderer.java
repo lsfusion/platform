@@ -1,8 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view.link;
 
-import lsfusion.client.base.SwingUtils;
-import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import org.fit.cssbox.swingbox.BrowserPane;
 
 import java.awt.*;

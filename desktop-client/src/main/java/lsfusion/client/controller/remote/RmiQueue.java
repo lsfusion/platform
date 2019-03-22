@@ -92,6 +92,10 @@ public class RmiQueue implements DispatcherListener {
         }
     }
 
+    public <T> T runRetryableRequest(Callable<T> request) {
+        return runRetryableRequest(request, abandoned);
+    }
+
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
         return runRetryableRequest(request, abandoned, null, null);
     }

@@ -79,12 +79,6 @@ public class ClientFormLayout extends JPanel {
         });
     }
 
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        MainFrame.instance.dropCurrentForm(form);
-    }
-
     public ClientContainerView getContainerView(ClientContainer container) {
         return containerViews.get(container);
     }
