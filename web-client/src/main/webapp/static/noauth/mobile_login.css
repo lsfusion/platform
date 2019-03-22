@@ -1,0 +1,117 @@
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+fieldset {
+    border: 0;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+html, body {
+    height: 100%;
+}
+
+.round {
+    border-radius: 0.3125em;
+    -moz-border-radius: 0.3125em;
+    -webkit-border-radius: 0.3125em;
+}
+
+p {
+    margin-bottom: 1.25em;
+}
+
+form {
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+p, a, form input, .errorblock {
+    font-size: 2em;
+}
+
+form p input[type="text"], form p input[type="password"] {
+    font-size: 1.5em;
+}
+
+a {
+    text-decoration: none;
+    color: #2069b4;
+}
+
+.blue {
+    background-color: #2069b4;
+    color: white;
+}
+
+.full-width-box {
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.image-center {
+    text-align: center;
+}               
+
+.logo {
+    width: 60%;
+}
+
+form label {
+    display: block;
+    text-transform: uppercase;
+    color: #2a2e36;
+    margin: 0 0 0.3125em 0;
+}
+
+form input[type="text"], input[type="password"], textarea {
+    border: 1px solid #d9dbdd;
+    padding: 0.625em;
+    outline: none;
+}
+
+form input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    border: 1px solid #bbbdbe;
+}
+
+form input[type="submit"] {
+    border: none;
+    cursor: pointer;
+    padding: 1.2em;
+    width: 100%;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 1em;
+}
+
+form p em {
+    margin-top: 0.833em;
+    display: block;
+}
+
+.content-table {
+    height: 100%;
+    width: 100%;
+}
+
+.desktop-link {
+    display: none;
+}
+
+.errorblock {
+    color: #ff0000;
+    background-color: #ffEEEE;
+    border: 1px solid #ff0000;
+    padding: 8px;
+    text-align: left;
+    margin: 40px auto;
+}
+
+details summary::-webkit-details-marker {
+    color: #75AEEA;
+}

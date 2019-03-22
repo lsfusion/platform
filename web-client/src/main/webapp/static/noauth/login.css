@@ -78,7 +78,7 @@ a:hover {
 
 
 
-.full-width-input {
+.full-width-box {
     width: 95%;
 }
 
@@ -89,10 +89,6 @@ a:hover {
 .image-right {
     background-position: right center;
     padding-right: 3em;
-}
-
-.ic-left-arrow {
-    background-image: url("left_arrow.png");
 }
 
 .ic-right-arrow {
