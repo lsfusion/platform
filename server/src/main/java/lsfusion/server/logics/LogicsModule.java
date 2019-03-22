@@ -1766,7 +1766,7 @@ public abstract class LogicsModule {
         setFormActions(property);
 
         property.setImage("delete.png");
-        property.setChangeKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
+        property.setChangeKey(KeyStrokes.getDeleteActionKeyStroke());
         property.setShowChangeKey(false);
     }
 
@@ -1817,7 +1817,7 @@ public abstract class LogicsModule {
         setFormActions(property);
 
         property.setImage("add.png");
-        property.setChangeKey(KeyStrokes.getAddActionPropertyKeyStroke());
+        property.setChangeKey(KeyStrokes.getAddActionKeyStroke());
         property.setShowChangeKey(false);
 
         if(objectEntity != null) { // ADDFORM как оператор
@@ -1851,7 +1851,7 @@ public abstract class LogicsModule {
         setFormActions(result);
         
         result.setImage("edit.png");
-        result.setChangeKey(KeyStrokes.getEditActionPropertyKeyStroke());
+        result.setChangeKey(KeyStrokes.getEditActionKeyStroke());
         result.setShowChangeKey(false);
     }
 

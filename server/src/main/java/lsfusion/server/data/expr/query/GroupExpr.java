@@ -15,7 +15,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
-import lsfusion.base.logging.DebugInfoWriter;
+import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.data.expr.BaseExpr;

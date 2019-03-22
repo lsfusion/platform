@@ -1,4 +1,4 @@
-package lsfusion.base.logging;
+package lsfusion.base.log;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;

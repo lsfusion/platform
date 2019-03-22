@@ -132,19 +132,19 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getAddActionPropertyKeyStroke() {
+    public static KeyStroke getAddActionKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0);
     }
 
-    public static KeyStroke getEditActionPropertyKeyStroke() {
+    public static KeyStroke getEditActionKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
     }
 
-    public static KeyStroke getDeleteActionPropertyKeyStroke() {
+    public static KeyStroke getDeleteActionKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getImportActionPropertyKeyStroke() {
+    public static KeyStroke getImportActionKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
     }
 

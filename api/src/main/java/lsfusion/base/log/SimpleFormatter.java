@@ -1,4 +1,4 @@
-package lsfusion.base.logging;
+package lsfusion.base.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

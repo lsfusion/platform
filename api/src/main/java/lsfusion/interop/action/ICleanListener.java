@@ -1,4 +1,4 @@
-package lsfusion.interop.form.event;
+package lsfusion.interop.action;
 
 public interface ICleanListener {
 
