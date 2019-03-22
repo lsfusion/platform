@@ -13,8 +13,8 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
-import lsfusion.base.logging.DebugInfoWriter;
-import lsfusion.base.logging.StringDebugInfoWriter;
+import lsfusion.base.log.DebugInfoWriter;
+import lsfusion.base.log.StringDebugInfoWriter;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityQuickLazy;
@@ -91,7 +91,7 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.base.logging.DebugInfoWriter.pushPrefix;
+import static lsfusion.base.log.DebugInfoWriter.pushPrefix;
 
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe

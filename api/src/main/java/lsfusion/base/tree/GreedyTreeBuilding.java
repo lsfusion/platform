@@ -1,7 +1,7 @@
 package lsfusion.base.tree;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.logging.DebugInfoWriter;
+import lsfusion.base.log.DebugInfoWriter;
 
 import java.util.*;
 

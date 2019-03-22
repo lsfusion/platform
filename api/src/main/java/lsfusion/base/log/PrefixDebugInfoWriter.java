@@ -1,4 +1,4 @@
-package lsfusion.base.logging;
+package lsfusion.base.log;
 
 import lsfusion.base.BaseUtils;
 

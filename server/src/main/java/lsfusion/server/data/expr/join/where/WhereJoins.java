@@ -18,7 +18,7 @@ import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.dnf.ExtraMultiIntersectSetWhere;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
-import lsfusion.base.logging.DebugInfoWriter;
+import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.base.tree.GreedyTreeBuilding;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.ContextEnumerator;

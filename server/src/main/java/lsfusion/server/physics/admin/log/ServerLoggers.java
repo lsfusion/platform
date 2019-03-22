@@ -4,7 +4,7 @@ import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.logging.FlushableRollingFileAppender;
+import lsfusion.base.log.FlushableRollingFileAppender;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;

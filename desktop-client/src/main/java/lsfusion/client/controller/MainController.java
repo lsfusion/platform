@@ -216,6 +216,8 @@ public class MainController {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        if(!reconnect)
+                            authToken = null;
                         authAndLoadMainFrame(null, null);
                     }
                 });

@@ -1,4 +1,4 @@
-package lsfusion.base.logging;
+package lsfusion.base.log;
 
 public abstract class DebugInfoWriter {
 

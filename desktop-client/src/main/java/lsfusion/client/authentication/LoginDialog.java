@@ -78,6 +78,8 @@ public class LoginDialog extends JDialog {
 
         initUserSettings(currentUserInfo, userInfos);
 
+        updateOK();
+
         initUIHandlers();
 
         setLocationRelativeTo(null);
@@ -107,12 +109,23 @@ public class LoginDialog extends JDialog {
     }
 
     private void initUserSettings(UserInfo currentUserInfo, List<UserInfo> userInfos) {
+        boolean anonymous = currentUserInfo.isAnonymous();
+        useAnonymousUICheckBox.setSelected(anonymous);
+        updateAnonymousUIActivity();
+
+        this.userInfos = userInfos; // need to store them for passwords
         for (UserInfo userInfo : userInfos) {
             ((MutableComboBoxModel<String>)loginBox.getModel()).addElement(userInfo.name);
         }
-        loginBox.setSelectedItem(currentUserInfo.name);
-        this.userInfos = userInfos; // need to store them for passwords
-        updatePassword(currentUserInfo);
+        UserInfo selectInfo;
+        if(anonymous)
+            selectInfo = userInfos.isEmpty() ? null : userInfos.get(0);
+        else
+            selectInfo = currentUserInfo; 
+        if(selectInfo != null) {
+            loginBox.setSelectedItem(selectInfo.name);
+            updatePassword(selectInfo);
+        }
     }
 
     private void initUIHandlers() {
@@ -204,8 +217,6 @@ public class LoginDialog extends JDialog {
                 onCancel();
             }
         }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        
-        updateOK();
     }
 
     public void updatePassword(UserInfo info) {
@@ -286,16 +297,18 @@ public class LoginDialog extends JDialog {
         }
     }
     
-    private static void storeServerData(LogicsConnection serverInfo, UserInfo currentUserInfo, List<UserInfo> userInfos) {
+    private static void storeServerAndUserInfos(LogicsConnection serverInfo, UserInfo currentUserInfo, List<UserInfo> userInfos) {
         try {
             FileWriter fileWr = new FileWriter(SystemUtils.getUserFile(CONFIG_FILE_NAME));
             fileWr.write(serverInfo.host + "\n");
             fileWr.write(serverInfo.port + "\n");
 
             // reordering users (to make current first) and saving + important that here userInfos
-            StringBuilder usersString = new StringBuilder(currentUserInfo.toString());
+            StringBuilder usersString = new StringBuilder();
+            boolean currentAnonymous = currentUserInfo.isAnonymous();
+            usersString.append(currentAnonymous ? "ANONYMOUS" : currentUserInfo);
             for (UserInfo userInfo : userInfos) {
-                if (!userInfo.name.equals(currentUserInfo.name))
+                if (currentAnonymous || !userInfo.name.equals(currentUserInfo.name))
                     usersString.append("\t").append(userInfo);
             }
             fileWr.write(usersString + "\n");
@@ -307,7 +320,7 @@ public class LoginDialog extends JDialog {
         }
     }
 
-    private static Pair<LogicsConnection, List<UserInfo>> restoreServerAndUserInfos() {
+    private static Pair<LogicsConnection, Pair<UserInfo, List<UserInfo>>> restoreServerAndUserInfos() {
         try {
             File file = SystemUtils.getUserFile(CONFIG_FILE_NAME, false);
             if (file.exists() && file.length() < 10000) { // don't restore if cfg file has grown large: most likely it's damaged
@@ -316,6 +329,7 @@ public class LoginDialog extends JDialog {
                 String serverHost = scanner.hasNextLine() ? scanner.nextLine() : "";
                 int serverPort = scanner.hasNextLine() ? Integer.parseInt(scanner.nextLine()) : 0;
                 List<UserInfo> userInfos = new ArrayList<>();
+                UserInfo currentUserInfo = null;
                 if (scanner.hasNextLine()) {
                     String users = scanner.nextLine();
                     if (!users.isEmpty()) {
@@ -323,20 +337,28 @@ public class LoginDialog extends JDialog {
                         usersScanner.useDelimiter("\\t");
                         while (usersScanner.hasNext()) {
                             String name = usersScanner.next().trim();
-                            boolean save = false;
-                            String pass = null;
-                            if (usersScanner.hasNext()) {
-                                save = Boolean.parseBoolean(usersScanner.next());
+                            UserInfo userInfo;
+                            if(name.equals("ANONYMOUS"))
+                                userInfo = UserInfo.ANONYMOUS;
+                            else {
+                                boolean save = false;
+                                String pass = null;
+                                if (usersScanner.hasNext()) {
+                                    save = Boolean.parseBoolean(usersScanner.next());
+                                }
+                                if (save && usersScanner.hasNext()) {
+                                    pass = new String(Base64.decodeBase64(usersScanner.next()));
+                                }
+                                userInfo = new UserInfo(name, save, pass);
+                                userInfos.add(userInfo);
                             }
-                            if (save && usersScanner.hasNext()) {
-                                pass = new String(Base64.decodeBase64(usersScanner.next()));
-                            }
-                            userInfos.add(new UserInfo(name, save, pass));
+                            if(currentUserInfo == null)
+                                currentUserInfo = userInfo;
                         }
                     }
                 }
                 String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "default";
-                return new Pair<>(new LogicsConnection(serverHost, serverPort, serverDB), userInfos);
+                return new Pair<>(new LogicsConnection(serverHost, serverPort, serverDB), new Pair<>(currentUserInfo, userInfos));
             }
         } catch (IOException e) { // some problems with file
             return null;
@@ -427,22 +449,22 @@ public class LoginDialog extends JDialog {
     public static Pair<LogicsConnection, UserInfo> login(LogicsConnection serverInfo, UserInfo userInfo, String warningMsg) {
 
         // restoring saved server and user info (if no initializing empty)
-        Pair<LogicsConnection, List<UserInfo>> restoredData = restoreServerAndUserInfos();
-        List<UserInfo> userInfos;
+        Pair<LogicsConnection, Pair<UserInfo, List<UserInfo>>> restoredData = restoreServerAndUserInfos();
+        List<UserInfo> userInfos = null;
         if(restoredData != null) {
             if(serverInfo == null)
                 serverInfo = restoredData.first;
-            userInfos = restoredData.second;
-        } else
-            userInfos = new ArrayList<>();
+            if(userInfo == null)
+                userInfo = restoredData.second.first;
+            userInfos = restoredData.second.second;
+        }
+
         if(serverInfo == null)
             serverInfo = new LogicsConnection("localhost", 7652, "default");
-        if(userInfo == null) {
-            if(!userInfos.isEmpty())
-                userInfo = userInfos.get(0);
-            else
-                userInfo = new UserInfo("", false, "");
-        }
+        if(userInfo == null)
+            userInfo = new UserInfo("", false, "");
+        if(userInfos == null)
+            userInfos = new ArrayList<>();
 
         LoginDialog loginDialog = new LoginDialog(warningMsg, serverInfo, userInfo, userInfos);
         loginDialog.setVisible(true);
@@ -466,7 +488,7 @@ public class LoginDialog extends JDialog {
         }
 
         // saving server and user info
-        storeServerData(result.first, result.second, rUserInfos.result);
+        storeServerAndUserInfos(result.first, result.second, rUserInfos.result);
 
         return result;
     }
