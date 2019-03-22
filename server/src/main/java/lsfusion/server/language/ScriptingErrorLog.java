@@ -609,6 +609,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "use NULL instead of FALSE");
     }
 
+    public void emitEvalModuleError(ScriptParser parser, String prefix) throws SemanticErrorException {
+        emitSimpleError(parser, prefix + " cannot be used in EVAL module");
+    }
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);

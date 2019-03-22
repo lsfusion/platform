@@ -351,10 +351,10 @@ public abstract class LogicsModule {
     protected void setBaseLogicsModule(BaseLogicsModule baseLM) {
         this.baseLM = baseLM;
     }
-
+    
     public FunctionSet<Version> visible;
     public Integer order;
-    public boolean temporary;
+    
     private final Version version = new Version() {
         public boolean canSee(Version version) {
             assert !(version instanceof LastVersion);
@@ -367,10 +367,6 @@ public abstract class LogicsModule {
 
         public int compareTo(Version o) {
             return getOrder().compareTo(o.getOrder());
-        }
-
-        public boolean isTemporary() {
-            return temporary;
         }
     };
     public Version getVersion() {
@@ -386,9 +382,8 @@ public abstract class LogicsModule {
         Version version = getVersion();
         if (parent != null) {
             parent.add(group, version);
-        } else {
-            if (baseLM.privateGroup != null && !temporary)
-                baseLM.privateGroup.add(group, version);
+        } else if (baseLM.privateGroup != null) {
+            baseLM.privateGroup.add(group, version);
         }
         group.system = !toCreateContainer;
         addGroup(group);
@@ -1875,7 +1870,7 @@ public abstract class LogicsModule {
         Version version = getVersion();
         if (group != null) {
             group.add(property, version);
-        } else if (!property.isLocal() && !temporary) {
+        } else if (!property.isLocal()) {
             baseLM.privateGroup.add(property, version);
         }
     }

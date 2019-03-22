@@ -16,6 +16,4 @@ public abstract class Version implements Comparable<Version> { // в TreeMap в 
 
     public abstract Integer getOrder();
     public abstract boolean canSee(Version version);
-    
-    public abstract boolean isTemporary();
 }
