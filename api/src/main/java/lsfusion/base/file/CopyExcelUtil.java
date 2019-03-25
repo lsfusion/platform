@@ -1,6 +1,5 @@
 package lsfusion.base.file;
 
-import lsfusion.base.BaseUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;

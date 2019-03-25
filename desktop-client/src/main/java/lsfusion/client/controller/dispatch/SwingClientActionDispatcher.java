@@ -23,7 +23,6 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.EventBus;
-import lsfusion.interop.action.ICleanListener;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerator;
 import org.apache.commons.io.FileUtils;

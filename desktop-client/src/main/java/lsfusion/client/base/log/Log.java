@@ -135,7 +135,7 @@ public final class Log {
 
         provideErrorFeedback();
 
-        if (Main.frame == null) {
+        if (MainFrame.instance == null) {
             return;
         }
         
