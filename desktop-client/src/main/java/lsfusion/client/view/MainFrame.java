@@ -134,10 +134,10 @@ public abstract class MainFrame extends JFrame {
             frame.setVisible(true);
 
             frame.clearForms();
+            
+            instance = frame; // it's important to set this field before onDesktopClientStarted because it is used when getting eventbus for example
 
             frame.executeNavigatorAction("SystemEvents.onDesktopClientStarted[]", 0, null, null);
-
-            instance = frame; 
         } catch (Throwable e) {
             closeSplashScreen();
             logger.error(getString("client.error.application.initialization"), e);
