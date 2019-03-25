@@ -29,7 +29,6 @@ import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,13 +85,13 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     if (clientAction != null) {
                         GForm form = formProvider.createForm(clientAction.canonicalName, clientAction.formSID, clientAction.remoteForm, clientAction.immutableMethods, clientAction.firstChanges, sessionID);
                         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(clientAction.remoteForm.getRichDesignByteArray())));
-                        ClientFormChanges formChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.firstChanges)), clientForm);
+                        ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.firstChanges)), clientForm);
 
                         FormSessionObject formSessionObject = formProvider.getFormSessionObject(form.sessionID);
-                        formSessionObject.currentGridObjects = formChanges.gridObjects;
-                        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity(createJSONResponse(formChanges.gridObjects, formChanges.properties, null, form.sessionID), charset), null, null, null, null, null));
+                        formSessionObject.currentGridObjects = changes.gridObjects;
+                        sendResponse(request, response, createJSONResponse(changes, form.sessionID), charset, false, true);
                     } else {
-                        sendErrorResponse(response, "Invalid response");
+                        sendErrorResponse(request, response, "Invalid response");
                     }
                     break;
                 }
@@ -103,16 +102,22 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     FormSessionObject formSessionObject = formProvider.getFormSessionObject(sessionID);
                     if (currentRows != null && formSessionObject != null && formSessionObject.currentGridObjects != null) {
 
+                        Map<ClientGroupObject, ClientGroupObjectValue> changeObjects = new HashMap<>();
+                        Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> changeProperties = new HashMap<>();
+                        Set<ClientPropertyDraw> dropProperties = new HashSet<>();
+
                         //changeGroupObject
                         Iterator<String> currentRowKeys = currentRows.keys();
                         while (currentRowKeys.hasNext()) {
                             String currentRowKey = currentRowKeys.next();
                             int currentRowValue = currentRows.getInt(currentRowKey);
-                            changeGroupObject(formSessionObject, currentRowKey, currentRowValue);
+                            ClientFormChanges changes = changeGroupObject(formSessionObject, currentRowKey, currentRowValue);
+                            if (changes != null) {
+                                changeObjects.putAll(changes.objects);
+                                changeProperties.putAll(changes.properties);
+                                dropProperties.addAll(changes.dropProperties);
+                            }
                         }
-
-                        Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> changeProperties = new HashMap<>();
-                        Set<ClientPropertyDraw> dropProperties = new HashSet<>();
 
                         //changeProperty
                         if (data != null) {
@@ -128,6 +133,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                                         Object value = ((JSONObject) dataValue).get(propertyName);
                                         ClientFormChanges changes = changeProperty(formSessionObject, propertyName, value);
                                         if (changes != null) {
+                                            changeObjects.putAll(changes.objects);
                                             changeProperties.putAll(changes.properties);
                                             dropProperties.addAll(changes.dropProperties);
                                         }
@@ -135,6 +141,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                                 } else { //property without params
                                     ClientFormChanges changes = changeProperty(formSessionObject, dataKey, dataValue);
                                     if (changes != null) {
+                                        changeObjects.putAll(changes.objects);
                                         changeProperties.putAll(changes.properties);
                                         dropProperties.addAll(changes.dropProperties);
                                     }
@@ -142,10 +149,10 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                             }
                         }
 
-                        String jsonResponse = createJSONResponse(formSessionObject.currentGridObjects, changeProperties, dropProperties, sessionID);
-                        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity(jsonResponse, charset), null, null, null, null, null));
+                        String jsonResponse = createJSONResponse(formSessionObject.currentGridObjects, changeObjects, changeProperties, dropProperties, sessionID);
+                        sendResponse(request, response, jsonResponse, charset, false, true);
                     } else {
-                        sendErrorResponse(response, "Invalid change request");
+                        sendErrorResponse(request, response, "Invalid change request");
                     }
                     break;
                 }
@@ -154,14 +161,16 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     if (formSessionObject != null) {
                         formSessionObject.remoteForm.closeExternal();
                         formProvider.removeFormSessionObject(sessionID);
-                        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity("session closed", charset), null, null, null, null, null));
+                        JSONObject responseObject = new JSONObject();
+                        responseObject.put("message", "session closed");
+                        sendResponse(request, response, responseObject.toString(), charset, false, true);
                     } else {
-                        sendErrorResponse(response, "Invalid close request");
+                        sendErrorResponse(request, response, "Invalid close request");
                     }
                     break;
                 }
                 default:
-                    sendErrorResponse(response, "Unknown action: '" + action + "'");
+                    sendErrorResponse(request, response, "Unknown action: '" + action + "'");
             }
 
 
@@ -195,7 +204,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
         return sessionID.isEmpty() ? "external" : sessionID;
     }
 
-    private void changeGroupObject(FormSessionObject formSessionObject, String currentRowKey, int currentRowValue) throws RemoteException {
+    private ClientFormChanges changeGroupObject(FormSessionObject formSessionObject, String currentRowKey, int currentRowValue) throws IOException {
         ClientGroupObject group = null;
         for (ClientGroupObject groupObject : formSessionObject.clientForm.groupObjects) {
             if (currentRowKey.equals(groupObject.getSID())) {
@@ -214,15 +223,20 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
             ClientGroupObjectValue groupObjectValue = gridObjects != null && gridObjects.size() > currentRowValue ? gridObjects.get(currentRowValue) : null;
             if (groupObjectValue != null) {
-                formSessionObject.remoteForm.changeGroupObject(formSessionObject.requestIndex++, defaultLastReceivedRequestIndex, group.ID, groupObjectValue.serialize());
+                ServerResponse response = formSessionObject.remoteForm.changeGroupObject(formSessionObject.requestIndex++, defaultLastReceivedRequestIndex, group.ID, groupObjectValue.serialize());
+                ProcessFormChangesClientAction formChangesAction = getProcessFormChangesClientAction(response);
+                if(formChangesAction != null) {
+                    return new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(formChangesAction.formChanges)), formSessionObject.clientForm);
+                }
             }
         }
+        return null;
     }
 
-    private ClientFormChanges changeProperty(FormSessionObject formSessionObject, String propertyFormName, Object value) throws IOException {
+    private ClientFormChanges changeProperty(FormSessionObject formSessionObject, String integrationSID, Object value) throws IOException {
         ClientPropertyDraw property = null;
         for (ClientPropertyDraw propertyDraw : formSessionObject.clientForm.propertyDraws) {
-            if (propertyFormName.equals(propertyDraw.getPropertyFormName())) {
+            if (integrationSID.equals(propertyDraw.getIntegrationSID())) {
                 property = propertyDraw;
             }
         }
@@ -240,7 +254,10 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
         return null;
     }
 
-    private String createJSONResponse(Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects, Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties, Set<ClientPropertyDraw> dropProperties, String formSessionID) {
+    private String createJSONResponse(ClientFormChanges formChanges, String formSessionID) {
+        return createJSONResponse(formChanges.gridObjects, formChanges.objects, formChanges.properties, null, formSessionID);
+    }
+    private String createJSONResponse(Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects, Map<ClientGroupObject, ClientGroupObjectValue> objects, Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> changeProperties, Set<ClientPropertyDraw> dropProperties, String formSessionID) {
 
         JSONObject dataJSON = new JSONObject();
 
@@ -249,8 +266,8 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
             for (ClientGroupObjectValue clientGroupObjectValue : gridObject.getValue()) {
 
                 JSONObject propValues = new JSONObject();
-                for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> property : properties.entrySet()) {
-                    String propertySID = getPropertyFormName(property.getKey());
+                for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> property : changeProperties.entrySet()) {
+                    String propertySID = getIntegrationSID(property.getKey());
                     if (propertySID != null) {
                         for (ClientGroupObjectValue propertyGroupObjectValue : property.getValue().keySet()) {
                             if (equalClientGroupObjectValues(propertyGroupObjectValue, clientGroupObjectValue)) {
@@ -270,9 +287,9 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
             }
 
             //properties without params
-            for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> property : properties.entrySet()) {
+            for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> property : changeProperties.entrySet()) {
                 if (property.getKey().getGroupObject() == null) {
-                    String propertySID = getPropertyFormName(property.getKey());
+                    String propertySID = getIntegrationSID(property.getKey());
                     if(propertySID != null) {
                         Object propertyValue = property.getValue().get(ClientGroupObjectValue.EMPTY);
                         dataJSON.put(propertySID, propertyValue != null ? propertyValue : "null");
@@ -285,15 +302,28 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
         if(dropProperties != null) {
             JSONArray dropPropertiesArray = new JSONArray();
             for (ClientPropertyDraw dropProperty : dropProperties) {
-                dropPropertiesArray.put(dropProperty.getPropertyFormName());
+                dropPropertiesArray.put(dropProperty.getIntegrationSID());
             }
             if(!dropPropertiesArray.isEmpty()) {
                 dataJSON.put("drop", dropPropertiesArray);
             }
         }
 
+        JSONObject currentRowsJSON = new JSONObject();
+        for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> entry : objects.entrySet()) {
+            List<ClientGroupObjectValue> clientGroupObjectValues = gridObjects.get(entry.getKey());
+            if(clientGroupObjectValues != null) {
+                for(int i = 0; i < clientGroupObjectValues.size(); i++) {
+                    currentRowsJSON.put(entry.getKey().getSID(), clientGroupObjectValues.indexOf(entry.getValue()));
+                }
+            }
+        }
+
         JSONObject response = new JSONObject();
         response.put("sessionID", formSessionID);
+        if(!currentRowsJSON.isEmpty()) {
+            response.put("currentRows", currentRowsJSON);
+        }
         response.put("data", dataJSON);
 
         return response.toString();
@@ -341,7 +371,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
         return formClientAction;
     }
 
-    private String getPropertyFormName(ClientPropertyReader property) {
-        return property instanceof ClientPropertyDraw && !(((ClientPropertyDraw) property).baseType instanceof ClientActionClass) ? ((ClientPropertyDraw) property).getPropertyFormName() : null;
+    private String getIntegrationSID(ClientPropertyReader property) {
+        return property instanceof ClientPropertyDraw && !(((ClientPropertyDraw) property).baseType instanceof ClientActionClass) ? ((ClientPropertyDraw) property).getIntegrationSID() : null;
     }
 }

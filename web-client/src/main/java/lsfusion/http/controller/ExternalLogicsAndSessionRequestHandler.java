@@ -73,7 +73,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
                     logicsHost, sessionObject.connection.port, sessionObject.connection.exportName);
 
             if (responseHttpEntity.response != null) {
-                sendResponse(response, responseHttpEntity);
+                sendResponse(request, response, responseHttpEntity, false, false);
             } else {
                 sendOKResponse(request, response);
             }
