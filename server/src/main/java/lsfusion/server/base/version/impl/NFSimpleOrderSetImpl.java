@@ -8,10 +8,7 @@ import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
 

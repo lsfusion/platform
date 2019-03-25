@@ -39,9 +39,11 @@ import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.property.ObjectValueProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
@@ -50,6 +52,7 @@ import lsfusion.server.logics.navigator.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
@@ -765,6 +768,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             makeActionPublic(result, name, cls.getResolveSet());
         }
         return result;
+    }
+
+    @IdentityStrongLazy
+    public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
+        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
+        return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
 
     @IdentityStrongLazy

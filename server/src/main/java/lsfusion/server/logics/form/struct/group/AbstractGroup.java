@@ -88,7 +88,7 @@ public class AbstractGroup extends AbstractNode {
         for (AbstractNode child : getChildrenListIt()) {
             count++;
             if (child instanceof ActionOrProperty) {
-                mResult.exclAdd((ActionOrProperty) child, count);
+                mResult.exclAdd((ActionOrProperty) child, count); // can be not exclusive when the property is cached and then added several times to private group (see the whole commit for example)
             }
         }
         return mResult.immutable();
