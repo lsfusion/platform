@@ -1924,10 +1924,8 @@ public abstract class LogicsModule {
         return baseLM.addClassProp(lp);
     }
 
-    @IdentityStrongLazy // для ID
     public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
-        PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
-        return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
+        return baseLM.addGroupObjectProp(groupObject, prop);
     }
     
     protected LA addOSAProp(ObjectEntity object, UpdateType type, Object... params) {
