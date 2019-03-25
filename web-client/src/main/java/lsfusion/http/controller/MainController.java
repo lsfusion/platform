@@ -1,12 +1,14 @@
 package lsfusion.http.controller;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -30,27 +32,37 @@ public class MainController {
         if (auth != null && auth.isAuthenticated() && !(auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous())) {
             return "redirect:/main"; // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
         }
-        
-        ServerSettings serverSettings = getServerSettings(request);
+
+        Result<String> checkVersionError = new Result<>();
+        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
-
-        String error = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion()) : null;
-        if (error != null) {
-            model.addAttribute("error", error);
+        if (checkVersionError.result != null) {
+            model.addAttribute("error", checkVersionError.result);
             return "restricted";
         } else {
             return "login";
         }
     }
 
+    private ServerSettings getAndCheckServerSettings(HttpServletRequest request, Result<String> rCheck, boolean noCache) {
+        ServerSettings serverSettings = getServerSettings(request, noCache);
+        String checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
+        if(checkVersionError != null) {
+            if(!noCache) // try without cache
+                return getAndCheckServerSettings(request, rCheck, true);
+            rCheck.set(checkVersionError);
+        }
+        return serverSettings;
+    }
+
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getServerSettings(request);
+        ServerSettings serverSettings = getServerSettings(request, false);
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
@@ -59,8 +71,8 @@ public class MainController {
         return "main";
     }
 
-    private ServerSettings getServerSettings(HttpServletRequest request) {
-        return logicsProvider.getServerSettings(request);
+    private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
+        return logicsProvider.getServerSettings(request, noCache);
     }
 
     private String getTitle(ServerSettings serverSettings) {

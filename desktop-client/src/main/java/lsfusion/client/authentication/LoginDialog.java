@@ -246,11 +246,10 @@ public class LoginDialog extends JDialog {
 
     public void updateServerSettings() {
 
-        boolean hasAnonymousUI = false;
-        String checkVersionError = null;
-
         LogicsConnection serverInfo = getServerInfo();
-        ServerSettings serverSettings = isValid(serverInfo) ? LogicsProvider.instance.getServerSettings(serverInfo, MainController.getSessionInfo(), null) : null;
+
+        Result<String> checkVersionError = new Result<>();
+        ServerSettings serverSettings = isValid(serverInfo) ? getAndCheckServerSettings(serverInfo, checkVersionError, false) : null;
 
         setTitle(MainController.getMainTitle(serverSettings));
 
@@ -258,16 +257,25 @@ public class LoginDialog extends JDialog {
 
         imageLabel.setIcon(MainController.getLogo(serverSettings));
 
-        checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
-
-        hasAnonymousUI = serverSettings != null && serverSettings.anonymousUI;
+        boolean hasAnonymousUI = serverSettings != null && serverSettings.anonymousUI;
 
         useAnonymousUICheckBox.setVisible(hasAnonymousUI);
         updateAnonymousUIActivity();
 
-        setWarningMsg(checkVersionError);
-        this.checkVersionError = checkVersionError;
+        setWarningMsg(checkVersionError.result);
+        this.checkVersionError = checkVersionError.result;
         pack();
+    }
+
+    private ServerSettings getAndCheckServerSettings(LogicsConnection serverInfo, Result<String> rCheck, boolean noCache) {
+        ServerSettings serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, MainController.getSessionInfo(), null, noCache);
+        String checkVersionError = serverSettings != null ? BaseUtils.checkClientVersion(serverSettings.platformVersion, serverSettings.apiVersion, BaseUtils.getPlatformVersion(),  BaseUtils.getApiVersion()) : null;
+        if(checkVersionError != null) {
+            if(!noCache) // try without cache
+                return getAndCheckServerSettings(serverInfo, rCheck, true);
+            rCheck.set(checkVersionError);
+        }
+        return serverSettings;
     }
 
     private static void syncUsers(RemoteLogicsInterface remoteLogics, Result<List<UserInfo>> userInfos) {
