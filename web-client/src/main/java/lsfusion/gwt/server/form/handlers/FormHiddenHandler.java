@@ -7,6 +7,8 @@ import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.http.provider.SessionInvalidatedException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
+import java.rmi.RemoteException;
+
 public class FormHiddenHandler extends FormActionHandler<FormHidden, VoidResult> {
     public FormHiddenHandler(MainDispatchServlet servlet) {
         super(servlet);
