@@ -3,6 +3,7 @@ package lsfusion.gwt.server;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.controller.remote.action.CreateNavigatorAction;
 import lsfusion.gwt.server.logics.LogicsActionHandler;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -25,7 +26,7 @@ public class CreateNavigatorHandler extends LogicsActionHandler<CreateNavigatorA
        });
     }
 
-    protected String getActionDetails(CreateNavigatorAction action) {
+    protected String getActionDetails(CreateNavigatorAction action) throws SessionInvalidatedException {
         return super.getActionDetails(action) + " TAB IN " + servlet.getSessionInfo();
     }
 

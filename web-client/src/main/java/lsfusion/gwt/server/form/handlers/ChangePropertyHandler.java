@@ -6,6 +6,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
@@ -22,7 +23,7 @@ public class ChangePropertyHandler extends FormServerResponseActionHandler<Chang
     }
 
     @Override
-    public ServerResponseResult executeEx(ChangeProperty action, ExecutionContext context) {
+    public ServerResponseResult executeEx(ChangeProperty action, ExecutionContext context) throws SessionInvalidatedException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         Object value = gwtConverter.convertOrCast(action.value);
         byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
