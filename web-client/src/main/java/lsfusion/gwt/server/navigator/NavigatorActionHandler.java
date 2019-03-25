@@ -4,6 +4,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.CloseNavigator;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorAction;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.SimpleActionHandlerEx;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorSessionObject;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
@@ -21,32 +22,32 @@ public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R ext
     private NavigatorProvider getNavigatorProvider() {
         return servlet.getNavigatorProvider();
     }
-    protected NavigatorSessionObject getNavigatorSessionObject(String sessionID) {
+    protected NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException {
         return getNavigatorProvider().getNavigatorSessionObject(sessionID);
     }
     protected void removeNavigatorSessionObject(String sessionID) throws RemoteException {
         servlet.getFormProvider().removeFormSessionObjects(sessionID);
         getNavigatorProvider().removeNavigatorSessionObject(sessionID);
     }
-    protected String getLogicsName(String sessionID) {
+    protected String getLogicsName(String sessionID) throws SessionInvalidatedException {
         return getNavigatorProvider().getLogicsName(sessionID);
     }
 
     // shortcut's
-    protected NavigatorSessionObject getNavigatorSessionObject(A action) {
+    protected NavigatorSessionObject getNavigatorSessionObject(A action) throws SessionInvalidatedException {
         return getNavigatorSessionObject(action.sessionID);
     }
-    protected String getLogicsName(A action) {
+    protected String getLogicsName(A action) throws SessionInvalidatedException {
         return getLogicsName(action.sessionID);
     }
-    protected RemoteNavigatorInterface getRemoteNavigator(A action) {
+    protected RemoteNavigatorInterface getRemoteNavigator(A action) throws SessionInvalidatedException {
         return getNavigatorSessionObject(action).remoteNavigator;
     }
     protected ClientCallBackInterface getClientCallback(A action) throws RemoteException {
         return getNavigatorSessionObject(action).getRemoteCallback();
     }
 
-    protected String getActionDetails(A action) {
+    protected String getActionDetails(A action) throws SessionInvalidatedException {
         String message = super.getActionDetails(action);
 
         if (action instanceof CloseNavigator) {

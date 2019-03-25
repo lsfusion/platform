@@ -5,7 +5,7 @@ import java.io.IOException;
 public enum GOrder {
     REPLACE, ADD, REMOVE, DIR;
 
-    public byte serialize() throws IOException {
+    public byte serialize() {
         switch(this) {
             case REPLACE:
                 return 0;

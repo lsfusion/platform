@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPr
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -95,8 +96,11 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         return gGroupObjectUPList;
     }
 
-    public FormSessionObject getFormSessionObject(String formSessionID) {
-        return currentForms.get(formSessionID);
+    public FormSessionObject getFormSessionObject(String formSessionID) throws SessionInvalidatedException {
+        FormSessionObject formSessionObject = currentForms.get(formSessionID);
+        if(formSessionObject == null)
+            throw new SessionInvalidatedException();
+        return formSessionObject;
     }
 
     private final Map<String, FormSessionObject> currentForms = new ConcurrentHashMap<>();
@@ -111,14 +115,15 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         return formSessionID;
     }
 
-    public void removeFormSessionObject(String formSessionID) {
-        FormSessionObject<?> sessionObject = currentForms.remove(formSessionID);
+    public void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
+        FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID); 
+        currentForms.remove(formSessionID);
         for(File file : sessionObject.savedTempFiles)
             FileUtils.deleteFile(file);        
     }
 
     @Override
-    public void removeFormSessionObjects(String sessionID) {
+    public void removeFormSessionObjects(String sessionID) throws SessionInvalidatedException {
         Collection<String> formSessionIDs = new HashSet<>(currentForms.keySet());
         for (String formSessionID : formSessionIDs) {
             if (currentForms.get(formSessionID).sessionID.equals(sessionID)) {

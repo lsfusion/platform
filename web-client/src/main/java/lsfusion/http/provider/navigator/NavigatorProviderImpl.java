@@ -7,6 +7,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.navigator.NavigatorInfo;
@@ -97,18 +98,22 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
-    public NavigatorSessionObject getNavigatorSessionObject(String sessionID) {
-        return currentLogicsAndNavigators.get(sessionID);
+    public NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException {
+        NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionID);
+        if(navigatorSessionObject == null)
+            throw new SessionInvalidatedException();
+        return navigatorSessionObject;
     }
 
     @Override
     public void removeNavigatorSessionObject(String sessionID) throws RemoteException {
-        NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.remove(sessionID);
+        NavigatorSessionObject navigatorSessionObject = getNavigatorSessionObject(sessionID);
+        currentLogicsAndNavigators.remove(sessionID);
         navigatorSessionObject.remoteNavigator.close();
     }
 
     @Override
-    public String getLogicsName(String sessionID) {
+    public String getLogicsName(String sessionID) throws SessionInvalidatedException {
         return getNavigatorSessionObject(sessionID).logicsName;
     }
 

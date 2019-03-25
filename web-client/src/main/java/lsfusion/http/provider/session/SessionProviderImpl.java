@@ -2,6 +2,7 @@ package lsfusion.http.provider.session;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -36,13 +37,17 @@ public class SessionProviderImpl implements SessionProvider, DisposableBean {
     }
 
     @Override
-    public SessionSessionObject getSessionSessionObject(String sessionID) {
-        return currentSessions.get(sessionID);
+    public SessionSessionObject getSessionSessionObject(String sessionID) throws SessionInvalidatedException {
+        SessionSessionObject sessionSessionObject = currentSessions.get(sessionID);
+        if(sessionSessionObject == null)
+            throw new SessionInvalidatedException();
+        return sessionSessionObject;
     }
 
     @Override
     public void removeSessionSessionObject(String sessionID) throws RemoteException {
-        SessionSessionObject sessionSessionObject = currentSessions.remove(sessionID);
+        SessionSessionObject sessionSessionObject = getSessionSessionObject(sessionID);
+        currentSessions.remove(sessionID);
         sessionSessionObject.remoteSession.close();
     }
 

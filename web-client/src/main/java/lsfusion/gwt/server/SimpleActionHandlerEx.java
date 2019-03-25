@@ -3,6 +3,7 @@ package lsfusion.gwt.server;
 import lsfusion.base.ServerUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.base.exception.WrappedRemoteDispatchException;
+import lsfusion.http.provider.SessionInvalidatedException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.server.SimpleActionHandler;
 import net.customware.gwt.dispatch.shared.Action;
@@ -22,26 +23,25 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
 
     @Override
     public final R execute(A action, ExecutionContext context) throws DispatchException {
-        String actionDetails = invocationLogger.isInfoEnabled() ? getActionDetails(action) : null;
-        if (actionDetails != null)
-            invocationLogger.info("Executing action" + actionDetails);
-
-        R result = null;
         try {
-            result = executeEx(action, context);
+            String actionDetails = invocationLogger.isInfoEnabled() ? getActionDetails(action) : null;
+            if (actionDetails != null)
+                invocationLogger.info("Executing action" + actionDetails);
+
+            R result = executeEx(action, context);
+
+            if(actionDetails != null)
+                invocationLogger.info("Executed action" + actionDetails);
+
+            return result;
         } catch (RemoteException e) {
             throw new WrappedRemoteDispatchException(e); // wrap into dispatch exception to unwrap it in MainDispatchServlet
         }
-
-        if(actionDetails != null)
-            invocationLogger.info("Executed action" + actionDetails);
-
-        return result;
     }
 
     public abstract R executeEx(A action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException; // last exception throws only LogicsActionHandler
 
-    protected String getActionDetails(A action) {
+    protected String getActionDetails(A action) throws SessionInvalidatedException {
         return " by " + ServerUtils.getAuthorizedUserName() + ": " + action.getClass().getSimpleName();
     }
 

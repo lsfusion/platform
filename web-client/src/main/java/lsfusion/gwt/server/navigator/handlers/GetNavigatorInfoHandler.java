@@ -15,6 +15,7 @@ import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,13 +26,14 @@ public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigator
     }
 
     @Override
-    public GetNavigatorInfoResult executeEx(GetNavigatorInfo action, ExecutionContext context) {
+    public GetNavigatorInfoResult executeEx(GetNavigatorInfo action, ExecutionContext context) throws RemoteException {
         ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(getLogicsName(action));
 
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
         NavigatorData navigatorData = null;
+        byte[] navigatorTree = remoteNavigator.getNavigatorTree();
         try {
-            navigatorData = NavigatorData.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
+            navigatorData = NavigatorData.deserializeListClientNavigatorElementWithChildren(navigatorTree);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
