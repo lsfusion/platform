@@ -98,6 +98,10 @@ public class PropertyDrawView extends ComponentView {
         return entity.getSID();
     }
 
+    public String getIntegrationSID() {
+        return entity.getIntegrationSID();
+    }
+
     public Type getType() {
         return entity.getType();
     }
@@ -297,6 +301,7 @@ public class PropertyDrawView extends ComponentView {
         pool.writeString(outStream, getSID());
         pool.writeString(outStream, debugBinding.getCanonicalName());
         pool.writeString(outStream, getPropertyFormName());
+        pool.writeString(outStream, getIntegrationSID());
         pool.writeString(outStream, toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.view.entity)));
 
