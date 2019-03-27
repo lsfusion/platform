@@ -97,7 +97,8 @@ public interface ClientMessages extends Messages {
     String rmiConnectionLostAuth();
     String rmiConnectionLostFatal();
     String rmiConnectionLostNonfatal();
-    String rmiConnectionLostWaitReconnect(int attempt);
+    String rmiConnectionLostMessage(int attempt);
+    String rmiConnectionLostMessageUnavailable(int attempt);
     String rmiConnectionLostExit();
     String rmiConnectionLostRelogin();
     String rmiConnectionLostReconnect();

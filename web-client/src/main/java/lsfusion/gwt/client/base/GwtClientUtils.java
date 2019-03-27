@@ -121,7 +121,7 @@ public class GwtClientUtils {
     public static void setAttemptCount(int attemptCount) {
         RootPanel p = RootPanel.get("loadingMsg");
         if (p != null) {
-            p.getElement().setInnerHTML(messages.rmiConnectionLostWaitReconnect(attemptCount));
+            p.getElement().setInnerHTML(attemptCount == 1 ? messages.rmiConnectionLostMessage(attemptCount) : messages.rmiConnectionLostMessageUnavailable(attemptCount));
         }
     }
 

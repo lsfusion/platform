@@ -136,7 +136,7 @@ public final class ReconnectWorker<T> extends SwingWorker<T, Integer> {
         }
 
         public void setAttemptNumber(int n) {
-            lbMessage.setText(getString("connect.message", n));
+            lbMessage.setText(n == 0 ? getString("connect.message", n + 1) : getString("connect.message.unavailable", n + 1));
         }
 
         @Override
