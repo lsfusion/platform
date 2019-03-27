@@ -106,6 +106,12 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
+    public String getOrCreateNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, String sessionID) throws RemoteException {
+        NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionID);
+        return navigatorSessionObject != null ? sessionID : createNavigator(sessionObject, request);
+    }
+
+    @Override
     public void removeNavigatorSessionObject(String sessionID) throws RemoteException {
         NavigatorSessionObject navigatorSessionObject = getNavigatorSessionObject(sessionID);
         currentLogicsAndNavigators.remove(sessionID);

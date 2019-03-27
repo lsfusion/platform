@@ -74,11 +74,8 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     String name = jsonObject.optString("name");
                     String script = "run() { SHOW " + name + "; }";
 
+                    sessionID = logicsAndNavigatorProvider.getOrCreateNavigatorSessionObject(sessionObject, request, sessionID);
                     NavigatorSessionObject navigatorSessionObject = logicsAndNavigatorProvider.getNavigatorSessionObject(sessionID);
-                    if (navigatorSessionObject == null) {
-                        sessionID = logicsAndNavigatorProvider.createNavigator(sessionObject, request);
-                        navigatorSessionObject = logicsAndNavigatorProvider.getNavigatorSessionObject(sessionID);
-                    }
 
                     ServerResponse serverResponse = navigatorSessionObject.remoteNavigator.executeNavigatorAction(script);
                     FormClientAction clientAction = getFormClientAction(serverResponse);
@@ -96,22 +93,22 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     break;
                 }
                 case "change": {
-                    JSONObject currentRows = jsonObject.optJSONObject("currentRows");
+                    JSONObject current = jsonObject.optJSONObject("current");
                     JSONObject data = jsonObject.optJSONObject("data");
 
                     FormSessionObject formSessionObject = formProvider.getFormSessionObject(sessionID);
-                    if (currentRows != null && formSessionObject != null && formSessionObject.currentGridObjects != null) {
+                    if (current != null && formSessionObject != null && formSessionObject.currentGridObjects != null) {
 
                         Map<ClientGroupObject, ClientGroupObjectValue> changeObjects = new HashMap<>();
                         Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> changeProperties = new HashMap<>();
                         Set<ClientPropertyDraw> dropProperties = new HashSet<>();
 
                         //changeGroupObject
-                        Iterator<String> currentRowKeys = currentRows.keys();
-                        while (currentRowKeys.hasNext()) {
-                            String currentRowKey = currentRowKeys.next();
-                            int currentRowValue = currentRows.getInt(currentRowKey);
-                            ClientFormChanges changes = changeGroupObject(formSessionObject, currentRowKey, currentRowValue);
+                        Iterator<String> currentKeys = current.keys();
+                        while (currentKeys.hasNext()) {
+                            String currentKey = currentKeys.next();
+                            int currentValue = current.getInt(currentKey);
+                            ClientFormChanges changes = changeGroupObject(formSessionObject, currentKey, currentValue);
                             if (changes != null) {
                                 changeObjects.putAll(changes.objects);
                                 changeProperties.putAll(changes.properties);
@@ -255,13 +252,15 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
     }
 
     private String createJSONResponse(ClientFormChanges formChanges, String formSessionID) {
-        return createJSONResponse(formChanges.gridObjects, formChanges.objects, formChanges.properties, null, formSessionID);
+        return createJSONResponse(formChanges.gridObjects, formChanges.objects, formChanges.properties, formChanges.dropProperties, formSessionID);
     }
-    private String createJSONResponse(Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects, Map<ClientGroupObject, ClientGroupObjectValue> objects, Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> changeProperties, Set<ClientPropertyDraw> dropProperties, String formSessionID) {
+    private String createJSONResponse(Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects, Map<ClientGroupObject, ClientGroupObjectValue> objects,
+                                      Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> changeProperties, Set<ClientPropertyDraw> dropProperties, String formSessionID) {
 
         JSONObject dataJSON = new JSONObject();
 
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> gridObject : gridObjects.entrySet()) {
+            ClientGroupObject clientGroupObject = gridObject.getKey();
             JSONArray gridObjectValues = new JSONArray();
             for (ClientGroupObjectValue clientGroupObjectValue : gridObject.getValue()) {
 
@@ -270,20 +269,20 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     String propertySID = getIntegrationSID(property.getKey());
                     if (propertySID != null) {
                         for (ClientGroupObjectValue propertyGroupObjectValue : property.getValue().keySet()) {
-                            if (equalClientGroupObjectValues(propertyGroupObjectValue, clientGroupObjectValue)) {
+                            if (equalClientGroupObjectValues(propertyGroupObjectValue, clientGroupObjectValue)
+                                    || (clientGroupObject.equals(property.getKey().getGroupObject()))) {
                                 Object propertyValue = property.getValue().get(propertyGroupObjectValue);
                                 propValues.put(propertySID, propertyValue != null ? propertyValue : "null");
                             }
                         }
                     }
                 }
-                if(!propValues.isEmpty()) {
-                    gridObjectValues.put(propValues);
-                }
+                propValues.put("ID", getClientGroupObjectValueID(clientGroupObjectValue));
+                gridObjectValues.put(propValues);
 
             }
             if(!gridObjectValues.isEmpty()) {
-                dataJSON.put(gridObject.getKey().getSID(), gridObjectValues);
+                dataJSON.put(clientGroupObject.getSID(), gridObjectValues);
             }
 
             //properties without params
@@ -299,34 +298,40 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
         }
 
         //drop properties
-        if(dropProperties != null) {
-            JSONArray dropPropertiesArray = new JSONArray();
-            for (ClientPropertyDraw dropProperty : dropProperties) {
-                dropPropertiesArray.put(dropProperty.getIntegrationSID());
-            }
-            if(!dropPropertiesArray.isEmpty()) {
-                dataJSON.put("drop", dropPropertiesArray);
-            }
+        JSONArray dropPropertiesArray = new JSONArray();
+        for (ClientPropertyDraw dropProperty : dropProperties) {
+            dropPropertiesArray.put(dropProperty.getIntegrationSID());
+        }
+        if(!dropPropertiesArray.isEmpty()) {
+            dataJSON.put("drop", dropPropertiesArray);
         }
 
-        JSONObject currentRowsJSON = new JSONObject();
+        JSONObject currentJSON = new JSONObject();
         for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> entry : objects.entrySet()) {
             List<ClientGroupObjectValue> clientGroupObjectValues = gridObjects.get(entry.getKey());
             if(clientGroupObjectValues != null) {
                 for(int i = 0; i < clientGroupObjectValues.size(); i++) {
-                    currentRowsJSON.put(entry.getKey().getSID(), clientGroupObjectValues.indexOf(entry.getValue()));
+                    currentJSON.put(entry.getKey().getSID(), clientGroupObjectValues.indexOf(entry.getValue()));
                 }
             }
         }
 
         JSONObject response = new JSONObject();
         response.put("sessionID", formSessionID);
-        if(!currentRowsJSON.isEmpty()) {
-            response.put("currentRows", currentRowsJSON);
+        if(!currentJSON.isEmpty()) {
+            response.put("current", currentJSON);
         }
         response.put("data", dataJSON);
 
         return response.toString();
+    }
+
+    private JSONObject getClientGroupObjectValueID(ClientGroupObjectValue clientGroupObjectValue) {
+        JSONObject result = new JSONObject();
+        for(Map.Entry<ClientObject, Object> entry : clientGroupObjectValue.entrySet()) {
+            result.put(entry.getKey().groupObject.getSID(), entry.getValue());
+        }
+        return result;
     }
 
     private boolean equalClientGroupObjectValues(ClientGroupObjectValue map1, ClientGroupObjectValue map2) {
