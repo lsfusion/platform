@@ -63,7 +63,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        we don't need client locale here, because it was already updated when authenticating
 //        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
 //        if(clientLocale == null)
-//            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here
+//            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here         
 //        String language = clientLocale.getLanguage();
 //        String country = clientLocale.getCountry();
 
@@ -103,6 +103,12 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         if(navigatorSessionObject == null)
             throw new SessionInvalidatedException();
         return navigatorSessionObject;
+    }
+
+    @Override
+    public String getOrCreateNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, String sessionID) throws RemoteException {
+        NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionID);
+        return navigatorSessionObject != null ? sessionID : createNavigator(sessionObject, request);
     }
 
     @Override

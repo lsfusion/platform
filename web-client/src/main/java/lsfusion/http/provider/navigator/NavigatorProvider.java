@@ -11,6 +11,7 @@ public interface NavigatorProvider {
 
     String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
     NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException;
+    String getOrCreateNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, String sessionID) throws RemoteException;
     void removeNavigatorSessionObject(String sessionID) throws RemoteException;
 
     String getLogicsName(String sessionID) throws SessionInvalidatedException;
