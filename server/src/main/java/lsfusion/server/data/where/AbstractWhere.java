@@ -262,51 +262,46 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         ImCol<GroupJoinsWhere> whereJoins = whereJoinsExcl.first;
         boolean exclusive = whereJoinsExcl.second;
 
-        if(whereJoins.size()==1) // нет смысла упаковывать если один whereJoins
-            return whereJoinsExcl;
-        else {
-            MCol<GroupJoinsWhere> mResult = ListFact.mColFilter(whereJoins);
-            MList<Where> mRecPacks = ListFact.mListMax(whereJoins.size());
-            long currentComplexity = 0;
-            if(!exclusive) {
-                currentComplexity = hasUnionExpr() ? getComplexity(false) : Long.MAX_VALUE;
-                mRecPacks.add(Where.FALSE);
-            }
-            for(GroupJoinsWhere innerJoin : whereJoins) {
-                if(innerJoin.isComplex())
+        MCol<GroupJoinsWhere> mResult = ListFact.mColFilter(whereJoins);
+        MList<Where> mRecPacks = ListFact.mListMax(whereJoins.size());
+        long currentComplexity = 0;
+        if(!exclusive) {
+            currentComplexity = hasUnionExpr() ? getComplexity(false) : Long.MAX_VALUE;
+            mRecPacks.add(Where.FALSE);
+        }
+        for(GroupJoinsWhere innerJoin : whereJoins) {
+            if(innerJoin.isComplex())
+                mResult.add(innerJoin);
+            else { // не будем запускать рекурсию
+                Where fullWhere = innerJoin.getFullWhere();
+                Where fullPackWhere = fullWhere.pack();
+                if(BaseUtils.hashEquals(fullWhere, fullPackWhere))
                     mResult.add(innerJoin);
-                else { // не будем запускать рекурсию
-                    Where fullWhere = innerJoin.getFullWhere();
-                    Where fullPackWhere = fullWhere.pack();
-                    if(BaseUtils.hashEquals(fullWhere, fullPackWhere))
-                        mResult.add(innerJoin);
+                else {
+                    if(exclusive)
+                        mRecPacks.add(fullPackWhere); // если не exclusive
                     else {
-                        if(exclusive)
-                            mRecPacks.add(fullPackWhere); // если не exclusive
-                        else {
-                            int last = mRecPacks.size() - 1;
-                            Where merged = mRecPacks.get(last).or(fullPackWhere);
-                            if(merged.getComplexity(false) < currentComplexity) // предотвращение бесконечной рекурсии, через getCommonWhere может залазить внутрь UnionExpr потом их опять собирать и проверка на hashEquals не сработает
-                                mRecPacks.set(last, merged);
-                            else
-                                mRecPacks.add(fullPackWhere);
-                        }
+                        int last = mRecPacks.size() - 1;
+                        Where merged = mRecPacks.get(last).or(fullPackWhere);
+                        if(merged.getComplexity(false) < currentComplexity) // предотвращение бесконечной рекурсии, через getCommonWhere может залазить внутрь UnionExpr потом их опять собирать и проверка на hashEquals не сработает
+                            mRecPacks.set(last, merged);
+                        else
+                            mRecPacks.add(fullPackWhere);
                     }
                 }
             }
-            ImCol<GroupJoinsWhere> result = ListFact.imColFilter(mResult, whereJoins);
-            ImList<Where> recPacks = mRecPacks.immutableList();
-
-            if(result.size()==whereJoins.size())
-                return whereJoinsExcl;
-
-            for(Where recPack : recPacks) {
-                Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = recPack.getPackWhereJoins(exclusive, keepStat, orderTop);
-                exclusive = exclusive && recWhereJoins.second;
-                result = KeyEquals.merge(result, recWhereJoins.first, orderTop);
-            }
-            return new Pair<>(result, exclusive);
         }
+        ImCol<GroupJoinsWhere> result = ListFact.imColFilter(mResult, whereJoins);
+        if(result.size()==whereJoins.size()) // optimization
+            return whereJoinsExcl;
+
+        ImList<Where> recPacks = mRecPacks.immutableList();
+        for(Where recPack : recPacks) {
+            Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = recPack.getPackWhereJoins(exclusive, keepStat, orderTop);
+            exclusive = exclusive && recWhereJoins.second;
+            result = KeyEquals.merge(result, recWhereJoins.first, orderTop);
+        }
+        return new Pair<>(result, exclusive);
     }
 
     // 2-й параметр чисто для оптимизации пока
