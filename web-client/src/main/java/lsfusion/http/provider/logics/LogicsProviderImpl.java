@@ -92,8 +92,8 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
                                    request != null ? request.getParameter("exportName") : null);
     }
 
-    public ServerSettings getServerSettings(final HttpServletRequest request) {
-        return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath());
+    public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
+        return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
     }
 
     public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {

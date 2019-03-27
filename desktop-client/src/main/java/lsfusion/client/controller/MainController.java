@@ -421,7 +421,7 @@ public class MainController {
         MainController.overrideRMIHostName(serverInfo.host);
         MainController.serverInfo = serverInfo;
 
-        serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, getSessionInfo(), null);
+        serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, getSessionInfo(), null, false);
     }
 
     public static AuthenticationToken authToken;

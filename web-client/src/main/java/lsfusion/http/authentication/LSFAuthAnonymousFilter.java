@@ -36,7 +36,7 @@ public class LSFAuthAnonymousFilter extends OncePerRequestFilter {
 
         // if there is no authentication and server supports anonymous UI, give "anonymous authentication"
         ServerSettings serverSettings;
-        if ((existingAuth == null || !existingAuth.isAuthenticated() || existingAuth instanceof AnonymousAuthenticationToken) && (serverSettings = logicsProvider.getServerSettings(request)) != null && serverSettings.anonymousUI) {
+        if ((existingAuth == null || !existingAuth.isAuthenticated() || existingAuth instanceof AnonymousAuthenticationToken) && (serverSettings = logicsProvider.getServerSettings(request, false)) != null && serverSettings.anonymousUI) {
             LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", AuthenticationToken.ANONYMOUS, Locale.getDefault());
             Authentication authResult = authenticationManager.authenticate(auth);
 

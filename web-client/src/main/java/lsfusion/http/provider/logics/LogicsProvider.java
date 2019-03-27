@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
 
 public interface LogicsProvider {
 
-    ServerSettings getServerSettings(HttpServletRequest request);
+    ServerSettings getServerSettings(HttpServletRequest request, boolean noCache);
 
     <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException;
     <R> R runRequest(HttpServletRequest request, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException;

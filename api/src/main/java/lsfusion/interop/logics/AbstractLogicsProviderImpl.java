@@ -67,11 +67,11 @@ public abstract class AbstractLogicsProviderImpl {
         }
     }
 
-    public ServerSettings getServerSettings(LogicsConnection connection, final SessionInfo sessionInfo, final String contextPath) {
+    public ServerSettings getServerSettings(LogicsConnection connection, final SessionInfo sessionInfo, final String contextPath, final boolean noCache) {
         try {
             return runRequest(connection, new LogicsRunnable<ServerSettings>() {
                 public ServerSettings run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return sessionObject.getServerSettings(sessionInfo, contextPath);
+                    return sessionObject.getServerSettings(sessionInfo, contextPath, noCache);
                 }
             });
         } catch (Throwable t) {
