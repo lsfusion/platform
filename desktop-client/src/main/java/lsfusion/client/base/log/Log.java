@@ -138,7 +138,7 @@ public final class Log {
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
         JLabel titlePanel = new JLabel(toHtml(message));
-        double screenWidth = MainFrame.instance.getRootPane().getWidth() * 0.9;
+        double screenWidth = (MainFrame.instance != null ? MainFrame.instance.getRootPane().getWidth() : Toolkit.getDefaultToolkit().getScreenSize().width)  * 0.9;
         double titleWidth = titlePanel.getPreferredSize().getWidth();
         double titleHeight = titlePanel.getPreferredSize().getHeight();
         titlePanel.setPreferredSize(new Dimension((int) Math.min(screenWidth, titleWidth), (int) (titleHeight * Math.ceil(titleWidth / screenWidth))));
@@ -201,7 +201,7 @@ public final class Log {
                                      opt,
                 okOption);
 
-        final JDialog dialog = new JDialog(MainFrame.instance, MainFrame.instance.getTitle(), Dialog.ModalityType.APPLICATION_MODAL);
+        final JDialog dialog = new JDialog(MainFrame.instance, MainFrame.instance  != null ? MainFrame.instance.getTitle() : "lsfusion", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(optionPane);
         dialog.setMinimumSize(dialog.getPreferredSize());
         dialog.pack();

@@ -85,8 +85,8 @@ public class LoginDialog extends JDialog {
         setLocationRelativeTo(null);
         loginBox.requestFocusInWindow();
         getRootPane().setDefaultButton(buttonOK);
-        
-        setWarningMsg(warningMsg);
+
+        setWarningMsg(checkVersionError != null ? checkVersionError : warningMsg);
     }
 
     private void initServerSettings(LogicsConnection serverInfo) {
@@ -104,7 +104,7 @@ public class LoginDialog extends JDialog {
             ((MutableComboBoxModel<String>) serverDBComboBox.getModel()).addElement(db);
         serverDBComboBox.setSelectedItem(db);
 
-        updateServerSettings();
+        updateServerSettings(false);
         initServerSettingsListeners();
     }
 
@@ -229,7 +229,7 @@ public class LoginDialog extends JDialog {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if(e.getStateChange() == ItemEvent.DESELECTED) {
-                    updateServerSettings();
+                    updateServerSettings(true);
                 }
             }
         });
@@ -238,14 +238,13 @@ public class LoginDialog extends JDialog {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if(e.getStateChange() == ItemEvent.DESELECTED) {
-                    updateServerSettings();
+                    updateServerSettings(true);
                 }
             }
         });
     }
 
-    public void updateServerSettings() {
-
+    public void updateServerSettings(boolean setWarningMessage) {
         LogicsConnection serverInfo = getServerInfo();
 
         Result<String> checkVersionError = new Result<>();
@@ -262,7 +261,9 @@ public class LoginDialog extends JDialog {
         useAnonymousUICheckBox.setVisible(hasAnonymousUI);
         updateAnonymousUIActivity();
 
-        setWarningMsg(checkVersionError.result);
+        if(setWarningMessage) {
+            setWarningMsg(checkVersionError.result);
+        }
         this.checkVersionError = checkVersionError.result;
         pack();
     }
@@ -447,11 +448,10 @@ public class LoginDialog extends JDialog {
     }
 
     public void setWarningMsg(String msg) {
-        if(checkVersionError == null) {
-            warningLabel.setText(msg);
-            warningPanel.setVisible(msg != null && !msg.isEmpty());
-            pack();
-        }
+        logger.info("setWarningMsg: " + msg);
+        warningLabel.setText(msg != null ? "<html><body style='width: " + warningPanel.getSize().width + "px'>" + msg + "</body></html>" : "");
+        warningPanel.setVisible(msg != null && !msg.isEmpty());
+        pack();
     }
 
     public static Pair<LogicsConnection, UserInfo> login(LogicsConnection serverInfo, UserInfo userInfo, String warningMsg) {
