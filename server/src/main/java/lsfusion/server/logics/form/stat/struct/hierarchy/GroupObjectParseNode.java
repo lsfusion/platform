@@ -83,7 +83,7 @@ public class GroupObjectParseNode extends GroupParseNode {
             mMap.add(new Pair<>(objectValue, newNode));
         }
         ImList<Pair<Object, T>> map = mMap.immutableList();
-        boolean isEmpty = node.addMap(node, getKey(), isIndex, map);
+        boolean isNotEmpty = node.addMap(node, getKey(), isIndex, map);
 
         if(upDown) {
             for(int j=0,size=map.size();j<size;j++) {
@@ -92,6 +92,6 @@ public class GroupObjectParseNode extends GroupParseNode {
             }
         }
         
-        return isEmpty;
+        return isNotEmpty;
     }
 }

@@ -195,14 +195,14 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     public boolean addMap(XMLNode node, String key, boolean isIndex, Iterable<Pair<Object, XMLNode>> map) {
-        boolean isEmpty = true;
+        boolean isNotEmpty = false;
         if(isIndex) {
             for(Pair<Object, XMLNode> value : map) {
-                isEmpty = false;
+                isNotEmpty = true;
                 addXMLChild(node.element, tag != null ? tag : key, value.second.element);
             }
         } else {
-            isEmpty = false;
+            isNotEmpty = true;
             Element addElement = new Element(tag != null ? tag : key);
             for(Pair<Object, XMLNode> value : map) { // we don't support namespaces in getMap, so won't support it here
                 value.second.element.setName((String) value.first);                    
@@ -210,6 +210,6 @@ public class XMLNode implements Node<XMLNode> {
             }
             node.element.addContent(addElement); // need to support namespaces, but it is not used for now
         }
-        return isEmpty;
+        return isNotEmpty;
     }
 }

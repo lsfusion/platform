@@ -28,7 +28,7 @@ public class ClientFormChanges {
     public final Map<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> expandables;
 
     public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties;
-    public final Set<ClientPropertyDraw> updateProperties; // пришедшие значения на обновление, а не изменение
+    public final Set<ClientPropertyDraw> updateProperties; // needed for async changes, that check means that property was not changed, so async change should be dropped (old value need to be set)
 
     public final Set<ClientPropertyDraw> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
