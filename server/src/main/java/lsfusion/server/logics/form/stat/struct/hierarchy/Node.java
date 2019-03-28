@@ -16,11 +16,12 @@ public interface Node<T extends Node<T>> {
     // export
     T createNode(); 
     
-    boolean isUpDown(); // if we need to first add element to structure and then fill it or vice versa
+    boolean isUpDown(); // if we need to first add element to structure (for example for namespace resolving in XML) and then fill it or vice versa
         
     void addNode(T node, String key, T childNode); // group 
+    void removeNode(T node, T childNode); // group, it can be called only for upDown formats 
     
     void addValue(T node, String key, boolean attr, Object value, Type type); // property
 
-    void addMap(T node, String key, boolean isIndex, Iterable<Pair<Object, T>> map); // group object
+    boolean addMap(T node, String key, boolean isIndex, Iterable<Pair<Object, T>> map); // group object
 }

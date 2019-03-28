@@ -54,6 +54,11 @@ public class JSONNode implements Node<JSONNode> {
         }
     }
 
+    public void removeNode(JSONNode node, JSONNode childNode) { 
+        assert !isUpDown();
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public Object getValue(String key, boolean attr, Type type) throws ParseException {
         try {
@@ -108,7 +113,7 @@ public class JSONNode implements Node<JSONNode> {
         }
     }
 
-    public void addMap(JSONNode node, String key, boolean isIndex, Iterable<Pair<Object, JSONNode>> map) {
+    public boolean addMap(JSONNode node, String key, boolean isIndex, Iterable<Pair<Object, JSONNode>> map) {
         try {
             Object addObject;
             if(isIndex) {
@@ -125,6 +130,7 @@ public class JSONNode implements Node<JSONNode> {
             node.element.put(key, addObject);
         } catch (JSONException e) {
             throw Throwables.propagate(e);
-        }
+        }        
+        return true;
     }
 }

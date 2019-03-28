@@ -29,9 +29,12 @@ public class PropertyParseNode extends ParseNode {
         importData.addProperty(property, upValues, propertyValue, isExclusive);
     }
     
-    public <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
+    public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         Object value = exportData.getProperty(this.property, upValues);
-        if(value != null)
+        if(value != null) {
             node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
+            return true;
+        }
+        return false;
     }
 }

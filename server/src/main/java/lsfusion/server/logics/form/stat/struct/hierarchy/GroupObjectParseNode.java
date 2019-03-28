@@ -59,7 +59,7 @@ public class GroupObjectParseNode extends GroupParseNode {
     }
 
     @Override
-    public <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
+    public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         boolean isIndex = isIndex();
         boolean upDown = node.isUpDown();
 
@@ -83,13 +83,15 @@ public class GroupObjectParseNode extends GroupParseNode {
             mMap.add(new Pair<>(objectValue, newNode));
         }
         ImList<Pair<Object, T>> map = mMap.immutableList();
-        node.addMap(node, getKey(), isIndex, map);
-        
+        boolean isEmpty = node.addMap(node, getKey(), isIndex, map);
+
         if(upDown) {
             for(int j=0,size=map.size();j<size;j++) {
                 ImMap<ObjectEntity, Object> data = objects.get(j);
                 exportChildrenNodes(map.get(j).second, data, exportData);
             }
         }
+        
+        return isEmpty;
     }
 }

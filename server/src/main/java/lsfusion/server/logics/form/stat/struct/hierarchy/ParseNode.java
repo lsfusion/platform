@@ -65,7 +65,7 @@ public abstract class ParseNode {
 
     public abstract <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData);
     
-    public abstract <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData);
+    public abstract <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData);
 
     private interface PGNode {
         AbstractGroup getParent();
