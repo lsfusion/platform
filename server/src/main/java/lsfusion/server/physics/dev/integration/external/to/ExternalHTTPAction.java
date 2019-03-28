@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.DateConverter;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -33,7 +34,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.*;
-import org.apache.http.client.utils.DateUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -205,7 +205,7 @@ public class ExternalHTTPAction extends ExternalAction {
                 String paramValue = rawCookieParam[1].trim();
 
                 if (paramName.equalsIgnoreCase("expires")) {
-                    Date expiryDate = DateUtils.parseDate(paramValue, new String[] {"EEE, dd MMM yyyy HH:mm:ssZZZ"});
+                    Date expiryDate = DateConverter.parseDate("EEE, dd MMM yyyy HH:mm:ssZZZ", paramValue);
                     cookie.setExpiryDate(expiryDate);
                 } else if (paramName.equalsIgnoreCase("max-age")) {
                     long maxAge = Long.parseLong(paramValue);
