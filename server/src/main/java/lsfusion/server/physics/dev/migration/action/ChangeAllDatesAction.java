@@ -87,7 +87,7 @@ public class ChangeAllDatesAction extends InternalAction {
                         String classSID = (String) valueEntry.get("classSID");
                         String key = (String) valueEntry.get("name");
                         String table = (String) valueEntry.get("sidTable");
-                        if (!key.isEmpty() && !table.isEmpty() && (classSID.equals("TIME") || classSID.equals("DATETIME"))) {
+                        if (!key.isEmpty() && !table.isEmpty() && (classSID.equals("DATE") || classSID.equals("TIME") || classSID.equals("DATETIME"))) {
                             List<String> columns = tableColumnsMap.get(table);
                             if (columns == null) columns = new ArrayList<>();
                             columns.add(key);
