@@ -8,7 +8,7 @@ grammar MigrationScript;
 }
 
 @lexer::header { 
-	package lsfusion.server;
+	package lsfusion.server.language;
 }
 
 @members {
