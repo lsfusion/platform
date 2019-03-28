@@ -1,7 +1,7 @@
 grammar LsfLogics;
 
 @header {
-	package lsfusion.server;
+	package lsfusion.server.language;
 
     import lsfusion.base.Pair;
     import lsfusion.base.col.heavy.OrderedMap;
