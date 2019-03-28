@@ -88,7 +88,7 @@ grammar LsfLogics;
 }
 
 @lexer::header { 
-	package lsfusion.server; 
+	package lsfusion.server.language; 
 	import lsfusion.server.language.ScriptingLogicsModule;
 	import lsfusion.server.language.ScriptParser;
 }
