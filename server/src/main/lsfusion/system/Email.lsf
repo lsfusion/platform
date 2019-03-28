@@ -234,8 +234,8 @@ DESIGN mail {
                     }
                 }
             }
-            MOVE TOOLBARBOX;
         }
+        MOVE TOOLBARBOX;
     }
 }
 
