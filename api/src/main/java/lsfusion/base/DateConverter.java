@@ -1,7 +1,6 @@
 package lsfusion.base;
 
 import org.apache.http.ParseException;
-import org.apache.http.client.utils.DateUtils;
 
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -186,7 +185,7 @@ public class DateConverter {
             
         for (String regexp : DATE_FORMAT_REGEXPS.keySet()) {
             if (dateString.toLowerCase().matches(regexp)) {
-                return DateUtils.parseDate(dateString, new String[] {DATE_FORMAT_REGEXPS.get(regexp)});
+                return parseDate(DATE_FORMAT_REGEXPS.get(regexp), dateString);
             }
         }
     
@@ -195,5 +194,13 @@ public class DateConverter {
             return null;
 
         throw new ParseException();
+    }
+
+    public static Date parseDate(String pattern, String value) {
+        try {
+            return new SimpleDateFormat(pattern).parse(value);
+        } catch (java.text.ParseException e) {
+            return null;
+        }
     }
 }
