@@ -1,7 +1,7 @@
 grammar MigrationScript;
 
 @header {
-	package lsfusion.server;
+	package lsfusion.server.language;
 	import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 	import java.util.*;
 	import org.antlr.runtime.BitSet;
