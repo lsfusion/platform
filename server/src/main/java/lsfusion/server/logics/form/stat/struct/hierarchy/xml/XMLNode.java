@@ -180,6 +180,11 @@ public class XMLNode implements Node<XMLNode> {
         addXMLChild(node.element, key, childNode.element);
     }
 
+    public void removeNode(XMLNode node, XMLNode childNode) {
+        assert isUpDown();
+        node.element.removeContent(childNode.element);
+    }
+
     public void addValue(XMLNode node, String key, boolean attr, Object value, Type type) {
         String stringValue = type.formatXML(value);
         if(attr) {
@@ -189,12 +194,15 @@ public class XMLNode implements Node<XMLNode> {
         }
     }
 
-    public void addMap(XMLNode node, String key, boolean isIndex, Iterable<Pair<Object, XMLNode>> map) {
+    public boolean addMap(XMLNode node, String key, boolean isIndex, Iterable<Pair<Object, XMLNode>> map) {
+        boolean isEmpty = true;
         if(isIndex) {
             for(Pair<Object, XMLNode> value : map) {
+                isEmpty = false;
                 addXMLChild(node.element, tag != null ? tag : key, value.second.element);
             }
         } else {
+            isEmpty = false;
             Element addElement = new Element(tag != null ? tag : key);
             for(Pair<Object, XMLNode> value : map) { // we don't support namespaces in getMap, so won't support it here
                 value.second.element.setName((String) value.first);                    
@@ -202,5 +210,6 @@ public class XMLNode implements Node<XMLNode> {
             }
             node.element.addContent(addElement); // need to support namespaces, but it is not used for now
         }
+        return isEmpty;
     }
 }

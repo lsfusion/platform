@@ -16,9 +16,11 @@ public abstract class GroupParseNode extends ParseNode {
             child.importNode(node, upValues, importData);
         }
     }
-    protected <T extends Node<T>> void exportChildrenNodes(T node, ImMap<ObjectEntity, Object> upValues, ExportData importData) {
+    protected <T extends Node<T>> boolean exportChildrenNodes(T node, ImMap<ObjectEntity, Object> upValues, ExportData importData) {
+        boolean hasNotEmptyChild = false;
         for(ParseNode child : children) {
-            child.exportNode(node, upValues, importData);
+            hasNotEmptyChild = child.exportNode(node, upValues, importData) || hasNotEmptyChild;
         }
+        return hasNotEmptyChild;
     }
 }

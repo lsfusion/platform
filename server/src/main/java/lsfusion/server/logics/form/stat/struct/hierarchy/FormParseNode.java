@@ -16,7 +16,7 @@ public class FormParseNode extends GroupParseNode {
     }
 
     @Override
-    public <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
-        exportChildrenNodes(node, upValues, exportData);
+    public <T extends Node<T>> boolean exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
+        return exportChildrenNodes(node, upValues, exportData);
     }
 }
