@@ -368,7 +368,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }});
     }
 
-    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(ImMap<ObjectInstance,Object> map) {
+    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(final DataSession session, ImMap<ObjectInstance, Object> map) throws SQLException, SQLHandledException {
         for(ImMap<ObjectInstance, DataObject> keyRow : keys.keyIt()) {
             boolean equal = true;
             for(int i=0,size=keyRow.size();i<size;i++) {
@@ -382,10 +382,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
         }
 
-        // из-за работы с вебом, может прийти несинхронный запрос на изменение объекта
-        // и соответственно ключ будет не найден, поэтому возвращаем null, вместо исключения,
-        // чтобы игнорировать этот запрос
-        return null;
+        // actually clients call this method only for grids, and rows that are in that grids (i.e in keys collection), so upper cycle should exit before getting to this code
+        // so this code is needed only for ExternalFormRequestHandler
+        // however there was a comment that in web-client because of some race conditions this code also might be called
+        ImValueMap<ObjectInstance, DataObject> mvResult = map.mapItValues();// exception
+        for(int i=0,size=map.size();i<size;i++)
+            mvResult.mapValue(i, session.getDataObject(map.getKey(i).getBaseClass(), map.getValue(i)));
+        return mvResult.immutableValue();
 //        throw new RuntimeException("key not found");
     }
 
