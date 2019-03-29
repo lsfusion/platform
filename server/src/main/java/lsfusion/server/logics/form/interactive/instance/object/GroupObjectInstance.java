@@ -383,12 +383,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         // actually clients call this method only for grids, and rows that are in that grids (i.e in keys collection), so upper cycle should exit before getting to this code
-        // so this code is needed only for ExternalFormRequestHandler
         // however there was a comment that in web-client because of some race conditions this code also might be called
-        ImValueMap<ObjectInstance, DataObject> mvResult = map.mapItValues();// exception
-        for(int i=0,size=map.size();i<size;i++)
-            mvResult.mapValue(i, session.getDataObject(map.getKey(i).getBaseClass(), map.getValue(i)));
-        return mvResult.immutableValue();
+        return null;
 //        throw new RuntimeException("key not found");
     }
 

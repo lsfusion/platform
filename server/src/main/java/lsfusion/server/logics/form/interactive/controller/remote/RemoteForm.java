@@ -5,6 +5,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -12,7 +13,9 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
@@ -38,6 +41,7 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
@@ -242,16 +246,16 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return deserializePropertyKeys(propertyDraw, getDeserializeKeysValuesInputStream(remapKeys), form);
     }
     public static ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, DataInputStream remapKeys, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(remapKeys, form);
+        //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
+        return getDataObjects(form, deserializeKeysValues(remapKeys, form));
+    }
 
+    private static ImMap<ObjectInstance, DataObject> getDataObjects(FormInstance form, ImMap<ObjectInstance, Object> dataKeys) throws SQLException, SQLHandledException {
         ImFilterValueMap<ObjectInstance, DataObject> mvKeys = dataKeys.mapFilterValues();
         for (int i=0,size=dataKeys.size();i<size;i++) {
             Object value = dataKeys.getValue(i);
-            //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
-            if (value != null) {
-                ObjectInstance key = dataKeys.getKey(i);
-                mvKeys.mapValue(i, form.session.getDataObject(key.getBaseClass(), value));
-            }
+            if (value != null)
+                mvKeys.mapValue(i, form.session.getDataObject(dataKeys.getKey(i).getBaseClass(), value));
         }
         return mvKeys.immutableValue();
     }
@@ -265,12 +269,47 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             @Override
             public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+                
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
 
                 groupObject.change(form.session, valueToSet, form, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
+                    logger.trace("   keys: ");
+                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                    }
+                }
+            }
+        });
+    }
+
+    private ImMap<ObjectInstance, Object> parseJSONKeysValues(ImMap<ObjectInstance, Object> map) throws ParseException {
+        ImValueMap<ObjectInstance, Object> mvResult = map.mapItValues(); // exception
+        for(int i=0,size=map.size();i<size;i++)
+            mvResult.mapValue(i, map.getKey(i).getType().parseJSON(map.getValue(i)));
+        return mvResult.immutableValue();
+    }
+    
+    public ServerResponse changeGroupObjectExternal(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
+            @Override
+            public void run(ExecutionStack stack) throws Exception {
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+
+                ImMap<ObjectInstance, Object> valueObjects = parseJSONKeysValues(deserializeKeysValues(value));
+                ImMap<ObjectInstance, DataObject> valueToSet = groupObject.findGroupObjectValue(form.session, valueObjects);
+                if(valueToSet == null) {
+                    valueToSet = getDataObjects(form, valueObjects);
+                    if(valueToSet.size() < valueObjects.size()) // if there are not all valueObjects, change group object to null (assertion in GroupObjectInstance.change requires this)
+                        valueToSet = MapFact.EMPTY();
+                }
+
+                groupObject.change(form.session, valueToSet, form, stack);
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changeGroupObjectExternal: [ID: %1$d]", groupObject.getID()));
                     logger.trace("   keys: ");
                     for (int i = 0, size = valueToSet.size(); i < size; i++) {
                         logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
@@ -703,13 +742,12 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         });
     }
 
-    @Override
-    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final String value) throws IOException {
+    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final Object value) throws IOException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
             public void run(ExecutionStack stack) throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                changeProperty(stack, propertyDraw, null, BaseUtils.serializeObject(propertyDraw.getType().parseString(value)), null);
+                changeProperty(stack, propertyDraw, null, BaseUtils.serializeObject(propertyDraw.getType().parseJSON(value)), null);
             }
         });
     }

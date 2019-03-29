@@ -12,6 +12,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
@@ -50,24 +51,6 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
                     return target.getColorPreferences();
                 }
             });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
-    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, String value) {
-        try {
-            return target.changePropertyExternal(requestIndex, lastReceivedRequestIndex, propertyID, value);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
-    public void closeExternal() {
-        try {
-            target.closeExternal();
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -337,4 +320,26 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         logRemoteMethodEndCall("isInServerInvocation", result);
         return result;
     }
+
+    @Override
+    public ServerResponse changeGroupObjectExternal(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException {
+        logRemoteMethodStartCall("changeGroupObjectExternal");
+        ServerResponse result = target.changeGroupObjectExternal(requestIndex, lastReceivedRequestIndex, groupID, value);
+        logRemoteMethodEndCall("changeGroupObjectExternal", result);
+        return result;
+    }
+
+    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, Object value) throws IOException {
+        logRemoteMethodStartCall("changePropertyExternal");
+        ServerResponse result = target.changePropertyExternal(requestIndex, lastReceivedRequestIndex, propertyID, value);
+        logRemoteMethodEndCall("changePropertyExternal", result);
+        return result;
+    }
+
+    public void closeExternal() throws RemoteException {
+        logRemoteMethodStartCall("closeExternal");
+        target.closeExternal();
+        logRemoteMethodEndVoidCall("closeExternal");
+    }
+
 }

@@ -116,7 +116,9 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     // external
 
-    ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, String value) throws IOException;
+    ServerResponse changeGroupObjectExternal(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException;
+    
+    ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, Object value) throws IOException;
 
     void closeExternal() throws RemoteException;
 }
