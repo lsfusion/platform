@@ -87,9 +87,9 @@ public class ApplyAction extends KeepContextAction {
             if (serializable)
                 DBManager.pushTIL(Connection.TRANSACTION_REPEATABLE_READ);
 
-            Result<String> rApplyMessage = new Result<>(); 
-            if (!context.apply(action == null ? SetFact.<ActionValueImplement>EMPTYORDER() : SetFact.<ActionValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties, rApplyMessage)) // no need to change canceled property if apply succeeds, because it is not nested and is dropped automatically
-                canceled.change(context, true);
+            Result<String> rApplyMessage = new Result<>();
+            boolean applied = context.apply(action == null ? SetFact.<ActionValueImplement>EMPTYORDER() : SetFact.<ActionValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties, rApplyMessage);
+            canceled.change(context, !applied ? true : null);
             applyMessage.change(context, rApplyMessage.result);
         } finally {
             if (serializable)
