@@ -256,8 +256,8 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return mvKeys.immutableValue();
     }
 
-    private ImMap<ObjectInstance, DataObject> deserializeGroupObjectKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException {
-        return group.findGroupObjectValue(deserializeKeysValues(treePathKeys));
+    private ImMap<ObjectInstance, DataObject> deserializeGroupObjectKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException, SQLException, SQLHandledException {
+        return group.findGroupObjectValue(form.session, deserializeKeysValues(treePathKeys));
     }
 
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
@@ -266,9 +266,6 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
-                if (valueToSet == null) {
-                    return;
-                }
 
                 groupObject.change(form.session, valueToSet, form, stack);
 
@@ -289,17 +286,15 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
-                if (valueToSet != null) {
-                    if (logger.isTraceEnabled()) {
-                        GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                        logger.trace(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
-                        logger.trace("   keys: ");
-                        for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                            logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
-                        }
+                if (logger.isTraceEnabled()) {
+                    GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
+                    logger.trace(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
+                    logger.trace("   keys: ");
+                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                     }
-                    form.expandGroupObject(group, valueToSet);
                 }
+                form.expandGroupObject(group, valueToSet);
             }
         });
     }
@@ -310,17 +305,15 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
-                if (valueToSet != null) {
-                    if (logger.isTraceEnabled()) {
-                        GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                        logger.trace(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));
-                        logger.trace("   keys: ");
-                        for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                            logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
-                        }
+                if (logger.isTraceEnabled()) {
+                    GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
+                    logger.trace(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));
+                    logger.trace("   keys: ");
+                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                     }
-                    form.collapseGroupObject(group, valueToSet);
                 }
+                form.collapseGroupObject(group, valueToSet);
             }
         });
     }
