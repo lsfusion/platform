@@ -23,6 +23,6 @@ public class ExpandGroupObjectHandler extends FormServerResponseActionHandler<Ex
 
         byte[] keyValues = gwtConverter.convertOrCast(action.value);
 
-        return getServerResponseResult(form, form.remoteForm.expandGroupObject(action.requestIndex, defaultLastReceivedRequestIndex, action.groupObjectId, keyValues));
+        return getServerResponseResult(form, form.remoteForm.expandGroupObject(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectId, keyValues));
     }
 }

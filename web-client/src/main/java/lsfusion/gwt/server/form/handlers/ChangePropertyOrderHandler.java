@@ -25,6 +25,6 @@ public class ChangePropertyOrderHandler extends FormServerResponseActionHandler<
     public ServerResponseResult executeEx(ChangePropertyOrder action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         byte[] keyBytes = gwtConverter.convertOrCast(action.columnKey);
-        return getServerResponseResult(form, form.remoteForm.changePropertyOrder(action.requestIndex, defaultLastReceivedRequestIndex, action.propertyID, action.modiType.serialize(), keyBytes));
+        return getServerResponseResult(form, form.remoteForm.changePropertyOrder(action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, action.modiType.serialize(), keyBytes));
     }
 }

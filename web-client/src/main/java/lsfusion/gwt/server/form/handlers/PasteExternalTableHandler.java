@@ -47,6 +47,6 @@ public class PasteExternalTableHandler extends FormServerResponseActionHandler<P
         }
 
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, defaultLastReceivedRequestIndex, action.propertyIdList, columnKeys, values));
+        return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, action.lastReceivedRequestIndex, action.propertyIdList, columnKeys, values));
     }
 }

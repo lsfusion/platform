@@ -17,6 +17,6 @@ public class GetRemoteChangesHandler extends FormServerResponseActionHandler<Get
     @Override
     public ServerResponseResult executeEx(GetRemoteChanges action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.getRemoteChanges(action.requestIndex, defaultLastReceivedRequestIndex, action.refresh));
+        return getServerResponseResult(form, form.remoteForm.getRemoteChanges(action.requestIndex, action.lastReceivedRequestIndex, action.refresh));
     }
 }

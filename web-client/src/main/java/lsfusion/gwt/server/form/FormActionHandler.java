@@ -1,6 +1,7 @@
 package lsfusion.gwt.server.form;
 
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.SimpleActionHandlerEx;
@@ -35,8 +36,8 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
         if (form != null) {
             message += " : " + form.clientForm.canonicalName + "(" + formSessionID + ")";
         }
-        if (action instanceof FormRequestIndexCountingAction) {
-            message += " : " + ((FormRequestIndexCountingAction) action).requestIndex;
+        if (action instanceof FormRequestIndexAction) {
+            message += " : " + ((FormRequestIndexAction) action).requestIndex;
         }
         return message;
     }

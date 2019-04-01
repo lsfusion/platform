@@ -17,16 +17,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     private ServerResponseResult currentResponse = null;
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
-
-    private final ErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
-            new ErrorHandlingCallback<ServerResponseResult>() {
-                @Override
-                public void success(ServerResponseResult response) {
-                    dispatchResponse(response);
-                }
-            };
+    private int currentContinueIndex = -1;
 
     public void dispatchResponse(ServerResponseResult response) {
+        dispatchResponse(response, -1);
+    }
+    public void dispatchResponse(ServerResponseResult response, int continueIndex) {
         assert response != null;
 
         try {
@@ -38,6 +34,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 if (dispatchingPaused) {
                     beginIndex = currentActionIndex + 1;
                     actionResults = currentActionResults;
+                    continueIndex = currentContinueIndex;
 
                     currentActionIndex = -1;
                     currentActionResults = null;
@@ -63,6 +60,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                         currentResponse = response;
                         currentActionResults = actionResults;
                         currentActionIndex = i;
+                        currentContinueIndex = continueIndex;
                         return;
                     }
 
@@ -71,10 +69,20 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
 
             if (response.resumeInvocation) {
+                continueIndex++;
+
+                final int fContinueIndex = continueIndex;
+                ErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
+                        new ErrorHandlingCallback<ServerResponseResult>() {
+                            @Override
+                            public void success(ServerResponseResult response) {
+                                dispatchResponse(response, fContinueIndex);
+                            }
+                        };
                 if (actionThrowable == null) {
-                    continueServerInvocation(actionResults, continueRequestCallback);
+                    continueServerInvocation(response.requestIndex, actionResults, continueIndex, continueRequestCallback);
                 } else {
-                    throwInServerInvocation(actionThrowable, continueRequestCallback);
+                    throwInServerInvocation(response.requestIndex, actionThrowable, continueIndex, continueRequestCallback);
                 }
             } else {
                 if (actionThrowable != null) {
@@ -96,9 +104,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
     }
 
-    protected abstract void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback);
+    protected abstract void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, AsyncCallback<ServerResponseResult> callback);
 
-    protected abstract void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback);
+    protected abstract void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback);
 
     protected final void pauseDispatching() {
         dispatchingPaused = true;

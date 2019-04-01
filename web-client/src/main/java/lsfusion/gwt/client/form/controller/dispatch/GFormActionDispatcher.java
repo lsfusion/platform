@@ -27,13 +27,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-        form.continueServerInvocation(actionResults, callback);
+    protected void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+        form.continueServerInvocation(requestIndex, actionResults, continueIndex, callback);
     }
 
     @Override
-    protected void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback) {
-        form.throwInServerInvocation(t, callback);
+    protected void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+        form.throwInServerInvocation(requestIndex, t, continueIndex, callback);
     }
 
     @Override

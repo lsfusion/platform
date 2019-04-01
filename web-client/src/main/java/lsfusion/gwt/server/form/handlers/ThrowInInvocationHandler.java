@@ -17,6 +17,6 @@ public class ThrowInInvocationHandler extends FormServerResponseActionHandler<Th
     @Override
     public ServerResponseResult executeEx(ThrowInInvocation action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.throwInServerInvocation(-1, defaultLastReceivedRequestIndex, -1, action.throwable) );
+        return getServerResponseResult(form, form.remoteForm.throwInServerInvocation(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, action.throwable) );
     }
 }

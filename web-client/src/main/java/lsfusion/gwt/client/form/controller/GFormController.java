@@ -112,8 +112,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private final Map<GGroupObject, List<Widget>> filterViews = new HashMap<>();
 
-    private final LinkedHashMap<Integer, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
-    private final NativeHashMap<GGroupObject, Integer> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
+    private final LinkedHashMap<Long, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
+    private final NativeHashMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
     private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<>();
 
     private boolean initialFormChangesReceived = false;
@@ -539,8 +539,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(final int currentDispatchingRequestIndex, GFormChanges fc) {
-        for (Iterator<Map.Entry<Integer, ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
-            Map.Entry<Integer, ModifyObject> cell = iterator.next();
+        for (Iterator<Map.Entry<Long, ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<Long, ModifyObject> cell = iterator.next();
             if (cell.getKey() <= currentDispatchingRequestIndex) {
                 iterator.remove();
 
@@ -555,7 +555,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             }
         }
 
-        for (Map.Entry<Integer, ModifyObject> e : pendingModifyObjectRequests.entrySet()) {
+        for (Map.Entry<Long, ModifyObject> e : pendingModifyObjectRequests.entrySet()) {
             ArrayList<GGroupObjectValue> gridObjects = fc.gridObjects.get(e.getValue().object.groupObject);
             if (gridObjects != null) {
                 if (e.getValue().add) {
@@ -567,10 +567,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    private void modifyFormChangesWithChangeCurrentObjectAsyncs(final int currentDispatchingRequestIndex, final GFormChanges fc) {
-        pendingChangeCurrentObjectsRequests.foreachEntry(new Function2<GGroupObject, Integer>() {
+    private void modifyFormChangesWithChangeCurrentObjectAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
+        pendingChangeCurrentObjectsRequests.foreachEntry(new Function2<GGroupObject, Long>() {
             @Override
-            public void apply(GGroupObject group, Integer requestIndex) {
+            public void apply(GGroupObject group, Long requestIndex) {
                 if (requestIndex <= currentDispatchingRequestIndex) {
                     pendingChangeCurrentObjectsRequests.remove(group);
                 } else {
@@ -587,7 +587,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 values.foreachEntry(new Function2<GGroupObjectValue, Change>() {
                     @Override
                     public void apply(GGroupObjectValue keys, Change change) {
-                        int requestIndex = change.requestIndex;
+                        long requestIndex = change.requestIndex;
                         if (requestIndex <= currentDispatchingRequestIndex) {
 
                             removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
@@ -651,7 +651,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
-        int requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
+        long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
             @Override
             public void preProcess() {
                 DeferredRunner.get().commitDelayedGroupObjectChange(group);
@@ -736,12 +736,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ExecuteEditAction(property.ID, getFullCurrentKey(columnKey), actionSID), callback);
     }
 
-    public void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ContinueInvocation(actionResults), callback, true);
+    public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
     }
 
-    public void throwInServerInvocation(Throwable throwable, AsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ThrowInInvocation(throwable), callback);
+    public void throwInServerInvocation(long requestIndex, Throwable throwable, int continueIndex, AsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ThrowInInvocation(requestIndex, throwable, continueIndex), callback, true);
     }
 
     public <T extends Result> void syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
@@ -801,7 +801,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
-        int requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey), value, null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey), value, null), new ServerResponseCallback());
 
         GTableController controller = getGroupObjectLogicsSupplier(property.groupObject);
 
@@ -852,7 +852,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
 
-        int requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey, null, add ? ID : null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey, null, add ? ID : null), new ServerResponseCallback());
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
         pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }
@@ -1222,12 +1222,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private static final class Change {
-        public final int requestIndex;
+        public final long requestIndex;
         public final Object newValue;
         public final Object oldValue;
         public final boolean canUseNewValueForRendering;
 
-        private Change(int requestIndex, Object newValue, Object oldValue, boolean canUseNewValueForRendering) {
+        private Change(long requestIndex, Object newValue, Object oldValue, boolean canUseNewValueForRendering) {
             this.requestIndex = requestIndex;
             this.newValue = newValue;
             this.oldValue = oldValue;
