@@ -35,7 +35,7 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
             }
         }
 
-        return new ServerResponseResult(resultActions, serverResponse.resumeInvocation);
+        return new ServerResponseResult(resultActions, serverResponse.requestIndex, serverResponse.resumeInvocation);
     }
 
 }

@@ -17,6 +17,6 @@ public class ExecuteNotificationHandler extends FormServerResponseActionHandler<
     @Override
     public ServerResponseResult executeEx(ExecuteNotification action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.executeNotificationAction(action.requestIndex, defaultLastReceivedRequestIndex, action.idNotification));
+        return getServerResponseResult(form, form.remoteForm.executeNotificationAction(action.requestIndex, action.lastReceivedRequestIndex, action.idNotification));
     }
 }

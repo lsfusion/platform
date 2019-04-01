@@ -32,7 +32,7 @@ public class ChangePropertyHandler extends FormServerResponseActionHandler<Chang
                     form,
                     form.remoteForm.changeProperty(
                             action.requestIndex,
-                            defaultLastReceivedRequestIndex,
+                            action.lastReceivedRequestIndex,
                             action.propertyId,
                             fullKey,
                             serializeObject(gwtConverter.convertOrCast(value)),

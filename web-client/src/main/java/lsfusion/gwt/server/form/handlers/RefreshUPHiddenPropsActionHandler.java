@@ -18,6 +18,6 @@ public class RefreshUPHiddenPropsActionHandler extends FormServerResponseActionH
     @Override
     public ServerResponseResult executeEx(RefreshUPHiddenPropsAction action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.refreshUPHiddenProperties(action.requestIndex, defaultLastReceivedRequestIndex, action.groupObjectSID, action.propSids));
+        return getServerResponseResult(form, form.remoteForm.refreshUPHiddenProperties(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectSID, action.propSids));
     }
 }

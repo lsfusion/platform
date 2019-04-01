@@ -40,7 +40,7 @@ public class PasteSingleCellValueHandler extends FormServerResponseActionHandler
 
         return getServerResponseResult(
                 form,
-                form.remoteForm.pasteMulticellValue(action.requestIndex, defaultLastReceivedRequestIndex, singletonMap(action.propertyId, singletonList(fullKey)), singletonMap(action.propertyId, value))
+                form.remoteForm.pasteMulticellValue(action.requestIndex, action.lastReceivedRequestIndex, singletonMap(action.propertyId, singletonList(fullKey)), singletonMap(action.propertyId, value))
         );
     }
 }

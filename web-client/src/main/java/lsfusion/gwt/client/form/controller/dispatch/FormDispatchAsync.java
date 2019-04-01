@@ -7,6 +7,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.client.form.controller.GFormController;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
@@ -21,7 +22,8 @@ public class FormDispatchAsync {
     private final GForm form;
     private final GFormController formController;
 
-    private int nextRequestIndex = 0;
+    private long nextRequestIndex = 0;
+    private long lastReceivedRequestIndex = -1;
 
     private final LinkedList<QueuedAction> q = new LinkedList<>();
 
@@ -33,7 +35,7 @@ public class FormDispatchAsync {
         this.form = formController.getForm();
     }
 
-    public <A extends FormRequestIndexCountingAction<R>, R extends Result> int execute(A action, AsyncCallback<R> callback) {
+    public <A extends FormRequestIndexCountingAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
         execute((FormAction) action, callback);
         return action.requestIndex;
     }
@@ -44,8 +46,10 @@ public class FormDispatchAsync {
 
     public <A extends FormAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
         action.formSessionID = form.sessionID;
-        if (action instanceof FormRequestIndexCountingAction) {
-            ((FormRequestIndexCountingAction) action).requestIndex = nextRequestIndex++;
+        if (action instanceof FormRequestIndexAction) {
+            if(action instanceof FormRequestIndexCountingAction)
+                ((FormRequestIndexCountingAction) action).requestIndex = nextRequestIndex++;
+            ((FormRequestIndexAction) action).lastReceivedRequestIndex = lastReceivedRequestIndex;
         }
 
         queueAction(action, callback, direct);
@@ -88,13 +92,15 @@ public class FormDispatchAsync {
     public void flushCompletedRequests() {
         if (!formController.isEditing()) {
             while (!q.isEmpty() && q.peek().finished) {
-                execNextAction();
+                QueuedAction remove = q.remove();
+                
+                long requestIndex = remove.getRequestIndex();
+                if(requestIndex >= 0)
+                    lastReceivedRequestIndex = requestIndex;
+                
+                remove.proceed();
             }
         }
-    }
-
-    private void execNextAction() {
-        q.remove().proceed();
     }
 
     public <A extends FormAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {

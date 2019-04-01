@@ -6,11 +6,13 @@ import net.customware.gwt.dispatch.shared.Result;
 public class ServerResponseResult implements Result {
     public GAction[] actions;
     public boolean resumeInvocation;
+    public long requestIndex;
 
     public ServerResponseResult() {}
 
-    public ServerResponseResult(GAction[] actions, boolean resumeInvocation) {
+    public ServerResponseResult(GAction[] actions, long requestIndex, boolean resumeInvocation) {
         this.actions = actions;
+        this.requestIndex = requestIndex;
         this.resumeInvocation = resumeInvocation;
     }
 }

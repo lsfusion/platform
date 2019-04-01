@@ -7,6 +7,7 @@ import com.google.gwt.logging.impl.StackTracePrintStream;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -100,8 +101,8 @@ public class GExceptionManager {
         }
 
         long reqId;
-        if (action instanceof FormRequestIndexCountingAction) {
-            reqId = ((FormRequestIndexCountingAction) action).requestIndex;
+        if (action instanceof FormRequestIndexAction) {
+            reqId = ((FormRequestIndexAction) action).requestIndex;
         } else {
             int ind = -1;
             for (Map.Entry<Action, List<NonFatalHandledException>> actionListEntry : failedNotFatalHandledRequests.entrySet()) {

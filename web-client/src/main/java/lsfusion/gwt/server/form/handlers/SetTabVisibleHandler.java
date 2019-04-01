@@ -17,6 +17,6 @@ public class SetTabVisibleHandler extends FormServerResponseActionHandler<SetTab
     @Override
     public ServerResponseResult executeEx(SetTabVisible action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.setTabVisible(action.requestIndex, defaultLastReceivedRequestIndex, action.tabbedPaneID, action.tabIndex));
+        return getServerResponseResult(form, form.remoteForm.setTabVisible(action.requestIndex, action.lastReceivedRequestIndex, action.tabbedPaneID, action.tabIndex));
     }
 }

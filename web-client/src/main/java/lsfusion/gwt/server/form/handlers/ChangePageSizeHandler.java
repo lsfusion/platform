@@ -17,6 +17,6 @@ public class ChangePageSizeHandler extends FormServerResponseActionHandler<Chang
     @Override
     public ServerResponseResult executeEx(ChangePageSize action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.changePageSize(action.requestIndex, defaultLastReceivedRequestIndex, action.groupObjectID, action.pageSize));
+        return getServerResponseResult(form, form.remoteForm.changePageSize(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, action.pageSize));
     }
 }

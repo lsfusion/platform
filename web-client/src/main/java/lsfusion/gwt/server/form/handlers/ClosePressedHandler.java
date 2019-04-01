@@ -17,6 +17,6 @@ public class ClosePressedHandler extends FormServerResponseActionHandler<ClosePr
     @Override
     public ServerResponseResult executeEx(ClosePressed action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.closedPressed(action.requestIndex, defaultLastReceivedRequestIndex));
+        return getServerResponseResult(form, form.remoteForm.closedPressed(action.requestIndex, action.lastReceivedRequestIndex));
     }
 }
