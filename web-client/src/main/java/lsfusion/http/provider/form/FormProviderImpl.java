@@ -69,6 +69,10 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         return gForm;
     }
 
+    public String createFormExternal(RemoteFormInterface remoteForm, String sessionID) {
+        return addFormSessionObject(new FormSessionObject(null, remoteForm, sessionID));
+    }
+
     private static List<GGroupObjectUserPreferences> convertUserPreferences(GForm gForm, List<GroupObjectUserPreferences> groupObjectUserPreferences) {
         ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<>();
         for (GroupObjectUserPreferences groupObjectUP : groupObjectUserPreferences) {
@@ -118,8 +122,10 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     public void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID); 
         currentForms.remove(formSessionID);
-        for(File file : sessionObject.savedTempFiles)
-            FileUtils.deleteFile(file);        
+        if(sessionObject.savedTempFiles != null) {
+            for (File file : sessionObject.savedTempFiles)
+                FileUtils.deleteFile(file);
+        }
     }
 
     @Override

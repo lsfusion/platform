@@ -9,6 +9,7 @@ import java.io.IOException;
 public interface FormProvider {
 
     GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException;
+    String createFormExternal(RemoteFormInterface remoteForm, String sessionID);
 
     FormSessionObject getFormSessionObject(String formSessionID) throws SessionInvalidatedException;
     void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException;

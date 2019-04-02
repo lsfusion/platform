@@ -130,6 +130,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return entity.getSID();
     }
 
+    public ObjectInstance getObjectInstance(String objectSID) {
+        for (ObjectInstance object : objects)
+            if (object.getSID().equals(objectSID))
+                return object;
+        return null;
+    }
+
     private Integer pageSize;
     public int getPageSize() {
         assert !isInTree();

@@ -41,10 +41,13 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
         sendResponse(request, response, getString(request, "executed.successfully"), Charset.forName("UTF-8"), false, false);
     }
 
-    protected void sendErrorResponse(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
-        JSONObject messageObject = new JSONObject();
-        messageObject.put("message", message);
-        sendResponse(request, response, message, Charset.forName("UTF-8"),  true, true);
+    protected void sendErrorResponse(HttpServletRequest request, HttpServletResponse response, String message) {
+        try {
+            JSONObject messageObject = new JSONObject();
+            messageObject.put("message", message);
+            sendResponse(request, response, message, Charset.forName("UTF-8"), true, true);
+        } catch (IOException ignored) {
+        }
     }
 
     protected void sendResponse(HttpServletRequest request, HttpServletResponse response, String message, Charset charset, boolean error, boolean accessControl) throws IOException {

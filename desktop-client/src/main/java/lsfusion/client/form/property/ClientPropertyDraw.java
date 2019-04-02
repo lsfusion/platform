@@ -296,10 +296,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return propertyFormName;
     }
 
-    public String getIntegrationSID() {
-        return integrationSID;
-    }
-
     public Object parseChangeValueOrNull(String s) {
         if (changeWYSType == null) {
             return null;

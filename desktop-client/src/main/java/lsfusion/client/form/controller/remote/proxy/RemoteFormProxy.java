@@ -1,6 +1,7 @@
 package lsfusion.client.form.controller.remote.proxy;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
@@ -12,7 +13,6 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +54,14 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public Pair<Long, String> changeExternal(long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException {
+        logRemoteMethodStartVoidCall("changeExternal");
+        Pair<Long, String> result = target.changeExternal(requestIndex, lastReceivedRequestIndex, json);
+        logRemoteMethodEndVoidCall("changeExternal");
+        return result;
     }
 
     public byte[] getRichDesignByteArray() throws RemoteException {
@@ -318,21 +326,6 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         logRemoteMethodStartCall("isInServerInvocation");
         boolean result = target.isInServerInvocation(requestIndex);
         logRemoteMethodEndCall("isInServerInvocation", result);
-        return result;
-    }
-
-    @Override
-    public ServerResponse changeGroupObjectExternal(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException {
-        logRemoteMethodStartCall("changeGroupObjectExternal");
-        ServerResponse result = target.changeGroupObjectExternal(requestIndex, lastReceivedRequestIndex, groupID, value);
-        logRemoteMethodEndCall("changeGroupObjectExternal", result);
-        return result;
-    }
-
-    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, Object value) throws IOException {
-        logRemoteMethodStartCall("changePropertyExternal");
-        ServerResponse result = target.changePropertyExternal(requestIndex, lastReceivedRequestIndex, propertyID, value);
-        logRemoteMethodEndCall("changePropertyExternal", result);
         return result;
     }
 
