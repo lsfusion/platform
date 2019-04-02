@@ -852,7 +852,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public GroupObjectInstance getGroupObjectInstanceIntegration(String sid) {
         for (GroupObjectInstance groupObject : getGroups())
-            if (groupObject.getSID().equals(sid))
+            if (groupObject.getIntegrationSID().equals(sid))
                 return groupObject;
         return null;
     }

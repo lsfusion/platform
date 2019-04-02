@@ -130,6 +130,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return entity.getSID();
     }
 
+    public String getIntegrationSID() {
+        return entity.getIntegrationSID();
+    }
+
     public ObjectInstance getObjectInstance(String objectSID) {
         for (ObjectInstance object : objects)
             if (object.getSID().equals(objectSID))

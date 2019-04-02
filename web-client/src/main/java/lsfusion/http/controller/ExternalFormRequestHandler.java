@@ -45,7 +45,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
         if(action.equals("create")) {
             String navigatorID = jsonObject.optString("navigator");
-            if(navigatorID == null)
+            if(navigatorID.isEmpty())
                 navigatorID = "external";
             
             NavigatorSessionObject navigatorSessionObject = logicsAndNavigatorProvider.createOrGetNavigatorSessionObject(navigatorID, sessionObject, request);

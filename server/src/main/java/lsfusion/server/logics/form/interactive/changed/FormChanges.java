@@ -1,6 +1,8 @@
 package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -8,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -219,122 +222,87 @@ public class FormChanges {
             throw Throwables.propagate(e);
         }
     }
+    
+    private void serializePropertiesExternal(JSONObject jsonObject, List<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
+        for(PropertyDrawInstance property : serializeProps)
+            if(panelProperties.contains(property) == (gridObjectRow.isEmpty())) {
+                Object propertyValue = properties.get(property).get(gridObjectRow).getValue();
+                jsonObject.put(property.getIntegrationSID(), property.getType().formatJSON(propertyValue));
+            }
+                
+    } 
 
     public String serializeExternal() {
-        JSONObject modifyJSON = new JSONObject();
 
+        // modify
+        JSONObject modifyJSON = new JSONObject();
+        for (Map.Entry<GroupObjectInstance, List<PropertyDrawInstance>> groupObjectPropertiesEntry : getGroupProperties().entrySet()) {
+            GroupObjectInstance groupObject = groupObjectPropertiesEntry.getKey();
+            List<PropertyDrawInstance> propertiesList = groupObjectPropertiesEntry.getValue();
+
+            JSONObject groupObjectJSON = modifyJSON;
+            if(groupObject != null) {
+                groupObjectJSON = new JSONObject();
+
+                // grid
+                boolean updateGridObjects = true;
+                ImOrderSet<ImMap<ObjectInstance, DataObject>> rows = gridObjects.get(groupObject);
+                if(rows == null) {
+                    updateGridObjects = false;
+                    rows = groupObject.keys != null ? groupObject.keys.keyOrderSet() : null;
+                }
+                if(rows != null && (updateGridObjects || !propertiesList.isEmpty())) { // has grid and props or keys
+                    JSONArray rowsJSON = new JSONArray();
+                    for (ImMap<ObjectInstance, DataObject> gridObjectRow : rows) {
+                        JSONObject rowJSON = new JSONObject();
+                        // grid props
+                        serializePropertiesExternal(rowJSON, propertiesList, gridObjectRow);
+                        // grid keys
+                        if(updateGridObjects)
+                            rowJSON.put("value", RemoteForm.formatJSON(groupObject, gridObjectRow));
+                    }
+                    groupObjectJSON.put("list", rowsJSON);
+                }
+
+                // current
+                ImMap<ObjectInstance, ? extends ObjectValue> currentObjects = objects.get(groupObject);
+                if(currentObjects != null) {
+                    Object valueJSON = RemoteForm.formatJSON(groupObject, currentObjects);
+                    groupObjectJSON.put("value", valueJSON);
+                }
+            }
+
+            // panel props 
+            serializePropertiesExternal(groupObjectJSON, propertiesList, MapFact.<ObjectInstance, DataObject>EMPTY());
+        }
+
+        // drop props
+        JSONArray dropJSON = new JSONArray();
+        for (PropertyDrawInstance dropProperty : dropProperties)
+            dropJSON.put(dropProperty.getIntegrationSID());
+
+        JSONObject response = new JSONObject();
+        response.put("modify", modifyJSON);
+        response.put("drop", dropJSON);
+        return response.toString();
+    }
+
+    public Map<GroupObjectInstance, List<PropertyDrawInstance>> getGroupProperties() {
         Map<GroupObjectInstance, List<PropertyDrawInstance>> groupObjectPropertiesMap = new HashMap<>();
+        for(GroupObjectInstance group : gridObjects.keys().merge(objects.keys()))
+            groupObjectPropertiesMap.put(group, new ArrayList<PropertyDrawInstance>());
         for (PropertyReaderInstance property : properties.keyIt()) {
             if (property instanceof PropertyDrawInstance) {
                 GroupObjectInstance toDraw = ((PropertyDrawInstance) property).toDraw;
                 List<PropertyDrawInstance> propertiesList = groupObjectPropertiesMap.get(toDraw);
                 if (propertiesList == null) {
                     propertiesList = new ArrayList<>();
+                    groupObjectPropertiesMap.put(toDraw, propertiesList);
                 }
                 propertiesList.add((PropertyDrawInstance) property);
-                groupObjectPropertiesMap.put(toDraw, propertiesList);
             }
         }
-
-        for (Map.Entry<GroupObjectInstance, List<PropertyDrawInstance>> groupObjectPropertiesEntry : groupObjectPropertiesMap.entrySet()) {
-            GroupObjectInstance groupObject = groupObjectPropertiesEntry.getKey();
-            List<PropertyDrawInstance> propertiesList = groupObjectPropertiesEntry.getValue();
-
-            if (groupObject == null) { //panel properties without objects
-                for (PropertyDrawInstance property : propertiesList) {
-                    String integrationSID = property.getIntegrationSID();
-                    if (property.isProperty() && property.toDraw == null && integrationSID != null) {
-                        ObjectValue rowPropertyObject = properties.get(property).singleValue();
-                        if (rowPropertyObject != null) {
-                            Object rowPropertyValue = rowPropertyObject.getValue();
-                            modifyJSON.put(integrationSID, rowPropertyValue != null ? rowPropertyValue : "null");
-                        }
-                    }
-                }
-            } else { //objects in grid
-                JSONObject gridObjectsJSON = new JSONObject();
-                JSONArray gridObjectsList = new JSONArray();
-
-                for (ImMap<ObjectInstance, DataObject> gridObjectRow : groupObject.keys.keyIt()) {
-                    JSONObject gridObjectRowJSON = new JSONObject();
-
-                    for (PropertyDrawInstance property : propertiesList) {
-                        String integrationSID = property.getIntegrationSID();
-                        if (property.toDraw != null && integrationSID != null && !panelProperties.contains(property)) {
-                            ObjectValue rowPropertyObject = properties.get(property).get(gridObjectRow);
-                            if (rowPropertyObject != null) {
-                                Object rowPropertyValue = rowPropertyObject.getValue();
-                                gridObjectRowJSON.put(integrationSID, rowPropertyValue != null ? rowPropertyValue : "null");
-                            }
-                        }
-                    }
-
-                    if(gridObjects.containsKey(groupObject)) {
-                        Object valueJSON = getClientGroupObjectValueID(gridObjectRow);
-                        if (valueJSON != null) {
-                            gridObjectRowJSON.put("value", valueJSON);
-                        }
-                    }
-
-                    gridObjectsList.put(gridObjectRowJSON);
-
-                }
-                if(!gridObjectsList.isEmpty()) {
-                    gridObjectsJSON.put("list", gridObjectsList);
-                }
-
-                //panel properties of objects in grid
-                for (PropertyReaderInstance property : properties.keyIt()) {
-                    if (property instanceof PropertyDrawInstance) {
-                        GroupObjectInstance toDraw = ((PropertyDrawInstance) property).toDraw;
-                        if (toDraw != null && toDraw.equals(groupObject) && panelProperties.contains((PropertyDrawInstance) property)) {
-                            String integrationSID = ((PropertyDrawInstance) property).getIntegrationSID();
-                            ObjectValue propertyObject = properties.get(property).singleValue();
-                            if (((PropertyDrawInstance) property).isProperty() && integrationSID != null && propertyObject != null) {
-                                Object propertyValue = propertyObject.getValue();
-                                gridObjectsJSON.put(integrationSID, propertyValue != null ? propertyValue : "null");
-                            }
-                        }
-                    }
-                }
-
-                //current objects
-                Object valueJSON = getClientGroupObjectValueID(objects.get(groupObject));
-                if (valueJSON != null) {
-                    gridObjectsJSON.put("value", valueJSON);
-                }
-
-                modifyJSON.put(groupObject.getSID(), gridObjectsJSON);
-            }
-        }
-
-        //drop properties
-        JSONArray dropPropertiesArray = new JSONArray();
-        for (PropertyDrawInstance dropProperty : dropProperties) {
-            dropPropertiesArray.put(dropProperty.getIntegrationSID());
-        }
-
-        JSONObject response = new JSONObject();
-        response.put("modify", modifyJSON);
-        if(!dropPropertiesArray.isEmpty()) {
-            response.put("drop", dropPropertiesArray);
-        }
-        return response.toString();
-    }
-
-    private Object getClientGroupObjectValueID(ImMap<ObjectInstance, ? extends ObjectValue> gridObjectRow) {
-        Object result = null;
-        if(gridObjectRow != null) {
-            if (gridObjectRow.size() == 1) {
-                result = gridObjectRow.singleValue().getValue();
-            } else {
-                result = new JSONObject();
-                for (ObjectInstance gridObjectRowKey : gridObjectRow.keyIt()) {
-                    ((JSONObject) result).put(gridObjectRowKey.getSID(), gridObjectRow.get(gridObjectRowKey).getValue());
-                }
-            }
-        }
-        return result;
+        return groupObjectPropertiesMap;
     }
 
     public void logChanges(FormInstance bv, Logger logger) {

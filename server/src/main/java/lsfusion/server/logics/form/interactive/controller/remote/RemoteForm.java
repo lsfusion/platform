@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.controller.remote;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import com.informix.json.JSON;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -13,7 +14,9 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
@@ -38,6 +41,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
@@ -246,15 +250,15 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     }
     public static ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, DataInputStream remapKeys, FormInstance form) throws IOException, SQLException, SQLHandledException {
         //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
-        return getDataObjects(form, deserializeKeysValues(remapKeys, form));
+        return getDataObjects(form.session, deserializeKeysValues(remapKeys, form));
     }
 
-    private static ImMap<ObjectInstance, DataObject> getDataObjects(FormInstance form, ImMap<ObjectInstance, Object> dataKeys) throws SQLException, SQLHandledException {
+    private static ImMap<ObjectInstance, DataObject> getDataObjects(DataSession session, ImMap<ObjectInstance, Object> dataKeys) throws SQLException, SQLHandledException {
         ImFilterValueMap<ObjectInstance, DataObject> mvKeys = dataKeys.mapFilterValues();
         for (int i=0,size=dataKeys.size();i<size;i++) {
             Object value = dataKeys.getValue(i);
             if (value != null)
-                mvKeys.mapValue(i, form.session.getDataObject(dataKeys.getKey(i).getBaseClass(), value));
+                mvKeys.mapValue(i, session.getDataObject(dataKeys.getKey(i).getBaseClass(), value));
         }
         return mvKeys.immutableValue();
     }
@@ -1099,7 +1103,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                         // changing current object (before changing property to have relevant current objects) 
                         Object groupObjectValue = groupObjectModify.opt("value");
                         if (groupObjectValue != null)
-                            changeGroupObjectExternal(modifyKey, MapFact.singleton(modifyKey, groupObjectValue), stack);
+                            changeGroupObjectExternal(modifyKey, groupObjectValue, stack);
 
                         Iterator<String> propertyKeys = groupObjectModify.keys();
                         while (propertyKeys.hasNext()) {
@@ -1116,30 +1120,63 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         });
     }
 
-    private static ImMap<ObjectInstance, Object> parseJSON(GroupObjectInstance group, ImMap<String, Object> map) throws ParseException {
-        MExclMap<ObjectInstance, Object> mResult = MapFact.mExclMap(map.size()); // exception
-        for(int i=0,size=map.size();i<size;i++) {
-            ObjectInstance objectInstance = group.getObjectInstance(map.getKey(i));
-            mResult.exclAdd(objectInstance, objectInstance.getType().parseJSON(map.getValue(i)));
-        }
-        return mResult.immutable();
+    private static Object formatJSON(ObjectInstance object, ObjectValue value) {
+        return object.getType().formatJSON(value.getValue());
     }
 
-    private void changeGroupObjectExternal(String groupSID, ImMap<String, Object> values, ExecutionStack stack) throws IOException, ParseException, SQLException, SQLHandledException {
-        GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
-        
+    private static Object parseJSON(ObjectInstance object, Object value) throws ParseException {
+        return object.getType().parseJSON(value);
+    }
+
+    private static boolean isSimpleGroup(GroupObjectInstance groupObject) {
+        return groupObject.objects.size() == 1 && groupObject.getIntegrationSID().equals(groupObject.objects.single().getSID());        
+    }
+    
+    public static Object formatJSON(GroupObjectInstance group, ImMap<ObjectInstance, ? extends ObjectValue> gridObjectRow) {
+        if (isSimpleGroup(group)) {
+            ObjectInstance object = group.objects.single();
+            return formatJSON(object, gridObjectRow.get(object));
+        }
+
+        JSONObject result = new JSONObject();
+        for (ObjectInstance object : group.objects)
+            result.put(object.getSID(), formatJSON(object, gridObjectRow.get(object)));
+        return result;
+    }
+
+    private static ImMap<ObjectInstance, Object> parseJSON(GroupObjectInstance group, Object values) throws ParseException {
+        if(isSimpleGroup(group)) {
+            ObjectInstance object = group.objects.single();
+            return MapFact.singleton(object, parseJSON(object, values));
+        }
+
+        final JSONObject jsonObject = (JSONObject) values;
+        ImValueMap<ObjectInstance, Object> mvResult = group.objects.mapItValues();// exception
+        for(int i=0,size=group.objects.size();i<size;i++) {
+            ObjectInstance object = group.objects.get(i);
+            mvResult.mapValue(i, parseJSON(object, jsonObject.get(object.getSID())));
+        }
+        return mvResult.immutableValue();
+    }
+
+    private static ImMap<ObjectInstance, DataObject> parseJSON(GroupObjectInstance groupObject, DataSession session, Object values) throws ParseException, SQLException, SQLHandledException {
         ImMap<ObjectInstance, Object> valueObjects = parseJSON(groupObject, values);
-        ImMap<ObjectInstance, DataObject> valueToSet = groupObject.findGroupObjectValue(form.session, valueObjects);
+        ImMap<ObjectInstance, DataObject> valueToSet = groupObject.findGroupObjectValue(session, valueObjects);
         if(valueToSet == null) { // group object is in panel or objects are not in grid (it's possible with external api) 
-            valueToSet = getDataObjects(form, valueObjects);
+            valueToSet = getDataObjects(session, valueObjects);
             if(valueToSet.size() < valueObjects.size()) // if there are not all valueObjects, change group object to null (assertion in GroupObjectInstance.change requires this)
                 valueToSet = MapFact.EMPTY();
         }
-
-        // there is no addSeek so maybe we should use forceChangeObject instead of change 
-        groupObject.change(form.session, valueToSet, form, stack);
+        return valueToSet;
     }
-    
+
+    private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack) throws IOException, ParseException, SQLException, SQLHandledException {
+        GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
+        DataSession session = form.session;
+        // there is no addSeek so maybe we should use forceChangeObject instead of change 
+        groupObject.change(session, parseJSON(groupObject, session, values), form, stack);
+    }
+
     private void changePropertyOrExecActionExternal(String propertySID, final Object value, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(propertySID);
         if(propertyDraw != null) {
