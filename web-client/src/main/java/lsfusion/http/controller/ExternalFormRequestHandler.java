@@ -38,23 +38,25 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
         String jsonResult;
         String action = jsonObject.getString("action");
+        String formID = jsonObject.getString("form");
         
+        JSONObject dataObject = jsonObject.optJSONObject("data");
+        String data = dataObject != null ? dataObject.toString() : null; 
+
         if(action.equals("create")) {
             String navigatorID = jsonObject.optString("navigator");
             if(navigatorID == null)
                 navigatorID = "external";
             
             NavigatorSessionObject navigatorSessionObject = logicsAndNavigatorProvider.createOrGetNavigatorSessionObject(navigatorID, sessionObject, request);
-            Pair<RemoteFormInterface, String> result = navigatorSessionObject.remoteNavigator.createFormExternal(jsonObject.getJSONObject("form").toString());
-
-            formProvider.createFormExternal(jsonObject.getString("form"), result.first, navigatorID);
+            
+            Pair<RemoteFormInterface, String> result = navigatorSessionObject.remoteNavigator.createFormExternal(data);
+            formProvider.createFormExternal(formID, result.first, navigatorID); // registering form for further usage
             jsonResult = result.second;
         } else {
-            String formID = jsonObject.getString("form");
-            
             FormSessionObject formSessionObject = formProvider.getFormSessionObject(formID);
             if(action.equals("change")) {
-                Pair<Long, String> result = formSessionObject.remoteForm.changeExternal(formSessionObject.requestIndex++, defaultLastReceivedRequestIndex, jsonObject.getJSONObject("data").toString());
+                Pair<Long, String> result = formSessionObject.remoteForm.changeExternal(formSessionObject.requestIndex++, defaultLastReceivedRequestIndex, data);
                 jsonResult = result.second;
             } else {
                 formSessionObject.remoteForm.closeExternal();
