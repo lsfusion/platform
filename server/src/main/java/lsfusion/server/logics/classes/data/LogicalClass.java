@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -135,6 +136,8 @@ public class LogicalClass extends DataClass<Boolean> {
     }
     @Override
     public Boolean parseJSON(Object value) throws JSONException {
+        if(value == JSONObject.NULL)
+            return null;
         return readJSON(value);
     }
     @Override

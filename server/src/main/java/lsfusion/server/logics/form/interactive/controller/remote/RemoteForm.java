@@ -1080,70 +1080,43 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     }
 
     @Override
-    public Pair<Long, String> changeExternal(final long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException {
-        changeExternal(json);
+    public Pair<Long, String> changeExternal(final long requestIndex, long lastReceivedRequestIndex, final String json) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Pair<Long, String>>() {
             @Override
             public Pair<Long, String> call(ExecutionStack stack) throws Exception {
                 // parse json do changes (values should be passed as is, they are parsed inside particular changes)
                 // if group is value (not an object), pass singleton map with group sid
-                return new Pair<>(requestIndex, getFormChangesExternal(stack));
-            }
-        });
-    }
+                JSONObject modify = new JSONObject(json);
 
-    private void changeExternal(String json) {
-        try {
-            JSONObject jsonObject = new JSONObject(json);
-            JSONObject modify = jsonObject.optJSONObject("modify");
-
-            if (modify != null) {
-
-                //changeProperty
                 Iterator<String> modifyKeys = modify.keys();
                 while (modifyKeys.hasNext()) {
                     String modifyKey = modifyKeys.next();
                     Object modifyValue = modify.get(modifyKey);
 
-                    if (modifyValue instanceof JSONObject) { //property with params
+                    if (modifyValue instanceof JSONObject) { // group objects
+                        JSONObject groupObjectModify = (JSONObject) modifyValue;
 
-                        //changeGroupObject
-                        Object groupObjectValue = ((JSONObject) modifyValue).opt("value");
-                        if (groupObjectValue != null) {
-                            changeGroupObjectExternal(modifyKey, MapFact.singleton(modifyKey, groupObjectValue), getStack());
-                        }
+                        // changing current object (before changing property to have relevant current objects) 
+                        Object groupObjectValue = groupObjectModify.opt("value");
+                        if (groupObjectValue != null)
+                            changeGroupObjectExternal(modifyKey, MapFact.singleton(modifyKey, groupObjectValue), stack);
 
-                        Iterator<String> propertyKeys = ((JSONObject) modifyValue).keys();
+                        Iterator<String> propertyKeys = groupObjectModify.keys();
                         while (propertyKeys.hasNext()) {
                             String propertyName = propertyKeys.next();
-                            if (!propertyName.equals("value")) {
-                                Object propertyValue = ((JSONObject) modifyValue).get(propertyName);
-                                if(propertyValue == JSONObject.NULL) {
-                                    propertyValue = null;
-                                }
-
-                                PropertyDrawInstance property = form.getPropertyDrawIntegration(propertyName);
-                                if (property != null) {
-                                    changePropertyOrExecActionExternal(propertyName, property.getType().formatJSON(propertyValue), getStack());
-                                }
-                            }
+                            if (!propertyName.equals("value"))
+                                changePropertyOrExecActionExternal(propertyName, groupObjectModify.get(propertyName), stack);
                         }
-
-                    } else { //property without params
-                        PropertyDrawInstance property = form.getPropertyDrawIntegration(modifyKey);
-                        if (property != null) {
-                            changePropertyOrExecActionExternal(modifyKey, property.getType().parseJSON(modifyValue), getStack());
-                        }
-                    }
-
+                    } else // properties without group
+                        changePropertyOrExecActionExternal(modifyKey, modifyValue, stack);
                 }
+
+                return new Pair<>(requestIndex, getFormChangesExternal(stack));
             }
-        } catch (ParseException | SQLHandledException | SQLException | IOException e) {
-            throw Throwables.propagate(e);
-        }
+        });
     }
 
-    private ImMap<ObjectInstance, Object> parseJSON(GroupObjectInstance group, ImMap<String, Object> map) throws ParseException {
+    private static ImMap<ObjectInstance, Object> parseJSON(GroupObjectInstance group, ImMap<String, Object> map) throws ParseException {
         MExclMap<ObjectInstance, Object> mResult = MapFact.mExclMap(map.size()); // exception
         for(int i=0,size=map.size();i<size;i++) {
             ObjectInstance objectInstance = group.getObjectInstance(map.getKey(i));
@@ -1169,12 +1142,13 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     
     private void changePropertyOrExecActionExternal(String propertySID, final Object value, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(propertySID);
-
-        DataClass pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.securityPolicy);
-        ObjectValue pushChangeObject = null;
-        if(pushChangeType != null)
-            pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
-        form.executeEditAction(propertyDraw, ServerResponse.CHANGE_WYS, MapFact.<ObjectInstance, DataObject>EMPTY(), pushChangeObject, pushChangeType, null, false, stack);
+        if(propertyDraw != null) {
+            DataClass pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.securityPolicy);
+            ObjectValue pushChangeObject = null;
+            if (pushChangeType != null) 
+                pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
+            form.executeEditAction(propertyDraw, ServerResponse.CHANGE_WYS, MapFact.<ObjectInstance, DataObject>EMPTY(), pushChangeObject, pushChangeType, null, false, stack);
+        }
     }
 
     @Override
