@@ -161,7 +161,7 @@ class BusyDialog extends JDialog {
                 if (answer == JOptionPane.NO_OPTION) {
                     return;
                 }
-                needInterrupt = true;
+                needInterrupt = false;
             }
         });
 
@@ -172,7 +172,7 @@ class BusyDialog extends JDialog {
                 if (answer == JOptionPane.NO_OPTION) {
                     return;
                 }
-                needInterrupt = false;
+                needInterrupt = true;
             }
         });
 
