@@ -1088,7 +1088,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Pair<Long, String>>() {
             @Override
             public Pair<Long, String> call(ExecutionStack stack) throws Exception {
-                // parse json do changes (values should be passed as is, they are parsed inside particular changes)
+                // parse json do changes (values should be passed as is, they are parsed inside particular change call)
                 // if group is value (not an object), pass singleton map with group sid
                 JSONObject modify = new JSONObject(json);
 

@@ -266,10 +266,8 @@ public class FormChanges {
 
                 // current
                 ImMap<ObjectInstance, ? extends ObjectValue> currentObjects = objects.get(groupObject);
-                if(currentObjects != null) {
-                    Object valueJSON = RemoteForm.formatJSON(groupObject, currentObjects);
-                    groupObjectJSON.put("value", valueJSON);
-                }
+                if(currentObjects != null)
+                    groupObjectJSON.put("value", RemoteForm.formatJSON(groupObject, currentObjects));
             }
 
             // panel props 
