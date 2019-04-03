@@ -130,6 +130,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return entity.getSID();
     }
 
+    public String getIntegrationSID() {
+        return entity.getIntegrationSID();
+    }
+
+    public ObjectInstance getObjectInstance(String objectSID) {
+        for (ObjectInstance object : objects)
+            if (object.getSID().equals(objectSID))
+                return object;
+        return null;
+    }
+
     private Integer pageSize;
     public int getPageSize() {
         assert !isInTree();
@@ -368,7 +379,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }});
     }
 
-    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(final DataSession session, ImMap<ObjectInstance, Object> map) throws SQLException, SQLHandledException {
+    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(ImMap<ObjectInstance, Object> map) throws SQLException, SQLHandledException {
         for(ImMap<ObjectInstance, DataObject> keyRow : keys.keyIt()) {
             boolean equal = true;
             for(int i=0,size=keyRow.size();i<size;i++) {
@@ -383,12 +394,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         // actually clients call this method only for grids, and rows that are in that grids (i.e in keys collection), so upper cycle should exit before getting to this code
-        // so this code is needed only for ExternalFormRequestHandler
         // however there was a comment that in web-client because of some race conditions this code also might be called
-        ImValueMap<ObjectInstance, DataObject> mvResult = map.mapItValues();// exception
-        for(int i=0,size=map.size();i<size;i++)
-            mvResult.mapValue(i, session.getDataObject(map.getKey(i).getBaseClass(), map.getValue(i)));
-        return mvResult.immutableValue();
+        return null;
 //        throw new RuntimeException("key not found");
     }
 
@@ -1102,6 +1109,18 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readKeys(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass) throws SQLException, SQLHandledException {
         return SEEK_HOME.executeOrders(session, env, modifier, baseClass, 0, true, null);
     }
+
+    private GroupObjectInstance() {
+        propertyBackground = null;
+        propertyForeground = null;
+
+        entity = null;
+
+        orderObjects = null;
+
+        parent = null;
+    }
+    public static final GroupObjectInstance NULL = new GroupObjectInstance(); // hack for ImMap key
     
     public interface SeekObjects {
         ImMap<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException;

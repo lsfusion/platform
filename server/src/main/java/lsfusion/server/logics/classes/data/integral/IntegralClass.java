@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
@@ -124,7 +125,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     @Override
     public T parseJSON(Object value) throws JSONException {
-        if(value instanceof String && (value.equals("NaN") || value.equals("Infinity") || value.equals("-NaN") || value.equals("-Infinity")))
+        if(value == JSONObject.NULL || (value instanceof String && (value.equals("NaN") || value.equals("Infinity") || value.equals("-NaN") || value.equals("-Infinity"))))
             return null;
         return readJSON((Number) value);
     }

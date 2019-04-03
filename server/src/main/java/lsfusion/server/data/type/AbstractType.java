@@ -14,6 +14,7 @@ import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -130,7 +131,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     @Override
     public T parseJSON(Object value) throws ParseException, JSONException {
-        return parseNullableString(value != null ? value.toString() : null, false); // json supports nulls
+        return parseNullableString(value != null && value != JSONObject.NULL ? value.toString() : null, false); // json supports nulls
     }
     @Override
     public T parseCSV(String value) throws ParseException {

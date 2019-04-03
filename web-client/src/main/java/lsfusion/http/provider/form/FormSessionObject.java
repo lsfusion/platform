@@ -1,14 +1,11 @@
 package lsfusion.http.provider.form;
 
 import lsfusion.client.form.ClientForm;
-import lsfusion.client.form.object.ClientGroupObject;
-import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class FormSessionObject<T> {
     public final ClientForm clientForm;
@@ -18,7 +15,6 @@ public class FormSessionObject<T> {
     public final List<File> savedTempFiles;
 
     public int requestIndex = 0;
-    public Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects;
 
     public FormSessionObject(ClientForm clientForm, RemoteFormInterface remoteForm, String sessionID) {
         this.clientForm = clientForm;

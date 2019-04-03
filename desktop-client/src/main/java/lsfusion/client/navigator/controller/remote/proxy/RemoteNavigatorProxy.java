@@ -1,8 +1,10 @@
 package lsfusion.client.navigator.controller.remote.proxy;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -28,6 +30,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
 
     public ClientCallBackInterface getClientCallBack() throws RemoteException {
         return target.getClientCallBack();
+    }
+
+    @Override
+    public Pair<RemoteFormInterface, String> createFormExternal(String json) throws RemoteException {
+        return target.createFormExternal(json);
     }
 
     @Override

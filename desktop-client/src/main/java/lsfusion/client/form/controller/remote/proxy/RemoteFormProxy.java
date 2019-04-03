@@ -1,6 +1,7 @@
 package lsfusion.client.form.controller.remote.proxy;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
@@ -56,21 +57,11 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
     }
 
     @Override
-    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, String value) {
-        try {
-            return target.changePropertyExternal(requestIndex, lastReceivedRequestIndex, propertyID, value);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
-    public void closeExternal() {
-        try {
-            target.closeExternal();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+    public Pair<Long, String> changeExternal(long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException {
+        logRemoteMethodStartVoidCall("changeExternal");
+        Pair<Long, String> result = target.changeExternal(requestIndex, lastReceivedRequestIndex, json);
+        logRemoteMethodEndVoidCall("changeExternal");
+        return result;
     }
 
     public byte[] getRichDesignByteArray() throws RemoteException {
@@ -337,4 +328,11 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         logRemoteMethodEndCall("isInServerInvocation", result);
         return result;
     }
+
+    public void closeExternal() throws RemoteException {
+        logRemoteMethodStartCall("closeExternal");
+        target.closeExternal();
+        logRemoteMethodEndVoidCall("closeExternal");
+    }
+
 }

@@ -1,13 +1,19 @@
 package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -15,6 +21,8 @@ import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -212,6 +220,100 @@ public class FormChanges {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+    
+    private void serializePropertiesExternal(JSONObject jsonObject, ImSet<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
+        for(PropertyDrawInstance property : serializeProps)
+            jsonObject.put(property.getIntegrationSID(), property.getType().formatJSON(properties.get(property).get(gridObjectRow).getValue()));
+    } 
+
+    private ImSet<PropertyDrawInstance> filterPropertiesExternal(ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {
+        return serializeProps.filterFn(new SFunctionSet<PropertyDrawInstance>() {
+            public boolean contains(PropertyDrawInstance property) {
+                return panelProperties.contains(property) == panel && property.isProperty();
+            }
+        });                
+    } 
+
+    public String serializeExternal() {
+
+        // modify
+        JSONObject modifyJSON = new JSONObject();
+        ImMap<GroupObjectInstance, ImSet<PropertyDrawInstance>> groupProperties = getGroupProperties();
+        for (int i=0,size=groupProperties.size();i<size;i++) {
+            GroupObjectInstance groupObject = groupProperties.getKey(i);
+            if(groupObject == GroupObjectInstance.NULL)
+                groupObject = null;
+            ImSet<PropertyDrawInstance> properties = groupProperties.getValue(i);
+
+            JSONObject groupObjectJSON = modifyJSON;
+            if(groupObject != null) {
+                groupObjectJSON = new JSONObject();
+
+                // grid
+                boolean updateGridObjects = true;
+                ImOrderSet<ImMap<ObjectInstance, DataObject>> rows = gridObjects.get(groupObject);
+                if(rows == null) {
+                    updateGridObjects = false;
+                    rows = groupObject.keys.keyOrderSet();
+                }
+                ImSet<PropertyDrawInstance> gridProperties = filterPropertiesExternal(properties, false);
+                if(rows != null && (updateGridObjects || !gridProperties.isEmpty())) { // has grid and props or keys
+                    JSONArray rowsJSON = new JSONArray();
+                    for (ImMap<ObjectInstance, DataObject> gridObjectRow : rows) {
+                        JSONObject rowJSON = new JSONObject();
+                        // grid props
+                        serializePropertiesExternal(rowJSON, gridProperties, gridObjectRow);
+                        // grid keys
+                        if(updateGridObjects)
+                            rowJSON.put("value", RemoteForm.formatJSON(groupObject, gridObjectRow));
+                        rowsJSON.put(rowJSON);
+                    }
+                    groupObjectJSON.put("list", rowsJSON);
+                }
+
+                // current
+                ImMap<ObjectInstance, ? extends ObjectValue> currentObjects = objects.get(groupObject);
+                if(currentObjects != null)
+                    groupObjectJSON.put("value", RemoteForm.formatJSON(groupObject, currentObjects));
+
+                modifyJSON.put(groupObject.getIntegrationSID(), groupObjectJSON);
+            }
+
+            // panel props 
+            ImSet<PropertyDrawInstance> panelProperties = filterPropertiesExternal(properties, true);
+            serializePropertiesExternal(groupObjectJSON, panelProperties, MapFact.<ObjectInstance, DataObject>EMPTY());
+        }
+
+        // drop props
+        JSONArray dropJSON = new JSONArray();
+        for (PropertyDrawInstance dropProperty : dropProperties)
+            dropJSON.put(dropProperty.getIntegrationSID());
+
+        JSONObject response = new JSONObject();
+        response.put("modify", modifyJSON);
+        response.put("drop", dropJSON);
+        return response.toString();
+    }
+
+    public ImMap<GroupObjectInstance, ImSet<PropertyDrawInstance>> getGroupProperties() {
+        MExclMap<GroupObjectInstance, MExclSet<PropertyDrawInstance>> mGroupProperties = MapFact.mExclMap();
+        for(GroupObjectInstance group : gridObjects.keys().merge(objects.keys()))
+            mGroupProperties.exclAdd(group, SetFact.<PropertyDrawInstance>mExclSet());
+        for (PropertyReaderInstance property : properties.keyIt()) {
+            if (property instanceof PropertyDrawInstance) {
+                GroupObjectInstance toDraw = ((PropertyDrawInstance) property).toDraw;
+                if(toDraw == null)
+                    toDraw = GroupObjectInstance.NULL;
+                MExclSet<PropertyDrawInstance> mProperties = mGroupProperties.get(toDraw);
+                if (mProperties == null) {
+                    mProperties = SetFact.mExclSet();
+                    mGroupProperties.exclAdd(toDraw, mProperties);
+                }
+                mProperties.exclAdd((PropertyDrawInstance) property);
+            }
+        }
+        return MapFact.immutable(mGroupProperties);
     }
 
     public void logChanges(FormInstance bv, Logger logger) {

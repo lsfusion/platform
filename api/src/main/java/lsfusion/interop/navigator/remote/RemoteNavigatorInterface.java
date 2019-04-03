@@ -1,7 +1,9 @@
 package lsfusion.interop.navigator.remote;
 
+import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientSettings;
 
 import java.rmi.RemoteException;
@@ -34,4 +36,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     String getCurrentForm() throws RemoteException;
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 
+    // external
+    
+    Pair<RemoteFormInterface, String> createFormExternal(String json) throws RemoteException;
 }

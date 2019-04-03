@@ -72,11 +72,17 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
+        String sessionID = nextSessionID();
+        addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request));
+        return sessionID;
+    }
+
+    private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         AuthenticationToken lsfToken = LSFAuthenticationToken.getAppServerToken();
 
         RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, getNavigatorInfo(request));
 
-        return addLogicsAndNavigatorSessionObject(new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName(getSessionInfo(request))));
+        return new NavigatorSessionObject(remoteNavigator, sessionObject.getLogicsName(getSessionInfo(request)));
     }
 
     @Override
@@ -91,10 +97,8 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
     private final Map<String, NavigatorSessionObject> currentLogicsAndNavigators = new ConcurrentHashMap<>();
 
-    private String addLogicsAndNavigatorSessionObject(NavigatorSessionObject navigatorSessionObject) {
-        String sessionID = nextSessionID();
+    private void addLogicsAndNavigatorSessionObject(String sessionID, NavigatorSessionObject navigatorSessionObject) {
         currentLogicsAndNavigators.put(sessionID, navigatorSessionObject);
-        return sessionID;
     }
 
     @Override
@@ -106,9 +110,13 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
-    public String getOrCreateNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, String sessionID) throws RemoteException {
+    public NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionID);
-        return navigatorSessionObject != null ? sessionID : createNavigator(sessionObject, request);
+        if(navigatorSessionObject == null) {
+            navigatorSessionObject = createNavigatorSessionObject(sessionObject, request);
+            addLogicsAndNavigatorSessionObject(sessionID, navigatorSessionObject);
+        }
+        return navigatorSessionObject;
     }
 
     @Override

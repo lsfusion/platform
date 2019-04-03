@@ -1994,7 +1994,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                                     Thread.sleep((long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000));
                                     ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
                                 } catch (InterruptedException e) {
-                                    ThreadUtils.interruptThread(BL.getDbManager(), Thread.currentThread());
+                                    return false;
+//                                    ThreadUtils.interruptThread(BL.getDbManager(), Thread.currentThread());
                                 }
                         } else { // dead locks
                             if(attempts >= settings.getDeadLockThreshold()) {

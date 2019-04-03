@@ -1,5 +1,6 @@
 package lsfusion.interop.form.remote;
 
+import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
@@ -10,7 +11,6 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.ClassViewType;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
@@ -115,8 +115,8 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
     ColorPreferences getColorPreferences() throws RemoteException;
 
     // external
-
-    ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, int propertyID, String value) throws IOException;
+    
+    Pair<Long, String> changeExternal(long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException;
 
     void closeExternal() throws RemoteException;
 }

@@ -1,10 +1,21 @@
 package lsfusion.http.controller;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.provider.navigator.NavigatorProviderImpl;
+import lsfusion.http.provider.session.SessionSessionObject;
+import lsfusion.interop.base.exception.AuthenticationException;
+import lsfusion.interop.base.exception.RemoteInternalException;
+import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.json.JSONObject;
 import org.springframework.web.HttpRequestHandler;
@@ -15,12 +26,35 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
+import java.util.Enumeration;
 
+import static java.util.Collections.list;
 import static lsfusion.base.ServerMessages.getString;
 
-public class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
+public abstract class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
 
-    protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
+    protected abstract void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception;
+
+    private void handleRequestException(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
+        try {
+            handleRequest(sessionObject, request, response);
+        } catch (Exception e) {
+            if(e instanceof AuthenticationException) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("text/html; charset=utf-8");
+                try { // in theory here can be changed exception (despite the fact that remote call is wrapped into RemoteExceptionAspect)
+                    Pair<String, Pair<String, String>> actualStacks = RemoteInternalException.toString(e);
+                    response.getWriter().print(actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.first, actualStacks.second.second));
+                } catch (IOException e1) {
+                    throw Throwables.propagate(e1);
+                }
+
+                if (e instanceof RemoteException)  // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
+                    throw (RemoteException) e;
+            }
+        }
     }
 
     @Override
@@ -29,7 +63,7 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
             runRequest(request, new LogicsRunnable<Object>() {
                 @Override
                 public Object run(LogicsSessionObject sessionObject) throws RemoteException {
-                    handleRequest(sessionObject, request, response);
+                    handleRequestException(sessionObject, request, response);
                     return null;
                 }
             });
@@ -39,12 +73,6 @@ public class ExternalRequestHandler extends LogicsRequestHandler implements Http
 
     protected void sendOKResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
         sendResponse(request, response, getString(request, "executed.successfully"), Charset.forName("UTF-8"), false, false);
-    }
-
-    protected void sendErrorResponse(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
-        JSONObject messageObject = new JSONObject();
-        messageObject.put("message", message);
-        sendResponse(request, response, message, Charset.forName("UTF-8"),  true, true);
     }
 
     protected void sendResponse(HttpServletRequest request, HttpServletResponse response, String message, Charset charset, boolean error, boolean accessControl) throws IOException {

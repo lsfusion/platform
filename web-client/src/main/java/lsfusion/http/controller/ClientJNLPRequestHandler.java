@@ -1,5 +1,6 @@
 package lsfusion.http.controller;
 
+import lsfusion.interop.logics.LogicsSessionObject;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +14,10 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 @Deprecated
 public class ClientJNLPRequestHandler extends ExternalRequestHandler {
     protected final static Logger logger = Logger.getLogger(ClientJNLPRequestHandler.class);
+
+    @Override
+    protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    }
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
