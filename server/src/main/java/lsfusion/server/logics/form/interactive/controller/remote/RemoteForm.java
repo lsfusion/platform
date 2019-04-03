@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.controller.remote;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.informix.json.JSON;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -14,7 +13,6 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.action.ClientAction;
@@ -264,7 +262,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     }
 
     private ImMap<ObjectInstance, DataObject> deserializeGroupObjectKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException, SQLException, SQLHandledException {
-        return group.findGroupObjectValue(form.session, deserializeKeysValues(treePathKeys));
+        return group.findGroupObjectValue(deserializeKeysValues(treePathKeys));
     }
 
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
@@ -1161,7 +1159,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
 
     private static ImMap<ObjectInstance, DataObject> parseJSON(GroupObjectInstance groupObject, DataSession session, Object values) throws ParseException, SQLException, SQLHandledException {
         ImMap<ObjectInstance, Object> valueObjects = parseJSON(groupObject, values);
-        ImMap<ObjectInstance, DataObject> valueToSet = groupObject.findGroupObjectValue(session, valueObjects);
+        ImMap<ObjectInstance, DataObject> valueToSet = groupObject.findGroupObjectValue(valueObjects);
         if(valueToSet == null) { // group object is in panel or objects are not in grid (it's possible with external api) 
             valueToSet = getDataObjects(session, valueObjects);
             if(valueToSet.size() < valueObjects.size()) // if there are not all valueObjects, change group object to null (assertion in GroupObjectInstance.change requires this)

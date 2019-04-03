@@ -379,7 +379,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }});
     }
 
-    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(final DataSession session, ImMap<ObjectInstance, Object> map) throws SQLException, SQLHandledException {
+    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(ImMap<ObjectInstance, Object> map) throws SQLException, SQLHandledException {
         for(ImMap<ObjectInstance, DataObject> keyRow : keys.keyIt()) {
             boolean equal = true;
             for(int i=0,size=keyRow.size();i<size;i++) {
