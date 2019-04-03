@@ -17,8 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.Charset;
 
-import static lsfusion.gwt.server.form.FormActionHandler.defaultLastReceivedRequestIndex;
-
 public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
     @Autowired
@@ -56,7 +54,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
         } else {
             FormSessionObject formSessionObject = formProvider.getFormSessionObject(formID);
             if(action.equals("change")) {
-                Pair<Long, String> result = formSessionObject.remoteForm.changeExternal(formSessionObject.requestIndex++, defaultLastReceivedRequestIndex, data);
+                Pair<Long, String> result = formSessionObject.remoteForm.changeExternal(jsonObject.getLong("requestIndex"), jsonObject.getLong("lastReceivedRequestIndex"), data);
                 jsonResult = result.second;
             } else {
                 formSessionObject.remoteForm.closeExternal();
