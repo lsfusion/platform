@@ -225,7 +225,7 @@ public class FormChanges {
     
     private void serializePropertiesExternal(JSONObject jsonObject, List<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
         for(PropertyDrawInstance property : serializeProps)
-            if(panelProperties.contains(property) == (gridObjectRow.isEmpty())) {
+            if(panelProperties.contains(property) == (gridObjectRow.isEmpty()) && property.isProperty()) {
                 Object propertyValue = properties.get(property).get(gridObjectRow).getValue();
                 jsonObject.put(property.getIntegrationSID(), property.getType().formatJSON(propertyValue));
             }
@@ -260,14 +260,19 @@ public class FormChanges {
                         // grid keys
                         if(updateGridObjects)
                             rowJSON.put("value", RemoteForm.formatJSON(groupObject, gridObjectRow));
+                        rowsJSON.put(rowJSON);
                     }
-                    groupObjectJSON.put("list", rowsJSON);
+                    if(!rowsJSON.isEmpty()) {
+                        groupObjectJSON.put("list", rowsJSON);
+                    }
                 }
 
                 // current
                 ImMap<ObjectInstance, ? extends ObjectValue> currentObjects = objects.get(groupObject);
                 if(currentObjects != null)
                     groupObjectJSON.put("value", RemoteForm.formatJSON(groupObject, currentObjects));
+
+                modifyJSON.put(groupObject.getIntegrationSID(), groupObjectJSON);
             }
 
             // panel props 
