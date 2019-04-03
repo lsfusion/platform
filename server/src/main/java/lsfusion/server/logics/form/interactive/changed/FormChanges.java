@@ -242,6 +242,8 @@ public class FormChanges {
         ImMap<GroupObjectInstance, ImSet<PropertyDrawInstance>> groupProperties = getGroupProperties();
         for (int i=0,size=groupProperties.size();i<size;i++) {
             GroupObjectInstance groupObject = groupProperties.getKey(i);
+            if(groupObject == GroupObjectInstance.NULL)
+                groupObject = null;
             ImSet<PropertyDrawInstance> properties = groupProperties.getValue(i);
 
             JSONObject groupObjectJSON = modifyJSON;
@@ -301,6 +303,8 @@ public class FormChanges {
         for (PropertyReaderInstance property : properties.keyIt()) {
             if (property instanceof PropertyDrawInstance) {
                 GroupObjectInstance toDraw = ((PropertyDrawInstance) property).toDraw;
+                if(toDraw == null)
+                    toDraw = GroupObjectInstance.NULL;
                 MExclSet<PropertyDrawInstance> mProperties = mGroupProperties.get(toDraw);
                 if (mProperties == null) {
                     mProperties = SetFact.mExclSet();

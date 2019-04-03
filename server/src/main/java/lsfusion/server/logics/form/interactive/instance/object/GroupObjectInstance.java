@@ -1109,6 +1109,18 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readKeys(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass) throws SQLException, SQLHandledException {
         return SEEK_HOME.executeOrders(session, env, modifier, baseClass, 0, true, null);
     }
+
+    private GroupObjectInstance() {
+        propertyBackground = null;
+        propertyForeground = null;
+
+        entity = null;
+
+        orderObjects = null;
+
+        parent = null;
+    }
+    public static final GroupObjectInstance NULL = new GroupObjectInstance(); // hack for ImMap key
     
     public interface SeekObjects {
         ImMap<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException;
