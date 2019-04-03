@@ -65,8 +65,14 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
             gForm.userPreferences = new GFormUserPreferences(convertUserPreferences(gForm, formUP.getGroupObjectGeneralPreferencesList()),
                                                             convertUserPreferences(gForm, formUP.getGroupObjectUserPreferencesList()));
 
-        gForm.sessionID = addFormSessionObject(formSessionObject);
+        String formID = nextFormSessionID();
+        addFormSessionObject(formID, formSessionObject);
+        gForm.sessionID = formID;
         return gForm;
+    }
+
+    public void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID) {
+        addFormSessionObject(formID, new FormSessionObject(null, remoteForm, navigatorID));
     }
 
     private static List<GGroupObjectUserPreferences> convertUserPreferences(GForm gForm, List<GroupObjectUserPreferences> groupObjectUserPreferences) {
@@ -109,17 +115,17 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     private String nextFormSessionID() {
         return "form" + nextFormId.getAndIncrement();
     }
-    private String addFormSessionObject(FormSessionObject formSessionObject) {
-        String formSessionID = nextFormSessionID();
+    private void addFormSessionObject(String formSessionID, FormSessionObject formSessionObject) {
         currentForms.put(formSessionID, formSessionObject);
-        return formSessionID;
     }
 
     public void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID); 
         currentForms.remove(formSessionID);
-        for(File file : sessionObject.savedTempFiles)
-            FileUtils.deleteFile(file);        
+        if(sessionObject.savedTempFiles != null) {
+            for (File file : sessionObject.savedTempFiles)
+                FileUtils.deleteFile(file);
+        }
     }
 
     @Override

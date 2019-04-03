@@ -32,7 +32,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
     SessionProvider sessionProvider;
 
     @Override
-    protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws RemoteException {
+    protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String sessionID = null;
         boolean closeSession = false;
         try {
@@ -78,24 +78,9 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
                 sendOKResponse(request, response);
             }
 
-        } catch (Exception e) {
-            if(e instanceof AuthenticationException) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            } else {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.setContentType("text/html; charset=utf-8");
-                try { // in theory here can be changed exception (despite the fact that remote call is wrapped into RemoteExceptionAspect)
-                    Pair<String, Pair<String, String>> actualStacks = RemoteInternalException.toString(e);
-                    response.getWriter().print(actualStacks.first+'\n'+ ExceptionUtils.getExStackTrace(actualStacks.second.first, actualStacks.second.second));
-                } catch (IOException e1) {
-                    throw Throwables.propagate(e1);
-                }
-
-                if (e instanceof RemoteException) { // rethrow RemoteException to invalidate LogicsSessionObject in LogicsProvider
-                    closeSession = true; // closing session if there is a RemoteException
-                    throw (RemoteException) e;
-                }
-            }
+        } catch (RemoteException e) {
+            closeSession = true; // closing session if there is a RemoteException
+            throw e;
         } finally {
             if(sessionID != null && closeSession) {
                 sessionProvider.removeSessionSessionObject(sessionID);

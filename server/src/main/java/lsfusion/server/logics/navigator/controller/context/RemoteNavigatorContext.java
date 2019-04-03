@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator.controller.context;
 
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -31,6 +32,7 @@ import lsfusion.server.physics.admin.log.LogInfo;
 
 import java.sql.SQLException;
 import java.util.Locale;
+import java.util.Stack;
 
 // multiple inheritance - RemoteConnection + RemoteUI
 public class RemoteNavigatorContext extends RemoteConnectionContext {
@@ -106,7 +108,35 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             public Locale getLocale() {
                 return RemoteNavigatorContext.this.getLocale();
             }
+
+            @Override
+            protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+                Stack<Result<RemoteForm>> getForms = getForm.get();
+                if(getForms != null)
+                    getForms.peek().set(remoteForm);
+                else
+                    super.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
+            }
         };
+    }
+
+    private ThreadLocal<Stack<Result<RemoteForm>>> getForm = new ThreadLocal<>();
+
+    public void pushGetForm() {
+        Stack<Result<RemoteForm>> getForms = getForm.get();
+        if(getForms == null) {
+            getForms = new Stack<>();
+            getForm.set(getForms);
+        }
+        getForms.push(new Result<RemoteForm>());
+    }
+
+    public RemoteForm popGetForm() {
+        Stack<Result<RemoteForm>> getForms = getForm.get();
+        Result<RemoteForm> result = getForms.pop();
+        if(getForms.isEmpty())
+            getForm.remove();
+        return result.result;
     }
 
     @Override

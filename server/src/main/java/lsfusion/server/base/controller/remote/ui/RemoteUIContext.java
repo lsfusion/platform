@@ -43,12 +43,14 @@ public abstract class RemoteUIContext extends AbstractContext {
 
     @Override
     public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormEntity formEntity = formInstance.entity;
-        RemoteForm remoteForm = createRemoteForm(formInstance, stack);
-        FormClientAction action = new FormClientAction(formEntity.getCanonicalName(), formEntity.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType);
+        requestFormUserInteraction(createRemoteForm(formInstance, stack), modalityType, forbidDuplicate, stack);
+    }
+
+    protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType);
         if(modalityType.isModal()) {
             requestUserInteraction(action);
-            formInstance.syncLikelyOnClose(true, stack);
+            remoteForm.form.syncLikelyOnClose(true, stack);
         } else
             delayUserInteraction(action);
     }

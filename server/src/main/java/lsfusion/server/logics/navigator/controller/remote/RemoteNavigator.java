@@ -14,6 +14,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -59,6 +60,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -482,6 +484,36 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         };
 
         return currentInvocation.execute();
+    }
+
+    @Override
+    public Pair<RemoteFormInterface, String> createFormExternal(String json) {
+
+        JSONObject jsonObject = new JSONObject(json);
+        String name = jsonObject.optString("name");
+        String script = "run() { SHOW " + name + "; }";
+
+        RemoteForm remoteForm;
+
+        RemoteNavigatorContext navigatorContext = (RemoteNavigatorContext) this.context;
+        navigatorContext.pushGetForm();
+        try {
+            try (DataSession session = createSession()) {
+                LA runAction = businessLogics.evaluateRun(script, false);
+                if (runAction != null) {
+                    runAction.execute(session, getStack());
+                }
+            } catch (EvalUtils.EvaluationException | RecognitionException e) {
+                throw Throwables.propagate(e);
+            }
+        } catch (Throwable t) {
+            navigatorContext.popGetForm();
+            throw Throwables.propagate(t);
+        } finally {
+            remoteForm = navigatorContext.popGetForm();
+        }
+        
+        return new Pair<RemoteFormInterface, String>(remoteForm, remoteForm.getFormChangesExternal(getStack()));
     }
 
     private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {

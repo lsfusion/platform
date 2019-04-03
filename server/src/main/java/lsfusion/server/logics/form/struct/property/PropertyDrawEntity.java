@@ -631,7 +631,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         policy.deny(getSecurityProperty());
     }
 
-    public String integrationSID; // can be null (hack for orders)
+    public String integrationSID; // hack - can be null for EXPORT FROM orders
 
     public void setIntegrationSID(String integrationSID) {
         this.integrationSID = integrationSID;

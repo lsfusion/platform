@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.controller.remote;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -13,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
@@ -37,7 +39,9 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
@@ -57,6 +61,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -242,22 +247,22 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return deserializePropertyKeys(propertyDraw, getDeserializeKeysValuesInputStream(remapKeys), form);
     }
     public static ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, DataInputStream remapKeys, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(remapKeys, form);
+        //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
+        return getDataObjects(form.session, deserializeKeysValues(remapKeys, form));
+    }
 
+    private static ImMap<ObjectInstance, DataObject> getDataObjects(DataSession session, ImMap<ObjectInstance, Object> dataKeys) throws SQLException, SQLHandledException {
         ImFilterValueMap<ObjectInstance, DataObject> mvKeys = dataKeys.mapFilterValues();
         for (int i=0,size=dataKeys.size();i<size;i++) {
             Object value = dataKeys.getValue(i);
-            //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
-            if (value != null) {
-                ObjectInstance key = dataKeys.getKey(i);
-                mvKeys.mapValue(i, form.session.getDataObject(key.getBaseClass(), value));
-            }
+            if (value != null)
+                mvKeys.mapValue(i, session.getDataObject(dataKeys.getKey(i).getBaseClass(), value));
         }
         return mvKeys.immutableValue();
     }
 
     private ImMap<ObjectInstance, DataObject> deserializeGroupObjectKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException, SQLException, SQLHandledException {
-        return group.findGroupObjectValue(form.session, deserializeKeysValues(treePathKeys));
+        return group.findGroupObjectValue(deserializeKeysValues(treePathKeys));
     }
 
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
@@ -265,6 +270,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             @Override
             public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+                
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
 
                 groupObject.change(form.session, valueToSet, form, stack);
@@ -698,68 +704,43 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             @Override
             public void run(ExecutionStack stack) throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                changeProperty(stack, propertyDraw, fullKey, pushChange, pushAdd);
-            }
-        });
-    }
+                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
 
-    @Override
-    public ServerResponse changePropertyExternal(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final String value) throws IOException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
-            @Override
-            public void run(ExecutionStack stack) throws Exception {
-                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                changeProperty(stack, propertyDraw, null, BaseUtils.serializeObject(propertyDraw.getType().parseString(value)), null);
-            }
-        });
-    }
+                ObjectValue pushChangeObject = null;
+                DataClass pushChangeType = null;
+                if (pushChange != null) {
+                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.securityPolicy);
+                    Object objectPushChange = deserializeObject(pushChange);
+                    if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
+                        ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
+                    else
+                        pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
+                }
 
-    private void changeProperty(ExecutionStack stack, final PropertyDrawInstance propertyDraw, final byte[] fullKey, final byte[] pushChange, final Long pushAdd) throws SQLHandledException, SQLException, IOException {
-        ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+                DataObject pushAddObject = null;
+                if (pushAdd != null) {
+                    pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
+                }
 
-        ObjectValue pushChangeObject = null;
-        DataClass pushChangeType = null;
-        if (pushChange != null) {
-            pushChangeType = propertyDraw.getEntity().getRequestInputType(form.securityPolicy);
-            Object objectPushChange = deserializeObject(pushChange);
-            if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
-                ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
-            else
-                pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
-        }
+                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
 
-        DataObject pushAddObject = null;
-        if (pushAdd != null) {
-            pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
-        }
-
-        form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
-
-        if (logger.isTraceEnabled()) {
-            logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-            if (keys.size() > 0) {
-                logger.trace("   columnKeys: ");
-                for (int i = 0, size = keys.size(); i < size; i++) {
-                    logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+                    if (keys.size() > 0) {
+                        logger.trace("   columnKeys: ");
+                        for (int i = 0, size = keys.size(); i < size; i++) {
+                            logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
+                        }
+                    }
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("   current object's values: ");
+                        for (ObjectInstance obj : form.getObjects()) {
+                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        }
+                    }        
                 }
             }
-            if (logger.isTraceEnabled()) {
-                logger.trace("   current object's values: ");
-                for (ObjectInstance obj : form.getObjects()) {
-                    logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                }
-            }
-
-        }
-    }
-
-    @Override
-    public void closeExternal() {
-        try {
-            form.explicitClose();
-        } catch (Throwable t) {
-            ServerLoggers.sqlSuppLog(t);
-        }
+        });
     }
 
     public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {
@@ -972,7 +953,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             if(isDeactivated() || delayedHideFormSent) // formWillBeClosed
                 formChanges = FormChanges.EMPTY;
             else
-                formChanges = form.endApply(stack);
+                formChanges = form.getChanges(stack);
 
             if (logger.isTraceEnabled()) {
                 formChanges.logChanges(form, logger);
@@ -1083,7 +1064,136 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     protected String notSafeToString() {
         return "RF[" + form + "]";
     }
+    
+    public String getFormChangesExternal(ExecutionStack stack) {
+        try {
+            FormChanges formChanges;
+            if(numberOfFormChangesRequests.get() > 1 || isDeactivated())
+                formChanges = FormChanges.EMPTY;
+            else
+                formChanges = form.getChanges(stack);
+            // should use formatJSON and getIntegrationSID
+            // if group consists of one object and their sids are equal put value
+            // if there are no gridObjects, we can use GroupObjectInstance.keys instead
+            return formChanges.serializeExternal();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
 
+    @Override
+    public Pair<Long, String> changeExternal(final long requestIndex, long lastReceivedRequestIndex, final String json) throws RemoteException {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Pair<Long, String>>() {
+            @Override
+            public Pair<Long, String> call(ExecutionStack stack) throws Exception {
+                // parse json do changes (values should be passed as is, they are parsed inside particular change call)
+                // if group is value (not an object), pass singleton map with group sid
+                JSONObject modify = new JSONObject(json);
+
+                Iterator<String> modifyKeys = modify.keys();
+                while (modifyKeys.hasNext()) {
+                    String modifyKey = modifyKeys.next();
+                    Object modifyValue = modify.get(modifyKey);
+
+                    if (modifyValue instanceof JSONObject) { // group objects
+                        JSONObject groupObjectModify = (JSONObject) modifyValue;
+
+                        // changing current object (before changing property to have relevant current objects) 
+                        Object groupObjectValue = groupObjectModify.opt("value");
+                        if (groupObjectValue != null)
+                            changeGroupObjectExternal(modifyKey, groupObjectValue, stack);
+
+                        Iterator<String> propertyKeys = groupObjectModify.keys();
+                        while (propertyKeys.hasNext()) {
+                            String propertyName = propertyKeys.next();
+                            if (!propertyName.equals("value"))
+                                changePropertyOrExecActionExternal(propertyName, groupObjectModify.get(propertyName), stack);
+                        }
+                    } else // properties without group
+                        changePropertyOrExecActionExternal(modifyKey, modifyValue, stack);
+                }
+
+                return new Pair<>(requestIndex, getFormChangesExternal(stack));
+            }
+        });
+    }
+
+    private static Object formatJSON(ObjectInstance object, ObjectValue value) {
+        return object.getType().formatJSON(value.getValue());
+    }
+
+    private static Object parseJSON(ObjectInstance object, Object value) throws ParseException {
+        return object.getType().parseJSON(value);
+    }
+
+    private static boolean isSimpleGroup(GroupObjectInstance groupObject) {
+        return groupObject.objects.size() == 1 && groupObject.getIntegrationSID().equals(groupObject.objects.single().getSID());        
+    }
+    
+    public static Object formatJSON(GroupObjectInstance group, ImMap<ObjectInstance, ? extends ObjectValue> gridObjectRow) {
+        if (isSimpleGroup(group)) {
+            ObjectInstance object = group.objects.single();
+            return formatJSON(object, gridObjectRow.get(object));
+        }
+
+        JSONObject result = new JSONObject();
+        for (ObjectInstance object : group.objects)
+            result.put(object.getSID(), formatJSON(object, gridObjectRow.get(object)));
+        return result;
+    }
+
+    private static ImMap<ObjectInstance, Object> parseJSON(GroupObjectInstance group, Object values) throws ParseException {
+        if(isSimpleGroup(group)) {
+            ObjectInstance object = group.objects.single();
+            return MapFact.singleton(object, parseJSON(object, values));
+        }
+
+        final JSONObject jsonObject = (JSONObject) values;
+        ImValueMap<ObjectInstance, Object> mvResult = group.objects.mapItValues();// exception
+        for(int i=0,size=group.objects.size();i<size;i++) {
+            ObjectInstance object = group.objects.get(i);
+            mvResult.mapValue(i, parseJSON(object, jsonObject.get(object.getSID())));
+        }
+        return mvResult.immutableValue();
+    }
+
+    private static ImMap<ObjectInstance, DataObject> parseJSON(GroupObjectInstance groupObject, DataSession session, Object values) throws ParseException, SQLException, SQLHandledException {
+        ImMap<ObjectInstance, Object> valueObjects = parseJSON(groupObject, values);
+        ImMap<ObjectInstance, DataObject> valueToSet = groupObject.findGroupObjectValue(valueObjects);
+        if(valueToSet == null) { // group object is in panel or objects are not in grid (it's possible with external api) 
+            valueToSet = getDataObjects(session, valueObjects);
+            if(valueToSet.size() < valueObjects.size()) // if there are not all valueObjects, change group object to null (assertion in GroupObjectInstance.change requires this)
+                valueToSet = MapFact.EMPTY();
+        }
+        return valueToSet;
+    }
+
+    private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack) throws IOException, ParseException, SQLException, SQLHandledException {
+        GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
+        DataSession session = form.session;
+        // there is no addSeek so maybe we should use forceChangeObject instead of change 
+        groupObject.change(session, parseJSON(groupObject, session, values), form, stack);
+    }
+
+    private void changePropertyOrExecActionExternal(String propertySID, final Object value, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
+        PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(propertySID);
+        if(propertyDraw != null) {
+            DataClass pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.securityPolicy);
+            ObjectValue pushChangeObject = null;
+            if (pushChangeType != null) 
+                pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
+            form.executeEditAction(propertyDraw, ServerResponse.CHANGE_WYS, MapFact.<ObjectInstance, DataObject>EMPTY(), pushChangeObject, pushChangeType, null, false, stack);
+        }
+    }
+
+    @Override
+    public void closeExternal() {
+        try {
+            form.explicitClose();
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }
+    }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
     @Override

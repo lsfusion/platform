@@ -140,6 +140,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public PropertyDrawEntity getEntity() {
         return entity;
     }
+    
+    public String getIntegrationSID() {
+        return entity.getIntegrationSID();
+    }
 
     @Override
     public Object getProfiledObject() {

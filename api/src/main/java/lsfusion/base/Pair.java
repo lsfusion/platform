@@ -1,6 +1,8 @@
 package lsfusion.base;
 
-public class Pair<Class1, Class2> {
+import java.io.Serializable;
+
+public class Pair<Class1, Class2> implements Serializable {
 
     public final Class1 first;
     public final Class2 second;

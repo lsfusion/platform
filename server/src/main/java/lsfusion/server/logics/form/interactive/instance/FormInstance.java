@@ -401,7 +401,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         environmentIncrementSources = mEnvironmentIncrementSources.immutable();
         
         if (!interactive) // deprecated ветка, в будущем должна уйти
-            endApply(stack);
+            getChanges(stack);
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
@@ -849,10 +849,24 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 return groupObject;
         return null;
     }
+
+    public GroupObjectInstance getGroupObjectInstanceIntegration(String sid) {
+        for (GroupObjectInstance groupObject : getGroups())
+            if (groupObject.getIntegrationSID().equals(sid))
+                return groupObject;
+        return null;
+    }
     
     public PropertyDrawInstance getPropertyDraw(String sid) {
         for (PropertyDrawInstance property : properties)
             if (property.getSID().equals(sid))
+                return property;
+        return null;
+    }
+
+    public PropertyDrawInstance getPropertyDrawIntegration(String sid) {
+        for (PropertyDrawInstance property : properties)
+            if (property.getIntegrationSID().equals(sid))
                 return property;
         return null;
     }
@@ -1856,7 +1870,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @LogTime
     @ThisMessage
     @AssertSynchronized
-    public FormChanges endApply(ExecutionStack stack) throws SQLException, SQLHandledException {
+    public FormChanges getChanges(ExecutionStack stack) throws SQLException, SQLHandledException {
 
         checkNavigatorDeactivated();
 
