@@ -2744,7 +2744,7 @@ public class BaseUtils {
                 if (j <= i)
                     result.add("");
                 else
-                    result.add(s.substring(i, j-1));
+                    result.add(s.substring(i, j));
                 i = j + f.length();
             }
         }
