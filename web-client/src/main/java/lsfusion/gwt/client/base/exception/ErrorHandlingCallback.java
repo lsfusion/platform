@@ -54,7 +54,9 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
 
     // client - web-server and web-server - app-server connection problems 
     public static int getMaxTries(Throwable caught) {
-        if (caught instanceof StatusCodeException || isAuthException(caught)) // client - web-server
+        if(isAuthException(caught))
+            return 0;
+        if (caught instanceof StatusCodeException) // client - web-server
             return MAX_REQUEST_TRIES;
         else if (caught instanceof RemoteRetryException) // web-server - app-server
             return ((RemoteRetryException) caught).maxTries;

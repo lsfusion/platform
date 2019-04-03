@@ -66,16 +66,13 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         final Integer finalRequestTry = requestTry;
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
-                int maxTries = ErrorHandlingCallback.getMaxTries(caught);
+                int maxTries = ErrorHandlingCallback.getMaxTries(caught); // because we set invalidate-session to false (for some security reasons) there is no need to retry request in the case of auth problem
                 boolean isAuthException = ErrorHandlingCallback.isAuthException(caught);
                 if (finalRequestTry <= maxTries) {
-                    if (isAuthException)
-                        GConnectionLostManager.connectionLost(true, true);
-                    else {
-                        if (finalRequestTry == 2) //first retry
-                            GConnectionLostManager.registerFailedRmiRequest();
-                        GExceptionManager.addFailedRmiRequest(caught, action);
-                    }
+                    assert !isAuthException; // because maxTries is 0 in that case
+                    if (finalRequestTry == 2) //first retry
+                        GConnectionLostManager.registerFailedRmiRequest();
+                    GExceptionManager.addFailedRmiRequest(caught, action);
 
                     Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
                         @Override
