@@ -25,7 +25,7 @@ public class OracleSQLSyntax extends DefaultSQLSyntax {
     }
 
     public String getClassName() {
-        return "oracle.jdbc.driver.OracleDriver";
+        return "oracle.jdbc.OracleDriver";
     }
 
     public String isNULL(String exprs, boolean notSafe) {
