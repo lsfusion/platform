@@ -19,6 +19,9 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.log4j.EnhancedPatternLayout;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 
@@ -37,7 +40,21 @@ import java.util.List;
 import java.util.Scanner;
 
 public class LoginDialog extends JDialog {
-    private final static Logger logger = Logger.getLogger(LoginDialog.class);
+
+    static Logger logger;
+    static {
+        try {
+            logger = Logger.getLogger("loginLog");
+            logger.setLevel(Level.INFO);
+            FileAppender fileAppender = new FileAppender(new EnhancedPatternLayout("%d{DATE} %5p %c{1} - %m%n%throwable{1000}"),
+                    "logs/login.log");
+            logger.removeAllAppenders();
+            logger.addAppender(fileAppender);
+
+        } catch (Exception ignored) {
+        }
+    }
+
     private static final String CONFIG_FILE_NAME = "login.dialog.cfg";
 
     private JPanel contentPane;
