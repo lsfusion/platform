@@ -496,7 +496,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         JSONObject jsonObject = new JSONObject(json);
         String name = jsonObject.optString("name");
         String script = "";
-        if (name == null) {
+        if (name.isEmpty()) {
             name = "external";
             script += "FORM " + name + " " + jsonObject.optString("script") + ";" + '\n';
         }
