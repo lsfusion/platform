@@ -446,20 +446,24 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
-                try (DataSession session = createSession()) {
-                    LA runAction = businessLogics.evaluateRun(script, false);
-                    if (runAction != null) {
-                        runAction.execute(session, getStack());
-                    }
-                } catch (EvalUtils.EvaluationException | RecognitionException e) {
-                    throw Throwables.propagate(e);
-                }
+                evaluateRun(script);
                 assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
                 return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }
         };
 
         return currentInvocation.execute();
+    }
+
+    private void evaluateRun(String script) throws SQLException, SQLHandledException {
+        try (DataSession session = createSession()) {
+            LA runAction = businessLogics.evaluateRun(script, false);
+            if (runAction != null) {
+                runAction.execute(session, getStack());
+            }
+        } catch (EvalUtils.EvaluationException | RecognitionException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
@@ -491,21 +495,19 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         JSONObject jsonObject = new JSONObject(json);
         String name = jsonObject.optString("name");
-        String script = "run() { SHOW " + name + "; }";
+        String script = "";
+        if (name == null) {
+            name = "external";
+            script += "FORM " + name + " " + jsonObject.optString("script") + ";" + '\n';
+        }
+        script += "run() { SHOW " + name + "; }";
 
         RemoteForm remoteForm;
 
         RemoteNavigatorContext navigatorContext = (RemoteNavigatorContext) this.context;
         navigatorContext.pushGetForm();
         try {
-            try (DataSession session = createSession()) {
-                LA runAction = businessLogics.evaluateRun(script, false);
-                if (runAction != null) {
-                    runAction.execute(session, getStack());
-                }
-            } catch (EvalUtils.EvaluationException | RecognitionException e) {
-                throw Throwables.propagate(e);
-            }
+            evaluateRun(script);
         } catch (Throwable t) {
             navigatorContext.popGetForm();
             throw Throwables.propagate(t);
