@@ -19,9 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
-import java.util.Enumeration;
 
-import static java.util.Collections.list;
 import static lsfusion.base.ServerMessages.getString;
 
 public abstract class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
@@ -64,16 +62,12 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
     }
 
-    protected void sendOKResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        sendResponse(request, response, getString(request, "executed.successfully"), Charset.forName("UTF-8"), false, false);
-    }
-
-    protected void sendResponse(HttpServletRequest request, HttpServletResponse response, String message, Charset charset, boolean error, boolean accessControl) throws IOException {
-        sendResponse(request, response, new ExternalUtils.ExternalResponse(new StringEntity(message, charset), null, null, null, null, null), error, accessControl);
+    protected void sendResponse(HttpServletResponse response, String message, Charset charset) throws IOException {
+        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity(message, charset), null, null, null, null, null));
     }
 
     // copy of ExternalHTTPServer.sendResponse
-    protected void sendResponse(HttpServletRequest request, HttpServletResponse response, ExternalUtils.ExternalResponse responseHttpEntity, boolean error, boolean accessControl) throws IOException {
+    protected void sendResponse(HttpServletResponse response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
         HttpEntity responseEntity = responseHttpEntity.response;
         Header contentType = responseEntity.getContentType();
         String contentDisposition = responseHttpEntity.contentDisposition;
@@ -107,13 +101,6 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             response.setContentType(contentType.getValue());
         if(contentDisposition != null && !hasContentDisposition)
             response.addHeader("Content-Disposition", contentDisposition);        
-        response.setStatus(error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK);
-        if(accessControl) {
-            //marks response as successful for js request
-            response.addHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-            //allows to use cookies for js request
-            response.addHeader("Access-Control-Allow-Credentials", "true");
-        }
         responseEntity.writeTo(response.getOutputStream());
     }
 }
