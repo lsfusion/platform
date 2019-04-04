@@ -80,11 +80,11 @@ public class MainController {
     }
 
     private String getLogicsLogo(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "static/noauth/logo.png";
+        return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "static/noauth/images/logo.png";
     }
 
     private String getLogicsIcon(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "static/noauth/favicon.ico";
+        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "static/noauth/images/favicon.ico";
     }
     
     private String getLogicsName(ServerSettings serverSettings) {
