@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.Charset;
+import java.rmi.RemoteException;
 
 public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
@@ -43,12 +44,24 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
         if(action.equals("create")) {
             String navigatorID = jsonObject.optString("navigator");
-            if(navigatorID.isEmpty())
+            boolean useGlobalNavigator = false;
+            if(navigatorID.isEmpty()) {
                 navigatorID = "external";
-            
+                useGlobalNavigator = true;
+            }
+
             NavigatorSessionObject navigatorSessionObject = logicsAndNavigatorProvider.createOrGetNavigatorSessionObject(navigatorID, sessionObject, request);
-            
-            Pair<RemoteFormInterface, String> result = navigatorSessionObject.remoteNavigator.createFormExternal(data);
+
+            Pair<RemoteFormInterface, String> result;
+            try {
+                result = navigatorSessionObject.remoteNavigator.createFormExternal(data);
+            } catch (RemoteException e) {
+                if(useGlobalNavigator) { // we need to invalidate all refs, otherwise we will always get no such object
+                    formProvider.removeFormSessionObjects(navigatorID);
+                    logicsAndNavigatorProvider.removeNavigatorSessionObject(navigatorID);
+                }
+                throw e;
+            }
             formProvider.createFormExternal(formID, result.first, navigatorID); // registering form for further usage
             jsonResult = result.second;
         } else {
