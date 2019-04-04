@@ -63,6 +63,6 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
             }
         }
 
-        sendResponse(request, response, jsonResult, charset, false, true);
+        sendResponse(response, jsonResult, charset);
     }
 }

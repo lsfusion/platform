@@ -3,21 +3,14 @@ package lsfusion.http.controller;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.http.authentication.LSFAuthenticationToken;
-import lsfusion.http.provider.navigator.NavigatorProviderImpl;
-import lsfusion.http.provider.session.SessionSessionObject;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
-import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.json.JSONObject;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.http.Cookie;
@@ -26,9 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
-import java.util.Enumeration;
 
-import static java.util.Collections.list;
 import static lsfusion.base.ServerMessages.getString;
 
 public abstract class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
@@ -71,16 +62,12 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
     }
 
-    protected void sendOKResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        sendResponse(request, response, getString(request, "executed.successfully"), Charset.forName("UTF-8"), false, false);
-    }
-
-    protected void sendResponse(HttpServletRequest request, HttpServletResponse response, String message, Charset charset, boolean error, boolean accessControl) throws IOException {
-        sendResponse(request, response, new ExternalUtils.ExternalResponse(new StringEntity(message, charset), null, null, null, null, null), error, accessControl);
+    protected void sendResponse(HttpServletResponse response, String message, Charset charset) throws IOException {
+        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity(message, charset), null, null, null, null, null));
     }
 
     // copy of ExternalHTTPServer.sendResponse
-    protected void sendResponse(HttpServletRequest request, HttpServletResponse response, ExternalUtils.ExternalResponse responseHttpEntity, boolean error, boolean accessControl) throws IOException {
+    protected void sendResponse(HttpServletResponse response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
         HttpEntity responseEntity = responseHttpEntity.response;
         Header contentType = responseEntity.getContentType();
         String contentDisposition = responseHttpEntity.contentDisposition;
@@ -114,13 +101,6 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             response.setContentType(contentType.getValue());
         if(contentDisposition != null && !hasContentDisposition)
             response.addHeader("Content-Disposition", contentDisposition);        
-        response.setStatus(error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK);
-        if(accessControl) {
-            //marks response as successful for js request
-            response.addHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-            //allows to use cookies for js request
-            response.addHeader("Access-Control-Allow-Credentials", "true");
-        }
         responseEntity.writeTo(response.getOutputStream());
     }
 }

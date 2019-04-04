@@ -1,16 +1,10 @@
 package lsfusion.http.controller;
 
-import com.google.common.base.Throwables;
-import lsfusion.base.ExceptionUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.http.authentication.LSFAuthenticationToken;
-import lsfusion.http.controller.ExternalRequestHandler;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
-import lsfusion.interop.base.exception.AuthenticationException;
-import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
@@ -20,11 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.Enumeration;
 
 import static java.util.Collections.list;
+import static lsfusion.base.ServerMessages.getString;
 
 public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandler {
     
@@ -73,9 +68,9 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
                     logicsHost, sessionObject.connection.port, sessionObject.connection.exportName);
 
             if (responseHttpEntity.response != null) {
-                sendResponse(request, response, responseHttpEntity, false, false);
+                sendResponse(response, responseHttpEntity);
             } else {
-                sendOKResponse(request, response);
+                sendResponse(response, getString(request, "executed.successfully"), Charset.forName("UTF-8"));
             }
 
         } catch (RemoteException e) {
