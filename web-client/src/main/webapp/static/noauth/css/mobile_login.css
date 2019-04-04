@@ -1,26 +1,15 @@
-*, html, body, div, form, label, fieldset, input, p, th, td {
-    margin: 0;
-    padding: 0;
-}
-
 table {
     border-collapse: collapse;
     border-spacing: 0;
 }
 
-fieldset, img {
+fieldset {
     border: 0;
 }
 
-a {
-    text-decoration: none;
-}
-
 body {
-    font-size: 1em; /* Prevents an IE bug where em's scale out of proportion */
+    background-color: #f8f9fa;
 }
-
-
 
 html, body {
     height: 100%;
@@ -34,36 +23,23 @@ html, body {
 
 p {
     margin-bottom: 1.25em;
-    color: #9498a1;
 }
 
-
-
-body, form {
+form {
     font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.125em;
 }
 
 p, a, form input, .errorblock {
-    font-size: 0.75em;
+    font-size: 2em;
 }
 
 form p input[type="text"], form p input[type="password"] {
-    font-size: 1em;
+    font-size: 1.5em;
 }
-
-
 
 a {
+    text-decoration: none;
     color: #2069b4;
-}
-
-a:hover {
-    color: #2a2e36;
-}
-
-a:hover {
-    border-bottom: 1px dotted;
 }
 
 .blue {
@@ -71,28 +47,19 @@ a:hover {
     color: white;
 }
 
-.blue:hover {
-    background-color: #5081b3;
-    color: white;
-}
-
-
-
 .full-width-box {
-    width: 95%;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .image-center {
     text-align: center;
-}
+}               
 
-.image-right {
-    background-position: right center;
-    padding-right: 3em;
-}
-
-.ic-right-arrow {
-    background-image: url("right_arrow.png");
+.logo {
+    width: 60%;
 }
 
 form label {
@@ -104,11 +71,10 @@ form label {
 
 form input[type="text"], input[type="password"], textarea {
     border: 1px solid #d9dbdd;
-    padding: 1em 0.625em;
+    padding: 0.625em;
     outline: none;
 }
 
-form input[type="text"]:hover, input[type="password"]:hover, textarea:hover,
 form input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
     border: 1px solid #bbbdbe;
 }
@@ -116,13 +82,11 @@ form input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
 form input[type="submit"] {
     border: none;
     cursor: pointer;
-    padding: 0.833em;
-
-    background-position: right center;
-    padding-right: 3em;
-    background-repeat: no-repeat;
+    padding: 1.2em;
+    width: 100%;
     font-weight: bold;
     text-transform: uppercase;
+    margin-top: 1em;
 }
 
 form p em {
@@ -135,21 +99,8 @@ form p em {
     width: 100%;
 }
 
-div#content {
-    background: #f8f9fa;
-    border: solid #eeefef;
-    border-width: 4px 0;
-    padding: 1.875em 0;
-}
-
-form#login-form {
-    width: 18.75em;
-    margin: 0 auto;
-}
-
 .desktop-link {
-    padding-top: 0.833em;
-    float: right;
+    display: none;
 }
 
 .errorblock {
@@ -158,8 +109,7 @@ form#login-form {
     border: 1px solid #ff0000;
     padding: 8px;
     text-align: left;
-    width: 30em;
-    margin: 10px auto;
+    margin: 40px auto;
 }
 
 details summary::-webkit-details-marker {

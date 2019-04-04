@@ -4,8 +4,8 @@
         <title>${jnlp.appName}</title>
         <vendor>Luxsoft Ltd.</vendor>
         <description>lsFusion</description>
-        <icon href="static/noauth/default.png" kind="default"/>
-        <icon href="static/noauth/splash.jpg" kind="splash"/>
+        <icon href="static/noauth/images/default.png" kind="default"/>
+        <icon href="static/noauth/images/splash.jpg" kind="splash"/>
         <shortcut online="true">
             <desktop/>
         </shortcut>

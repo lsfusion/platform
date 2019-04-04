@@ -61,7 +61,7 @@ select {
     cursor: pointer;
     cursor: hand;
     font-size:small;
-    background: url("images/hborder.png") repeat-x 0px -2077px;
+    background: url("../images/hborder.png") repeat-x 0px -2077px;
     border:1px solid #bbb;
     border-bottom: 1px solid #a0a0a0;
     border-radius: 3px;
@@ -126,23 +126,23 @@ select {
 }
 .gwt-DecoratorPanel .topLeft {
     line-height: 0px;
-    background: url(images/circles.png) no-repeat 0px -6px;
-    -background: url(images/circles_ie6.png) no-repeat 0px -6px;
+    background: url(../images/circles.png) no-repeat 0px -6px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px -6px;
 }
 .gwt-DecoratorPanel .topRight {
     line-height: 0px;
-    background: url(images/circles.png) no-repeat -5px -6px;
-    -background: url(images/circles_ie6.png) no-repeat -5px -6px;
+    background: url(../images/circles.png) no-repeat -5px -6px;
+    -background: url(../images/circles_ie6.png) no-repeat -5px -6px;
 }
 .gwt-DecoratorPanel .bottomLeft {
     line-height: 0px;
-    background: url(images/circles.png) no-repeat 0px -11px;
-    -background: url(images/circles_ie6.png) no-repeat 0px -11px;
+    background: url(../images/circles.png) no-repeat 0px -11px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px -11px;
 }
 .gwt-DecoratorPanel .bottomRight {
     line-height: 0px;
-    background: url(images/circles.png) no-repeat -5px -11px;
-    -background: url(images/circles_ie6.png) no-repeat -5px -11px;
+    background: url(../images/circles.png) no-repeat -5px -11px;
+    -background: url(../images/circles_ie6.png) no-repeat -5px -11px;
 }
 * html .gwt-DecoratorPanel .topLeftInner,
 * html .gwt-DecoratorPanel .topRightInner,
@@ -169,15 +169,15 @@ select {
     background: white;
 }
 .gwt-DialogBox .dialogBottomCenter {
-    background: url(images/hborder.png) repeat-x 0px -2945px;
-    -background: url(images/hborder_ie6.png) repeat-x 0px -2144px;
+    background: url(../images/hborder.png) repeat-x 0px -2945px;
+    -background: url(../images/hborder_ie6.png) repeat-x 0px -2144px;
 }
 .gwt-DialogBox .dialogMiddleLeft {
-    background: url(images/vborder.png) repeat-y -31px 0px;
+    background: url(../images/vborder_cr.png) repeat-y -31px 0px;
 }
 .gwt-DialogBox .dialogMiddleRight {
-    background: url(images/vborder.png) repeat-y -32px 0px;
-    -background: url(images/vborder_ie6.png) repeat-y -32px 0px;
+    background: url(../images/vborder_cr.png) repeat-y -32px 0px;
+    -background: url(../images/vborder_cr_ie6.png) repeat-y -32px 0px;
 }
 .gwt-DialogBox .dialogTopLeftInner {
     width: 10px;
@@ -199,20 +199,20 @@ select {
     zoom: 1;
 }
 .gwt-DialogBox .dialogTopLeft {
-    background: url(images/circles.png) no-repeat -20px 0px;
-    -background: url(images/circles_ie6.png) no-repeat -20px 0px;
+    background: url(../images/circles.png) no-repeat -20px 0px;
+    -background: url(../images/circles_ie6.png) no-repeat -20px 0px;
 }
 .gwt-DialogBox .dialogTopRight {
-    background: url(images/circles.png) no-repeat -28px 0px;
-    -background: url(images/circles_ie6.png) no-repeat -28px 0px;
+    background: url(../images/circles.png) no-repeat -28px 0px;
+    -background: url(../images/circles_ie6.png) no-repeat -28px 0px;
 }
 .gwt-DialogBox .dialogBottomLeft {
-    background: url(images/circles.png) no-repeat 0px -36px;
-    -background: url(images/circles_ie6.png) no-repeat 0px -36px;
+    background: url(../images/circles.png) no-repeat 0px -36px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px -36px;
 }
 .gwt-DialogBox .dialogBottomRight {
-    background: url(images/circles.png) no-repeat -8px -36px;
-    -background: url(images/circles_ie6.png) no-repeat -8px -36px;
+    background: url(../images/circles.png) no-repeat -8px -36px;
+    -background: url(../images/circles_ie6.png) no-repeat -8px -36px;
 }
 * html .gwt-DialogBox .dialogTopLeftInner {
     width: 10px;
@@ -310,7 +310,7 @@ select {
     background: #E3E8F3;
 }
 .gwt-MenuBar-horizontal {
-    background: #e3e8f3 url(images/hborder.png) repeat-x 0px -2003px;
+    background: #e3e8f3 url(../images/hborder.png) repeat-x 0px -2003px;
     border: 1px solid #e0e0e0;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItem {
@@ -363,19 +363,19 @@ select {
     margin: 0px 0px 0px 3px;
 }
 .gwt-MenuBarPopup .menuPopupTopCenter {
-    background: url(images/hborder.png) 0px -12px repeat-x;
+    background: url(../images/hborder.png) 0px -12px repeat-x;
 }
 .gwt-MenuBarPopup .menuPopupBottomCenter {
-    background: url(images/hborder.png) 0px -13px repeat-x;
-    -background: url(images/hborder_ie6.png) 0px -13px repeat-x;
+    background: url(../images/hborder.png) 0px -13px repeat-x;
+    -background: url(../images/hborder_ie6.png) 0px -13px repeat-x;
 }
 .gwt-MenuBarPopup .menuPopupMiddleLeft {
-    background: url(images/vborder.png) -12px 0px repeat-y;
-    -background: url(images/vborder_ie6.png) -12px 0px repeat-y;
+    background: url(../images/vborder_cr.png) -12px 0px repeat-y;
+    -background: url(../images/vborder_cr_ie6.png) -12px 0px repeat-y;
 }
 .gwt-MenuBarPopup .menuPopupMiddleRight {
-    background: url(images/vborder.png) -13px 0px repeat-y;
-    -background: url(images/vborder_ie6.png) -13px 0px repeat-y;
+    background: url(../images/vborder_cr.png) -13px 0px repeat-y;
+    -background: url(../images/vborder_cr_ie6.png) -13px 0px repeat-y;
 }
 .gwt-MenuBarPopup .menuPopupTopLeftInner {
     width: 5px;
@@ -398,20 +398,20 @@ select {
     zoom: 1;
 }
 .gwt-MenuBarPopup .menuPopupTopLeft {
-    background: url(images/corner.png) no-repeat 0px -36px;
-    -background: url(images/corner_ie6.png) no-repeat 0px -36px;
+    background: url(../images/corner.png) no-repeat 0px -36px;
+    -background: url(../images/corner_ie6.png) no-repeat 0px -36px;
 }
 .gwt-MenuBarPopup .menuPopupTopRight {
-    background: url(images/corner.png) no-repeat -5px -36px;
-    -background: url(images/corner_ie6.png) no-repeat -5px -36px;
+    background: url(../images/corner.png) no-repeat -5px -36px;
+    -background: url(../images/corner_ie6.png) no-repeat -5px -36px;
 }
 .gwt-MenuBarPopup .menuPopupBottomLeft {
-    background: url(images/corner.png) no-repeat 0px -41px;
-    -background: url(images/corner_ie6.png) no-repeat 0px -41px;
+    background: url(../images/corner.png) no-repeat 0px -41px;
+    -background: url(../images/corner_ie6.png) no-repeat 0px -41px;
 }
 .gwt-MenuBarPopup .menuPopupBottomRight {
-    background: url(images/corner.png) no-repeat -5px -41px;
-    -background: url(images/corner_ie6.png) no-repeat -5px -41px;
+    background: url(../images/corner.png) no-repeat -5px -41px;
+    -background: url(../images/corner_ie6.png) no-repeat -5px -41px;
 }
 * html .gwt-MenuBarPopup .menuPopupTopLeftInner {
     width: 5px;
@@ -457,18 +457,18 @@ select {
     background: #f1f1f1;
 }
 .gwt-DecoratedPopupPanel .popupTopCenter {
-    background: url(images/hborder.png) 0px -2937px repeat-x;
+    background: url(../images/hborder.png) 0px -2937px repeat-x;
 }
 .gwt-DecoratedPopupPanel .popupBottomCenter {
-    background:  url(images/hborder.png) repeat-x 0px -2938px;
-    -background: url(images/hborder_ie6.png) repeat-x 0px -2138px;
+    background:  url(../images/hborder.png) repeat-x 0px -2938px;
+    -background: url(../images/hborder_ie6.png) repeat-x 0px -2138px;
 }
 .gwt-DecoratedPopupPanel .popupMiddleLeft {
-    background: url(images/vborder.png) -21px 0px repeat-y;
+    background: url(../images/vborder_cr.png) -21px 0px repeat-y;
 }
 .gwt-DecoratedPopupPanel .popupMiddleRight {
-    background: url(images/vborder.png) repeat-y -24px 0px;
-    -background: url(images/vborder_ie6.png) repeat-y -24px 0px;
+    background: url(../images/vborder_cr.png) repeat-y -24px 0px;
+    -background: url(../images/vborder_cr_ie6.png) repeat-y -24px 0px;
 }
 .gwt-DecoratedPopupPanel .popupTopLeftInner {
     width: 6px;
@@ -491,20 +491,20 @@ select {
     zoom: 1;
 }
 .gwt-DecoratedPopupPanel .popupTopLeft {
-    background: url(images/circles.png) no-repeat 0px -16px;
-    -background: url(images/circles_ie6.png) no-repeat 0px -16px;
+    background: url(../images/circles.png) no-repeat 0px -16px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px -16px;
 }
 .gwt-DecoratedPopupPanel .popupTopRight {
-    background: url(images/circles.png) no-repeat -6px -16px;
-    -background: url(images/circles_ie6.png) no-repeat -6px -16px;
+    background: url(../images/circles.png) no-repeat -6px -16px;
+    -background: url(../images/circles_ie6.png) no-repeat -6px -16px;
 }
 .gwt-DecoratedPopupPanel .popupBottomLeft {
-    background: url(images/circles.png) no-repeat 0px -21px;
-    -background: url(images/circles_ie6.png) no-repeat 0px -21px;
+    background: url(../images/circles.png) no-repeat 0px -21px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px -21px;
 }
 .gwt-DecoratedPopupPanel .popupBottomRight {
-    background: url(images/circles.png) no-repeat -6px -21px;
-    -background: url(images/circles_ie6.png) no-repeat -6px -21px;
+    background: url(../images/circles.png) no-repeat -6px -21px;
+    -background: url(../images/circles_ie6.png) no-repeat -6px -21px;
 }
 * html .gwt-DecoratedPopupPanel .popupTopLeftInner {
     width: 6px;
@@ -541,7 +541,7 @@ select {
 .gwt-PushButton-down-disabled {
     margin: 0;
     text-decoration: none;
-    background: url("images/hborder.png") repeat-x 0px -27px;
+    background: url("../images/hborder.png") repeat-x 0px -27px;
     border-radius: 2px;
     -moz-border-radius: 2px;
 }
@@ -708,7 +708,7 @@ select {
     padding: 3px;
     border: 1px solid #bbbbbb;
     border-bottom: 0px;
-    background: #d3def6 url(images/hborder.png) repeat-x 0px -989px;
+    background: #d3def6 url(../images/hborder.png) repeat-x 0px -989px;
 }
 .gwt-StackPanel .gwt-StackPanelContent {
     border: 1px solid #bbbbbb;
@@ -738,13 +738,13 @@ select {
 }
 .gwt-DecoratedStackPanel .stackItemTopLeft {
     border-left: 1px solid #bbbbbb;
-    background: #d3def6 url(images/corner.png) no-repeat 0px -49px;
-    -background: #d3def6 url(images/corner_ie6.png) no-repeat 0px -49px;
+    background: #d3def6 url(../images/corner.png) no-repeat 0px -49px;
+    -background: #d3def6 url(../images/corner_ie6.png) no-repeat 0px -49px;
 }
 .gwt-DecoratedStackPanel .stackItemTopRight {
     border-right: 1px solid #bbbbbb;
-    background: #d3def6 url(images/corner.png) no-repeat -6px -49px;
-    -background: #d3def6 url(images/corner_ie6.png) no-repeat -6px -49px;
+    background: #d3def6 url(../images/corner.png) no-repeat -6px -49px;
+    -background: #d3def6 url(../images/corner_ie6.png) no-repeat -6px -49px;
 }
 .gwt-DecoratedStackPanel .stackItemTopLeftInner,
 .gwt-DecoratedStackPanel .stackItemTopRightInner {
@@ -758,10 +758,10 @@ select {
     overflow: hidden;
 }
 .gwt-DecoratedStackPanel .stackItemTopCenter {
-    background: url(images/hborder.png) 0px -21px repeat-x;
+    background: url(../images/hborder.png) 0px -21px repeat-x;
 }
 .gwt-DecoratedStackPanel .stackItemMiddleLeft {
-    background: #d3def6 url(images/hborder.png) repeat-x 0px -989px;
+    background: #d3def6 url(../images/hborder.png) repeat-x 0px -989px;
     border-left: 1px solid #bbbbbb;
 }
 .gwt-DecoratedStackPanel .stackItemMiddleLeftInner,
@@ -770,13 +770,13 @@ select {
     height: 1px;
 }
 .gwt-DecoratedStackPanel .stackItemMiddleRight {
-    background: #d3def6 url(images/hborder.png) repeat-x 0px -989px;
+    background: #d3def6 url(../images/hborder.png) repeat-x 0px -989px;
     border-right: 1px solid #bbbbbb;
 }
 .gwt-DecoratedStackPanel .stackItemMiddleCenter {
     font-weight: bold;
     font-size: 1.3em;
-    background: #d3def6 url(images/hborder.png) repeat-x 0px -989px;
+    background: #d3def6 url(../images/hborder.png) repeat-x 0px -989px;
 }
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-first .stackItemTopRight,
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-first .stackItemTopLeft {
@@ -854,26 +854,26 @@ select {
     zoom: 1;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopLeft {
-    background: url(images/circles.png) no-repeat 0px -6px;
-    -background: url(images/circles_ie6.png) no-repeat 0px -6px;
+    background: url(../images/circles.png) no-repeat 0px -6px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px -6px;
     width:5px;
     height:5px;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopRight {
-    background: url(images/circles.png) no-repeat -5px -6px;
-    -background: url(images/circles_ie6.png) no-repeat -5px -6px;
+    background: url(../images/circles.png) no-repeat -5px -6px;
+    -background: url(../images/circles_ie6.png) no-repeat -5px -6px;
     width:5px;
     height:5px;
 }
 .gwt-SuggestBoxPopup .suggestPopupBottomLeft {
-    background: url(images/circles.png) no-repeat 0px -11px;
-    -background: url(images/circles_ie6.png) no-repeat 0px -11px;
+    background: url(../images/circles.png) no-repeat 0px -11px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px -11px;
     width:5px;
     height:5px;
 }
 .gwt-SuggestBoxPopup .suggestPopupBottomRight {
-    background: url(images/circles.png) no-repeat -5px -11px;
-    -background: url(images/circles_ie6.png) no-repeat -5px -11px;
+    background: url(../images/circles.png) no-repeat -5px -11px;
+    -background: url(../images/circles_ie6.png) no-repeat -5px -11px;
     width:5px;
     height:5px;
 }
@@ -968,12 +968,12 @@ select {
     height: 3px;
 }
 .gwt-DecoratedTabBar .tabTopLeft {
-    background: url(images/circles.png) no-repeat 0px 0px;
-    -background: url(images/circles_ie6.png) no-repeat 0px 0px;
+    background: url(../images/circles.png) no-repeat 0px 0px;
+    -background: url(../images/circles_ie6.png) no-repeat 0px 0px;
 }
 .gwt-DecoratedTabBar .tabTopRight {
-    background: url(images/circles.png) no-repeat -3px 0px;
-    -background: url(images/circles_ie6.png) no-repeat -3px 0px;
+    background: url(../images/circles.png) no-repeat -3px 0px;
+    -background: url(../images/circles_ie6.png) no-repeat -3px 0px;
 }
 * html .gwt-DecoratedTabBar .tabTopLeftInner,
 * html .gwt-DecoratedTabBar .tabTopRightInner {
@@ -1005,12 +1005,12 @@ select {
     background:#fff;
 }
 .gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabTopLeft {
-    background: url(images/circles.png) no-repeat -6px 0px;
-    -background: url(images/circles_ie6.png) no-repeat -6px 0px;
+    background: url(../images/circles.png) no-repeat -6px 0px;
+    -background: url(../images/circles_ie6.png) no-repeat -6px 0px;
 }
 .gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabTopRight {
-    background: url(images/circles.png) no-repeat -9px 0px;
-    -background: url(images/circles_ie6.png) no-repeat -9px 0px;
+    background: url(../images/circles.png) no-repeat -9px 0px;
+    -background: url(../images/circles_ie6.png) no-repeat -9px 0px;
 }
 .gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabMiddleLeft,
 .gwt-DecoratedTabBar .gwt-TabBarItem-selected .tabMiddleRight {
@@ -1056,7 +1056,7 @@ select {
 .gwt-ToggleButton-down-disabled {
     margin: 0;
     text-decoration: none;
-    background: url("images/hborder.png") repeat-x 0px -27px;
+    background: url("../images/hborder.png") repeat-x 0px -27px;
     -moz-border-radius: 2px;
     border-radius: 2px;
 }
@@ -1207,7 +1207,7 @@ select {
 .datePickerDayIsToday {
     padding: 3px;
     color: #fff;
-    background: url(images/hborder.png) repeat-x 0px -2607px;
+    background: url(../images/hborder.png) repeat-x 0px -2607px;
 }
 
 .datePickerMonthSelector {
@@ -1246,7 +1246,7 @@ td.datePickerMonth {
     padding: 3px;
     border: 1px solid #bbbbbb;
     border-bottom: 0px;
-    background: #d3def6 url(images/hborder.png) repeat-x 0px -989px;
+    background: #d3def6 url(../images/hborder.png) repeat-x 0px -989px;
 }
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader-hovering {
     background: #d3def6;
@@ -1294,11 +1294,11 @@ td.datePickerMonth {
 }
 
 .gwt-SplitLayoutPanel-HDragger {
-    background: #e7e7e7 url(images/thumb_vertical.png) center center no-repeat;
+    background: #e7e7e7 url(../images/thumb_vertical.png) center center no-repeat;
     cursor: col-resize;
 }
 
 .gwt-SplitLayoutPanel-VDragger {
-    background: #e7e7e7 url(images/thumb_horz.png) center center no-repeat;
+    background: #e7e7e7 url(../images/thumb_horz.png) center center no-repeat;
     cursor: row-resize;
 }
