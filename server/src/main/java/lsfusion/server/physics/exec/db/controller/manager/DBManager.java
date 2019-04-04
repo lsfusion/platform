@@ -1317,7 +1317,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             initSystemUser(session);
 
+            classForNameSQL();
+
             return compareHashModules(session);
+        }
+    }
+
+    private void classForNameSQL() {
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.informix.jdbc.IfxDriver");
+            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+        } catch (ClassNotFoundException e) {
+            throw Throwables.propagate(e);
         }
     }
 

@@ -32,14 +32,6 @@ public class ReadAction extends SystemExplicitAction {
         this.targetProp = targetProp;
         this.clientAction = clientAction;
         this.dialog = dialog;
-
-        try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            Class.forName("com.informix.jdbc.IfxDriver");
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     @Override
