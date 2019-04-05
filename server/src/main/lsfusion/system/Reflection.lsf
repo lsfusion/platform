@@ -45,7 +45,7 @@ TABLE formNames (VARSTRING[100]);
 
 caption '{reflection.caption.form}' = DATA VARSTRING[250] (Form);
 canonicalName '{reflection.canonical.name.form}' = DATA VARSTRING[100] (Form);
-form '{reflection.form}' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // для profiler'а
+form '{reflection.form}' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // for profiler
 is (Form form) = form IS Form;
 
 currentForm = NATIVE VARSTRING[100] (); // canonical name
@@ -259,16 +259,16 @@ notRecalculateStats '{reflection.not.recalculate.stats}' = DATA BOOLEAN (Table);
 recalculateStats '{reflection.recalculate.stats}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableStatsAction' (Table);
 pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PackTableAction' (Table);
 
-disableClasses 'Отключить пересчёт и проверку классов' = DATA BOOLEAN (Table);
-disableStatsTable 'Отключить пересчёт и проверку статистики' (Table t) = notRecalculateStats(t);
-disableAggregations 'Отключить пересчёт и проверку аггрегаций' (TableColumn tc) = notRecalculate(tc);
-disableClasses 'Отключить пересчёт и проверку классов' = DATA BOOLEAN (TableColumn);
-disableStatsTableColumn 'Отключить пересчёт и проверку статистики' = DATA BOOLEAN (TableColumn);
+disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (Table);
+disableStatsTable '{reflection.disable.stats}' (Table t) = notRecalculateStats(t);
+disableAggregations '{reflection.disable.aggregations}' (TableColumn tc) = notRecalculate(tc);
+disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (TableColumn);
+disableStatsTableColumn '{reflection.disable.stats}' = DATA BOOLEAN (TableColumn);
 
-disableClasses 'Отключить пересчёт и проверку классов' (VARISTRING[100] sid) = disableClasses(tableSID(sid));
-disableStatsTable 'Отключить пересчёт и проверку статистики' (VARISTRING[100] sid) = disableStatsTable(tableSID(sid));
+disableClasses '{reflection.disable.classes}' (VARISTRING[100] sid) = disableClasses(tableSID(sid));
+disableStatsTable '{reflection.disable.stats}' (VARISTRING[100] sid) = disableStatsTable(tableSID(sid));
 disableAggregations (VARISTRING[100] sid) = disableAggregations(tableColumnSID(sid));
-disableStatsTableColumn 'Отключить пересчёт и проверку статистики' (VARISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
+disableStatsTableColumn '{reflection.disable.stats}' (VARISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
 
 CLASS DropColumn '{reflection.drop.column}';
 TABLE dropColumn (DropColumn);
