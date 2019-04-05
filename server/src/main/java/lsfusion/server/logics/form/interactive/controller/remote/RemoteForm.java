@@ -61,6 +61,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -1090,27 +1091,36 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                 // if group is value (not an object), pass singleton map with group sid
                 JSONObject modify = new JSONObject(json);
 
+                // changing current object (before changing property to have relevant current objects)
+                MExclMap<ObjectInstance, DataObject> mCurrentObjects = MapFact.mExclMap();
                 Iterator<String> modifyKeys = modify.keys();
                 while (modifyKeys.hasNext()) {
                     String modifyKey = modifyKeys.next();
                     Object modifyValue = modify.get(modifyKey);
 
                     if (modifyValue instanceof JSONObject) { // group objects
+                        Object value = ((JSONObject) modifyValue).opt("value");
+                        if(value != null) // in current js interface value is passed for all objects, but in theory it will work even when there are not all values
+                            changeGroupObjectExternal(modifyKey, value, stack, mCurrentObjects);
+                    }
+                }
+                ImMap<ObjectInstance, DataObject> currentObjects = mCurrentObjects.immutable();
+
+                modifyKeys = modify.keys();
+                while (modifyKeys.hasNext()) {
+                    String modifyKey = modifyKeys.next();
+                    Object modifyValue = modify.get(modifyKey);
+
+                    if (modifyValue instanceof JSONObject) { // group objects
                         JSONObject groupObjectModify = (JSONObject) modifyValue;
-
-                        // changing current object (before changing property to have relevant current objects) 
-                        Object groupObjectValue = groupObjectModify.opt("value");
-                        if (groupObjectValue != null)
-                            changeGroupObjectExternal(modifyKey, groupObjectValue, stack);
-
                         Iterator<String> propertyKeys = groupObjectModify.keys();
                         while (propertyKeys.hasNext()) {
                             String propertyName = propertyKeys.next();
                             if (!propertyName.equals("value"))
-                                changePropertyOrExecActionExternal(propertyName, groupObjectModify.get(propertyName), stack);
+                                changePropertyOrExecActionExternal(propertyName, groupObjectModify.get(propertyName), currentObjects, stack);
                         }
                     } else // properties without group
-                        changePropertyOrExecActionExternal(modifyKey, modifyValue, stack);
+                        changePropertyOrExecActionExternal(modifyKey, modifyValue, currentObjects, stack);
                 }
 
                 return new Pair<>(requestIndex, getFormChangesExternal(stack));
@@ -1168,21 +1178,35 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return valueToSet;
     }
 
-    private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack) throws IOException, ParseException, SQLException, SQLHandledException {
+    private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack, MExclMap<ObjectInstance, DataObject> mCurrentObjects) throws IOException, ParseException, SQLException, SQLHandledException {
         GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
         DataSession session = form.session;
-        // there is no addSeek so maybe we should use forceChangeObject instead of change 
-        groupObject.change(session, parseJSON(groupObject, session, values), form, stack);
+
+        boolean change = true;
+        if(values instanceof JSONArray) {
+            change = false;
+            values = ((JSONArray)values).get(0);
+        }
+
+        ImMap<ObjectInstance, DataObject> objectValues = parseJSON(groupObject, session, values);
+        mCurrentObjects.exclAddAll(objectValues);
+        if(change)// there is no addSeek so maybe we should use forceChangeObject instead of change
+            groupObject.change(session, objectValues, form, stack);
     }
 
-    private void changePropertyOrExecActionExternal(String propertySID, final Object value, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
+    private void changePropertyOrExecActionExternal(String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(propertySID);
         if(propertyDraw != null) {
             DataClass pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.securityPolicy);
             ObjectValue pushChangeObject = null;
             if (pushChangeType != null) 
                 pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
-            form.executeEditAction(propertyDraw, ServerResponse.CHANGE_WYS, MapFact.<ObjectInstance, DataObject>EMPTY(), pushChangeObject, pushChangeType, null, false, stack);
+            form.executeEditAction(propertyDraw, ServerResponse.CHANGE_WYS, currentObjects, pushChangeObject, pushChangeType, null, false, stack);
+
+            // it's tricky here, unlike changeGroupObject, changeProperty is cancelable, i.e. its change may be canceled, but there will be no undo change in getChanges
+            // so there are 2 ways store previous values on client (just like it is done now on desktop and web-client, which is not that easy task), or just force that property reread
+            // we'll try that approach on external api, if it works fine, maybe we'll change corresponding behaviour on desktop and web-client
+            form.forcePropertyDrawUpdate(propertyDraw);
         }
     }
 

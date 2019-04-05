@@ -1914,6 +1914,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 object.updated = 0;
             group.updated = 0;
         }
+        forcePropertyDrawUpdates = SetFact.EMPTY();
         refresh = false;
 
 //        result.out(this);
@@ -2071,6 +2072,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
+    private ImSet<PropertyDrawInstance> forcePropertyDrawUpdates = SetFact.EMPTY();
+    public void forcePropertyDrawUpdate(PropertyDrawInstance propertyDraw) {
+        forcePropertyDrawUpdates = forcePropertyDrawUpdates.merge(propertyDraw);
+    }
+
+    private boolean propertyUpdated(PropertyDrawInstance propertyDraw, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
+        return forcePropertyDrawUpdates.contains(propertyDraw) || propertyUpdated(propertyDraw.getDrawInstance(), groupObjects, changedProps, hidden);
+    }
+
     private void fillChangedDrawProps(MFormChanges result, ChangedData changedProps) throws SQLException, SQLHandledException {
         //1е чтение - читаем showIfs
         HashMap<PropertyDrawInstance, Boolean> newIsShown = new HashMap<>();
@@ -2096,7 +2106,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 boolean hidden = isTabHidden(drawProperty, newPropIsShown);
 
                 // расширенный fillChangedReader, но есть часть специфики, поэтому дублируется
-                if (read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty.getDrawInstance(), propRowGrids, changedProps, hidden)) {
+                if (read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty, propRowGrids, changedProps, hidden)) {
                     if (hidden) { // если спрятан
                         if (read) { // все равно надо отослать клиенту, так как влияет на наличие вкладки, но с "hidden" значениями
                             mReadProperties.exclAdd(drawProperty.hiddenReader, propRowGrids);
