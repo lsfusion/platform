@@ -105,8 +105,6 @@ generatePassword 'Сгенерировать пароль' INTERNAL 'lsfusion.se
 
 lower (TEXT p1) = FORMULA 'lower($1)';
 
-stringEqualsAll(STRING[3] string) = string == STRING[3]('Все');
-
 isWordInCSV = FORMULA NULL INTEGER PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
 
 getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA TEXT '(string_to_array($1,$2))[($3)]';
