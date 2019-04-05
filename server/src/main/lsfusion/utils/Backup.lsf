@@ -65,7 +65,7 @@ exclude '{backup.exclude.backup.table}' = DATA BOOLEAN (Backup, Table);
 
 FORM backup '{backup.backup}'
     OBJECTS b = Backup
-    PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
+    PROPERTIES() binPath, dumpDir, saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
     PROPERTIES() DRAW b  decimateBackupsAction, makeBackupAction, makePartialBackupAction
     PROPERTIES(b) save
     PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log PANEL
@@ -108,6 +108,8 @@ DESIGN backup {
         NEW pane2 {
             caption = '{backup.form.backup.caption.settings}';
             align = STRETCH;
+            MOVE PROPERTY(binPath());
+            MOVE PROPERTY(dumpDir());
             MOVE PROPERTY(saveFirstDayBackups());
             MOVE PROPERTY(saveMondayBackups());
             MOVE PROPERTY(maxQuantityBackups());
