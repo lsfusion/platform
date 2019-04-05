@@ -49,7 +49,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     }
     
     public static boolean isAuthException(Throwable caught) {
-        return caught instanceof InvocationException && caught.getMessage() != null && caught.getMessage().contains("<div style=\"visibility: hidden;\">448b0ce6-206e-11e9-ab14-d663bd873d93</div>");//from login.jsp
+        return caught instanceof StatusCodeException && ((StatusCodeException) caught).getStatusCode() == 401;
     }
 
     // client - web-server and web-server - app-server connection problems 
