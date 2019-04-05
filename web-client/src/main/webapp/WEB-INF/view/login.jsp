@@ -14,7 +14,6 @@
     </head>
     <body onload="document.loginForm.username.focus();">
 
-    <div style="visibility: hidden;">448b0ce6-206e-11e9-ab14-d663bd873d93</div>
         <table class="content-table">
             <tr></tr>
             <tr>

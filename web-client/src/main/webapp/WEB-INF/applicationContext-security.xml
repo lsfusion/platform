@@ -20,6 +20,17 @@
     </http>
     <!-- for login.css, logo, favicon, etc. -->
     <http pattern="/static/noauth/**" security="none"/>
+
+    <http pattern="/main/*/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
+        <intercept-url pattern="/**" access="isAuthenticated()"/>
+        <csrf disabled="true"/>
+    </http>
+
+    <http pattern="/static/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
+        <intercept-url pattern="/**" access="isAuthenticated()"/>
+        <csrf disabled="true"/>
+    </http>
+
     <!-- we need to download logo and icon -->
     <http pattern="/downloadFile" security="none"/>
     <!--for backward compatibility-->
@@ -52,7 +63,7 @@
     <!-- authenticate user when anonymousUI is enabled, and no auth provided -->
     <b:bean id="anonymousFilter" class="lsfusion.http.authentication.LSFAuthAnonymousFilter"/>
 
-    <b:bean id="entryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+    <b:bean id="entryPoint" class="lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint">
         <b:constructor-arg value="/login"/>
         <b:property name="useForward" value="true"/>
     </b:bean>
@@ -61,6 +72,9 @@
     <b:bean id="failureLoginHandler" class="lsfusion.http.authentication.LSFAuthenticationFailureHandler"/>
 
     <b:bean id="successLogoutHandler" class="lsfusion.http.authentication.LSFSimpleUrlLogoutSuccessHandler" >
+    </b:bean>
+
+    <b:bean id="restAuthenticationEntryPoint" class="lsfusion.http.authentication.RestAuthenticationEntryPoint" >
     </b:bean>
 
     <!-- Authentication configuration -->
