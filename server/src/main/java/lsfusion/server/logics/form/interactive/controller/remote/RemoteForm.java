@@ -273,6 +273,8 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
                 
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
+                if(valueToSet == null)
+                    return;
 
                 groupObject.change(form.session, valueToSet, form, stack);
 
@@ -293,6 +295,9 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+                if(valueToSet == null)
+                    return;
+
                 if (logger.isTraceEnabled()) {
                     GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
                     logger.trace(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
@@ -312,6 +317,9 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+                if(valueToSet == null)
+                    return;
+
                 if (logger.isTraceEnabled()) {
                     GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
                     logger.trace(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));

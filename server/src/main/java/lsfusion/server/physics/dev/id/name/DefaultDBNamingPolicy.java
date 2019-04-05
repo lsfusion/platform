@@ -6,20 +6,20 @@ public class DefaultDBNamingPolicy extends FixedSizeUnderscoreDBNamingPolicy {
     }
     
     @Override
-    public String transformPropertyCNToDBName(String canonicalName) {
-        int signtaturePos = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
-        assert signtaturePos > 0;
+    public String transformActionOrPropertyCNToDBName(String canonicalName) {
+        int signaturePos = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
+        assert signaturePos > 0;
         
         // отдельно обрабатываем канонические имена class data properties из-за того, что они получаются слишком длинными, 
         // а сигнатура в них необязательна для уникальности
         if (canonicalName.startsWith("System." + PropertyCanonicalNameUtils.classDataPropPrefix)) {
-            return cutToMaxLength(nameWithoutSignature(canonicalName, signtaturePos).replace(CompoundNameUtils.DELIMITER, '_'));
+            return cutToMaxLength(nameWithoutSignature(canonicalName, signaturePos).replace(CompoundNameUtils.DELIMITER, '_'));
         }
         
-        String signatureStr = canonicalName.substring(signtaturePos);
+        String signatureStr = canonicalName.substring(signaturePos);
         signatureStr = removeNamespacesFromSignatureClasses(signatureStr);
         
-        return super.transformPropertyCNToDBName(canonicalName.substring(0, signtaturePos) + signatureStr);
+        return super.transformActionOrPropertyCNToDBName(canonicalName.substring(0, signaturePos) + signatureStr);
     }
     
     private String removeNamespacesFromSignatureClasses(String signatureStr) {
