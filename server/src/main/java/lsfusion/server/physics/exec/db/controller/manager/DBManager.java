@@ -1759,7 +1759,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         Map<String, String> propertyChanges = getChangesAfter(oldData.dbVersion, storedPropertyCNChanges);
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             boolean found = false;
-            String newDBName = LM.getDBNamingPolicy().transformPropertyCNToDBName(entry.getValue());
+            String newDBName = LM.getDBNamingPolicy().transformActionOrPropertyCNToDBName(entry.getValue());
             for (DBStoredProperty oldProperty : oldData.storedProperties) {
                 if (entry.getKey().equals(oldProperty.getCanonicalName())) {
                     renameColumn(sql, oldData, oldProperty, newDBName);
@@ -1825,7 +1825,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 if (tableNewClassProps.containsKey(tableName)) {
                     String newName = tableNewClassProps.get(tableName);
                     nameRenames.put(cls.sDataPropID, newName);
-                    String newDBName = LM.getDBNamingPolicy().transformPropertyCNToDBName(newName);
+                    String newDBName = LM.getDBNamingPolicy().transformActionOrPropertyCNToDBName(newName);
                     renameColumn(sql, oldData, oldClassProp, newDBName);
                     oldClassProp.setCanonicalName(newName);
                     cls.sDataPropID = newName;
@@ -2220,7 +2220,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public void setCanonicalName(String canonicalName) {
             this.canonicalName = canonicalName;
             if (canonicalName != null) {
-                this.dbName = LM.getDBNamingPolicy().transformPropertyCNToDBName(canonicalName);
+                this.dbName = LM.getDBNamingPolicy().transformActionOrPropertyCNToDBName(canonicalName);
             }
         }
 

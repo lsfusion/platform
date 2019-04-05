@@ -168,7 +168,7 @@ public class TableFactory implements FullTablesInterface {
         }
         Collections.sort(valueClasses, ValueClass.comparator);
 
-        ImplementTable implementTable = new ImplementTable(policy.createAutoTableName(valueClasses), valueClasses.toArray(new ValueClass[classCount]));
+        ImplementTable implementTable = new ImplementTable(policy.createAutoTableDBName(valueClasses), valueClasses.toArray(new ValueClass[classCount]));
         incTables.add(implementTable);
         return implementTable.getSingleMapTable(findItem, true);
     }

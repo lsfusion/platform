@@ -15,13 +15,19 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
     }
 
     @Override
-    public String createPropertyName(String namespaceName, String name, List<ResolveClassSet> signature) {
+    public String createActionOrPropertyDBName(String namespaceName, String name, List<ResolveClassSet> signature) {
         String canonicalName = PropertyCanonicalNameUtils.createName(namespaceName, name, signature);
-        return transformPropertyCNToDBName(canonicalName);
+        return transformActionOrPropertyCNToDBName(canonicalName);
     }
 
     @Override
-    public String createAutoTableName(List<ValueClass> classes) {
+    public String createTableDBName(String namespace, String name) {
+        String canonicalName = CanonicalNameUtils.createCanonicalName(namespace, name);
+        return transformTableCNToDBName(canonicalName);
+    }
+    
+    @Override
+    public String createAutoTableDBName(List<ValueClass> classes) {
         StringBuilder builder = new StringBuilder(autoTablesPrefix);
         for (ValueClass valueClass : classes) {
             builder.append('_');
@@ -32,7 +38,7 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
 
     // Заменяет знаки '?' на 'null', затем все спец символы заменяет на '_', и удаляет подчеркивания в конце 
     @Override
-    public String transformPropertyCNToDBName(String canonicalName) {
+    public String transformActionOrPropertyCNToDBName(String canonicalName) {
         String dbName = replaceUnknownClassesWithNull(canonicalName);
         dbName = replaceAllNonIDLettersWithUnderscore(dbName);
         dbName = removeTrailingUnderscores(dbName);
