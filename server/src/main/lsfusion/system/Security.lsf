@@ -25,10 +25,10 @@ mainRole[User](CustomUser u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
 // Roles
 TABLE customUserRole (CustomUser, UserRole);
-in 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
+in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
 
 TABLE userUserRole (User, UserRole);
-has 'Вкл.' (User user, UserRole role) = mainRole(user) = role OR in(user, role) MATERIALIZED;
+has '{security.in}' (User user, UserRole role) = mainRole(user) = role OR in(user, role) MATERIALIZED;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
