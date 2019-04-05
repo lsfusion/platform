@@ -78,7 +78,7 @@ actionBodyExecution '{eval.script.action.body.execution}' (Script s)  {
 formExecution '{eval.script.form.execution}' (Script s)  { 
     preRunScript(s);
     NEWSESSION TRY {
-        EVAL CONCAT ' ', 'FORM form', text(s), ';\nrun() \{ SHOW form NOWAIT; \}';
+        EVAL CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}';
     } CATCH {
         SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();    
     }
