@@ -50,6 +50,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -202,7 +203,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, DBNamingPolicy policy) {
         assert name != null && namespace != null;
-        this.dbName = policy.createActionOrPropertyDBName(namespace, name, signature);
+
+        this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
+        this.dbName = policy.transformActionOrPropertyCNToDBName(this.canonicalName);
 
         setExplicitClasses(signatureOrder, signature);
     }
