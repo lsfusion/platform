@@ -48,7 +48,7 @@ incrementValue '{numerator.increment.value.numerator}'(Numerator numerator)  {
 
 // -------------- Генерация счетчиков на форме с целью выноса из общей транзакции для уменьшения вероятности CONFLICT UPDATE
 
-@defineOption(generateNumberOnForm, '{numerator.generate.number.on.form}Генерировать номер до общей транзакции', numerator);
+@defineOption(generateNumberOnForm, '{numerator.generate.number.on.form}', numerator);
 
 META addEventGenerateNumberOnForm(form, o, object)
     generateNumber (###object ob) { 
