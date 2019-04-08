@@ -35,8 +35,8 @@ import java.util.Map;
 public abstract class ExportPlainAction<O extends ObjectSelector> extends ExportAction<O> {
     protected final ImMap<GroupObjectEntity, LP> exportFiles;
     
-    public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, String charset) {
-        super(caption, form, objectsToSet, nulls, staticType, charset);
+    public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset) {
+        super(caption, form, objectsToSet, nulls, staticType, selectTop, charset);
         this.exportFiles = exportFiles;
     }
 

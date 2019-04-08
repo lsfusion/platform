@@ -20,8 +20,8 @@ import java.io.IOException;
 
 public class ExportDBFAction<O extends ObjectSelector> extends ExportPlainAction<O> {
 
-    public ExportDBFAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, String charset) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset != null ? charset : ExternalUtils.defaultDBFCharset);
+    public ExportDBFAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset != null ? charset : ExternalUtils.defaultDBFCharset);
     }
 
     @Override

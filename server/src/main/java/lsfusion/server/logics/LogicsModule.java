@@ -587,29 +587,29 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LA<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, Property printerProperty, LP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, Property passwordProperty, LP targetProp, boolean removeNullsAndDuplicates) {
         return addProperty(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNullsAndDuplicates)));
     }
-    protected <O extends ObjectSelector> LA addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, Property root, Property tag, LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles) {
+    protected <O extends ObjectSelector> LA addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, Integer selectTop, String charset, Property root, Property tag, LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles) {
         ExportAction<O> exportAction;
         switch(staticType) {
             case XML:
-                exportAction = new ExportXMLAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset, root, tag);
+                exportAction = new ExportXMLAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset, root, tag);
                 break;
             case JSON:
-                exportAction = new ExportJSONAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
+                exportAction = new ExportJSONAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, noHeader, separator, noEscape);
+                exportAction = new ExportCSVAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape);
                 break;
             case XLS:
-                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false, noHeader);
+                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, false, noHeader);
                 break;
             case XLSX:
-                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true, noHeader);
+                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, true, noHeader);
                 break;
             case DBF:
-                exportAction = new ExportDBFAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
+                exportAction = new ExportDBFAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
                 break;
             case TABLE:
-                exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
+                exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
                 break;
             default:
                 throw new UnsupportedOperationException();                
@@ -690,7 +690,7 @@ public abstract class LogicsModule {
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean conditional, Property root, Property tag, String separator,
-                                        boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+                                        boolean noHeader, boolean noEscape, Integer selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         int extraParamsCount = (root != null ? 1 : 0) + (tag != null ? 1 : 0);
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
@@ -713,7 +713,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, root, tag, singleExportFile, exportFiles);
+        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, selectTop, charset, root, tag, singleExportFile, exportFiles);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LP<?> whereLCP, String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
