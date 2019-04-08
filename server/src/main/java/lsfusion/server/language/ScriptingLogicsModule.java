@@ -3207,8 +3207,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
-                                                                           LPWithParams rootProperty, LPWithParams tagProperty, boolean attr,
-                                                                           boolean noHeader, String separator, boolean noEscape, String charset, NamedPropertyUsage propUsage,
+                                                                           LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, boolean noHeader,
+                                                                           String separator, boolean noEscape, Integer selectTop, String charset, NamedPropertyUsage propUsage,
                                                                            OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
             exportType = FormIntegrationType.JSON;
@@ -3262,7 +3262,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         LA property = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
-                exportType, noHeader, separator, noEscape, charset, null, null, singleExportFile, exportFiles.immutable());
+                exportType, noHeader, separator, noEscape, selectTop, charset, null, null, singleExportFile, exportFiles.immutable());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
@@ -3390,7 +3390,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, LPWithParams whereProperty, NamedPropertyUsage fileProp, LPWithParams rootProperty, LPWithParams tagProperty,
-                                                String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
+                                                String separator, boolean noHeader, boolean noEscape, Integer selectTop, String charset, boolean attr,
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
         LP<?> targetProp = fileProp != null ? findLPNoParamsByPropertyUsage(fileProp) : null;
@@ -3443,7 +3443,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         try {
             result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), exIds, exLiterals, orders, targetProp,
                     whereProperty != null, rootProperty != null ? rootProperty.getLP().property : null, tagProperty != null ? tagProperty.getLP().property : null,
-                    separator, noHeader, noEscape, charset, attr, resultParams.toArray());
+                    separator, noHeader, noEscape, selectTop, charset, attr, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }

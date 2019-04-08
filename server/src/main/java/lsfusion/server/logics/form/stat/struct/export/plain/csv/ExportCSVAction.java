@@ -23,8 +23,8 @@ public class ExportCSVAction<O extends ObjectSelector> extends ExportPlainAction
     private final boolean noEscape;
     private final String separator;
 
-    public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, String charset, boolean noHeader, String separator, boolean noEscape) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset != null ? charset : ExternalUtils.defaultCSVCharset);
+    public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean noHeader, String separator, boolean noEscape) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset != null ? charset : ExternalUtils.defaultCSVCharset);
         
         this.noHeader = noHeader;
         this.noEscape = noEscape;

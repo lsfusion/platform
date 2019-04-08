@@ -19,8 +19,8 @@ import java.io.PrintWriter;
 public class ExportJSONAction<O extends ObjectSelector> extends ExportHierarchicalAction<JSONNode, O> {
 
     public ExportJSONAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                            FormIntegrationType staticType, LP exportFile, String charset) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, charset, null, null);
+                            FormIntegrationType staticType, LP exportFile, Integer selectTop, String charset) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFile, selectTop, charset, null, null);
     }
 
     protected JSONNode createRootNode(String root, String tag) {

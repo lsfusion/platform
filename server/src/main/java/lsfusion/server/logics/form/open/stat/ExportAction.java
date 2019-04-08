@@ -26,8 +26,8 @@ import java.sql.SQLException;
 public abstract class ExportAction<O extends ObjectSelector> extends FormStaticAction<O, FormIntegrationType> {
     protected final String charset;
 
-    public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, String charset, ActionOrProperty... extraProps) {
-        super(caption, form, objectsToSet, nulls, staticType, null, extraProps);
+    public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, Integer selectTop, String charset, ActionOrProperty... extraProps) {
+        super(caption, form, objectsToSet, nulls, staticType, selectTop, extraProps);
         this.charset = charset;
     }
     
@@ -36,7 +36,7 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
         StaticFormDataManager formDataManager = new StaticFormDataManager(form, mapObjectValues, context);
-        FormDataManager.ExportResult exportData = formDataManager.getExportData();
+        FormDataManager.ExportResult exportData = formDataManager.getExportData(selectTop);
         try {
             export(context, new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
         } catch (IOException e) {

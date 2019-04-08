@@ -19,8 +19,8 @@ public class ExportXLSAction<O extends ObjectSelector> extends ExportPlainAction
     private boolean xlsx;
     private boolean noHeader;
 
-    public ExportXLSAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, String charset, boolean xlsx, boolean noHeader) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
+    public ExportXLSAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean xlsx, boolean noHeader) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
         this.xlsx = xlsx;
         this.noHeader = noHeader;
     }

@@ -38,10 +38,11 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     ImList<Boolean> nulls,
                                     FormIntegrationType staticType,
                                     LP exportFile,
+                                    Integer selectTop,
                                     String charset,
                                     Property root,
                                     Property tag) {
-        super(caption, form, objectsToSet, nulls, staticType, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, root, tag);
+        super(caption, form, objectsToSet, nulls, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, root, tag);
 
         if (root != null) {
             this.rootProperty = root.getImplement(

@@ -22,8 +22,8 @@ import java.io.PrintWriter;
 public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchicalAction<XMLNode, O> {
     
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                           FormIntegrationType staticType, LP exportFile, String charset, Property root, Property tag) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, charset, root, tag);
+                           FormIntegrationType staticType, LP exportFile, Integer selectTop, String charset, Property root, Property tag) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFile, selectTop, charset, root, tag);
     }
 
     protected XMLNode createRootNode(String root, String tag) {
