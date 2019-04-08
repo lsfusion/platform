@@ -1,6 +1,5 @@
 package lsfusion.interop.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
@@ -13,7 +12,7 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public abstract class AbstractLogicsProviderImpl {
 
@@ -24,15 +23,27 @@ public abstract class AbstractLogicsProviderImpl {
         return logicsSessionObject;
     }
 
-    protected RemoteLogicsInterface lookup(LogicsConnection connection) throws AppServerNotAvailableException {
+    protected RemoteLogicsInterface lookup(final LogicsConnection connection) throws AppServerNotAvailableException {
         RemoteLogicsInterface logics;
         try {
-            RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(connection.host, connection.port, connection.exportName, "RemoteLogicsLoader");
+
+            final Future<RemoteLogicsLoaderInterface> future = Executors.newSingleThreadExecutor().submit(new Callable() {
+                @Override
+                public RemoteLogicsLoaderInterface call() throws RemoteException, NotBoundException, MalformedURLException {
+                    return RMIUtils.rmiLookup(connection.host, connection.port, connection.exportName, "RemoteLogicsLoader");
+                }
+            });
+
+            RemoteLogicsLoaderInterface loader;
+            try {
+                loader = future.get(2000, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException e) {
+                future.cancel(true);
+                throw new AppServerNotAvailableException("Application server [" + connection.host + ":" + connection.port + "(" + connection.exportName + ")] is not available. Reason: Timeout");
+            }
             logics = loader.getLogics();
-        } catch (MalformedURLException e) {
-            throw Throwables.propagate(e);
-        } catch (NotBoundException | RemoteException e) {
-            throw new AppServerNotAvailableException("Application server [" + connection.host + ":" + connection.port + "(" + connection.exportName + ")] is not available. Reason : " + ExceptionUtils.copyMessage(e));
+        }  catch (RemoteException | InterruptedException | ExecutionException e) {
+            throw new AppServerNotAvailableException("Application server [" + connection.host + ":" + connection.port + "(" + connection.exportName + ")] is not available. Reason: " + ExceptionUtils.copyMessage(e));
         }
         return logics;
     }
