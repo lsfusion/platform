@@ -449,7 +449,7 @@ public class LoginDialog extends JDialog {
 
     public void setWarningMsg(String msg) {
         ClientLoggers.clientLogger.info("setWarningMsg: " + msg);
-        warningLabel.setText(msg != null ? "<html><body style='width: " + warningPanel.getSize().width + "px'>" + msg + "</body></html>" : "");
+        warningLabel.setText(msg != null ? "<html><body style='width: " + warningPanel.getSize().width + "'>" + msg + "</body></html>" : "");
         warningPanel.setVisible(msg != null && !msg.isEmpty());
         pack();
     }
