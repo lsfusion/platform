@@ -7,6 +7,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -19,10 +20,6 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.EnhancedPatternLayout;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 
 import javax.swing.*;
@@ -40,20 +37,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public class LoginDialog extends JDialog {
-
-    static Logger logger;
-    static {
-        try {
-            logger = Logger.getLogger("loginLog");
-            logger.setLevel(Level.INFO);
-            FileAppender fileAppender = new FileAppender(new EnhancedPatternLayout("%d{DATE} %5p %c{1} - %m%n%throwable{1000}"),
-                    "logs/login.log");
-            logger.removeAllAppenders();
-            logger.addAppender(fileAppender);
-
-        } catch (Exception ignored) {
-        }
-    }
 
     private static final String CONFIG_FILE_NAME = "login.dialog.cfg";
 
@@ -318,7 +301,7 @@ public class LoginDialog extends JDialog {
                 }
                 userInfos.set(newUserInfos);
             } catch (RemoteException e) {
-                logger.error("Error synchronizing users", e);
+                ClientLoggers.clientLogger.error("Error synchronizing users", e);
             }
         }
     }
@@ -465,7 +448,7 @@ public class LoginDialog extends JDialog {
     }
 
     public void setWarningMsg(String msg) {
-        logger.info("setWarningMsg: " + msg);
+        ClientLoggers.clientLogger.info("setWarningMsg: " + msg);
         warningLabel.setText(msg != null ? "<html><body style='width: " + warningPanel.getSize().width + "px'>" + msg + "</body></html>" : "");
         warningPanel.setVisible(msg != null && !msg.isEmpty());
         pack();
@@ -509,7 +492,7 @@ public class LoginDialog extends JDialog {
                 }
             });
         } catch (Throwable e) {
-            logger.error("Failed to synchronize users", e);
+            ClientLoggers.clientLogger.error("Failed to synchronize users", e);
         }
 
         // saving server and user info
