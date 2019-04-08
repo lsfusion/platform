@@ -46,9 +46,11 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
         SQLSyntax syntax = source.getSyntax();
         Matcher m = paramsPattern.matcher(formula.getFormula(syntax.getSyntaxType()));
         StringBuffer result = new StringBuffer("(");
-        while (m.find()) {
-            String param = m.group();
-            m.appendReplacement(result, Matcher.quoteReplacement(exprSource.get(param)));
+        if (!paramsPattern.pattern().isEmpty()) {
+            while (m.find()) {
+                String param = m.group();
+                m.appendReplacement(result, Matcher.quoteReplacement(exprSource.get(param)));
+            }
         }
         m.appendTail(result);
         result.append(")");
