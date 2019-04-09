@@ -7,9 +7,11 @@ import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorSessionObject;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.http.entity.ContentType;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,42 +39,55 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
         String jsonResult;
         String action = jsonObject.getString("action");
-        String formID = jsonObject.getString("form");
-        
-        JSONObject dataObject = jsonObject.optJSONObject("data");
-        String data = dataObject != null ? dataObject.toString() : null; 
 
-        if(action.equals("create")) {
-            String navigatorID = jsonObject.optString("navigator");
-            boolean useGlobalNavigator = false;
-            if(navigatorID.isEmpty()) {
-                navigatorID = "external";
-                useGlobalNavigator = true;
-            }
-
-            NavigatorSessionObject navigatorSessionObject = logicsAndNavigatorProvider.createOrGetNavigatorSessionObject(navigatorID, sessionObject, request);
-
-            Pair<RemoteFormInterface, String> result;
-            try {
-                result = navigatorSessionObject.remoteNavigator.createFormExternal(data);
-            } catch (RemoteException e) {
-                if(useGlobalNavigator) { // we need to invalidate all refs, otherwise we will always get no such object
-                    formProvider.removeFormSessionObjects(navigatorID);
-                    logicsAndNavigatorProvider.removeNavigatorSessionObject(navigatorID);
+        if (action.equals("genids")) {
+            final int count = jsonObject.getInt("count");
+            jsonResult = new JSONArray(runRequest(request, new LogicsRunnable<Object>() {
+                public Object run(LogicsSessionObject sessionObject) throws RemoteException {
+                    long[] ids = new long[count];
+                    for(int i = 0; i< count; i++)
+                        ids[i] = sessionObject.remoteLogics.generateID();
+                    return ids;
                 }
-                throw e;
-            }
-            formProvider.createFormExternal(formID, result.first, navigatorID); // registering form for further usage
-            jsonResult = result.second;
+            })).toString();
         } else {
-            FormSessionObject formSessionObject = formProvider.getFormSessionObject(formID);
-            if(action.equals("change")) {
-                Pair<Long, String> result = formSessionObject.remoteForm.changeExternal(jsonObject.getLong("requestIndex"), jsonObject.getLong("lastReceivedRequestIndex"), data);
+            String formID = jsonObject.getString("form");
+
+            JSONObject dataObject = jsonObject.optJSONObject("data");
+            String data = dataObject != null ? dataObject.toString() : null;
+
+            if (action.equals("create")) {
+                String navigatorID = jsonObject.optString("navigator");
+                boolean useGlobalNavigator = false;
+                if (navigatorID.isEmpty()) {
+                    navigatorID = "external";
+                    useGlobalNavigator = true;
+                }
+
+                NavigatorSessionObject navigatorSessionObject = logicsAndNavigatorProvider.createOrGetNavigatorSessionObject(navigatorID, sessionObject, request);
+
+                Pair<RemoteFormInterface, String> result;
+                try {
+                    result = navigatorSessionObject.remoteNavigator.createFormExternal(data);
+                } catch (RemoteException e) {
+                    if (useGlobalNavigator) { // we need to invalidate all refs, otherwise we will always get no such object
+                        formProvider.removeFormSessionObjects(navigatorID);
+                        logicsAndNavigatorProvider.removeNavigatorSessionObject(navigatorID);
+                    }
+                    throw e;
+                }
+                formProvider.createFormExternal(formID, result.first, navigatorID); // registering form for further usage
                 jsonResult = result.second;
             } else {
-                formSessionObject.remoteForm.closeExternal();
-                formProvider.removeFormSessionObject(formID);
-                jsonResult = "{}";
+                FormSessionObject formSessionObject = formProvider.getFormSessionObject(formID);
+                if (action.equals("change")) {
+                    Pair<Long, String> result = formSessionObject.remoteForm.changeExternal(jsonObject.getLong("requestIndex"), jsonObject.getLong("lastReceivedRequestIndex"), data);
+                    jsonResult = result.second;
+                } else {
+                    formSessionObject.remoteForm.closeExternal();
+                    formProvider.removeFormSessionObject(formID);
+                    jsonResult = "{}";
+                }
             }
         }
 

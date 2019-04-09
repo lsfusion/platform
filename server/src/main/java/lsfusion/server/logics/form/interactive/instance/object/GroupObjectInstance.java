@@ -61,6 +61,7 @@ import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -359,6 +360,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             if((object.getObjectValue() instanceof NullValue)!=isNull)
                 return false;
         return true;
+    }
+
+    public void forceUpdateKeys() {
+        updated |= UPDATED_FILTER;
     }
 
     public boolean isNull() {

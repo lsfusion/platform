@@ -28,6 +28,7 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.remote.SequentialRequestLock;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
@@ -56,6 +57,7 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -1074,7 +1076,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return "RF[" + form + "]";
     }
     
-    public String getFormChangesExternal(ExecutionStack stack) {
+    public JSONObject getFormChangesExternal(ExecutionStack stack) {
         try {
             FormChanges formChanges;
             if(numberOfFormChangesRequests.get() > 1 || isDeactivated())
@@ -1088,6 +1090,11 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @IdentityLazy
+    public FormEntity.MetaExternal getMetaExternal() {
+        return form.entity.getMetaExternal(form.securityPolicy);
     }
 
     @Override
@@ -1116,8 +1123,8 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
 
                 modifyKeys = modify.keys();
                 while (modifyKeys.hasNext()) {
-                    String modifyKey = modifyKeys.next();
-                    Object modifyValue = modify.get(modifyKey);
+                    String groupObjectOrProperty = modifyKeys.next();
+                    Object modifyValue = modify.get(groupObjectOrProperty);
 
                     if (modifyValue instanceof JSONObject) { // group objects
                         JSONObject groupObjectModify = (JSONObject) modifyValue;
@@ -1125,13 +1132,13 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                         while (propertyKeys.hasNext()) {
                             String propertyName = propertyKeys.next();
                             if (!propertyName.equals("value"))
-                                changePropertyOrExecActionExternal(propertyName, groupObjectModify.get(propertyName), currentObjects, stack);
+                                changePropertyOrExecActionExternal(groupObjectOrProperty, propertyName, groupObjectModify.get(propertyName), currentObjects, stack);
                         }
                     } else // properties without group
-                        changePropertyOrExecActionExternal(modifyKey, modifyValue, currentObjects, stack);
+                        changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack);
                 }
 
-                return new Pair<>(requestIndex, getFormChangesExternal(stack));
+                return new Pair<>(requestIndex, getFormChangesExternal(stack).toString());
             }
         });
     }
@@ -1186,6 +1193,17 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return valueToSet;
     }
 
+    private Pair<ObjectInstance, Boolean> getNewDeleteExternal(String groupSID, String propertySID) {
+        GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
+        PropertyDrawInstance<?> propertyDraw = form.getPropertyDrawIntegration(propertySID);
+
+        FormEntity.MetaExternal metaExternal = getMetaExternal();
+        Boolean newDelete = metaExternal.groups.get(groupObject.entity).newDelete.get(propertyDraw.entity);
+        if(newDelete != null)
+            return new Pair<>(groupObject.objects.single(), newDelete);
+        return null;
+    }
+
     private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack, MExclMap<ObjectInstance, DataObject> mCurrentObjects) throws IOException, ParseException, SQLException, SQLHandledException {
         GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
         DataSession session = form.session;
@@ -1202,26 +1220,41 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             groupObject.change(session, objectValues, form, stack);
     }
 
-    private void changePropertyOrExecActionExternal(String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
+    private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(propertySID);
-        if(propertyDraw != null) {
-            DataClass pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.securityPolicy);
-            ObjectValue pushChangeObject = null;
-            if (pushChangeType != null) 
+
+        String editAction;
+        DataClass pushChangeType = null;
+        ObjectValue pushChangeObject = null;
+        DataObject pushAdd = null;
+        if(propertyDraw.isProperty()) {
+            pushChangeType = propertyDraw.getEntity().getWYSRequestInputType(form.securityPolicy);
+            if (pushChangeType != null)
                 pushChangeObject = DataObject.getValue(pushChangeType.parseJSON(value), pushChangeType);
-            form.executeEditAction(propertyDraw, ServerResponse.CHANGE_WYS, currentObjects, pushChangeObject, pushChangeType, null, false, stack);
+            editAction = ServerResponse.CHANGE_WYS;
 
             // it's tricky here, unlike changeGroupObject, changeProperty is cancelable, i.e. its change may be canceled, but there will be no undo change in getChanges
             // so there are 2 ways store previous values on client (just like it is done now on desktop and web-client, which is not that easy task), or just force that property reread
             // we'll try that approach on external api, if it works fine, maybe we'll change corresponding behaviour on desktop and web-client
             form.forcePropertyDrawUpdate(propertyDraw);
+        } else {
+            Pair<ObjectInstance, Boolean> newDelete;
+            if(groupSID != null && (newDelete = getNewDeleteExternal(groupSID, propertySID)) != null) {
+                if(newDelete.second)
+                    pushAdd = currentObjects.get(newDelete.first);
+
+                // see comment above
+                newDelete.first.groupTo.forceUpdateKeys();
+            }
+            editAction = ServerResponse.CHANGE;
         }
+        form.executeEditAction(propertyDraw, editAction, currentObjects, pushChangeObject, pushChangeType, pushAdd, false, stack);
     }
 
     @Override
     public void closeExternal() {
         try {
-            explicitClose();
+            deactivateAndCloseLater(false);
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
         }

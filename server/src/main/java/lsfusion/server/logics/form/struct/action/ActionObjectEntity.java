@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.struct.action;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -35,6 +36,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return property.getGroupChange().mapObjects(mapping);
     }
 
+    @IdentityLazy
     public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
         CustomClass simpleAdd = property.getSimpleAdd();
         if(simpleAdd!=null) {

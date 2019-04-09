@@ -24,7 +24,10 @@ public class RemoteExceptionsAspect {
     @Around(RemoteContextAspect.allRemoteCalls)
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
         try {
-            return thisJoinPoint.proceed();
+            Object result = thisJoinPoint.proceed();
+            if (Thread.interrupted()) // dropping interrupted flag, otherwise it will go with the thread to the next rmi call
+                throw new InterruptedException();
+            return result;
         } catch (Throwable throwable) {
             boolean suppressLog = throwable instanceof RemoteInternalException; // "nested remote call" so we don't need to log it twice
             if(throwable instanceof ThreadDeath || throwable instanceof InterruptedException) {

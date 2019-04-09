@@ -237,7 +237,7 @@ public class FormChanges {
         });                
     } 
 
-    public String serializeExternal() {
+    public JSONObject serializeExternal() {
 
         // modify
         JSONObject modifyJSON = new JSONObject();
@@ -266,9 +266,8 @@ public class FormChanges {
                         JSONObject rowJSON = new JSONObject();
                         // grid props
                         serializePropertiesExternal(rowJSON, gridProperties, gridObjectRow);
-                        // grid keys
-                        if(updateGridObjects)
-                            rowJSON.put("value", RemoteForm.formatJSON(groupObject, gridObjectRow));
+                        // grid keys (we'll need it anyway, for async deletes)
+                        rowJSON.put("value", RemoteForm.formatJSON(groupObject, gridObjectRow));
                         rowsJSON.put(rowJSON);
                     }
                     groupObjectJSON.put("list", rowsJSON);
@@ -295,7 +294,7 @@ public class FormChanges {
         JSONObject response = new JSONObject();
         response.put("modify", modifyJSON);
         response.put("drop", dropJSON);
-        return response.toString();
+        return response;
     }
 
     public ImMap<GroupObjectInstance, ImSet<PropertyDrawInstance>> getGroupProperties() {

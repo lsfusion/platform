@@ -1,5 +1,6 @@
 package lsfusion.server.base.controller.thread;
 
+import lsfusion.base.SystemUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.base.controller.context.Context;
@@ -36,6 +37,10 @@ public class ThreadUtils {
             SQLSession.cancelExecutingStatement(dbManager, thread.getId(), true);
             thread.interrupt();
         }
+    }
+
+    public static void sleep(long millis) {
+        SystemUtils.sleep(millis);
     }
 
     public static void interruptThread(DBManager dbManager, Long threadId, Future future) throws SQLException, SQLHandledException {

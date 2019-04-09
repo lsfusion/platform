@@ -1,5 +1,6 @@
 package lsfusion.server.logics.action.flow;
 
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -18,9 +19,6 @@ public class SleepAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         long updatedValue = ((Number) context.getSingleKeyObject()).longValue();
-        try {
-            Thread.sleep(updatedValue);
-        } catch (InterruptedException e) {
-        }
+        ThreadUtils.sleep(updatedValue);
     }
 }

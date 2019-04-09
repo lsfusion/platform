@@ -190,15 +190,13 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                 ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);
                 ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, threadInfo);
                 try {
-                    deactivate();
-
                     try {
-                        Thread.sleep(delay); // даем время на deactivate (interrupt)
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+                        deactivate();  // it's important to call it in runLater, otherwise it will deactivate itself (in sleep there will be Interrupted exception)
 
-                    explicitClose();
+                        ThreadUtils.sleep(delay); // даем время на deactivate (interrupt)
+                    } finally {
+                        explicitClose();
+                    }
                 } finally {
                     ThreadLocalContext.aspectAfterRmi(threadInfo);
                 }

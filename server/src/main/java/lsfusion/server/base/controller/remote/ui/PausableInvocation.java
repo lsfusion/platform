@@ -1,5 +1,6 @@
 package lsfusion.server.base.controller.remote.ui;
 
+import com.google.common.base.Throwables;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -46,7 +47,7 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
                 try {
                     blockInvocation();
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    throw Throwables.propagate(e);
                 }
                 
                 ServerLoggers.pausableLog("Run invocation: " + sid);
@@ -63,7 +64,7 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
                 try {
                     releaseMain();
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    throw Throwables.propagate(e);
                 }
             }
         });
@@ -108,7 +109,7 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
             releaseInvocation();
             blockMain();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
 
         switch (invocationResult.getStatus()) {

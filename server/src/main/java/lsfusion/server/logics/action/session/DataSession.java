@@ -1988,15 +1988,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     Integer attempts = attemptCountMap.get(conflict.getDescription(true));
                     if(attempts != null) {
                         if(conflict.updateConflict) { // update conflicts
-                            if (attempts >= settings.getConflictSleepThreshold())
-                                try {
-                                    ServerLoggers.sqlHandLogger.info("Sleep started after conflict updates : " + attempts);
-                                    Thread.sleep((long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000));
-                                    ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
-                                } catch (InterruptedException e) {
-                                    return false;
-//                                    ThreadUtils.interruptThread(BL.getDbManager(), Thread.currentThread());
-                                }
+                            if (attempts >= settings.getConflictSleepThreshold()) {
+                                ServerLoggers.sqlHandLogger.info("Sleep started after conflict updates : " + attempts);
+                                ThreadUtils.sleep((long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000));
+                                ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
+                            }
                         } else { // dead locks
                             if(attempts >= settings.getDeadLockThreshold()) {
                                 deadLockPriority = true;

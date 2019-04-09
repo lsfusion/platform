@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.utils.geo;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -75,7 +76,7 @@ public class DistanceGeoAction extends GeoAction {
         int count = 2;
         while (count > 0) {
             try {
-                Thread.sleep(50);
+                ThreadUtils.sleep(50);
 
                 // prepare parameters
                 TcpipNetAddress httpServerNetAddress = new TcpipNetAddress("maps.googleapis.com", 80);
@@ -88,8 +89,6 @@ public class DistanceGeoAction extends GeoAction {
                 count--;
                 if(count <= 0)
                     ServerLoggers.systemLogger.error("DistanceGeo Error, url: " + url, e);
-            } catch (InterruptedException e) {
-                throw Throwables.propagate(e);
             }
         }
         return new JSONObject("");
