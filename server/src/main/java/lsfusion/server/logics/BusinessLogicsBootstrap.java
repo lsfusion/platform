@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.remote.RMIUtils;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
@@ -119,7 +120,7 @@ public class BusinessLogicsBootstrap {
                 @Override
                 public void run() {
                     //убиваемся, если через 5 секунд ещё не вышли
-                    SystemUtils.sleep(5000);
+                    ThreadUtils.sleep(5000);
                     System.exit(0);
                 }
             };

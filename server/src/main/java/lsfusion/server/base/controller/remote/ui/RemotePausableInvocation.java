@@ -88,7 +88,10 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         try {
             pause();
         } catch (InterruptedException e) {
-            throw new RuntimeException("Interaction " + sid + " was interrupted");
+            if (ServerLoggers.isPausableLogEnabled()) {
+                ServerLoggers.pausableLog("Interaction " + sid + " was interrupted");
+            }
+            throw Throwables.propagate(e);
         }
 
         if (clientThrowable != null) {

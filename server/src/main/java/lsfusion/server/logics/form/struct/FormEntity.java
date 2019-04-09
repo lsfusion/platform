@@ -6,10 +6,8 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -64,11 +62,13 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,8 +120,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<GroupObjectEntity> getNFGroupsIt(Version version) { // не finalized
         return groups.getNFIt(version);
     }
+    public ImSet<GroupObjectEntity> getGroups() {
+        return groups.getSet();
+    }
     public ImOrderSet<GroupObjectEntity> getGroupsList() {
-        return groups.getOrderSet(); 
+        return groups.getOrderSet();
     }
     public Iterable<GroupObjectEntity> getNFGroupsListIt(Version version) {
         return groups.getNFListIt(version);
@@ -402,12 +405,74 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             }});
     }
 
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getAllGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
+        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
+            public GroupObjectEntity group(PropertyDrawEntity key) {
+                GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
+                return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+            }});
+    }
+
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(new SFunctionSet<PropertyDrawEntity>() {
             public boolean contains(PropertyDrawEntity element) {
                 return element.isProperty() && element.getIntegrationSID() != null;
             }
         });
+    }
+
+    public static class GroupMetaExternal {
+        public final ImMap<PropertyDrawEntity, Boolean> newDelete;
+
+        public GroupMetaExternal(ImMap<PropertyDrawEntity, Boolean> newDelete) {
+            this.newDelete = newDelete;
+        }
+
+        public JSONObject serialize() {
+            JSONObject newDeleteJSON = new JSONObject();
+            for(int i=0,size=newDelete.size();i<size;i++)
+                newDeleteJSON.put(newDelete.getKey(i).getIntegrationSID(), newDelete.getValue(i));
+
+            JSONObject groupData = new JSONObject();
+            groupData.put("newDelete", newDeleteJSON);
+            return groupData;
+        }
+    }
+
+    public static class MetaExternal {
+        public final ImMap<GroupObjectEntity, GroupMetaExternal> groups;
+
+        public MetaExternal(ImMap<GroupObjectEntity, GroupMetaExternal> groups) {
+            this.groups = groups;
+        }
+
+        public JSONObject serialize() {
+            JSONObject result = new JSONObject();
+            for(int i=0,size=groups.size();i<size;i++)
+                result.put(groups.getKey(i).getIntegrationSID(), groups.getValue(i).serialize());
+            return result;
+        }
+    }
+
+    public MetaExternal getMetaExternal(final SecurityPolicy policy) {
+        final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.<GroupObjectEntity>EMPTY(), false);
+
+        return new MetaExternal(getGroups().mapValues(new GetValue<GroupMetaExternal, GroupObjectEntity>() {
+            public GroupMetaExternal getMapValue(GroupObjectEntity value) {
+                ImOrderSet<PropertyDrawEntity> properties = groupProperties.get(value);
+                if(properties == null)
+                    properties = SetFact.EMPTYORDER();
+
+                MExclMap<PropertyDrawEntity, Boolean> mNewDelete = MapFact.mExclMapMax(properties.size());
+                for(PropertyDrawEntity propertyDraw : properties) {
+                    Pair<ObjectEntity, Boolean> addRemove = propertyDraw.getAddRemove(FormEntity.this, policy);
+                    if(addRemove != null)
+                        mNewDelete.exclAdd(propertyDraw, addRemove.second);
+                }
+                return new GroupMetaExternal(mNewDelete.immutable());
+            }
+        }));
     }
 
     @IdentityLazy

@@ -514,8 +514,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         } finally {
             remoteForm = navigatorContext.popGetForm();
         }
-        
-        return new Pair<RemoteFormInterface, String>(remoteForm, remoteForm.getFormChangesExternal(getStack()));
+
+        JSONObject result = new JSONObject();
+        result.put("initial", remoteForm.getFormChangesExternal(getStack()).get("modify"));
+        result.put("meta", remoteForm.getMetaExternal().serialize());
+        return new Pair<RemoteFormInterface, String>(remoteForm, result.toString());
     }
 
     private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {
