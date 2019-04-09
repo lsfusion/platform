@@ -99,8 +99,8 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         property.drawOptions.setCharWidth(charWidth);
     }
 
-    public void setFixedCharWidth(int charWidth) {
-        property.drawOptions.setFixedCharWidth(charWidth);
+    public void setFlexCharWidth(int charWidth, Boolean flex) {
+        property.drawOptions.setFlexCharWidth(charWidth, flex);
     }
 
     public void setImage(String name) {

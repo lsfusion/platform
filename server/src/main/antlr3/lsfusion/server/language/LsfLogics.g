@@ -2326,7 +2326,7 @@ recursiveActionOptions[LA property, String propertyName, LocalizedString caption
 semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :	inSetting [ps]
 	|	forceViewTypeSetting [property]
-	|	fixedCharWidthSetting [property]
+	|	flexCharWidthSetting [property]
 	|	charWidthSetting [property]
 	|	editKeySetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
@@ -2457,13 +2457,19 @@ forceViewTypeSetting [LAP property]
 	:	viewType=classViewType
 	;
 
-fixedCharWidthSetting [LAP property]
+flexCharWidthSetting [LAP property]
+@init {
+	Boolean flex = null;
+}
 @after {
 	if (inMainParseState()) {
-		self.setFixedCharWidth(property, $width.val);
+		self.setFlexCharWidth(property, $width.val, flex);
 	}
 }
-	:	'CHARWIDTH' width = intLiteral 'FIXED'
+	:	'CHARWIDTH' width = intLiteral
+	    (	('FLEX' { flex = true; })
+        |	('NOFLEX' { flex = false; })
+        )
 	;
 
 charWidthSetting [LAP property]

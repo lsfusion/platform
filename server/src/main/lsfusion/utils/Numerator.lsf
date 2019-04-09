@@ -16,7 +16,7 @@ TABLE numerator (Numerator);
 
 name '{numerator.name.numerator}' = DATA VARISTRING[100](Numerator) CHARWIDTH 20;
 
-series '{numerator.series.numerator}' = DATA STRING[2] (Numerator) IN id CHARWIDTH 3 FIXED;
+series '{numerator.series.numerator}' = DATA STRING[2] (Numerator) IN id CHARWIDTH 3 NOFLEX;
 
 minValue '{numerator.min.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 maxValue '{numerator.max.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
@@ -120,7 +120,7 @@ GROUP numbered '{numerator.numerator}' : id;
 
 META defineNumberedAbstract(class)
     number '{numerator.number.numerator}' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
-    series '{numerator.series.numerator}' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED CHARWIDTH 3 FIXED; 
+    series '{numerator.series.numerator}' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED CHARWIDTH 3 NOFLEX; 
 
     seriesNumber '{numerator.series.number.numerator}' (class o) = 
         CONCAT '', series(o), number(o) 
@@ -145,7 +145,7 @@ DESIGN options{
 
 META defineNumbered(class)
     number '{numerator.number.numerator}' = DATA VARSTRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
-    series '{numerator.series.numerator}' = DATA STRING[2] (class) IN numbered CHARWIDTH 3 FIXED;
+    series '{numerator.series.numerator}' = DATA STRING[2] (class) IN numbered CHARWIDTH 3 NOFLEX;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
          INLINE DO number(o) <- lower(number(o));
@@ -219,7 +219,7 @@ END
 META defineNumerated(object1, object2)
 
     number '{numerator.number.numerator}' = DATA VARSTRING[28] (###object1, ###object2) CHARWIDTH 8;
-    series '{numerator.series.numerator}' = DATA STRING[2] (###object1, ###object2) CHARWIDTH 3 FIXED;
+    series '{numerator.series.numerator}' = DATA STRING[2] (###object1, ###object2) CHARWIDTH 3 NOFLEX;
     seriesNumber '{numerator.series.number.numerator}' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) CHARWIDTH 8 MATERIALIZED;
 
     numerator = DATA Numerator (###object1, ###object2);

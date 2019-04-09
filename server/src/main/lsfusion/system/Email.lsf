@@ -60,8 +60,8 @@ receiveAccountType = DATA ReceiveAccountType(Account);
 nameReceiveAccountType '{email.receive.account.type.account}' (Account account) = name(receiveAccountType(account));
 
 deleteMessages '{email.delete.messages.account}' = DATA BOOLEAN(Account);
-lastDays '{email.last.days.account}' = DATA INTEGER(Account) CHARWIDTH 10 FIXED;
-maxMessages '{email.max.messages.account}' = DATA INTEGER(Account) CHARWIDTH 10 FIXED;
+lastDays '{email.last.days.account}' = DATA INTEGER(Account) CHARWIDTH 10 NOFLEX;
+maxMessages '{email.max.messages.account}' = DATA INTEGER(Account) CHARWIDTH 10 NOFLEX;
 unpack '{email.unpack.account}' = DATA BOOLEAN (Account);
 ignoreExceptions '{email.ignore.exceptions.account}' = DATA BOOLEAN (Account);
 

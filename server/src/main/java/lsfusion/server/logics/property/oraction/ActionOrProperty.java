@@ -735,9 +735,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             processors = processors.addList(processor);
         }
 
-        public void setFixedCharWidth(int charWidth) {
+        public void setFlexCharWidth(int charWidth, Boolean flex) {
             setCharWidth(charWidth);
-            setValueFlex(false);
+            setValueFlex(flex);
         }
 
         public void setImage(String iconPath) {
