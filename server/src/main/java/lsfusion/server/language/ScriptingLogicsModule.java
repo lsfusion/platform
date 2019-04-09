@@ -1218,9 +1218,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setForceViewType(viewType);
     }
 
-    public void setFixedCharWidth(LAP property, Integer fixedCharWidth) {
-        if (fixedCharWidth != null && fixedCharWidth > 0)
-            property.setFixedCharWidth(fixedCharWidth);
+    public void setFlexCharWidth(LAP property, Integer charWidth, Boolean flex) {
+        if (charWidth != null && charWidth > 0)
+            property.setFlexCharWidth(charWidth, flex);
     }
 
     public void setCharWidth(LAP property, Integer charWidth) {

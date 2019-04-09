@@ -545,7 +545,7 @@ END
 
 META defineDocumentDetailNumber (object, detailClass)
     number '{document.number.detail.class}' (detailClass d) = number(object(d)) IN id CHARWIDTH 7;
-    series '{document.series.detail.class}' (detailClass d) = series(object(d)) IN id CHARWIDTH 3 FIXED;
+    series '{document.series.detail.class}' (detailClass d) = series(object(d)) IN id CHARWIDTH 3 NOFLEX;
     seriesNumber '{document.series.number.detail.class}' (detailClass d) = seriesNumber(object(d));
 END
 

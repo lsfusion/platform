@@ -38,11 +38,11 @@ markSeenOnChange  ABSTRACT LIST ( Chat);
 editMessage '{chat.edit.message}' (Chat c, Message m)  ABSTRACT LIST ( Chat, Message);
 
 author '{chat.author.message}' = DATA CustomUser (Message);
-nameAuthor '{chat.author.message}' (Message m) = nameOrLogin(author(m)) CHARWIDTH 30 FIXED;
+nameAuthor '{chat.author.message}' (Message m) = nameOrLogin(author(m)) CHARWIDTH 30 NOFLEX;
 own(Message m) = author(m) == currentUser();
 text '{chat.text.message}' = DATA TEXT (Message) CHARWIDTH 50;
-dateTime '{chat.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
-lastEditDateTime '{chat.last.edit.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
+dateTime '{chat.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 NOFLEX;
+lastEditDateTime '{chat.last.edit.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 NOFLEX;
 system '{chat.system.message}' = DATA BOOLEAN (Message);
 status '{chat.status.message}' = DATA MessageStatus (Message, CustomUser);
 captionStatus '{chat.status.message}' (Message message, CustomUser user) = staticCaption(status(message, user));
@@ -52,7 +52,7 @@ nameChat '{chat.chat}' (Message message) = name(chat(message)) CHARWIDTH 30;
 nameShortChat '{chat.chat}' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
 
 attachment '{chat.attachment}' = DATA FILE (Message);
-hasAttachment '{chat.has.attachment}' (Message m) = IF attachment(m) THEN TRUE CHARWIDTH 1 FIXED;
+hasAttachment '{chat.has.attachment}' (Message m) = IF attachment(m) THEN TRUE CHARWIDTH 1 NOFLEX;
 loadAttachment '{chat.load.attachment}' (Message m)  { INPUT =attachment(m) CHANGE; }
 openAttachment '{chat.open.attachment}' (Message m)  { 
     IF attachment(m) THEN {
@@ -70,7 +70,7 @@ editable (Message m) = NOT readonly(m);
 
 seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
 deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
-status '{chat.status.message}' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 FIXED;
+status '{chat.status.message}' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 NOFLEX;
  
 countMessages '{chat.count.messages}' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
 isEmpty(Chat c) = NOT countMessages(c); 
@@ -78,8 +78,8 @@ lastMessageDateTime '{chat.last.message.date.time}' (Chat c) = GROUP LAST dateTi
 lastMessageDateTime '{chat.last.message.date.time}' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
 
 unreadMessages '{chat.unread.messages}' (chat, CustomUser user) = GROUP SUM 1 IF (status(Message message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message);
-unreadMessages'{chat.unread.messages}' (Chat chat) = unreadMessages(chat, currentUser()) CHARWIDTH 10 FIXED;
-unreadMessages '{chat.unread.messages}' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) CHARWIDTH 10 FIXED;
+unreadMessages'{chat.unread.messages}' (Chat chat) = unreadMessages(chat, currentUser()) CHARWIDTH 10 NOFLEX;
+unreadMessages '{chat.unread.messages}' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) CHARWIDTH 10 NOFLEX;
 sumUnreadMessages '{chat.sum.unread.messages}' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
 
 chatNotFound = DATA LOCAL BOOLEAN ();
