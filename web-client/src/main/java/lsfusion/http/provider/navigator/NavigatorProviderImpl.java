@@ -37,7 +37,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        return new SessionInfo(request.getRemoteHost(), request.getRemoteHost(), null, null); // we don't need client language and country because they were already provided when authenticating (see method above)
+        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null); // we don't need client language and country because they were already provided when authenticating (see method above)
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {
