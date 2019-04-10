@@ -25,13 +25,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
+import java.util.Map;
+import java.util.concurrent.*;
 
 public class ExternalHttpServer extends MonitorServer {
 
     private LogicsInstance logicsInstance;
     private RemoteLogics remoteLogics;
+    private Map<InetSocketAddress, String> hostMap = new HashMap<>();
 
     @Override
     public String getEventName() {
@@ -103,7 +106,7 @@ public class ExternalHttpServer extends MonitorServer {
 
                 InetSocketAddress remoteAddress = request.getRemoteAddress();
                 InetAddress address = remoteAddress.getAddress();
-                SessionInfo sessionInfo = new SessionInfo(remoteAddress.getHostName(), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
+                SessionInfo sessionInfo = new SessionInfo(getHostName(remoteAddress), address != null ? address.getHostAddress() : null, null, null);// client locale does not matter since we use anonymous authentication
 
                 String uriPath = request.getRequestURI().getPath();
                 String url = "http://" + request.getRequestHeaders().getFirst("Host") + uriPath;
@@ -126,6 +129,26 @@ public class ExternalHttpServer extends MonitorServer {
                 ThreadLocalContext.aspectAfterMonitorHTTP(ExternalHttpServer.this);
                 request.close();
             }
+        }
+
+        private String getHostName(final InetSocketAddress remoteAddress) throws ExecutionException, InterruptedException {
+            String hostName = hostMap.get(remoteAddress);
+            if (hostName == null) {
+                final Future future = Executors.newSingleThreadExecutor().submit(new Callable() {
+                    @Override
+                    public String call() {
+                        return remoteAddress.getHostName();
+                    }
+                });
+                try {
+                    hostName = (String) future.get(100, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    future.cancel(true);
+                    hostName = "remote";
+                }
+                hostMap.put(remoteAddress, hostName);
+            }
+            return hostName;
         }
 
         private ContentType getContentType(HttpExchange request) {
