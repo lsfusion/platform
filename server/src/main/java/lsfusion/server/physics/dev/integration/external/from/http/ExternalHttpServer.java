@@ -131,6 +131,7 @@ public class ExternalHttpServer extends MonitorServer {
             }
         }
 
+        //we use hostMap and timeout because getHostName can be very slow
         private String getHostName(final InetSocketAddress remoteAddress) throws ExecutionException, InterruptedException {
             String hostName = hostMap.get(remoteAddress);
             if (hostName == null) {
