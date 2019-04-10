@@ -235,15 +235,14 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         return new SyncNewExConnectionReRun() {
             public ExConnection execute(ExConnection rerun) throws SQLException {
                 ExConnection freeConnection;
-                if (freeConnections.isEmpty()) {
-                    if(rerun != null)
+                    if(rerun != null && freeConnections.size() < Settings.get().getFreeConnections()) {
                         freeConnection = rerun;
-                    else
-                        return null;
-                } else {
-                    freeConnection = freeConnections.pop();
-                    logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) freeConnection.sql).getBackendPID());
-                }
+                    } else {
+                        if (freeConnections.isEmpty())
+                            return null;
+                        freeConnection = freeConnections.pop();
+                        logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) freeConnection.sql).getBackendPID());
+                    }
 
                 usedConnections.put(freeConnection, new WeakReference<>(object));
                 return freeConnection;
