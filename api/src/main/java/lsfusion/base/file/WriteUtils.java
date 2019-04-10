@@ -39,7 +39,8 @@ public class WriteUtils {
         File file = createFile(System.getProperty("user.home") + "/Downloads/", url);
         File parentFile = file.getParentFile();
         if (parentFile != null && !parentFile.exists()) {
-            throw new RuntimeException(String.format("Path is incorrect or not found: %s", file.getAbsolutePath()));
+            throw new RuntimeException(String.format("Path is incorrect or not found: '%s' (resolved to '%s')",
+                    path, file.getAbsolutePath()));
         } else if (append && file.exists()) {
             switch (extension) {
                 case "csv":
