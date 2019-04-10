@@ -45,7 +45,7 @@ public class GBusyDialog extends WindowBox {
 
     @Override
     protected void onLoad() {
-        ScriptInjector.fromUrl("clipboard.js").inject();
+        ScriptInjector.fromUrl("static/js/clipboard.js").inject();
     }
 
     public GBusyDialog() {
