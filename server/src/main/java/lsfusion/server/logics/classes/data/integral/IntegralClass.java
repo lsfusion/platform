@@ -143,6 +143,11 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
+    public String getJSONType() {
+        return "number";
+    }
+
+    @Override
     public void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles) {
         if(object != null)
             cell.setCellValue(object.doubleValue());

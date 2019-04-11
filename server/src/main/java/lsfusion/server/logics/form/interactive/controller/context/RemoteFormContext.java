@@ -35,7 +35,7 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     }
 
     public void aspectDelayUserInteraction(ClientAction action, String message) {
-        form.delayUserInteraction(action);
+        form.delayUserInteraction(action, message);
     }
 
     @Override

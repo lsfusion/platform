@@ -35,6 +35,7 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -85,6 +86,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public static final SessionDataProperty isSync = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
+    public static final SessionDataProperty isExternal = new SessionDataProperty(LocalizedString.create("Is external"), LogicalClass.instance);
     public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
 
     public PropertyDrawEntity printActionPropertyDraw;
@@ -96,6 +98,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public PropertyDrawEntity cancelActionPropertyDraw;
     public PropertyDrawEntity okActionPropertyDraw;
     public PropertyDrawEntity closeActionPropertyDraw;
+
+    public PropertyDrawEntity logMessagePropertyDraw;
 
     private int ID;
     
@@ -206,6 +210,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 
+        initDefaultElements(version);
+    }
+
+    public void initDefaultElements(Version version) {
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
         LA<PropertyInterface> formOk = baseLM.getFormOk();
@@ -218,7 +226,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         okActionPropertyDraw = addPropertyDraw(formOk, version);
         closeActionPropertyDraw = addPropertyDraw(formClose, version);
         dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
-        
+
+        PropertyObjectEntity externalShowIf = addPropertyObject(FormToolbarAction.createShowIfProperty(new Property[]{FormEntity.isExternal}, new boolean[]{false}));
+        logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
+        logMessagePropertyDraw.propertyShowIf = externalShowIf;
+
         addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
     }
@@ -422,20 +434,37 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         });
     }
 
-    public static class GroupMetaExternal {
-        public final ImMap<PropertyDrawEntity, Boolean> newDelete;
+    public static class PropMetaExternal {
+        private final String caption;
+        private final String type;
+        public final Boolean newDelete;
 
-        public GroupMetaExternal(ImMap<PropertyDrawEntity, Boolean> newDelete) {
+        public PropMetaExternal(String caption, String type, Boolean newDelete) {
+            this.caption = caption;
+            this.type = type;
             this.newDelete = newDelete;
         }
 
         public JSONObject serialize() {
-            JSONObject newDeleteJSON = new JSONObject();
-            for(int i=0,size=newDelete.size();i<size;i++)
-                newDeleteJSON.put(newDelete.getKey(i).getIntegrationSID(), newDelete.getValue(i));
+            JSONObject propData = new JSONObject();
+            propData.put("caption", caption);
+            propData.put("type", type);
+            propData.put("newDelete", newDelete);
+            return propData;
+        }
+    }
 
+    public static class GroupMetaExternal {
+        public final ImMap<PropertyDrawEntity, PropMetaExternal> props;
+
+        public GroupMetaExternal(ImMap<PropertyDrawEntity, PropMetaExternal> props) {
+            this.props = props;
+        }
+
+        public JSONObject serialize() {
             JSONObject groupData = new JSONObject();
-            groupData.put("newDelete", newDeleteJSON);
+            for(int i=0,size=props.size();i<size;i++)
+                groupData.put(props.getKey(i).getIntegrationSID(), props.getValue(i).serialize());
             return groupData;
         }
     }
@@ -464,13 +493,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 if(properties == null)
                     properties = SetFact.EMPTYORDER();
 
-                MExclMap<PropertyDrawEntity, Boolean> mNewDelete = MapFact.mExclMapMax(properties.size());
-                for(PropertyDrawEntity propertyDraw : properties) {
-                    Pair<ObjectEntity, Boolean> addRemove = propertyDraw.getAddRemove(FormEntity.this, policy);
-                    if(addRemove != null)
-                        mNewDelete.exclAdd(propertyDraw, addRemove.second);
-                }
-                return new GroupMetaExternal(mNewDelete.immutable());
+                return new GroupMetaExternal(properties.getSet().mapValues(new GetValue<PropMetaExternal, PropertyDrawEntity>() {
+                    public PropMetaExternal getMapValue(PropertyDrawEntity value) {
+                        Pair<ObjectEntity, Boolean> newDelete = ((PropertyDrawEntity<?>) value).getAddRemove(FormEntity.this, policy);
+                        return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete != null ? newDelete.second : null);
+                    }
+                }));
             }
         }));
     }

@@ -61,7 +61,7 @@ public abstract class FormToolbarAction extends InternalAction {
         return enableIf == null ? super.getWhereProperty(recursive) : enableIf.getImplement();
     }
 
-    static LP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {
+    public static LP createShowIfProperty(final Property showIfs[], boolean showIfNots[]) {
         assert showIfs != null && showIfNots != null && showIfs.length == showIfNots.length;
 
         MList<PropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(showIfs.length);

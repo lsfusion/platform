@@ -15,9 +15,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ProcessFormChangesClientAction;
-import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.action.*;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -29,12 +27,16 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.remote.SequentialRequestLock;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.SyncType;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
@@ -66,6 +68,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
@@ -1044,11 +1047,31 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return callAndCacheResult(requestIndex, lastReceivedRequestIndex, continueRequest);
     }
 
-    public void delayUserInteraction(ClientAction action) {
+    public void delayUserInteraction(ClientAction action, String message) {
+        if(currentInvocationExternal) {
+            if(action instanceof UpdateEditValueClientAction || action instanceof AsyncGetRemoteChangesClientAction) // in external CHANGE_WYS state is updated at once on a client, we don't need to reupdate it
+                return;
+            if(message != null) // we'll proceed this message in popLogMessage
+                return;
+        }
         currentInvocation.delayUserInteraction(action);
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {
+        if(currentInvocationExternal) { // temporary for formCancel
+            Object[] result = new Object[actions.length];
+            for (int i = 0; i < actions.length; i++) {
+                ClientAction action = actions[i];
+                if (action instanceof ConfirmClientAction)
+                    result[i] = JOptionPane.YES_OPTION;
+                else {
+                    result = null;
+                    break;
+                }
+            }
+            if(result != null)
+                return result;
+        }
         return currentInvocation.pauseForUserInteraction(actions);
     }
 
@@ -1097,54 +1120,69 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return form.entity.getMetaExternal(form.securityPolicy);
     }
 
+    private boolean currentInvocationExternal = false;
+
     @Override
     public Pair<Long, String> changeExternal(final long requestIndex, long lastReceivedRequestIndex, final String json) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Pair<Long, String>>() {
             @Override
             public Pair<Long, String> call(ExecutionStack stack) throws Exception {
-                // parse json do changes (values should be passed as is, they are parsed inside particular change call)
-                // if group is value (not an object), pass singleton map with group sid
-                JSONObject modify = new JSONObject(json);
+                assert !currentInvocationExternal;
+                currentInvocationExternal = true;
+                try {
+                    // parse json do changes (values should be passed as is, they are parsed inside particular change call)
+                    // if group is value (not an object), pass singleton map with group sid
+                    JSONObject modify = new JSONObject(json);
 
-                // changing current object (before changing property to have relevant current objects)
-                MExclMap<ObjectInstance, DataObject> mCurrentObjects = MapFact.mExclMap();
-                Iterator<String> modifyKeys = modify.keys();
-                while (modifyKeys.hasNext()) {
-                    String modifyKey = modifyKeys.next();
-                    Object modifyValue = modify.get(modifyKey);
+                    // changing current object (before changing property to have relevant current objects)
+                    MExclMap<ObjectInstance, DataObject> mCurrentObjects = MapFact.mExclMap();
+                    Iterator<String> modifyKeys = modify.keys();
+                    while (modifyKeys.hasNext()) {
+                        String modifyKey = modifyKeys.next();
+                        Object modifyValue = modify.get(modifyKey);
 
-                    if (modifyValue instanceof JSONObject) { // group objects
-                        Object value = ((JSONObject) modifyValue).opt("value");
-                        if(value != null) // in current js interface value is passed for all objects, but in theory it will work even when there are not all values
-                            changeGroupObjectExternal(modifyKey, value, stack, mCurrentObjects);
-                    }
-                }
-                ImMap<ObjectInstance, DataObject> currentObjects = mCurrentObjects.immutable();
-
-                modifyKeys = modify.keys();
-                while (modifyKeys.hasNext()) {
-                    String groupObjectOrProperty = modifyKeys.next();
-                    Object modifyValue = modify.get(groupObjectOrProperty);
-
-                    if (modifyValue instanceof JSONObject) { // group objects
-                        JSONObject groupObjectModify = (JSONObject) modifyValue;
-                        Iterator<String> propertyKeys = groupObjectModify.keys();
-                        while (propertyKeys.hasNext()) {
-                            String propertyName = propertyKeys.next();
-                            if (!propertyName.equals("value"))
-                                changePropertyOrExecActionExternal(groupObjectOrProperty, propertyName, groupObjectModify.get(propertyName), currentObjects, stack);
+                        if (modifyValue instanceof JSONObject) { // group objects
+                            Object value = ((JSONObject) modifyValue).opt("value");
+                            if (value != null) // in current js interface value is passed for all objects, but in theory it will work even when there are not all values
+                                changeGroupObjectExternal(modifyKey, value, stack, mCurrentObjects);
                         }
-                    } else // properties without group
-                        changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack);
-                }
+                    }
+                    ImMap<ObjectInstance, DataObject> currentObjects = mCurrentObjects.immutable();
 
-                return new Pair<>(requestIndex, getFormChangesExternal(stack).toString());
+                    ThreadLocalContext.pushLogMessage();
+                    try {
+                        modifyKeys = modify.keys();
+                        while (modifyKeys.hasNext()) {
+                            String groupObjectOrProperty = modifyKeys.next();
+                            Object modifyValue = modify.get(groupObjectOrProperty);
+
+                            if (modifyValue instanceof JSONObject) { // group objects
+                                JSONObject groupObjectModify = (JSONObject) modifyValue;
+                                Iterator<String> propertyKeys = groupObjectModify.keys();
+                                while (propertyKeys.hasNext()) {
+                                    String propertyName = propertyKeys.next();
+                                    if (!propertyName.equals("value"))
+                                        changePropertyOrExecActionExternal(groupObjectOrProperty, propertyName, groupObjectModify.get(propertyName), currentObjects, stack);
+                                }
+                            } else // properties without group
+                                changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack);
+                        }
+                    } finally {
+                        ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
+                        if(form.dataChanged) // just for optimization purposes (otherwise just any change property / exec action would do)
+                            form.BL.LM.getLogMessage().change(DataSession.getLogMessage(logMessages, true), form);
+                    }
+
+                    return new Pair<>(requestIndex, getFormChangesExternal(stack).toString());
+                } finally {
+                    currentInvocationExternal = false;
+                }
             }
         });
     }
 
     private static Object formatJSON(ObjectInstance object, ObjectValue value) {
-        return object.getType().formatJSON(value.getValue());
+        return formatJSONNull(object.getType(), value.getValue());
     }
 
     private static Object parseJSON(ObjectInstance object, Object value) throws ParseException {
@@ -1154,7 +1192,13 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     private static boolean isSimpleGroup(GroupObjectInstance groupObject) {
         return groupObject.objects.size() == 1 && groupObject.getIntegrationSID().equals(groupObject.objects.single().getSID());        
     }
-    
+
+    // we need nulls in external interface to override not null values (while updating)
+    public static Object formatJSONNull(Type type, Object value) {
+        Object jsonValue = type.formatJSON(value);
+        return jsonValue != null ? jsonValue : JSONObject.NULL;
+    }
+
     public static Object formatJSON(GroupObjectInstance group, ImMap<ObjectInstance, ? extends ObjectValue> gridObjectRow) {
         if (isSimpleGroup(group)) {
             ObjectInstance object = group.objects.single();
@@ -1195,10 +1239,10 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
 
     private Pair<ObjectInstance, Boolean> getNewDeleteExternal(String groupSID, String propertySID) {
         GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
-        PropertyDrawInstance<?> propertyDraw = form.getPropertyDrawIntegration(propertySID);
+        PropertyDrawInstance<?> propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
         FormEntity.MetaExternal metaExternal = getMetaExternal();
-        Boolean newDelete = metaExternal.groups.get(groupObject.entity).newDelete.get(propertyDraw.entity);
+        Boolean newDelete = metaExternal.groups.get(groupObject.entity).props.get(propertyDraw.entity).newDelete;
         if(newDelete != null)
             return new Pair<>(groupObject.objects.single(), newDelete);
         return null;
@@ -1221,7 +1265,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     }
 
     private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
-        PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(propertySID);
+        PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
         String editAction;
         DataClass pushChangeType = null;
@@ -1322,7 +1366,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             return result;
         }
         
-        @Around("execution(private lsfusion.interop.action.ServerResponse RemoteForm.executeServerInvocation(long, long, RemotePausableInvocation)) && target(form) && args(requestIndex, lastReceivedRequestIndex, invocation)")
+        @Around("execution(private lsfusion.interop.action.ServerResponse RemoteForm.executeServerInvocation(long, long, lsfusion.server.base.controller.remote.ui.RemotePausableInvocation)) && target(form) && args(requestIndex, lastReceivedRequestIndex, invocation)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
             return syncExecute(form.syncExecuteServerInvocationMap, requestIndex, joinPoint);
         }
@@ -1336,7 +1380,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
             return syncExecute(form.syncThrowInServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(private Object RemoteForm.processRMIRequest(long, long, EExecutionStackCallable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, request)")
+        @Around("execution(private Object RemoteForm.processRMIRequest(long, long, lsfusion.server.logics.action.controller.stack.EExecutionStackCallable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, request)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, EExecutionStackCallable request) throws Throwable {
             return syncExecute(form.syncProcessRMIRequestMap, requestIndex, joinPoint);
         }

@@ -108,6 +108,6 @@ public class LogicsInstanceContext extends AbstractContext {
                 SecurityManager.serverSecurityPolicy, getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
-                checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly, getLocale());
+                checkOnOk, showDrop, interactive, false, contextFilters, pullProps, readonly, getLocale());
     }
 }

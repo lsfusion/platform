@@ -214,9 +214,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack, boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
-                        ImSet<ContextFilter> contextFilters,
+                        boolean isExternal, ImSet<ContextFilter> contextFilters,
                         ImSet<PullChangeProperty> pullProps, boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, isExternal, contextFilters, pullProps, showReadOnly, locale);
     }
 
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
@@ -225,7 +225,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         ExecutionStack stack,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isFloat,
-                        ImSet<ContextFilter> contextFilters,
+                        boolean isExternal, ImSet<ContextFilter> contextFilters,
                         ImSet<PullChangeProperty> pullProps,
                         boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isSync = isSync;
@@ -390,7 +390,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         this.manageSession = adjManageSession;
-        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, adjNoCancel, adjManageSession, showDrop);
+        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, isExternal, adjNoCancel, adjManageSession, showDrop);
 
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
@@ -469,12 +469,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    private static IncrementChangeProps createEnvironmentIncrement(boolean isSync, boolean isFloat, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
+    private static IncrementChangeProps createEnvironmentIncrement(boolean isSync, boolean isFloat, boolean isExternal, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
         IncrementChangeProps environment = new IncrementChangeProps();
         environment.add(FormEntity.isSync, PropertyChange.<ClassPropertyInterface>STATIC(isSync));
         environment.add(FormEntity.isFloat, PropertyChange.<ClassPropertyInterface>STATIC(isFloat));
         environment.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(isAdd));
         environment.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(manageSession));
+        environment.add(FormEntity.isExternal, PropertyChange.<ClassPropertyInterface>STATIC(isExternal));
         environment.add(FormEntity.showDrop, PropertyChange.<ClassPropertyInterface>STATIC(showDrop));
         return environment;
     }
@@ -864,9 +865,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return null;
     }
 
-    public PropertyDrawInstance getPropertyDrawIntegration(String sid) {
+    public PropertyDrawInstance getPropertyDrawIntegration(String groupSID, String sid) {
         for (PropertyDrawInstance property : properties)
-            if (property.getIntegrationSID().equals(sid))
+            if (((groupSID == null && property.toDraw == null) || (groupSID != null && property.toDraw != null && property.toDraw.getIntegrationSID().equals(groupSID)))
+                    && property.getIntegrationSID().equals(sid))
                 return property;
         return null;
     }
@@ -2400,7 +2402,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
                                 true, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, true, true, true,
-                                additionalFilters, pullProps, false, locale);
+                                false, additionalFilters, pullProps, false, locale);
     }
 
     // ---------------------------------------- Events ----------------------------------------

@@ -1784,11 +1784,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return tableUsage.getCount();
         return classChanges.getMaxDataUsed(prop);
     }
-    
-    // inner / external server calls (not recommended)
-    public void apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        apply(BL, stack, null, SetFact.<ActionValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
-    }
 
     // inner / external server calls
     public String applyMessage(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -1851,15 +1846,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
         } finally {
             if(applyMessage != null)
-                applyMessage.set(getLogMessage(ThreadLocalContext.popLogMessage()));
+                applyMessage.set(getLogMessage(ThreadLocalContext.popLogMessage(), false));
         }
     }
     
-    private static String getLogMessage(ImList<AbstractContext.LogMessage> messages) {
+    public static String getLogMessage(ImList<AbstractContext.LogMessage> messages, boolean addFailed) {
+        if(messages.isEmpty())
+            return null;
+
         StringBuilder logBuilder = new StringBuilder();
         for(AbstractContext.LogMessage message : messages) {
             if (logBuilder.length() > 0) 
                 logBuilder.append('\n');
+            if(addFailed && message.failed)
+                logBuilder.append("(failed) ");
             logBuilder.append(message.message);
         }
         return logBuilder.toString();

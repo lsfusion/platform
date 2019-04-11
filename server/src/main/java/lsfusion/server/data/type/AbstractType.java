@@ -165,7 +165,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     public Object formatJSON(T object) {
         return formatNullableString(object, false); // json supports nulls
     }
-
+    @Override
+    public String getJSONType() {
+        return "string";
+    }
     @Override
     public String formatCSV(T object) {
         return formatNullableString(object, true);

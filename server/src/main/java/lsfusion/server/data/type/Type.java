@@ -80,6 +80,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     OverJDBField formatDBF(String fieldName) throws JDBFException;
     Object formatJSON(T object);
+    String getJSONType();
     String formatCSV(T object);
     String formatXML(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
