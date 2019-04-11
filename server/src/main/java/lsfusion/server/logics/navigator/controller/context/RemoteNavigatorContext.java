@@ -110,6 +110,11 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
+            protected boolean isExternal() {
+                return getForm.get() != null;
+            }
+
+            @Override
             protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
                 Stack<Result<RemoteForm>> getForms = getForm.get();
                 if(getForms != null)

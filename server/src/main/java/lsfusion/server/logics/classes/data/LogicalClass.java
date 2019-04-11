@@ -153,6 +153,11 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
+    public String getJSONType() {
+        return "boolean";
+    }
+
+    @Override
     public void formatXLS(Boolean object, Cell cell, ExportXLSWriter.Styles styles) {
         cell.setCellValue(object != null);
     }

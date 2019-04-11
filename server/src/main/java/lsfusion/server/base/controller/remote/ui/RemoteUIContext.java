@@ -83,6 +83,9 @@ public abstract class RemoteUIContext extends AbstractContext {
 
     public abstract FocusListener getFocusListener();
     protected abstract SecurityPolicy getSecurityPolicy();
+    protected boolean isExternal() {
+        return false;
+    }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
@@ -90,7 +93,7 @@ public abstract class RemoteUIContext extends AbstractContext {
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
-                checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly, getLocale());
+                checkOnOk, showDrop, interactive, isExternal(), contextFilters, pullProps, readonly, getLocale());
     }
 
     protected abstract int getExportPort();

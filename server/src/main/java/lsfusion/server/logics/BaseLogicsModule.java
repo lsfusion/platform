@@ -335,6 +335,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
+    public LP<?> getLogMessage() {
+        try {
+            return findProperty("logMessage[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @IdentityLazy
     public LA<?> getEmpty() {
         try {
             return findAction("empty[]");

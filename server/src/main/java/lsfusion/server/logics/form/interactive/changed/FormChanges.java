@@ -226,7 +226,7 @@ public class FormChanges {
     
     private void serializePropertiesExternal(JSONObject jsonObject, ImSet<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
         for(PropertyDrawInstance property : serializeProps)
-            jsonObject.put(property.getIntegrationSID(), property.getType().formatJSON(properties.get(property).get(gridObjectRow).getValue()));
+            jsonObject.put(property.getIntegrationSID(), RemoteForm.formatJSONNull(property.getType(), properties.get(property).get(gridObjectRow).getValue()));
     } 
 
     private ImSet<PropertyDrawInstance> filterPropertiesExternal(ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {

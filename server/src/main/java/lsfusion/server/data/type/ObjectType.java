@@ -160,6 +160,11 @@ public class ObjectType extends AbstractType<Long> {
         return idClass.formatJSON(object);
     }
 
+    @Override
+    public String getJSONType() {
+        return idClass.getJSONType();
+    }
+
     public Long parseString(String s) throws ParseException {
         return idClass.parseString(s);
     }

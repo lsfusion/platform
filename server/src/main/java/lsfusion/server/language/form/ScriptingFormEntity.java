@@ -321,6 +321,7 @@ public class ScriptingFormEntity {
             
             LAP property = null;
             ImOrderSet<ObjectEntity> objects = null;
+            String forceIntegrationSID = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
                 ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
                 ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
@@ -335,6 +336,7 @@ public class ScriptingFormEntity {
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddObjectAction(form, obj, explicitClass);
                     objects = SetFact.EMPTYORDER();
+                    forceIntegrationSID = propertyName;
                 } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
@@ -349,6 +351,7 @@ public class ScriptingFormEntity {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     property = LM.getDeleteAction(obj, scope);
                     objects = SetFact.singletonOrder(obj);
+                    forceIntegrationSID = propertyName;
                 }
             }
             Result<Pair<ActionOrProperty, String>> inherited = new Result<>();
@@ -370,6 +373,9 @@ public class ScriptingFormEntity {
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, version);
             else
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, version);
+
+            if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
+                propertyDraw.setIntegrationSID(forceIntegrationSID);
 
             try {
                 form.setFinalPropertyDrawSID(propertyDraw, alias);
