@@ -305,8 +305,8 @@ forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), forb
 
 // Default forms
 CLASS DefaultForms '{security.default.forms}' {
-    none 'None', //'{security.default.forms.none}',
-    default 'Default' //'{security.default.forms.default}'
+    none '{security.default.forms.none}',
+    default '{security.default.forms.default}'
 }
 TABLE defaultForms (DefaultForms);
 name '{security.default.forms.name}' (DefaultForms o) = staticCaption(o) IF o IS DefaultForms CHARWIDTH 15;
