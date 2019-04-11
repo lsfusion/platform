@@ -88,9 +88,8 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     }
 
     @Override
-    public void dispatchResponse(ServerResponseResult response) {
-        super.dispatchResponse(response);
-
+    public void dispatchResponse(ServerResponseResult response, int continueIndex) {
+        super.dispatchResponse(response, continueIndex);
         if (readType != null) {
             GType editType = readType;
             readType = null;
