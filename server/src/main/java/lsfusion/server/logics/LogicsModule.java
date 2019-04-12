@@ -254,47 +254,47 @@ public abstract class LogicsModule {
         }
     }
     
-    protected void addModuleLP(LAP<?, ?> lp) {
+    protected void addModuleLAP(LAP<?, ?> lap) {
         String name = null;
-        assert getNamespace().equals(lp.property.getNamespace());
-        if (lp instanceof LA) {
-            name = ((LA<?>)lp).property.getName();
-            putLPToMap(namedActions, (LA) lp, name);
-        } else if (lp instanceof LP) {
-            name = ((LP<?>)lp).property.getName();
-            putLPToMap(namedProperties, (LP)lp, name);
+        assert getNamespace().equals(lap.property.getNamespace());
+        if (lap instanceof LA) {
+            name = ((LA<?>)lap).property.getName();
+            putLAPToMap(namedActions, (LA) lap, name);
+        } else if (lap instanceof LP) {
+            name = ((LP<?>)lap).property.getName();
+            putLAPToMap(namedProperties, (LP)lap, name);
         }
         assert name != null;
     }
 
-    private <T extends LAP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp, String name) {
+    private <T extends LAP<?, ?>> void putLAPToMap(Map<String, List<T>> moduleMap, T lap, String name) {
         if (!moduleMap.containsKey(name)) {
             moduleMap.put(name, new ArrayList<T>());
         }
-        moduleMap.get(name).add(lp);
+        moduleMap.get(name).add(lap);
     }
 
     @NFLazy
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamingPolicy());
         propClasses.put(lp, signature);
-        addModuleLP(lp);
+        addModuleLAP(lp);
     }
 
     protected void makePropertyPublic(LP<?> lp, String name, ResolveClassSet... signature) {
         makePropertyPublic(lp, name, Arrays.asList(signature));
     }
     
-    protected void makeActionPublic(LA<?> lp, String name, ResolveClassSet... signature) {
-        makeActionPublic(lp, name, Arrays.asList(signature));
+    protected void makeActionPublic(LA<?> la, String name, ResolveClassSet... signature) {
+        makeActionPublic(la, name, Arrays.asList(signature));
     }
 
     protected <P extends PropertyInterface> void makePropertyPublic(LP<P> lp, String name, List<ResolveClassSet> signature) {
         makeActionOrPropertyPublic(lp, name, signature);
     }
     
-    protected <P extends PropertyInterface> void makeActionPublic(LA<P> lp, String name, List<ResolveClassSet> signature) {
-        makeActionOrPropertyPublic(lp, name, signature);
+    protected <P extends PropertyInterface> void makeActionPublic(LA<P> la, String name, List<ResolveClassSet> signature) {
+        makeActionOrPropertyPublic(la, name, signature);
     }
 
     public AbstractGroup getGroup(String name) {

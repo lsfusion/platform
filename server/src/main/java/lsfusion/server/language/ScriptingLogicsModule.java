@@ -602,13 +602,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return findLAByNameAndClasses(name, sourceName, params, false, false);
     }
     private LA<?> findLAByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract, boolean prioritizeNotEqual) throws ScriptingErrorLog.SemanticErrorException {
-        LA<?> property = null;
+        LA<?> action = null;
 
         try {
             if (onlyAbstract) {
-                property = resolveAbstractAction(name, params, prioritizeNotEqual);
+                action = resolveAbstractAction(name, params, prioritizeNotEqual);
             } else {
-                property = resolveAction(name, params);
+                action = resolveAction(name, params);
             }
         } catch (ResolvingErrors.ResolvingAmbiguousPropertyError e) {
             if (sourceName != null) {
@@ -619,8 +619,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             convertResolveError(e);
         }
 
-        checks.checkAction(property, sourceName == null ? name : sourceName, params);
-        return property;
+        checks.checkAction(action, sourceName == null ? name : sourceName, params);
+        return action;
     }
 
     public LP<?> findLPByPropertyUsage(NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
@@ -829,9 +829,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     // todo [dale]: выделить общий код    
     public void addImplementationToAbstractAction(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
-        LA abstractLP = findLAByPropertyUsage(abstractPropUsage, context, true);
-        checks.checkParamCount(abstractLP, context.size());
-        checks.checkImplementIsNotMain(abstractLP, implement.getLP());
+        LA abstractLA = findLAByPropertyUsage(abstractPropUsage, context, true);
+        checks.checkParamCount(abstractLA, context.size());
+        checks.checkImplementIsNotMain(abstractLA, implement.getLP());
 
         List<LAPWithParams> allProps = new ArrayList<>();
         allProps.add(implement);
@@ -841,7 +841,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> params = getParamsPlainList(allProps);
 
         List<ResolveClassSet> signature = getClassesFromTypedParams(context);
-        addImplementationToAbstractAction(abstractPropUsage.name, abstractLP, signature, when != null, params);
+        addImplementationToAbstractAction(abstractPropUsage.name, abstractLA, signature, when != null, params);
     }
 
     public void addImplementationToAbstractProp(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
@@ -968,8 +968,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class LAWithParams extends LAPWithParams {
-        public LAWithParams(LA<?> property, List<Integer> usedParams) {
-            super(property, usedParams);
+        public LAWithParams(LA<?> action, List<Integer> usedParams) {
+            super(action, usedParams);
         }
 
         public LA<?> getLP() {
@@ -1077,20 +1077,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         addPropertyToGroup(property.property, group);
     }
 
-    public void addSettingsToAction(LA property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings ps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToAction(LA action, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings as) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateAction(name, signature);
 
-        addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
+        addSettingsToActionOrProperty(action, name, caption, params, signature, as);
 
-        makeActionPublic(property, name, signature);
+        makeActionPublic(action, name, signature);
     }
 
-    public LP addSettingsToProperty(LP<?> baseProperty, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature,
+    public void addSettingsToProperty(LP<?> property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature,
                                     PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateProperty(name, signature);
-
-        LP<?> property = baseProperty;
-        property = checkPropertyIsNew(property);
 
         addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
 
@@ -1137,8 +1134,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //            if (Settings.get().isCheckClassWhere()) {
 //                checks.checkClassWhere((LP) property, name);
 //            }
-        makeLoggable(baseProperty, ps.isLoggable);
-        return property;
+        makeLoggable(property, ps.isLoggable);
     }
 
     /** Проверяет нужно ли обернуть свойство в join.
@@ -1767,10 +1763,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
         ValueClass[] eaClasses = Property.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
-        LA<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses);
-        SendEmailAction eaProp = (SendEmailAction) eaPropLP.property;
+        LA<ClassPropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses);
+        SendEmailAction eaProp = (SendEmailAction) eaLA.property;
 
-        ImList<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
+        ImList<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaLA.listInterfaces, allParams);
 
         int i = 0;
         
@@ -1794,7 +1790,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.addAttachmentFile(fileName != null ? allImplements.get(i++) : null, allImplements.get(i++));
         }
 
-        return new LAWithParams(eaPropLP, mergeAllParams(allProps));
+        return new LAWithParams(eaLA, mergeAllParams(allProps));
     }
 
     public LPWithParams addScriptedAdditiveOrProp(List<String> operands, List<LPWithParams> properties) {
@@ -1901,20 +1897,20 @@ public class ScriptingLogicsModule extends LogicsModule {
             removeLocal(localProp);
         }
 
-        LA<?> listLP = addListAProp(mLocals.immutable(), resultParams.toArray());
+        LA<?> listLA = addListAProp(mLocals.immutable(), resultParams.toArray());
 
         if(mDebugLocals != null) {
-            listLP.property.setDebugLocals(mDebugLocals.immutable());
+            listLA.property.setDebugLocals(mDebugLocals.immutable());
         }
 
         List<Integer> usedParams = mergeAllParams(properties);
-        return new LAWithParams(listLP, usedParams);
+        return new LAWithParams(listLA, usedParams);
     }
 
     public LAWithParams addScriptedNewSessionAProp(LAWithParams action, List<NamedPropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
                                                    boolean isNested, boolean singleApply, boolean newSQL) throws ScriptingErrorLog.SemanticErrorException {
-        LA<?> sessionLP = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
-        return new LAWithParams(sessionLP, action.usedParams);
+        LA<?> sessionLA = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
+        return new LAWithParams(sessionLA, action.usedParams);
     }
 
     public DataClass getInputDataClass(String paramName, List<TypedParameter> context, String typeId, LPWithParams oldValue, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
@@ -1936,7 +1932,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         assert targetProp == null;
         LP<?> tprop = getInputProp(targetProp, requestDataClass, null);
 
-        LA property = addInputAProp(requestDataClass, tprop != null ? tprop.property : null);
+        LA action = addInputAProp(requestDataClass, tprop != null ? tprop.property : null);
         
         if (changeProp == null)
             changeProp = oldValue;
@@ -1944,7 +1940,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         // optimization. we don't use files on client side (see also DefaultChangeAction.executeCustom()) 
         if (oldValue == null || getTypeByParamProperty(oldValue, oldContext) instanceof FileClass)
             oldValue = new LPWithParams(baseLM.vnull);
-        LAWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
+        LAWithParams inputAction = addScriptedJoinAProp(action, Collections.singletonList(oldValue));
 
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, ListFact.<LP>singleton(tprop), inputAction,
                 ListFact.singleton(assign ? new Pair<>(changeProp, assignDebugPoint) : null));
@@ -1992,23 +1988,23 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LP addWatchLocalDataProperty(LP lp, List<ResolveClassSet> signature) {
         assert lp.property instanceof SessionDataProperty;
-        addModuleLP(lp);
+        addModuleLAP(lp);
         propClasses.put(lp, signature);
         return lp;
     }
 
     public LAWithParams addScriptedJoinAProp(NamedPropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LA mainProp = findLAByPropertyUsage(pUsage, properties, params);
-        return addScriptedJoinAProp(mainProp, properties);
+        LA mainAction = findLAByPropertyUsage(pUsage, properties, params);
+        return addScriptedJoinAProp(mainAction, properties);
     }
 
-    public LAWithParams addScriptedJoinAProp(LA mainProp, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkParamCount(mainProp, properties.size());
+    public LAWithParams addScriptedJoinAProp(LA mainAction, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkParamCount(mainAction, properties.size());
 
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
-        LA prop = addJoinAProp(null, LocalizedString.NONAME, mainProp, resultParams.toArray());
-        return new LAWithParams(prop, usedParams);
+        LA action = addJoinAProp(null, LocalizedString.NONAME, mainAction, resultParams.toArray());
+        return new LAWithParams(action, usedParams);
     }
 
     public LAWithParams addScriptedConfirmProp(LPWithParams msgProp, LAWithParams doAction, LAWithParams elseAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -2876,17 +2872,17 @@ public class ScriptingLogicsModule extends LogicsModule {
                 windowType = WindowFormType.DOCKED;
         }
 
-        LA property = addIFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
+        LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
                                  manageSession, noCancel,
                                  syncType, windowType, false, checkOnOk,
                                  readonly);
 
-        property = addSessionScopeAProp(formSessionScope, property);
+        action = addSessionScopeAProp(formSessionScope, action);
 
         if (mapping.size() > 0) {
-            return addScriptedJoinAProp(property, mapping);
+            return addScriptedJoinAProp(action, mapping);
         } else {
-            return new LAWithParams(property, new ArrayList<Integer>());
+            return new LAWithParams(action, new ArrayList<Integer>());
         }
     }
 
@@ -2978,14 +2974,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> allParams = mergeAllParams(propParams);
 
         ImList<O> objects = mObjects.immutableList();
-        LA property = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
+        LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                                  inputObjects, inputProps, inputNulls,
                                  manageSession, noCancel,
                                  contextObjects, contextProps,
                 true, windowType, false, checkOnOk,
                 readonly);
 
-        property = addSessionScopeAProp(scope, property, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());
+        action = addSessionScopeAProp(scope, action, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());
 
         LAWithParams formAction;
         if (mapping.size() > 0) { // тут надо contextLPs просто в mapping закинуть по идее сразу
@@ -2993,9 +2989,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 for (int usedParam : contextLP.usedParams) {
                     mapping.add(new LPWithParams(usedParam));
                 }
-            formAction = addScriptedJoinAProp(property, mapping);
+            formAction = addScriptedJoinAProp(action, mapping);
         } else {
-            formAction = new LAWithParams(property, allParams);
+            formAction = new LAWithParams(action, allParams);
         }
 
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, inputProps, formAction, assignProps);
@@ -3185,7 +3181,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(sheetNamePropUsage != null)
             sheetNameProperty = findLPNoParamsByPropertyUsage(sheetNamePropUsage);
 
-        LA property = addPFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
+        LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
                 printerProperty != null ? printerProperty.getLP().property : null, sheetNameProperty, printType, syncType, selectTop,
                 passwordProperty != null ? passwordProperty.getLP().property : null, targetProp, false);
 
@@ -3200,9 +3196,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                     mapping.add(new LPWithParams(usedParam));
                 }
             }
-            return addScriptedJoinAProp(property, mapping);
+            return addScriptedJoinAProp(action, mapping);
         } else {
-            return new LAWithParams(property, allParams);
+            return new LAWithParams(action, allParams);
         }
     }
 
@@ -3261,13 +3257,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitSimpleError(parser, "EXPORT form with ATTR not supported");
         }
 
-        LA property = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
+        LA action = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
                 exportType, noHeader, separator, noEscape, selectTop, charset, null, null, singleExportFile, exportFiles.immutable());
 
         if (mapping.size() > 0) {
-            return addScriptedJoinAProp(property, mapping);
+            return addScriptedJoinAProp(action, mapping);
         } else {
-            return new LAWithParams(property, allParams);
+            return new LAWithParams(action, allParams);
         }
     }
 
@@ -3483,15 +3479,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             propParams.add(connectionProp);
         }
         List<Integer> allParams = mergeAllParams(propParams);
-        LA<?> property = addNewThreadAProp(null, LocalizedString.NONAME, connectionProp != null, periodProp != null, delayProp != null, getParamsPlainList(propParams).toArray());
-        return new LAWithParams(property, allParams);
+        LA<?> newAction = addNewThreadAProp(null, LocalizedString.NONAME, connectionProp != null, periodProp != null, delayProp != null, getParamsPlainList(propParams).toArray());
+        return new LAWithParams(newAction, allParams);
     }
 
     public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp) {
         List<LAPWithParams> propParams = Arrays.asList(action, threadsProp);
         List<Integer> allParams = mergeAllParams(propParams);
-        LA<?> property = addNewExecutorAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
-        return new LAWithParams(property, allParams);
+        LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
+        return new LAWithParams(newAction, allParams);
     }
 
     private ImList<LP> findLPsForImport(List<NamedPropertyUsage> propUsages, ImList<ValueClass> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
@@ -3813,15 +3809,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedAspect(NamedPropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams action, boolean before) throws ScriptingErrorLog.SemanticErrorException {
-        LA mainProp = findLAByPropertyUsage(mainPropUsage, mainPropParams);
-        checks.checkParamCount(mainProp, mainPropParams.size());
+        LA mainAction = findLAByPropertyUsage(mainPropUsage, mainPropParams);
+        checks.checkParamCount(mainAction, mainPropParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(mainPropParams));
 
-        LA<PropertyInterface> mainActionLP = (LA<PropertyInterface>) mainProp;
+        LA<PropertyInterface> mainActionLA = (LA<PropertyInterface>) mainAction;
 
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
-        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(mainActionLP.listInterfaces, params.toArray());
-        addAspectEvent(mainActionLP.property, actionImplements.get(0), before);
+        ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(mainActionLA.listInterfaces, params.toArray());
+        addAspectEvent(mainActionLA.property, actionImplements.get(0), before);
     }
 
     public void addScriptedTable(String name, List<String> classIds, boolean isFull, boolean isExplicit) throws ScriptingErrorLog.SemanticErrorException {
@@ -4447,12 +4443,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class FormLAUsage extends FormLAPUsage<LA> implements AbstractFormActionUsage {
-        public FormLAUsage(LA lp, ImOrderSet<String> mapping) {
-            super(lp, mapping);
+        public FormLAUsage(LA la, ImOrderSet<String> mapping) {
+            super(la, mapping);
         }
 
-        public FormLAUsage(LA lp, ImOrderSet<String> mapping, List<ResolveClassSet> signature) {
-            super(lp, mapping, signature);
+        public FormLAUsage(LA la, ImOrderSet<String> mapping, List<ResolveClassSet> signature) {
+            super(la, mapping, signature);
         }
     }
 
