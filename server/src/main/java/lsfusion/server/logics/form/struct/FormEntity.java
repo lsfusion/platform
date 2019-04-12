@@ -429,7 +429,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(new SFunctionSet<PropertyDrawEntity>() {
             public boolean contains(PropertyDrawEntity element) {
-                return element.isProperty() && element.getIntegrationSID() != null;
+                return element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw;
             }
         });
     }
