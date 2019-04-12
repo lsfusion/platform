@@ -337,7 +337,7 @@ copy (UserRole from, UserRole to) +{
 CLASS Policy '{security.policy}';
 TABLE policy (Policy);
 
-id = DATA VARSTRING[100](Policy);
+id '{integration.id}' = DATA VARSTRING[100](Policy);
 policy = GROUP AGGR Policy policy BY id(policy);
 name '{security.name.policy}' = DATA VARISTRING[100](Policy);
 policyName = GROUP MAX Policy policy BY name(policy) IF NOT id(policy);
@@ -449,7 +449,7 @@ FORM securityPolicy '{security.form.policy}'
 
     // Custom policy
     OBJECTS p = Policy
-    PROPERTIES(p) READONLY name, description
+    PROPERTIES(p) READONLY id, name, description
     PROPERTIES(ur, p)      order
 
     // Users
