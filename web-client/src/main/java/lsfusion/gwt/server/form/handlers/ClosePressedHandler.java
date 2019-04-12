@@ -5,6 +5,8 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -15,8 +17,11 @@ public class ClosePressedHandler extends FormServerResponseActionHandler<ClosePr
     }
 
     @Override
-    public ServerResponseResult executeEx(ClosePressed action, ExecutionContext context) throws RemoteException {
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.closedPressed(action.requestIndex, action.lastReceivedRequestIndex));
+    public ServerResponseResult executeEx(final ClosePressed action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.closedPressed(action.requestIndex, action.lastReceivedRequestIndex);
+            }
+        });
     }
 }

@@ -8,6 +8,7 @@ import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.action.ServerResponse;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
@@ -22,9 +23,12 @@ public class ChangePropertyOrderHandler extends FormServerResponseActionHandler<
     }
 
     @Override
-    public ServerResponseResult executeEx(ChangePropertyOrder action, ExecutionContext context) throws RemoteException {
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-        byte[] keyBytes = gwtConverter.convertOrCast(action.columnKey);
-        return getServerResponseResult(form, form.remoteForm.changePropertyOrder(action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, action.modiType.serialize(), keyBytes));
+    public ServerResponseResult executeEx(final ChangePropertyOrder action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                byte[] keyBytes = gwtConverter.convertOrCast(action.columnKey);
+                return remoteForm.changePropertyOrder(action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, action.modiType.serialize(), keyBytes);
+            }
+        });
     }
 }

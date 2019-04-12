@@ -21,9 +21,6 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
     public FormSessionObject getFormSessionObject(String formSessionID) throws SessionInvalidatedException {
         return getFormProvider().getFormSessionObject(formSessionID);
     }
-    public void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
-        getFormProvider().removeFormSessionObject(formSessionID);
-    }
 
     @Override
     protected String getActionDetails(A action) throws SessionInvalidatedException {

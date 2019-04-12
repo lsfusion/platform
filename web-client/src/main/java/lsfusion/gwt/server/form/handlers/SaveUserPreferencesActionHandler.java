@@ -8,8 +8,10 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -24,17 +26,20 @@ public class SaveUserPreferencesActionHandler extends FormServerResponseActionHa
     }
 
     @Override
-    public ServerResponseResult executeEx(SaveUserPreferencesAction action, ExecutionContext context) throws RemoteException {
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-        GGroupObjectUserPreferences gGroupObjectUP = action.groupObjectUserPreferences;
-        
-        HashMap<String, ColumnUserPreferences> columnUPMap = new HashMap<>();
-        for (Map.Entry<String, GColumnUserPreferences> entry : gGroupObjectUP.getColumnUserPreferences().entrySet()) {
-            GColumnUserPreferences gColumnUP = entry.getValue();
-            columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userPattern, gColumnUP.userWidth, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));
-        }
-        GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.getPageSize(), gGroupObjectUP.getHeaderHeight(), gGroupObjectUP.hasUserPreferences());
+    public ServerResponseResult executeEx(final SaveUserPreferencesAction action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                GGroupObjectUserPreferences gGroupObjectUP = action.groupObjectUserPreferences;
 
-        return getServerResponseResult(form, form.remoteForm.saveUserPreferences(action.requestIndex, action.lastReceivedRequestIndex, groupObjectUP, action.forAllUsers, action.completeOverride, action.hiddenProps));
+                HashMap<String, ColumnUserPreferences> columnUPMap = new HashMap<>();
+                for (Map.Entry<String, GColumnUserPreferences> entry : gGroupObjectUP.getColumnUserPreferences().entrySet()) {
+                    GColumnUserPreferences gColumnUP = entry.getValue();
+                    columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userPattern, gColumnUP.userWidth, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));
+                }
+                GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.getPageSize(), gGroupObjectUP.getHeaderHeight(), gGroupObjectUP.hasUserPreferences());
+
+                return remoteForm.saveUserPreferences(action.requestIndex, action.lastReceivedRequestIndex, groupObjectUP, action.forAllUsers, action.completeOverride, action.hiddenProps);
+            }
+        });
     }
 }

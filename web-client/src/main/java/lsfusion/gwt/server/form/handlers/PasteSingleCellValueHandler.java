@@ -7,10 +7,14 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -24,23 +28,22 @@ public class PasteSingleCellValueHandler extends FormServerResponseActionHandler
     }
 
     @Override
-    public ServerResponseResult executeEx(PasteSingleCellValue action, ExecutionContext context) throws RemoteException {
-        byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
+    public ServerResponseResult executeEx(final PasteSingleCellValue action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
 
-        byte[] value;
-        try {
-            value = serializeObject(
-                    gwtConverter.convertOrCast(action.value)
-            );
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+                byte[] value;
+                try {
+                    value = serializeObject(
+                            gwtConverter.convertOrCast(action.value)
+                    );
+                } catch (IOException e) {
+                    throw Throwables.propagate(e);
+                }
 
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-
-        return getServerResponseResult(
-                form,
-                form.remoteForm.pasteMulticellValue(action.requestIndex, action.lastReceivedRequestIndex, singletonMap(action.propertyId, singletonList(fullKey)), singletonMap(action.propertyId, value))
-        );
+                return remoteForm.pasteMulticellValue(action.requestIndex, action.lastReceivedRequestIndex, singletonMap(action.propertyId, singletonList(fullKey)), singletonMap(action.propertyId, value));
+            }
+        });
     }
 }

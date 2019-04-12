@@ -1,5 +1,6 @@
 package lsfusion.http.controller;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.file.IOUtils;
 import lsfusion.http.provider.form.FormProvider;
@@ -85,7 +86,7 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
                     jsonResult = result.second;
                 } else {
                     formSessionObject.remoteForm.closeExternal();
-                    formProvider.removeFormSessionObject(formID);
+                    BaseUtils.runLater(5000, formProvider.delayedRemoveFormSessionObject(formID));
                     jsonResult = "{}";
                 }
             }

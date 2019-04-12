@@ -1,7 +1,10 @@
 package lsfusion.gwt.server.convert;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.file.WriteClientAction;
+import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
@@ -13,6 +16,8 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.SessionInvalidatedException;
+import lsfusion.http.provider.form.FormProvider;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
@@ -69,7 +74,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
-        return new GFormAction(modalityType, servlet.getFormProvider().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.sessionID),
+        return new GFormAction(modalityType, servlet.getFormProvider().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
                 action.forbidDuplicate);
     }
 
@@ -86,7 +91,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = HideFormClientAction.class)
-    public GHideFormAction convertAction(HideFormClientAction action) throws IOException {
+    public GHideFormAction convertAction(HideFormClientAction action, final String formID, final MainDispatchServlet servlet) {
+        BaseUtils.runLater(5000, servlet.getFormProvider().delayedRemoveFormSessionObject(formID)); // adding the same delay (closeFormDelay) as in deactivateAndCloseLater
         return new GHideFormAction();
     }
 

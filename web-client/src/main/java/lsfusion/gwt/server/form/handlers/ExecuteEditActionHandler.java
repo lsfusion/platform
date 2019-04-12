@@ -6,6 +6,8 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -18,11 +20,12 @@ public class ExecuteEditActionHandler extends FormServerResponseActionHandler<Ex
     }
 
     @Override
-    public ServerResponseResult executeEx(ExecuteEditAction action, ExecutionContext context) throws RemoteException {
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-
-        byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
-
-        return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, action.lastReceivedRequestIndex, action.propertyId, fullKey, action.actionSID));
+    public ServerResponseResult executeEx(final ExecuteEditAction action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
+                return remoteForm.executeEditAction(action.requestIndex, action.lastReceivedRequestIndex, action.propertyId, fullKey, action.actionSID);
+            }
+        });
     }
 }

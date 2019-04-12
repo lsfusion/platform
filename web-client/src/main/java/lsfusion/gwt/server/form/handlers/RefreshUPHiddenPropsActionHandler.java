@@ -5,6 +5,8 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -16,8 +18,11 @@ public class RefreshUPHiddenPropsActionHandler extends FormServerResponseActionH
     }
 
     @Override
-    public ServerResponseResult executeEx(RefreshUPHiddenPropsAction action, ExecutionContext context) throws RemoteException {
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.refreshUPHiddenProperties(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectSID, action.propSids));
+    public ServerResponseResult executeEx(final RefreshUPHiddenPropsAction action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.refreshUPHiddenProperties(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectSID, action.propSids);
+            }
+        });
     }
 }

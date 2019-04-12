@@ -8,8 +8,8 @@ public class RemoteRetryException extends DispatchException {
     public RemoteRetryException() {
     }
 
-    public RemoteRetryException(String message, Throwable re, Integer maxTries) {
-        super(message, re);
+    public RemoteRetryException(Throwable re, Integer maxTries) {
+        super(re);
         this.maxTries = maxTries;
     }
 }

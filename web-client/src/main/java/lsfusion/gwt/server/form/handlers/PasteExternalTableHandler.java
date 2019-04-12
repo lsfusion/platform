@@ -7,6 +7,8 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.io.IOException;
@@ -24,29 +26,32 @@ public class PasteExternalTableHandler extends FormServerResponseActionHandler<P
     }
 
     @Override
-    public ServerResponseResult executeEx(PasteExternalTable action, ExecutionContext context) throws RemoteException {
-        List<List<byte[]>> values = new ArrayList<>();
-        for (List<Object> gRowValues : action.values) {
-            List<byte[]> rowValues = new ArrayList<>();
+    public ServerResponseResult executeEx(final PasteExternalTable action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                List<List<byte[]>> values = new ArrayList<>();
+                for (List<Object> gRowValues : action.values) {
+                    List<byte[]> rowValues = new ArrayList<>();
 
-            for (Object gRowValue : gRowValues) {
-                Object oCell = gwtConverter.convertOrCast(gRowValue);
-                try {
-                    rowValues.add(serializeObject(oCell));
-                } catch (IOException e) {
-                    throw Throwables.propagate(e);
+                    for (Object gRowValue : gRowValues) {
+                        Object oCell = gwtConverter.convertOrCast(gRowValue);
+                        try {
+                            rowValues.add(serializeObject(oCell));
+                        } catch (IOException e) {
+                            throw Throwables.propagate(e);
+                        }
+                    }
+
+                    values.add(rowValues);
                 }
+
+                List<byte[]> columnKeys = new ArrayList<>();
+                for (int i = 0; i < action.columnKeys.size(); i++) {
+                    columnKeys.add((byte[]) gwtConverter.convertOrCast(action.columnKeys.get(i)));
+                }
+
+                return remoteForm.pasteExternalTable(action.requestIndex, action.lastReceivedRequestIndex, action.propertyIdList, columnKeys, values);
             }
-
-            values.add(rowValues);
-        }
-
-        List<byte[]> columnKeys = new ArrayList<>();
-        for (int i = 0; i < action.columnKeys.size(); i++) {
-            columnKeys.add((byte[]) gwtConverter.convertOrCast(action.columnKeys.get(i)));
-        }
-
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.pasteExternalTable(action.requestIndex, action.lastReceivedRequestIndex, action.propertyIdList, columnKeys, values));
+        });
     }
 }
