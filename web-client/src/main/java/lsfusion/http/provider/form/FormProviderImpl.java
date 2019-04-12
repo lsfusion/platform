@@ -1,5 +1,7 @@
 package lsfusion.http.provider.form;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
@@ -119,8 +121,20 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         currentForms.put(formSessionID, formSessionObject);
     }
 
-    public void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
-        FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID); 
+    public Runnable delayedRemoveFormSessionObject(final String formSessionID) {
+        return new Runnable() {
+            public void run() {
+                try {
+                    removeFormSessionObject(formSessionID);
+                } catch (SessionInvalidatedException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+        };
+    }
+
+    private void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
+        FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID);
         currentForms.remove(formSessionID);
         if(sessionObject.savedTempFiles != null) {
             for (File file : sessionObject.savedTempFiles)
@@ -132,7 +146,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     public void removeFormSessionObjects(String sessionID) throws SessionInvalidatedException {
         Collection<String> formSessionIDs = new HashSet<>(currentForms.keySet());
         for (String formSessionID : formSessionIDs) {
-            if (currentForms.get(formSessionID).sessionID.equals(sessionID)) {
+            if (currentForms.get(formSessionID).navigatorID.equals(sessionID)) {
                 removeFormSessionObject(formSessionID); // maybe it's better to call remoteForm.close (just like navigators are closed in LogicsAndNavigatorProviderImpl), if there are opeened tabs (because if there are not such tabs, RemoteNavigator.close will do all the work) - but it is a rare case, so will do it later 
             }
         }

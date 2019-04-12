@@ -1098,7 +1098,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void hideForm() {
         formHidden = true;
         setFiltersVisible(false);
-        dispatcher.execute(new FormHidden(), new ErrorHandlingCallback<VoidResult>());
         dispatcher.close();
     }
 

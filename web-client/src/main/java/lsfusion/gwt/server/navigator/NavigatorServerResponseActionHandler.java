@@ -14,6 +14,6 @@ public abstract class NavigatorServerResponseActionHandler<A extends NavigatorRe
     }
 
     protected ServerResponseResult getServerResponseResult(A action, ServerResponse serverResponse) {
-        return FormServerResponseActionHandler.getServerResponseResult(new FormSessionObject(null, null, action.sessionID), serverResponse, servlet);
+        return FormServerResponseActionHandler.getServerResponseResult(null, new FormSessionObject(null, null, action.sessionID), serverResponse, servlet);
     }
 }

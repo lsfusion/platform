@@ -5,6 +5,8 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -15,8 +17,11 @@ public class ChangePageSizeHandler extends FormServerResponseActionHandler<Chang
     }
 
     @Override
-    public ServerResponseResult executeEx(ChangePageSize action, ExecutionContext context) throws RemoteException {
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.changePageSize(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, action.pageSize));
+    public ServerResponseResult executeEx(final ChangePageSize action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.changePageSize(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, action.pageSize);
+            }
+        });
     }
 }

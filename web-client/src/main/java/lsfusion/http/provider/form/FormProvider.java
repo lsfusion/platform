@@ -12,6 +12,6 @@ public interface FormProvider {
     void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID);
 
     FormSessionObject getFormSessionObject(String formSessionID) throws SessionInvalidatedException;
-    void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException;
+    Runnable delayedRemoveFormSessionObject(final String formSessionID);
     void removeFormSessionObjects(String sessionID) throws SessionInvalidatedException;
 }

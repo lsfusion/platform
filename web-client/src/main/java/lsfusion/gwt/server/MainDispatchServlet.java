@@ -92,7 +92,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new ExecuteEditActionHandler(this));
         registry.addHandler(new ExecuteNotificationHandler(this));
         registry.addHandler(new ExpandGroupObjectHandler(this));
-        registry.addHandler(new FormHiddenHandler(this));
         registry.addHandler(new GetInitialFilterPropertyHandler(this));
         registry.addHandler(new GetRemoteActionMessageHandler(this));
         registry.addHandler(new GetRemoteActionMessageListHandler(this));
@@ -225,7 +224,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         if(e instanceof AuthenticationException) // we need to wrap this exception, otherwise it will be treated like RemoteInternalDispatchException (unknown server exception)
             return new AuthenticationDispatchException(e.getMessage());
         if(e instanceof RemoteException && !(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException)) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
-            return new RemoteRetryException(e.getMessage(), e, e instanceof SessionInvalidatedException ? 3 : ExceptionUtils.getFatalRemoteExceptionCount(e));
+            return new RemoteRetryException(e, e instanceof SessionInvalidatedException ? 3 : ExceptionUtils.getFatalRemoteExceptionCount(e));
 
         RemoteInternalDispatchException clientException = new RemoteInternalDispatchException(ExceptionUtils.copyMessage(e), RemoteInternalException.getLsfStack(e));
         ExceptionUtils.copyStackTraces(e, clientException);        

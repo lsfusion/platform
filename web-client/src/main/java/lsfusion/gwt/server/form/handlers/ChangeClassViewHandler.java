@@ -7,7 +7,9 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.remote.RemoteFormInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -18,12 +20,12 @@ public class ChangeClassViewHandler extends FormServerResponseActionHandler<Chan
     }
 
     @Override
-    public ServerResponseResult executeEx(ChangeClassView action, ExecutionContext context) throws RemoteException {
-        FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(
-                form,
-                form.remoteForm.changeClassView(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectId, convertClassView(action.newClassView))
-        );
+    public ServerResponseResult executeEx(final ChangeClassView action, ExecutionContext context) throws RemoteException {
+        return getServerResponseResult(action, new RemoteCall() {
+            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.changeClassView(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectId, convertClassView(action.newClassView));
+            }
+        });
     }
 
     private ClassViewType convertClassView(GClassViewType newClassView) {
