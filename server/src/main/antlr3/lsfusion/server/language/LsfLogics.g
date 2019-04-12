@@ -756,7 +756,7 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 				|	action=formActionDeclaration { signature = $action.signature; }
 				    {
                         if(inMainParseState()) {
-                            lpUsage = new FormLAUsage($action.property, $action.mapping, signature);
+                            lpUsage = new FormLAUsage($action.action, $action.mapping, signature);
                         }
 				    })
 				)
@@ -790,7 +790,7 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
                     |	action=formActionDeclaration { signature = $action.signature; }
                         {
                             if(inMainParseState()) {
-                                lpUsage = new FormLAUsage($action.property, $action.mapping, signature);
+                                lpUsage = new FormLAUsage($action.action, $action.mapping, signature);
                             }
                         })                    
                     )
@@ -839,7 +839,7 @@ formActionObject returns [ActionObjectEntity action = null]
     ImOrderSet<String> mapping = null;
 }
 	:	(	mProperty=mappedPropertyObjectUsage { propUsage = new FormActionUsage($mProperty.propUsage, $mProperty.mapping); }
-		|	mAction=formActionDeclaration { propUsage = new FormLAUsage($mAction.property, $mAction.mapping); }
+		|	mAction=formActionDeclaration { propUsage = new FormLAUsage($mAction.action, $mAction.mapping); }
 		)
 		{
 			if (inMainParseState()) {
@@ -1075,7 +1075,7 @@ formExprDeclaration returns [LP property, ImOrderSet<String> mapping, List<Resol
 	:	expr=propertyExpression[context, false] { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.getLP(); } }
 	;
 
-formActionDeclaration returns [LA property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
+formActionDeclaration returns [LA action, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	if (inMainParseState()) {
@@ -1084,11 +1084,11 @@ formActionDeclaration returns [LA property, ImOrderSet<String> mapping, List<Res
 }
 @after {
 	if (inMainParseState()) {
-		$mapping = self.getUsedNames(context, $action.property.usedParams);
-		$signature = self.getUsedClasses(context, $action.property.usedParams);
+		$mapping = self.getUsedNames(context, $aDB.action.usedParams);
+		$signature = self.getUsedClasses(context, $aDB.action.usedParams);
 	}
 }
-	:	action=listTopContextDependentActionDefinitionBody[context, false, false] { if (inMainParseState()) { $property = $action.property.getLP(); } }
+	:	aDB=listTopContextDependentActionDefinitionBody[context, false, false] { if (inMainParseState()) { $action = $aDB.action.getLP(); } }
 	;
 	
 filterSetDefault returns [boolean isDefault = false]
@@ -1131,12 +1131,13 @@ scope {
 	
 	String propertyName = null;
 	LocalizedString caption = null;
-	LAP lp = null;
+	LP property = null;
+	PropertySettings ps = new PropertySettings();
 }
 @after {
-	if (inMainParseState()) {
-	    if (lp != null) // not native
-		    self.setPropertyScriptInfo(lp, $text, point);
+	if (inMainParseState() && property != null) { // == null when native
+    	self.addSettingsToProperty(property, propertyName, caption, context, signature, ps);
+	    self.setPropertyScriptInfo(property, $text, point);
 	}
 }
 	:	declaration=actionOrPropertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
@@ -1145,17 +1146,9 @@ scope {
 			$propertyStatement::topCaption = caption = $declaration.caption;
 		}
         EQ
-        { LP property = null; PropertySettings ps = null; }
         pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
+        { if (inMainParseState() && property != null) { property = self.checkPropertyIsNew(property); }}
         ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
-        {
-            if (inMainParseState() && property != null) { // not native
-                if(ps == null)
-                    ps = new PropertySettings();
-                property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps);
-                lp = property;
-            }
-        }
 	;
 
 actionStatement
@@ -1169,42 +1162,32 @@ scope {
 	boolean dynamic = true;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 
-	String propertyName = null;
+	String actionName = null;
 	LocalizedString caption = null;
-	LAP lp = null;
+	LA action = null;
+	ActionSettings as = new ActionSettings();
 }
 @after {
 	if (inMainParseState()) {
-	    if (lp != null) // not native
-		    self.setPropertyScriptInfo(lp, $text, point);
+        self.addSettingsToAction(action, actionName, caption, context, signature, as);
+		self.setPropertyScriptInfo(action, $text, point);
 	}
 }
 	:	'ACTION'?
 	    declaration=actionOrPropertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
 		{
-			$actionStatement::topName = propertyName = $declaration.name;
+			$actionStatement::topName = actionName = $declaration.name;
 			$actionStatement::topCaption = caption = $declaration.caption;
 		}
-        { LA property = null; ActionSettings ps = null; }
         (
-            (
-                ciADB=contextIndependentActionDB { if(inMainParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
-                ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
+            (   ciADB=contextIndependentActionDB { if(inMainParseState()) { action = $ciADB.action; signature = $ciADB.signature; } }
+                ((aopt=actionOptions[action, actionName, caption, context, signature] { as = $aopt.as; } ) | ';')
             )
         |
-            (
-                aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inMainParseState()) { property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(context); }}
-                (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
+            (   aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inMainParseState()) { action = $aDB.action.getLP(); signature = self.getClassesFromTypedParams(context); }}
+                (aopt=actionOptions[action, actionName, caption, context, signature]  { as = $aopt.as; } )?
             )
         )
-        {
-            if (inMainParseState()) {
-                if(ps == null)
-                    ps = new ActionSettings();
-                self.addSettingsToAction(property, propertyName, caption, context, signature, ps);
-                lp = property;
-            }
-        }
 	;
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP property, List<ResolveClassSet> signature]
@@ -1216,7 +1199,7 @@ propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP pr
 
 
 actionOrPropertyDeclaration returns [String name, LocalizedString caption, List<TypedParameter> params]
-	:	propNameCaption=simpleNameWithCaption { $name = $propNameCaption.name; $caption = $propNameCaption.caption; }
+	:	nameCaption=simpleNameWithCaption { $name = $nameCaption.name; $caption = $nameCaption.caption; }
 		('(' paramList=typedParameterList ')' { $params = $paramList.params; })? 
 	;
 
@@ -1718,7 +1701,7 @@ abstractPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveCl
 		')'
 	;
 
-abstractActionDefinition returns [LA property, List<ResolveClassSet> signature]
+abstractActionDefinition returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1728,14 +1711,18 @@ abstractActionDefinition returns [LA property, List<ResolveClassSet> signature]
 @after {
 	if (inMainParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractAction(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
+		$action = self.addScriptedAbstractAction(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
 	}
 }
 	:	'ABSTRACT'
 		(
-			(('CASE' { type = ListCaseAction.AbstractType.CASE; isExclusive = false; }
-			|	'MULTI'	{ type = ListCaseAction.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
-		|	('LIST' { type = ListCaseAction.AbstractType.LIST; isLast = true; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
+			(	
+				(	'CASE' { type = ListCaseAction.AbstractType.CASE; isExclusive = false; }
+			 	|	'MULTI'	{ type = ListCaseAction.AbstractType.MULTI; isExclusive = true; }
+			 	) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if ($opt.isLast!=null) isLast = $opt.isLast;})?
+			)
+		|	('LIST' { type = ListCaseAction.AbstractType.LIST; isLast = true; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?
+		)
 		)?
 		('FULL' { isChecked = true; })?
 		'(' 
@@ -1982,20 +1969,20 @@ reflectionPropertyType returns [ReflectionPropertyType type]
 	:	'CANONICALNAME' { $type = ReflectionPropertyType.CANONICAL_NAME; }
 	;
 
-readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean clientAction = false;
     boolean dialog = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedReadAction($expr.property, $pUsage.propUsage, context, clientAction, dialog);
+		$action = self.addScriptedReadAction($expr.property, $pUsage.propUsage, context, clientAction, dialog);
 	}
 }
 	:	'READ' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? expr=propertyExpression[context, dynamic] ('TO' pUsage=propertyUsage)?
 	;
 
-writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean clientAction = false;
 	boolean dialog = false;
@@ -2003,7 +1990,7 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedWriteAction($fromExpr.property, $expr.property, context, clientAction, dialog, append);
+		$action = self.addScriptedWriteAction($fromExpr.property, $expr.property, context, clientAction, dialog, append);
 	}
 }
 	:	'WRITE' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? fromExpr=propertyExpression[context, dynamic]
@@ -2011,7 +1998,7 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 	;
 
-importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 
@@ -2034,7 +2021,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inMainParseState()) {
-        $property = self.addScriptedImportAction(format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, $wherePropertyUsage.propUsage, sheet, sheetAll, separator, !hasHeader, noEscape, charset, root, fieldParams, toParams, attr, where, memo);
+        $action = self.addScriptedImportAction(format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.action, $dDB.elseAction, context, newContext, $wherePropertyUsage.propUsage, sheet, sheetAll, separator, !hasHeader, noEscape, charset, root, fieldParams, toParams, attr, where, memo);
 	}
 } 
 	:	'IMPORT' 
@@ -2091,7 +2078,7 @@ importFieldDefinition[List<TypedParameter> newContext] returns [String id, Boole
         }
     ;
 
-exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<TypedParameter> newContext = new ArrayList<>(context); 
 
@@ -2109,7 +2096,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inMainParseState()) {
-			$property = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
+			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
 			                                                 root, tag, separator, !hasHeader, noEscape, selectTop, charset, attr, orderProperties, orderDirections);
 	}
 } 
@@ -2149,7 +2136,7 @@ exportAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] r
         expr=propertyExpression[context, dynamic] { $property = $expr.property; }
     ;
 
-importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     FormIntegrationType format = null;
 	LPWithParams sheet = null;
@@ -2166,7 +2153,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-	    $property = self.addScriptedImportFormAction(format, context, $fileExprs.property, $fileExprs.properties, form, sheet, sheetAll, !hasHeader, noEscape, attr, charset, separator, root, where, memo);
+	    $action = self.addScriptedImportFormAction(format, context, $fileExprs.property, $fileExprs.properties, form, sheet, sheetAll, !hasHeader, noEscape, attr, charset, separator, root, where, memo);
 	}
 }
 	:	'IMPORT'
@@ -2194,14 +2181,14 @@ importAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] r
         expr=propertyExpression[context, dynamic] { $property = $expr.property; }
     ;
 
-newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 	List<LP> localProps = new ArrayList<LP>();
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedNewThreadAction($aDB.property, $connExpr.property, $periodExpr.property, $delayExpr.property);
+		$action = self.addScriptedNewThreadAction($aDB.action, $connExpr.property, $periodExpr.property, $delayExpr.property);
 	}
 }
 	:	'NEWTHREAD' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
@@ -2213,20 +2200,20 @@ newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
         )?
 	;
 
-newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 	List<LP> localProps = new ArrayList<LP>();
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedNewExecutorAction($aDB.property, $threadsExpr.property);
+		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property);
 	}
 }
 	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic] 'THREADS' threadsExpr=propertyExpression[context, dynamic] ';'
 	;
 
-newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<NamedPropertyUsage> migrateSessionProps = Collections.emptyList();
 	boolean migrateAllSessionProps = false;
@@ -2236,7 +2223,7 @@ newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedNewSessionAProp($aDB.property, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL);
+		$action = self.addScriptedNewSessionAProp($aDB.action, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL);
 	}
 }
 	:	(	'NEWSESSION' ('NEWSQL' { newSQL = true; })? (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
@@ -2314,13 +2301,13 @@ recursivePropertyOptions[LP property, String propertyName, LocalizedString capti
 	|	nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
 	;
 
-actionOptions[LA property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings ps = new ActionSettings()]
-	:	recursiveActionOptions[property, propertyName, caption, $ps, context]
+actionOptions[LA action, String actionName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings as = new ActionSettings()]
+	:	recursiveActionOptions[action, actionName, caption, $as, context]
 	;
 
-recursiveActionOptions[LA property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
-	:	semiActionOption[property, propertyName, caption, ps, context] (';' | recursiveActionOptions[property, propertyName, caption, ps, context])
-	|	nonSemiActionOption[property, propertyName, caption, ps, context] recursiveActionOptions[property, propertyName, caption, ps, context]?
+recursiveActionOptions[LA action, String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
+	:	semiActionOption[action, actionName, caption, as, context] (';' | recursiveActionOptions[action, actionName, caption, as, context])
+	|	nonSemiActionOption[action, actionName, caption, as, context] recursiveActionOptions[action, actionName, caption, as, context]?
 	;
 
 semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
@@ -2349,12 +2336,12 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	eventIdSetting [property]
     ;
 
-semiActionOption[LA property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
-    :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
-    |   imageSetting [property]
-	|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
-	|	asonEditActionSetting [property]
-	|	confirmSetting [property]
+semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
+    :	semiActionOrPropertyOption[action, actionName, caption, ps, context]
+    |   imageSetting [action]
+	|	shortcutSetting [action, caption != null ? caption : LocalizedString.create(actionName)]
+	|	asonEditActionSetting [action]
+	|	confirmSetting [action]
     ;
 
 nonSemiActionOrPropertyOption[LAP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
@@ -2367,8 +2354,8 @@ nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption,
     :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
     ;
 
-nonSemiActionOption[LA property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
-    :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
+nonSemiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings as, List<TypedParameter> context]
+    :   nonSemiActionOrPropertyOption[action, actionName, caption, as, context]
     ;
 
 inSetting [ActionOrPropertySettings ps]
@@ -2580,11 +2567,11 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
 onEditEventSetting [LAP property, List<TypedParameter> context]
 @after {
 	if (inMainParseState()) {
-		self.setScriptedEditAction(property, $et.type, $action.property);
+		self.setScriptedEditAction(property, $et.type, $aDB.action);
 	}
 }
 	:	'ON' et=formEventType
-		action=listTopContextDependentActionDefinitionBody[context, false, false]
+		aDB=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
 
 formEventType returns [String type]
@@ -2597,7 +2584,7 @@ formEventType returns [String type]
 onContextMenuEventSetting [LAP property, List<TypedParameter> context]
 @after {
 	if (inMainParseState()) {
-		self.setScriptedContextMenuAction(property, $c.val, $action.property);
+		self.setScriptedContextMenuAction(property, $c.val, $action.action);
 	}
 }
 	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)?
@@ -2607,7 +2594,7 @@ onContextMenuEventSetting [LAP property, List<TypedParameter> context]
 onKeyPressEventSetting [LAP property, List<TypedParameter> context]
 @after {
 	if (inMainParseState()) {
-		self.setScriptedKeyPressAction(property, $key.val, $action.property);
+		self.setScriptedKeyPressAction(property, $key.val, $action.action);
 	}
 }
 	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false]
@@ -2627,158 +2614,158 @@ eventIdSetting [LAP property]
 ////////////////////////////////////////////////////////////////////////////////
 
 // "multiple inheritance" of topContextDependentActionDefinitionBody
-listTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAWithParams property]
+listTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAWithParams action]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
     if (inMainParseState()) {
-        $property = self.modifyContextFlowActionDefinitionBodyCreated($property, context, new ArrayList<TypedParameter>(), needFullContext);
+        $action = self.modifyContextFlowActionDefinitionBodyCreated($action, context, new ArrayList<TypedParameter>(), needFullContext);
 
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
-		self.actionDefinitionBodyCreated($property, point, endPoint, true, null);
+		self.actionDefinitionBodyCreated($action, point, endPoint, true, null);
 
-        self.topContextActionDefinitionBodyCreated($property);
+        self.topContextActionDefinitionBodyCreated($action);
     }
 }
-    :   aDB=listActionDefinitionBody[context, dynamic] { if(inMainParseState()) { $property = $aDB.property; } }
+    :   aDB=listActionDefinitionBody[context, dynamic] { if(inMainParseState()) { $action = $aDB.action; } }
 	;
 
-endDeclTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAWithParams property]
-    :   aDB=topContextDependentActionDefinitionBody[context, dynamic, needFullContext] { $property = $aDB.property; }
+endDeclTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAWithParams action]
+    :   aDB=topContextDependentActionDefinitionBody[context, dynamic, needFullContext] { $action = $aDB.action; }
 	;
 
 // top level, not recursive
-topContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAWithParams property]
+topContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAWithParams action]
 @after{
     if (inMainParseState()) {
-        self.topContextActionDefinitionBodyCreated($property);
+        self.topContextActionDefinitionBodyCreated($action);
     }
 }
-    :   aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext, false] { $property = $aDB.property; }
+    :   aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext, false] { $action = $aDB.action; }
 	;
 
 // modifies context + is flow action (uses another actions)
-modifyContextFlowActionDefinitionBody[List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean dynamic, boolean needFullContext, boolean explicitCreated] returns [LAWithParams property]
+modifyContextFlowActionDefinitionBody[List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean dynamic, boolean needFullContext, boolean explicitCreated] returns [LAWithParams action]
 @after{
     if (inMainParseState() && !explicitCreated) {
-        $property = self.modifyContextFlowActionDefinitionBodyCreated($property, newContext, $oldContext, needFullContext);
+        $action = self.modifyContextFlowActionDefinitionBodyCreated($action, newContext, $oldContext, needFullContext);
     }
 }
-    :	aDB=actionDefinitionBody[newContext, dynamic, true] { $property = $aDB.property; }
+    :	aDB=actionDefinitionBody[newContext, dynamic, true] { $action = $aDB.action; }
 	;
 
-keepContextFlowActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
-    :	aDB=actionDefinitionBody[context, dynamic, false] { $property = $aDB.property; }
+keepContextFlowActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+    :	aDB=actionDefinitionBody[context, dynamic, false] { $action = $aDB.action; }
 	;
 
-actionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modifyContext] returns [LAWithParams property]
+actionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modifyContext] returns [LAWithParams action]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
 	if (inMainParseState()) {
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
-		self.actionDefinitionBodyCreated($property, point, endPoint, modifyContext, null);
+		self.actionDefinitionBodyCreated($action, point, endPoint, modifyContext, null);
 	}
 }
-	:	(   recDB=recursiveContextActionDB[context, dynamic]	{ $property = $recDB.property; }
-	    |	leafDB=leafContextActionDB[context, dynamic]	{ $property = $leafDB.property; }
+	:	(   recDB=recursiveContextActionDB[context, dynamic]	{ $action = $recDB.action; }
+	    |	leafDB=leafContextActionDB[context, dynamic]	{ $action = $leafDB.action; }
 	    )
 	;
 
 // recursive or mixed (in mixed rule there can be semi, but not necessary)
-recursiveContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
-	:	(   extDB=recursiveExtendContextActionDB[context, dynamic]	{ $property = $extDB.property; }
-	    |	keepDB=recursiveKeepContextActionDB[context, dynamic]	{ $property = $keepDB.property; }
+recursiveContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+	:	(   extDB=recursiveExtendContextActionDB[context, dynamic]	{ $action = $extDB.action; }
+	    |	keepDB=recursiveKeepContextActionDB[context, dynamic]	{ $action = $keepDB.action; }
 	    )
 ;
 
-recursiveExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+recursiveExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	if (inMainParseState() && dynamic) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
 }
-	:	forADB=forActionDefinitionBody[context] { $property = $forADB.property; }
-	|	dialogADB=dialogActionDefinitionBody[context] { $property = $dialogADB.property; } // mixed, input
-	|	inputADB=inputActionDefinitionBody[context] { $property = $inputADB.property; } // mixed, input
-	|	newADB=newActionDefinitionBody[context] { $property = $newADB.property; }
+	:	forADB=forActionDefinitionBody[context] { $action = $forADB.action; }
+	|	dialogADB=dialogActionDefinitionBody[context] { $action = $dialogADB.action; } // mixed, input
+	|	inputADB=inputActionDefinitionBody[context] { $action = $inputADB.action; } // mixed, input
+	|	newADB=newActionDefinitionBody[context] { $action = $newADB.action; }
 	;
 
-recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
-	:	listADB=listActionDefinitionBody[context, dynamic] { $property = $listADB.property; }
-	|	confirmADB=confirmActionDefinitionBody[context] { $property = $confirmADB.property; } // mixed, input
-	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; } // mixed
-	|	newSessionADB=newSessionActionDefinitionBody[context, dynamic] { $property = $newSessionADB.property; }
-	|	requestADB=requestActionDefinitionBody[context, dynamic] { $property = $requestADB.property; }
-	|	tryADB=tryActionDefinitionBody[context, dynamic] { $property = $tryADB.property; } // mixed
-	|	ifADB=ifActionDefinitionBody[context, dynamic] { $property = $ifADB.property; }
-	|	caseADB=caseActionDefinitionBody[context, dynamic] { $property = $caseADB.property; }
-	|	multiADB=multiActionDefinitionBody[context, dynamic] { $property = $multiADB.property; }
-	|	applyADB=applyActionDefinitionBody[context, dynamic] { $property = $applyADB.property; }
-    |   newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; } // mixed
-	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $property = $newExecutorADB.property; } // mixed, recursive but always semi
+recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+	:	listADB=listActionDefinitionBody[context, dynamic] { $action = $listADB.action; }
+	|	confirmADB=confirmActionDefinitionBody[context] { $action = $confirmADB.action; } // mixed, input
+	|	importADB=importActionDefinitionBody[context, dynamic] { $action = $importADB.action; } // mixed
+	|	newSessionADB=newSessionActionDefinitionBody[context, dynamic] { $action = $newSessionADB.action; }
+	|	requestADB=requestActionDefinitionBody[context, dynamic] { $action = $requestADB.action; }
+	|	tryADB=tryActionDefinitionBody[context, dynamic] { $action = $tryADB.action; } // mixed
+	|	ifADB=ifActionDefinitionBody[context, dynamic] { $action = $ifADB.action; }
+	|	caseADB=caseActionDefinitionBody[context, dynamic] { $action = $caseADB.action; }
+	|	multiADB=multiActionDefinitionBody[context, dynamic] { $action = $multiADB.action; }
+	|	applyADB=applyActionDefinitionBody[context, dynamic] { $action = $applyADB.action; }
+    |   newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $action = $newThreadADB.action; } // mixed
+	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $action = $newExecutorADB.action; } // mixed, recursive but always semi
 ;
 
 // always semi in the end
-leafContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
-	:	(   extDB=leafExtendContextActionDB[context, dynamic]	{ $property = $extDB.property; }
-	    |	keepDB=leafKeepContextActionDB[context, dynamic]	{ $property = $keepDB.property; }
+leafContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+	:	(   extDB=leafExtendContextActionDB[context, dynamic]	{ $action = $extDB.action; }
+	    |	keepDB=leafKeepContextActionDB[context, dynamic]	{ $action = $keepDB.action; }
 	    ) ';'
 ;
 
-leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	if (inMainParseState() && dynamic) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
 }
-	:	setADB=assignActionDefinitionBody[context] { $property = $setADB.property; }
-	|	classADB=changeClassActionDefinitionBody[context] { $property = $classADB.property; }
-	|	delADB=deleteActionDefinitionBody[context] { $property = $delADB.property; }
-	|	addADB=newWhereActionDefinitionBody[context] { $property = $addADB.property; }
+	:	setADB=assignActionDefinitionBody[context] { $action = $setADB.action; }
+	|	classADB=changeClassActionDefinitionBody[context] { $action = $classADB.action; }
+	|	delADB=deleteActionDefinitionBody[context] { $action = $delADB.action; }
+	|	addADB=newWhereActionDefinitionBody[context] { $action = $addADB.action; }
 	;
 
-leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
-	:	execADB=execActionDefinitionBody[context, dynamic] { $property = $execADB.property; }
-	|	termADB=terminalFlowActionDefinitionBody { $property = $termADB.property; }
-	|  	cancelPDB=cancelActionDefinitionBody[context, dynamic] { $property = $cancelPDB.property; }
-	|	formADB=formActionDefinitionBody[context, dynamic] { $property = $formADB.property; }
-	|	printADB=printActionDefinitionBody[context, dynamic] { $property = $printADB.property; }
-	|	exportFormADB=exportFormActionDefinitionBody[context, dynamic] { $property = $exportFormADB.property; }
-	|	exportADB=exportActionDefinitionBody[context, dynamic] { $property = $exportADB.property; }
-	|	msgADB=messageActionDefinitionBody[context, dynamic] { $property = $msgADB.property; }
-	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $property = $asyncADB.property; }
-	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $property = $seekADB.property; }
-	|	mailADB=emailActionDefinitionBody[context, dynamic] { $property = $mailADB.property; }
-	|	evalADB=evalActionDefinitionBody[context, dynamic] { $property = $evalADB.property; }
-	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $property = $drillDownADB.property; }
-	|	readADB=readActionDefinitionBody[context, dynamic] { $property = $readADB.property; }
-	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
-	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $property = $importFormADB.property; }
-	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
-	|	activateADB=activateActionDefinitionBody[context, dynamic] { $property = $activateADB.property; }
-    |   externalADB=externalActionDefinitionBody[context, dynamic] { $property = $externalADB.property;}
-	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $property = $emptyADB.property; }
+leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+	:	execADB=execActionDefinitionBody[context, dynamic] { $action = $execADB.action; }
+	|	termADB=terminalFlowActionDefinitionBody { $action = $termADB.action; }
+	|  	cancelPDB=cancelActionDefinitionBody[context, dynamic] { $action = $cancelPDB.action; }
+	|	formADB=formActionDefinitionBody[context, dynamic] { $action = $formADB.action; }
+	|	printADB=printActionDefinitionBody[context, dynamic] { $action = $printADB.action; }
+	|	exportFormADB=exportFormActionDefinitionBody[context, dynamic] { $action = $exportFormADB.action; }
+	|	exportADB=exportActionDefinitionBody[context, dynamic] { $action = $exportADB.action; }
+	|	msgADB=messageActionDefinitionBody[context, dynamic] { $action = $msgADB.action; }
+	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $action = $asyncADB.action; }
+	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $action = $seekADB.action; }
+	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
+	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
+	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $action = $drillDownADB.action; }
+	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
+	|	writeADB=writeActionDefinitionBody[context, dynamic] { $action = $writeADB.action; }
+	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $action = $importFormADB.action; }
+	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $action = $activeFormADB.action; }
+	|	activateADB=activateActionDefinitionBody[context, dynamic] { $action = $activateADB.action; }
+    |   externalADB=externalActionDefinitionBody[context, dynamic] { $action = $externalADB.action;}
+	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
 
-contextIndependentActionDB returns [LA property, List<ResolveClassSet> signature]
+contextIndependentActionDB returns [LA action, List<ResolveClassSet> signature]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 	Boolean needToCreateDelegate = null;
 }
 @after{
 	if (inMainParseState()) {
-	    LAWithParams lpWithParams = new LAWithParams($property, new ArrayList<Integer>());
+	    LAWithParams laWithParams = new LAWithParams($action, new ArrayList<Integer>());
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
-		self.actionDefinitionBodyCreated(lpWithParams, point, endPoint, false, needToCreateDelegate);
+		self.actionDefinitionBodyCreated(laWithParams, point, endPoint, false, needToCreateDelegate);
 
-        self.topContextActionDefinitionBodyCreated(lpWithParams);
+        self.topContextActionDefinitionBodyCreated(laWithParams);
 	}
 }
-	:	customADB=customActionDefinitionBody { $property = $customADB.property; $signature = $customADB.signature; }
-    |	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
+	:	customADB=customActionDefinitionBody { $action = $customADB.action; $signature = $customADB.signature; }
+    |	abstractActionDef=abstractActionDefinition { $action = $abstractActionDef.action; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	;
 
 mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [MappedForm mapped, List<FormActionProps> props = new ArrayList<>(), FormEntity form]
@@ -2809,16 +2796,16 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
 ;
 
 
-emptyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+emptyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
     if (inMainParseState()) {
-        $property = new LAWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());
+        $action = new LAWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());
     }
 }
     :
     ;
 
-formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 
 	Boolean syncType = null;
@@ -2833,7 +2820,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly);
+		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly);
 	}
 }
 	:	'SHOW' mf=mappedForm[context, null, dynamic]
@@ -2850,7 +2837,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		)*
 	;
 
-dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	WindowFormType windowType = null;
 
@@ -2866,7 +2853,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams p
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $dDB.property, $dDB.elseProperty, context, newContext);
+		$action = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $dDB.action, $dDB.elseAction, context, newContext);
 	}
 }
 	:	'DIALOG' mf=mappedForm[context, newContext, false]
@@ -2897,10 +2884,10 @@ noCancelClause returns [boolean result]
 	|	'NOCANCEL' { $result = true; }
     ;
 
-doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LAWithParams property, LAWithParams elseProperty]
+doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext] returns [LAWithParams action, LAWithParams elseAction]
         // used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses inside extendDoParams, but need modifyContext flag in actionDefinitionBody to get right DelegationType
-    :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false, true] { $property = $dDB.property; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseProperty = $eDB.property; } )?)
-	|	(';' { if(inMainParseState()) { $property = new LAWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
+    :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false, true] { $action = $dDB.action; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseAction = $eDB.action; } )?)
+	|	(';' { if(inMainParseState()) { $action = new LAWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
 ;
 
 syncTypeLiteral returns [boolean val]
@@ -2913,7 +2900,7 @@ windowTypeLiteral returns [WindowFormType val]
 	|	'DOCKED' { $val = WindowFormType.DOCKED; }
 	;
 
-printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	LPWithParams printerProperty = null;
 	FormPrintType printType = null;
@@ -2923,7 +2910,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop, $sUsage.propUsage, passwordProperty);
+		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop, $sUsage.propUsage, passwordProperty);
 	}
 }
 	:	'PRINT' mf=mappedForm[context, null, dynamic]
@@ -2954,7 +2941,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         )
 	;
 
-exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     FormIntegrationType format = null;
 	String separator = null;
@@ -2967,7 +2954,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages);
+		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
@@ -3069,7 +3056,7 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 		(',' id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); })*
 	;
 	
-customActionDefinitionBody returns [LA property, List<ResolveClassSet> signature]
+customActionDefinitionBody returns [LA action, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
@@ -3077,10 +3064,10 @@ customActionDefinitionBody returns [LA property, List<ResolveClassSet> signature
 @after {
 	if (inMainParseState()) {
 	    if($code.val == null)
-	        $property = self.addScriptedCustomAction($classN.val, classes, allowNullValue);
+	        $action = self.addScriptedCustomAction($classN.val, classes, allowNullValue);
 	    else
-		    $property = self.addScriptedCustomAction($code.val, allowNullValue);
-		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
+		    $action = self.addScriptedCustomAction($code.val, allowNullValue);
+		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
 	}
 }
 	:	'INTERNAL'
@@ -3091,22 +3078,22 @@ customActionDefinitionBody returns [LA property, List<ResolveClassSet> signature
 	    ('NULL' { allowNullValue = true; })?
 	;
 
-externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     List<LPWithParams> params = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
       if($type.format == ExternalFormat.DB) {
-        $property = self.addScriptedExternalDBAction($type.conStr, $type.exec, params, context, $tl.propUsages);
+        $action = self.addScriptedExternalDBAction($type.conStr, $type.exec, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.DBF) {
-        $property = self.addScriptedExternalDBFAction($type.conStr, $type.charset, params, context, $tl.propUsages);
+        $action = self.addScriptedExternalDBFAction($type.conStr, $type.charset, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.JAVA) {
-        $property = self.addScriptedExternalJavaAction(params, context, $tl.propUsages);
+        $action = self.addScriptedExternalJavaAction(params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPAction($type.method, $type.conStr, $type.bodyUrl, $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
+        $action = self.addScriptedExternalHTTPAction($type.method, $type.conStr, $type.bodyUrl, $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
-        $property = self.addScriptedExternalLSFAction($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
+        $action = self.addScriptedExternalLSFAction($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
 	}
 }
@@ -3137,7 +3124,7 @@ externalHttpMethod returns [ExternalHttpMethod method]
 	|	'PUT'    { $method = ExternalHttpMethod.PUT; }
 	;
 
-newWhereActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+newWhereActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	LPWithParams condition = null;
@@ -3146,7 +3133,7 @@ newWhereActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedAddObjProp(context, $cid.sid, toPropUsage, toPropMapping, condition, newContext);
+		$action = self.addScriptedAddObjProp(context, $cid.sid, toPropUsage, toPropMapping, condition, newContext);
 	}
 }
 	:	'NEW' cid=classId
@@ -3154,7 +3141,7 @@ newWhereActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams
 		('TO' toProp=propertyUsage '(' params=singleParameterList[newContext, false] ')' { toPropUsage = $toProp.propUsage; toPropMapping = $params.props; } )?
 	;
 
-newActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+newActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 
@@ -3162,7 +3149,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams prop
 }
 @after {
 	if (inMainParseState()) {
-        $property = self.addScriptedNewAProp(context, $actDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset);
+        $action = self.addScriptedNewAProp(context, $actDB.action, $addObj.paramCnt, $addObj.className, $addObj.autoset);
 	}
 }
 	:
@@ -3171,7 +3158,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams prop
    		actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false, false]
 	;
 
-emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	LPWithParams fromProp = null;
 	LPWithParams subjProp = null;
@@ -3185,7 +3172,7 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedEmailProp(fromProp, subjProp, bodyProp, recipTypes, recipProps, attachFileNames, attachFiles);
+		$action = self.addScriptedEmailProp(fromProp, subjProp, bodyProp, recipTypes, recipProps, attachFileNames, attachFiles);
 	}
 }
 	:	'EMAIL'
@@ -3215,14 +3202,14 @@ emailActionFormObjects[List<TypedParameter> context, boolean dynamic] returns [O
 		)?
 	;
 
-confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
     List<TypedParameter> newContext;
     boolean yesNo = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedConfirmProp($pe.property, $dDB.property, $dDB.elseProperty, yesNo, context, newContext);
+		$action = self.addScriptedConfirmProp($pe.property, $dDB.action, $dDB.elseAction, yesNo, context, newContext);
 	}
 }
 	:	'ASK'
@@ -3232,13 +3219,13 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams 
         dDB=doInputBody[context, newContext]
 	;
 		
-messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean noWait = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedMessageProp($pe.property, noWait);
+		$action = self.addScriptedMessageProp($pe.property, noWait);
 	}
 }
 	:	'MESSAGE'
@@ -3246,16 +3233,16 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 	    (sync = syncTypeLiteral { noWait = !$sync.val; })?
 	;
 
-asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedAsyncUpdateProp($pe.property);
+		$action = self.addScriptedAsyncUpdateProp($pe.property);
 	}
 }
 	:	'ASYNCUPDATE' pe=propertyExpression[context, dynamic]
 	;
 
-seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	UpdateType type = UpdateType.FIRST;
 	List<String> objNames = new ArrayList<>();
@@ -3263,8 +3250,8 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$property = obj != null ? self.addScriptedObjectSeekProp($obj.sid, $pe.property, type)
-		                        : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
+		$action = obj != null ? self.addScriptedObjectSeekProp($obj.sid, $pe.property, type)
+		                      : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
 	:	'SEEK' ('FIRST' | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
@@ -3277,66 +3264,66 @@ seekObjectsList[List<TypedParameter> context, boolean dynamic] returns [List<Str
 	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $values = $list.exprs; }
 	;
 
-changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	LPWithParams condition = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedChangeClassAProp(context.size(), newContext, $param.property, $className.sid, condition);	
+		$action = self.addScriptedChangeClassAProp(context.size(), newContext, $param.property, $className.sid, condition);	
 	}
 }
 	:	'CHANGECLASS' param=singleParameter[newContext, true] 'TO' className=classId 
 		('WHERE' pe=propertyExpression[newContext, false] { condition = $pe.property; })?
 	;  
 
-deleteActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+deleteActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	LPWithParams condition = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedDeleteAProp(context.size(), newContext, $param.property, condition);	
+		$action = self.addScriptedDeleteAProp(context.size(), newContext, $param.property, condition);	
 	}
 }
 	:	'DELETE' param=singleParameter[newContext, true] 
 		('WHERE' pe=propertyExpression[newContext, false] { condition = $pe.property; })?
 	;  
 
-evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
-	boolean action = false;
+	boolean isAction = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedEvalAction($expr.property, $exprList.props, context, action);
+		$action = self.addScriptedEvalAction($expr.property, $exprList.props, context, isAction);
 	}
 }
-	:	'EVAL' ('ACTION' { action = true; })? expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
+	:	'EVAL' ('ACTION' { isAction = true; })? expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
 	;
 	
-drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedDrillDownAction($expr.property);
+		$action = self.addScriptedDrillDownAction($expr.property);
 	}
 }
 	:	'DRILLDOWN' expr=propertyExpression[context, dynamic]
 	;	
 
-requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedRequestAProp($aDB.property, $dDB.property, $eDB.property);
+		$action = self.addScriptedRequestAProp($aDB.action, $dDB.action, $eDB.action);
 	}
 }
 	:	'REQUEST' aDB=keepContextFlowActionDefinitionBody[context, dynamic] 'DO' dDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	    ('ELSE' eDB=keepContextFlowActionDefinitionBody[context, dynamic])?
 	;
 
-inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	boolean assign = false;
@@ -3347,7 +3334,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams pr
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.property, $dDB.elseProperty, context, newContext, assign, changeProp, assignDebugPoint);
+		$action = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext, assign, changeProp, assignDebugPoint);
 	}
 }
 	:	'INPUT'
@@ -3383,16 +3370,16 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithPa
     )
 ;
 
-activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedActiveFormAProp($name.sid);
+		$action = self.addScriptedActiveFormAProp($name.sid);
 	}
 }
 	:	'ACTIVE' 'FORM' name=compoundID 
 	;
 
-activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     FormEntity form = null;
     ComponentView component = null;
@@ -3401,9 +3388,9 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 @after {
 	if (inMainParseState()) {
 	    if(form != null)
-		    $property = self.addScriptedActivateAProp(form, component);
+		    $action = self.addScriptedActivateAProp(form, component);
         else
-            $property = self.addScriptedFocusAction(propertyDraw);
+            $action = self.addScriptedFocusAction(propertyDraw);
 	}
 }
 	:	'ACTIVATE'
@@ -3413,18 +3400,18 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 		)
 	;
 
-listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<LAWithParams> props = new ArrayList<>();
 	List<LP> localProps = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedListAProp(props, localProps);
+		$action = self.addScriptedListAProp(props, localProps);
 	}
 }
 	:	'{'
-			(	(aDB=keepContextFlowActionDefinitionBody[context, dynamic] { props.add($aDB.property); })
+			(	(aDB=keepContextFlowActionDefinitionBody[context, dynamic] { props.add($aDB.action); })
 			|	def=localDataPropertyDefinition ';' { if (inMainParseState()) localProps.addAll($def.properties); }
 			)*
 		'}'
@@ -3457,16 +3444,16 @@ localDataPropertyDefinition returns [List<LP<?>> properties]
 		')'
 	;
 
-execActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+execActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	boolean isInline = false;
 } 
 @after {
 	if (inMainParseState()) {
 //		if (isInline) {
-//			$property = self.addScriptedJoinAProp($iProp.property, $exprList.props);
+//			$action = self.addScriptedJoinAProp($iProp.property, $exprList.props);
 //		} else {
-			$property = self.addScriptedJoinAProp($uProp.propUsage, $exprList.props, context);
+			$action = self.addScriptedJoinAProp($uProp.propUsage, $exprList.props, context);
 //		}
 	}
 }
@@ -3479,14 +3466,14 @@ execActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		')'
 	;
 
-assignActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+assignActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context); 
 	LPWithParams condition = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedAssignPropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
+		$action = self.addScriptedAssignPropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
 	}
 }
 	:	('CHANGE')?
@@ -3498,10 +3485,10 @@ assignActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams p
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
 	;
 
-tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedTryAProp($tryADB.property, $catchADB.property, $finallyADB.property);
+		$action = self.addScriptedTryAProp($tryADB.action, $catchADB.action, $finallyADB.action);
 	}
 }
 	:	'TRY' tryADB=keepContextFlowActionDefinitionBody[context, dynamic]
@@ -3509,10 +3496,10 @@ tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [
 		( 'FINALLY' finallyADB=keepContextFlowActionDefinitionBody[context, dynamic] )?
 	;
 
-ifActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+ifActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedIfAProp($expr.property, $thenADB.property, $elseADB.property);
+		$action = self.addScriptedIfAProp($expr.property, $thenADB.action, $elseADB.action);
 	}
 }
 	:	'IF' expr=propertyExpression[context, dynamic] 
@@ -3520,7 +3507,7 @@ ifActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [L
 		('ELSE' elseADB=keepContextFlowActionDefinitionBody[context, dynamic])?
 	;
 
-caseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property] 
+caseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action] 
 @init {
 	List<LPWithParams> whenProps = new ArrayList<>();
 	List<LAWithParams> thenActions = new ArrayList<>();
@@ -3529,20 +3516,20 @@ caseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedCaseAProp(whenProps, thenActions, elseAction, isExclusive); 
+		$action = self.addScriptedCaseAProp(whenProps, thenActions, elseAction, isExclusive); 
 	}
 }
 	:	'CASE' (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 			( branch=actionCaseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenActions.add($branch.thenAction); } )+
-			('ELSE' elseAct=keepContextFlowActionDefinitionBody[context, dynamic] { elseAction = $elseAct.property; })?
+			('ELSE' elseAct=keepContextFlowActionDefinitionBody[context, dynamic] { elseAction = $elseAct.action; })?
 	;
 
 actionCaseBranchBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams whenProperty, LAWithParams thenAction]
 	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
-		'THEN' thenAct=keepContextFlowActionDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
+		'THEN' thenAct=keepContextFlowActionDefinitionBody[context, dynamic] { $thenAction = $thenAct.action; }
 	;
 
-applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	boolean single = false;
 	List<NamedPropertyUsage> keepSessionProps = Collections.emptyList();
@@ -3551,7 +3538,7 @@ applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedApplyAProp($applyADB.property, single, keepSessionProps, keepAllSessionProps, serializable);
+		$action = self.addScriptedApplyAProp($applyADB.action, single, keepSessionProps, keepAllSessionProps, serializable);
 	}
 }
 	:	'APPLY' 
@@ -3561,27 +3548,27 @@ applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         applyADB=keepContextFlowActionDefinitionBody[context, dynamic]
 	;
 
-cancelActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property]
+cancelActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<NamedPropertyUsage> keepSessionProps = Collections.emptyList();
 	boolean keepAllSessionProps = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedCancelAProp(keepSessionProps, keepAllSessionProps);
+		$action = self.addScriptedCancelAProp(keepSessionProps, keepAllSessionProps);
 	}
 }
 	:	'CANCEL'
         (mps=nestedPropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
 	;
 
-multiActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams property] 
+multiActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action] 
 @init {
 	boolean isExclusive = true;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedMultiAProp($actList.props, isExclusive); 
+		$action = self.addScriptedMultiAProp($actList.actions, isExclusive); 
 	}
 }
 	:	'MULTI' (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
@@ -3603,7 +3590,7 @@ forAddObjClause[List<TypedParameter> context] returns [Integer paramCnt, String 
         ('AUTOSET' { $autoset = true; } )?
 	;
 
-forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams property]
+forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
 	boolean recursive = false;
 	boolean descending = false;
@@ -3614,7 +3601,7 @@ forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams prop
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actDB.property, $elseActDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline);
+		$action = self.addScriptedForAProp(context, $expr.property, orders, $actDB.action, $elseActDB.action, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline);
 	}	
 }
 	:	(	'FOR' 
@@ -3631,13 +3618,13 @@ forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams prop
 		( {!recursive}?=> 'ELSE' elseActDB=keepContextFlowActionDefinitionBody[context, false])?
 	;
 
-terminalFlowActionDefinitionBody returns [LAWithParams property]
+terminalFlowActionDefinitionBody returns [LAWithParams action]
 @init {
 	boolean isBreak = true;
 }
 @after {
 	if (inMainParseState()) {
-		$property =	self.getTerminalFlowAction(isBreak);
+		$action = self.getTerminalFlowAction(isBreak);
 	}
 }
 	:	'BREAK'
@@ -3705,7 +3692,7 @@ scope {
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
         actionDB=listTopContextDependentActionDefinitionBody[context, false, when == null] // for abstract LIST will also support patch / explicit classes params (because param classes are also explicitly set in property definition, for WHEN will keep as it is)
         { 
-            action = $actionDB.property; 
+            action = $actionDB.action; 
             if(inMainParseState()) {
                 if(when == null)
                     action.getLP().setExplicitClasses(self.getClassesFromTypedParams(context)); // just like in action declaration we need full context, and explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in body)
@@ -3845,7 +3832,7 @@ eventStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug);
+		self.addScriptedEvent($whenExpr.property, $action.action, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug);
 	} 
 }
 	:	'WHEN'
@@ -3879,7 +3866,7 @@ globalEventStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedGlobalEvent($action.property, $et.event, single, $property.propUsage);
+		self.addScriptedGlobalEvent($action.action, $et.event, single, $property.propUsage);
 	}
 }
 	:	'ON' 
@@ -3948,7 +3935,7 @@ aspectStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedAspect($mainProp.propUsage, $mainProp.mapping, $action.property, before);
+		self.addScriptedAspect($mainProp.propUsage, $mainProp.mapping, $action.action, before);
 	}
 }
 	:	(	'BEFORE' 
@@ -4594,19 +4581,19 @@ singleParameterList[List<TypedParameter> context, boolean dynamic] returns [List
 		(',' next=singleParameter[context, dynamic] { props.add($next.property); })*)?
 	;
 
-actionPDBList[List<TypedParameter> context, boolean dynamic] returns [List<LAWithParams> props] 
+actionPDBList[List<TypedParameter> context, boolean dynamic] returns [List<LAWithParams> actions] 
 @init {
-	$props = new ArrayList<>();
+	$actions = new ArrayList<>();
 }
-	:	(neList=nonEmptyActionPDBList[context, dynamic] { $props = $neList.props; })?
+	:	(neList=nonEmptyActionPDBList[context, dynamic] { $actions = $neList.actions; })?
 	;
 
-nonEmptyActionPDBList[List<TypedParameter> context, boolean dynamic] returns [List<LAWithParams> props]
+nonEmptyActionPDBList[List<TypedParameter> context, boolean dynamic] returns [List<LAWithParams> actions]
 @init {
-	$props = new ArrayList<>();
+	$actions = new ArrayList<>();
 }
-	:	first=keepContextFlowActionDefinitionBody[context, dynamic] { $props.add($first.property); }
-		(',' next=keepContextFlowActionDefinitionBody[context, dynamic] { $props.add($next.property); })*
+	:	first=keepContextFlowActionDefinitionBody[context, dynamic] { $actions.add($first.action); }
+		(',' next=keepContextFlowActionDefinitionBody[context, dynamic] { $actions.add($next.action); })*
 	; 
 
 propertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<LPWithParams> props] 
