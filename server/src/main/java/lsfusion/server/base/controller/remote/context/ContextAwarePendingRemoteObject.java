@@ -180,9 +180,9 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         }
     }
 
-    public synchronized void deactivateAndCloseLater(final boolean syncedOnClient) {
+    public synchronized int deactivateAndCloseLater(final boolean syncedOnClient) {
         if(Settings.get().isDisableAsyncClose() && !syncedOnClient)
-            return;
+            return 0;
 
         final int delay = Settings.get().getCloseFormDelay();
         BaseUtils.runLater(delay, new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
@@ -202,6 +202,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                 }
             }
         });
+        return delay;
     }
 
     private boolean closed;

@@ -118,5 +118,5 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
     
     Pair<Long, String> changeExternal(long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException;
 
-    void closeExternal() throws RemoteException;
+    int closeExternal() throws RemoteException;
 }
