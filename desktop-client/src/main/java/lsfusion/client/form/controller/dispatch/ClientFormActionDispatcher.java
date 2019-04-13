@@ -6,6 +6,7 @@ import lsfusion.client.controller.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.interop.action.*;
+import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.form.ModalityType;
 
 import java.awt.*;
@@ -19,6 +20,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     public abstract ClientFormController getFormController();
+
+    @Override
+    protected PendingRemoteInterface getRemote() {
+        return getFormController().getRemoteForm();
+    }
 
     @Override
     protected Container getDialogParentContainer() {

@@ -13,6 +13,7 @@ import lsfusion.client.base.log.Log;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.controller.MainController;
+import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.client.form.classes.view.ClassDialog;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.print.ClientReportUtils;
@@ -21,6 +22,7 @@ import lsfusion.client.form.view.ClientModalForm;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
+import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.action.ICleanListener;
@@ -166,8 +168,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         return MainFrame.instance;
     }
 
+    protected abstract PendingRemoteInterface getRemote();
+
     public void execute(FormClientAction action) {
-        RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
+        RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm, RemoteObjectProxy.getRealHostName(getRemote()));
         if(action.immutableMethods != null) {
             for (int i = 0; i < FormClientAction.methodNames.length; i++) {
                 remoteForm.setProperty(FormClientAction.methodNames[i], action.immutableMethods[i]);

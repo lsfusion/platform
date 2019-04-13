@@ -16,19 +16,19 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
-public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
+public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingRemoteObjectProxy<T> implements RemoteLogicsInterface {
 
-    public RemoteLogicsProxy(T target) {
-        super(target);
+    public RemoteLogicsProxy(T target, String realHostName) {
+        super(target, realHostName);
     }
 
     public RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException {
-        return new RemoteNavigatorProxy(target.createNavigator(token, navigatorInfo));
+        return new RemoteNavigatorProxy(target.createNavigator(token, navigatorInfo), realHostName);
     }
 
     @Override
     public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
-        return new RemoteSessionProxy<>(target.createSession(token, sessionInfo));
+        return new RemoteSessionProxy<>(target.createSession(token, sessionInfo), realHostName);
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {

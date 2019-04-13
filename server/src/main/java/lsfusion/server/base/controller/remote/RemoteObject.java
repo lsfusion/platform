@@ -1,6 +1,7 @@
 package lsfusion.server.base.controller.remote;
 
 import lsfusion.base.remote.RMIUtils;
+import lsfusion.base.remote.ZipClientSocketFactory;
 
 import java.rmi.NoSuchObjectException;
 import java.rmi.Remote;
@@ -20,11 +21,15 @@ public class RemoteObject implements Remote {
         this(port, false);
     }
 
+    public static void export(Remote object, int port) throws RemoteException {
+        RMIUtils.rmiExport(object, port, ZipServerSocketFactory.getInstance());
+    }
+
     public RemoteObject(int port, boolean autoExport) throws RemoteException {
         exportPort = port;
 
         if (autoExport) {
-            RMIUtils.rmiExport(this, port);
+            export(this, port);
         }
     }
 

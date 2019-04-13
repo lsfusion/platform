@@ -1,5 +1,6 @@
 package lsfusion.client.session.remote.proxy;
 
+import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
@@ -7,10 +8,10 @@ import lsfusion.interop.session.remote.RemoteSessionInterface;
 
 import java.rmi.RemoteException;
 
-public class RemoteSessionProxy<T extends RemoteSessionInterface> extends RemoteObjectProxy<T> implements RemoteSessionInterface {
+public class RemoteSessionProxy<T extends RemoteSessionInterface> extends PendingRemoteObjectProxy<T> implements RemoteSessionInterface {
 
-    public RemoteSessionProxy(T target) {
-        super(target);
+    public RemoteSessionProxy(T target, String realHostName) {
+        super(target, realHostName);
     }
 
     @Override

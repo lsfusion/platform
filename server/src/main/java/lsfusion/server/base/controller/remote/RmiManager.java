@@ -108,16 +108,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
         logger.info("Starting RMI Manager.");
         try {
             initJMX(); // важно, что до initRMI, так как должен использовать SocketFactory по умолчанию
-            initRMI();
             initRegistry();
-        } catch (RemoteException e) {
-            throw new RuntimeException("Error starting RmiManager: ", e);
-        }
-    }
-
-    private void initRMI() {
-        try {
-            RMIUtils.initRMI();
         } catch (IOException e) {
             logger.error("Error starting RmiManager: ", e);
             Throwables.propagate(e);
@@ -182,16 +173,15 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     }
     
     private void initRegistry() throws RemoteException {
-        //сначала ищем внешний registry на этом порту
-        registry = RMIUtils.getRmiRegistry(port);
-        try {
-            //данный вызов позволяет убедиться, что registry найден
-            registry.list();
-        } catch (RemoteException e) {
-            //если не найден - создаём локальнй registry
-            registry = RMIUtils.createRmiRegistry(port);
-            exportPort = port;
-        }
+        // first try external registry on that port
+        // will disable that behaviour see RMIUtils.getRmiRegistry comment
+//        registry = RMIUtils.getRmiRegistry(port);
+//        try {
+//            registry.list();
+//        } catch (RemoteException e) {
+        registry = RMIUtils.createRmiRegistry(port, ZipServerSocketFactory.getInstance());
+        exportPort = port;
+//        }
     }
 
     private String getExportPath(String relativeName) {
@@ -199,7 +189,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     }
 
     public void export(Remote remote) throws RemoteException {
-        RMIUtils.rmiExport(remote, exportPort);
+        RemoteObject.export(remote, exportPort);
     }
 
     public void unexport(Remote remote) throws RemoteException {
