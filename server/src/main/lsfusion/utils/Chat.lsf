@@ -99,15 +99,18 @@ showDeleteAttachment (Chat c) = attachment(c);
 
 onStarted() + { 
 
-    FOR NOT chat('system') NEW c = Chat DO {
-        id(c) <- 'system';
-        dataName(c) <- '{chat.name.all}'; 
-    }
+    NEWSESSION {
+        FOR NOT chat('system') NEW c = Chat DO {
+            id(c) <- 'system';
+            dataName(c) <- '{chat.name.all}'; 
+        }
+        
+        in(Chat c, User u) <- TRUE WHERE (login( u) AND lastActivity(u)) AND  c == chat('system');
     
-    in(Chat c, User u) <- TRUE WHERE (login( u) AND lastActivity(u)) AND  c == chat('system');
-
-    status(Message m, CustomUser u) <- MessageStatus.seen WHERE system(m);
-
+        status(Message m, CustomUser u) <- MessageStatus.seen WHERE system(m);
+        APPLY;
+    }
+ 
 }
 
 setSeenMessageUser(Message m, CustomUser user, BOOLEAN system)  { 
