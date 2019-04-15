@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.id.name;
 
-public class NamespaceDBNamePolicy extends FixedSizeUnderscoreDBNamingPolicy {
-    public NamespaceDBNamePolicy(int maxIDLength) {
+public class NamespaceDBNamingPolicy extends FixedSizeUnderscoreDBNamingPolicy {
+    public NamespaceDBNamingPolicy(int maxIDLength) {
         super(maxIDLength, "_auto");
     }
 
