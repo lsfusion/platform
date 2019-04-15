@@ -9,6 +9,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
 
 import java.io.UnsupportedEncodingException;
@@ -30,19 +31,40 @@ public class RichTextToStringAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getDataKeyValue(richTextInterface).getValue();
         try {
-            findProperty("resultString[]").change(value != null ? Jsoup.clean(URLDecoder.decode(replaceSpecialCharacters(value), "UTF-8"), Whitelist.none()) : null, context);
+            findProperty("resultString[]").change(cleanHTML(value), context);
         } catch (ScriptingErrorLog.SemanticErrorException | UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    //https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
-    private String replaceSpecialCharacters(String value) {
+    private String cleanHTML(String value) throws UnsupportedEncodingException {
         if(value != null) {
-            value = value.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
-            value = value.replaceAll("\\+", "%2B");
+            value = URLDecoder.decode(replaceSpecialCharacters(value), "UTF-8");
+            //create Jsoup document from HTML
+            Document jsoupDoc = Jsoup.parse(value);
+            Document.OutputSettings outputSettings = new Document.OutputSettings().prettyPrint(false);
+            //set pretty print to false, so \n is not removed
+            jsoupDoc.outputSettings(outputSettings);
+            //select tags and append \n after that
+            for(String tag : new String[] {"br", "ol", "ul"}) {
+                jsoupDoc.select(tag).after("\\n");
+            }
+            //select tags and prepend \n before that
+            for(String tag : new String[] {"p", "li", "blockquote", "div"}) {
+                jsoupDoc.select(tag).before("\\n");
+            }
+            //get the HTML from the document, and retaining original new lines
+            String str = jsoupDoc.html().replaceAll("\\\\n", "\n");
+            value = Jsoup.clean(str, "", Whitelist.none(), outputSettings);
         }
         return value;
+    }
+
+    //https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
+    private String replaceSpecialCharacters(String value) {
+        value = value.replace((char) 160, ' '); //replace &nbsp;
+        value = value.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
+        return value.replaceAll("\\+", "%2B");
     }
 
     @Override
