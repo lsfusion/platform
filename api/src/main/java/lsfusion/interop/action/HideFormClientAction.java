@@ -4,7 +4,10 @@ import java.io.IOException;
 
 public class HideFormClientAction extends ExecuteClientAction {
 
-    public HideFormClientAction() {
+    public final int closeFormDelay;
+
+    public HideFormClientAction(int closeFormDelay) {
+        this.closeFormDelay = closeFormDelay;
     }
 
     public void execute(ClientActionDispatcher dispatcher) throws IOException {

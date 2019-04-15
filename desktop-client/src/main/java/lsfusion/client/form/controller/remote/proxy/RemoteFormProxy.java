@@ -2,6 +2,7 @@ package lsfusion.client.form.controller.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
@@ -19,15 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
+public class RemoteFormProxy extends PendingRemoteObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
 
     public static final Map<String, byte[]> cachedRichDesign = new HashMap<>();
     public static void dropCaches() {
         cachedRichDesign.clear();
     }
 
-    public RemoteFormProxy(RemoteFormInterface target) {
-        super(target);
+    public RemoteFormProxy(RemoteFormInterface target, String realHostName) {
+        super(target, realHostName);
     }
 
     public FormUserPreferences getUserPreferences() throws RemoteException {
@@ -329,10 +330,11 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return result;
     }
 
-    public void closeExternal() throws RemoteException {
+    public int closeExternal() throws RemoteException {
         logRemoteMethodStartCall("closeExternal");
-        target.closeExternal();
+        int result = target.closeExternal();
         logRemoteMethodEndVoidCall("closeExternal");
+        return result;
     }
 
 }

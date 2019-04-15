@@ -30,7 +30,7 @@ public abstract class AbstractLogicsProviderImpl {
             final Future<RemoteLogicsLoaderInterface> future = Executors.newSingleThreadExecutor().submit(new Callable() {
                 @Override
                 public RemoteLogicsLoaderInterface call() throws RemoteException, NotBoundException, MalformedURLException {
-                    return RMIUtils.rmiLookup(connection.host, connection.port, connection.exportName, "RemoteLogicsLoader");
+                    return lookupLoader(connection);
                 }
             });
 
@@ -46,6 +46,10 @@ public abstract class AbstractLogicsProviderImpl {
             throw new AppServerNotAvailableException("Application server [" + connection.host + ":" + connection.port + "(" + connection.exportName + ")] is not available. Reason: " + ExceptionUtils.copyMessage(e));
         }
         return logics;
+    }
+
+    protected RemoteLogicsLoaderInterface lookupLoader(LogicsConnection connection) throws RemoteException, NotBoundException, MalformedURLException {
+        return RMIUtils.rmiLookup(connection.host, connection.port, connection.exportName, "RemoteLogicsLoader");
     }
 
     private final Map<LogicsConnection, LogicsSessionObject> currentLogics = new ConcurrentHashMap<>();

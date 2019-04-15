@@ -4,8 +4,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.SingleInstance;
 import lsfusion.client.SplashScreen;
+import lsfusion.client.StartupProperties;
 import lsfusion.client.authentication.LoginDialog;
 import lsfusion.client.authentication.UserInfo;
 import lsfusion.client.base.SwingUtils;
@@ -15,7 +17,6 @@ import lsfusion.client.base.log.ClientLoggingManager;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.controller.remote.ClientRMIClassLoaderSpi;
 import lsfusion.client.controller.remote.ConnectionLostManager;
-import lsfusion.client.controller.remote.RMITimeoutSocketFactory;
 import lsfusion.client.form.print.SavingThread;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
 import lsfusion.client.logics.LogicsProvider;
@@ -50,15 +51,12 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.base.remote.RMIUtils.initRMI;
 import static lsfusion.client.StartupProperties.*;
 
 public class MainController {
     private final static Logger logger = Logger.getLogger(MainController.class);
 
     public static final String LSFUSION_TITLE = "lsFusion";
-
-    public static final RMITimeoutSocketFactory rmiSocketFactory = RMITimeoutSocketFactory.getInstance();
 
     public static RemoteLogicsInterface remoteLogics; // hack, in theory it's better to wrap all request in runRequest, but it's not important in current usages
 
@@ -112,7 +110,7 @@ public class MainController {
 
             initRmiClassLoader();
 
-            initRMI(rmiSocketFactory);
+            ZipClientSocketFactory.timeout = StartupProperties.rmiTimeout;
 
             initSwing();
         } catch (Exception e) {
@@ -340,18 +338,14 @@ public class MainController {
     }
 
     public static long getBytesSent() {
-        return rmiSocketFactory.outSum;
+        return ZipClientSocketFactory.outSum;
     }
 
     public static long getBytesReceived() {
-        return rmiSocketFactory.inSum;
+        return ZipClientSocketFactory.inSum;
     }
 
-    public static void overrideRMIHostName(String hostName) {
-        rmiSocketFactory.setOverrideHostName(hostName);
-    }
-
-    // edit reports 
+    // edit reports
     
     public static void addReportPathList(List<ReportPath> reportPathList, String formSID) throws IOException {
         reportPathList.addAll(MainController.remoteLogics.saveAndGetCustomReportPathList(formSID, false));
@@ -418,7 +412,6 @@ public class MainController {
     public static LogicsConnection serverInfo;
 
     public static void setServerInfo(LogicsConnection serverInfo) {
-        MainController.overrideRMIHostName(serverInfo.host);
         MainController.serverInfo = serverInfo;
 
         serverSettings = LogicsProvider.instance.getServerSettings(serverInfo, getSessionInfo(), null, false);

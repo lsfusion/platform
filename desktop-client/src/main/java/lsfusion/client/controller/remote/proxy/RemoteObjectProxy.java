@@ -1,21 +1,27 @@
 package lsfusion.client.controller.remote.proxy;
 
+import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.utils.ContentLengthException;
 import lsfusion.client.base.utils.ContentLengthOutputStream;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implements PendingRemoteInterface {
+// for now it's necessary to proxy only remote objects that can create other remote objects (for example ClientCallbackInterface don't do it)
+public abstract class RemoteObjectProxy<T extends Remote> implements Remote {
     private static Logger logger = ClientLoggers.remoteLogger;
 
     protected final T target;
@@ -24,23 +30,16 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
 
     private long startCall = 0;
 
-    public RemoteObjectProxy(T target) {
+    public final String realHostName;
+
+    public static String getRealHostName(PendingRemoteInterface remote) {
+        return ((RemoteObjectProxy)remote).realHostName;
+    }
+
+    public RemoteObjectProxy(T target, String realHostName) {
         this.target = target;
-    }
-
-    @Override
-    public String getRemoteActionMessage() throws RemoteException {
-        return target.getRemoteActionMessage();
-    }
-
-    @Override
-    public List<Object> getRemoteActionMessageList() throws RemoteException {
-        return target.getRemoteActionMessageList();
-    }
-
-    @Override
-    public void interrupt(boolean cancelable) throws RemoteException {
-        target.interrupt(cancelable);
+        this.realHostName = realHostName;
+        assert realHostName != null;
     }
 
     public Object getProperty(Object key) {
@@ -98,4 +97,20 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
         logRemoteMethodEndCall(methodName, null);
     }
 
+    @Aspect
+    public static class RealHostNameAspect {
+        @Around("execution(public * (java.rmi.Remote+ && *..*Interface).*(..))" +
+                " && !execution(public * *.ping(..))" +
+                " && !execution(public * *.findClass(..))" +
+                " && !execution(public * *.toString())" +
+                " && target(target)")
+        public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, RemoteObjectProxy target) throws Throwable {
+            ZipClientSocketFactory.threadRealHostName.set(target.realHostName);
+            try {
+                return thisJoinPoint.proceed();
+            } finally {
+                ZipClientSocketFactory.threadRealHostName.set(null);
+            }
+        }
+    }
 }

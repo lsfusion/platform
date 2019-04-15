@@ -10,90 +10,36 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIFailureHandler;
-import java.rmi.server.RMISocketFactory;
-import java.rmi.server.UnicastRemoteObject;
+import java.rmi.server.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
 public class RMIUtils {
     private static final Logger logger = Logger.getLogger(RMIUtils.class);
 
-    public static void installRmiErrorHandler() throws IOException {
-        RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-            public boolean failure(Exception ex) {
-                logger.error(getString("exceptions.rmi.error") + " ", ex);
-                return true;
-            }
-        });
-    }
-
-    public static void initRMI() throws IOException {
-        initRMI(ZipSocketFactory.getInstance());
-    }
-
-    public static void initRMI(ZipSocketFactory rmiSocketFactory) throws IOException {
-        installRmiErrorHandler();
-
-        synchronized (RMISocketFactory.class) {
-            RMISocketFactory currentFactory = RMISocketFactory.getSocketFactory();
-            if (currentFactory == null) {
-                RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-                    public boolean failure(Exception ex) {
-                        logger.error(getString("exceptions.rmi.error") + " ", ex);
-                        return true;
-                    }
-                });
-
-                RMISocketFactory.setSocketFactory(rmiSocketFactory);
-            } else if (currentFactory != rmiSocketFactory) {
-                //если кто-то проставил свою socket factory, то меняем на нашу через reflection
-                ReflectionUtils.setPrivateStaticFieldValue(RMISocketFactory.class, "factory", rmiSocketFactory);
-            }
-        }
-    }
-
-    public static void overrideRMIHostName(String hostName) {
-        RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
-        if (socketFactory instanceof ZipSocketFactory) {
-            ((ZipSocketFactory) socketFactory).setOverrideHostName(hostName);
-        }
-    }
-
     public static <T extends Remote> T rmiLookup(String host, int port, String name, String subName) throws RemoteException, NotBoundException, MalformedURLException {
-        return rmiLookup(host, port, name + "/" + subName);
+        ZipClientSocketFactory.threadRealHostName.set(host);
+        try {
+            Registry registry = LocateRegistry.getRegistry(host, port, new ZipClientSocketFactory(host));
+            return (T) registry.lookup(name + "/" + subName);
+        } finally {
+            ZipClientSocketFactory.threadRealHostName.set(null);
+        }
     }
 
-    public static <T extends Remote> T rmiLookup(String host, int port, String name, String subName, RMIClientSocketFactory csf) throws RemoteException, NotBoundException, MalformedURLException {
-        return rmiLookup(host, port, name + "/" + subName, csf);
+    public static void rmiExport(Remote object, int port, RMIServerSocketFactory ssf) throws RemoteException {
+        UnicastRemoteObject.exportObject(object, port, ZipClientSocketFactory.export, ssf);
     }
 
-    public static <T extends Remote> T rmiLookup(String host, int port, String name) throws RemoteException, NotBoundException, MalformedURLException {
-        return rmiLookup(host, port, name, ZipSocketFactory.getInstance());
+    // rmi registry should have the same socketfactory as export, because we will export objects on the same port (and with different socket factory we will get port is already bound)
+    public static Registry createRmiRegistry(int exportPort, RMIServerSocketFactory ssf) throws RemoteException {
+        return LocateRegistry.createRegistry(exportPort, ZipClientSocketFactory.export, ssf);
     }
 
-    public static <T extends Remote> T rmiLookup(String host, int port, String name, RMIClientSocketFactory csf) throws RemoteException, NotBoundException, MalformedURLException {
-//        Registry registry = LocateRegistry.getRegistry(host, port, csf);
-        Registry registry = LocateRegistry.getRegistry(host, port);
-        return (T) registry.lookup(name);
-    }
-
-    public static void rmiExport(Remote object, int port) throws RemoteException {
-        UnicastRemoteObject.exportObject(object, port);
-//        UnicastRemoteObject.exportObject(object, port, null, ZipSocketFactory.getInstance());
-//        UnicastRemoteObject.exportObject(object, port, ZipSocketFactory.getInstance(), ZipSocketFactory.getInstance());
-    }
-
-    public static Registry createRmiRegistry(int exportPort) throws RemoteException {
-        return LocateRegistry.createRegistry(exportPort);
-//        return LocateRegistry.createRegistry(exportPort, null, ZipSocketFactory.getInstance());
-//        return LocateRegistry.createRegistry(exportPort, ZipSocketFactory.getInstance(), ZipSocketFactory.getInstance());
-    }
-
-    public static Registry getRmiRegistry(int exportPort) throws RemoteException {
-        return LocateRegistry.getRegistry(null, exportPort, ZipSocketFactory.getInstance());
-    }
+    // it's not possible to use external rmi registry because on client we don't know what socketfactory was used (of course we can try default and then ZipClientSocketFactory.export, but it's not that safe)
+//    public static Registry getRmiRegistry(int exportPort) throws RemoteException {
+//        return LocateRegistry.getRegistry(null, exportPort);
+//    }
 
     public static void killRmiThread() {
         for (Thread t : Thread.getAllStackTraces().keySet()) {

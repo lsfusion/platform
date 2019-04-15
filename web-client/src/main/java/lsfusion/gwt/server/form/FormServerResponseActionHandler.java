@@ -1,5 +1,7 @@
 package lsfusion.gwt.server.form;
 
+import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
+import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GThrowExceptionAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;
@@ -8,6 +10,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.rmi.RemoteException;
@@ -25,18 +28,19 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
     protected ServerResponseResult getServerResponseResult(FormAction action, RemoteCall call) throws RemoteException {
         String formID = action.formSessionID;
         FormSessionObject form = getFormSessionObject(formID);
-        return getServerResponseResult(formID, form, call.call(form.remoteForm), servlet);
+        return getServerResponseResult(formID, form.remoteForm, form, call.call(form.remoteForm), servlet);
     }
 
-    public static ServerResponseResult getServerResponseResult(String formID, FormSessionObject form, ServerResponse serverResponse, MainDispatchServlet servlet) {
+    public static ServerResponseResult getServerResponseResult(String formID, PendingRemoteInterface remoteInterface, FormSessionObject form, ServerResponse serverResponse, MainDispatchServlet servlet) {
         GAction[] resultActions;
         if (serverResponse.actions == null) {
             resultActions = null;
         } else {
+            String realHostName = ((RemoteObjectProxy)remoteInterface).realHostName;
             resultActions = new GAction[serverResponse.actions.length];
             for (int i = 0; i < serverResponse.actions.length; i++) {
                 try {
-                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, formID, servlet);
+                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, realHostName, formID, servlet);
                 } catch (Exception e) {
                     resultActions[i] = new GThrowExceptionAction(new IllegalStateException("Can't convert server action: " + e.getMessage(), e));
                 }

@@ -1296,11 +1296,12 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
     }
 
     @Override
-    public void closeExternal() {
+    public int closeExternal() {
         try {
-            deactivateAndCloseLater(false);
+            return deactivateAndCloseLater(false);
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
+            return 0;
         }
     }
 

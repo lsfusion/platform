@@ -116,6 +116,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.LogTime;
@@ -2581,7 +2582,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private void formHide(ExecutionContext context) throws SQLException {
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
-        context.delayUserInteraction(new HideFormClientAction());
+        context.delayUserInteraction(new HideFormClientAction(Settings.get().getCloseFormDelay()));
         // здесь не делаем close, так как нет RemoteForm + надо делать closeLater, так как могут остаться еще запросы к форме которые возможно надо обработать, так что это делается prepareRemoteChangesResponse
     }
 
