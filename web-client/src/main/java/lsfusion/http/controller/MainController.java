@@ -6,6 +6,7 @@ import lsfusion.base.ServerMessages;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.http.authentication.LSFAuthenticationFailureHandler;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.logics.LogicsConnection;
@@ -30,7 +31,7 @@ public class MainController {
     public String processLogin(ModelMap model, HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof LSFAuthenticationToken && ((LSFAuthenticationToken) auth).isAnonymous())) {
-            return "redirect:/main"; // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
+            return "redirect:" + LSFAuthenticationFailureHandler.getURLPreservingParameters("/main", request); // to prevent LSFAuthenticationSuccessHandler from showing login form twice (request cache)
         }
 
         Result<String> checkVersionError = new Result<>();

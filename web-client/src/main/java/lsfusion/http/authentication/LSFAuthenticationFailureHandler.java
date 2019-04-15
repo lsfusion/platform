@@ -15,16 +15,24 @@ public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFail
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         saveException(request, exception);
 
+        getRedirectStrategy().sendRedirect(request, response, getCachedRequest("/login", request, response));
+    }
+
+    public static String getCachedRequest(String defaultURL, HttpServletRequest request, HttpServletResponse response) {
+        String redirectUrl;
         SavedRequest savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request, response);
 
         if (savedRequest == null) {
-            String queryString = request.getQueryString();
-            queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
-            getRedirectStrategy().sendRedirect(request, response, "/login" + queryString);
+            redirectUrl = getURLPreservingParameters(defaultURL, request);
         } else {
-            String targetUrl = savedRequest.getRedirectUrl();
-            logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+            redirectUrl = savedRequest.getRedirectUrl();
         }
+        return redirectUrl;
+    }
+
+    public static String getURLPreservingParameters(String url, HttpServletRequest request) {
+        String queryString = request.getQueryString();
+        queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
+        return url + queryString;
     }
 }

@@ -30,9 +30,7 @@ public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucc
 
         SavedRequest savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request, response);
         if (savedRequest != null) {
-            String targetUrl = savedRequest.getRedirectUrl();
-            logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+            getRedirectStrategy().sendRedirect(request, response, savedRequest.getRedirectUrl());
         } else {
             super.onAuthenticationSuccess(request, response, authentication);
         }
