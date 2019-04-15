@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -135,10 +136,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.remove.defaultPermission = false;
 
-            String[] changeEvents = {ServerResponse.CHANGE, ServerResponse.CHANGE_WYS, ServerResponse.GROUP_CHANGE, ServerResponse.EDIT_OBJECT};
+            ImList<String> changeEvents = ListFact.toList(ServerResponse.CHANGE, ServerResponse.CHANGE_WYS, ServerResponse.GROUP_CHANGE, ServerResponse.EDIT_OBJECT);
             for (FormEntity formEntity : businessLogics.getAllForms()) {
-                for(PropertyDrawEntity propertyDraw : formEntity.getPropertyDrawsIt()) {
-                    for(String changeEvent : changeEvents) {
+                for(PropertyDrawEntity<?> propertyDraw : formEntity.getPropertyDrawsIt()) {
+                    for(String changeEvent : BaseUtils.mergeIterables(changeEvents, propertyDraw.getContextMenuBindings().keySet())) {
                         ActionObjectEntity<?> editAction = propertyDraw.getEditAction(changeEvent);
                         if (editAction != null && editAction.property.ignoreReadOnlyPolicy()) {
                             readOnlyPolicy.property.change.permit(editAction.property); // permits editAction if it doesn't change anything
