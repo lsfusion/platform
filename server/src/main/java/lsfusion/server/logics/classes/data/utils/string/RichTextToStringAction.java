@@ -30,10 +30,19 @@ public class RichTextToStringAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getDataKeyValue(richTextInterface).getValue();
         try {
-            findProperty("resultString[]").change(value != null ? Jsoup.clean(URLDecoder.decode(value, "UTF-8"), Whitelist.none()) : null, context);
+            findProperty("resultString[]").change(value != null ? Jsoup.clean(URLDecoder.decode(replaceSpecialCharacters(value), "UTF-8"), Whitelist.none()) : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException | UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    //https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
+    private String replaceSpecialCharacters(String value) {
+        if(value != null) {
+            value = value.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
+            value = value.replaceAll("\\+", "%2B");
+        }
+        return value;
     }
 
     @Override
