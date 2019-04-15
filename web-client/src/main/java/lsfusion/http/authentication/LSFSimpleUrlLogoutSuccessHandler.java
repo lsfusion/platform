@@ -9,7 +9,6 @@ public class LSFSimpleUrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHand
 
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
-        String queryString = request.getQueryString();
-        return  "/login" + (queryString == null || queryString.isEmpty() ? "" : ("?" + queryString));
+        return LSFAuthenticationFailureHandler.getCachedRequest("/login", request, response);
     }
 }
