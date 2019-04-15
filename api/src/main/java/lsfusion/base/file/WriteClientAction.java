@@ -31,7 +31,7 @@ public class WriteClientAction extends ExecuteClientAction {
                 fileExtension = null;
             }
             if (filePath != null) {
-                WriteUtils.write(file, filePath, fileExtension, append);
+                WriteUtils.write(file, filePath, fileExtension, true, append);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

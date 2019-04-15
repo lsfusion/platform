@@ -11,12 +11,12 @@ import java.util.Properties;
 
 public class WriteUtils {
 
-    public static void write(RawFileData fileData, String path, String extension, boolean append) throws IOException, SftpException, JSchException {
+    public static void write(RawFileData fileData, String path, String extension, boolean client, boolean append) throws IOException, SftpException, JSchException {
         Path filePath = Path.parsePath(path);
 
         switch (filePath.type) {
             case "file": {
-                writeFile(filePath.path, extension, fileData, append);
+                writeFile(filePath.path, extension, fileData, client, append);
                 break;
             }
             case "ftp": {
@@ -34,9 +34,9 @@ public class WriteUtils {
         }
     }
 
-    private static void writeFile(String path, String extension, RawFileData fileData, boolean append) throws IOException {
+    private static void writeFile(String path, String extension, RawFileData fileData, boolean client, boolean append) throws IOException {
         String url = appendExtension(path, extension);
-        File file = createFile(System.getProperty("user.home") + "/Downloads/", url);
+        File file = createFile(client ? System.getProperty("user.home") + "/Downloads/" : null, url);
         File parentFile = file.getParentFile();
         if (parentFile != null && !parentFile.exists()) {
             throw new RuntimeException(String.format("Path is incorrect or not found: '%s' (resolved to '%s')",

@@ -66,7 +66,7 @@ public class WriteAction extends SystemExplicitAction {
                         context.delayUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
                     }
                 } else {
-                    WriteUtils.write(rawFileData, path, extension, append);
+                    WriteUtils.write(rawFileData, path, extension, false, append);
                 }
             } else {
                 throw new RuntimeException("File bytes not specified");
