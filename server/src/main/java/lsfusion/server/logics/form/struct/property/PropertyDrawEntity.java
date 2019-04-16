@@ -357,6 +357,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     assert CHANGE_WYS.equals(actionId);
                     if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
                         return editAction;
+                    else {
+                        ActionMapImplement<?, P> defaultWYSAction = propertyObject.property.getDefaultWYSAction();
+                        if(defaultWYSAction != null) // assert getSimpleRequestInputType != null
+                            return defaultWYSAction.mapObjects(propertyObject.mapping);
+                    }
                 }
             }
         }
