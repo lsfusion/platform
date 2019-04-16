@@ -31,87 +31,87 @@ import java.sql.SQLException;
 
 public class ActionMapImplement<P extends PropertyInterface, T extends PropertyInterface> implements lsfusion.server.logics.property.oraction.PropertyInterfaceImplement {
 
-    public Action<P> property;
+    public Action<P> action;
     public ImRevMap<P, T> mapping;
 
-    public ActionMapImplement(Action<P> property) {
-        this.property = property;
+    public ActionMapImplement(Action<P> action) {
+        this.action = action;
         mapping = MapFact.EMPTYREV();
     }
 
-    public ActionMapImplement(Action<P> property, ImRevMap<P, T> mapping) {
-        this.property = property;
+    public ActionMapImplement(Action<P> action, ImRevMap<P, T> mapping) {
+        this.action = action;
         this.mapping = mapping;
     }
 
     public <K extends PropertyInterface> ActionMapImplement<P, K> map(ImRevMap<T, K> remap) {
-        return new ActionMapImplement<>(property, mapping.join(remap));
+        return new ActionMapImplement<>(action, mapping.join(remap));
     }
 
     public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, PropertyMapImplement<L, T> where, Event event, boolean resolve, DebugInfo.DebugPoint debugInfo) {
-        lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<PropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
+        lm.addEventAction(action, where.map(mapping.reverse()), MapFact.<PropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
     }
 
     public ActionObjectEntity<P> mapObjects(ImRevMap<T, ObjectEntity> mapObjects) {
-        return new ActionObjectEntity<>(property, mapping.join(mapObjects));
+        return new ActionObjectEntity<>(action, mapping.join(mapObjects));
     }
 
     public PropertyMapImplement<?, T> mapWhereProperty() {
-        return property.getWhereProperty().map(mapping);
+        return action.getWhereProperty().map(mapping);
     }
 
     public PropertyMapImplement<?, T> mapCalcWhereProperty() {
-        return property.getWhereProperty(true).map(mapping);
+        return action.getWhereProperty(true).map(mapping);
     }
 
     public LA<P> createLP(ImOrderSet<T> listInterfaces) {
-        return new LA<>(property, listInterfaces.mapOrder(mapping.reverse()));
+        return new LA<>(action, listInterfaces.mapOrder(mapping.reverse()));
     }
 
     public FlowResult execute(ExecutionContext<T> context) throws SQLException, SQLHandledException {
-        return property.execute(context.map(mapping));
+        return action.execute(context.map(mapping));
     }
 
     public T mapSimpleDelete() {
-        P simpleDelete = property.getSimpleDelete();
+        P simpleDelete = action.getSimpleDelete();
         if(simpleDelete!=null)
             return mapping.get(simpleDelete);
         return null;
     }
 
     public ImList<ActionMapImplement<?, T>> getList() {
-        return PropertyFact.mapActionImplements(mapping, property.getList());
+        return PropertyFact.mapActionImplements(mapping, action.getList());
     }
 /*    public ActionMapImplement<?, T> compile() {
         return property.compile().map(mapping);
     }*/
     public boolean hasPushFor(ImSet<T> context, boolean ordersNotNull) {
-        return property.hasPushFor(mapping, context, ordersNotNull);
+        return action.hasPushFor(mapping, context, ordersNotNull);
     }
     public Property getPushWhere(ImSet<T> context, boolean ordersNotNull) {
-        return property.getPushWhere(mapping, context, ordersNotNull);
+        return action.getPushWhere(mapping, context, ordersNotNull);
     }
     public ActionMapImplement<?, T> pushFor(ImSet<T> context, PropertyMapImplement<?, T> where, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
-        return property.pushFor(mapping, context, where, orders, ordersNotNull);
+        return action.pushFor(mapping, context, where, orders, ordersNotNull);
     }
     public boolean hasFlow(ChangeFlowType... types) {
         for(ChangeFlowType type : types)
-            if(property.hasFlow(type))
+            if(action.hasFlow(type))
                 return true;
         return false;
     }
 
     public ImSet<OldProperty> mapParseOldDepends() {
-        return property.getParseOldDepends();
+        return action.getParseOldDepends();
     }
 
     public ActionValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapValues, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
-        return new ActionValueImplement<>(property, mapping.join(mapValues), mapObjects != null ? mapping.innerJoin(mapObjects) : null, formInstance);
+        return new ActionValueImplement<>(action, mapping.join(mapValues), mapObjects != null ? mapping.innerJoin(mapObjects) : null, formInstance);
     }
 
     public Graph<ActionCase<T>> mapAbstractGraph() {
-        if(property instanceof CaseAction) {
-            Graph<ActionCase<PropertyInterface>> absGraph = ((CaseAction) property).getAbstractGraph();
+        if(action instanceof CaseAction) {
+            Graph<ActionCase<PropertyInterface>> absGraph = ((CaseAction) action).getAbstractGraph();
             if(absGraph != null)
                 return absGraph.map(new GetValue<ActionCase<T>, ActionCase<PropertyInterface>>() {
                     public ActionCase<T> getMapValue(ActionCase<PropertyInterface> value) {
@@ -127,15 +127,15 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
             return false;
 
         ActionMapImplement<?, T> mapProp = (ActionMapImplement<?, T>) object;
-        return property.equals(mapProp.property) && mapping.equals(mapProp.mapping);
+        return action.equals(mapProp.action) && mapping.equals(mapProp.mapping);
     }
 
     public int hashMap() {
-        return 31 * property.hashCode() + mapping.hashCode();
+        return 31 * action.hashCode() + mapping.hashCode();
     }
 
     public String toString() {
-        return property.toString() + " {" + mapping + "}";
+        return action.toString() + " {" + mapping + "}";
     }
 
 }

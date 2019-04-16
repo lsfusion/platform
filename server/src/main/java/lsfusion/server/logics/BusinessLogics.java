@@ -705,7 +705,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public <P extends PropertyInterface> void finishLogInit(Property property) {
         if (property.isLoggable()) {
-            Action<P> logAction = (Action<P>) property.getLogFormAction().property;
+            Action<P> logAction = (Action<P>) property.getLogFormAction().action;
 
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), logAction.caption);
@@ -725,7 +725,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             LA<?> setupPolicyLA = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
-            Action setupPolicyAction = setupPolicyLA.property;
+            Action setupPolicyAction = setupPolicyLA.action;
             LM.makeActionPublic(setupPolicyLA, setupPolicyActionName, new ArrayList<ResolveClassSet>());
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
@@ -847,7 +847,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             String namespace = namespaceToModule.getKey();
             for (LogicsModule module : namespaceToModule.getValue()) {
                 for (LAP<?, ?> property : Iterables.concat(module.getNamedProperties(), module.getNamedActions())) {
-                    String propertyName = property.property.getName();
+                    String propertyName = property.getActionOrProperty().getName();
                     
                     if (result.get(propertyName) == null) {
                         result.put(propertyName, new ArrayList<NamedDecl>());

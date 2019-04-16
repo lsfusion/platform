@@ -7,6 +7,6 @@ public class ViewPropertySecurityPolicy extends AbstractSecurityPolicy<ActionOrP
 
     public void deny(LAP<?, ?> lp) {
         if (lp != null)
-            deny(lp.property);
+            deny(lp.getActionOrProperty());
     }
 }

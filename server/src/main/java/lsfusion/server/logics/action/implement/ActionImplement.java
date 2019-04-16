@@ -7,32 +7,32 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ActionImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
-    public Action<P> property;
+    public Action<P> action;
     public ImMap<P, T> mapping;
 
     public String toString() {
-        return property.toString();
+        return action.toString();
     }
 
-    public ActionImplement(Action<P> property, ImMap<P, T> mapping) {
-        this.property = property;
+    public ActionImplement(Action<P> action, ImMap<P, T> mapping) {
+        this.action = action;
         this.mapping = mapping;
     }
 
-    public ActionImplement(Action<P> property) {
-        this.property = property;
+    public ActionImplement(Action<P> action) {
+        this.action = action;
         mapping = MapFact.EMPTY();
     }
 
     public <L> ActionImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
-        return new ActionImplement<>(property, mapping.join(mapImplement));
+        return new ActionImplement<>(action, mapping.join(mapImplement));
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return property.equals(((ActionImplement) o).property) && mapping.equals(((ActionImplement) o).mapping);
+        return action.equals(((ActionImplement) o).action) && mapping.equals(((ActionImplement) o).mapping);
     }
 
     public int immutableHashCode() {
-        return property.hashCode() * 31 + mapping.hashCode();
+        return action.hashCode() * 31 + mapping.hashCode();
     }
 }

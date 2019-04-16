@@ -255,7 +255,7 @@ public class CaseAction extends ListCaseAction {
         Type type = null;
         ImList<ActionMapImplement<?, PropertyInterface>> actions = getListActions();
         for (ActionMapImplement<?, PropertyInterface> action : actions) {
-            Type actionRequestType = action.property.getSimpleRequestInputType(optimistic, inRequest);
+            Type actionRequestType = action.action.getSimpleRequestInputType(optimistic, inRequest);
             if (!optimistic && actionRequestType == null) {
                 return null;
             }
@@ -282,7 +282,7 @@ public class CaseAction extends ListCaseAction {
 
         OrObjectClassSet result = null;
         for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            CustomClass simpleAdd = action.property.getSimpleAdd();
+            CustomClass simpleAdd = action.action.getSimpleAdd();
             if(simpleAdd==null) // значит есть case который не добавляет
                 return null;
 

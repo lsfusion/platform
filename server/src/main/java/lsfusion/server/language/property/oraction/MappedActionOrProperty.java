@@ -15,6 +15,6 @@ public final class MappedActionOrProperty {
     }
 
     public ActionOrProperty<PropertyInterface> getProperty() {
-        return property.property;
+        return property.getActionOrProperty();
     }
 }

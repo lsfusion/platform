@@ -11,7 +11,7 @@ public abstract class ModuleAbstractLAPFinder<L extends LAP<?, ?>> extends Modul
 
     @Override
     protected boolean accepted(LogicsModule module, L property, List<ResolveClassSet> signature) {
-        return isAbstract(property.property) && 
+        return isAbstract(property.getActionOrProperty()) &&
                 SignatureMatcher.isCompatible(module.getParamClasses(property), signature, false, false);
     }
 

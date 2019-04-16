@@ -97,9 +97,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     public ImSet<Action> getDependActions() {
-       ImSet<Action> result = SetFact.singleton((Action) action.property);
+       ImSet<Action> result = SetFact.singleton((Action) action.action);
        if(elseAction != null)
-           result = result.merge(elseAction.property);
+           result = result.merge(elseAction.action);
        return result;
     }
 
@@ -212,7 +212,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     private static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException, SQLHandledException {
-        return implement.property.execute(
+        return implement.action.execute(
                 context.override(
                         implement.mapping.join(keys),
                         BaseUtils.<ImMap<P, PropertyInterfaceImplement<PropertyInterface>>>immutableCast(
@@ -339,8 +339,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
             if (list.size() > 0) {
                 ActionMapImplement<?, I> first = list.get(0);
-                if (first.mapping.size() == 1 && first.mapping.singleValue().equals(addObject) && first.property instanceof ChangeClassAction) {
-                    ChangeClassAction changeClassProperty = (ChangeClassAction) first.property;
+                if (first.mapping.size() == 1 && first.mapping.singleValue().equals(addObject) && first.action instanceof ChangeClassAction) {
+                    ChangeClassAction changeClassProperty = (ChangeClassAction) first.action;
                     if (changeClassProperty.valueClass instanceof CustomClass && changeClassProperty.where == null) // удаление не интересует
                         return PropertyFact.createForAction(innerInterfaces, context, ifProp, orders, ordersNotNull,
                                 PropertyFact.createListAction(innerInterfaces, list.subList(1, list.size())), elseAction, addObject,
@@ -367,8 +367,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         ImSet<Property>[] listChangeProps = new ImSet[list.size()];
         ImSet<Property>[] listUsedProps = new ImSet[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            listChangeProps[i] = list.get(i).property.getChangeProps();
-            listUsedProps[i] = list.get(i).property.getUsedProps();
+            listChangeProps[i] = list.get(i).action.getChangeProps();
+            listUsedProps[i] = list.get(i).action.getUsedProps();
         }
 
         // ищем сначала "вытаскиваемые" (changeProps не зависят от usedProps и т.д)
@@ -507,8 +507,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type actionType = action.property.getSimpleRequestInputType(optimistic, inRequest);
-        Type elseType = elseAction == null ? null : elseAction.property.getSimpleRequestInputType(optimistic, inRequest);
+        Type actionType = action.action.getSimpleRequestInputType(optimistic, inRequest);
+        Type elseType = elseAction == null ? null : elseAction.action.getSimpleRequestInputType(optimistic, inRequest);
 
         if (!optimistic) {
             if (actionType == null) {

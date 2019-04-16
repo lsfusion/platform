@@ -123,7 +123,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public ImMap<Property, Boolean> getChangeExtProps() {
         ActionMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
-            return compile.property.getChangeExtProps();
+            return compile.action.getChangeExtProps();
 
         return aspectChangeExtProps();
     }
@@ -162,7 +162,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public ImMap<Property, Boolean> getUsedExtProps() {
         ActionMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
-            return compile.property.getUsedExtProps();
+            return compile.action.getUsedExtProps();
 
         return aspectUsedExtProps();
     }

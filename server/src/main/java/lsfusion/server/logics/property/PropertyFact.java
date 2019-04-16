@@ -117,7 +117,7 @@ public class PropertyFact {
     }
 
     public static <T extends PropertyInterface,K extends PropertyInterface, P extends PropertyInterface> ActionImplement<P, PropertyInterfaceImplement<K>> mapActionImplements(ActionImplement<P, PropertyInterfaceImplement<T>> implement, ImRevMap<T,K> map) {
-        return new ActionImplement<>(implement.property, mapImplements(implement.mapping, map));
+        return new ActionImplement<>(implement.action, mapImplements(implement.mapping, map));
     }
 
     public static <T extends PropertyInterface> ImSet<T> getUsedInterfaces(PropertyInterfaceImplement<T> interfaceImplement) {
@@ -155,7 +155,7 @@ public class PropertyFact {
         ImRevMap<T,PropertyInterface> joinMap = usedInterfaces.mapRevValues(ActionOrProperty.genInterface); // строим карту
         ImRevMap<PropertyInterface, T> revJoinMap = joinMap.reverse();
         JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
-                new ActionImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));
+                new ActionImplement<>(implement.action, mapImplements(implement.mapping, joinMap)));
         return new ActionMapImplement<>(joinProperty, revJoinMap);
     }
 

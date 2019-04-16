@@ -7,7 +7,7 @@ public class ChangePropertySecurityPolicy extends AbstractSecurityPolicy<ActionO
 
     public void deny(LAP<?, ?> lp) {
         if (lp != null)
-            deny(lp.property);
+            deny(lp.getActionOrProperty());
     }
     public void deny(LAP<?, ?>... lps) { for (LAP<?, ?> lp : lps) deny(lp); }
 }

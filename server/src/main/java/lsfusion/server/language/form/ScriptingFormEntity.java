@@ -428,8 +428,8 @@ public class ScriptingFormEntity {
             }
         });
 
-        if (!property.property.isInInterface(map, true)) {
-            LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), property.property.getName());
+        if (!property.getActionOrProperty().isInInterface(map, true)) {
+            LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), property.getActionOrProperty().getName());
         }
     }
 

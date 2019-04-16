@@ -42,7 +42,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
         ImFilterValueMap<T, ObjectValue> mvReadValues = action.mapping.mapFilterValues();
         for (int i=0,size=action.mapping.size();i<size;i++)
             mvReadValues.mapValue(i, action.mapping.getValue(i).readClasses(context, context.getKeys()));
-        action.property.execute(context.override(mvReadValues.immutableValue(), action.mapping));
+        action.action.execute(context.override(mvReadValues.immutableValue(), action.mapping));
         return FlowResult.FINISH;
     }
 
@@ -50,20 +50,20 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         if(isRecursive) // recursion guard
             return null;
-        return action.property.getSimpleRequestInputType(optimistic, inRequest);
+        return action.action.getSimpleRequestInputType(optimistic, inRequest);
     }
 
     @Override
     public CustomClass getSimpleAdd() {
         if(isRecursive) // recursion guard
             return null;
-        return action.property.getSimpleAdd();
+        return action.action.getSimpleAdd();
     }
 
     @Override
     public PropertyInterface getSimpleDelete() {
         if(!isRecursive) { // recursion guard
-            T simpleRemove = action.property.getSimpleDelete();
+            T simpleRemove = action.action.getSimpleDelete();
             PropertyInterfaceImplement<PropertyInterface> mapRemove;
             if (simpleRemove != null && ((mapRemove = action.mapping.get(simpleRemove)) instanceof PropertyInterface))
                 return (PropertyInterface) mapRemove;
@@ -82,7 +82,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     public ImSet<Action> getDependActions() {
-        return SetFact.singleton((Action)action.property);
+        return SetFact.singleton((Action)action.action);
     }
 
     @Override
@@ -105,27 +105,27 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     @IdentityInstanceLazy
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() { // тут на recursive не смо
-        return PropertyFact.createJoin(action.property.getWhereProperty(true).mapImplement(action.mapping));
+        return PropertyFact.createJoin(action.action.getWhereProperty(true).mapImplement(action.mapping));
     }
 
     @Override
     public ImList<ActionMapImplement<?, PropertyInterface>> getList() {
         // если все интерфейсы однозначны и нет return'ов - inlin'им
-        if(isRecursive || action.property.hasFlow(ChangeFlowType.RETURN))
+        if(isRecursive || action.action.hasFlow(ChangeFlowType.RETURN))
             return super.getList();
         
         ImRevMap<T, PropertyInterface> identityMap = PropertyInterface.getIdentityMap(action.mapping);
         if(identityMap == null)
             return super.getList();
 
-        return PropertyFact.mapActionImplements(identityMap, action.property.getList());
+        return PropertyFact.mapActionImplements(identityMap, action.action.getList());
     }
 
     private boolean isRecursive;
     // пока исходим из того что рекурсивными могут быть только abstract'ы
     @Override
     protected void markRecursions(ImSet<ListCaseAction> recursiveActions) {
-        Action<T> execAction = action.property;
+        Action<T> execAction = action.action;
         if(execAction instanceof ListCaseAction && recursiveActions.contains((ListCaseAction)execAction)) {
             assert ((ListCaseAction) execAction).isAbstract();
             isRecursive = true;
@@ -135,7 +135,7 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
 
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
-        if(action.property instanceof WatchAction)
+        if(action.action instanceof WatchAction)
             return super.getDelegationType(modifyContext);
         return ActionDelegationType.IN_DELEGATE; // jump to another LSF
     }
@@ -152,6 +152,6 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
         if(isRecursive) // recursion guard
             return false;
         
-        return action.property.endsWithApplyAndNoChangesAfterBreaksBefore();
+        return action.action.endsWithApplyAndNoChangesAfterBreaksBefore();
     }
 }

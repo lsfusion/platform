@@ -1090,7 +1090,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @Cancelable
     private boolean executeApplyEvent(BusinessLogics BL, ExecutionStack stack, ApplyEvent event, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
         if(event instanceof ApplyActionEvent) {
-            startPendingSingles(event instanceof ActionValueImplement ? ((ActionValueImplement) event).property : ((ApplyGlobalActionEvent) event).action);
+            startPendingSingles(event instanceof ActionValueImplement ? ((ActionValueImplement) event).action : ((ApplyGlobalActionEvent) event).action);
 
             if(event instanceof ActionValueImplement)
                 executeActionInTransaction(this, stack, (ActionValueImplement)event);
@@ -1773,7 +1773,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private FunctionSet<SessionDataProperty> recursiveUsed = SetFact.EMPTY();
     private List<ActionValueImplement> recursiveActions = ListFact.mAddRemoveList();
     public void addRecursion(ActionValueImplement action, FunctionSet<SessionDataProperty> sessionUsed, boolean singleApply) {
-        action.property.singleApply = singleApply; // жестко конечно, но пока так
+        action.action.singleApply = singleApply; // жестко конечно, но пока так
         recursiveActions.add(action);
         recursiveUsed = BaseUtils.merge(recursiveUsed, sessionUsed);
     }
