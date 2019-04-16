@@ -2,7 +2,6 @@ package lsfusion.gwt.server;
 
 import lsfusion.base.ServerUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
-import lsfusion.gwt.client.base.exception.WrappedRemoteDispatchException;
 import lsfusion.http.provider.SessionInvalidatedException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.server.SimpleActionHandler;
