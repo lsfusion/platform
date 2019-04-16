@@ -300,6 +300,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     public abstract ActionMapImplement<?, T> getDefaultEditAction(String editActionSID, Property filterProperty);
 
+    public ActionMapImplement<?, T> getDefaultWYSAction() {
+        return null;
+    }
+
     public boolean checkEquals() {
         return this instanceof Property;
     }

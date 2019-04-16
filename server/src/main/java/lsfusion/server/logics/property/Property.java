@@ -82,6 +82,7 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.change.DefaultChangeAction;
+import lsfusion.server.logics.form.interactive.action.change.DefaultWYSObjectAction;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ChangeProperty;
@@ -1567,6 +1568,26 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
         DefaultChangeAction<T> changeAction = new DefaultChangeAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
+        return changeAction.getImplement(listInterfaces);
+    }
+
+    @Override
+    @IdentityStrongLazy // STRONG for using in security policy
+    public ActionMapImplement<?, T> getDefaultWYSAction() {
+        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // because in property draw definition also FULL is used (and not ASSERTFULL)
+        if(interfaceClasses.size() < interfaces.size()) // we don't have all classes
+            return null;
+
+        ValueClass valueClass = getValueClass(ClassType.tryEditPolicy);
+        if (!(valueClass instanceof CustomClass))
+            return null;
+
+        if (!canBeChanged())
+            return null;
+
+        ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
+        ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
+        DefaultWYSObjectAction<T> changeAction = new DefaultWYSObjectAction<>(LocalizedString.NONAME, this, listInterfaces, listValues, (CustomClass) valueClass);
         return changeAction.getImplement(listInterfaces);
     }
 
