@@ -91,7 +91,7 @@ public class DuplicateElementsChecker {
 
         @Override
         public String getCanonicalName(T element) {
-            return element.property.getCanonicalName();
+            return element.getActionOrProperty().getCanonicalName();
         }
     }
 

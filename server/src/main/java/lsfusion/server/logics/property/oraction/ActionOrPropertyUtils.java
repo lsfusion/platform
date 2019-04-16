@@ -188,7 +188,7 @@ public class ActionOrPropertyUtils {
     }
 
     public static <P extends PropertyInterface> ActionImplement<P, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapActionImplement(LA<P> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
-        return new ActionImplement<>(property.property, getMapping(property, propImpl));
+        return new ActionImplement<>(property.action, getMapping(property, propImpl));
     }
 
     public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> mapCalcImplement(LP<T> property, ImList<lsfusion.server.logics.property.implement.PropertyInterfaceImplement<P>> propImpl) {
@@ -259,10 +259,10 @@ public class ActionOrPropertyUtils {
                     return interfaces.get(mapInt[i] - 1);
                 }});
 
-            if(lp.property instanceof Action)
-                return new ActionMapImplement<>((Action<P>) lp.property, mapping);
+            if(lp.getActionOrProperty() instanceof Action)
+                return new ActionMapImplement<>((Action<P>) lp.getActionOrProperty(), mapping);
             else
-                return new PropertyMapImplement<>((Property<P>) lp.property, mapping);
+                return new PropertyMapImplement<>((Property<P>) lp.getActionOrProperty(), mapping);
         }
 
         <T> PropertyObjectInterfaceImplement<T> mapObject(final ImOrderSet<T> interfaces) {
@@ -271,7 +271,7 @@ public class ActionOrPropertyUtils {
                     return interfaces.get(mapInt[i] - 1);
                 }});
 
-            return new PropertyRevImplement<>((Property<P>) lp.property, mapping);
+            return new PropertyRevImplement<>((Property<P>) lp.getActionOrProperty(), mapping);
         }
 
         Object[] write() {

@@ -67,13 +67,13 @@ public class TryAction extends KeepContextAction {
 
     public ImSet<Action> getDependActions() {
         ImSet<Action> result = SetFact.EMPTY();
-        result = result.merge(tryAction.property);
+        result = result.merge(tryAction.action);
 
         if (catchAction != null) {
-            result = result.merge(catchAction.property);
+            result = result.merge(catchAction.action);
         }
         if (finallyAction != null) {
-            result = result.merge(finallyAction.property);
+            result = result.merge(finallyAction.action);
         }
         return result;
     }
@@ -82,9 +82,9 @@ public class TryAction extends KeepContextAction {
 
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type tryType = tryAction.property.getSimpleRequestInputType(optimistic, inRequest);
-        Type catchType = catchAction == null ? null : catchAction.property.getSimpleRequestInputType(optimistic, inRequest);
-        Type finallyType = finallyAction == null ? null : finallyAction.property.getSimpleRequestInputType(optimistic, inRequest);
+        Type tryType = tryAction.action.getSimpleRequestInputType(optimistic, inRequest);
+        Type catchType = catchAction == null ? null : catchAction.action.getSimpleRequestInputType(optimistic, inRequest);
+        Type finallyType = finallyAction == null ? null : finallyAction.action.getSimpleRequestInputType(optimistic, inRequest);
 
         if (!optimistic) {
             if (tryType == null) {

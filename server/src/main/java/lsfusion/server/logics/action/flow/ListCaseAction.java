@@ -121,7 +121,7 @@ public abstract class ListCaseAction extends KeepContextAction {
     public ImSet<Action> getDependActions() {
         return getListActions().mapListValues(new GetValue<Action, ActionMapImplement<?, PropertyInterface>>() {
             public Action getMapValue(ActionMapImplement<?, PropertyInterface> value) {
-                return value.property;
+                return value.action;
             }
         }).toOrderSet().getSet();
     }

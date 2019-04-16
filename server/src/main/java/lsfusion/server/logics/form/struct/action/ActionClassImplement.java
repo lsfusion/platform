@@ -19,10 +19,10 @@ public class ActionClassImplement<P extends PropertyInterface> extends ActionOrP
     }
 
     public LA<P> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
-        return new LA<>(property, listInterfaces.mapOrder(mapping.reverse()));
+        return new LA<>(actionOrProperty, listInterfaces.mapOrder(mapping.reverse()));
     }
 
     public ActionClassImplement<P> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap) {
-        return new ActionClassImplement<P>(property, mapping.join(remap));
+        return new ActionClassImplement<P>(actionOrProperty, mapping.join(remap));
     }
 }

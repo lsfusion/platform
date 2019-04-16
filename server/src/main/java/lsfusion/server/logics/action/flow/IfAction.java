@@ -55,10 +55,10 @@ public class IfAction extends KeepContextAction {
     public ImSet<Action> getDependActions() {
         ImSet<Action> result = SetFact.EMPTY();
         if (trueAction != null) {
-            result = result.merge(trueAction.property);
+            result = result.merge(trueAction.action);
         }
         if (falseAction != null) {
-            result = result.merge(falseAction.property);
+            result = result.merge(falseAction.action);
         }
         return result;
     }
@@ -72,8 +72,8 @@ public class IfAction extends KeepContextAction {
 
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        Type trueType = trueAction == null ? null : trueAction.property.getSimpleRequestInputType(optimistic, inRequest);
-        Type falseType = falseAction == null ? null : falseAction.property.getSimpleRequestInputType(optimistic, inRequest);
+        Type trueType = trueAction == null ? null : trueAction.action.getSimpleRequestInputType(optimistic, inRequest);
+        Type falseType = falseAction == null ? null : falseAction.action.getSimpleRequestInputType(optimistic, inRequest);
 
         if (!optimistic) {
             if (trueType == null) {

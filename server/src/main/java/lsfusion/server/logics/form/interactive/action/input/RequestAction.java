@@ -64,8 +64,8 @@ public class RequestAction extends KeepContextAction {
 
     public ImSet<Action> getDependActions() {
         return elseAction != null ?
-                SetFact.<Action>toSet(requestAction.property, doAction.property, elseAction.property) :
-                SetFact.<Action>toSet(requestAction.property, doAction.property);
+                SetFact.<Action>toSet(requestAction.action, doAction.action, elseAction.action) :
+                SetFact.<Action>toSet(requestAction.action, doAction.action);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class RequestAction extends KeepContextAction {
 
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
-        return requestAction.property.getSimpleRequestInputType(optimistic, true);
+        return requestAction.action.getSimpleRequestInputType(optimistic, true);
     }
 }
 

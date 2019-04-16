@@ -12,31 +12,31 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class ExecuteActionStackItem extends ExecutionStackItem {
-    private final Action property;
+    private final Action action;
 
     public ExecuteActionStackItem(ProceedingJoinPoint joinPoint) {
         super(joinPoint, Profiler.PROFILER_ENABLED ? new ActionProfileObject((Action) joinPoint.getTarget()) : null);
-        this.property = (Action) joinPoint.getTarget();
+        this.action = (Action) joinPoint.getTarget();
     }
     
-    public Action getProperty() {
-        return property;
+    public Action getAction() {
+        return action;
     }
     
     public String getCaption() {
-        return BaseUtils.nullEmpty(localize(property.caption));
+        return BaseUtils.nullEmpty(localize(action.caption));
     }
 
     public String getCanonicalName() {
-        return BaseUtils.nullEmpty(property.getCanonicalName());
+        return BaseUtils.nullEmpty(action.getCanonicalName());
     }
     
     public DebugInfo getDebugInfo() {
-        return property.getDebugInfo();
+        return action.getDebugInfo();
     }
 
     public ActionDelegationType getDelegationType() {
-        return property.getDelegationType(false);
+        return action.getDelegationType(false);
     }
     
     public boolean isInDelegate() {
@@ -44,11 +44,11 @@ public class ExecuteActionStackItem extends ExecutionStackItem {
     }
 
     public boolean hasNoDebugInfo() {
-        return property.getDebugInfo() == null && !property.isNamed();
+        return action.getDebugInfo() == null && !action.isNamed();
     }
     
     @Override
     public String toString() {
-        return localize("{message.execute.action}") + (" : " + property);
+        return localize("{message.execute.action}") + (" : " + action);
     }
 }

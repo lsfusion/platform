@@ -37,12 +37,21 @@ import java.util.List;
 
 public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
 
-    public LA(Action<T> property) {
-        super(property);
+    public Action<T> action;
+
+    @Override
+    public Action<T> getActionOrProperty() {
+        return action;
     }
 
-    public LA(Action<T> property, ImOrderSet<T> listInterfaces) {
-        super(property, listInterfaces);
+    public LA(Action<T> action) {
+        super(action);
+        this.action = action;
+    }
+
+    public LA(Action<T> action, ImOrderSet<T> listInterfaces) {
+        super(action, listInterfaces);
+        this.action = action;
     }
 
     public void execute(DataSession session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
@@ -50,55 +59,55 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
     }
 
     public void execute(ExecutionEnvironment session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
-        property.execute(getMapValues(objects), session, stack, null);
+        action.execute(getMapValues(objects), session, stack, null);
     }
 
     public FlowResult execute(ExecutionContext<?> context, ObjectValue... objects) throws SQLException, SQLHandledException {
-        return property.execute(context.override(getMapValues(objects), (FormEnvironment<T>) null));
+        return action.execute(context.override(getMapValues(objects), (FormEnvironment<T>) null));
     }
 
     public <X extends PropertyInterface> FlowResult execute(ExecutionContext<X> context) throws SQLException, SQLHandledException {
-        return property.execute(BaseUtils.<ExecutionContext<T>>immutableCast(context.override(MapFact.<X, ObjectValue>EMPTY())));
+        return action.execute(BaseUtils.<ExecutionContext<T>>immutableCast(context.override(MapFact.<X, ObjectValue>EMPTY())));
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LP<P> lp, Integer... mapping) {
-        lm.addEventAction(property, new PropertyMapImplement<>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<PropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false, null);
+        lm.addEventAction(action, new PropertyMapImplement<>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<PropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false, null);
     }
 
     public ValueClass[] getInterfaceClasses() { // obsolete
-        return listInterfaces.mapList(property.getInterfaceClasses(ClassType.obsolete)).toArray(new ValueClass[listInterfaces.size()]); // тут все равно obsolete
+        return listInterfaces.mapList(action.getInterfaceClasses(ClassType.obsolete)).toArray(new ValueClass[listInterfaces.size()]); // тут все равно obsolete
     }
 
     public ValueClass[] getInterfaceClasses(ClassType classType) {
-        return property.getInterfaceClasses(listInterfaces, classType);
+        return action.getInterfaceClasses(listInterfaces, classType);
     }
 
     public <U extends PropertyInterface> ActionMapImplement<T, U> getImplement(U... mapping) {
-        return new ActionMapImplement<>(property, getRevMap(mapping));
+        return new ActionMapImplement<>(action, getRevMap(mapping));
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LAP<P, ActionOrProperty<P>> mainProperty, LocalizedString contextMenuCaption) {
-        mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
+        mainProperty.getActionOrProperty().setContextMenuAction(action.getSID(), contextMenuCaption);
     }
 
     public <P extends PropertyInterface> void setAsEditActionFor(String actionSID, LAP<P, ActionOrProperty<P>> mainProperty) {
         assert listInterfaces.size() <= mainProperty.listInterfaces.size();
 
         //мэпим входы по порядку, у этого экшна входов может быть меньше
-        ActionMapImplement<T, P> actionImplement = new ActionMapImplement<>(property, getRevMap(mainProperty.listInterfaces));
+        ActionMapImplement<T, P> actionImplement = new ActionMapImplement<>(action, getRevMap(mainProperty.listInterfaces));
 
-        mainProperty.property.setEditAction(actionSID, actionImplement);
+        mainProperty.getActionOrProperty().setEditAction(actionSID, actionImplement);
     }
 
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {
         ImList<lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> readImplements = ActionOrPropertyUtils.readImplements(listInterfaces, params);
         ActionMapImplement<?, PropertyInterface> actImpl = (ActionMapImplement<?, PropertyInterface>)readImplements.get(0);
-        if (property instanceof ListAction) {
-            ((ListAction) property).addAction(actImpl, version);
+        if (action instanceof ListAction) {
+            ((ListAction) action).addAction(actImpl, version);
         } else if (hasWhen) {
-            ((CaseAction) property).addCase((PropertyMapImplement<?, PropertyInterface>)readImplements.get(1), actImpl, version);
+            ((CaseAction) action).addCase((PropertyMapImplement<?, PropertyInterface>)readImplements.get(1), actImpl, version);
         } else {
-            ((CaseAction) property).addOperand(actImpl, signature, version);
+            ((CaseAction) action).addOperand(actImpl, signature, version);
         }
     }
 }

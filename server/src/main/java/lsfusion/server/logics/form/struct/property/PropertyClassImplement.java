@@ -20,13 +20,13 @@ public class PropertyClassImplement<P extends PropertyInterface> extends ActionO
     }
 
     public LP createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
-        Property<P> createProp = property;
-        if(prev && property.noOld())
+        Property<P> createProp = actionOrProperty;
+        if(prev && actionOrProperty.noOld())
             createProp = createProp.getOld(PrevScope.DB); 
         return new LP<>(createProp, listInterfaces.mapOrder(mapping.reverse()));
     }
 
     public PropertyClassImplement<P> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap) {
-        return new PropertyClassImplement<P>(property, mapping.join(remap));
+        return new PropertyClassImplement<P>(actionOrProperty, mapping.join(remap));
     }
 }

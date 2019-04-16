@@ -113,7 +113,7 @@ public class ListAction extends ListCaseAction {
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type type = null;
         for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            Type actionRequestType = action.property.getSimpleRequestInputType(optimistic, inRequest);
+            Type actionRequestType = action.action.getSimpleRequestInputType(optimistic, inRequest);
             if (actionRequestType != null) {
                 if (type == null) {
                     type = actionRequestType;
@@ -132,7 +132,7 @@ public class ListAction extends ListCaseAction {
     public CustomClass getSimpleAdd() {
         CustomClass result = null;
         for (ActionMapImplement<?, PropertyInterface> action : getListActions()) {
-            CustomClass simpleAdd = action.property.getSimpleAdd();
+            CustomClass simpleAdd = action.action.getSimpleAdd();
             if (simpleAdd != null) {
                 if (result == null) {
                     result = simpleAdd;
@@ -177,7 +177,7 @@ public class ListAction extends ListCaseAction {
         boolean lookingForChange = true;
         ImList<ActionMapImplement<?, PropertyInterface>> actions = getActions();
         for(int i = actions.size() - 1; i>= 0; i--) {
-            Action<?> listAction = actions.get(i).property;
+            Action<?> listAction = actions.get(i).action;
             
             if(lookingForChangeFlow && (listAction.hasFlow(ChangeFlowType.BREAK) || listAction.hasFlow(ChangeFlowType.RETURN)))
                 return false;

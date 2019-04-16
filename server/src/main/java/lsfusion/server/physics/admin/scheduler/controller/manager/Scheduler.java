@@ -623,7 +623,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         public List<String> params;
         
         public String getCaption() {
-            return (script == null ? (localize(LA.property.caption) + " (" + LA.property.getSID() + ")") : (" " + BaseUtils.truncate(script, 191)));
+            return (script == null ? (localize(LA.action.caption) + " (" + LA.action.getSID() + ")") : (" " + BaseUtils.truncate(script, 191)));
         }
 
         public ScheduledTaskDetail(LA LA, String script, boolean ignoreExceptions, Integer timeout, List<String> params) {

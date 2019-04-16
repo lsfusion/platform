@@ -101,7 +101,7 @@ public class ApplyAction extends KeepContextAction {
     public ImSet<Action> getDependActions() {
         ImSet<Action> result = SetFact.EMPTY();
         if (action != null) {
-            result = result.merge(action.property);
+            result = result.merge(action.action);
         }        
         return result;
     }

@@ -19,18 +19,15 @@ import java.util.List;
 
 public abstract class LAP<T extends PropertyInterface, P extends ActionOrProperty<T>> {
 
-    public P property;
     public ImOrderSet<T> listInterfaces;
     private String creationScript = null;
     private String creationPath = null;
 
     public LAP(P property) {
-        this.property = property;
         listInterfaces = property.getFriendlyOrderInterfaces();
     }
 
     public LAP(P property, ImOrderSet<T> listInterfaces) {
-        this.property = property;
         this.listInterfaces = listInterfaces;
         assert property.interfaces.size() == listInterfaces.size();
     }
@@ -96,55 +93,55 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     */
     
     public void setCharWidth(int charWidth) {
-        property.drawOptions.setCharWidth(charWidth);
+        getActionOrProperty().drawOptions.setCharWidth(charWidth);
     }
 
     public void setFlexCharWidth(int charWidth, Boolean flex) {
-        property.drawOptions.setFlexCharWidth(charWidth, flex);
+        getActionOrProperty().drawOptions.setFlexCharWidth(charWidth, flex);
     }
 
     public void setImage(String name) {
-        property.drawOptions.setImage(name);
+        getActionOrProperty().drawOptions.setImage(name);
     }
 
     public void setDefaultCompare(String defaultCompare) {
-        property.drawOptions.setDefaultCompare(defaultCompare);
+        getActionOrProperty().drawOptions.setDefaultCompare(defaultCompare);
     }
 
     public void setChangeKey(KeyStroke editKey) {
-        property.drawOptions.setChangeKey(editKey);
+        getActionOrProperty().drawOptions.setChangeKey(editKey);
     }
 
     public void setShowChangeKey(boolean showEditKey) {
-        property.drawOptions.setShowChangeKey(showEditKey);
+        getActionOrProperty().drawOptions.setShowChangeKey(showEditKey);
     }
     
     public void addProcessor(ActionOrProperty.DefaultProcessor processor) {
-        property.drawOptions.addProcessor(processor);
+        getActionOrProperty().drawOptions.addProcessor(processor);
     }
 
     public void setRegexp(String regexp) {
-        property.drawOptions.setRegexp(regexp);
+        getActionOrProperty().drawOptions.setRegexp(regexp);
     }
 
     public void setRegexpMessage(String regexpMessage) {
-        property.drawOptions.setRegexpMessage(regexpMessage);
+        getActionOrProperty().drawOptions.setRegexpMessage(regexpMessage);
     }
 
     public void setEchoSymbols(boolean echoSymbols) {
-        property.drawOptions.setEchoSymbols(echoSymbols);
+        getActionOrProperty().drawOptions.setEchoSymbols(echoSymbols);
     }
 
     public void setShouldBeLast(boolean shouldBeLast) {
-        property.drawOptions.setShouldBeLast(shouldBeLast);
+        getActionOrProperty().drawOptions.setShouldBeLast(shouldBeLast);
     }
 
     public void setForceViewType(ClassViewType forceViewType) {
-        property.drawOptions.setForceViewType(forceViewType);
+        getActionOrProperty().drawOptions.setForceViewType(forceViewType);
     }
 
     public void setAskConfirm(boolean askConfirm) {
-        property.drawOptions.setAskConfirm(askConfirm);
+        getActionOrProperty().drawOptions.setAskConfirm(askConfirm);
     }
 
     public String getCreationScript() {
@@ -164,19 +161,21 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     }
 
     public ActionOrPropertyObjectEntity<T, ?> createObjectEntity(ImOrderSet<ObjectEntity> objects) {
-        return ActionOrPropertyObjectEntity.create(property, getRevMap(objects), creationScript, creationPath);
+        return ActionOrPropertyObjectEntity.create(getActionOrProperty(), getRevMap(objects), creationScript, creationPath);
     }
 
     public List<ResolveClassSet> getExplicitClasses() {
-        return property.getExplicitClasses(listInterfaces);
+        return getActionOrProperty().getExplicitClasses(listInterfaces);
     }
 
     public void setExplicitClasses(List<ResolveClassSet> signature) {
-        property.setExplicitClasses(listInterfaces, signature);
+        getActionOrProperty().setExplicitClasses(listInterfaces, signature);
     }
 
     @Override
     public String toString() {
-        return property.toString();
+        return getActionOrProperty().toString();
     }
+
+    public abstract P getActionOrProperty();
 }

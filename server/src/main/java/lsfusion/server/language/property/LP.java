@@ -49,12 +49,20 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.rea
 
 public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
 
+    public Property<T> property;
+
+    public Property<T> getActionOrProperty() {
+        return property;
+    }
+
     public LP(Property<T> property) {
         super(property);
+        this.property = property;
     }
 
     public LP(Property<T> property, ImOrderSet<T> listInterfaces) {
         super(property, listInterfaces);
+        this.property = property;
     }
 
     public Object read(ExecutionEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {

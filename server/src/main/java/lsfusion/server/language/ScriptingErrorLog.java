@@ -252,7 +252,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitParamCountError(ScriptParser parser, LAP property, int paramCount) throws SemanticErrorException {
-        int interfacesCount = property.property.interfaces.size();
+        int interfacesCount = property.getActionOrProperty().interfaces.size();
         emitParamCountError(parser, interfacesCount, paramCount);
     }
 

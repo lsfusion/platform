@@ -395,7 +395,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             if(hasPolyForm())
                 return true;
 
-            CaseAction polyAction = (CaseAction) getPolyAction(LM).property;
+            CaseAction polyAction = (CaseAction) getPolyAction(LM).action;
             ImList<ActionCase<PropertyInterface>> cases = polyAction.getOptimizedCases(MapFact.singleton(polyAction.interfaces.single(), getUpSet()), SetFact.<PropertyInterface>EMPTY());
             if(cases.size() > 1) // если есть edit кроме default'ого поведения
                 return true;

@@ -121,7 +121,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkParamCount(LAP mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
-        if (mainProp.property.interfaces.size() != paramCount) {
+        if (mainProp.getActionOrProperty().interfaces.size() != paramCount) {
             errLog.emitParamCountError(parser, mainProp, paramCount);
         }
     }
@@ -271,7 +271,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkNamedParams(LAP property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
-        int interfaceCnt = property.property.interfaces.size();
+        int interfaceCnt = property.getActionOrProperty().interfaces.size();
         if (interfaceCnt != namedParams.size() && !namedParams.isEmpty()) {
             errLog.emitNamedParamsError(parser, namedParams, interfaceCnt);
         }
@@ -364,9 +364,9 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkSessionProperty(LAP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property.property instanceof SessionDataProperty)) {
-            errLog.emitNotSessionOrLocalPropertyError(parser, property.getCreationScript());
+    public void checkSessionProperty(LP lp) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(lp.property instanceof SessionDataProperty)) {
+            errLog.emitNotSessionOrLocalPropertyError(parser, lp.getCreationScript());
         }
     }
 
@@ -463,7 +463,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkPartitionUngroupConsistence(LAP ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkPartitionUngroupConsistence(LP ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (ungroupProp != null && ungroupProp.property.interfaces.size() != groupPropCnt) {
             errLog.emitUngroupParamsCntPartitionError(parser, groupPropCnt);
         }
@@ -498,7 +498,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkAbstractAction(LA action, String actionName) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(action.property instanceof ListCaseAction && ((ListCaseAction)action.property).isAbstract())) {
+        if (!(action.action instanceof ListCaseAction && ((ListCaseAction)action.action).isAbstract())) {
             errLog.emitNotAbstractActionError(parser, actionName);
         }
     }
@@ -509,8 +509,8 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkEventNoParameters(LAP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.property.interfaces.size() > 0) {
+    public void checkEventNoParameters(LA la) throws ScriptingErrorLog.SemanticErrorException {
+        if (la.action.interfaces.size() > 0) {
             errLog.emitEventNoParametersError(parser);
         }
     }

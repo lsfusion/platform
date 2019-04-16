@@ -106,16 +106,16 @@ public class LogFormEntity extends FormEntity {
                 int paramCnt = logValueProperty.property.interfaces.size();
                 ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 
-                LP lpMainProp = new LP(calcImpl.property);
+                LP lpMainProp = new LP(calcImpl.actionOrProperty);
 
                 Object[] params = new Object[paramCnt + 1];
                 params[0] = logValueProperty;
                 for (int i = 0; i < paramCnt; i++) {
                     params[i+1] = i+1;
                 }
-                JoinProperty<?> jProp = new JoinProperty(impl.property.caption,
+                JoinProperty<?> jProp = new JoinProperty(impl.actionOrProperty.caption,
                         listInterfaces, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
-                jProp.drawOptions.inheritDrawOptions(impl.property.drawOptions);
+                jProp.drawOptions.inheritDrawOptions(impl.actionOrProperty.drawOptions);
                 LP<?> ljProp = new LP<>(jProp, listInterfaces);
                 addPropertyDraw(ljProp, version, entities);
             }

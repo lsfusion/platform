@@ -416,7 +416,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         vnull = addProperty(null, new LP<>(NullValueProperty.instance));
 
         if(ActionDebugger.getInstance().isEnabled()) {
-            watch = addProperty(null, new LA<>(WatchAction.instance));
+            watch = addAction(null, new LA<>(WatchAction.instance));
             makeActionPublic(watch, "watch");
         }
 

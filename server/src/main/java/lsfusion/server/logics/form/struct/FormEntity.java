@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -231,8 +230,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.propertyShowIf = externalShowIf;
 
-        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
-        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.property, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
+        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.<PropertyInterface, ObjectEntity>EMPTYREV()));
     }
 
     public void finalizeInit(Version version) {
@@ -760,7 +759,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new PropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
     public <P extends PropertyInterface> ActionObjectEntity<P> addPropertyObject(LA<P> property, ImRevMap<P, ObjectEntity> objects) {
-        return new ActionObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
+        return new ActionObjectEntity<>(property.action, objects, property.getCreationScript(), property.getCreationPath());
     }
     
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(PropertyRevImplement<P, ObjectEntity> impl) {
@@ -854,8 +853,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void addHintsIncrementTable(Version version, LP... props) {
-        for (LAP prop : props) {
-            hintsIncrementTable.add((Property) prop.property, version);
+        for (LP prop : props) {
+            hintsIncrementTable.add(prop.property, version);
         }
     }
 

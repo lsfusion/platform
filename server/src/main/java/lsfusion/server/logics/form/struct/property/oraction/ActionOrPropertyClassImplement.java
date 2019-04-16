@@ -10,30 +10,30 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public abstract class ActionOrPropertyClassImplement<P extends PropertyInterface, T extends ActionOrProperty<P>> extends TwinImmutableObject {
 
-    public T property;
+    public T actionOrProperty;
     public ImRevMap<P, ValueClassWrapper> mapping;
 
     public String toString() {
-        return property.toString();
+        return actionOrProperty.toString();
     }
 
-    public ActionOrPropertyClassImplement(T property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
-        this(property, interfaces.mapSet(classes));
+    public ActionOrPropertyClassImplement(T actionOrProperty, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
+        this(actionOrProperty, interfaces.mapSet(classes));
     }
 
-    public ActionOrPropertyClassImplement(T property, ImRevMap<P, ValueClassWrapper> mapping) {
-        this.property = property;
+    public ActionOrPropertyClassImplement(T actionOrProperty, ImRevMap<P, ValueClassWrapper> mapping) {
+        this.actionOrProperty = actionOrProperty;
         this.mapping = mapping;
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return property.equals(((ActionOrPropertyClassImplement) o).property) && mapping.equals(((ActionOrPropertyClassImplement) o).mapping);
+        return actionOrProperty.equals(((ActionOrPropertyClassImplement) o).actionOrProperty) && mapping.equals(((ActionOrPropertyClassImplement) o).mapping);
     }
     
     public abstract ActionOrPropertyClassImplement<P, T> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap);
 
     public int immutableHashCode() {
-        return property.hashCode() * 31 + mapping.hashCode();
+        return actionOrProperty.hashCode() * 31 + mapping.hashCode();
     }
     
     public abstract LAP<P, ?> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev);

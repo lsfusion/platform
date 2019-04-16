@@ -99,16 +99,16 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
         checkEnableApi(property);
 
-        writeRequestInfo(dataSession, property.property, request);
+        writeRequestInfo(dataSession, property.action, request);
 
         property.execute(dataSession, getStack(), ExternalHTTPAction.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
 
-        return readResult(request.returnNames, property.property);
+        return readResult(request.returnNames, property.action);
     }
 
     private void checkEnableApi(LA<?> property) {
         boolean forceAPI = false;
-        String annotation = property.property.annotation;
+        String annotation = property.action.annotation;
         if(annotation != null) {
             if(annotation.equals("noauth"))
                 return;

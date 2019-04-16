@@ -2382,7 +2382,7 @@ loggableSetting [PropertySettings ps]
 	:	'LOGGABLE'  { ps.isLoggable = true; }
 	;
 
-aggrSetting [LAP property]
+aggrSetting [LP property]
 @after {
 	if (inMainParseState()) {
 		self.setAggr(property);

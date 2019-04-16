@@ -73,11 +73,11 @@ public class NewExecutorAction extends AroundAspectAction {
 
     @Override
     public CustomClass getSimpleAdd() {
-        return aspectActionImplement.property.getSimpleAdd();
+        return aspectActionImplement.action.getSimpleAdd();
     }
 
     @Override
     public PropertyInterface getSimpleDelete() {
-        return aspectActionImplement.property.getSimpleDelete();
+        return aspectActionImplement.action.getSimpleDelete();
     }
 }
