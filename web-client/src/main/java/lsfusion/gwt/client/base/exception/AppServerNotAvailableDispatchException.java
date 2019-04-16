@@ -7,4 +7,8 @@ public class AppServerNotAvailableDispatchException extends DispatchException {
     public AppServerNotAvailableDispatchException(String message) {
         super(message); // exceptions.app.server.not.available
     }
+
+    //need for serializable
+    public AppServerNotAvailableDispatchException() {
+    }
 }
