@@ -6,7 +6,6 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
 import lsfusion.gwt.client.base.exception.RemoteInternalDispatchException;
 import lsfusion.gwt.client.base.exception.RemoteRetryException;
-import lsfusion.gwt.client.base.exception.WrappedRemoteDispatchException;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
