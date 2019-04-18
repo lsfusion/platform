@@ -244,6 +244,8 @@ public class DefaultFormView extends FormView {
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
         setupFormButton(closeFunction, KeyStrokes.getCloseKeyStroke(), null);
 
+        PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
+
         ContainerView toolbarLeftContainer = createContainer(null, null, DefaultFormView.getToolbarLeftContainerSID(), version);
         toolbarLeftContainer.setType(ContainerType.CONTAINERH);
         toolbarLeftContainer.childrenAlignment = Alignment.START;
@@ -255,6 +257,7 @@ public class DefaultFormView extends FormView {
         toolbarRightContainer.setFlex(1);
 
         toolbarLeftContainer.add(editFunction, version);
+        toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
 
         toolbarRightContainer.add(toolbarContainer, version);
         toolbarRightContainer.add(refreshFunction, version);
