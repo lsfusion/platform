@@ -79,7 +79,7 @@ public class WriteUtils {
     }
 
     public static void storeFileToFTP(String path, RawFileData file, String extension) throws IOException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 21);
+        FTPPath properties = FTPPath.parseFTPPath(path);
         String remoteFile = appendExtension(properties.remoteFile, extension);
         FTPClient ftpClient = new FTPClient();
         ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
@@ -117,7 +117,7 @@ public class WriteUtils {
     }
 
     public static void storeFileToSFTP(String path, RawFileData file, String extension) throws JSchException, SftpException, FileNotFoundException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 22);
+        FTPPath properties = FTPPath.parseSFTPPath(path);
         String remoteFilePath = appendExtension(properties.remoteFile, extension);
         File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);
 

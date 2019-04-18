@@ -156,7 +156,7 @@ public abstract class ReadUtils {
     }
 
     private static void copyFTPToFile(String path, File file) throws IOException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 21);
+        FTPPath properties = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
         if (properties.charset != null)
@@ -190,7 +190,7 @@ public abstract class ReadUtils {
     }
 
     private static void copySFTPToFile(String path, File file) throws JSchException, SftpException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 22);
+        FTPPath properties = FTPPath.parseSFTPPath(path);
         String remoteFile = properties.remoteFile;
         remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
 

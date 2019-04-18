@@ -29,7 +29,15 @@ public class FTPPath {
         this.passiveMode = passiveMode;
     }
 
-    public static FTPPath parseFTPPath(String path, Integer defaultPort) {
+    public static FTPPath parseFTPPath(String path) {
+        return parseFTPPath(path, 21);
+    }
+
+    public static FTPPath parseSFTPPath(String path) {
+        return parseFTPPath(path, 22);
+    }
+
+    private static FTPPath parseFTPPath(String path, Integer defaultPort) {
         /*username:password;charset@host:port/path_to_file?passivemode=false*/
         Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]+))?(?:/([^?]*))?(?:\\?(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
