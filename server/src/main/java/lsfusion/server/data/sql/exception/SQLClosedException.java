@@ -32,7 +32,8 @@ public class SQLClosedException extends SQLHandledException {
         return sql.tryRestore(owner, connection, isPrivate);
     }
 
-    public String toString() {
+    @Override
+    public String getMessage() {
         return "CONNECTION_CLOSED " + connection + " " + wrapped + " " + isPrivate;
     }
 

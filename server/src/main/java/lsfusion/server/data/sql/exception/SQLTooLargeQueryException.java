@@ -21,7 +21,8 @@ public class SQLTooLargeQueryException extends SQLHandledException {
         return false;
     }
 
-    public String toString() {
+    @Override
+    public String getMessage() {
         return "TOO LARGE QUERY ROWS " + rowCount + ", LIMIT :" + limit + ", ROWSIZE :" + rowSize;
     }
 
