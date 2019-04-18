@@ -29,7 +29,7 @@ public class SQLRetryException extends SQLHandledException {
     }
 
     @Override
-    public String toString() {
+    public String getMessage() {
         return "RETRY : " + reason;
     }
 

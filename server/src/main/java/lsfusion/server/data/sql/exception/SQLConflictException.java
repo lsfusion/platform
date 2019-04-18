@@ -7,8 +7,9 @@ public class SQLConflictException extends SQLHandledException {
         this.updateConflict = updateConflict;
     }
 
-    public String toString() {
-        return updateConflict ? "UPDATE_CONFLICT" : "DEAD_LOCK"; 
+    @Override
+    public String getMessage() {
+        return updateConflict ? "UPDATE_CONFLICT" : "DEAD_LOCK";
     }
 
     @Override
