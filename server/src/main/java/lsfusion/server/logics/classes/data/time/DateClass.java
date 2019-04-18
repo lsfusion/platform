@@ -148,7 +148,7 @@ public class DateClass extends DataClass<Date> {
             }
             return safeDateToSql(parse);
         } catch (Exception e) {
-            throw new ParseException("error parsing date : " + s, e);
+            throw new ParseException("error parsing date: " + s, e);
         }
     }
 

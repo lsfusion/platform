@@ -156,7 +156,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         try {
             return new BigDecimal(s.replace(',','.'));
         } catch (Exception e) {
-            throw new ParseException("error parsing numeric", e);
+            throw new ParseException("error parsing numeric: " + s, e);
         }
     }
 

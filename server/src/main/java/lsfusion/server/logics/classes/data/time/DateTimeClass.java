@@ -142,7 +142,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
             
             return dateToStamp(parse);
         } catch (Exception e) {
-            throw new ParseException("error parsing datetime", e);
+            throw new ParseException("error parsing datetime: " + s, e);
         }
     }
 
