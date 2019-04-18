@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import static lsfusion.base.file.WriteUtils.appendExtension;
+
 public class FileUtils {
 
     public static void moveFile(String sourcePath, String destinationPath) throws SQLException, JSchException, SftpException, IOException {
@@ -25,6 +27,8 @@ public class FileUtils {
 
         if(srcPath.type.equals("file") && destPath.type.equals("file")) {
             moveFile(new File(srcPath.path), new File(destPath.path));
+        } else if (equalFTPServers(srcPath, destPath)) {
+            renameFTP(srcPath.path, destPath.path, null);
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false, null);
             if (readResult != null) {
@@ -40,17 +44,7 @@ public class FileUtils {
                         WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
                         break;
                 }
-                switch (srcPath.type) {
-                    case "file":
-                        deleteFile(srcPath.path);
-                        break;
-                    case "ftp":
-                        deleteFTPFile(srcPath.path);
-                        break;
-                    case "sftp":
-                        deleteSFTPFile(srcPath.path);
-                        break;
-                }
+                delete(srcPath);
             }
         }
     }
@@ -75,8 +69,55 @@ public class FileUtils {
         }
     }
 
+    private static boolean equalFTPServers(Path srcPath, Path destPath) {
+        if (srcPath.type.equals("ftp") && destPath.type.equals("ftp")) {
+            FTPPath srcProperties = FTPPath.parseFTPPath(srcPath.path);
+            FTPPath destProperties = FTPPath.parseFTPPath(destPath.path);
+            return srcProperties.server.equals(destProperties.server) && srcProperties.port.equals(destProperties.port);
+        } else return false;
+    }
+
+    public static void renameFTP(String srcPath, String destPath, String extension) throws IOException {
+        FTPPath srcProperties = FTPPath.parseFTPPath(srcPath);
+        FTPPath destProperties = FTPPath.parseFTPPath(destPath);
+        FTPClient ftpClient = new FTPClient();
+        ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+        if (srcProperties.charset != null)
+            ftpClient.setControlEncoding(srcProperties.charset);
+        try {
+
+            ftpClient.connect(srcProperties.server, srcProperties.port);
+            if (ftpClient.login(srcProperties.username, srcProperties.password)) {
+                if(srcProperties.passiveMode) {
+                    ftpClient.enterLocalPassiveMode();
+                }
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+
+                boolean done = ftpClient.rename(appendExtension(srcProperties.remoteFile, extension), appendExtension(destProperties.remoteFile, extension));
+                if (!done) {
+                    throw new RuntimeException("Error occurred while renaming file to ftp : " + ftpClient.getReplyCode());
+                }
+            } else {
+                throw new RuntimeException("Incorrect login or password. Renaming file from ftp failed");
+            }
+        } finally {
+            try {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static void delete(String sourcePath) throws IOException, SftpException, JSchException {
-        Path path = Path.parsePath(sourcePath);
+        delete(Path.parsePath(sourcePath));
+    }
+
+    public static void delete(Path path) throws IOException, SftpException, JSchException {
         switch (path.type) {
             case "file":
                 deleteFile(path.path);
@@ -106,7 +147,7 @@ public class FileUtils {
     }
 
     private static void deleteFTPFile(String path) throws IOException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 21);
+        FTPPath properties = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         try {
             if (properties.charset != null) {
@@ -132,7 +173,7 @@ public class FileUtils {
     }
 
     private static void deleteSFTPFile(String path) throws JSchException, SftpException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 22);
+        FTPPath properties = FTPPath.parseSFTPPath(path);
         String remoteFile = properties.remoteFile;
         remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
 
@@ -193,7 +234,7 @@ public class FileUtils {
 
     private static String mkdirFTP(String path) throws IOException {
         String result = null;
-        FTPPath ftpPath = FTPPath.parseFTPPath(path, 21);
+        FTPPath ftpPath = FTPPath.parseFTPPath(path);
 
         FTPClient ftpClient = new FTPClient();
         ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
@@ -239,7 +280,7 @@ public class FileUtils {
     }
 
     private static boolean mkdirSFTP(String path) throws JSchException, SftpException {
-        FTPPath ftpPath = FTPPath.parseFTPPath(path, 22);
+        FTPPath ftpPath = FTPPath.parseSFTPPath(path);
 
         Session session = null;
         Channel channel = null;
@@ -287,7 +328,7 @@ public class FileUtils {
     }
 
     private static boolean checkFileExistsFTP(String path) throws IOException {
-        FTPPath ftpPath = FTPPath.parseFTPPath(path, 21);
+        FTPPath ftpPath = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         try {
             ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
@@ -344,7 +385,7 @@ public class FileUtils {
     }
 
     private static Map<String, Boolean> listFilesFTP(String path, String charset) throws IOException {
-        FTPPath ftpPath = FTPPath.parseFTPPath(path, 21);
+        FTPPath ftpPath = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         try {
             ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
