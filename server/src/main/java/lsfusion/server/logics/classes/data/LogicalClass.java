@@ -169,7 +169,7 @@ public class LogicalClass extends DataClass<Boolean> {
                 return true;
             return null;
         } catch (Exception e) {
-            throw new ParseException("error parsing boolean", e);
+            throw new ParseException("error parsing boolean: " + s, e);
         }
     }
 

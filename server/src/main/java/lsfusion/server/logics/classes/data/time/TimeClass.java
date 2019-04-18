@@ -50,7 +50,7 @@ public class TimeClass extends DataClass<Time> {
         try {
             return new Time(((Date) getDefaultFormat().parseObject(s)).getTime());
         } catch (Exception e) {
-            throw new ParseException("error parsing time", e);
+            throw new ParseException("error parsing time: " + s, e);
         }
     }
 
