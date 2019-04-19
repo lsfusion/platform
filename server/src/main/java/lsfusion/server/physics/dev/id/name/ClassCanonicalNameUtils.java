@@ -2,10 +2,7 @@ package lsfusion.server.physics.dev.id.name;
 
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.ColorClass;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.*;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -178,8 +175,8 @@ public final class ClassCanonicalNameUtils {
         put("XMLLINK", XMLLinkClass.get(false));
         put("TABLELINK", TableLinkClass.get(false));
         put("COLOR", ColorClass.instance);
-        put("TEXT", StringClass.text);
-        put("RICHTEXT", StringClass.richText);
+        put("TEXT", TextClass.instance);
+        put("RICHTEXT", TextClass.richInstance);
     }};
 
     public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {

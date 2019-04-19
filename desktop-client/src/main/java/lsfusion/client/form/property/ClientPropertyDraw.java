@@ -575,10 +575,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     private String escapeHTML(String value) {
         return value.replace("<", "&lt;").replace(">", "&gt;");
     }
-    
-    public boolean isRichTextType() {
-        return baseType instanceof ClientStringClass && ((ClientStringClass) baseType).rich;
-    }
 
     public class CaptionReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {

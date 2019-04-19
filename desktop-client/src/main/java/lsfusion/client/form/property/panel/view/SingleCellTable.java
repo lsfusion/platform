@@ -3,6 +3,7 @@ package lsfusion.client.form.property.panel.view;
 import com.google.common.base.Throwables;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientStringClass;
+import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -110,7 +111,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getProperty();
-        return property.baseType instanceof ClientStringClass && ((ClientStringClass) property.baseType).rich;
+        return property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
     }
 
     public void pasteTable(List<List<String>> table) {

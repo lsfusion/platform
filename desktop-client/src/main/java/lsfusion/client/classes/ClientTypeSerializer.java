@@ -62,7 +62,17 @@ public class ClientTypeSerializer {
         if (type == DataType.NUMERIC) return new ClientNumericClass(inStream.readInt(), inStream.readInt());
         if (type == DataType.LOGICAL) return ClientLogicalClass.instance;
         if (type == DataType.DATE) return ClientDateClass.instance;
-        if (type == DataType.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+
+        if (type == DataType.STRING || type == DataType.TEXT) {
+            boolean blankPadded = inStream.readBoolean();
+            boolean caseInsensitive = inStream.readBoolean();
+            inStream.readBoolean(); // backward compatibility see StringClass.serialize
+            ExtInt length = ExtInt.deserialize(inStream);
+            if( type == DataType.TEXT)
+                return new ClientTextClass(inStream.readBoolean());
+            return new ClientStringClass(blankPadded, caseInsensitive, length);
+        }
+
         if (type == DataType.YEAR) return ClientIntegerClass.instance;
         if (type == DataType.DATETIME) return ClientDateTimeClass.instance;
         if (type == DataType.TIME) return ClientTimeClass.instance;

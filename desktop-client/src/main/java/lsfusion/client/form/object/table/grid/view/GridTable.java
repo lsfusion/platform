@@ -7,6 +7,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.classes.data.ClientStringClass;
+import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
@@ -810,7 +811,7 @@ public class GridTable extends ClientPropertyTable {
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getCurrentProperty();
-        return property != null && property.baseType instanceof ClientStringClass && ((ClientStringClass) property.baseType).rich;
+        return property != null && property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
     }
 
     public void pasteTable(List<List<String>> table) {

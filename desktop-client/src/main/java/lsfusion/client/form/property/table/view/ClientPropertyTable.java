@@ -6,6 +6,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientStringClass;
+import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -304,7 +305,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             // todo: временно отключил тултипы для richText'а для Java старше 8. часто вылетает (особенно при вставке из Word). следует убрать проверку после перехода на Java 8:
             // https://bugs.openjdk.java.net/browse/JDK-8034955
             Double javaVersion = SystemUtils.getJavaSpecificationVersion();
-            if ((javaVersion == null || javaVersion < 1.8) && cellProperty.baseType instanceof ClientStringClass && ((ClientStringClass) cellProperty.baseType).rich) {
+            if ((javaVersion == null || javaVersion < 1.8) && cellProperty.baseType instanceof ClientTextClass && ((ClientTextClass) cellProperty.baseType).rich) {
                 return null;
             }
             
