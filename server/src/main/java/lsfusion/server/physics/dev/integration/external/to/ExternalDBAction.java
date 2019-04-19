@@ -11,6 +11,7 @@ import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLCommand;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.statement.ParsedStatement;
@@ -63,7 +64,7 @@ public class ExternalDBAction extends ExternalAction {
     }
 
     private List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString, String exec, DBManager dbManager) throws SQLException, SQLHandledException {
-        SQLSyntax syntax = DefaultSQLSyntax.getSyntax(connectionString);
+        SQLSyntax syntax;
         OperationOwner owner = OperationOwner.unknown;
 
         boolean isLocalDB = connectionString.equals("LOCAL");
@@ -71,11 +72,15 @@ public class ExternalDBAction extends ExternalAction {
         ExConnection exConn = null;
         Connection conn;
         if(isLocalDB) {
+            DataAdapter adapter = dbManager.getAdapter();
+            syntax = adapter.syntax;
             connOwner = new MutableObject();
-            exConn = dbManager.getAdapter().getPrivate(connOwner);
+            exConn = adapter.getPrivate(connOwner);
             conn = exConn.sql;
-        } else
+        } else {
+            syntax = DefaultSQLSyntax.getSyntax(connectionString);
             conn = DriverManager.getConnection(connectionString);
+        }
         List<String> tempTables = new ArrayList<>();
 
         try {
