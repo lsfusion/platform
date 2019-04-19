@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -43,7 +42,6 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         this.toChange = toChange;
     }
 
-    @IdentityInstanceLazy
     public Property getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
@@ -60,14 +58,18 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
         }
         constraint = PropertyFact.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
-        
+
+        constraint.caption = getConstrainedMessage();
+        return constraint;
+    }
+
+    public LocalizedString getConstrainedMessage() {
         String cycleCaption;
         if(groupProperty instanceof PropertyMapImplement)
             cycleCaption = ((PropertyMapImplement<?, I>)groupProperty).property.toString();
         else
             cycleCaption = groupProperty.toString();
-        constraint.caption = LocalizedString.createFormatted("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
-        return constraint;
+        return LocalizedString.createFormatted("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
     }
 
     @Override

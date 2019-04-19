@@ -35,8 +35,6 @@ public abstract class FormDataManager {
 
     public PrintMessageData getPrintMessageData(int selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
 
-        FormEntity formEntity = getFormEntity();
-
         ExportResult sources = getExportData(selectTop);
 
         // filling message (root group)
@@ -45,7 +43,7 @@ public abstract class FormDataManager {
         List<String> rootTitles = rootTable.first;
         List<String> rootRows = BaseUtils.single(rootTable.second);
 
-        StringBuilder builder = new StringBuilder(ThreadLocalContext.localize(formEntity.getCaption()));
+        StringBuilder builder = new StringBuilder();
         for (int i=0,size=rootTitles.size();i<size;i++) {
             if(builder.length() != 0)
                 builder.append("\n");

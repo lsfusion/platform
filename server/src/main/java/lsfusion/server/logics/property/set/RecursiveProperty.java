@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.RecursiveExpr;
@@ -65,15 +64,18 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return cycle!=Cycle.IMPOSSIBLE;
     }
 
-    @IdentityInstanceLazy
     public Property getConstrainedProperty() {
         assert cycle == Cycle.NO;
         assert !isLogical();
 
         IntegralClass<?> integralClass = (IntegralClass)getType();
         Property constraint = PropertyFact.createCompare(interfaces, getImplement(), PropertyFact.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
-        constraint.caption = LocalizedString.createFormatted("{logics.property.cycle.detected}", caption);
+        constraint.caption = getConstrainedMessage();
         return constraint;
+    }
+
+    public LocalizedString getConstrainedMessage() {
+        return LocalizedString.createFormatted("{logics.property.cycle.detected}", caption);
     }
 
     public RecursiveProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, PropertyMapImplement<?, T> initial, PropertyMapImplement<?, T> step) {
