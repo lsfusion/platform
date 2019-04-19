@@ -1180,7 +1180,7 @@ public abstract class LogicsModule {
         RecursiveProperty<PropertyInterface> property = new RecursiveProperty<>(caption, interfaces, cycle,
                 mapInterfaces, mapIterate, initial, step);
         if(cycle==Cycle.NO)
-            addConstraint(property.getConstrainedProperty(), false);
+            addConstraint(property.getConstrainedProperty(), property.getConstrainedMessage(), false);
 
         LP result = new LP<>(property, interfaces);
 //        if (convertToLogical)
@@ -1365,7 +1365,7 @@ public abstract class LogicsModule {
         property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
         // нужно добавить ограничение на уникальность
-        addConstraint(property.getConstrainedProperty(), checkChange);
+        addConstraint(property.getConstrainedProperty(), property.getConstrainedMessage(), checkChange);
 
         return mapLGProp(group, persistent, property, listImplements.subList(1, listImplements.size()));
     }
@@ -1393,7 +1393,7 @@ public abstract class LogicsModule {
     private <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T> property, ImList<PropertyInterfaceImplement<T>> listImplements) {
         // нужно добавить ограничение на уникальность
         if(!noConstraint)
-            addConstraint(property.getConstrainedProperty(), checkChange);
+            addConstraint(property.getConstrainedProperty(), property.getConstrainedMessage(), checkChange);
 
         return mapLGProp(group, persistent, property, listImplements);
     }
@@ -1968,31 +1968,19 @@ public abstract class LogicsModule {
         return addAction(null, new LA<>(seekProperty));
     }
 
-    public void addConstraint(Property property, boolean checkChange) {
-        addConstraint(property, null, checkChange);
+    public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {
+        addConstraint(property, message, checkChange, null);
     }
 
-    public void addConstraint(Property property, Property messageProperty, boolean checkChange) {
-        addConstraint(property, messageProperty, checkChange, null);
-    }
-
-    public void addConstraint(Property property, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
-        addConstraint(addProp(property), null, checkChange, debugPoint);
-    }
-
-    public void addConstraint(Property property, Property messageProperty, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
-        addConstraint(addProp(property), messageProperty == null ? null : addProp(messageProperty), checkChange, debugPoint);
-    }
-
-    public void addConstraint(LP<?> lp, LP<?> messageLP, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
-        addConstraint(lp, messageLP, (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
+    public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
+        addConstraint(addProp(property), baseLM.addCProp(StringClass.text, message), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
     }
 
     protected void addConstraint(LP<?> lp, LP<?> messageLP, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
         if(!(lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
         // assert что lp уже в списке properties
-        setConstraint(lp.property, messageLP == null ? null : messageLP.property, type, event, checkProps, debugPoint);
+        setConstraint(lp.property, messageLP.property, type, event, checkProps, debugPoint);
     }
 
     public <T extends PropertyInterface> void setConstraint(Property property, Property messageProperty, Property.CheckType type, Event event, ImSet<Property<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
@@ -2119,8 +2107,7 @@ public abstract class LogicsModule {
         }
 
         Property constraint = PropertyFact.createAndNot(property, implement).property;
-        constraint.caption = caption;
-        addConstraint(constraint, false, debugPoint);
+        addConstraint(constraint, caption, false, debugPoint);
     }
 
     protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, ImList<PropertyFollowsDebug> resolve) {
