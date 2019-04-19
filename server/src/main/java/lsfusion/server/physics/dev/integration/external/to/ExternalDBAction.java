@@ -7,9 +7,11 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.FileData;
+import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLCommand;
 import lsfusion.server.data.sql.SQLSession;
+import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.statement.ParsedStatement;
 import lsfusion.server.data.sql.syntax.DefaultSQLSyntax;
@@ -27,6 +29,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -51,7 +54,7 @@ public class ExternalDBAction extends ExternalAction {
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         String replacedParams = replaceParams(context, getTransformedText(context, connectionString));
-        List<Object> results = readJDBC(context.getKeys(), replacedParams, getTransformedText(context, exec));
+        List<Object> results = readJDBC(context.getKeys(), replacedParams, getTransformedText(context, exec), context.getDbManager());
 
         for (int i = 0; i < targetPropList.size(); i++)
             targetPropList.get(i).change(results.get(i), context);
@@ -59,11 +62,20 @@ public class ExternalDBAction extends ExternalAction {
         return FlowResult.FINISH;
     }
 
-    private List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString, String exec) throws SQLException, SQLHandledException {
+    private List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString, String exec, DBManager dbManager) throws SQLException, SQLHandledException {
         SQLSyntax syntax = DefaultSQLSyntax.getSyntax(connectionString);
         OperationOwner owner = OperationOwner.unknown;
 
-        Connection conn = DriverManager.getConnection(connectionString);
+        boolean isLocalDB = connectionString.equals("LOCAL");
+        MutableObject connOwner = null;
+        ExConnection exConn = null;
+        Connection conn;
+        if(isLocalDB) {
+            connOwner = new MutableObject();
+            exConn = dbManager.getAdapter().getPrivate(connOwner);
+            conn = exConn.sql;
+        } else
+            conn = DriverManager.getConnection(connectionString);
         List<String> tempTables = new ArrayList<>();
 
         try {
@@ -130,8 +142,12 @@ public class ExternalDBAction extends ExternalAction {
         } finally {
             for(String table : tempTables)
                 SQLSession.dropTemporaryTableFromDB(conn, syntax, table, owner);
-            if (conn != null)
-                conn.close();
+            if (conn != null) {
+                if(isLocalDB)
+                    dbManager.getAdapter().returnPrivate(connOwner, exConn);
+                else
+                    conn.close();
+            }
         }
     }
 }
