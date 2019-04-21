@@ -23,18 +23,6 @@ public class Settings implements Cloneable {
 
     private int innerGroupExprs = 0; // использовать Subquery Expressions
 
-    private int LRUOftenCleanPeriod = 2;
-
-    private int LRUOftenExpireSecond = 5;
-
-    private int LRUOftenProceedBucket = 10000;
-
-    private int LRURareCleanPeriod = 20;
-
-    private int LRURareExpireSecond = 3600;
-
-    private int LRURareProceedBucket = 10000;
-
     private boolean cacheInnerHashes = true;
 
     private int mapInnerMaxIterations = 24;
@@ -79,7 +67,7 @@ public class Settings implements Cloneable {
     private boolean enableApplySingleStored = true;
     private boolean enableApplySingleRemoveClasses = true;
 
-    private boolean editLogicalOnSingleClick = false;
+    private boolean editBooleanOnSingleClick = false;
 
     private boolean editActionOnSingleClick = false;
 
@@ -317,54 +305,6 @@ public class Settings implements Cloneable {
         this.packOnCacheComplexity = packOnCacheComplexity;
     }
 
-    public int getLRUOftenCleanPeriod() {
-        return LRUOftenCleanPeriod;
-    }
-
-    public void setLRUOftenCleanPeriod(int LRUOftenCleanPeriod) {
-        this.LRUOftenCleanPeriod = LRUOftenCleanPeriod;
-    }
-
-    public int getLRUOftenExpireSecond() {
-        return LRUOftenExpireSecond;
-    }
-
-    public void setLRUOftenExpireSecond(int LRUOftenExpireSecond) {
-        this.LRUOftenExpireSecond = LRUOftenExpireSecond;
-    }
-
-    public int getLRUOftenProceedBucket() {
-        return LRUOftenProceedBucket;
-    }
-
-    public void setLRUOftenProceedBucket(int LRUOftenProceedBucket) {
-        this.LRUOftenProceedBucket = LRUOftenProceedBucket;
-    }
-
-    public int getLRURareCleanPeriod() {
-        return LRURareCleanPeriod;
-    }
-
-    public void setLRURareCleanPeriod(int LRURareCleanPeriod) {
-        this.LRURareCleanPeriod = LRURareCleanPeriod;
-    }
-
-    public int getLRURareExpireSecond() {
-        return LRURareExpireSecond;
-    }
-
-    public void setLRURareExpireSecond(int LRURareExpireSecond) {
-        this.LRURareExpireSecond = LRURareExpireSecond;
-    }
-
-    public int getLRURareProceedBucket() {
-        return LRURareProceedBucket;
-    }
-
-    public void setLRURareProceedBucket(int LRURareProceedBucket) {
-        this.LRURareProceedBucket = LRURareProceedBucket;
-    }
-
     public boolean isCacheInnerHashes() {
         return cacheInnerHashes;
     }
@@ -455,12 +395,12 @@ public class Settings implements Cloneable {
         this.simpleCheckCompare = simpleCheckCompare;
     }
 
-    public boolean getEditLogicalOnSingleClick() {
-        return editLogicalOnSingleClick;
+    public boolean getEditBooleanOnSingleClick() {
+        return editBooleanOnSingleClick;
     }
 
-    public void setEditLogicalOnSingleClick(boolean editLogicalOnSingleClick) {
-        this.editLogicalOnSingleClick = editLogicalOnSingleClick;
+    public void setEditBooleanOnSingleClick(boolean editLogicalOnSingleClick) {
+        this.editBooleanOnSingleClick = editLogicalOnSingleClick;
     }
 
     public boolean getEditActionOnSingleClick() {
@@ -1383,21 +1323,6 @@ public class Settings implements Cloneable {
     public void setLogTimeThreshold(long logTimeThreshold) {
         this.logTimeThreshold = logTimeThreshold;
     }
-    
-    // 0 - no adjustment
-    // 1 - multi tree
-    // 2 - (multi tree + spanning tree) / 2
-    // 3 - spanning tree
-    // 1 и 2 используют переборный механизм, поэтому туда надо еще отсечение вставить, если понадобится использовать
-    private int pessStatType = 3;
-
-    public int getPessStatType() {
-        return pessStatType;
-    }
-
-    public void setPessStatType(int pessStatType) {
-        this.pessStatType = pessStatType;
-    }
 
     // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)
     private boolean useRecalculateClassesInsteadOfInconsisentExpr = true;
@@ -1812,24 +1737,24 @@ public class Settings implements Cloneable {
         this.useSavepointsForExceptions = useSavepointsForExceptions;
     }
 
-    private int maxLength = 127;
+    private int maxNumericLength = 127;
 
-    public int getMaxLength() {
-        return maxLength;
+    public int getMaxNumericLength() {
+        return maxNumericLength;
     }
 
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
+    public void setMaxNumericLength(int maxNumericLength) {
+        this.maxNumericLength = maxNumericLength;
     }
 
-    private int maxPrecision = 32;
+    private int maxNumericPrecision = 32;
 
-    public int getMaxPrecision() {
-        return maxPrecision;
+    public int getMaxNumericPrecision() {
+        return maxNumericPrecision;
     }
 
-    public void setMaxPrecision(int maxPrecision) {
-        this.maxPrecision = maxPrecision;
+    public void setMaxNumericPrecision(int maxNumericPrecision) {
+        this.maxNumericPrecision = maxNumericPrecision;
     }
 
     private int maxEdgeIterations = 100;

@@ -118,10 +118,10 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     public static NumericClass get(int length, int precision) {
-        int maxLength = Settings.get().getMaxLength();
+        int maxLength = Settings.get().getMaxNumericLength();
         if(length >= maxLength)
             length = maxLength;
-        int maxPrecision = Settings.get().getMaxPrecision();
+        int maxPrecision = Settings.get().getMaxNumericPrecision();
         if(precision >= maxPrecision)
             precision = maxPrecision;
         return get((byte)length, (byte)precision);
