@@ -13,6 +13,8 @@ import lsfusion.client.base.log.Log;
 import lsfusion.client.classes.ClientObjectClass;
 import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.controller.MainController;
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.client.form.classes.view.ClassDialog;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
@@ -131,9 +133,19 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    protected abstract ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException;
+    protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
+        ServerResponse result = getRmiQueue().directRequest(requestIndex, getThrowInServerRequest(continueIndex, t));
+        return result == null ? ServerResponse.EMPTY : result;
+    }
 
-    protected abstract ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException;
+    protected abstract RmiQueue getRmiQueue();
+    protected abstract RmiRequest<ServerResponse> getContinueServerRequest(int continueIndex, Object[] actionResults);
+    protected abstract RmiRequest<ServerResponse> getThrowInServerRequest(int continueIndex, Throwable clientThrowable);
+
+    protected ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
+        ServerResponse result = getRmiQueue().directRequest(requestIndex, getContinueServerRequest(continueIndex, actionResults));
+        return result == null ? ServerResponse.EMPTY : result;
+    }
 
     public void pauseDispatching() {
         dispatchingPaused = true;

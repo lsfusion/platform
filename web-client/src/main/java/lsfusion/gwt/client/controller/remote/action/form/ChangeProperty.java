@@ -4,7 +4,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.io.Serializable;
 
-public class ChangeProperty extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class ChangeProperty extends FormRequestCountingAction<ServerResponseResult> {
     public int propertyId;
     public GGroupObjectValue fullKey;
     public Serializable value;

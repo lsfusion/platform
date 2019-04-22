@@ -1,8 +1,7 @@
 package lsfusion.gwt.server.form;
 
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.http.provider.SessionInvalidatedException;
@@ -31,8 +30,8 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
         if (form != null) {
             message += " : " + form.clientForm.canonicalName + "(" + formSessionID + ")";
         }
-        if (action instanceof FormRequestIndexAction) {
-            message += " : " + ((FormRequestIndexAction) action).requestIndex;
+        if (action instanceof FormRequestAction) {
+            message += " : " + ((FormRequestAction) action).requestIndex;
         }
         return message;
     }

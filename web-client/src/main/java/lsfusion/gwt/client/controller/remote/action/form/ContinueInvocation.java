@@ -2,7 +2,7 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import java.io.Serializable;
 
-public class ContinueInvocation extends FormRequestIndexAction<ServerResponseResult> {
+public class ContinueInvocation extends FormRequestAction<ServerResponseResult> {
     public Serializable[] actionResults;
     public int continueIndex;
 

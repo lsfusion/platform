@@ -4,7 +4,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.ArrayList;
 
-public class PasteExternalTable extends FormRequestIndexCountingAction<ServerResponseResult>  {
+public class PasteExternalTable extends FormRequestCountingAction<ServerResponseResult> {
 
     public ArrayList<Integer> propertyIdList;
     public ArrayList<GGroupObjectValue> columnKeys;

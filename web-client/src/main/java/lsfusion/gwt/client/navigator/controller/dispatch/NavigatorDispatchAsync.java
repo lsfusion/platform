@@ -1,12 +1,14 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
+import lsfusion.gwt.client.RemoteDispatchAsync;
+import lsfusion.gwt.client.controller.remote.action.RequestAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorAction;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestCountingAction;
 import net.customware.gwt.dispatch.shared.Result;
 
-public class NavigatorDispatchAsync {
+public class NavigatorDispatchAsync extends RemoteDispatchAsync {
 
     private final String sessionID;
 
@@ -14,11 +16,17 @@ public class NavigatorDispatchAsync {
         this.sessionID = sessionID;
     }
 
-    private final DispatchAsyncWrapper gwtDispatch = new DispatchAsyncWrapper(new DefaultExceptionHandler());
-
     public <A extends NavigatorAction<R>, R extends Result> void execute(final A action, final AsyncCallback<R> callback) {
-        action.sessionID = sessionID;
+        execute(action, callback, false);
+    }
 
-        gwtDispatch.execute(action, callback);
+    @Override
+    protected <A extends RequestAction<R>, R extends Result> void fillAction(A action) {
+        ((NavigatorAction) action).sessionID = sessionID;
+        if (action instanceof NavigatorRequestAction) {
+            if(action instanceof NavigatorRequestCountingAction)
+                ((NavigatorRequestCountingAction) action).requestIndex = nextRequestIndex++;
+            ((NavigatorRequestAction) action).lastReceivedRequestIndex = lastReceivedRequestIndex;
+        }
     }
 }

@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-public class ExecuteNotification extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class ExecuteNotification extends FormRequestCountingAction<ServerResponseResult> {
     public Integer idNotification;
 
     @SuppressWarnings("UnusedDeclaration")

@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-public class ChangePageSize extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class ChangePageSize extends FormRequestCountingAction<ServerResponseResult> {
     public int groupObjectID;
     public int pageSize;
 

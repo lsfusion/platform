@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
 
-public class ScrollToEnd extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class ScrollToEnd extends FormRequestCountingAction<ServerResponseResult> {
     public int groupId;
     public boolean toEnd;
 

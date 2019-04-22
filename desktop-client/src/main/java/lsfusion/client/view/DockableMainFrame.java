@@ -190,7 +190,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             rmiQueue.syncRequest(new RmiRequest<ServerResponse>("executeNavigatorAction") {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-                    return remoteNavigator.executeNavigatorAction(actionSID, type);
+                    return remoteNavigator.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, actionSID, type);
                 }
 
                 @Override

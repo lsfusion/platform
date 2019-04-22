@@ -1,9 +1,11 @@
 package lsfusion.server.physics.admin.authentication.controller.remote;
 
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
+import lsfusion.server.base.controller.remote.context.RemoteRequestObject;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.SQLSession;
@@ -22,9 +24,10 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Locale;
 
-public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
+public abstract class RemoteConnection extends RemoteRequestObject {
 
     protected SQLSession sql;
 
@@ -258,5 +261,10 @@ public abstract class RemoteConnection extends ContextAwarePendingRemoteObject {
 
     public synchronized void close() throws RemoteException {
         deactivateAndCloseLater(true);
+    }
+
+    @Override
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
+        return null;
     }
 }

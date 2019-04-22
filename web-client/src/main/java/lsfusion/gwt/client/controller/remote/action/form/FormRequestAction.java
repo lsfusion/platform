@@ -2,15 +2,15 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import net.customware.gwt.dispatch.shared.Result;
 
-public class FormRequestIndexAction<R extends Result> extends FormAction<R> {
+public class FormRequestAction<R extends Result> extends FormAction<R> {
     
     public long requestIndex;
     public long lastReceivedRequestIndex;
 
-    public FormRequestIndexAction() {
+    public FormRequestAction() {
     }
 
-    public FormRequestIndexAction(long requestIndex) {
+    public FormRequestAction(long requestIndex) {
         this.requestIndex = requestIndex;
     }
 

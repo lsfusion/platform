@@ -4,7 +4,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.io.Serializable;
 
-public class PasteSingleCellValue extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class PasteSingleCellValue extends FormRequestCountingAction<ServerResponseResult> {
 
     public int propertyId;
     public GGroupObjectValue fullKey;

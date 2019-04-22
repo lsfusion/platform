@@ -2,7 +2,7 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
-public class ExpandGroupObject extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class ExpandGroupObject extends FormRequestCountingAction<ServerResponseResult> {
     public int groupObjectId;
     public GGroupObjectValue value;
 

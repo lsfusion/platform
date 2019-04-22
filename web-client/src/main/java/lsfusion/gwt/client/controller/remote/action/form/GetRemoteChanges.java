@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-public class GetRemoteChanges extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class GetRemoteChanges extends FormRequestCountingAction<ServerResponseResult> {
     public boolean refresh;
 
     public GetRemoteChanges() {

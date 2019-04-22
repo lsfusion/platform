@@ -8,7 +8,8 @@ public class ContinueNavigatorAction extends NavigatorRequestAction {
 
     public ContinueNavigatorAction() {}
 
-    public ContinueNavigatorAction(Object[] actionResults, int continueIndex) {
+    public ContinueNavigatorAction(Object[] actionResults, long requestIndex, int continueIndex) {
+        super(requestIndex);
         this.actionResults = new Serializable[actionResults.length];
         for (int i = 0; i < actionResults.length; i++) {
             this.actionResults[i] = (Serializable) actionResults[i];
