@@ -11,11 +11,9 @@ public class StringTypeConversion implements TypeConversion {
     @Override
     public Type getType(Type type1, Type type2) {
         if (type1 instanceof StringClass || type2 instanceof StringClass) {
-            if(type1 instanceof TextClass && type2 instanceof TextClass)
-                return ((TextClass) type1).rich || ((TextClass) type2).rich ? TextClass.richInstance : TextClass.instance;
-
-            ExtInt length1 = type1 == null ? ExtInt.ZERO : type1.getCharLength();
-            ExtInt length2 = type2 == null ? ExtInt.ZERO : type2.getCharLength();
+            if(type1 instanceof TextClass || type2 instanceof TextClass)
+                return (type1 instanceof TextClass && ((TextClass) type1).rich) ||
+                        (type2 instanceof TextClass && ((TextClass) type2).rich) ? TextClass.richInstance : TextClass.instance;
 
             boolean caseInsensitive =
                     (type1 instanceof StringClass && ((StringClass) type1).caseInsensitive) ||
@@ -25,7 +23,11 @@ public class StringTypeConversion implements TypeConversion {
                     (type1 instanceof StringClass && ((StringClass) type1).blankPadded) &&
                             (type2 instanceof StringClass && ((StringClass) type2).blankPadded);
 
-            return StringClass.get(blankPadded, caseInsensitive, length1.sum(length2));
+            ExtInt length1 = type1 == null ? ExtInt.ZERO : type1.getCharLength();
+            ExtInt length2 = type2 == null ? ExtInt.ZERO : type2.getCharLength();
+            ExtInt length = length1.sum(length2);
+
+            return StringClass.get(blankPadded, caseInsensitive, length);
         }
         return null;
     }

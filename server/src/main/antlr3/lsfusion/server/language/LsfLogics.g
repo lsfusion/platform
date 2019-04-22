@@ -527,11 +527,11 @@ formTreeGroupObjectList
 		(id = ID { treeSID = $id.text; })?
 		groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); }
 		(',' groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); })*
-	    opts = formTreeGroupObjectOptions		
+	    opts = formTreeGroupObjectOptions
 	;
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } 
+	:	object=formCommonGroupObject { $groupObject = $object.groupObject; }
 	    formGroupObjectOptions[$groupObject]
 	; 
 
@@ -613,7 +613,7 @@ formGroupObjectGroup returns [String formObjectGroup]
 	;
 
 formExtID returns [String extID]
-	:	'EXTID' id=stringLiteral { $extID = $id.val; } 
+	:	'EXTID' id=stringLiteral { $extID = $id.val; }
 	;
 
 formExtKey
@@ -4894,10 +4894,10 @@ fragment META_FRAGMENT : STRING_LITERAL_ID_FRAGMENT? (('##' | '###') STRING_LITE
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' 
                 |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' 
-				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' 
-				|   'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK' 
-				|   'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'
-				|	'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
+				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK'
+				|   'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
+				|   'STRING'('[' DIGITS ']') | 'ISTRING'('[' DIGITS ']')
+				|	'VARSTRING'('[' DIGITS ']') | 'VARISTRING'('[' DIGITS ']') | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
 ID				:	ID_FRAGMENT;

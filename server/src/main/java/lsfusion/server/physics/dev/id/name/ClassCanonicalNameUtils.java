@@ -177,6 +177,10 @@ public final class ClassCanonicalNameUtils {
         put("COLOR", ColorClass.instance);
         put("TEXT", TextClass.instance);
         put("RICHTEXT", TextClass.richInstance);
+        put("STRING", StringClass.get(ExtInt.UNLIMITED));
+        put("ISTRING", StringClass.get(true, ExtInt.UNLIMITED));
+        put("VARSTRING", StringClass.getv(ExtInt.UNLIMITED));
+        put("VARISTRING", StringClass.getv(true, ExtInt.UNLIMITED));
     }};
 
     public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {
