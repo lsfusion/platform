@@ -176,8 +176,8 @@ addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
 
 exportObject = DATA LOCAL Object ();
-exportString = DATA LOCAL BPSTRING[4000] ();
-exportVarString = DATA LOCAL STRING[4000] ();
+exportBpString = DATA LOCAL BPSTRING[4000] ();
+exportString = DATA LOCAL STRING[4000] ();
 exportText = DATA LOCAL TEXT ();
 exportInteger = DATA LOCAL INTEGER ();
 exportLong = DATA LOCAL LONG ();
@@ -241,8 +241,8 @@ requestCanceled() = DATA LOCAL NESTED BOOLEAN ();
 requestPushed() = DATA LOCAL NESTED BOOLEAN ();
 
 requestedObject = DATA LOCAL NESTED Object ();
-requestedString = DATA LOCAL NESTED BPSTRING[4000] ();
-requestedVarString = DATA LOCAL NESTED STRING[4000] ();
+requestedBpString = DATA LOCAL NESTED BPSTRING[4000] ();
+requestedString = DATA LOCAL NESTED STRING[4000] ();
 requestedText = DATA LOCAL NESTED TEXT ();
 requestedInteger = DATA LOCAL NESTED INTEGER ();
 requestedLong = DATA LOCAL NESTED LONG ();
