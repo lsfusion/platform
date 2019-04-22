@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
 
 public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
     protected final String separator;
@@ -28,16 +29,22 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         ExtInt length = ExtInt.ZERO;
         boolean caseInsensitive = false;
         boolean blankPadded = true;
+        Boolean isText = null;
         boolean rich = false;
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = source.getType(i);
 
             length = length.sum(exprType != null ? exprType.getCharLength() : ExtInt.ZERO);
             if (exprType instanceof StringClass) {
-                StringClass strintType = (StringClass) exprType;
-                caseInsensitive = caseInsensitive || strintType.caseInsensitive;
-                blankPadded = blankPadded && strintType.blankPadded;
-                rich = rich || strintType.rich;
+                StringClass stringType = (StringClass) exprType;
+                caseInsensitive = caseInsensitive || stringType.caseInsensitive;
+                blankPadded = blankPadded && stringType.blankPadded;
+                if(exprType instanceof TextClass && (isText == null || isText)) {
+                    isText = true;
+                    TextClass textType = (TextClass) stringType;
+                    rich = rich || textType.rich;
+                } else
+                    isText = false;
             }
 
             if (i > 0) {
@@ -49,7 +56,9 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
             caseInsensitive = forceCaseInsensitivity;
         }
 
-        return StringClass.get(blankPadded, caseInsensitive, rich, length);
+        if(isText != null && isText)
+            return rich ? TextClass.richInstance : TextClass.instance;
+        return StringClass.get(blankPadded, caseInsensitive, length);
     }
 
     @Override

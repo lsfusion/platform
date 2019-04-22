@@ -211,7 +211,12 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientStringClass.class)
     public GStringType convertStringClass(ClientStringClass clientStringClass) {
-        return new GStringType(new GExtInt(clientStringClass.length.value), clientStringClass.caseInsensitive, clientStringClass.blankPadded, clientStringClass.rich);
+        return new GStringType(new GExtInt(clientStringClass.length.value), clientStringClass.caseInsensitive, clientStringClass.blankPadded);
+    }
+
+    @Converter(from = ClientTextClass.class)
+    public GTextType convertTextClass(ClientTextClass clientTextClass) {
+        return new GTextType(clientTextClass.rich);
     }
 
     @Converter(from = ClientDateClass.class)

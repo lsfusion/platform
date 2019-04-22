@@ -113,6 +113,29 @@
                 <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>
                 <entry key="enableAPI" value="${settings.enableAPI:}"/>
                 <entry key="enableUI" value="${settings.enableUI:}"/>
+                <entry key="excessThreadAllocatedBytes" value="${settings.excessThreadAllocatedBytes:}"/>
+                <entry key="accessInterruptCount" value="${settings.accessInterruptCount:}"/>
+                <entry key="tempTablesTimeThreshold" value="${settings.tempTablesTimeThreshold:}"/>
+                <entry key="tempTablesCountThreshold" value="${settings.tempTablesCountThreshold:}"/>
+                <entry key="queryRowCountOptDivider" value="${settings.queryRowCountOptDivider:}"/>
+                <entry key="queryLengthLimit" value="${settings.queryLengthLimit:}"/>
+                <entry key="remoteLogTime" value="${settings.remoteLogTime:}"/>
+                <entry key="explainThreshold" value="${settings.explainThreshold:}"/>
+                <entry key="explainJavaStack" value="${settings.explainJavaStack:}"/>
+                <entry key="explainCompile" value="${settings.explainCompile:}"/>
+                <entry key="conflictSleepThreshold" value="${settings.conflictSleepThreshold:}"/>
+                <entry key="conflictSleepTimeDegree" value="${settings.conflictSleepTimeDegree:}"/>
+                <entry key="deadLockThreshold" value="${settings.deadLockThreshold:}"/>
+                <entry key="periodRestartConnections" value="${settings.periodRestartConnections:}"/>
+                <entry key="percentRestartConnections" value="${settings.percentRestartConnections:}"/>
+                <entry key="closeFormDelay" value="${settings.closeFormDelay:}"/>
+                <entry key="constraintRowsLimit" value="${settings.constraintRowsLimit:}"/>
+                <entry key="defaultCompareForStringContains" value="${settings.defaultCompareForStringContains:}"/>
+                <entry key="useSavePointsThreshold" value="${settings.useSavePointsThreshold:}"/>
+                <entry key="authTokenExpiration" value="${settings.authTokenExpiration:}"/>
+                <entry key="connectTimeout" value="${settings.connectTimeout:}"/>
+                <entry key="editBooleanOnSingleClick" value="${settings.editBooleanOnSingleClick:}"/>
+                <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
             </map>
         </property>
         </bean>

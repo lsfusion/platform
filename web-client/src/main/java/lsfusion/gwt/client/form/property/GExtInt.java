@@ -6,6 +6,8 @@ public class GExtInt implements Serializable {
 
     public int value;  // -1, бесконечность
 
+    public static final GExtInt UNLIMITED = new GExtInt(-1);
+
     public GExtInt() {
     }
 

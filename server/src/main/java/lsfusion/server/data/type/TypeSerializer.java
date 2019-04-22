@@ -5,10 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.logics.classes.data.ColorClass;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.*;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -84,9 +81,14 @@ public class TypeSerializer {
         if (type == DataType.TIME) return TimeClass.instance;
         if (type == DataType.COLOR) return ColorClass.instance;
 
-        
-        if (type == DataType.STRING) {
-            return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+        if (type == DataType.STRING || type == DataType.TEXT) {
+            boolean blankPadded = inStream.readBoolean();
+            boolean caseInsensitive = inStream.readBoolean();
+            inStream.readBoolean(); // backward compatibility see StringClass.serialize
+            ExtInt length = ExtInt.deserialize(inStream);
+            if( type == DataType.TEXT)
+                return inStream.readBoolean() ? TextClass.richInstance : TextClass.instance;
+            return StringClass.get(blankPadded, caseInsensitive, length);
         }
 
         if (type == DataType.IMAGE) return ImageClass.get(inStream.readBoolean(), inStream.readBoolean());

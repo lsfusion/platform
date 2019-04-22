@@ -338,7 +338,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public int getLabelHeight() {
-        return new GStringType().getDefaultHeight(captionFont);
+        return new GStringType(new GExtInt(50), false, false).getDefaultHeight(captionFont);
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

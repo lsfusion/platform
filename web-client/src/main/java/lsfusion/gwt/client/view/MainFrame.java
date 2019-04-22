@@ -88,7 +88,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public <T extends Result> void syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
-        //todo: возможно понадобится сделать чтото более сложное как в
+        //todo: may be need something more sophisticated
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
         loadingManager.start();
         navigatorDispatchAsync.execute(action, new WrapperAsyncCallbackEx<ServerResponseResult>(callback) {
@@ -151,6 +151,19 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             @Override
             public void onUncaughtException(Throwable t) {
                 GExceptionManager.logClientError(t);
+            }
+        });
+
+        // we need to read settings first to have loadingManager set (for syncDispatch)
+        navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
+            @Override
+            public void success(GetClientSettingsResult result) {
+                busyDialog = result.busyDialog;
+                busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
+                loadingManager = busyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
+                devMode = result.devMode;
+                configurationAccessAllowed = result.configurationAccessAllowed;
+                forbidDuplicateForms = result.forbidDuplicateForms;
             }
         });
 
@@ -230,18 +243,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         };
         navigatorControllerLink.link = navigatorController;
-
-        navigatorDispatchAsync.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
-            @Override
-            public void success(GetClientSettingsResult result) {
-                busyDialog = result.busyDialog;
-                busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
-                loadingManager = busyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
-                devMode = result.devMode;
-                configurationAccessAllowed = result.configurationAccessAllowed;
-                forbidDuplicateForms = result.forbidDuplicateForms;
-            }
-        });
 
         initializeWindows(formsController, windowsController, navigatorController, formsWindowLink, commonWindowsLink);
 

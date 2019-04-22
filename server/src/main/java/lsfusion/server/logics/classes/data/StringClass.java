@@ -31,10 +31,8 @@ public class StringClass extends DataClass<String> {
     private final static Collection<StringClass> strings = new ArrayList<>();
 
     public final static StringClass text = getv(true, ExtInt.UNLIMITED);
-    public final static StringClass richText = get(false, false, true, ExtInt.UNLIMITED);
     public final boolean blankPadded;
     public final boolean caseInsensitive;
-    public final boolean rich;
     public final ExtInt length;
 
     public Class getReportJavaClass() {
@@ -80,7 +78,7 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public String formatString(String value) {
-        return value == null ? null : String.valueOf(value);
+        return value;
     }
 
     @Override
@@ -88,20 +86,19 @@ public class StringClass extends DataClass<String> {
         super.serialize(outStream);
         outStream.writeBoolean(blankPadded);
         outStream.writeBoolean(caseInsensitive);
-        outStream.writeBoolean(rich);
+        outStream.writeBoolean(false); // backward compatibility (and potentially maybe future backward compatibility)
         length.serialize(outStream);
     }
 
-    protected StringClass(boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
-        this(LocalizedString.create(caseInsensitive ? "{classes.insensitive.string}" : "{classes.string}" + (blankPadded ? " (bp)" : "") + (rich ? " (rich)" : "")), blankPadded, length, caseInsensitive, rich);
+    protected StringClass(boolean blankPadded, ExtInt length, boolean caseInsensitive) {
+        this(LocalizedString.create(caseInsensitive ? "{classes.insensitive.string}" : "{classes.string}" + (blankPadded ? " (bp)" : "")), blankPadded, length, caseInsensitive);
     }
 
-    protected StringClass(LocalizedString caption, boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
+    protected StringClass(LocalizedString caption, boolean blankPadded, ExtInt length, boolean caseInsensitive) {
         super(caption);
         this.blankPadded = blankPadded;
         this.length = length;
         this.caseInsensitive = caseInsensitive;
-        this.rich = rich;
 
 //        assert !blankPadded || !this.length.isUnlimited();
     }
@@ -126,7 +123,6 @@ public class StringClass extends DataClass<String> {
         StringClass stringClass = (StringClass) compClass;
         return get(cmp(blankPadded, stringClass.blankPadded, or),
                    cmp(caseInsensitive, stringClass.caseInsensitive, or),
-                   cmp(rich, stringClass.rich, or),
                    length.cmp(stringClass.length, or));
     }
 
@@ -216,15 +212,13 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public String getSID() {
-        return (length == ExtInt.UNLIMITED
-                      ? (rich ? "RICHTEXT" : "TEXT")
-                      : (!blankPadded ? "VAR" : "") + (caseInsensitive ? "I" : "") + "STRING" + "_" + length);
+        return (!blankPadded ? "VAR" : "") + (caseInsensitive ? "I" : "") + "STRING" + (length.isUnlimited() ? "" : "_" + length);
     }
 
     @Override
     public String getCanonicalName() {
         String userSID = getSID();
-        if (length == ExtInt.UNLIMITED) {
+        if (length.isUnlimited()) {
             return userSID;
         } else {
             return userSID.replaceFirst("_", "[") + "]";
@@ -245,20 +239,12 @@ public class StringClass extends DataClass<String> {
     public StringClass extend(int times) {
         if(length.isUnlimited())
             return this;
-        return get(blankPadded, caseInsensitive, rich, new ExtInt(BaseUtils.min(length.getValue() * times, 4000)));
+        return get(blankPadded, caseInsensitive, new ExtInt(BaseUtils.min(length.getValue() * times, 4000)));
     }
     public StringClass toVar() {
         if(!blankPadded) // оптимизация
             return this;
-        return get(true, caseInsensitive, rich, length);
-    }
-
-    public static StringClass[] getArray(int... lengths) {
-        StringClass[] result = new StringClass[lengths.length];
-        for (int i = 0; i < lengths.length; i++) {
-            result[i] = StringClass.get(lengths[i]);
-        }
-        return result;
+        return get(true, caseInsensitive, length);
     }
 
     public static StringClass get(final int length) {
@@ -294,11 +280,7 @@ public class StringClass extends DataClass<String> {
     }
 
     public static StringClass get(boolean blankPadded, boolean caseInsensitive, final ExtInt length) {
-        return get(blankPadded, caseInsensitive, false, length);
-    }
-    
-    public static StringClass get(boolean blankPadded, boolean caseInsensitive, boolean rich, final ExtInt length) {
-        return getCached(strings, length, blankPadded, caseInsensitive, rich);
+        return getCached(strings, length, blankPadded, caseInsensitive);
     }
 
     public static StringClass get(boolean caseInsensitive, final int length) {
@@ -317,15 +299,15 @@ public class StringClass extends DataClass<String> {
         return get(false, caseInsensitive, length);
     }
 
-    private static StringClass getCached(Collection<StringClass> cached, ExtInt length, boolean blankPadded, boolean caseInsensitive, boolean rich) {
+    private static StringClass getCached(Collection<StringClass> cached, ExtInt length, boolean blankPadded, boolean caseInsensitive) {
         synchronized (cached) {
             for (StringClass string : cached) {
-                if (string.length.equals(length) && string.blankPadded == blankPadded && string.caseInsensitive == caseInsensitive && string.rich == rich) {
+                if (string.length.equals(length) && string.blankPadded == blankPadded && string.caseInsensitive == caseInsensitive) {
                     return string;
                 }
             }
     
-            StringClass string = new StringClass(blankPadded, length, caseInsensitive, rich);
+            StringClass string = new StringClass(blankPadded, length, caseInsensitive);
     
             cached.add(string);
             

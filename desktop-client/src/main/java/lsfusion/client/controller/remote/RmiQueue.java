@@ -250,7 +250,7 @@ public class RmiQueue implements DispatcherListener {
 
                     ConnectionLostManager.blockIfHasFailed();
                     if (abandoned.get()) {
-                        throw new RuntimeException("RmiQueue is abandoned");
+                        throw new RemoteAbandonedException();
                     }
                     if (!direct) {
                         flushCompletedRequestsNow(true);
@@ -333,7 +333,7 @@ public class RmiQueue implements DispatcherListener {
                     //дождались, выполняем остальное
                     ConnectionLostManager.blockIfHasFailed();
                     if (abandoned.get()) {
-                        throw new RuntimeException("RmiQueue is abandoned");
+                        throw new RemoteAbandonedException();
                     }
                     if (flush) {
                         flushCompletedRequestsNow(true);

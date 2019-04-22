@@ -660,7 +660,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
             if(propertyView.isProperty()) {
                 if (propertyView.getType() instanceof LogicalClass) 
-                    propertyView.editOnSingleClick = Settings.get().getEditLogicalOnSingleClick();
+                    propertyView.editOnSingleClick = Settings.get().getEditBooleanOnSingleClick();
             } else
                 propertyView.editOnSingleClick = Settings.get().getEditActionOnSingleClick();
 
