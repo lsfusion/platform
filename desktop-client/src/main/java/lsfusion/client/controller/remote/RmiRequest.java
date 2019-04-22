@@ -11,8 +11,8 @@ import java.rmi.RemoteException;
 public abstract class RmiRequest<T> {
     private static final Logger logger = ClientLoggers.invocationLogger;
 
-    private long requestIndex = -1;
-    private long lastReceivedRequestIndex = -1;
+    private long requestIndex;
+    private long lastReceivedRequestIndex;
     private String name;
     
     /**
@@ -23,11 +23,6 @@ public abstract class RmiRequest<T> {
 
     protected RmiRequest(String name) {
         this.name = name;
-    }
-
-    protected RmiRequest(String name, Pair<Integer, Integer> timeoutParams) {
-        this.name = name;
-        this.timeoutParams = timeoutParams;
     }
 
     public String getName() {

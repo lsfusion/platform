@@ -56,7 +56,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return optionalResult(optionalResult);
         }
 
-        if(requestIndex != -1 && requestIndex < minReceivedRequestIndex) // request can be lost and reach server only after retried and even next request already received, proceeded
+        if(requestIndex < minReceivedRequestIndex) // request can be lost and reach server only after retried and even next request already received, proceeded
             return null; // this check is important, because otherwise acquireRequestLock will never stop
 
         String invocationSID = generateInvocationSid(requestIndex);
@@ -82,7 +82,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return optionalResult(optionalResult);
         }
 
-        if(requestIndex != -1 && requestIndex < minReceivedRequestIndex) // request can be lost and reach server only after retried and even next request already received, proceeded
+        if(requestIndex < minReceivedRequestIndex) // request can be lost and reach server only after retried and even next request already received, proceeded
             return null; // this check is important, because otherwise acquireRequestLock will never stop and numberOfFormChangesRequests will be always > 0
 
         numberOfFormChangesRequests.incrementAndGet();
@@ -103,9 +103,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             result = new ThrowableWithStack(t);
         }
 
-        if (requestIndex != -1) {
-            recentResults.put(requestIndex, fromNullable(result));
-        }
+        recentResults.put(requestIndex, fromNullable(result));
 
         return cachedResult(result);
     }
@@ -131,19 +129,16 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
     private void clearRecentResults(long lastReceivedRequestIndex) {
         //assert: current thread holds the request lock
-        if (lastReceivedRequestIndex == -2) {
-            recentResults.clear();
-        } else {
-            if(lastReceivedRequestIndex == -1)
-                return;
-            // if request is already received, there is no need for recentResults for that request (we'll assume that there cannot be retryableRequest after that)
-            // however it is < (and not <=) because the same requestIndex is used for continueServerInvocation (so it would be possible to clear result that might be needed for retryable request)
-            // the cleaner solution is to lookahead if there will be continueServerInvocation and don't set lastReceivedRequestIndex in RmiQueue in that case, but now using < is a lot easier
-            for (long i = minReceivedRequestIndex; i < lastReceivedRequestIndex; ++i) {
-                recentResults.remove(i);
-            }
-            minReceivedRequestIndex = lastReceivedRequestIndex;
+        if(lastReceivedRequestIndex == -1)
+            return;
+        // if request is already received, there is no need for recentResults for that request (we'll assume that there cannot be retryableRequest after that)
+        // however it is < (and not <=) because the same requestIndex is used for continueServerInvocation (so it would be possible to clear result that might be needed for retryable request)
+        // the cleaner solution is to lookahead if there will be continueServerInvocation and don't set lastReceivedRequestIndex in RmiQueue in that case, but now using < is a lot easier
+        for (long i = minReceivedRequestIndex; i < lastReceivedRequestIndex; ++i) {
+            recentResults.remove(i);
+            requestsContinueIndices.remove(i);
         }
+        minReceivedRequestIndex = lastReceivedRequestIndex;
     }
 
     protected abstract ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack);
@@ -223,26 +218,22 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     }
 
     private ServerResponse continueInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Callable<ServerResponse> continueRequest) throws RemoteException {
-        if (continueIndex != -1) {
-            Integer cachedContinueIndex = requestsContinueIndices.get(requestIndex);
-            if (cachedContinueIndex != null && cachedContinueIndex == continueIndex) {
-                Optional<?> result = recentResults.get(requestIndex);
-                ServerLoggers.pausableLog("Return cachedResult for continue: rq#" + requestIndex + "; cont#" + continueIndex);
-                return optionalResult(result);
-            }
-            if (cachedContinueIndex == null) {
-                cachedContinueIndex = -1;
-            }
-
-            //следующий continue может прийти только, если был получен предыдущий
-            assert continueIndex == cachedContinueIndex + 1;
+        Integer cachedContinueIndex = requestsContinueIndices.get(requestIndex);
+        if (cachedContinueIndex != null && cachedContinueIndex == continueIndex) {
+            Optional<?> result = recentResults.get(requestIndex);
+            ServerLoggers.pausableLog("Return cachedResult for continue: rq#" + requestIndex + "; cont#" + continueIndex);
+            return optionalResult(result);
+        }
+        if (cachedContinueIndex == null) {
+            cachedContinueIndex = -1;
         }
 
-        assert requestIndex == -1 || currentInvocation.getRequestIndex() == requestIndex;
+        //следующий continue может прийти только, если был получен предыдущий
+        assert continueIndex == cachedContinueIndex + 1;
 
-        if (continueIndex != -1) {
-            requestsContinueIndices.put(requestIndex, continueIndex);
-        }
+        assert currentInvocation.getRequestIndex() == requestIndex;
+
+        requestsContinueIndices.put(requestIndex, continueIndex);
 
         return callAndCacheResult(requestIndex, lastReceivedRequestIndex, continueRequest);
     }
