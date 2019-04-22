@@ -208,7 +208,7 @@ initFilters()  {
     active(ProfilerIndex i) <- TRUE WHERE i == ProfilerIndex.totalTimeNoWait OR i == ProfilerIndex.totalSQLTime OR i == ProfilerIndex.inherentJavaTime OR i == ProfilerIndex.callCount;
 }
 
-toString = FORMULA STRING[100] 'CAST($1 AS character(100))';
+toString = FORMULA BPSTRING[100] 'CAST($1 AS character(100))';
 toBoolean(s) = IF s == 'true' THEN TRUE;
 
 changeProfilingSettingsInteger(Setting r, INTEGER value)  { 

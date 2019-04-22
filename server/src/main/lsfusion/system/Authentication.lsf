@@ -68,7 +68,7 @@ name '{authentication.name.user}' (User user) = IF user IS SystemUser
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
 // login
-login '{authentication.login}' = DATA STRING[100] (CustomUser) CHARWIDTH 15;
+login '{authentication.login}' = DATA BPSTRING[100] (CustomUser) CHARWIDTH 15;
 customUser (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
 upcaseLogin (CustomUser customUser) = upper(login(customUser));
 customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
@@ -76,9 +76,9 @@ customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(custom
 // password
 sha256Password '{authentication.password}' = DATA VARSTRING[100] (CustomUser) ECHO;
 calculatedHash = DATA LOCAL VARSTRING[100] ();
-calculateBase64Hash INTERNAL  'lsfusion.server.physics.admin.authentication.action.CalculateBase64HashAction' (STRING[10], STRING[30]);
+calculateBase64Hash INTERNAL  'lsfusion.server.physics.admin.authentication.action.CalculateBase64HashAction' (BPSTRING[10], BPSTRING[30]);
 changeSHA256Password(CustomUser customUser)  { 
-    INPUT st=STRING[30] DO {
+    INPUT st=BPSTRING[30] DO {
         calculateBase64Hash('SHA-256', st);
         sha256Password(customUser) <- calculatedHash();
     }
@@ -168,7 +168,7 @@ fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser);
 // sync user logins saved on client 
 syncUsers ABSTRACT LIST (VARISTRING[100], JSONFILE) @@noauth;
 syncUsers (VARISTRING[100] computer, JSONFILE users) + { 
-    LOCAL syncSavedUser = STRING[100](INTEGER);
+    LOCAL syncSavedUser = BPSTRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;
     EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i));
 }
@@ -352,7 +352,7 @@ userChanged() = DATA LOCAL BOOLEAN();
 
 // change by login and password
 FORM reloginLoginUser '{authentication.relogin}'
-    OBJECTS data = (login = STRING[100], password = STRING[30])  PANEL
+    OBJECTS data = (login = BPSTRING[100], password = BPSTRING[30])  PANEL
     PROPERTIES valueLogin = VALUE(login), valuePassword = VALUE(password)
 ;
 
@@ -405,7 +405,7 @@ reloginLoginUser()  {
 
 // Change by password
 FORM reloginPasswordUser '{authentication.relogin}'
-    OBJECTS password = STRING[30] PANEL
+    OBJECTS password = BPSTRING[30] PANEL
     PROPERTIES valuePassword = VALUE(password)
 ;
 
@@ -445,7 +445,7 @@ FORM changePasswordUser '{authentication.change.password}'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) READONLY login
 
-    OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) PANEL
+    OBJECTS passwords = (old = BPSTRING[30], new1 = BPSTRING[30], new2 = BPSTRING[30]) PANEL
     PROPERTIES valueOld = VALUE(old), valueNew1 = VALUE(new1), valueNew2 = VALUE(new2)
 
     FILTERS u = currentUser()

@@ -22,7 +22,7 @@ fileExists '{utils.file.exists}'  INTERNAL  'lsfusion.server.physics.dev.integra
 fileExists '{utils.file.exists}' (VARISTRING[500] path)  { fileExists(path, NULL); }
 fileExistsClient '{utils.file.exists.client}' (VARISTRING[500] path)  { fileExists(path, TRUE); } 
 
-// --------------------------------- STRING -> FILE/LINK/RICHTEXT -> STRING --------------------------------- //
+// --------------------------------- BPSTRING -> FILE/LINK/RICHTEXT -> BPSTRING --------------------------------- //
 resultFile = DATA LOCAL FILE ();
 //value, charset, extension
 stringToFile '{utils.string.to.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.StringToFileAction' (TEXT, VARSTRING[10], VARSTRING[10]);
@@ -154,7 +154,7 @@ decodedBase64 = DATA LOCAL TEXT();
 decodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.DecodeBase64Action' (TEXT);
 
 urlEncoded = DATA LOCAL TEXT();
-urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, STRING[20]);
+urlEncode  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlEncodeAction' (TEXT, BPSTRING[20]);
 
 // --------------------------------------------- Работа с числами --------------------------------- //
 

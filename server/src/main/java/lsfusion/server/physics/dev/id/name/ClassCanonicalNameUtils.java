@@ -121,12 +121,12 @@ public final class ClassCanonicalNameUtils {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(VARSTRING\\[\\d+\\])|(VARISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\]))$")) {
-            if (name.startsWith("STRING[")) {
-                name = name.substring("STRING[".length(), name.length() - 1);
+        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(VARSTRING\\[\\d+\\])|(VARISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\]))$")) {
+            if (name.startsWith("BPSTRING[")) {
+                name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));
-            } else if (name.startsWith("ISTRING[")) {
-                name = name.substring("ISTRING[".length(), name.length() - 1);
+            } else if (name.startsWith("BPISTRING[")) {
+                name = name.substring("BPISTRING[".length(), name.length() - 1);
                 return StringClass.geti(new ExtInt(Integer.parseInt(name)));
             } else if (name.startsWith("VARSTRING[")) {
                 name = name.substring("VARSTRING[".length(), name.length() - 1);
@@ -177,8 +177,8 @@ public final class ClassCanonicalNameUtils {
         put("COLOR", ColorClass.instance);
         put("TEXT", TextClass.instance);
         put("RICHTEXT", TextClass.richInstance);
-        put("STRING", StringClass.get(ExtInt.UNLIMITED));
-        put("ISTRING", StringClass.get(true, ExtInt.UNLIMITED));
+        put("BPSTRING", StringClass.get(ExtInt.UNLIMITED));
+        put("BPISTRING", StringClass.get(true, ExtInt.UNLIMITED));
         put("VARSTRING", StringClass.getv(ExtInt.UNLIMITED));
         put("VARISTRING", StringClass.getv(true, ExtInt.UNLIMITED));
     }};

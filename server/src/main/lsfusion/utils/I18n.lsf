@@ -30,7 +30,7 @@ TABLE language(Language);
 
 name '{i18n.name.language}' = DATA VARISTRING[50](Language);
 
-locale '{i18n.locale.language}' = DATA STRING[5] (Language);
+locale '{i18n.locale.language}' = DATA BPSTRING[5] (Language);
 
 FORM language '{i18n.language}'
     OBJECTS l = Language PANEL

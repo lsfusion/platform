@@ -129,10 +129,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 
         isLockedCustomUser = findProperty("isLocked[CustomUser]");
-        isLockedLogin = findProperty("isLockedLogin[STRING[100]]");
+        isLockedLogin = findProperty("isLockedLogin[BPSTRING[100]]");
 
         loginCustomUser = findProperty("login[CustomUser]");
-        customUserLogin = findProperty("customUser[STRING[100]]");
+        customUserLogin = findProperty("customUser[BPSTRING[100]]");
         customUserUpcaseLogin = findProperty("customUserUpcase[?]");
 
         sha256PasswordCustomUser = findProperty("sha256Password[CustomUser]");
