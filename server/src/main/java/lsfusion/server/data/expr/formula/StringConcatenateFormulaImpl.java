@@ -29,7 +29,7 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         ExtInt length = ExtInt.ZERO;
         boolean caseInsensitive = false;
         boolean blankPadded = true;
-        Boolean isText = null;
+        boolean isText = false;
         boolean rich = false;
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = source.getType(i);
@@ -39,12 +39,10 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
                 StringClass stringType = (StringClass) exprType;
                 caseInsensitive = caseInsensitive || stringType.caseInsensitive;
                 blankPadded = blankPadded && stringType.blankPadded;
-                if(exprType instanceof TextClass && (isText == null || isText)) {
+                if(exprType instanceof TextClass) {
                     isText = true;
-                    TextClass textType = (TextClass) stringType;
-                    rich = rich || textType.rich;
-                } else
-                    isText = false;
+                    rich = rich || ((TextClass) stringType).rich;
+                }
             }
 
             if (i > 0) {
@@ -56,7 +54,7 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
             caseInsensitive = forceCaseInsensitivity;
         }
 
-        if(isText != null && isText)
+        if(isText)
             return rich ? TextClass.richInstance : TextClass.instance;
         return StringClass.get(blankPadded, caseInsensitive, length);
     }

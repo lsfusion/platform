@@ -2104,7 +2104,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	    (type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
 	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		('TOP' selectTop = intLiteral)?
-		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
+		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
         	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
@@ -4896,8 +4896,8 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME
 				| 	'FILE' | 'EXCELFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' 
 				|   'WORDLINK' | 'IMAGELINK'
 				|   'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
-				|   'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'
-				|	'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
+				|   'STRING'('[' DIGITS ']') | 'ISTRING'('[' DIGITS ']')
+				|	'VARSTRING'('[' DIGITS ']') | 'VARISTRING'('[' DIGITS ']') | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
 ID				:	ID_FRAGMENT;

@@ -34,9 +34,8 @@ public class TextClass extends StringClass {
 
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        if(compClass instanceof TextClass)
-            return BaseUtils.cmp(rich, ((TextClass) compClass).rich, or) ? richInstance : instance;
-
+        if(compClass instanceof StringClass)
+            return BaseUtils.cmp(rich, compClass instanceof TextClass && ((TextClass) compClass).rich, or) ? richInstance : instance;
         return super.getCompatible(compClass, or);
     }
 

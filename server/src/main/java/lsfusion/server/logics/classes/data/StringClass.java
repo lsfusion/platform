@@ -119,6 +119,8 @@ public class StringClass extends DataClass<String> {
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
         if (!(compClass instanceof StringClass)) return null;
+        if(compClass instanceof TextClass)
+            return compClass.getCompatible(this, or);
 
         StringClass stringClass = (StringClass) compClass;
         return get(cmp(blankPadded, stringClass.blankPadded, or),

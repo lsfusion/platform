@@ -149,7 +149,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     public BigDecimal getDefaultValue() {
-        return new BigDecimal("0.0");
+        return read(new BigDecimal("0.0"));
     }
 
     public BigDecimal parseString(String s) throws ParseException {
