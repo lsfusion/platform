@@ -82,11 +82,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
-    private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();
-    private Map<Long, SyncExecution> syncContinueServerInvocationMap = MapFact.mAddRemoveMap();
-    private Map<Long, SyncExecution> syncThrowInServerInvocationMap = MapFact.mAddRemoveMap();
-    private Map<Long, SyncExecution> syncProcessRMIRequestMap = MapFact.mAddRemoveMap();
-
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener, ExecutionStack upStack) throws RemoteException {
         super(port, upStack, form.entity.getSID(), form.isSync() ? SyncType.SYNC : SyncType.NOSYNC);
 
@@ -1109,70 +1104,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         }
     }
     
-    private static class SyncExecution {
-        private boolean executed;
-    }
-
-    @Aspect
-    public static class RemoteFormExecutionAspect {
-        private Object syncExecute(Map<Long, SyncExecution> syncMap, long requestIndex, ProceedingJoinPoint joinPoint) throws Throwable {
-            boolean needToWait = true;
-            SyncExecution obj;
-            Object result;
-
-            synchronized (syncMap) {
-                obj = syncMap.get(requestIndex);
-                if (obj == null) { // this thread will do the calculation
-                    obj = new SyncExecution();
-                    syncMap.put(requestIndex, obj);
-                    needToWait = false;
-                }
-            }
-
-            if(needToWait) {
-                synchronized (obj) {
-                    while(!obj.executed)
-                        obj.wait();
-                }
-            }
-
-            try {
-                result = joinPoint.proceed();
-            } finally {
-                if(!needToWait) {
-                    synchronized (obj) {
-                        obj.executed = true;
-                        obj.notifyAll();
-                    }
-                    synchronized (syncMap) {
-                        syncMap.remove(requestIndex);
-                    }
-                }
-            }
-
-            return result;
-        }
-        
-        @Around("execution(private lsfusion.interop.action.ServerResponse RemoteForm.executeServerInvocation(long, long, lsfusion.server.base.controller.remote.ui.RemotePausableInvocation)) && target(form) && args(requestIndex, lastReceivedRequestIndex, invocation)")
-        public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
-            return syncExecute(form.syncExecuteServerInvocationMap, requestIndex, joinPoint);
-        }
-
-        @Around("execution(public lsfusion.interop.action.ServerResponse RemoteForm.continueServerInvocation(long, long, int, Object[])) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
-        public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
-            return syncExecute(form.syncContinueServerInvocationMap, requestIndex, joinPoint);
-        }
-        @Around("execution(public lsfusion.interop.action.ServerResponse RemoteForm.throwInServerInvocation(long, long, int, Throwable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
-        public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable throwable) throws Throwable {
-            return syncExecute(form.syncThrowInServerInvocationMap, requestIndex, joinPoint);
-        }
-
-        @Around("execution(private Object RemoteForm.processRMIRequest(long, long, lsfusion.server.logics.action.controller.stack.EExecutionStackCallable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, request)")
-        public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, EExecutionStackCallable request) throws Throwable {
-            return syncExecute(form.syncProcessRMIRequestMap, requestIndex, joinPoint);
-        }
-    }
-
     @Override
     public Object getProfiledObject() {
         return form.entity;

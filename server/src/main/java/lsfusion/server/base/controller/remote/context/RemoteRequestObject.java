@@ -2,6 +2,7 @@ package lsfusion.server.base.controller.remote.context;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import lsfusion.base.col.MapFact;
 import lsfusion.interop.action.*;
 import lsfusion.server.base.controller.remote.SequentialRequestLock;
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
@@ -12,6 +13,9 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -258,6 +262,75 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             } catch (Exception e) {
                 logger.warn("Exception was thrown, while invalidating form", e);
             }
+        }
+    }
+
+    private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();
+    private Map<Long, SyncExecution> syncContinueServerInvocationMap = MapFact.mAddRemoveMap();
+    private Map<Long, SyncExecution> syncThrowInServerInvocationMap = MapFact.mAddRemoveMap();
+    private Map<Long, SyncExecution> syncProcessRMIRequestMap = MapFact.mAddRemoveMap();
+
+    private static class SyncExecution {
+        private boolean executed;
+    }
+
+    @Aspect
+    public static class RemoteFormExecutionAspect {
+        private Object syncExecute(Map<Long, SyncExecution> syncMap, long requestIndex, ProceedingJoinPoint joinPoint) throws Throwable {
+            boolean needToWait = true;
+            SyncExecution obj;
+            Object result;
+
+            synchronized (syncMap) {
+                obj = syncMap.get(requestIndex);
+                if (obj == null) { // this thread will do the calculation
+                    obj = new SyncExecution();
+                    syncMap.put(requestIndex, obj);
+                    needToWait = false;
+                }
+            }
+
+            if(needToWait) {
+                synchronized (obj) {
+                    while(!obj.executed)
+                        obj.wait();
+                }
+            }
+
+            try {
+                result = joinPoint.proceed();
+            } finally {
+                if(!needToWait) {
+                    synchronized (obj) {
+                        obj.executed = true;
+                        obj.notifyAll();
+                    }
+                    synchronized (syncMap) {
+                        syncMap.remove(requestIndex);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        @Around("execution(* RemoteRequestObject.executeServerInvocation(long, long, lsfusion.server.base.controller.remote.ui.RemotePausableInvocation)) && target(object) && args(requestIndex, lastReceivedRequestIndex, invocation)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
+            return syncExecute(object.syncExecuteServerInvocationMap, requestIndex, joinPoint);
+        }
+
+        @Around("execution(* RemoteRequestObject.continueServerInvocation(long, long, int, Object[])) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
+            return syncExecute(object.syncContinueServerInvocationMap, requestIndex, joinPoint);
+        }
+        @Around("execution(* RemoteRequestObject.throwInServerInvocation(long, long, int, Throwable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable throwable) throws Throwable {
+            return syncExecute(object.syncThrowInServerInvocationMap, requestIndex, joinPoint);
+        }
+
+        @Around("execution(* RemoteRequestObject.processRMIRequest(long, long, lsfusion.server.logics.action.controller.stack.EExecutionStackCallable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, request)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, EExecutionStackCallable request) throws Throwable {
+            return syncExecute(object.syncProcessRMIRequestMap, requestIndex, joinPoint);
         }
     }
 }

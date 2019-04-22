@@ -188,7 +188,7 @@ public class ClientFormController implements AsyncListener {
         try {
             form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-            rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this, true);
+            rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
 
             actionDispatcher = new ClientFormActionDispatcher(rmiQueue) {
                 @Override

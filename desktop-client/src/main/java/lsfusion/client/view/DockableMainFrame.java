@@ -126,7 +126,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
         };
 
-        rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this, false);
+        rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
 
         actionDispatcher = new ClientNavigatorActionDispatcher(rmiQueue, mainNavigator);
 
