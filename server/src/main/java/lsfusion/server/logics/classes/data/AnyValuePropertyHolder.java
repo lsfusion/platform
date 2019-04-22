@@ -34,7 +34,7 @@ import java.sql.SQLException;
 public class AnyValuePropertyHolder {
     private final LP objectProperty;
     private final LP stringProperty;
-    private final LP varStringProperty;
+    private final LP bpStringProperty;
     private final LP textProperty;
     private final LP intProperty;
     private final LP longProperty;
@@ -69,7 +69,7 @@ public class AnyValuePropertyHolder {
     private final LP xmlLinkProperty;
     private final LP tableLinkProperty;
 
-    public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> varStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
+    public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
                                   LP<?> dateTimeProperty, LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
                                   LP<?> pdfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
                                   LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
@@ -78,7 +78,7 @@ public class AnyValuePropertyHolder {
                                   LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
-                && varStringProperty.property.getType().getCompatible(StringClass.get(1))!=null
+                && bpStringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && textProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && intProperty.property.getType() == IntegerClass.instance
                 && longProperty.property.getType() == LongClass.instance
@@ -116,7 +116,7 @@ public class AnyValuePropertyHolder {
 
         this.objectProperty = objectProperty;
         this.stringProperty = stringProperty;
-        this.varStringProperty = varStringProperty;
+        this.bpStringProperty = bpStringProperty;
         this.textProperty = textProperty;
         this.intProperty = intProperty;
         this.longProperty = longProperty;
@@ -159,7 +159,7 @@ public class AnyValuePropertyHolder {
             if (((StringClass) valueType).length.isUnlimited()) {
                 return textProperty;
             }
-            return ((StringClass) valueType).blankPadded ? stringProperty : varStringProperty;
+            return ((StringClass) valueType).blankPadded ? bpStringProperty : stringProperty;
         } else if (valueType instanceof IntegerClass) {
             if (valueType instanceof YearClass) {
                 return yearProperty;
@@ -241,7 +241,7 @@ public class AnyValuePropertyHolder {
                 customFileProperty, rawFileProperty, wordFileProperty, imageFileProperty, pdfFileProperty, excelFileProperty,
                 csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty,
                 // strings
-                textProperty, stringProperty, varStringProperty,
+                textProperty, stringProperty, bpStringProperty,
                 // numbers
                 numericProperty, longProperty, intProperty, doubleProperty,
                 // date / times
