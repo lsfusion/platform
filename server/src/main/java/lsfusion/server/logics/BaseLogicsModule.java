@@ -458,7 +458,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         readFile = findProperty("readFile[]");
 
         imported = findProperty("imported[INTEGER]");
-        importedString = findProperty("importedString[VARSTRING[10]]");
+        importedString = findProperty("importedString[STRING[10]]");
 
         isServer = findProperty("isServer[]");
 

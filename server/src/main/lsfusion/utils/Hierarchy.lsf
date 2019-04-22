@@ -46,14 +46,14 @@ META defineHierarchyCustom (object, class)
 
     isParentLeaf (class child, class parent) = isParent(child, parent) AND isLeaf(child);
 
-    canonicalName '{hierarchy.canonical.name}' (class object) = VARISTRING[255](
+    canonicalName '{hierarchy.canonical.name}' (class object) = ISTRING[255](
                            (GROUP CONCAT name(class parent), ' / ' ORDER DESC level(object, parent)))
                            CHARWIDTH 50 MATERIALIZED;
 END
 
 META defineHierarchyFilter(object, class, property)
     // фильтры по имени
-    filter###property###object '{hierarchy.filter.property}' = DATA LOCAL NESTED VARSTRING[255] ();
+    filter###property###object '{hierarchy.filter.property}' = DATA LOCAL NESTED STRING[255] ();
     inFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isSubstring(name(child), filter###property###object()); 
     inIFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isISubstring(name(child), filter###property###object()); 
 END
@@ -69,7 +69,7 @@ END
 
 META defineHierarchyPlainOrder(object, property, prefixName, prefix)
     order###property###object '{hierarchy.order.property.object}' (g) = PARTITION SUM 1 BY parent###object(g) ORDER property###object(g);
-    canonicalOrder###property###object '{hierarchy.canonical.order.property.object}' (g) = GROUP CONCAT lpad(VARSTRING[3](order###property###object(parent)), 3, '0') , '.' BY child ORDER DESC level###object###object(child, parent);
+    canonicalOrder###property###object '{hierarchy.canonical.order.property.object}' (g) = GROUP CONCAT lpad(STRING[3](order###property###object(parent)), 3, '0') , '.' BY child ORDER DESC level###object###object(child, parent);
 
-    prefixName###object '{hierarchy.prefix.name.object}' (g) = VARSTRING[100](repeat(prefix, INTEGER(level###object(g))-1)) + name###object(g);
+    prefixName###object '{hierarchy.prefix.name.object}' (g) = STRING[100](repeat(prefix, INTEGER(level###object(g))-1)) + name###object(g);
 END

@@ -214,7 +214,7 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public String getSID() {
-        return (!blankPadded ? "VAR" : "") + (caseInsensitive ? "I" : "") + "STRING" + (length.isUnlimited() ? "" : "_" + length);
+        return (!blankPadded ? "" : "BP") + (caseInsensitive ? "I" : "") + "STRING" + (length.isUnlimited() ? "" : "_" + length);
     }
 
     @Override

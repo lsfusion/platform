@@ -131,7 +131,7 @@ reportRowHeight '{system.report.row.height}' = OVERRIDE customReportRowHeight(),
 reportNotToStretch '{system.report.not.to.stretch}' = DATA BOOLEAN (); 
 reportToStretch '{system.report.to.stretch}' = NOT reportNotToStretch();
 
-hashModules '{system.hash.modules}' = DATA VARSTRING[200] ();
+hashModules '{system.hash.modules}' = DATA STRING[200] ();
 
 checkIsServer INTERNAL 'lsfusion.server.physics.admin.authentication.action.CheckIsServerAction' ();
 isServer = DATA LOCAL BOOLEAN ();
@@ -139,13 +139,13 @@ isServer = DATA LOCAL BOOLEAN ();
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenPathAction' (VARISTRING[255], VARISTRING[255]);
-open '{system.open.file}' (VARSTRING[255] source)  { open(source, NULL); }
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenPathAction' (ISTRING[255], ISTRING[255]);
+open '{system.open.file}' (STRING[255] source)  { open(source, NULL); }
 //source file, name
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, ISTRING[255]);
 open '{system.open.file}' (FILE source)  { open(source, NULL); }
 //source rawFile, name
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, VARISTRING[255]);
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, ISTRING[255]);
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }
 //source link
 open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (LINK);
@@ -177,7 +177,7 @@ formPageCount() = DATA LOCAL INTEGER ();
 
 exportObject = DATA LOCAL Object ();
 exportString = DATA LOCAL BPSTRING[4000] ();
-exportVarString = DATA LOCAL VARSTRING[4000] ();
+exportVarString = DATA LOCAL STRING[4000] ();
 exportText = DATA LOCAL TEXT ();
 exportInteger = DATA LOCAL INTEGER ();
 exportLong = DATA LOCAL LONG ();
@@ -214,17 +214,17 @@ exportTableLink = DATA LOCAL TABLELINK ();
 
 importFile() = DATA LOCAL FILE ();
 imported = DATA LOCAL BOOLEAN (INTEGER);
-importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
+importedString = DATA LOCAL BOOLEAN (STRING[10]);
 
 readFile = DATA LOCAL FILE ();
 
 getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
 getExtension = getFileExtension(FILE(file));
 
-downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (VARSTRING[100]); 
+downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (STRING[100]); 
 
-loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedLibraryAction' (VARSTRING[100]);
-loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedFontAction' (VARSTRING[100]);
+loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedLibraryAction' (STRING[100]);
+loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedFontAction' (STRING[100]);
 
 loadLibrary '{system.load.library}' (path)   { 
     downloadFile(path);
@@ -242,7 +242,7 @@ requestPushed() = DATA LOCAL NESTED BOOLEAN ();
 
 requestedObject = DATA LOCAL NESTED Object ();
 requestedString = DATA LOCAL NESTED BPSTRING[4000] ();
-requestedVarString = DATA LOCAL NESTED VARSTRING[4000] ();
+requestedVarString = DATA LOCAL NESTED STRING[4000] ();
 requestedText = DATA LOCAL NESTED TEXT ();
 requestedInteger = DATA LOCAL NESTED INTEGER ();
 requestedLong = DATA LOCAL NESTED LONG ();
@@ -297,9 +297,9 @@ formDelete(Object o)  {
 }
 
 // ------------------ GUI Preferences ---------------- //
-dataLogicsName '{system.logics.name}' = DATA VARSTRING[100]();
+dataLogicsName '{system.logics.name}' = DATA STRING[100]();
 logicsName = OVERRIDE dataLogicsName(), 'default';
-displayName '{system.logics.display.name}' = DATA VARSTRING[100]();
+displayName '{system.logics.display.name}' = DATA STRING[100]();
 
 logicsLogo = DATA IMAGEFILE ();
 loadLogicsLogo '{system.logics.logo.load}'()  { INPUT=logicsLogo() CHANGE; }
@@ -337,14 +337,14 @@ END
 @applicationForm(integrationData, '{navigator.integration}');
 @applicationForm(migrationData, '{navigator.migration}');
 
-networkPath '{system.network.path}' = DATA LOCAL NESTED VARSTRING[500] ();
+networkPath '{system.network.path}' = DATA LOCAL NESTED STRING[500] ();
 loadNetworkPath '{system.load.network.path}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.input.LoadLinkAction' ();
 FORM networkPathForm '{system.form.network.path.form}'
     PROPERTIES() networkPath, loadNetworkPath;
 
 META defineLinkDialog (object, class)
     dialog###object(class o)  { 
-        networkPath() <- VARSTRING[500] (object(o));
+        networkPath() <- STRING[500] (object(o));
         DIALOG networkPathForm DO {
             object(o) <- IMAGELINK (networkPath()); 
         }
@@ -353,7 +353,7 @@ END
 
 META defineLinkDialog (object)
     dialog###object()  { 
-        networkPath() <- VARSTRING[500] (object());
+        networkPath() <- STRING[500] (object());
         DIALOG networkPathForm DO {
             object() <- LINK (networkPath()); 
         }

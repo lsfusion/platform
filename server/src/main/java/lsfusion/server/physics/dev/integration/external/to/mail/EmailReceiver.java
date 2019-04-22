@@ -121,7 +121,7 @@ public class EmailReceiver {
 
         ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[VARSTRING[100]]").getMapping(idEmailField));
+                LM.findProperty("emailId[STRING[100]]").getMapping(idEmailField));
         keys.add(emailKey);
         props.add(new ImportProperty(idEmailField, LM.findProperty("id[Email]").getMapping(emailKey)));
         props.add(new ImportProperty(accountObject, LM.findProperty("account[Email]").getMapping(emailKey)));
@@ -172,14 +172,14 @@ public class EmailReceiver {
 
         ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[VARSTRING[100]]").getMapping(idEmailField));
+                LM.findProperty("emailId[STRING[100]]").getMapping(idEmailField));
         emailKey.skipKey = true;
         keys.add(emailKey);
         fields.add(idEmailField);
 
         ImportField idAttachmentEmailField = new ImportField(LM.findProperty("id[AttachmentEmail]"));
         ImportKey<?> attachmentEmailKey = new ImportKey((ConcreteCustomClass) LM.findClass("AttachmentEmail"),
-                LM.findProperty("attachmentEmail[VARSTRING[100],VARSTRING[100]]").getMapping(idAttachmentEmailField, idEmailField));
+                LM.findProperty("attachmentEmail[STRING[100],STRING[100]]").getMapping(idAttachmentEmailField, idEmailField));
         keys.add(attachmentEmailKey);
         props.add(new ImportProperty(idAttachmentEmailField, LM.findProperty("id[AttachmentEmail]").getMapping(attachmentEmailKey)));
         props.add(new ImportProperty(idEmailField, LM.findProperty("email[AttachmentEmail]").getMapping(attachmentEmailKey),

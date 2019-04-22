@@ -68,13 +68,13 @@ public class StopProfilerAction extends InternalAction {
     public StopProfilerAction(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM);
 
-        totalTime = findProperty("totalTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
-        totalSQLTime = findProperty("totalSQLTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
-        totalUserInteractionTime = findProperty("totalUserInteractionTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
-        callCount = findProperty("callCount[TEXT, TEXT, INTEGER, VARSTRING[100]]");
-        minTime = findProperty("minTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
-        maxTime = findProperty("maxTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
-        squaresSum = findProperty("squaresSum[TEXT, TEXT, INTEGER, VARSTRING[100]]");
+        totalTime = findProperty("totalTime[TEXT, TEXT, INTEGER, STRING[100]]");
+        totalSQLTime = findProperty("totalSQLTime[TEXT, TEXT, INTEGER, STRING[100]]");
+        totalUserInteractionTime = findProperty("totalUserInteractionTime[TEXT, TEXT, INTEGER, STRING[100]]");
+        callCount = findProperty("callCount[TEXT, TEXT, INTEGER, STRING[100]]");
+        minTime = findProperty("minTime[TEXT, TEXT, INTEGER, STRING[100]]");
+        maxTime = findProperty("maxTime[TEXT, TEXT, INTEGER, STRING[100]]");
+        squaresSum = findProperty("squaresSum[TEXT, TEXT, INTEGER, STRING[100]]");
     }
 
     @Override

@@ -72,7 +72,7 @@ public class ImportEMLAction extends EmailAction {
                 ObjectValue emailObject = findProperty("emailAccountUID[Account,LONG]").readClasses(session, accountObject, uidObject);
                 if (emailObject instanceof NullValue) {
                     //обратная совместимость
-                    emailObject = findProperty("emailId[VARSTRING[100]]").readClasses(session, new DataObject(email.id));
+                    emailObject = findProperty("emailId[STRING[100]]").readClasses(session, new DataObject(email.id));
                     if (emailObject instanceof NullValue) {
                         emailObject = session.addObject((ConcreteCustomClass) emailLM.findClass("Email"));
                     }

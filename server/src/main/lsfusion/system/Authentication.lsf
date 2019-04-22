@@ -7,7 +7,7 @@ REQUIRE System;
 CLASS Computer '{authentication.computer}';
 TABLE computer (Computer);
 
-hostname '{authentication.host.name.computer}' = DATA VARISTRING[100] (Computer) IN id;
+hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) IN id;
 computer = GROUP LAST Computer computer BY hostname(computer);
 
 FORM computer '{authentication.computer}'
@@ -41,15 +41,15 @@ hostnameCurrentComputer () = hostname(currentComputer());
 CLASS ABSTRACT Contact '{authentication.contact}';
 TABLE contact (Contact);
 
-firstName '{authentication.first.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
-lastName '{authentication.last.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 15 IN base;
+firstName '{authentication.first.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 10 IN base;
+lastName '{authentication.last.name.contact}' = DATA ISTRING[100] (Contact) CHARWIDTH 15 IN base;
 name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id CHARWIDTH 20;
 
-phone '{authentication.phone.contact}' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;
-postAddress '{authentication.post.address.contact}' = DATA VARSTRING[150] (Contact) CHARWIDTH 20;
+phone '{authentication.phone.contact}' = DATA STRING[100] (Contact) CHARWIDTH 10;
+postAddress '{authentication.post.address.contact}' = DATA STRING[150] (Contact) CHARWIDTH 20;
 birthday '{authentication.birthday.contact}' = DATA DATE (Contact);
 
-email '{authentication.email.contact}'= DATA VARSTRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>{authentication.email.contact.incorrect}</html>';
+email '{authentication.email.contact}'= DATA STRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>{authentication.email.contact.incorrect}</html>';
 contact (email) = GROUP MAX Contact contact BY email(contact);
 
 // User
@@ -63,7 +63,7 @@ CLASS CustomUser '{authentication.custom.user}' : User, Contact;
 TABLE customUser (CustomUser);
 
 name '{authentication.name.user}' (User user) = IF user IS SystemUser 
-                        THEN VARSTRING[100]('{authentication.system.user}')
+                        THEN STRING[100]('{authentication.system.user}')
                         ELSE name[Contact](user) CHARWIDTH 10;
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
@@ -74,8 +74,8 @@ upcaseLogin (CustomUser customUser) = upper(login(customUser));
 customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
 
 // password
-sha256Password '{authentication.password}' = DATA VARSTRING[100] (CustomUser) ECHO;
-calculatedHash = DATA LOCAL VARSTRING[100] ();
+sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO;
+calculatedHash = DATA LOCAL STRING[100] ();
 calculateBase64Hash INTERNAL  'lsfusion.server.physics.admin.authentication.action.CalculateBase64HashAction' (BPSTRING[10], BPSTRING[30]);
 changeSHA256Password(CustomUser customUser)  { 
     INPUT st=BPSTRING[30] DO {
@@ -97,10 +97,10 @@ minHashLength = DATA INTEGER ();
 
 // LDAP
 useLDAP '{authentication.use.ldap}' = DATA BOOLEAN ();
-serverLDAP '{authentication.server.ldap}' = DATA VARSTRING[100] ();
+serverLDAP '{authentication.server.ldap}' = DATA STRING[100] ();
 portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
-baseDNLDAP '{authentication.base.dn.ldap}' = DATA VARSTRING[100] ();
-userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA VARSTRING[100] ();
+baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
+userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA STRING[100] ();
 
 // lock
 isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
@@ -122,18 +122,18 @@ reconnect { logOut(TRUE, TRUE); }
 restart { logOut(TRUE, NULL); }
 
 // Locale settings
-userLanguage '{authentication.user.language.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
-userCountry '{authentication.user.country.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
-userTimeZone '{authentication.user.time.zone.user}' = DATA VARSTRING[30] (CustomUser);
+userLanguage '{authentication.user.language.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
+userCountry '{authentication.user.country.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
+userTimeZone '{authentication.user.time.zone.user}' = DATA STRING[30] (CustomUser);
 userTwoDigitYearStart '{authentication.user.two.digit.year.start.user}' = DATA INTEGER (CustomUser);
 
-clientLanguage '{authentication.client.language.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
-clientCountry '{authentication.client.country.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
+clientLanguage '{authentication.client.language.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
+clientCountry '{authentication.client.country.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
 useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (CustomUser) CHARWIDTH 12;
 
-defaultUserLanguage '{authentication.default.user.language}' = DATA VARSTRING[3] ();
-defaultUserCountry '{authentication.default.user.country}' = DATA VARSTRING[3] ();
-defaultUserTimeZone '{authentication.default.user.time.zone}' = DATA VARSTRING[30] ();
+defaultUserLanguage '{authentication.default.user.language}' = DATA STRING[3] ();
+defaultUserCountry '{authentication.default.user.country}' = DATA STRING[3] ();
+defaultUserTimeZone '{authentication.default.user.time.zone}' = DATA STRING[30] ();
 defaultUserTwoDigitYearStart '{authentication.default.user.two.digit.year.start}' = DATA INTEGER ();
 
 language '{authentication.language.user}' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage();
@@ -166,8 +166,8 @@ fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser);
 // -------------------------- Forms ---------------------------- //
 
 // sync user logins saved on client 
-syncUsers ABSTRACT LIST (VARISTRING[100], JSONFILE) @@noauth;
-syncUsers (VARISTRING[100] computer, JSONFILE users) + { 
+syncUsers ABSTRACT LIST (ISTRING[100], JSONFILE) @@noauth;
+syncUsers (ISTRING[100] computer, JSONFILE users) + { 
     LOCAL syncSavedUser = BPSTRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;
     EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i));

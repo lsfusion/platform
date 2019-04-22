@@ -27,7 +27,7 @@ public class ClientJNLPRequestHandler extends ExternalRequestHandler {
         String jnlpMaxHeapSize = queryParams.get("maxHeapSize");
         String jnlpVmargs = queryParams.get("vmargs");
 
-        String path = "/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D";
+        String path = "/exec?action=Security.generateJnlp%5BSTRING%5B10%5D,STRING%5B1000%5D%5D";
         if (!isRedundantString(jnlpMaxHeapSize)) {
             path += "&p=" + jnlpMaxHeapSize;
         }

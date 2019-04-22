@@ -61,7 +61,7 @@ public class BackupAction extends InternalAction {
                 if(partial) {
                     findProperty("partial[Backup]").change(true, newContext, backupObject);
                     for (String excludeTable : excludeTables) {
-                        ObjectValue tableObject = findProperty("table[VARISTRING[100]]").readClasses(newContext, new DataObject(excludeTable));
+                        ObjectValue tableObject = findProperty("table[ISTRING[100]]").readClasses(newContext, new DataObject(excludeTable));
                         if (tableObject instanceof DataObject)
                             findProperty("exclude[Backup,Table]").change(true, newContext, backupObject, (DataObject) tableObject);
                     }

@@ -22,81 +22,81 @@ CLASS StateProcess '{process.monitor.status.process}' {
 }
 
 updateProcessMonitorAction '{process.monitor.update.process.monitor.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.UpdateProcessMonitorAction' () TOOLBAR;
-killJavaProcess '{process.monitor.kill.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillJavaProcessAction' (VARSTRING[10]);
-killSQLProcess '{process.monitor.kill.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillSQLProcessAction' (VARSTRING[10]);
-cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelJavaProcessAction' (VARSTRING[10]);
-cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelSQLProcessAction' (VARSTRING[10]);
+killJavaProcess '{process.monitor.kill.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillJavaProcessAction' (STRING[10]);
+killSQLProcess '{process.monitor.kill.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.KillSQLProcessAction' (STRING[10]);
+cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelJavaProcessAction' (STRING[10]);
+cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CancelSQLProcessAction' (STRING[10]);
 
 processType '{process.monitor.process.type}'= DATA LOCAL ProcessType();
 nameProcessType '{process.monitor.process.type}' () = staticName(processType()) CHARWIDTH 15;
 captionProcessType '{process.monitor.process.type}' () = staticCaption(processType());
 WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
-idThreadProcess '{process.monitor.id.thread.process}' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
-threadNameSQLProcess '{process.monitor.thread.name.sql.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-threadStackTraceSQLProcess '{process.monitor.thread.stack.trace.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+idThreadProcess '{process.monitor.id.thread.process}' = DATA LOCAL STRING[10] (STRING[10]);
+threadNameSQLProcess '{process.monitor.thread.name.sql.process}' = DATA LOCAL STRING[100] (STRING[10]);
+threadStackTraceSQLProcess '{process.monitor.thread.stack.trace.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 
-nameComputerJavaProcess '{process.monitor.name.computer.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-computerProcess '{process.monitor.computer.process}' = DATA LOCAL LONG (VARSTRING[10]);
+nameComputerJavaProcess '{process.monitor.name.computer.java.process}' = DATA LOCAL STRING[100] (STRING[10]);
+computerProcess '{process.monitor.computer.process}' = DATA LOCAL LONG (STRING[10]);
 objValue (Computer i) = INTEGER(i AS Computer);
 computerObject (value) = GROUP AGGR Computer computer BY objValue(computer);
-nameComputerSQL '{process.monitor.name.computer.sql}' (VARSTRING[10] process) = hostname(computerObject(computerProcess(process)));
-nameComputer '{process.monitor.name.computer}' (VARSTRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
+nameComputerSQL '{process.monitor.name.computer.sql}' (STRING[10] process) = hostname(computerObject(computerProcess(process)));
+nameComputer '{process.monitor.name.computer}' (STRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
   
-nameUserJavaProcess '{process.monitor.name.user.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-userProcess '{process.monitor.user.process}' = DATA LOCAL LONG (VARSTRING[10]);
+nameUserJavaProcess '{process.monitor.name.user.java.process}' = DATA LOCAL STRING[100] (STRING[10]);
+userProcess '{process.monitor.user.process}' = DATA LOCAL LONG (STRING[10]);
 objValue (User i) = INTEGER(i AS User);
 userObject (value) = GROUP AGGR User user BY objValue(user);
-nameUserSQL '{process.monitor.name.user.process.sql}' (VARSTRING[10] process) = name(userObject(userProcess(process)));
-nameUser '{process.monitor.name.user}' (VARSTRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
-dateTimeCallProcess '{process.monitor.date.time.call.process}' = DATA LOCAL DATETIME (VARSTRING[10]);
+nameUserSQL '{process.monitor.name.user.process.sql}' (STRING[10] process) = name(userObject(userProcess(process)));
+nameUser '{process.monitor.name.user}' (STRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
+dateTimeCallProcess '{process.monitor.date.time.call.process}' = DATA LOCAL DATETIME (STRING[10]);
 
-idSQLProcess '{process.monitor.id.sql.process}' = DATA LOCAL INTEGER (VARSTRING[10]);
-querySQLProcess '{process.monitor.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-fullQuerySQLProcess '{process.monitor.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (VARSTRING[10] i)  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CopyFullQuerySQLProcessAction' (VARSTRING[10]);
-copiedFullQuerySQLProcess '{process.monitor.copied.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-addressUserSQLProcess '{process.monitor.address.user.sql.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-debugInfoSQLProcess '{process.monitor.debug.info.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-dateTimeSQLProcess '{process.monitor.date.time.sql.process}' = DATA LOCAL DATETIME (VARSTRING[10]);
-isActiveSQLProcess '{process.monitor.is.active.sql.process}' = DATA LOCAL BOOLEAN (VARSTRING[10]);
-inTransactionSQLProcess '{process.monitor.in.transaction.sql.process}' = DATA LOCAL BOOLEAN (VARSTRING[10]);
-startTransactionSQLProcess '{process.monitor.start.transaction.sql.process}' = DATA LOCAL DATETIME (VARSTRING[10]);
-attemptCountSQLProcess '{process.monitor.attempt.count.sql.process}' = DATA LOCAL VARSTRING[20] (VARSTRING[10]);
-statusSQLProcess '{process.monitor.status.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-statusMessageSQLProcess '{process.monitor.status.message.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+idSQLProcess '{process.monitor.id.sql.process}' = DATA LOCAL INTEGER (STRING[10]);
+querySQLProcess '{process.monitor.query.sql.process}' = DATA LOCAL TEXT (STRING[10]);
+fullQuerySQLProcess '{process.monitor.full.query.sql.process}' = DATA LOCAL TEXT (STRING[10]);
+copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (STRING[10] i)  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CopyFullQuerySQLProcessAction' (STRING[10]);
+copiedFullQuerySQLProcess '{process.monitor.copied.full.query.sql.process}' = DATA LOCAL TEXT (STRING[10]);
+addressUserSQLProcess '{process.monitor.address.user.sql.process}' = DATA LOCAL STRING[100] (STRING[10]);
+debugInfoSQLProcess '{process.monitor.debug.info.sql.process}' = DATA LOCAL TEXT (STRING[10]);
+dateTimeSQLProcess '{process.monitor.date.time.sql.process}' = DATA LOCAL DATETIME (STRING[10]);
+isActiveSQLProcess '{process.monitor.is.active.sql.process}' = DATA LOCAL BOOLEAN (STRING[10]);
+inTransactionSQLProcess '{process.monitor.in.transaction.sql.process}' = DATA LOCAL BOOLEAN (STRING[10]);
+startTransactionSQLProcess '{process.monitor.start.transaction.sql.process}' = DATA LOCAL DATETIME (STRING[10]);
+attemptCountSQLProcess '{process.monitor.attempt.count.sql.process}' = DATA LOCAL STRING[20] (STRING[10]);
+statusSQLProcess '{process.monitor.status.sql.process}' = DATA LOCAL TEXT (STRING[10]);
+statusMessageSQLProcess '{process.monitor.status.message.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 
-lsfStackTraceProcess '{process.monitor.lsf.stack.trace.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-lastThreadAllocatedBytesProcess '{process.monitor.last.thread.allocated.bytes.process}' = DATA LOCAL LONG (VARSTRING[10]);
-threadAllocatedBytesProcess '{process.monitor.thread.allocated.bytes.process}' = DATA LOCAL LONG (VARSTRING[10]);
+lsfStackTraceProcess '{process.monitor.lsf.stack.trace.process}' = DATA LOCAL TEXT (STRING[10]);
+lastThreadAllocatedBytesProcess '{process.monitor.last.thread.allocated.bytes.process}' = DATA LOCAL LONG (STRING[10]);
+threadAllocatedBytesProcess '{process.monitor.thread.allocated.bytes.process}' = DATA LOCAL LONG (STRING[10]);
 
-stackTraceJavaProcess '{process.monitor.stack.trace.java.process}' = DATA LOCAL TEXT (VARSTRING[10]);
-hasStackTraceJavaProcess (VARSTRING[10] i) = stackTraceJavaProcess(i) AND i IS VARSTRING[10];
-nameJavaProcess '{process.monitor.name.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-statusJavaProcess '{process.monitor.status.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-lockNameJavaProcess '{process.monitor.lock.name.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+stackTraceJavaProcess '{process.monitor.stack.trace.java.process}' = DATA LOCAL TEXT (STRING[10]);
+hasStackTraceJavaProcess (STRING[10] i) = stackTraceJavaProcess(i) AND i IS STRING[10];
+nameJavaProcess '{process.monitor.name.java.process}' = DATA LOCAL STRING[100] (STRING[10]);
+statusJavaProcess '{process.monitor.status.java.process}' = DATA LOCAL STRING[100] (STRING[10]);
+lockNameJavaProcess '{process.monitor.lock.name.java.process}' = DATA LOCAL STRING[100] (STRING[10]);
 
-lockOwnerIdProcess '{process.monitor.lock.owner.id.process}' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
-lockOwnerNameProcess '{process.monitor.lock.owner.name.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-isDisabledNestLoopProcess '{process.monitor.is.disabled.nest.loop.process}' = DATA LOCAL BOOLEAN (VARSTRING[10]);
-queryTimeoutProcess '{process.monitor.query.timeout.process}' = DATA LOCAL INTEGER (VARSTRING[10]);
+lockOwnerIdProcess '{process.monitor.lock.owner.id.process}' = DATA LOCAL STRING[10] (STRING[10]);
+lockOwnerNameProcess '{process.monitor.lock.owner.name.process}' = DATA LOCAL STRING[100] (STRING[10]);
+isDisabledNestLoopProcess '{process.monitor.is.disabled.nest.loop.process}' = DATA LOCAL BOOLEAN (STRING[10]);
+queryTimeoutProcess '{process.monitor.query.timeout.process}' = DATA LOCAL INTEGER (STRING[10]);
    
-processThread (id) = GROUP AGGR VARSTRING[10] process WHERE process IS VARSTRING[10] BY idThreadProcess(process);
-threadOwnerProcess (VARSTRING[10] i) = processThread(lockOwnerIdProcess(i));
+processThread (id) = GROUP AGGR STRING[10] process WHERE process IS STRING[10] BY idThreadProcess(process);
+threadOwnerProcess (STRING[10] i) = processThread(lockOwnerIdProcess(i));
                                                                                                                                                                                                                                                           
-blockingProcess '{process.monitor.blocking.process}' (VARSTRING[10] child, VARSTRING[10] parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
+blockingProcess '{process.monitor.blocking.process}' (STRING[10] child, STRING[10] parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
                                                         STEP 1l IF parent == threadOwnerProcess($parent);                                                                                                                                                                                                                                                       
-isBlockingProcess '{process.monitor.is.blocking.process}' (VARSTRING[10] child, VARSTRING[10] parent) = TRUE IF blockingProcess(child, parent);
-sumPlusOneBlocked  (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(VARSTRING[10] child, parent);
-sumBlocked '{process.monitor.sum.blocked}' (VARSTRING[10] process) = sumPlusOneBlocked(process) - 1;
-deadlock (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child) AND statusJavaProcess(child) != 'BLOCKED';
-isDeadlock '{process.monitor.is.dead.lock}' (VARSTRING[10] process) = NOT deadlock(process) AND process IS VARSTRING[10];
-sumPlusOneBlocking '{process.monitor.sum.plus.one.blocking}' (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child);
-sumBlocking '{process.monitor.sum.blocking}' (VARSTRING[10] process) = sumPlusOneBlocking(process) - 1;
+isBlockingProcess '{process.monitor.is.blocking.process}' (STRING[10] child, STRING[10] parent) = TRUE IF blockingProcess(child, parent);
+sumPlusOneBlocked  (STRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(STRING[10] child, parent);
+sumBlocked '{process.monitor.sum.blocked}' (STRING[10] process) = sumPlusOneBlocked(process) - 1;
+deadlock (STRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, STRING[10] child) AND statusJavaProcess(child) != 'BLOCKED';
+isDeadlock '{process.monitor.is.dead.lock}' (STRING[10] process) = NOT deadlock(process) AND process IS STRING[10];
+sumPlusOneBlocking '{process.monitor.sum.plus.one.blocking}' (STRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, STRING[10] child);
+sumBlocking '{process.monitor.sum.blocking}' (STRING[10] process) = sumPlusOneBlocking(process) - 1;
 
-activeSQLProcess (VARSTRING[10] i) = querySQLProcess(i) AND (isActiveSQLProcess(i) OR inTransactionSQLProcess(i));
-activeJavaBlockingProcess (VARSTRING[10] i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i);
-activeJavaProcess (VARSTRING[10] i) = activeJavaBlockingProcess(i)
+activeSQLProcess (STRING[10] i) = querySQLProcess(i) AND (isActiveSQLProcess(i) OR inTransactionSQLProcess(i));
+activeJavaBlockingProcess (STRING[10] i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i);
+activeJavaProcess (STRING[10] i) = activeJavaBlockingProcess(i)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1)
@@ -105,18 +105,18 @@ activeJavaProcess (VARSTRING[10] i) = activeJavaBlockingProcess(i)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.io.FileInputStream.readBytes') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.lang.UNIXProcess.waitForProcessExit') == 1);
-activeBlockingProcess '{process.monitor.status.process.active}' (VARSTRING[10] i) = activeSQLProcess(i) OR activeJavaBlockingProcess(i);
-activeProcess '{process.monitor.status.process.active}' (VARSTRING[10] i) = activeSQLProcess(i) OR activeJavaProcess(i);
+activeBlockingProcess '{process.monitor.status.process.active}' (STRING[10] i) = activeSQLProcess(i) OR activeJavaBlockingProcess(i);
+activeProcess '{process.monitor.status.process.active}' (STRING[10] i) = activeSQLProcess(i) OR activeJavaProcess(i);
 
-blockedProcess '{process.monitor.blocked.process}' (VARSTRING[10] i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
+blockedProcess '{process.monitor.blocked.process}' (STRING[10] i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
 
 intToColor = FORMULA '(256*256*($1)+256*($2)+($3))::integer';
 
-deltaDateTimeProcess(VARSTRING[10] i) = subtractSeconds(dateTimeSQLProcess(i), currentDateTime());
-deltaTransactionProcess(VARSTRING[10] i) = subtractSeconds(startTransactionSQLProcess(i), currentDateTime());
+deltaDateTimeProcess(STRING[10] i) = subtractSeconds(dateTimeSQLProcess(i), currentDateTime());
+deltaTransactionProcess(STRING[10] i) = subtractSeconds(startTransactionSQLProcess(i), currentDateTime());
 
-red(VARSTRING[10] i) = 255 IF i IS VARSTRING[10];
-green(VARSTRING[10] i) = CASE
+red(STRING[10] i) = 255 IF i IS STRING[10];
+green(STRING[10] i) = CASE
                         WHEN deltaTransactionProcess(i) > 90 THEN 105
                         WHEN deltaTransactionProcess(i) > 80 THEN 125
                         WHEN deltaTransactionProcess(i) > 70 THEN 145
@@ -125,8 +125,8 @@ green(VARSTRING[10] i) = CASE
                         WHEN deltaTransactionProcess(i) > 40 THEN 205
                         WHEN deltaTransactionProcess(i) > 30 THEN 225
                         WHEN deltaTransactionProcess(i) > 20 THEN 245
-                        WHEN i IS VARSTRING[10] THEN 255;
-blue(VARSTRING[10] i) = CASE
+                        WHEN i IS STRING[10] THEN 255;
+blue(STRING[10] i) = CASE
                         WHEN deltaDateTimeProcess(i) > 90 THEN 0
                         WHEN deltaDateTimeProcess(i) > 80 THEN 30
                         WHEN deltaDateTimeProcess(i) > 70 THEN 60
@@ -135,26 +135,26 @@ blue(VARSTRING[10] i) = CASE
                         WHEN deltaDateTimeProcess(i) > 40 THEN 150
                         WHEN deltaDateTimeProcess(i) > 30 THEN 180
                         WHEN deltaDateTimeProcess(i) > 20 THEN 210
-                        WHEN i IS VARSTRING[10] THEN 240;
-sqlColorProcess(VARSTRING[10] i) = COLOR(intToColor(red(i), green(i), blue(i)));
-backgroundProcess(VARSTRING[10] i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
+                        WHEN i IS STRING[10] THEN 240;
+sqlColorProcess(STRING[10] i) = COLOR(intToColor(red(i), green(i), blue(i)));
+backgroundProcess(STRING[10] i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
-cancelProcess '{process.monitor.cancel.process}' (VARSTRING[10] i)  { 
+cancelProcess '{process.monitor.cancel.process}' (STRING[10] i)  { 
     IF idSQLProcess(i) THEN cancelSQLProcess(i); ELSE cancelJavaProcess(i);
     updateProcessMonitorAction();
 }           
-killProcess '{process.monitor.kill.process}' (VARSTRING[10] i)  { 
+killProcess '{process.monitor.kill.process}' (STRING[10] i)  { 
     IF isActiveSQLProcess(i) THEN killSQLProcess(i); ELSE killJavaProcess(i);
     updateProcessMonitorAction();
 }
-showExtraButtons(VARSTRING[10] i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');
+showExtraButtons(STRING[10] i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');
                       
 setDefaultProcessType()  { 
     processType() <- ProcessType.activeSQL;
 }    
 
 FORM processMonitor '{process.monitor.form.process.monitor}'
-    OBJECTS i = VARSTRING[10]
+    OBJECTS i = STRING[10]
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputer, nameUser,
                            dateTimeCallProcess, querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess,
                            isActiveSQLProcess, inTransactionSQLProcess, startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess,
@@ -169,7 +169,7 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
     FILTERGROUP idleInTransaction FILTER '{process.monitor.form.process.monitor.filter.idle}' statusSQLProcess(i) == 'idle in transaction'
     EVENTS ON INIT setDefaultProcessType()
     
-    TREE blocking i2 = VARSTRING[10] PARENT threadOwnerProcess
+    TREE blocking i2 = STRING[10] PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlocked,
                             activeProcess, idThreadProcess, nameComputer, nameUser, dateTimeCallProcess,
                             querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
@@ -182,7 +182,7 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
     FILTERS idThreadProcess(i2)
     FILTERGROUP filter FILTER '{process.monitor.form.process.monitor.filter.filter}' (activeBlockingProcess(i2) AND sumBlocked(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') DEFAULT   
     
-    OBJECTS blocked = VARSTRING[10], blocking = VARSTRING[10]
+    OBJECTS blocked = STRING[10], blocking = STRING[10]
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlock, 
                                  sumBlocking, nameComputer, nameUser, dateTimeCallProcess, 
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 

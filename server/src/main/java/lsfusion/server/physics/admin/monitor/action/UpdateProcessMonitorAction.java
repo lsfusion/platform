@@ -102,19 +102,19 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
             sqlProcesses = sqlProcesses.filter(javaProcesses.keys());
         }
 
-        ImOrderSet<LP> propsJava = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "stackTraceJavaProcess[VARSTRING[10]]", "nameJavaProcess[VARSTRING[10]]",
-                "statusJavaProcess[VARSTRING[10]]", "lockNameJavaProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]",
-                "nameComputerJavaProcess[VARSTRING[10]]", "nameUserJavaProcess[VARSTRING[10]]", "lsfStackTraceProcess[VARSTRING[10]]",
-                "threadAllocatedBytesProcess[VARSTRING[10]]", "lastThreadAllocatedBytesProcess[VARSTRING[10]]"));
+        ImOrderSet<LP> propsJava = getProps(findProperties("idThreadProcess[STRING[10]]", "stackTraceJavaProcess[STRING[10]]", "nameJavaProcess[STRING[10]]",
+                "statusJavaProcess[STRING[10]]", "lockNameJavaProcess[STRING[10]]", "lockOwnerIdProcess[STRING[10]]", "lockOwnerNameProcess[STRING[10]]",
+                "nameComputerJavaProcess[STRING[10]]", "nameUserJavaProcess[STRING[10]]", "lsfStackTraceProcess[STRING[10]]",
+                "threadAllocatedBytesProcess[STRING[10]]", "lastThreadAllocatedBytesProcess[STRING[10]]"));
 
-        ImOrderSet<LP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]",
-                "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]",
-                "dateTimeSQLProcess[VARSTRING[10]]", "isActiveSQLProcess[VARSTRING[10]]", "inTransactionSQLProcess[VARSTRING[10]]",
-                "startTransactionSQLProcess[VARSTRING[10]]", "attemptCountSQLProcess[VARSTRING[10]]", "statusSQLProcess[VARSTRING[10]]",
-                "statusMessageSQLProcess[VARSTRING[10]]", "computerProcess[VARSTRING[10]]", "userProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]",
-                "lockOwnerNameProcess[VARSTRING[10]]", "fullQuerySQLProcess[VARSTRING[10]]", "idSQLProcess[VARSTRING[10]]",
-                "isDisabledNestLoopProcess[VARSTRING[10]]", "queryTimeoutProcess[VARSTRING[10]]", "debugInfoSQLProcess[VARSTRING[10]]",
-                "threadNameSQLProcess[VARSTRING[10]]", "threadStackTraceSQLProcess[VARSTRING[10]]"));
+        ImOrderSet<LP> propsSQL = getProps(findProperties("idThreadProcess[STRING[10]]", "dateTimeCallProcess[STRING[10]]",
+                "querySQLProcess[STRING[10]]", "addressUserSQLProcess[STRING[10]]",
+                "dateTimeSQLProcess[STRING[10]]", "isActiveSQLProcess[STRING[10]]", "inTransactionSQLProcess[STRING[10]]",
+                "startTransactionSQLProcess[STRING[10]]", "attemptCountSQLProcess[STRING[10]]", "statusSQLProcess[STRING[10]]",
+                "statusMessageSQLProcess[STRING[10]]", "computerProcess[STRING[10]]", "userProcess[STRING[10]]", "lockOwnerIdProcess[STRING[10]]",
+                "lockOwnerNameProcess[STRING[10]]", "fullQuerySQLProcess[STRING[10]]", "idSQLProcess[STRING[10]]",
+                "isDisabledNestLoopProcess[STRING[10]]", "queryTimeoutProcess[STRING[10]]", "debugInfoSQLProcess[STRING[10]]",
+                "threadNameSQLProcess[STRING[10]]", "threadStackTraceSQLProcess[STRING[10]]"));
 
         int rowsJava = writeRowsJava(context, propsJava, javaProcesses);
         int rowsSQL = writeRowsSQL(context, propsSQL, sqlProcesses);

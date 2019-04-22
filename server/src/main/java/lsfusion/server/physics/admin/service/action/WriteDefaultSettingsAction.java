@@ -45,7 +45,7 @@ public class WriteDefaultSettingsAction extends InternalAction {
 
             ImportField nameSettingField = new ImportField(findProperty("name[Setting]"));
             ImportKey<?> settingKey = new ImportKey((CustomClass) findClass("Setting"),
-                    findProperty("setting[VARSTRING[100]]").getMapping(nameSettingField));
+                    findProperty("setting[STRING[100]]").getMapping(nameSettingField));
             keys.add(settingKey);
             props.add(new ImportProperty(nameSettingField, findProperty("name[Setting]").getMapping(settingKey)));
             fields.add(nameSettingField);

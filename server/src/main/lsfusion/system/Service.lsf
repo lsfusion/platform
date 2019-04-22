@@ -60,10 +60,10 @@ TABLE DBType(DBType);
 uploadType '{service.upload.type}' = DATA DBType ();
 uploadStaticNameType = staticName(uploadType()); 
 uploadStaticCaptionType '{service.upload.type}' = staticCaption(uploadType()); 
-uploadHost '{service.upload.host}' = DATA VARSTRING[100] ();
-uploadUser '{service.upload.user}' = DATA VARSTRING[100] ();
-uploadPassword '{service.upload.password}' = DATA VARSTRING[100] ();
-uploadInstance '{service.upload.instance}' = DATA VARSTRING[100] ();
+uploadHost '{service.upload.host}' = DATA STRING[100] ();
+uploadUser '{service.upload.user}' = DATA STRING[100] ();
+uploadPassword '{service.upload.password}' = DATA STRING[100] ();
+uploadInstance '{service.upload.instance}' = DATA STRING[100] ();
 onStarted() + { 
     uploadType() <- DBType.MSSQL;
     uploadHost() <- 'localhost';
@@ -71,7 +71,7 @@ onStarted() + {
     uploadPassword() <- '11111';
     uploadInstance() <- 'SQLEXPRESS';
 }
-uploadDB '{service.upload.db}' = DATA VARSTRING[100] (); 
+uploadDB '{service.upload.db}' = DATA STRING[100] (); 
 uploadToDBAction '{service.upload.to.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.UploadToDBAction' ();
 
 META defineMode(property, action, type, caption1, caption2)
@@ -93,7 +93,7 @@ hostnameServerComputer '{service.server.computer}' () = hostname(serverComputer(
 
 @defineMode(disableTILMode, 'lsfusion.server.physics.admin.service.action.SetRepeatableReadDisableTILModeAction', BOOLEAN, '{service.define.mode.set.repeatable.read.disable.til.mode}', '{service.define.mode.refresh.repeatable.read.disable.til.mode}');
 
-@defineMode(hostnameServerComputer, 'lsfusion.server.physics.admin.service.action.SetHostnameServerComputerAction', VARSTRING[100], '{service.define.mode.set.repeatable.read.hostname.server.computer}', '{service.define.mode.refresh.repeatable.read.hostname.server.computer}');
+@defineMode(hostnameServerComputer, 'lsfusion.server.physics.admin.service.action.SetHostnameServerComputerAction', STRING[100], '{service.define.mode.set.repeatable.read.hostname.server.computer}', '{service.define.mode.refresh.repeatable.read.hostname.server.computer}');
 
 setExplainAnalyzeMode '{service.set.explain.analyze.mode}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExplainAnalyzeModeUserAction' (BOOLEAN, User);
 explainAnalyzeMode '{service.explain.analyze.mode}' = DATA BOOLEAN (User);
@@ -290,20 +290,20 @@ isNotServerRestarting () = NOT isServerRestarting();
 CLASS Setting '{service.setting}';
 TABLE setting (Setting);
 
-name '{service.name.setting}' = DATA VARISTRING[100] (Setting);
+name '{service.name.setting}' = DATA ISTRING[100] (Setting);
 setting (name) = GROUP AGGR Setting setting BY name(setting);
-baseValue '{service.base.value.setting}' = DATA VARSTRING[100] (Setting);
+baseValue '{service.base.value.setting}' = DATA STRING[100] (Setting);
 
 TABLE settingUserRole(Setting, UserRole);
-baseValue '{service.base.value.setting.user.role}' = DATA VARSTRING[100] (Setting, UserRole);
+baseValue '{service.base.value.setting.user.role}' = DATA STRING[100] (Setting, UserRole);
 overBaseValue '{service.over.base.value.setting.user}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
-defaultValue '{service.default.value.setting}' = DATA VARSTRING[100] (Setting);
+defaultValue '{service.default.value.setting}' = DATA STRING[100] (Setting);
 value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
 value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
-valueSetting (VARISTRING[100] name) = value(setting(name)); 
+valueSetting (ISTRING[100] name) = value(setting(name)); 
 
-pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PushSettingAction' (VARSTRING[100], VARSTRING[100]);
-popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PopSettingAction' (VARSTRING[100]);
+pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PushSettingAction' (STRING[100], STRING[100]);
+popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PopSettingAction' (STRING[100]);
 
 writeDefaultSettings '{service.write.default.settings}'  INTERNAL  'lsfusion.server.physics.admin.service.action.WriteDefaultSettingsAction' ();
 updateSetting '{service.update.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSettingAction' (Setting, UserRole, BOOLEAN);

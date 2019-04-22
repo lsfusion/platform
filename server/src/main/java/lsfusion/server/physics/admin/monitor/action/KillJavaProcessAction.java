@@ -26,7 +26,7 @@ public class KillJavaProcessAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
-            Integer id = Integer.parseInt((String) findProperty("idThreadProcess[VARSTRING[10]]").read(context, currentObject));
+            Integer id = Integer.parseInt((String) findProperty("idThreadProcess[STRING[10]]").read(context, currentObject));
             Thread thread = ThreadUtils.getThreadById(id);
             if (thread != null) {
                 thread.stop();

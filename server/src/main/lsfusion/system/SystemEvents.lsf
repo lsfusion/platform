@@ -14,15 +14,15 @@ CLASS NonFatalHandledException '{system.events.not.fatal.handled.exception}' : H
 CLASS ServerException '{system.events.server.exception}' : Exception;
 TABLE exception (Exception);
 
-message '{system.events.message.exception}' = DATA VARISTRING[250] (Exception);
+message '{system.events.message.exception}' = DATA ISTRING[250] (Exception);
 date '{system.events.date.exception}' = DATA DATETIME (Exception);
 fromDate '{system.events.from.date.exception}' (Exception d)= DATE(date(d));
 erTrace '{system.events.er.trace.exception}'= DATA TEXT (Exception);
 lsfStackTrace '{system.events.lsf.stack.trace.exception}'= DATA TEXT (Exception);
-type '{system.events.type.exception}' = DATA VARSTRING[250] (Exception);
+type '{system.events.type.exception}' = DATA STRING[250] (Exception);
 
-client '{system.events.client}' = DATA VARSTRING[100] (ClientException);
-login '{system.events.login}' = DATA VARSTRING[100] (ClientException);
+client '{system.events.client}' = DATA STRING[100] (ClientException);
+login '{system.events.login}' = DATA STRING[100] (ClientException);
 
 reqId '{system.events.req.id}' = DATA LONG (HandledException);
 count '{system.events.count}' = DATA INTEGER (NonFatalHandledException);
@@ -45,7 +45,7 @@ computer '{system.events.computer.launch}' = DATA Computer (Launch);
 hostname '{system.events.hostname.launch}' (Launch launch) = hostname(computer(launch));
 time '{system.events.time.launch}'= DATA DATETIME (Launch);
 date '{system.events.date.launch}' (Launch l) = DATE(time(l));
-revision '{system.events.revision.launch}'= DATA VARSTRING[10] (Launch);
+revision '{system.events.revision.launch}'= DATA STRING[10] (Launch);
 
 @defineLog (Launch, '{system.events.define.log.of.launches}', log, date);
 
@@ -69,22 +69,22 @@ TABLE connectionNavigatorElement (Connection, NavigatorElement);
 computer '{system.events.computer.connection}' = DATA Computer (Connection);
 hostnameComputer '{system.events.hostname.computer.connection}'(Connection connection) = hostname(computer(connection));
 
-remoteAddress '{system.events.remote.address.connection}' = DATA VARSTRING[40] (Connection);
+remoteAddress '{system.events.remote.address.connection}' = DATA STRING[40] (Connection);
 
 user '{system.events.user.connection}' = DATA CustomUser (Connection);
 userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
 
-osVersion '{system.events.os.version.connection}' = DATA VARSTRING[100] (Connection);
-processor '{system.events.processor.connection}' = DATA VARSTRING[100] (Connection);
-architecture '{system.events.architecture.connection}' = DATA VARSTRING[10] (Connection);
+osVersion '{system.events.os.version.connection}' = DATA STRING[100] (Connection);
+processor '{system.events.processor.connection}' = DATA STRING[100] (Connection);
+architecture '{system.events.architecture.connection}' = DATA STRING[10] (Connection);
 cores '{system.events.cores.connection}' = DATA INTEGER (Connection);
 physicalMemory '{system.events.physical.memory.connection}' = DATA INTEGER (Connection);
 totalMemory '{system.events.total.memory.connection}' = DATA INTEGER (Connection);
 maximumMemory '{system.events.maximum.memory.connection}' = DATA INTEGER (Connection);
 freeMemory '{system.events.free.memory.connection}' = DATA INTEGER (Connection);
-javaVersion '{system.events.java.version.connection}' = DATA VARSTRING[100] (Connection);
+javaVersion '{system.events.java.version.connection}' = DATA STRING[100] (Connection);
 is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
-screenSize '{system.events.screen.size.connection}' = DATA VARSTRING[20] (Connection);
+screenSize '{system.events.screen.size.connection}' = DATA STRING[20] (Connection);
 
 countConnection '{system.events.count.connection}' = GROUP SUM 1 BY user(Connection connection) MATERIALIZED; 
 CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
@@ -225,7 +225,7 @@ onWebClientStarted  ABSTRACT LIST ( );
 
 showDefaultForms()  { 
     IF defaultForms(currentUser()) == DefaultForms.default THEN {
-        LOCAL firstForm = VARSTRING[100] ();
+        LOCAL firstForm = STRING[100] ();
         FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
             LOCAL NESTED action = TEXT ();
             LOCAL NESTED maximize = BOOLEAN();

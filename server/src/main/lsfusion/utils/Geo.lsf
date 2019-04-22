@@ -26,12 +26,12 @@ useTor '{geo.use.tor}' = DATA BOOLEAN ();
 nameCalculateUserMapProvider '{geo.name.calculate.user.map.provider}' () = staticCaption(calculateUserMapProvider());
 nameShowUserMapProvider '{geo.name.show.user.map.provider}' () = staticCaption(showUserMapProvider());
 
-name '{geo.name.poi}'= ABSTRACT VARISTRING[200] (POI) MATERIALIZED;
+name '{geo.name.poi}'= ABSTRACT ISTRING[200] (POI) MATERIALIZED;
 
-nameCountry '{geo.name.country.poi}' (poi) = ABSTRACT VARISTRING[50] (POI) MATERIALIZED;
+nameCountry '{geo.name.country.poi}' (poi) = ABSTRACT ISTRING[50] (POI) MATERIALIZED;
 
-mainAddress '{geo.main.address.poi}' = ABSTRACT VARISTRING[150] (POI) MATERIALIZED;
-additionalAddress '{geo.additional.address.poi}' = ABSTRACT VARISTRING[150] (POI) MATERIALIZED;
+mainAddress '{geo.main.address.poi}' = ABSTRACT ISTRING[150] (POI) MATERIALIZED;
+additionalAddress '{geo.additional.address.poi}' = ABSTRACT ISTRING[150] (POI) MATERIALIZED;
 
 address '{geo.address.poi}' (POI poi) = OVERRIDE additionalAddress(poi), mainAddress(poi); 
 
@@ -72,7 +72,7 @@ showOnMap '{geo.show.on.map}'(POI POI) {
 
 // Показать на карте путь
 numberPath '{geo.number.path.poi}' = DATA LOCAL INTEGER (POI);
-descriptionPath '{geo.description.path.poi}' = DATA LOCAL VARSTRING[200] (POI);
+descriptionPath '{geo.description.path.poi}' = DATA LOCAL STRING[200] (POI);
 
 TABLE poiPoi (POI, POI); 
 distancePOIPOI '{geo.distance.poi.poi}' = DATA INTEGER (POI, POI);

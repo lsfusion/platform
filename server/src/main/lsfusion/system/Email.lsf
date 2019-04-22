@@ -6,13 +6,13 @@ REQUIRE System, Reflection;
 CLASS Account '{email.account}';
 TABLE account (Account);
 
-name '{email.name.account}' = DATA VARSTRING[50](Account);
-password '{email.password.account}' = DATA VARSTRING[50](Account) ECHO;
+name '{email.name.account}' = DATA STRING[50](Account);
+password '{email.password.account}' = DATA STRING[50](Account) ECHO;
 disable '{email.disable.account}' = DATA BOOLEAN(Account);
 
 // Sending
-smtpHost '{email.smtp.host.account}' = DATA VARSTRING[50](Account);
-smtpPort '{email.smtp.port.account}' = DATA VARSTRING[10](Account);
+smtpHost '{email.smtp.host.account}' = DATA STRING[50](Account);
+smtpPort '{email.smtp.port.account}' = DATA STRING[10](Account);
 
 CLASS EncryptedConnectionTypeStatus '{email.encrypted.connection.type.status}' {
     SSL '{email.encrypted.connection.type.status.ssl}',
@@ -30,17 +30,17 @@ FORM encryptedConnectionTypeStatuses '{email.encrypted.connection.type.status}'
 encryptedConnectionType = DATA EncryptedConnectionTypeStatus(Account);
 nameEncryptedConnectionType '{email.encrypted.connection.type.account}' (Account account) = name(encryptedConnectionType(account)) CHARWIDTH 3;
 
-fromAddress '{email.from.address.account}' = DATA VARSTRING[50] (Account);
+fromAddress '{email.from.address.account}' = DATA STRING[50] (Account);
 accountFromAddress = GROUP AGGR Account account WHERE account IS Account BY fromAddress (account); 
 
 isDefaultInbox '{email.is.default.inbox.account}' = DATA BOOLEAN (Account);
 defaultInboxAccount = GROUP MAX Account account IF isDefaultInbox(account);
-inboxAccount (VARSTRING[100] fromAddress) = OVERRIDE accountFromAddress(fromAddress), defaultInboxAccount();
+inboxAccount (STRING[100] fromAddress) = OVERRIDE accountFromAddress(fromAddress), defaultInboxAccount();
 
 emailSent '{email.email.sent}' = DATA LOCAL BOOLEAN ();
 
 // Receiving
-receiveHost '{email.receive.host.account}' = DATA VARSTRING[50](Account);
+receiveHost '{email.receive.host.account}' = DATA STRING[50](Account);
 receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
 
 CLASS ReceiveAccountType '{email.receive.account.type}' {
@@ -124,7 +124,7 @@ FORM accounts '{email.form.accounts}'
 CLASS Email '{email.email}';
 TABLE email(Email);
 
-id = DATA VARSTRING[100] (Email);  
+id = DATA STRING[100] (Email);  
 emailId = GROUP AGGR Email email WHERE email IS Email BY id (email);
  
 account = DATA Account (Email) NONULL DELETE;
@@ -132,9 +132,9 @@ account = DATA Account (Email) NONULL DELETE;
 uid = DATA LONG (Email);  
 emailAccountUID = GROUP AGGR Email email BY account(email), uid (email); 
 
-subject '{email.subject.email}' = DATA VARSTRING[100] (Email);
-fromAddress '{email.from.address.email}' = DATA VARSTRING[100] (Email);
-toAddress '{email.to.address.email}' = DATA VARSTRING[100] (Email);
+subject '{email.subject.email}' = DATA STRING[100] (Email);
+fromAddress '{email.from.address.email}' = DATA STRING[100] (Email);
+toAddress '{email.to.address.email}' = DATA STRING[100] (Email);
 dateTimeSent '{email.date.time.sent.email}' = DATA DATETIME (Email);
 dateSent '{email.date.sent.email}' = DATE(dateTimeSent(Email e));
 dateTimeReceived '{email.date.time.received.email}' = DATA DATETIME (Email);
@@ -146,7 +146,7 @@ openEMLFile '{email.open.eml.file.email}' (Email email)  { open(emlFile(email));
 CLASS AttachmentEmail '{email.attachment.email}';
 TABLE attachmentEmail(AttachmentEmail);
 
-id = DATA VARSTRING[100] (AttachmentEmail);  
+id = DATA STRING[100] (AttachmentEmail);  
 imported '{email.imported.attachment.email}' = DATA BOOLEAN (AttachmentEmail);  
 markImported '{email.mark.imported.attachment.email}' (AttachmentEmail ae)  { 
     IF NOT imported(ae) THEN imported(ae) <- TRUE;
@@ -159,7 +159,7 @@ notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) A
 email = DATA Email (AttachmentEmail) NONULL DELETE;
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment));
  
-name '{email.name.attachment.email}' = DATA VARSTRING[255] (AttachmentEmail);
+name '{email.name.attachment.email}' = DATA STRING[255] (AttachmentEmail);
 file '{email.file.attachment.email}' = DATA FILE (AttachmentEmail);
 openFile '{email.open.file.attachment.email}' (AttachmentEmail attachmentEmail)  { open(file(attachmentEmail)); }
 saveFile '{email.save.file.attachment.email}' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG file(attachmentEmail) TO name(attachmentEmail);}

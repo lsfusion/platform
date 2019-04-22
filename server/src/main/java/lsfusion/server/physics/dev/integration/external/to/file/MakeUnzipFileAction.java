@@ -47,7 +47,7 @@ public class MakeUnzipFileAction extends InternalAction {
                     result = unpackZIPFile(file);
                 }
                 for(Map.Entry<String, FileData> entry : result.entrySet()) {
-                    findProperty("unzipped[VARSTRING[100]]").change(entry.getValue(), context, new DataObject(entry.getKey()));
+                    findProperty("unzipped[STRING[100]]").change(entry.getValue(), context, new DataObject(entry.getKey()));
                 }
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {

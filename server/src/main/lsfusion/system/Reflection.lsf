@@ -10,9 +10,9 @@ parent '{reflection.parent.property.group}' = DATA PropertyGroup (PropertyGroup)
 level '{reflection.level}' (PropertyGroup child, PropertyGroup parent) = RECURSION 1l IF child IS PropertyGroup AND parent == child
                                                                       STEP 2l IF parent == parent($parent) MATERIALIZED;
 
-caption '{reflection.caption.property.group}' = DATA VARSTRING[250] (PropertyGroup);
+caption '{reflection.caption.property.group}' = DATA STRING[250] (PropertyGroup);
 number '{reflection.number.property.group}' = DATA INTEGER (PropertyGroup);
-SID '{reflection.sid.property.group}' = DATA VARSTRING[100] (PropertyGroup);
+SID '{reflection.sid.property.group}' = DATA STRING[100] (PropertyGroup);
 propertyGroup '{reflection.property.group.sid}' (sID) = GROUP AGGR PropertyGroup propertyGroup WHERE propertyGroup IS PropertyGroup BY SID(propertyGroup);
 
 
@@ -25,8 +25,8 @@ CLASS NavigatorFolder '{reflection.navigator.folder}' : NavigatorElement;
 TABLE navigatorElement (NavigatorElement);
 TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
 
-caption '{reflection.caption.navigator.element}' = DATA VARSTRING[250] (NavigatorElement);
-canonicalName '{reflection.canonical.name.navigator.element}' = DATA VARSTRING[100] (NavigatorElement);
+caption '{reflection.caption.navigator.element}' = DATA STRING[250] (NavigatorElement);
+canonicalName '{reflection.canonical.name.navigator.element}' = DATA STRING[100] (NavigatorElement);
 number '{reflection.number.navigator.element}' = DATA INTEGER (NavigatorElement);
 navigatorElementCanonicalName '{reflection.navigator.element}' (sid) = GROUP AGGR NavigatorElement navigatorElement WHERE navigatorElement IS NavigatorElement BY canonicalName(navigatorElement);
 
@@ -43,14 +43,14 @@ CLASS Form '{reflection.form}' {
 };
 
 TABLE form (Form);
-TABLE formNames (VARSTRING[100]);
+TABLE formNames (STRING[100]);
 
-caption '{reflection.caption.form}' = DATA VARSTRING[250] (Form);
-canonicalName '{reflection.canonical.name.form}' = DATA VARSTRING[100] (Form);
+caption '{reflection.caption.form}' = DATA STRING[250] (Form);
+canonicalName '{reflection.canonical.name.form}' = DATA STRING[100] (Form);
 form '{reflection.form}' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // для profiler'а
 is (Form form) = form IS Form;
 
-currentForm = NATIVE VARSTRING[100] (); // canonical name
+currentForm = NATIVE STRING[100] (); // canonical name
 
 CLASS ABSTRACT ActionOrProperty '{reflection.action.or.property}';
 TABLE actionOrProperty(ActionOrProperty);
@@ -66,19 +66,19 @@ number '{reflection.number.action.or.property}' = DATA INTEGER (ActionOrProperty
 canonicalName '{reflection.canonical.name.property}' = DATA BPSTRING[512] (Property) IN id;
 canonicalName '{reflection.canonical.name.action}' = DATA BPSTRING[512] (Action) IN id;
 canonicalName '{reflection.canonical.name.action.or.property}' (ActionOrProperty p) = MULTI canonicalName[Property](p), canonicalName[Action](p);
-caption '{reflection.caption.action.or.property}' = DATA VARISTRING[250] (ActionOrProperty) IN base;
-annotation '{reflection.annotation.action.or.property}' = DATA VARSTRING[100] (ActionOrProperty);
-class '{reflection.class.action.or.property}' = DATA VARSTRING[100] (ActionOrProperty);
+caption '{reflection.caption.action.or.property}' = DATA ISTRING[250] (ActionOrProperty) IN base;
+annotation '{reflection.annotation.action.or.property}' = DATA STRING[100] (ActionOrProperty);
+class '{reflection.class.action.or.property}' = DATA STRING[100] (ActionOrProperty);
 
-dbName '{reflection.db.name.property}' = DATA VARSTRING[100] (Property) IN base;
+dbName '{reflection.db.name.property}' = DATA STRING[100] (Property) IN base;
 leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
 loggable '{reflection.loggable.property}' = DATA BOOLEAN (Property);
 userLoggable '{reflection.user.loggable.property}' = DATA BOOLEAN (Property);
 stored '{reflection.stored.property}' = DATA BOOLEAN (Property);
 isSetNotNull '{reflection.is.set.not.null.property}' = DATA BOOLEAN (Property);
-return '{reflection.return.property}' = DATA VARSTRING[100] (Property);
+return '{reflection.return.property}' = DATA STRING[100] (Property);
 complexity '{reflection.complexity.property}' = DATA LONG (Property);
-tableSID '{reflection.table.sid.property}' = DATA VARSTRING[100] (Property);
+tableSID '{reflection.table.sid.property}' = DATA STRING[100] (Property);
 
 stats '{reflection.stats.property}' = DATA INTEGER (Property);
 maxStatsProperty '{reflection.max.stats.property}' = DATA INTEGER ();
@@ -129,13 +129,13 @@ TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
-sid '{reflection.sid.property.draw}' = DATA VARSTRING[100] (PropertyDraw) IN id;
-caption '{reflection.caption.property.draw}' = DATA VARSTRING[250] (PropertyDraw);
+sid '{reflection.sid.property.draw}' = DATA STRING[100] (PropertyDraw) IN id;
+caption '{reflection.caption.property.draw}' = DATA STRING[250] (PropertyDraw);
 form '{reflection.form.property.draw}' = DATA Form (PropertyDraw) INDEXED;
 nameForm '{reflection.form.property.draw}' (PropertyDraw pd) = canonicalName(form(pd)) IN id;
 groupObject '{reflection.group.object.property.draw}' = DATA GroupObject (PropertyDraw);
 propertyDraw '{reflection.property.draw}' (form, sID) = GROUP AGGR PropertyDraw propertyDraw WHERE propertyDraw IS PropertyDraw BY form (propertyDraw), sid (propertyDraw);
-propertyDrawByFormNameAndPropertyDrawSid '{reflection.property.draw.by.form.name.and.property.draw.sid}' (VARSTRING[100] str1, VARSTRING[100] str2) = propertyDraw (form(str1), str2);
+propertyDrawByFormNameAndPropertyDrawSid '{reflection.property.draw.by.form.name.and.property.draw.sid}' (STRING[100] str1, STRING[100] str2) = propertyDraw (form(str1), str2);
 
 show '{reflection.show.property.draw}' = DATA PropertyDrawShowStatus (PropertyDraw);
 show '{reflection.show.property.draw.custom.user}' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
@@ -146,11 +146,11 @@ nameShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDra
 captionShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = staticCaption(show (propertyDraw)) CHARWIDTH 20;
 captionShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = staticCaption(show(propertyDraw, customUser)) CHARWIDTH 20;
 
-columnCaption '{reflection.column.caption.property.draw.custom.user}' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
-columnCaption '{reflection.column.caption.property.draw}' = DATA VARSTRING[100] (PropertyDraw);
+columnCaption '{reflection.column.caption.property.draw.custom.user}' = DATA STRING[100] (PropertyDraw, CustomUser);
+columnCaption '{reflection.column.caption.property.draw}' = DATA STRING[100] (PropertyDraw);
 
-columnPattern '{reflection.column.pattern.property.draw.custom.user}' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
-columnPattern '{reflection.column.pattern.property.draw}' = DATA VARSTRING[100] (PropertyDraw);
+columnPattern '{reflection.column.pattern.property.draw.custom.user}' = DATA STRING[100] (PropertyDraw, CustomUser);
+columnPattern '{reflection.column.pattern.property.draw}' = DATA STRING[100] (PropertyDraw);
 
 columnWidth '{reflection.column.width.property.draw.custom.user}' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidth '{reflection.column.width.property.draw}' = DATA INTEGER (PropertyDraw);
@@ -190,7 +190,7 @@ headerHeight '{reflection.header.height.group.object}' = DATA INTEGER (GroupObje
 CLASS Table '{reflection.table}';
 TABLE tables (Table);
 
-sid '{reflection.sid.table}' = DATA VARISTRING[100] (Table);
+sid '{reflection.sid.table}' = DATA ISTRING[100] (Table);
 table '{reflection.table}' (sID) = GROUP AGGR Table table WHERE table IS Table BY sid (table);
 rows '{reflection.row.table}' = DATA INTEGER (Table);
 skipVacuum '{reflection.skip.vacuum.table}' = DATA BOOLEAN (Table);
@@ -200,11 +200,11 @@ sidTable (TableKey tableKey) = sid(table(tableKey));
 CLASS TableKey '{reflection.table.key}';
 TABLE tableKey (TableKey);
 
-sid '{reflection.sid.table.key}' = DATA VARISTRING[100] (TableKey);
+sid '{reflection.sid.table.key}' = DATA ISTRING[100] (TableKey);
 tableKey '{reflection.table.key}' (sID) = GROUP AGGR TableKey tableKey WHERE tableKey IS TableKey BY sid (tableKey);
-class '{reflection.class.table.key}' = DATA VARISTRING[40] (TableKey);
-classSID '{reflection.class.sid.table.key}' = DATA VARSTRING[100] (TableKey);
-name '{reflection.name.table.key}' = DATA VARISTRING[20] (TableKey);
+class '{reflection.class.table.key}' = DATA ISTRING[40] (TableKey);
+classSID '{reflection.class.sid.table.key}' = DATA STRING[100] (TableKey);
+name '{reflection.name.table.key}' = DATA ISTRING[20] (TableKey);
 quantity '{reflection.quantity.table.key}' = DATA INTEGER (TableKey);
 quantityTop '{reflection.quantity.top.table.key}' = DATA INTEGER (TableKey);
 overQuantity '{reflection.quantity.table.key}' (TableKey tableKey) = OVERRIDE quantityTop(tableKey), quantity(tableKey);
@@ -213,7 +213,7 @@ CLASS TableColumn '{reflection.table.column}';
 TABLE tableColumn (TableColumn);
 
 table '{reflection.table.table.column}' = DATA Table(TableColumn);
-sid '{reflection.sid.table.column}' = DATA VARISTRING[100] (TableColumn);
+sid '{reflection.sid.table.column}' = DATA ISTRING[100] (TableColumn);
 tableSID (sid) = GROUP MAX Table table BY sid(table);
 
 longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColumn);
@@ -237,13 +237,13 @@ percentNotNull '{reflection.percent.not.null}' (TableColumn tableColumn) = IF ro
 sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
 notRecalculate '{reflection.not.recalculate}' = DATA BOOLEAN (TableColumn);
-notRecalculate '{reflection.not.recalculate}' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
+notRecalculate '{reflection.not.recalculate}' (ISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
 
 recalculateAggregation '{reflection.recalculate.aggregation}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
 recalculateAggregationWithDependencies '{reflection.recalculate.aggregation.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
 recalculateAggregationWithDependents '{reflection.recalculate.aggregation.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
 checkAggregation '{reflection.check.aggregation}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
-checkAggregation(VARISTRING[100] string)  { checkAggregation(tableColumnSID(string)); }
+checkAggregation(ISTRING[100] string)  { checkAggregation(tableColumnSID(string)); }
 dropDB  INTERNAL  'lsfusion.server.physics.admin.service.action.DropColumnAction' (DropColumn);
 drop '{reflection.drop.drop.column}' (DropColumn cl)  { 
     dropDB(cl);
@@ -256,27 +256,27 @@ recalculateColumnsAggregations '{reflection.recalculate.column.aggregations}' (T
     }
 }
 checkClasses '{reflection.check.classes}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableClassesAction' (Table);
-checkClasses(VARISTRING[100] string)  { checkClasses(table(string)); }
+checkClasses(ISTRING[100] string)  { checkClasses(table(string)); }
 recalculateClasses '{reflection.recalculate.classes}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableClassesAction' (Table);
 notRecalculateStats '{reflection.not.recalculate.stats}' = DATA BOOLEAN (Table);
-notRecalculateStats '{reflection.not.recalculate.stats}' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
+notRecalculateStats '{reflection.not.recalculate.stats}' (ISTRING[100] sid) = notRecalculateStats(tableSID(sid));
 recalculateStats '{reflection.recalculate.stats}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableStatsAction' (Table);
 pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PackTableAction' (Table);
 
 CLASS DropColumn '{reflection.drop.column}';
 TABLE dropColumn (DropColumn);
 
-sid '{reflection.sid.drop.column}' = DATA VARSTRING[100] (DropColumn);
+sid '{reflection.sid.drop.column}' = DATA STRING[100] (DropColumn);
 dropColumn '{reflection.drop.column}' (sID) = GROUP NAGGR DropColumn dropColumn WHERE dropColumn IS DropColumn BY sid (dropColumn);
-sidTable '{reflection.sid.table.drop.column}' = DATA VARSTRING[100] (DropColumn);
+sidTable '{reflection.sid.table.drop.column}' = DATA STRING[100] (DropColumn);
 time '{reflection.time.drop.column}' = DATA DATETIME (DropColumn);
-revision '{reflection.revision.drop.column}' = DATA VARSTRING[10] (DropColumn);
+revision '{reflection.revision.drop.column}' = DATA STRING[10] (DropColumn);
 
 CLASS GroupObject '{reflection.group.object}';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
-sid '{reflection.sid.group.object}' = DATA VARSTRING[100] (GroupObject) IN id;
+sid '{reflection.sid.group.object}' = DATA STRING[100] (GroupObject) IN id;
 form '{reflection.form.group.object}' = DATA Form (GroupObject);
 canonicalNameForm (GroupObject groupObject) = canonicalName (form(groupObject)) IN id;
 captionForm (GroupObject groupObject) = caption (form(groupObject)) IN id; 
@@ -285,7 +285,7 @@ groupSIDFormGroupObject '{reflection.group.object}' (sidGroupObject, canonicalNa
 CLASS FormGrouping '{reflection.form.grouping}';
 TABLE formGrouping (FormGrouping); 
 
-name '{reflection.name.form.grouping}' = DATA VARSTRING[100] (FormGrouping);
+name '{reflection.name.form.grouping}' = DATA STRING[100] (FormGrouping);
 groupObject = DATA GroupObject (FormGrouping);
 itemQuantity '{reflection.item.quantity.form.grouping}' = DATA BOOLEAN (FormGrouping);
 formGrouping '{reflection.form.grouping}' (nameFormGrouping, groupObject) = GROUP AGGR FormGrouping formGrouping WHERE formGrouping IS FormGrouping BY name(formGrouping), groupObject(formGrouping);

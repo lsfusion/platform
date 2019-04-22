@@ -232,7 +232,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         parentPropertyGroup = findProperty("parent[PropertyGroup]");
         numberPropertyGroup = findProperty("number[PropertyGroup]");
         SIDPropertyGroup = findProperty("SID[PropertyGroup]");
-        propertyGroupSID = findProperty("propertyGroup[VARSTRING[100]]");
+        propertyGroupSID = findProperty("propertyGroup[STRING[100]]");
 
         // Свойства
         parentProperty = findProperty("parent[ActionOrProperty]");
@@ -254,9 +254,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         classProperty = findProperty("class[Property]");
         complexityProperty = findProperty("complexity[Property]");
         captionProperty = findProperty("caption[Property]");
-        propertyCanonicalName = findProperty("propertyCanonicalName[VARSTRING[512]]");
-        actionCanonicalName = findProperty("actionCanonicalName[VARSTRING[512]]");
-        propertyTableSID = findProperty("propertyTable[VARSTRING[100],VARSTRING[100]]");
+        propertyCanonicalName = findProperty("propertyCanonicalName[STRING[512]]");
+        actionCanonicalName = findProperty("actionCanonicalName[STRING[512]]");
+        propertyTableSID = findProperty("propertyTable[STRING[100],STRING[100]]");
         quantityProperty = findProperty("quantity[Property]");
         quantityTopProperty = findProperty("quantityTop[Property]");
         notNullQuantityProperty = findProperty("notNullQuantity[Property]");
@@ -267,7 +267,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Навигатор
         numberNavigatorElement = findProperty("number[NavigatorElement]");
-        navigatorElementCanonicalName = findProperty("navigatorElementCanonicalName[VARSTRING[100]]");
+        navigatorElementCanonicalName = findProperty("navigatorElementCanonicalName[STRING[100]]");
         canonicalNameNavigatorElement = findProperty("canonicalName[NavigatorElement]");
         captionNavigatorElement = findProperty("caption[NavigatorElement]");
         parentNavigatorElement = findProperty("parent[NavigatorElement]");
@@ -280,7 +280,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         
         // ----- Формы ---- //
         formCanonicalName = findProperty("canonicalName[Form]");
-        formByCanonicalName = findProperty("form[VARSTRING[100]]");
+        formByCanonicalName = findProperty("form[STRING[100]]");
         formCaption = findProperty("caption[Form]");
         isForm = findProperty("is[Form]");
 
@@ -290,7 +290,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // Группа объектов
         sidGroupObject = findProperty("sid[GroupObject]");
         formGroupObject = findProperty("form[GroupObject]");
-        groupObjectSIDFormNameGroupObject = findProperty("groupSIDFormGroupObject[VARSTRING[100],VARSTRING[100]]");
+        groupObjectSIDFormNameGroupObject = findProperty("groupSIDFormGroupObject[STRING[100],STRING[100]]");
 
 
         // PropertyDraw
@@ -299,7 +299,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         formPropertyDraw = findProperty("form[PropertyDraw]");
         groupObjectPropertyDraw = findProperty("groupObject[PropertyDraw]");
         // todo : это свойство должно быть для форм, а не навигаторов
-        propertyDrawByFormNameAndPropertyDrawSid = findProperty("propertyDrawByFormNameAndPropertyDrawSid[VARSTRING[100],VARSTRING[100]]");
+        propertyDrawByFormNameAndPropertyDrawSid = findProperty("propertyDrawByFormNameAndPropertyDrawSid[STRING[100],STRING[100]]");
 
         // UserPreferences
         showPropertyDraw = findProperty("show[PropertyDraw]");
@@ -349,7 +349,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         nameFormGrouping = findProperty("name[FormGrouping]");
         itemQuantityFormGrouping = findProperty("itemQuantity[FormGrouping]");
         groupObjectFormGrouping = findProperty("groupObject[FormGrouping]");
-        formGroupingNameFormGroupingGroupObject = findProperty("formGrouping[VARSTRING[100],GroupObject]");
+        formGroupingNameFormGroupingGroupObject = findProperty("formGrouping[STRING[100],GroupObject]");
         groupOrderFormGroupingPropertyDraw = findProperty("groupOrder[FormGrouping,PropertyDraw]");
         sumFormGroupingPropertyDraw = findProperty("sum[FormGrouping,PropertyDraw]");
         maxFormGroupingPropertyDraw = findProperty("max[FormGrouping,PropertyDraw]");
@@ -358,7 +358,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Таблицы
         sidTable = findProperty("sid[Table]");
-        tableSID = findProperty("table[VARISTRING[100]]");
+        tableSID = findProperty("table[ISTRING[100]]");
 
         rowsTable = findProperty("rows[Table]");
 
@@ -366,7 +366,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableTableKey = findProperty("table[TableKey]");
 
         sidTableKey = findProperty("sid[TableKey]");
-        tableKeySID = findProperty("tableKey[VARISTRING[100]]");
+        tableKeySID = findProperty("tableKey[ISTRING[100]]");
 
         classTableKey = findProperty("class[TableKey]");
         classSIDTableKey = findProperty("classSID[TableKey]");
@@ -382,23 +382,23 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         sidTableColumn = findProperty("sid[TableColumn]");
         longSIDTableColumn = findProperty("longSID[TableColumn]");
-        tableColumnLongSID = findProperty("tableColumnLong[VARISTRING[100]]");
-        tableColumnSID = findProperty("tableColumnSID[VARISTRING[100]]");
+        tableColumnLongSID = findProperty("tableColumnLong[ISTRING[100]]");
+        tableColumnSID = findProperty("tableColumnSID[ISTRING[100]]");
 
         overQuantityTableColumn = findProperty("overQuantity[TableColumn]");
         notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
         notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");
-        notRecalculateSID = findProperty("notRecalculate[VARISTRING[100]]");
+        notRecalculateSID = findProperty("notRecalculate[ISTRING[100]]");
         recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
 
-        notRecalculateStatsSID = findProperty("notRecalculateStats[VARISTRING[100]]");
+        notRecalculateStatsSID = findProperty("notRecalculateStats[ISTRING[100]]");
 
         // Удаленные колонки
         sidTableDropColumn = findProperty("sidTable[DropColumn]");
 
         sidDropColumn = findProperty("sid[DropColumn]");
-        dropColumnSID = findProperty("dropColumn[VARSTRING[100]]");
+        dropColumnSID = findProperty("dropColumn[STRING[100]]");
 
         timeDropColumn = findProperty("time[DropColumn]");
         revisionDropColumn = findProperty("revision[DropColumn]");
