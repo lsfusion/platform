@@ -3,7 +3,6 @@ package lsfusion.client.navigator.controller.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
-import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientSettings;
@@ -70,22 +69,22 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Pe
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(String script) throws RemoteException {
-        return target.executeNavigatorAction(script);
+    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String script) throws RemoteException {
+        return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, script);
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(String navigatorActionSID, int type) throws RemoteException {
-        return target.executeNavigatorAction(navigatorActionSID, type);
+    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String navigatorActionSID, int type) throws RemoteException {
+        return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, navigatorActionSID, type);
     }
 
     @Override
-    public ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException {
-        return target.continueNavigatorAction(actionResults);
+    public ServerResponse continueNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
+        return target.continueNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
     }
 
     @Override
-    public ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException {
-        return target.throwInNavigatorAction(clientThrowable);
+    public ServerResponse throwInNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException {
+        return target.throwInNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
     }
 }

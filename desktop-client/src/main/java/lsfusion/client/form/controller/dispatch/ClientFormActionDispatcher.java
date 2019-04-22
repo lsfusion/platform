@@ -3,6 +3,8 @@ package lsfusion.client.form.controller.dispatch;
 import com.google.common.base.Throwables;
 import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.client.controller.dispatch.SwingClientActionDispatcher;
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.interop.action.*;
@@ -11,7 +13,6 @@ import lsfusion.interop.form.ModalityType;
 
 import java.awt.*;
 import java.io.IOException;
-import java.rmi.RemoteException;
 
 public abstract class ClientFormActionDispatcher extends SwingClientActionDispatcher {
 
@@ -32,13 +33,18 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
-    protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
-        return getFormController().throwInServerInvocation(requestIndex, continueIndex, t);
+    protected RmiQueue getRmiQueue() {
+        return getFormController().getRmiQueue();
     }
 
     @Override
-    public ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
-        return getFormController().continueServerInvocation(requestIndex, continueIndex, actionResults);
+    protected RmiRequest<ServerResponse> getContinueServerRequest(int continueIndex, Object[] actionResults) {
+        return getFormController().getContinueServerRequest(continueIndex, actionResults);
+    }
+
+    @Override
+    protected RmiRequest<ServerResponse> getThrowInServerRequest(int continueIndex, Throwable clientThrowable) {
+        return getFormController().getThrowInServerRequest(continueIndex, clientThrowable);
     }
 
     @Override

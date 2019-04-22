@@ -15,6 +15,6 @@ public class ThrowInNavigatorActionHandler extends NavigatorServerResponseAction
 
     @Override
     public ServerResponseResult executeEx(ThrowInNavigatorAction action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, getRemoteNavigator(action).throwInNavigatorAction(action.throwable));
+        return getServerResponseResult(action, getRemoteNavigator(action).throwInNavigatorAction(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, action.throwable));
     }
 }

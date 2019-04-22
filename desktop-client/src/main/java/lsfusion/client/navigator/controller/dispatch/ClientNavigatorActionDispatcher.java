@@ -1,19 +1,21 @@
 package lsfusion.client.navigator.controller.dispatch;
 
-import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.client.controller.dispatch.SwingClientActionDispatcher;
+import lsfusion.client.controller.remote.RmiQueue;
+import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 
 public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher {
     private final ClientNavigator clientNavigator;
+    RmiQueue rmiQueue;
 
-    public ClientNavigatorActionDispatcher(DispatcherListener dispatcherListener, ClientNavigator clientNavigator) {
-        super(dispatcherListener);
+    public ClientNavigatorActionDispatcher(RmiQueue rmiQueue, ClientNavigator clientNavigator) {
+        super(rmiQueue);
+        this.rmiQueue = rmiQueue;
         this.clientNavigator = clientNavigator;
     }
 
@@ -23,12 +25,27 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     }
 
     @Override
-    public ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
-        return clientNavigator.remoteNavigator.continueNavigatorAction(actionResults);
+    protected RmiQueue getRmiQueue() {
+        return rmiQueue;
     }
 
     @Override
-    protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
-        return clientNavigator.remoteNavigator.throwInNavigatorAction(t);
+    protected RmiRequest<ServerResponse> getContinueServerRequest(final int continueIndex, final Object[] actionResults) {
+        return new RmiRequest<ServerResponse>("continueServerInvocation") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                return clientNavigator.remoteNavigator.continueNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
+            }
+        };
+    }
+
+    @Override
+    protected RmiRequest<ServerResponse> getThrowInServerRequest(final int continueIndex, final Throwable clientThrowable) {
+        return new RmiRequest<ServerResponse>("throwInServerInvocation") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                return clientNavigator.remoteNavigator.throwInNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
+            }
+        };
     }
 }

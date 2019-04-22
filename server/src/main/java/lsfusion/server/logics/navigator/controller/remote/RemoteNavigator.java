@@ -19,7 +19,6 @@ import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
-import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -28,6 +27,7 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
@@ -88,8 +88,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     public SecurityPolicy securityPolicy;
 
     private ClientCallBackController client;
-
-    private RemotePausableInvocation currentInvocation = null;
     
     private final WeakIdentityHashSet<RemoteForm> forms = new WeakIdentityHashSet<>();
 
@@ -133,14 +131,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new LocalePreferences(locale,
                 (String) businessLogics.authenticationLM.timeZone.read(session, user),
                 (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user));
-    }
-
-    public void delayUserInteraction(ClientAction action) {
-        currentInvocation.delayUserInteraction(action);
-    }
-
-    public Object[] requestUserInteraction(final ClientAction... actions) {
-        return currentInvocation.pauseForUserInteraction(actions);
     }
 
     public void logClientException(String hostname, Throwable t) {
@@ -442,17 +432,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(final String script) throws RemoteException {
-        currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
+    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final String script) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            protected ServerResponse callInvocation() throws Throwable {
+            public void run(ExecutionStack stack) throws Exception {
                 evaluateRun(script);
-                assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
-                return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }
-        };
-
-        return currentInvocation.execute();
+        });
     }
 
     private void evaluateRun(String script) throws SQLException, SQLHandledException {
@@ -467,11 +453,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(final String actionSID, final int type) throws RemoteException {
-        currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
+    public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final String actionSID, final int type) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            protected ServerResponse callInvocation() throws Throwable {
-                ExecutionStack stack = getStack();
+            public void run(ExecutionStack stack) throws Exception {
                 if (type == 2) {
                     //временно, так как иначе все контроллеры идут от верхней сессии, в частности, currentUser получается чужой
                     try(DataSession session = createSession()) {
@@ -482,12 +467,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                         runAction(session, actionSID, type == 1, stack);
                     }
                 }
-                assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
-                return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }
-        };
+        });
+    }
 
-        return currentInvocation.execute();
+    @Override
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
+        assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
+        return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
     }
 
     @Override
@@ -566,13 +553,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException {
-        return currentInvocation.resumeAfterUserInteraction(actionResults);
+    public ServerResponse continueNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
+        return continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
     }
 
     @Override
-    public ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException {
-        return currentInvocation.resumeWithThrowable(clientThrowable);
+    public ServerResponse throwInNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException {
+        return throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
     }
 
     @Override

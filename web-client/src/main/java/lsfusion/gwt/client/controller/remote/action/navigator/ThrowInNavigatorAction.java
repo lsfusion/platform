@@ -6,7 +6,8 @@ public class ThrowInNavigatorAction extends NavigatorRequestAction {
 
     public ThrowInNavigatorAction() {}
 
-    public ThrowInNavigatorAction(Throwable throwable, int continueIndex) {
+    public ThrowInNavigatorAction(Throwable throwable, long requestIndex, int continueIndex) {
+        super(requestIndex);
         this.throwable = throwable;
         this.continueIndex = continueIndex;
     }

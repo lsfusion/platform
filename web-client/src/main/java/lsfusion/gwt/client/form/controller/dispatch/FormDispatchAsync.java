@@ -1,31 +1,19 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.AsyncCallbackEx;
-import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
+import lsfusion.gwt.client.RemoteDispatchAsync;
+import lsfusion.gwt.client.controller.remote.action.RequestAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestCountingAction;
 import lsfusion.gwt.client.form.controller.GFormController;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
-import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 
-import java.util.LinkedList;
-
-public class FormDispatchAsync {
-    private final DispatchAsyncWrapper gwtDispatch = new DispatchAsyncWrapper(new DefaultExceptionHandler());
-
+public class FormDispatchAsync extends RemoteDispatchAsync {
     private final GForm form;
     private final GFormController formController;
-
-    private long nextRequestIndex = 0;
-    private long lastReceivedRequestIndex = -1;
-
-    private final LinkedList<QueuedAction> q = new LinkedList<>();
 
     //отдельный флаг закрытой формы нужен, чтобы не посылать случайных запросов в закрытую форму (в частности changePageSize)
     private boolean formClosed = false;
@@ -44,63 +32,29 @@ public class FormDispatchAsync {
         execute(action, callback, false);
     }
 
-    public <A extends FormAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
-        action.formSessionID = form.sessionID;
+    @Override
+    protected <A extends RequestAction<R>, R extends Result> void fillAction(A action) {
+        ((FormAction) action).formSessionID = form.sessionID;
         if (action instanceof FormRequestAction) {
-            if(action instanceof FormRequestCountingAction)
+            if (action instanceof FormRequestCountingAction)
                 ((FormRequestCountingAction) action).requestIndex = nextRequestIndex++;
             ((FormRequestAction) action).lastReceivedRequestIndex = lastReceivedRequestIndex;
         }
-
-        queueAction(action, callback, direct);
     }
 
-    private <A extends Action<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct) {
-        Log.debug("Queueing action: " + action.toString());
-
-        final QueuedAction queuedAction = new QueuedAction(action, callback);
-        // в десктопе реализован механизм direct запросов, которые работают не через очередь, а напрямую блокируют EDT.
-        // в вебе нет возможности реализовать подобный механизм. поэтому ставим direct запросы в начало очереди.
-        // иначе мог произойти deadlock, когда, к примеру, между ExecuteEditAction и continueServerInvocation вклинивался changePageSize
-        if (direct) {
-            q.add(0, queuedAction);
-        } else {
-            q.add(queuedAction);
-        }
-
+    @Override
+    protected void onAsyncStarted() {
         formController.onAsyncStarted();
-
-        executeInternal(action, new AsyncCallbackEx<R>() {
-            @Override
-            public void failure(Throwable caught) {
-                queuedAction.failed(caught);
-            }
-
-            @Override
-            public void success(R result) {
-                queuedAction.succeeded(result);
-            }
-
-            @Override
-            public void postProcess() {
-                flushCompletedRequests();
-                formController.onAsyncFinished();
-            }
-        });
     }
 
-    public void flushCompletedRequests() {
-        if (!formController.isEditing()) {
-            while (!q.isEmpty() && q.peek().finished) {
-                QueuedAction remove = q.remove();
-                
-                long requestIndex = remove.getRequestIndex();
-                if(requestIndex >= 0)
-                    lastReceivedRequestIndex = requestIndex;
-                
-                remove.proceed();
-            }
-        }
+    @Override
+    protected void onAsyncFinished() {
+        formController.onAsyncFinished();
+    }
+
+    @Override
+    protected boolean isEditing() {
+        return formController.isEditing();
     }
 
     public <A extends FormAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {
@@ -109,27 +63,9 @@ public class FormDispatchAsync {
         executeInternal(action, callback);
     }
 
-    private <A extends Action<R>, R extends Result> void executeInternal(final A action, final AsyncCallback<R> callback) {
-        if (!formClosed) {
-            final double startExecTime = Duration.currentTimeMillis();
-            gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
-                @Override
-                public void preProcess() {
-                    double execTime = Duration.currentTimeMillis() - startExecTime;
-                    Log.debug("Executed action: " + action.toString() + " in " + (int) (execTime / 1000) + " ms.");
-                }
-
-                @Override
-                public void failure(Throwable caught) {
-                    callback.onFailure(caught);
-                }
-
-                @Override
-                public void success(R result) {
-                    callback.onSuccess(result);
-                }
-            });
-        }
+    @Override
+    protected boolean isClosed() {
+        return formClosed;
     }
 
     public void close() {

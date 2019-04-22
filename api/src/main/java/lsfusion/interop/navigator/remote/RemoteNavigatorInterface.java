@@ -18,13 +18,13 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     // main interface
 
-    ServerResponse executeNavigatorAction(String script) throws RemoteException;
+    ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String script) throws RemoteException;
 
-    ServerResponse executeNavigatorAction(String actionSID, int type) throws RemoteException;
+    ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int type) throws RemoteException;
 
-    ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException;
+    ServerResponse continueNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException;
 
-    ServerResponse throwInNavigatorAction(Throwable clientThrowable) throws RemoteException;
+    ServerResponse throwInNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException;
 
     void logClientException(String hostname, Throwable t) throws RemoteException;
 

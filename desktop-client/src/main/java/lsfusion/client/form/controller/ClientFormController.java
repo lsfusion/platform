@@ -1024,26 +1024,24 @@ public class ClientFormController implements AsyncListener {
         return result == null ? ServerResponse.EMPTY : result;
     }
 
-    public ServerResponse continueServerInvocation(final long requestIndex, final int continueIndex, final Object[] actionResults) throws RemoteException {
-        ServerResponse result =
-                rmiQueue.directRequest(requestIndex, new RmiCheckNullFormRequest<ServerResponse>("continueServerInvocation") {
-                    @Override
-                    protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                        return remoteForm.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
-                    }
-                });
-        return result == null ? ServerResponse.EMPTY : result;
+    public RmiQueue getRmiQueue() {
+        return rmiQueue;
     }
 
-    public ServerResponse throwInServerInvocation(final long requestIndex, final int continueIndex, final Throwable t) throws RemoteException {
-        ServerResponse result =
-                rmiQueue.directRequest(requestIndex, new RmiCheckNullFormRequest<ServerResponse>("throwInServerInvocation") {
-                    @Override
-                    protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                        return remoteForm.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, t);
-                    }
-                });
-        return result == null ? ServerResponse.EMPTY : result;
+    public RmiRequest<ServerResponse> getContinueServerRequest(final int continueIndex, final Object[] actionResults) {
+        return new RmiCheckNullFormRequest<ServerResponse>("continueServerInvocation") {
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
+            }
+        };
+    }
+
+    public RmiRequest<ServerResponse> getThrowInServerRequest(final int continueIndex, final Throwable clientThrowable) {
+        return new RmiCheckNullFormRequest<ServerResponse>("throwInServerInvocation") {
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
+            }
+        };
     }
 
     public boolean isInServerInvocation(long requestIndex) throws RemoteException {
