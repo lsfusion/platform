@@ -390,8 +390,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         overQuantityTableColumn = findProperty("overQuantity[TableColumn]");
         notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
-        notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");
-        notRecalculateSID = findProperty("notRecalculate[ISTRING[100]]");
         recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
 
         //Отключение пересчётов и проверок

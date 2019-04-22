@@ -235,7 +235,6 @@ percentNotNull '{reflection.percent.not.null}' (TableColumn tableColumn) = IF ro
 sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
 notRecalculate '{reflection.not.recalculate}' = DATA BOOLEAN (TableColumn);
-notRecalculate '{reflection.not.recalculate}' (ISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
 
 recalculateAggregation '{reflection.recalculate.aggregation}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
 recalculateAggregationWithDependencies '{reflection.recalculate.aggregation.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
