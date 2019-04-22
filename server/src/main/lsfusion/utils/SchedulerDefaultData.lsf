@@ -7,7 +7,7 @@ NAMESPACE Scheduler;
 loadDefaultScheduledTasks '{scheduler.default.data.load.default.scheduled.tasks}' ()  ABSTRACT LIST ( ) IN loadDefault;
 @implementLoadDefaultData(loadDefaultScheduledTasks);
 
-loadDefaultScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(VARSTRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type)  { 
+loadDefaultScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(STRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type)  { 
     NEW s = ScheduledTask {
         name(s) <- iname;
         active(s) <- TRUE ;
@@ -17,7 +17,7 @@ loadDefaultScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(
     }
 }
 
-loadDefaultScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.detail}'(VARSTRING[100] iname, INTEGER order, VARSTRING[512] prop)  { 
+loadDefaultScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.detail}'(STRING[100] iname, INTEGER order, STRING[512] prop)  { 
     NEW d = ScheduledTaskDetail {
         order(d) <- order;
         active(d) <- TRUE;

@@ -265,10 +265,10 @@ END
 
 // Примечание
 META defineDocumentHeaderNote (objectClass)
-    note '{document.note}' = DATA VARISTRING[500] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
+    note '{document.note}' = DATA ISTRING[500] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
 END
 META defineDocumentAbstractHeaderNote (objectClass)
-    note '{document.note}' = ABSTRACT VARISTRING[500] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
+    note '{document.note}' = ABSTRACT ISTRING[500] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderNote(objectClass)
     @defineDocumentAbstractHeaderNote(objectClass);
@@ -277,10 +277,10 @@ META defineDocumentInterfaceHeaderNote(objectClass)
 END
 
 META defineDocumentDetailNote (detailClass)
-    note '{document.note}' = DATA VARSTRING[500] (detailClass) CHARWIDTH 30;
+    note '{document.note}' = DATA STRING[500] (detailClass) CHARWIDTH 30;
 END
 META defineDocumentAbstractDetailNote (detailClass)
-    note '{document.note}' = ABSTRACT VARSTRING[500] (detailClass) CHARWIDTH 30;
+    note '{document.note}' = ABSTRACT STRING[500] (detailClass) CHARWIDTH 30;
 END
 META defineDocumentInterfaceDetailNote(detailClass)
     @defineDocumentAbstractDetailNote(detailClass);
@@ -465,7 +465,7 @@ META defineDocumentDetailIndexPersistent (object, detailClass)
 END
 
 META defineDocumentDetailSortOrder (object, detailClass)
-    sortOrder '{document.sort.order}' (d) = ABSTRACT VARSTRING[100] (detailClass);
+    sortOrder '{document.sort.order}' (d) = ABSTRACT STRING[100] (detailClass);
     sortOrder##detailClass = GROUP SUM 1 IF sortOrder(detailClass d) BY object(d);
     
     updateSortOrder '{document.update.sort.order}'(detailClass detail)  { 
@@ -601,10 +601,10 @@ END
 // ----- Description ----- //
 META defineDocumentHeaderDescription(objectClass, caption)
     description '{document.description.object}' (objectClass o) =
-        VARSTRING[200](CONCAT ' ', caption, '{document.desription.number} ' + seriesNumber(o), '{document.desription.of} ' + date(o)) CHARWIDTH 30;
+        STRING[200](CONCAT ' ', caption, '{document.desription.number} ' + seriesNumber(o), '{document.desription.of} ' + date(o)) CHARWIDTH 30;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
-    description '{document.description.object}' = ABSTRACT VARSTRING[200] (objectClass) CHARWIDTH 30 MATERIALIZED;
+    description '{document.description.object}' = ABSTRACT STRING[200] (objectClass) CHARWIDTH 30 MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderDescription(objectClass, caption)
     @defineDocumentAbstractHeaderDescription(objectClass);
@@ -614,7 +614,7 @@ END
 
 META defineDocumentDetailDescription(object, detailClass)
     description '{document.description.object}' (detailClass d) = description(object(d)) CHARWIDTH 30;
-    descriptionIndex '{document.description.object}' (detailClass d) = VARSTRING[200](description(d) + ', {document.description.position} ' + index(d)) CHARWIDTH 30 IN base;
+    descriptionIndex '{document.description.object}' (detailClass d) = STRING[200](description(d) + ', {document.description.position} ' + index(d)) CHARWIDTH 30 IN base;
 END
 
 META defineDocumentDescription(object, detailClass, caption)

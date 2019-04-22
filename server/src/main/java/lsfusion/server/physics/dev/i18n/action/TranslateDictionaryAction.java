@@ -37,8 +37,8 @@ public class TranslateDictionaryAction extends InternalAction {
             if (dictionaryObject != null && termObject != null) {
 
                 Boolean insensitive = findProperty("insensitive[Dictionary]").read(context.getSession(), dictionaryObject) != null;
-                LP insensitiveLP = findProperty("insensitiveTranslationDictionaryEntry[Dictionary,VARSTRING[50]]");
-                LP sensitiveLP = findProperty("translationDictionaryEntry[Dictionary,VARSTRING[50]]");
+                LP insensitiveLP = findProperty("insensitiveTranslationDictionaryEntry[Dictionary,STRING[50]]");
+                LP sensitiveLP = findProperty("translationDictionaryEntry[Dictionary,STRING[50]]");
 
                 String source = (String) termObject.object;
                 if (insensitive)

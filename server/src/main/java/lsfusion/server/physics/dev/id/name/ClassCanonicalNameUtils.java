@@ -121,18 +121,18 @@ public final class ClassCanonicalNameUtils {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(VARSTRING\\[\\d+\\])|(VARISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\]))$")) {
+        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\]))$")) {
             if (name.startsWith("BPSTRING[")) {
                 name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));
             } else if (name.startsWith("BPISTRING[")) {
                 name = name.substring("BPISTRING[".length(), name.length() - 1);
                 return StringClass.geti(new ExtInt(Integer.parseInt(name)));
-            } else if (name.startsWith("VARSTRING[")) {
-                name = name.substring("VARSTRING[".length(), name.length() - 1);
+            } else if (name.startsWith("STRING[")) {
+                name = name.substring("STRING[".length(), name.length() - 1);
                 return StringClass.getv(new ExtInt(Integer.parseInt(name)));
-            } else if (name.startsWith("VARISTRING[")) {
-                name = name.substring("VARISTRING[".length(), name.length() - 1);
+            } else if (name.startsWith("ISTRING[")) {
+                name = name.substring("ISTRING[".length(), name.length() - 1);
                 return StringClass.getvi(new ExtInt(Integer.parseInt(name)));
             } else if (name.startsWith("NUMERIC[")) {
                 String length = name.substring("NUMERIC[".length(), name.indexOf(","));
@@ -179,8 +179,8 @@ public final class ClassCanonicalNameUtils {
         put("RICHTEXT", TextClass.richInstance);
         put("BPSTRING", StringClass.get(ExtInt.UNLIMITED));
         put("BPISTRING", StringClass.get(true, ExtInt.UNLIMITED));
-        put("VARSTRING", StringClass.getv(ExtInt.UNLIMITED));
-        put("VARISTRING", StringClass.getv(true, ExtInt.UNLIMITED));
+        put("STRING", StringClass.getv(ExtInt.UNLIMITED));
+        put("ISTRING", StringClass.getv(true, ExtInt.UNLIMITED));
     }};
 
     public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {

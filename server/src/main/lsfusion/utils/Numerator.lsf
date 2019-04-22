@@ -14,7 +14,7 @@ DESIGN options {
 CLASS Numerator '{numerator.numerator}';
 TABLE numerator (Numerator);
 
-name '{numerator.name.numerator}' = DATA VARISTRING[100](Numerator) CHARWIDTH 20;
+name '{numerator.name.numerator}' = DATA ISTRING[100](Numerator) CHARWIDTH 20;
 
 series '{numerator.series.numerator}' = DATA BPSTRING[2] (Numerator) IN id CHARWIDTH 3 NOFLEX;
 
@@ -26,11 +26,11 @@ stringLength '{numerator.string.length.numerator}' = DATA INTEGER (Numerator) IN
 curValue '{numerator.cur.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 curValue(Numerator numerator) <- minValue(numerator) WHEN SET(numerator IS Numerator);
 
-lpadStringWithZero = FORMULA VARSTRING[28] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
+lpadStringWithZero = FORMULA STRING[28] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
 
 curStringValue '{numerator.cur.string.value.numerator}' (Numerator numerator) = lpadStringWithZero(curValue(numerator), stringLength(numerator)) IN base;
 
-incrementedValue = DATA LOCAL NESTED VARSTRING[28] ();
+incrementedValue = DATA LOCAL NESTED STRING[28] ();
 
 incrementValue '{numerator.increment.value.numerator}'(Numerator numerator)  { 
 	NEWSESSION {
@@ -119,7 +119,7 @@ NAVIGATOR {
 GROUP numbered '{numerator.numerator}' : id;
 
 META defineNumberedAbstract(class)
-    number '{numerator.number.numerator}' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
+    number '{numerator.number.numerator}' = ABSTRACT STRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
     series '{numerator.series.numerator}' = ABSTRACT BPSTRING[2] (class) IN numbered MATERIALIZED CHARWIDTH 3 NOFLEX; 
 
     seriesNumber '{numerator.series.number.numerator}' (class o) = 
@@ -144,7 +144,7 @@ DESIGN options{
 }
 
 META defineNumbered(class)
-    number '{numerator.number.numerator}' = DATA VARSTRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
+    number '{numerator.number.numerator}' = DATA STRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
     series '{numerator.series.numerator}' = DATA BPSTRING[2] (class) IN numbered CHARWIDTH 3 NOFLEX;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
@@ -218,7 +218,7 @@ END
 
 META defineNumerated(object1, object2)
 
-    number '{numerator.number.numerator}' = DATA VARSTRING[28] (###object1, ###object2) CHARWIDTH 8;
+    number '{numerator.number.numerator}' = DATA STRING[28] (###object1, ###object2) CHARWIDTH 8;
     series '{numerator.series.numerator}' = DATA BPSTRING[2] (###object1, ###object2) CHARWIDTH 3 NOFLEX;
     seriesNumber '{numerator.series.number.numerator}' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) CHARWIDTH 8 MATERIALIZED;
 

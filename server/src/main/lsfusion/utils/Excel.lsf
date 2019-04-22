@@ -5,11 +5,11 @@ REQUIRE System, MasterData, Utils;
 CLASS Template '{excel.template}';
 TABLE template(Template);
 
-name '{excel.name.template}' = DATA VARSTRING[100] (Template);
+name '{excel.name.template}' = DATA STRING[100] (Template);
 file '{excel.file.template}' (Template) = DATA EXCELFILE (Template);
 loadFile '{excel.load.file.template}'(Template t)  { INPUT =file(t) CHANGE; }
 openFile '{excel.open.file.template}'(Template t)  { open(file(t)); }
-id '{excel.id.template}' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
+id '{excel.id.template}' = DATA ISTRING[100] (Template) CHARWIDTH 5;
 
 process  INTERNAL  'lsfusion.server.logics.classes.data.utils.excel.ProcessTemplateAction' (Template);
 
@@ -25,14 +25,14 @@ CLASS TemplateEntry '{excel.template.entry}';
 TABLE templateEntry(TemplateEntry);
 
 template '{excel.template}' = DATA Template (TemplateEntry);
-key '{excel.key.template.entry}' = DATA VARSTRING[100](TemplateEntry);
-description '{excel.description.template.entry}' = DATA VARSTRING[100](TemplateEntry);
+key '{excel.key.template.entry}' = DATA STRING[100](TemplateEntry);
+description '{excel.description.template.entry}' = DATA STRING[100](TemplateEntry);
 isNumeric '{excel.is.numeric.template.entry}' = DATA BOOLEAN (TemplateEntry);
-format '{excel.format.template.entry}' = DATA VARSTRING[20] (TemplateEntry);
+format '{excel.format.template.entry}' = DATA STRING[20] (TemplateEntry);
 value '{excel.value.template.entry}' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
 isTable '{excel.is.table.template.entry}' = DATA BOOLEAN(TemplateEntry);
-dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
+dataRowSeparator = DATA STRING[20] (TemplateEntry);
 rowSeparator '{excel.row.separator}' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\n'; 
 
 FORM template '{excel.form.template}'

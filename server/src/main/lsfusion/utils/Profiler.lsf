@@ -15,13 +15,13 @@ onStarted() + {
 }
 profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
 
-totalTime '{profiler.total.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
-totalSQLTime '{profiler.total.sql.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);  
-totalUserInteractionTime '{profiler.total.user.interaction.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
-callCount '{profiler.call.count}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
-minTime '{profiler.min.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
-maxTime '{profiler.max.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
-squaresSum '{profiler.squares.sum}' = DATA LOCAL DOUBLE (TEXT, TEXT, INTEGER, VARSTRING[100]);
+totalTime '{profiler.total.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, STRING[100]);
+totalSQLTime '{profiler.total.sql.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, STRING[100]);  
+totalUserInteractionTime '{profiler.total.user.interaction.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, STRING[100]);
+callCount '{profiler.call.count}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, STRING[100]);
+minTime '{profiler.min.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, STRING[100]);
+maxTime '{profiler.max.time}' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, STRING[100]);
+squaresSum '{profiler.squares.sum}' = DATA LOCAL DOUBLE (TEXT, TEXT, INTEGER, STRING[100]);
 
 totalTime '{profiler.total.time}' = DATA LONG (ProfileObject, ProfileObject, User, Form);
 totalSQLTime '{profiler.total.sql.time}' = DATA LONG (ProfileObject, ProfileObject, User, Form);
@@ -63,15 +63,15 @@ stopProfiler '{profiler.stop.profiler}' ()  {
 id(User user) = INTEGER(user AS User) MATERIALIZED INDEXED; 
 
 writeProfilerBatch ()  { 
-    FOR [ GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
+    FOR [ GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, STRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
         text(p) <- t1;    
     }     
 
-    FOR [ GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t2](TEXT t2) AND NOT profileObject(t2) INLINE NEW p = ProfileObject DO {
+    FOR [ GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, STRING[100] f) BY t2](TEXT t2) AND NOT profileObject(t2) INLINE NEW p = ProfileObject DO {
         text(p) <- t2;    
     }     
     
-    FOR ProfileObject p1 == profileObject(TEXT t1) AND ProfileObject p2 == profileObject(TEXT t2) AND callCount(t1, t2, INTEGER u, VARSTRING[100] f) 
+    FOR ProfileObject p1 == profileObject(TEXT t1) AND ProfileObject p2 == profileObject(TEXT t2) AND callCount(t1, t2, INTEGER u, STRING[100] f) 
             AND u == id(User user) AND (Form form == form(f) OR (f == '' AND form == Form.noForm)) INLINE DO {
         totalTime(p1, p2, user, form) <- totalTime(p1, p2, user, form) (+) totalTime(t1, t2, u, f); 
         totalSQLTime(p1, p2, user, form) <- totalSQLTime(p1, p2, user, form) (+) totalSQLTime(t1, t2, u, f); 
@@ -190,7 +190,7 @@ order '{profiler.order}' (ProfileObject po, User u, Form f) = value(po, u, f, or
 //интерфейс
 dataSelectedTop = DATA LOCAL ProfileObject();
 selectedTop = OVERRIDE dataSelectedTop(), ProfileObject.top;
-nameSelectedTop '{profiler.name.selected.top}' = VARSTRING[1000](text(selectedTop()));
+nameSelectedTop '{profiler.name.selected.top}' = STRING[1000](text(selectedTop()));
 
 pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link($b, b) CYCLES YES; // из a можно дойти в b
 pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b) CYCLES YES; // из a можно дойти в b

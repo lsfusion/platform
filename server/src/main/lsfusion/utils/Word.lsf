@@ -5,11 +5,11 @@ REQUIRE System, MasterData, Utils;
 CLASS Template '{word.template}';
 TABLE template(Template);
 
-name '{word.name.template}' = DATA VARSTRING[100] (Template);
+name '{word.name.template}' = DATA STRING[100] (Template);
 file '{word.file.template}' (Template) = DATA WORDFILE (Template);
 loadFile '{word.load.file.template}'(Template t)  { INPUT =file(t) CHANGE; }
 openFile '{word.open.file.template}'(Template t)  { open(file(t)); }
-id '{word.id.template}' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
+id '{word.id.template}' = DATA ISTRING[100] (Template) CHARWIDTH 5;
 
 process  INTERNAL  'lsfusion.server.logics.classes.data.utils.word.ProcessTemplateAction' (Template);
 
@@ -28,8 +28,8 @@ TABLE templateEntry(TemplateEntry);
 
 objValue (TemplateEntry t) = INTEGER(t AS TemplateEntry);
 template '{word.template}' = DATA Template (TemplateEntry);
-key '{word.key.template.entry}' = DATA VARSTRING[100](TemplateEntry);
-description '{word.description.template.entry}' = DATA VARSTRING[100](TemplateEntry);
+key '{word.key.template.entry}' = DATA STRING[100](TemplateEntry);
+description '{word.description.template.entry}' = DATA STRING[100](TemplateEntry);
 value '{word.value.template.entry}' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
 //Deprecated
@@ -70,10 +70,10 @@ notPlainTemplateEntry (TemplateEntry t) = isTableTemplateEntry(t) OR isListTempl
 dataFirstRow = DATA INTEGER (TemplateEntry);
 firstRow '{word.first.row.template.entry}' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
 
-dataColumnSeparator = DATA VARSTRING[20] (TemplateEntry);
+dataColumnSeparator = DATA STRING[20] (TemplateEntry);
 columnSeparator '{word.column.separator.template.entry}' (TemplateEntry e)= OVERRIDE dataColumnSeparator(e), ';'; 
 
-dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
+dataRowSeparator = DATA STRING[20] (TemplateEntry);
 rowSeparator '{word.row.separator.template.entry}' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\r'; 
 
 templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR TemplateEntry templateEntry WHERE templateEntry IS TemplateEntry BY  key(templateEntry), id(template(templateEntry));

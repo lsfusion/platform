@@ -8,7 +8,7 @@ TABLE chatCustomUser(Chat, CustomUser);
 
 EXTEND CLASS UserRole : Chat;
 
-@defineExternalizable(chat, VARSTRING[100]);
+@defineExternalizable(chat, STRING[100]);
 
 in '{chat.in.chat}' = DATA BOOLEAN (Chat, CustomUser);
 overIn '{chat.in.chat}' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);  
@@ -18,7 +18,7 @@ chatIn(CustomUser user1, CustomUser user2) = GROUP MAX Chat chat IF in(chat, use
 readonly '{chat.readonly}' = DATA BOOLEAN (Chat, CustomUser);
 readonly '{chat.readonly}' (Chat c) = readonly(c, currentUser());
 
-dataName '{chat.name}' = DATA VARISTRING[100] (Chat);
+dataName '{chat.name}' = DATA ISTRING[100] (Chat);
 nameOrLogin '{chat.name.or.login.user}' (CustomUser user) = OVERRIDE name(user), login(user);
 name '{chat.name}' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN '{chat.name.role}: ' + Security.name(chat) ELSE (GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()))) CHARWIDTH 15;
 

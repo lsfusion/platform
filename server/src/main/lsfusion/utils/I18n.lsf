@@ -7,7 +7,7 @@ REQUIRE System, MasterData, Utils;
 CLASS Dictionary '{i18n.dictionary}';
 TABLE dictionary (Dictionary);
 
-name '{i18n.name.dictionary}' = DATA VARISTRING[50](Dictionary);
+name '{i18n.name.dictionary}' = DATA ISTRING[50](Dictionary);
 
 insensitive '{i18n.insensitive.dictionary}' = DATA BOOLEAN (Dictionary);
 
@@ -15,20 +15,20 @@ CLASS DictionaryEntry '{i18n.dictionary.entry}';
 TABLE dictionaryEntry (DictionaryEntry);
 
 dictionary '{i18n.dictionary}' = DATA Dictionary (DictionaryEntry);
-term '{i18n.term.dictionary.entry}' = DATA VARSTRING[50] (DictionaryEntry);
+term '{i18n.term.dictionary.entry}' = DATA STRING[50] (DictionaryEntry);
 insensitiveTerm(DictionaryEntry dictionaryEntry) = upper (term(dictionaryEntry));
-translation '{i18n.translation.dictionary.entry}' = DATA VARSTRING[50] (DictionaryEntry);
+translation '{i18n.translation.dictionary.entry}' = DATA STRING[50] (DictionaryEntry);
 
 dictionaryEntryTerm = GROUP AGGR DictionaryEntry dictionaryEntry WHERE dictionaryEntry IS DictionaryEntry BY dictionary(dictionaryEntry), term(dictionaryEntry);
-translationDictionaryEntry '{i18n.translation.dictionary.entry}' (Dictionary dictionary, VARSTRING[50] term) = translation(dictionaryEntryTerm(dictionary, term));
+translationDictionaryEntry '{i18n.translation.dictionary.entry}' (Dictionary dictionary, STRING[50] term) = translation(dictionaryEntryTerm(dictionary, term));
 nameDictionary '{i18n.dictionary}' (DictionaryEntry dictionaryEntry) = name(dictionary(dictionaryEntry));
 insensitiveDictionaryEntryTerm = GROUP MAX DictionaryEntry dictionaryEntry BY dictionary(dictionaryEntry), insensitiveTerm(dictionaryEntry);
-insensitiveTranslationDictionaryEntry '{i18n.insensitive.translation.dictionary.entry}' = translation (dictionaryEntryTerm(Dictionary dictionary, VARSTRING[50] term));
+insensitiveTranslationDictionaryEntry '{i18n.insensitive.translation.dictionary.entry}' = translation (dictionaryEntryTerm(Dictionary dictionary, STRING[50] term));
 
 CLASS Language '{i18n.language}';
 TABLE language(Language);
 
-name '{i18n.name.language}' = DATA VARISTRING[50](Language);
+name '{i18n.name.language}' = DATA ISTRING[50](Language);
 
 locale '{i18n.locale.language}' = DATA BPSTRING[5] (Language);
 
@@ -75,7 +75,7 @@ translateTerm '{i18n.translate}'(DictionaryEntry dictionaryEntry)  {
     EXEC translate (TEXT(term(dictionaryEntry)),
             languageFrom(dictionary(dictionaryEntry)),
             languageTo(dictionary(dictionaryEntry)));
-    translation(dictionaryEntry) <- VARSTRING[50](translationResult());
+    translation(dictionaryEntry) <- STRING[50](translationResult());
 }
 
 translateText '{i18n.translate}'()  { 
@@ -127,7 +127,7 @@ NAVIGATOR {
 CLASS MultiLanguageNamed '{i18n.multi.language.named}';
 
 TABLE multiLanguageNamedLanguage(MultiLanguageNamed, Language);
-languageName '{i18n.language.name.multi.language.named}' = DATA VARISTRING[110] (MultiLanguageNamed, Language);
+languageName '{i18n.language.name.multi.language.named}' = DATA ISTRING[110] (MultiLanguageNamed, Language);
 
 // ---------------------------------------------- Словари --------------------------------------------- //
 

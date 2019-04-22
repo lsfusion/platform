@@ -77,7 +77,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // ---- Роли
         sidUserRole = findProperty("sid[UserRole]");
         nameUserRole = findProperty("name[UserRole]");
-        userRoleSID = findProperty("userRoleSID[VARSTRING[30]]");
+        userRoleSID = findProperty("userRoleSID[STRING[30]]");
         currentUserMainRoleName = findProperty("currentUserMainRoleName[]");
         nameMainRoleUser = findProperty("nameMainRole[User]");
         currentUserTransactTimeout = findProperty("currentUserTransactTimeout[]");
@@ -89,7 +89,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
         // ------------------------ Политика безопасности ------------------ //
         idPolicy = findProperty("id[Policy]");
-        policyId = findProperty("policy[VARSTRING[100]]");
+        policyId = findProperty("policy[STRING[100]]");
         namePolicy = findProperty("name[Policy]");
         descriptionPolicy = findProperty("description[Policy]");
         orderUserPolicy = findProperty("order[User,Policy]");

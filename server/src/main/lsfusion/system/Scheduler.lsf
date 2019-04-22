@@ -26,7 +26,7 @@ DESIGN schedulerStartTypes {
 CLASS ScheduledTask '{scheduler.scheduled.task}';
 TABLE scheduledTask (ScheduledTask);
 
-name '{scheduler.name.scheduled.task}' = DATA VARSTRING[100] (ScheduledTask);
+name '{scheduler.name.scheduled.task}' = DATA STRING[100] (ScheduledTask);
 scheduledTask (name) = GROUP AGGR ScheduledTask task WHERE task IS ScheduledTask BY name(task);
 
 runAtStart '{scheduler.run.at.start.scheduled.task}' = DATA BOOLEAN (ScheduledTask);
@@ -37,11 +37,11 @@ period '{scheduler.period.scheduled.task}' = DATA INTEGER (ScheduledTask); // in
 schedulerStartType '{scheduler.scheduler.start.type}' = DATA SchedulerStartType (ScheduledTask);
 nameSchedulerStartType '{scheduler.scheduler.start.type}' = staticCaption(schedulerStartType(ScheduledTask ScheduledTask));
 active '{scheduler.active.scheduled.task}' = DATA BOOLEAN (ScheduledTask);
-daysOfMonth '{scheduler.days.of.month.scheduled.task}' = DATA VARSTRING[255] (ScheduledTask);
+daysOfMonth '{scheduler.days.of.month.scheduled.task}' = DATA STRING[255] (ScheduledTask);
 
 TABLE DOWScheduledTask(DOW, ScheduledTask);
 in '{scheduler.in.dow.scheduled.task}' = DATA BOOLEAN (DOW, ScheduledTask); 
-daysOfWeek (ScheduledTask t)= GROUP CONCAT VARSTRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
+daysOfWeek (ScheduledTask t)= GROUP CONCAT STRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
 
 CLASS ScheduledTaskDetail '{scheduler.scheduled.task.detail}';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
@@ -65,9 +65,9 @@ CLASS ScheduledTaskLog '{scheduler.scheduled.task.log}';
 TABLE scheduledTaskLog (ScheduledTaskLog);
 TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 
-result '{scheduler.result.scheduled.task.log}' = DATA VARSTRING[200] (ScheduledTaskLog);
+result '{scheduler.result.scheduled.task.log}' = DATA STRING[200] (ScheduledTaskLog);
 exceptionOccurred '{scheduler.exception.occurred.scheduled.task.log}' = DATA BOOLEAN (ScheduledTaskLog);
-property '{scheduler.property.scheduled.task.log}' = DATA VARSTRING[200] (ScheduledTaskLog);
+property '{scheduler.property.scheduled.task.log}' = DATA STRING[200] (ScheduledTaskLog);
 date '{scheduler.date.scheduled.task.log}' = DATA DATETIME (ScheduledTaskLog);
 toDate '{scheduler.to.date.scheduled.task.log}' (ScheduledTaskLog d) = DATE(date(d));
 scheduledTask '{scheduler.scheduled.task}' = DATA ScheduledTask (ScheduledTaskLog) INDEXED;

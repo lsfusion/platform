@@ -287,7 +287,7 @@ public class LoginDialog extends JDialog {
             }
             FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
             try {
-                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getSessionInfo(), "Authentication.syncUsers[VARISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{MainController.computerName, fileData}));
+                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getSessionInfo(), "Authentication.syncUsers[ISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{MainController.computerName, fileData}));
                 JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
                 List<Object> currentUsers = unlockedUsers.toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();

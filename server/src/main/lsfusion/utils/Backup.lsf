@@ -48,15 +48,15 @@ TABLE backup(Backup);
 partial '{backup.partial.backup}' = DATA BOOLEAN (Backup);
 date '{backup.date.backup}' = DATA DATE (Backup);
 time '{backup.time.backup}' = DATA TIME (Backup);
-file '{backup.file.backup}' = DATA VARSTRING[200] (Backup);
-name '{backup.name.backup}' = DATA VARSTRING[100] (Backup);
-fileLog '{backup.file.log.backup}' = DATA VARSTRING[200] (Backup);
+file '{backup.file.backup}' = DATA STRING[200] (Backup);
+name '{backup.name.backup}' = DATA STRING[100] (Backup);
+fileLog '{backup.file.log.backup}' = DATA STRING[200] (Backup);
 fileDeleted '{backup.file.deleted.backup}' = DATA BOOLEAN (Backup);
 log '{backup.log.backup}' = DATA TEXT (Backup);
 notSucceeded '{backup.not.succeeded.backup}' (Backup b) = NOT log(b);
 
-backupFileName '{backup.backup.file.name}' = DATA LOCAL VARSTRING[100] ();
-backupFilePath '{backup.backup.file.path}' = DATA LOCAL VARSTRING[200]();
+backupFileName '{backup.backup.file.name}' = DATA LOCAL STRING[100] ();
+backupFilePath '{backup.backup.file.path}' = DATA LOCAL STRING[200]();
 
 exclude '{backup.exclude.table}' = DATA BOOLEAN (Table);
 

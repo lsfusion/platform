@@ -16,7 +16,7 @@ META defineNamedObject(id, caption)
     CLASS ###id caption;
     TABLE id (###id);
     
-    name '{master.data.name}' = DATA VARISTRING[100] (###id) CHARWIDTH 15;
+    name '{master.data.name}' = DATA ISTRING[100] (###id) CHARWIDTH 15;
     
     FORM id caption
         OBJECTS o = ###id PANEL

@@ -93,7 +93,7 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        String mainUrl = "<a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp%5BVARSTRING%5B10%5D,VARSTRING%5B1000%5D%5D>" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
+        String mainUrl = "<a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp%5BSTRING%5B10%5D,STRING%5B1000%5D%5D>" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
         return serverSettings != null && serverSettings.jnlpUrls != null ? ("<details><summary>" + mainUrl + "</summary>" + serverSettings.jnlpUrls + "</details>") : mainUrl;
     }
 

@@ -66,7 +66,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionType[Account]");
 
         fromAddressAccount = findProperty("fromAddress[Account]");
-        inboxAccount = findProperty("inboxAccount[VARSTRING[100]]");
+        inboxAccount = findProperty("inboxAccount[STRING[100]]");
 
         emailSent = findProperty("emailSent[]");
 

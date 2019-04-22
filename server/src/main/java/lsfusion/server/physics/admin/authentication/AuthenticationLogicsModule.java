@@ -116,7 +116,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         firstNameContact = findProperty("firstName[Contact]");
         lastNameContact = findProperty("lastName[Contact]");
         emailContact = findProperty("email[Contact]");
-        contactEmail = findProperty("contact[VARSTRING[400]]");
+        contactEmail = findProperty("contact[STRING[400]]");
 
         nameContact = findProperty("name[Contact]");
         currentUserName = findProperty("currentUserName[]");
@@ -125,7 +125,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         // Компьютер
         hostnameComputer = findProperty("hostname[Computer]");
-        computerHostname = findProperty("computer[VARISTRING[100]]");
+        computerHostname = findProperty("computer[ISTRING[100]]");
         hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 
         isLockedCustomUser = findProperty("isLocked[CustomUser]");
@@ -172,7 +172,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
         
-        syncUsers = findAction("syncUsers[VARISTRING[100], JSONFILE]");
+        syncUsers = findAction("syncUsers[ISTRING[100], JSONFILE]");
     }
     
     public boolean checkPassword(DataSession session, DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
