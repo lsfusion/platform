@@ -20,10 +20,10 @@ deleteAction '{backup.delete.backup}' (Backup b)  {
     formRefresh();
 } CONFIRM;
 
-binPath '{backup.bin.path}' = DATA VARSTRING[100] ();
+binPath '{backup.bin.path}' = DATA STRING[100] ();
 setBinPath  INTERNAL 'lsfusion.server.physics.admin.backup.action.SetBinPathAction'();
 WHEN CHANGED(binPath()) DO setBinPath();
-dumpDir '{backup.dump.dir}' = DATA VARSTRING[100] ();
+dumpDir '{backup.dump.dir}' = DATA STRING[100] ();
 setDumpDir  INTERNAL 'lsfusion.server.physics.admin.backup.action.SetDumpDirAction'();
 WHEN CHANGED(dumpDir()) DO setDumpDir();
 

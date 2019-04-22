@@ -266,10 +266,10 @@ disableAggregations '{reflection.disable.aggregations}' (TableColumn tc) = notRe
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (TableColumn);
 disableStatsTableColumn '{reflection.disable.stats}' = DATA BOOLEAN (TableColumn);
 
-disableClasses '{reflection.disable.classes}' (VARISTRING[100] sid) = disableClasses(tableSID(sid));
-disableStatsTable '{reflection.disable.stats}' (VARISTRING[100] sid) = disableStatsTable(tableSID(sid));
-disableAggregations (VARISTRING[100] sid) = disableAggregations(tableColumnSID(sid));
-disableStatsTableColumn '{reflection.disable.stats}' (VARISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
+disableClasses '{reflection.disable.classes}' (ISTRING[100] sid) = disableClasses(tableSID(sid));
+disableStatsTable '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTable(tableSID(sid));
+disableAggregations (ISTRING[100] sid) = disableAggregations(tableColumnSID(sid));
+disableStatsTableColumn '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
 
 CLASS DropColumn '{reflection.drop.column}';
 TABLE dropColumn (DropColumn);

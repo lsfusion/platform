@@ -399,9 +399,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         disableClassesTableColumn = findProperty("disableClasses[TableColumn]");
         disableStatsTableColumn = findProperty("disableStatsTableColumn[TableColumn]");
 
-        disableClassesTableSID = findProperty("disableClasses[VARISTRING[100]]");
-        disableStatsTableSID = findProperty("disableStatsTable[VARISTRING[100]]");
-        disableAggregationsTableColumnSID = findProperty("disableAggregations[VARISTRING[100]]");
+        disableClassesTableSID = findProperty("disableClasses[ISTRING[100]]");
+        disableStatsTableSID = findProperty("disableStatsTable[ISTRING[100]]");
+        disableAggregationsTableColumnSID = findProperty("disableAggregations[ISTRING[100]]");
         disableStatsTableColumnSID = findProperty("disableStatsTableColumn[ISTRING[100]]");
 
         // Удаленные колонки
