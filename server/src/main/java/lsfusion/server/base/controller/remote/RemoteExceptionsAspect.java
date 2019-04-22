@@ -19,7 +19,7 @@ import java.rmi.RemoteException;
 @Aspect
 public class RemoteExceptionsAspect {
     private final static Logger logger = ServerLoggers.systemLogger;
-    
+
     // аспектами ловим все RuntimeException которые доходят до внешней границы сервера и оборачиваем их
     @Around(RemoteContextAspect.allRemoteCalls)
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
@@ -30,7 +30,7 @@ public class RemoteExceptionsAspect {
             return result;
         } catch (Throwable throwable) {
             boolean suppressLog = throwable instanceof RemoteInternalException; // "nested remote call" so we don't need to log it twice
-            if(throwable instanceof ThreadDeath || throwable instanceof InterruptedException) {
+            if(throwable instanceof ThreadDeath || ExceptionUtils.getRootCause(throwable) instanceof InterruptedException) {
                 logger.error("Thread '" + Thread.currentThread() + "' was forcefully stopped.");
                 suppressLog = true; // we don't need that situation, because if client ran some really long action and exited, all his threads will be stopped eventually, and then we'll get a lot of that exceptions
             }
