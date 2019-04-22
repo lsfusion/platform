@@ -2,7 +2,7 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 
-public class GroupReport extends FormRequestIndexCountingAction<GroupReportResult> {
+public class GroupReport extends FormRequestCountingAction<GroupReportResult> {
     public Integer groupObjectID;
     public boolean toExcel;
     public GFormUserPreferences preferences;

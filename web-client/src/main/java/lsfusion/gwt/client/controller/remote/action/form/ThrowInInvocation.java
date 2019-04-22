@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-public class ThrowInInvocation extends FormRequestIndexAction<ServerResponseResult> {
+public class ThrowInInvocation extends FormRequestAction<ServerResponseResult> {
     public Throwable throwable;
     public int continueIndex;
 

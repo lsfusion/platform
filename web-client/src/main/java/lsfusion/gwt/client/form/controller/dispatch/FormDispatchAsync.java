@@ -7,8 +7,8 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestCountingAction;
 import lsfusion.gwt.client.form.controller.GFormController;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
@@ -35,7 +35,7 @@ public class FormDispatchAsync {
         this.form = formController.getForm();
     }
 
-    public <A extends FormRequestIndexCountingAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
+    public <A extends FormRequestCountingAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
         execute((FormAction) action, callback);
         return action.requestIndex;
     }
@@ -46,10 +46,10 @@ public class FormDispatchAsync {
 
     public <A extends FormAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
         action.formSessionID = form.sessionID;
-        if (action instanceof FormRequestIndexAction) {
-            if(action instanceof FormRequestIndexCountingAction)
-                ((FormRequestIndexCountingAction) action).requestIndex = nextRequestIndex++;
-            ((FormRequestIndexAction) action).lastReceivedRequestIndex = lastReceivedRequestIndex;
+        if (action instanceof FormRequestAction) {
+            if(action instanceof FormRequestCountingAction)
+                ((FormRequestCountingAction) action).requestIndex = nextRequestIndex++;
+            ((FormRequestAction) action).lastReceivedRequestIndex = lastReceivedRequestIndex;
         }
 
         queueAction(action, callback, direct);

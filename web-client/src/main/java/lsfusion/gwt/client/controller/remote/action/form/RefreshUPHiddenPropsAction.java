@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-public class RefreshUPHiddenPropsAction extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class RefreshUPHiddenPropsAction extends FormRequestCountingAction<ServerResponseResult> {
     public String groupObjectSID;
     public String[] propSids;
 

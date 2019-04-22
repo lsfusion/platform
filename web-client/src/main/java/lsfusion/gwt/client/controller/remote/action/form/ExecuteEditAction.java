@@ -2,7 +2,7 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
-public class ExecuteEditAction extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class ExecuteEditAction extends FormRequestCountingAction<ServerResponseResult> {
     public int propertyId;
     public GGroupObjectValue fullKey;
     public String actionSID;

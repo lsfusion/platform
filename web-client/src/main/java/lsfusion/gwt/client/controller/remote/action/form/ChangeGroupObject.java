@@ -3,7 +3,7 @@ package lsfusion.gwt.client.controller.remote.action.form;
 
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
-public class ChangeGroupObject extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class ChangeGroupObject extends FormRequestCountingAction<ServerResponseResult> {
     public int groupId;
     public GGroupObjectValue keyValues;
 

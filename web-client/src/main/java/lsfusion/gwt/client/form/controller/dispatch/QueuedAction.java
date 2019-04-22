@@ -1,8 +1,7 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexAction;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -43,6 +42,6 @@ public class QueuedAction<R extends Result> {
     }
 
     public long getRequestIndex() {
-        return action instanceof FormRequestIndexAction ? ((FormRequestIndexAction) action).requestIndex : -1;
+        return action instanceof FormRequestAction ? ((FormRequestAction) action).requestIndex : -1;
     }
 }

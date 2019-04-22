@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.form;
 
-public class SetRegularFilter extends FormRequestIndexCountingAction<ServerResponseResult> {
+public class SetRegularFilter extends FormRequestCountingAction<ServerResponseResult> {
     public int groupId;
     public int filterId;
 
