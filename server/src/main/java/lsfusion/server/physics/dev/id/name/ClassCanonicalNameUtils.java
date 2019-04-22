@@ -131,6 +131,9 @@ public final class ClassCanonicalNameUtils {
             } else if (name.startsWith("STRING[")) {
                 name = name.substring("STRING[".length(), name.length() - 1);
                 return StringClass.getv(new ExtInt(Integer.parseInt(name)));
+            } else if (name.startsWith("VARSTRING[")) { // temporary fix for generateJnlp
+                name = name.substring("VARSTRING[".length(), name.length() - 1);
+                return StringClass.getv(new ExtInt(Integer.parseInt(name)));
             } else if (name.startsWith("ISTRING[")) {
                 name = name.substring("ISTRING[".length(), name.length() - 1);
                 return StringClass.getvi(new ExtInt(Integer.parseInt(name)));
