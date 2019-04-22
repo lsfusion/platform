@@ -42,8 +42,8 @@ longitude '{geo.longitude.poi}' = ABSTRACT NUMERIC[10,5] (POI);
 readLatitude '{geo.latitude.poi}' = DATA LOCAL NUMERIC[10,5] ();
 readLongitude '{geo.longitude.poi}' = DATA LOCAL NUMERIC[10,5] ();
 
-getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING[255], MapProvider);
-getCoordinates(STRING[255] address)  { getCoordinatesAddress(address, calculateMapProvider()); }
+getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (BPSTRING[255], MapProvider);
+getCoordinates (BPSTRING[255] address)  { getCoordinatesAddress(address, calculateMapProvider()); }
 recalculateDistance  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.RecalculateDistancePOIAction' (POI);
 
 calculateCoordinates '{geo.calculate.coordinates}'(POI POI) { 
@@ -63,8 +63,8 @@ recalculateAllDistances '{geo.recalculate.all.distances}'()  {
 }
 
 // Показать на карте одну точку
-showOnMap '{geo.show.on.map}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.ShowOnMapAction' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
-showOnMap(DOUBLE latitude, DOUBLE longitude, STRING[100] address)  { showOnMap (latitude, longitude, showMapProvider(), address); }
+showOnMap '{geo.show.on.map}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.ShowOnMapAction' (DOUBLE, DOUBLE, MapProvider, BPSTRING[100]);
+showOnMap(DOUBLE latitude, DOUBLE longitude, BPSTRING[100] address)  { showOnMap (latitude, longitude, showMapProvider(), address); }
 
 showOnMap '{geo.show.on.map}'(POI POI) { 
     EXEC showOnMap (latitude (POI), longitude (POI), address(POI));

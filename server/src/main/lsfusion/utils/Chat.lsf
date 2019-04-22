@@ -70,7 +70,7 @@ editable (Message m) = NOT readonly(m);
 
 seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
 deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
-status '{chat.status.message}' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 NOFLEX;
+status '{chat.status.message}' (Message m) = IF own(m) THEN BPISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 NOFLEX;
  
 countMessages '{chat.count.messages}' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
 isEmpty(Chat c) = NOT countMessages(c); 
