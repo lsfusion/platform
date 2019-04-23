@@ -25,6 +25,7 @@ import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
+import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.FormPrintType;
@@ -133,17 +134,30 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
-        ServerResponse result = getRmiQueue().directRequest(requestIndex, getThrowInServerRequest(continueIndex, t));
+    protected abstract RmiQueue getRmiQueue();
+    protected abstract RemoteRequestInterface getRemoteRequestInterface();
+
+    protected ServerResponse continueServerInvocation(long requestIndex, final int continueIndex, final Object[] actionResults) throws RemoteException {
+        ServerResponse result = getRmiQueue().directRequest(requestIndex, new RmiRequest<ServerResponse>("continueServerInvocation") {
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                RemoteRequestInterface requestInterface = getRemoteRequestInterface();
+                if (requestInterface != null) // for forms, just like in RmiCheckNullFormRequest
+                    return requestInterface.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
+                return null;
+            }
+        });
         return result == null ? ServerResponse.EMPTY : result;
     }
 
-    protected abstract RmiQueue getRmiQueue();
-    protected abstract RmiRequest<ServerResponse> getContinueServerRequest(int continueIndex, Object[] actionResults);
-    protected abstract RmiRequest<ServerResponse> getThrowInServerRequest(int continueIndex, Throwable clientThrowable);
-
-    protected ServerResponse continueServerInvocation(long requestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
-        ServerResponse result = getRmiQueue().directRequest(requestIndex, getContinueServerRequest(continueIndex, actionResults));
+    protected ServerResponse throwInServerInvocation(long requestIndex, final int continueIndex, final Throwable t) throws IOException {
+        ServerResponse result = getRmiQueue().directRequest(requestIndex, new RmiRequest<ServerResponse>("throwInServerInvocation") {
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                RemoteRequestInterface requestInterface = getRemoteRequestInterface();
+                if (requestInterface != null) // for forms, just like in RmiCheckNullFormRequest
+                    return requestInterface.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, t);
+                return null;
+            }
+        });
         return result == null ? ServerResponse.EMPTY : result;
     }
 

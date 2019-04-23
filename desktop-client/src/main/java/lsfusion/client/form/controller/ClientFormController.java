@@ -50,6 +50,7 @@ import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
+import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -1030,20 +1031,8 @@ public class ClientFormController implements AsyncListener {
         return rmiQueue;
     }
 
-    public RmiRequest<ServerResponse> getContinueServerRequest(final int continueIndex, final Object[] actionResults) {
-        return new RmiCheckNullFormRequest<ServerResponse>("continueServerInvocation") {
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
-            }
-        };
-    }
-
-    public RmiRequest<ServerResponse> getThrowInServerRequest(final int continueIndex, final Throwable clientThrowable) {
-        return new RmiCheckNullFormRequest<ServerResponse>("throwInServerInvocation") {
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
-            }
-        };
+    public RemoteRequestInterface getRemoteRequestInterface() {
+        return remoteForm;
     }
 
     public boolean isInServerInvocation(long requestIndex) throws RemoteException {
