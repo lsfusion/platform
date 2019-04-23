@@ -35,6 +35,10 @@ public class ExternalRequest implements Serializable {
         this(returnNames, params, charsetName, null, null, new String[0], new String[0], null, null, null, null, null);
     }
 
+    public ExternalRequest(String query) {
+        this(new String[0], new Object[0], "utf-8", null, query, new String[0], new String[0], null, null, null, null, null);
+    }
+
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName, String url, String query,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String host, Integer port, String exportName) {

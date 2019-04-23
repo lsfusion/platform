@@ -655,12 +655,22 @@ maxHeapSize '{security.max.heap.size.memory.limit}' = DATA STRING[10] (MemoryLim
 vmargs '{security.vm.args.memory.limit}' = DATA STRING[1000] (MemoryLimit);
 
 generateJnlpUrls () {
+
+    LOCAL execURL = STRING();
+    execURL() <- CONCAT '', '\{contextPath\}/exec?', IF query() THEN query() + '&' ELSE '', 'action=Security.generateJnlp%5BSTRING%5B10%5D,STRING%5B1000%5D%5D';
+
     FOR MemoryLimit ml IS MemoryLimit DO {
-        exportText() <- CONCAT '', exportText(), '<a href="\{contextPath\}/exec?action=Security.generateJnlp%5BSTRING%5B10%5D,STRING%5B1000%5D%5D&p=', IF maxHeapSize(ml) THEN maxHeapSize(ml) ELSE '';
+        exportText() <- CONCAT '', exportText(), '<a href="', execURL(), '&p=', IF maxHeapSize(ml) THEN maxHeapSize(ml) ELSE '';
         IF vmargs(ml) THEN {
             urlEncode(vmargs(ml), 'UTF-8');
             exportText() <- CONCAT '', exportText(), '&p=', urlEncoded();
         }
         exportText() <- CONCAT '', exportText(), '">{security.run.desktop.client} ', name(ml), '</a><br/>';   
     }
+    
+   IF(exportText()) THEN {  
+        exportText() <- CONCAT '', '<details><summary>', '<a href="', execURL(), '">{security.run.desktop.client}</a>', '</summary>', exportText(), '</details>';
+   } ELSE {
+        exportText() <- CONCAT '', '<a href="', execURL(), '">{security.run.desktop.client}</a>';     
+   }
 }
