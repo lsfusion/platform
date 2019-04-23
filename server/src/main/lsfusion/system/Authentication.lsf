@@ -170,7 +170,7 @@ syncUsers ABSTRACT LIST (ISTRING[100], JSONFILE) @@noauth;
 syncUsers (ISTRING[100] computer, JSONFILE users) + { 
     LOCAL syncSavedUser = BPSTRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;
-    EXPORT FROM value=syncSavedUser(INTEGER i) WHERE NOT isLockedLogin(syncSavedUser(i));
+    EXPORT FROM value=STRING s WHERE s = syncSavedUser(INTEGER i) AND customUser(s) AND NOT isLockedLogin(s);
 }
 
 FORM customUser '{authentication.custom.user}'
