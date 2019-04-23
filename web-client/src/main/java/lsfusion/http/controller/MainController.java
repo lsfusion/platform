@@ -9,7 +9,6 @@ import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationFailureHandler;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
-import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -93,8 +92,7 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        String mainUrl = "<a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp%5BSTRING%5B10%5D,STRING%5B1000%5D%5D>" + ServerMessages.getString(request, "run.desktop.client") + "</a>";
-        return serverSettings != null && serverSettings.jnlpUrls != null ? ("<details><summary>" + mainUrl + "</summary>" + serverSettings.jnlpUrls + "</details>") : mainUrl;
+        return serverSettings != null ? serverSettings.jnlpUrls : ("<a href=" + request.getContextPath() + "/exec?action=Security.generateJnlp%5BSTRING%5B10%5D,STRING%5B1000%5D%5D>" + ServerMessages.getString(request, "run.desktop.client") + "</a>");
     }
 
     private String getFileUrl(RawFileData file) {
