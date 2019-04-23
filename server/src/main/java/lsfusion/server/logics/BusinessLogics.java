@@ -22,7 +22,7 @@ import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.base.log.StringDebugInfoWriter;
-import lsfusion.interop.base.exception.ApplyCanceledException;
+import lsfusion.server.base.exception.ApplyCanceledException;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;

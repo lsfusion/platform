@@ -23,6 +23,6 @@ public class ContinueNavigatorActionHandler extends NavigatorServerResponseActio
             actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i]);
         }
 
-        return getServerResponseResult(action, getRemoteNavigator(action).continueNavigatorAction(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, actionResults));
+        return getServerResponseResult(action, getRemoteNavigator(action).continueServerInvocation(action.requestIndex, action.lastReceivedRequestIndex, action.continueIndex, actionResults));
     }
 }

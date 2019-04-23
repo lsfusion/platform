@@ -1,5 +1,6 @@
 package lsfusion.client.controller.remote.proxy;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.utils.ContentLengthException;
@@ -84,7 +85,7 @@ public abstract class RemoteObjectProxy<T extends Remote> implements Remote {
                         String.format("Remote method called (time: %1$d ms.; result size: %2$s): %3$s.%4$s",
                                 System.currentTimeMillis() - startCall, outStream.size(), this.getClass().getSimpleName(), methodName));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
     }

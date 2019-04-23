@@ -1,7 +1,7 @@
 package lsfusion.interop.base.exception;
 
 // ошибка связи
-public abstract class RemoteClientException extends RuntimeException {
+public abstract class RemoteClientException extends RemoteHandledException {
 
     public final long reqId;
 

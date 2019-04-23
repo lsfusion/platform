@@ -1,5 +1,6 @@
 package lsfusion.client.controller.remote;
 
+import com.google.common.base.Throwables;
 import lsfusion.client.StartupProperties;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.navigator.controller.remote.ClientCallBackProcessor;
@@ -81,7 +82,7 @@ public class PingThread extends Thread {
                                 if (abandoned.get()) {
                                     return;
                                 }
-                                throw new RuntimeException(t);
+                                throw Throwables.propagate(t);
                             }
                         });
                     }

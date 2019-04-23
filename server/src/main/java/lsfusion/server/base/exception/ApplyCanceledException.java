@@ -1,4 +1,4 @@
-package lsfusion.interop.base.exception;
+package lsfusion.server.base.exception;
 
 public class ApplyCanceledException extends RuntimeException {
 

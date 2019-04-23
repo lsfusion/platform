@@ -79,12 +79,17 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Pe
     }
 
     @Override
-    public ServerResponse continueNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
-        return target.continueNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
+    public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
+        return target.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
     }
 
     @Override
-    public ServerResponse throwInNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException {
-        return target.throwInNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
+    public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException {
+        return target.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
+    }
+
+    @Override
+    public boolean isInServerInvocation(long requestIndex) throws RemoteException {
+        return target.isInServerInvocation(requestIndex);
     }
 }

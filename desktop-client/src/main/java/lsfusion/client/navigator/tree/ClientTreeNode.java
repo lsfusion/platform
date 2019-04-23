@@ -1,5 +1,6 @@
 package lsfusion.client.navigator.tree;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.context.ApplicationContextHolder;
 import lsfusion.base.context.ApplicationContextProvider;
@@ -101,7 +102,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                     try {
                         ReflectionUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance(), object));
                     } catch (InstantiationException | IllegalAccessException e1) {
-                        throw new RuntimeException(e1);
+                        throw Throwables.propagate(e1);
                     }
                 }
             });
@@ -116,7 +117,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                     try {
                         ReflectionUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance(), object));
                     } catch (InstantiationException | IllegalAccessException e1) {
-                        throw new RuntimeException(e1);
+                        throw Throwables.propagate(e1);
                     }
                 }
             });

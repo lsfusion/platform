@@ -34,7 +34,7 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
         return new RmiRequest<ServerResponse>("continueServerInvocation") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-                return clientNavigator.remoteNavigator.continueNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
+                return clientNavigator.remoteNavigator.continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
             }
         };
     }
@@ -44,7 +44,7 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
         return new RmiRequest<ServerResponse>("throwInServerInvocation") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-                return clientNavigator.remoteNavigator.throwInNavigatorAction(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
+                return clientNavigator.remoteNavigator.throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
             }
         };
     }

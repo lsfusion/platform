@@ -3,6 +3,7 @@ package lsfusion.interop.form.remote;
 import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
+import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -15,7 +16,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
-public interface RemoteFormInterface extends PendingRemoteInterface {
+public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // form structure + design
 
@@ -23,17 +24,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     Integer getInitFilterPropertyDraw() throws RemoteException;
 
-    // sync communication with server
-
     ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException;
-
-    ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException;
-
-    ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException;
-
-    boolean isInServerInvocation(long requestIndex) throws RemoteException;
-
-    void interrupt(boolean cancelable) throws RemoteException;
 
     // events : form
 
