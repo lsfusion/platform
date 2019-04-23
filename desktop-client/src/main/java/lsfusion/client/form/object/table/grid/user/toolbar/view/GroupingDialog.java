@@ -1,5 +1,6 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
+import com.google.common.base.Throwables;
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.ComThread;
 import com.jacob.com.Dispatch;
@@ -374,7 +375,7 @@ public abstract class GroupingDialog extends JDialog {
                     else
                         exportToXLSX(false);
                 } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                    throw Throwables.propagate(ex);
                 }
             }
         });
@@ -966,7 +967,7 @@ public abstract class GroupingDialog extends JDialog {
             }
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

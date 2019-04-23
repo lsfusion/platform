@@ -5,7 +5,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -79,7 +78,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -932,11 +930,15 @@ public class ClientFormController implements AsyncListener {
         final long ID;
         final ClientGroupObjectValue value;
         if(add) {
-            ID = rmiQueue.runRetryableRequest(new Callable<Long>() {
-                public Long call() throws Exception {
-                    return MainController.generateID();
-                }
-            });
+            try {
+                ID = rmiQueue.runRetryableRequest(new Callable<Long>() {
+                    public Long call() throws Exception {
+                        return MainController.generateID();
+                    }
+                });
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
             value = new ClientGroupObjectValue(object, ID);
         } else {
             value = controller.getCurrentObject();

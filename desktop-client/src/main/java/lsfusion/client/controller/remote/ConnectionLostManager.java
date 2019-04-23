@@ -1,5 +1,6 @@
 package lsfusion.client.controller.remote;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.ExceptionUtils;
@@ -417,13 +418,17 @@ public class ConnectionLostManager {
 
         @Override
         public void run() {
-            RmiQueue.runRetryableRequest(new Callable<Object>() {
-                public Object call() throws Exception {
-                    if(MainController.remoteLogics != null)
-                        MainController.remoteLogics.ping();
-                    return true;
-                }
-            }, abandoned, true);
+            try {
+                RmiQueue.runRetryableRequest(new Callable<Object>() {
+                    public Object call() throws Exception {
+                        if(MainController.remoteLogics != null)
+                            MainController.remoteLogics.ping();
+                        return true;
+                    }
+                }, abandoned, true);
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
         }
 
         public void abandon() {

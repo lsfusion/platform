@@ -5,7 +5,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.server.base.controller.remote.context.RemoteRequestObject;
+import lsfusion.server.base.controller.remote.RemoteRequestObject;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.SQLSession;

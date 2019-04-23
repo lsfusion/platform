@@ -185,6 +185,14 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
     }
 
+    public boolean isInServerInvocation(long requestIndex) throws RemoteException {
+        return rmiQueue.directRequest(requestIndex, new RmiRequest<Boolean>("isInServerInvocation") {
+            protected Boolean doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                return mainNavigator.remoteNavigator.isInServerInvocation(requestIndex);
+            }
+        });
+    }
+
     private void tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate) {
         try {
             rmiQueue.syncRequest(new RmiRequest<ServerResponse>("executeNavigatorAction") {
@@ -195,7 +203,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
                 @Override
                 protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
-                    processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, true)); // тут не понятно, по идее не нужен isInServerInvocation(requestIndex)
+                    processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, isInServerInvocation(requestIndex)));
                 }
 
                 @Override

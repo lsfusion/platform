@@ -5,10 +5,7 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.base.exception.NonFatalRemoteClientException;
-import lsfusion.interop.base.exception.RemoteAbandonedException;
-import lsfusion.interop.base.exception.RemoteClientException;
-import lsfusion.interop.base.exception.RemoteServerException;
+import lsfusion.interop.base.exception.*;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -26,7 +23,7 @@ public class ClientExceptionManager {
     private final static List<Throwable> unreportedThrowables = new ArrayList<>();
     
     public static Throwable fromDesktopClientToAppServer(Throwable e) {
-        if (e instanceof RemoteServerException || e instanceof RemoteClientException) {
+        if (e instanceof RemoteHandledException) {
             assert e.getCause() == null;
             return e;
         }
@@ -35,7 +32,9 @@ public class ClientExceptionManager {
         // but we want to get rid of chained exceptions
         String message = ExceptionUtils.copyMessage(e);
         Throwable throwable;
-        if(e instanceof RemoteException) // we want to keep remoteException class to show it as unhandled remote exception in server log
+        // we want to keep remoteException class to show it as unhandled remote exception in server log
+        // however all remote calls are usually wrapped in runRetryableRequest, where RemoteException is handled and wrapped into RemoteClientException
+        if(ExceptionUtils.getRootCause(e) instanceof RemoteException)
             throwable = new RemoteException(message);
         else
             throwable = new Throwable(getString("errors.internal.client.error")
@@ -44,29 +43,16 @@ public class ClientExceptionManager {
         return throwable;  
     }
 
-    public static Throwable getRemoteExceptionCause(Throwable e) {
-        for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
-            if (ex instanceof RemoteException || ex instanceof RemoteServerException || ex instanceof RemoteClientException || ex instanceof RemoteAbandonedException) {
-                assert !(ex instanceof NonFatalRemoteClientException);
-                return ex;
-            }
-        }
-        return null;
-    }
-
     public static void handle(final Throwable e) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 logger.error("Client error: ", e);
 
-                Throwable exception = getRemoteExceptionCause(e);
-                if(exception instanceof RemoteAbandonedException)
+                if(e instanceof RemoteAbandonedException) // we don't need to log that exception
                     return;
-                if(exception == null)
-                    exception = e;
 
-                reportThrowable(exception);
+                reportThrowable(e);
             }
         });
     }

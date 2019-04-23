@@ -1,5 +1,6 @@
 package lsfusion.client.form.object.table.grid.controller;
 
+import com.google.common.base.Throwables;
 import lsfusion.client.classes.data.ClientIntegralClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
@@ -152,7 +153,7 @@ public class GridTableController {
                                         showPopupMenu(caption, null);
                                     }
                                 } catch (Exception ex) {
-                                    throw new RuntimeException(ex);
+                                    throw Throwables.propagate(ex);
                                 }
                             }
                         });
@@ -173,7 +174,7 @@ public class GridTableController {
                                 try {
                                     showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
                                 } catch (Exception ex) {
-                                    throw new RuntimeException(ex);
+                                    throw Throwables.propagate(ex);
                                 }
                             }
                         });

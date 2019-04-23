@@ -1,10 +1,11 @@
-package lsfusion.server.base.controller.remote.context;
+package lsfusion.server.base.controller.remote;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.interop.action.*;
-import lsfusion.server.base.controller.remote.SequentialRequestLock;
+import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.SyncType;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Optional.fromNullable;
 
-public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObject {
+public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObject implements RemoteRequestInterface {
 
     protected final AtomicInteger numberOfFormChangesRequests = new AtomicInteger();
     private final SequentialRequestLock requestLock;
@@ -305,21 +306,21 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return result;
         }
 
-        @Around("execution(* RemoteRequestObject.executeServerInvocation(long, long, lsfusion.server.base.controller.remote.ui.RemotePausableInvocation)) && target(object) && args(requestIndex, lastReceivedRequestIndex, invocation)")
+        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.executeServerInvocation(long, long, lsfusion.server.base.controller.remote.ui.RemotePausableInvocation)) && target(object) && args(requestIndex, lastReceivedRequestIndex, invocation)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
             return syncExecute(object.syncExecuteServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(* RemoteRequestObject.continueServerInvocation(long, long, int, Object[])) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
+        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.continueServerInvocation(long, long, int, Object[])) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
             return syncExecute(object.syncContinueServerInvocationMap, requestIndex, joinPoint);
         }
-        @Around("execution(* RemoteRequestObject.throwInServerInvocation(long, long, int, Throwable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
+        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.throwInServerInvocation(long, long, int, Throwable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable throwable) throws Throwable {
             return syncExecute(object.syncThrowInServerInvocationMap, requestIndex, joinPoint);
         }
 
-        @Around("execution(* RemoteRequestObject.processRMIRequest(long, long, lsfusion.server.logics.action.controller.stack.EExecutionStackCallable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, request)")
+        @Around("execution(* lsfusion.server.base.controller.remote.RemoteRequestObject.processRMIRequest(long, long, lsfusion.server.logics.action.controller.stack.EExecutionStackCallable)) && target(object) && args(requestIndex, lastReceivedRequestIndex, request)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteRequestObject object, long requestIndex, long lastReceivedRequestIndex, EExecutionStackCallable request) throws Throwable {
             return syncExecute(object.syncProcessRMIRequestMap, requestIndex, joinPoint);
         }

@@ -553,16 +553,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public ServerResponse continueNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Object[] actionResults) throws RemoteException {
-        return continueServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults);
-    }
-
-    @Override
-    public ServerResponse throwInNavigatorAction(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException {
-        return throwInServerInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, clientThrowable);
-    }
-
-    @Override
     public void formCreated(RemoteForm form) {
         DataObject connection = getConnection();
         if (connection != null) {

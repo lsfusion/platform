@@ -1,5 +1,6 @@
 package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
+import com.google.common.base.Throwables;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.filter.user.FilterView;
 import lsfusion.client.form.object.table.grid.view.GridTable;
@@ -48,7 +49,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
                                 try {
                                     dialog.exportToExcelPivot(false);
                                 } catch (Exception e) {
-                                    throw new RuntimeException(e);
+                                    throw Throwables.propagate(e);
                                 }
                             }
 
@@ -58,7 +59,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
                                 try {
                                     dialog.exportToExcelPivot(true);
                                 } catch (Exception e) {
-                                    throw new RuntimeException(e);
+                                    throw Throwables.propagate(e);
                                 }
                             }
 

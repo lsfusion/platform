@@ -1,5 +1,6 @@
 package lsfusion.client.form.print.view;
 
+import com.google.common.base.Throwables;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.FormPrintType;
@@ -41,7 +42,7 @@ public class ReportDialog extends JDialog {
             dlg.setVisible(true);
             return pageCount;
         } catch (JRException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 }

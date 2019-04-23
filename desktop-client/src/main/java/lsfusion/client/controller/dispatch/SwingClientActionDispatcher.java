@@ -285,7 +285,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             return new RuntimeClientActionResult(output, error);
 
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -320,7 +320,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -347,7 +347,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 fileStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
                 if (action.mustExist) {
-                    throw new RuntimeException(e);
+                    throw Throwables.propagate(e);
                 } else {
                     return null;
                 }
@@ -376,7 +376,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             return true;
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -384,7 +384,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         try {
             MainFrame.instance.updateUser(MainFrame.instance.remoteNavigator.getClientSettings().currentUserName);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -470,7 +470,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 BaseUtils.openFile(action.file, action.name, action.extension);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -481,7 +481,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             clip.open(inputStream);
             clip.start();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -521,7 +521,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(ExceptionClientAction action) {
-        throw new RuntimeException(action.e);
+        throw Throwables.propagate(action.e);
     }
 
     @Override
