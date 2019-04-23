@@ -16,7 +16,7 @@ public class TextClass extends StringClass {
     public final boolean rich;
 
     public TextClass(boolean rich) {
-        super(LocalizedString.create("Text" + (rich ? " (rich)" : "")), false, ExtInt.UNLIMITED, false);
+        super(LocalizedString.create("{classes.text}" + (rich ? " (rich)" : "")), false, ExtInt.UNLIMITED, false);
 
         this.rich = rich;
     }

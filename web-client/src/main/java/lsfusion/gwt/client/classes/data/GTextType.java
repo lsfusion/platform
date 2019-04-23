@@ -42,7 +42,7 @@ public class GTextType extends GStringType {
 
     @Override
     public String toString() {
-        return "Text" + (rich ? " rich" : "");
+        return ClientMessages.Instance.get().typeTextCaption() + (rich ? " rich" : "");
     }
 
 }

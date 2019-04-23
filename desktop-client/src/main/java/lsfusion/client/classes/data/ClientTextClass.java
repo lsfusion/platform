@@ -51,7 +51,7 @@ public class ClientTextClass extends ClientStringClass implements ClientTypeClas
 
     @Override
     public String toString() {
-        return "Text" + (rich ? " (rich)" : "");
+        return ClientResourceBundle.getString("logics.classes.time") + (rich ? " (rich)" : "");
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
