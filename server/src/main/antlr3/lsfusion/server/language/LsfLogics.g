@@ -2993,13 +2993,6 @@ groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObje
 		(',' nextGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextPropertyUsage = propertyUsage { if(inMainParseState()) { $pUsages.put(go, $nextPropertyUsage.propUsage); } } )*
 	;
 
-initFilterDefinition returns [String propName, List<String> mapping]
-	:	'INITFILTER'
-		(	pname=ID { $propName = $pname.text; }
-	    |	mappedProp=mappedPropertyDraw { $propName = $mappedProp.name; $mapping = $mappedProp.mapping; }
-		)
-	;
-
 formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
 @init {
     ObjectEntity object = null;
