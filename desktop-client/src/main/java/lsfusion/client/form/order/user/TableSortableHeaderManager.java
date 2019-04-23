@@ -36,6 +36,8 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
 
         TableColumnModel columnModel = table.getColumnModel();
         int viewColumn = columnModel.getColumnIndexAtX(me.getX());
+        if(viewColumn == -1)
+            return;
         int column = columnModel.getColumn(viewColumn).getModelIndex();
 
         if (table.getTableHeader().getCursor().getType() == Cursor.E_RESIZE_CURSOR) {
