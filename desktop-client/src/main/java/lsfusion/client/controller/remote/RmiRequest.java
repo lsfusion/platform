@@ -21,7 +21,7 @@ public abstract class RmiRequest<T> {
      */
     private Pair<Integer, Integer> timeoutParams;
 
-    protected RmiRequest(String name) {
+    public RmiRequest(String name) {
         this.name = name;
     }
 
