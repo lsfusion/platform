@@ -129,6 +129,7 @@ public interface ClientMessages extends Messages {
     String typeStringCaption();
     String typeStringCaptionRegister();
     String typeStringCaptionPadding();
+    String typeTextCaption();
     String typeObjectCaption();
     String typeTimeCaption();
     String typeExcelFileCaption();
