@@ -74,17 +74,17 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
     @Override
     public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
-        navigatorDispatchAsync.execute(new GetRemoteNavigatorActionMessage(), callback);
+        navigatorDispatchAsync.executePriority(new GetRemoteNavigatorActionMessage(), callback);
     }
 
     @Override
     public void getServerActionMessageList(ErrorHandlingCallback<ListResult> callback) {
-        navigatorDispatchAsync.execute(new GetRemoteNavigatorActionMessageList(), callback);
+        navigatorDispatchAsync.executePriority(new GetRemoteNavigatorActionMessageList(), callback);
     }
 
     @Override
     public void interrupt(boolean cancelable) {
-        navigatorDispatchAsync.execute(new InterruptNavigator(cancelable), new ErrorHandlingCallback<VoidResult>());
+        navigatorDispatchAsync.executePriority(new InterruptNavigator(cancelable), new ErrorHandlingCallback<VoidResult>());
     }
 
     public <T extends Result> void syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {

@@ -35,6 +35,10 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     @Override
     protected <A extends RequestAction<R>, R extends Result> void fillAction(A action) {
         ((FormAction) action).formSessionID = form.sessionID;
+    }
+
+    @Override
+    protected <A extends RequestAction<R>, R extends Result> void fillQueuedAction(A action) {
         if (action instanceof FormRequestAction) {
             if (action instanceof FormRequestCountingAction)
                 ((FormRequestCountingAction) action).requestIndex = nextRequestIndex++;
@@ -55,12 +59,6 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     @Override
     protected boolean isEditing() {
         return formController.isEditing();
-    }
-
-    public <A extends FormAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {
-        action.formSessionID = form.sessionID;
-        Log.debug("Executing priority action: " + action.toString());
-        executeInternal(action, callback);
     }
 
     @Override

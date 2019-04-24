@@ -23,6 +23,10 @@ public class NavigatorDispatchAsync extends RemoteDispatchAsync {
     @Override
     protected <A extends RequestAction<R>, R extends Result> void fillAction(A action) {
         ((NavigatorAction) action).sessionID = sessionID;
+    }
+
+    @Override
+    protected <A extends RequestAction<R>, R extends Result> void fillQueuedAction(A action) {
         if (action instanceof NavigatorRequestAction) {
             if(action instanceof NavigatorRequestCountingAction)
                 ((NavigatorRequestCountingAction) action).requestIndex = nextRequestIndex++;
