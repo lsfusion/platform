@@ -57,8 +57,26 @@ public class ClientExceptionManager {
         });
     }
 
+    // some java and docking frames not critical bugs
+    private static boolean ignoreException(Throwable exception) {
+        if(exception instanceof ConcurrentModificationException && ExceptionUtils.toString(exception).contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground("))
+            return true;
+        if(exception instanceof IllegalArgumentException) {
+            String exceptionString = ExceptionUtils.toString(exception);
+            if(exceptionString.contains("Comparison method violates its general contract!") && exceptionString.contains("sun.awt.datatransfer.DataTransferer.setToSortedDataFlavorArray("))
+                return true;
+        }
+        return false;
+    }
+
     public static void reportThrowable(Throwable exception) {
         SwingUtils.assertDispatchThread();
+
+        if(ignoreException(exception)) {
+            logger.error("Ignoring throwable : " + exception, exception);
+            return;
+        }
+
         exception = fromDesktopClientToAppServer(exception);
 
         assert exception.getCause() == null;
@@ -70,19 +88,17 @@ public class ClientExceptionManager {
 
         logger.error("Reporting throwable : " + exception, exception);
 
-        if (!(exception instanceof ConcurrentModificationException && ExceptionUtils.toString(exception).contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
-            synchronized (unreportedThrowables) {
-                boolean reported = false;
-                try {
-                    reported = clientExceptionLog(exception);
-                } catch (ConnectException ex) {
-                    logger.error("Error reporting client connect exception: " + exception, ex);
-                } catch (Throwable ex) {
-                    logger.error("Error reporting client exception: " + exception, ex);
-                }
-                if(!reported)
-                    unreportedThrowables.add(exception);
+        synchronized (unreportedThrowables) {
+            boolean reported = false;
+            try {
+                reported = clientExceptionLog(exception);
+            } catch (ConnectException ex) {
+                logger.error("Error reporting client connect exception: " + exception, ex);
+            } catch (Throwable ex) {
+                logger.error("Error reporting client exception: " + exception, ex);
             }
+            if(!reported)
+                unreportedThrowables.add(exception);
         }
     }
 

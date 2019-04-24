@@ -1260,15 +1260,27 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
+    // setRegularFilter is synchronous, that's why busy dialog filter can be set visible, which will lead to another itemStateChanged and setRegularFilter call (with nested sync exception)
+    // so we just suppress that call
+    private final ThreadLocal<Boolean> threadSettingRegularFilter = new ThreadLocal<>();
+
     private void setRegularFilter(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter filter) throws IOException {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
-            @Override
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.setRegularFilter(requestIndex, lastReceivedRequestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());
-            }
-        });
+        Boolean settingRegularFilter = threadSettingRegularFilter.get();
+        if(settingRegularFilter != null && settingRegularFilter)
+            return;
+        threadSettingRegularFilter.set(true);
+        try {
+            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
+                @Override
+                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.setRegularFilter(requestIndex, lastReceivedRequestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());
+                }
+            });
+        } finally {
+            threadSettingRegularFilter.set(null);
+        }
     }
 
     public Integer countRecords(final int groupObjectID) throws Exception {

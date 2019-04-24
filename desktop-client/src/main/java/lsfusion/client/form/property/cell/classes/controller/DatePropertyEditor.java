@@ -137,6 +137,8 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(!calendarButton.isVisible())
+            return;
         int x = calendarButton.getWidth() - (int) popup.getPreferredSize().getWidth();
         int y = calendarButton.getY() + calendarButton.getHeight();
 
