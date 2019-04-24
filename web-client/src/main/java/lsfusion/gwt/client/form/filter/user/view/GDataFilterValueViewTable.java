@@ -250,9 +250,23 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             if (context != null && parentElement != null) {
                 removeAllChildren(parentElement);
                 renderDom(context, parentElement, value);
-                redraw();
-                focusOnValue();
-            }
+
+                final Runnable redrawAndFocus = new Runnable() {
+                    public void run() {
+                        redraw();
+                        focusOnValue();
+                    }
+                };
+                // hack, the problem is in DataGrid.resolvePendingStateAfterUpdate setFocus is called in isResolvingState, which leads to validateAndCommit => finishEditing => nested update, so in that case just schedule redraw and focus later
+                if(!GDataFilterValueViewTable.this.isResolvingState)
+                    redrawAndFocus.run();
+                else
+                    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                        public void execute() {
+                            redrawAndFocus.run();
+                        }
+                    });
+                }
         }
     }
 }
