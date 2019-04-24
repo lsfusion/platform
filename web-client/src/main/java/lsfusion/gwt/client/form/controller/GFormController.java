@@ -1205,17 +1205,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     @Override
     public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
-        dispatcher.executePriorityAction(new GetRemoteActionMessage(), callback);
+        dispatcher.executePriority(new GetRemoteActionMessage(), callback);
     }
 
     @Override
     public void getServerActionMessageList(ErrorHandlingCallback<ListResult> callback) {
-        dispatcher.executePriorityAction(new GetRemoteActionMessageList(), callback);
+        dispatcher.executePriority(new GetRemoteActionMessageList(), callback);
     }
 
     @Override
     public void interrupt(boolean cancelable) {
-        dispatcher.executePriorityAction(new Interrupt(cancelable), new ErrorHandlingCallback<VoidResult>());
+        dispatcher.executePriority(new Interrupt(cancelable), new ErrorHandlingCallback<VoidResult>());
     }
 
     private static final class Change {
