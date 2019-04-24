@@ -931,6 +931,18 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return column.getValue(rowValue);
     }
 
+    private int getMaxColumnsCount(List<List<String>> table) {
+        if(table.isEmpty())
+            return 0;
+        int tableColumns = 0;
+        for(List<String> row : table) {
+            int rowColumns = row.size();
+            if(rowColumns > tableColumns)
+                tableColumns = rowColumns;
+        }
+        return tableColumns;
+    }
+
     @Override
     public void pasteData(final List<List<String>> table) {
         final int selectedColumn = getKeyboardSelectedColumn();
@@ -939,7 +951,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             return;
         }
 
-        final int tableColumns = table.get(0).size();
+        final int tableColumns = getMaxColumnsCount(table);
 
         boolean singleC = table.size() == 1 && tableColumns == 1;
 
@@ -958,7 +970,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                             columnKeys.add(getColumnKey(selectedColumn + i));
                         }
 
-                        form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
+                        form.pasteExternalTable(propertyList, columnKeys, table);
                     }
                 }
             });

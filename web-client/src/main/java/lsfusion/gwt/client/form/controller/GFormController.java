@@ -669,19 +669,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, int maxColumns) {
+    public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table) {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
 
+        int propertyColumns = propertyList.size();
         for (List<String> sRow : table) {
             ArrayList<Object> valueRow = new ArrayList<>();
 
-            int rowLength = Math.min(sRow.size(), maxColumns);
-            for (int i = 0; i < rowLength; i++) {
+            for (int i = 0; i < propertyColumns; i++) {
                 GPropertyDraw property = propertyList.get(i);
-                String sCell = sRow.get(i);
-                valueRow.add(
-                        property.parseChangeValueOrNull(sCell)
-                );
+                String sCell = i < sRow.size() ? sRow.get(i) : null;
+                valueRow.add(property.parseChangeValueOrNull(sCell));
             }
             values.add(valueRow);
         }

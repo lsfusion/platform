@@ -1075,15 +1075,16 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table, int maxColumns) throws IOException {
+    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table) throws IOException {
+        int propertyColumns = propertyList.size();
+
         final List<List<byte[]>> values = new ArrayList<>();
         for (List<String> sRow : table) {
             List<byte[]> valueRow = new ArrayList<>();
 
-            int rowLength = Math.min(sRow.size(), maxColumns);
-            for (int i = 0; i < rowLength; i++) {
+            for (int i = 0; i < propertyColumns; i++) {
                 ClientPropertyDraw property = propertyList.get(i);
-                String sCell = sRow.get(i);
+                String sCell = i < sRow.size() ? sRow.get(i) : null;
                 Object oCell = sCell == null ? null : property.parseChangeValueOrNull(sCell);
                 valueRow.add(serializeObject(oCell));
             }

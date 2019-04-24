@@ -814,16 +814,26 @@ public class GridTable extends ClientPropertyTable {
         return property != null && property.baseType instanceof ClientTextClass && ((ClientTextClass) property.baseType).rich;
     }
 
+    private int getMaxColumnsCount(List<List<String>> table) {
+        if(table.isEmpty())
+            return 0;
+        int tableColumns = 0;
+        for(List<String> row : table) {
+            int rowColumns = row.size();
+            if(rowColumns > tableColumns)
+                tableColumns = rowColumns;
+        }
+        return tableColumns;
+    }
+
     public void pasteTable(List<List<String>> table) {
         boolean singleV = selectionController.hasSingleSelection();
         int selectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
         if (selectedColumn == -1) {
             return;
         }
-        int tableColumns = 0;
-        if (!table.isEmpty()) {
-            tableColumns = table.get(0).size();
-        }
+        int tableColumns = getMaxColumnsCount(table);
+
         boolean singleC = table.size() == 1 && tableColumns == 1;
         if (!singleV || !singleC) {
             int answer = SwingUtils.showConfirmDialog(form.getLayout(), getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.QUESTION_MESSAGE, 1, false, 0);
@@ -865,7 +875,7 @@ public class GridTable extends ClientPropertyTable {
                         columnKeys.add(model.getColumnKey(selectedColumn + i));
                     }
 
-                    form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
+                    form.pasteExternalTable(propertyList, columnKeys, table);
                 } else {
                     //вставляем в несколько ячеек, используем только 1е значение
                     String sPasteValue = table.get(0).get(0);
