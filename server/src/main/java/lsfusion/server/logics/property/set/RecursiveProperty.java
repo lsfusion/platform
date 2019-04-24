@@ -69,9 +69,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         assert !isLogical();
 
         IntegralClass<?> integralClass = (IntegralClass)getType();
-        Property constraint = PropertyFact.createCompare(interfaces, getImplement(), PropertyFact.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
-        constraint.caption = getConstrainedMessage();
-        return constraint;
+        return PropertyFact.createCompare(interfaces, getImplement(), PropertyFact.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
     }
 
     public LocalizedString getConstrainedMessage() {

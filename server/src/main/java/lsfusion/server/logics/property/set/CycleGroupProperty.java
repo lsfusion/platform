@@ -45,8 +45,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     public Property getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
-        Property constraint; 
-                
+
 //        constraint = PropertyFact.createPartition(innerInterfaces, PropertyFact.<I>createTrue(),
 //                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
 
@@ -57,10 +56,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         } else {
             constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
         }
-        constraint = PropertyFact.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
-
-        constraint.caption = getConstrainedMessage();
-        return constraint;
+        return PropertyFact.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
     }
 
     public LocalizedString getConstrainedMessage() {
