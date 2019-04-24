@@ -3,6 +3,7 @@ package lsfusion.gwt.client.base.exception;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.logging.impl.StackTracePrintStream;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -112,8 +113,10 @@ public class GExceptionManager {
             }
             reqId = ind;
         }
-        
-        exceptions.add(new NonFatalHandledException(copyMessage(t), reqId));
+
+        NonFatalHandledException e = new NonFatalHandledException(copyMessage(t), reqId);
+        GExceptionManager.copyStackTraces(t, e);
+        exceptions.add(e);
     }
 
     public static void flushFailedNotFatalRequests(Action action) {
@@ -167,9 +170,11 @@ public class GExceptionManager {
     // assuming that there should be primitive copy (Strings and other very primitive Java classes)  
     public static void copyStackTraces(Throwable from, Throwable to) {
         from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
-        if(!(from instanceof StatusCodeException)) // temporary hack to understand how statuscodeexception can pass check in DispatchAsyncWrapper  
-            to.setStackTrace(from.getStackTrace());
-        else
+        if (from instanceof StatusCodeException) { // temporary hack to understand how statuscodeexception can pass check in DispatchAsyncWrapper
             assert false;
+            if(to instanceof SerializableThrowable) // serializableThrowable suppresses stacktrace
+                to.setStackTrace(new Exception().getStackTrace());
+        } else
+            to.setStackTrace(from.getStackTrace());
     }
 }
