@@ -1,9 +1,12 @@
 package lsfusion.server.physics.dev.i18n;
 
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Locale;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -36,6 +39,7 @@ public final class LocalizedString {
     
     private boolean isFormatted;
     private Object[] params = null;
+    private static Object[] NOPARAMS = new Object[]{};
     
     private LocalizedString(String source) {
         if (canBeOptimized(source)) {
@@ -45,6 +49,7 @@ public final class LocalizedString {
             this.source = source;
             this.needToBeLocalized = true;
         }
+        this.params = NOPARAMS;
     }
 
     private LocalizedString(String source, boolean needToBeLocalized) {
@@ -159,7 +164,8 @@ public final class LocalizedString {
             LocalizedString other = (LocalizedString)obj;
             return  source.equals(other.source) && 
                     needToBeLocalized() == other.needToBeLocalized() && 
-                    isFormatted == other.isFormatted;
+                    isFormatted == other.isFormatted &&
+                    Arrays.equals(params, other.params);
         }
     }
 
@@ -188,8 +194,8 @@ public final class LocalizedString {
         }
         
         @IdentityStartLazy
-        public LocalizedString createFormatted(String source, Object... params) {
-            return new LocalizedString(source, true, true, params);
+        public LocalizedString createFormatted(String source, ImList<Object> params) { // we need ImList to get correct equals for IdentityLazy
+            return new LocalizedString(source, true, true, params.toArray(new Object[params.size()]));
         }
     }
     
@@ -219,7 +225,7 @@ public final class LocalizedString {
         if (source == null) {
             return null;
         }
-        return Instancer.instance.createFormatted(source, params);
+        return Instancer.instance.createFormatted(source, ListFact.toList(params));
     }
     
     private static boolean canBeOptimized(String s) {

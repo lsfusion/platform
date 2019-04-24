@@ -77,6 +77,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     public void replaceSelection(String content){
         if(content.endsWith("\n"))
             content = content.substring(0, content.length()-1);
-        super.replaceSelection(content);
+        try {
+            super.replaceSelection(content);
+        } catch (IllegalArgumentException e) { // strange java bug, so just suppress that exception
+        }
     }
 }
