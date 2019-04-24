@@ -221,7 +221,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     /**
      * A boolean indicating that we are in the process of resolving state.
      */
-    private boolean isResolvingState;
+    protected boolean isResolvingState;
 
     /**
      * A boolean indicating that the widget is refreshing, so all events should be ignored.
@@ -2313,7 +2313,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         @Override
         public void onResize() {
-            ensurePendingState();
+            if(!isResolvingState) // hack, because in preAfterUpdateTableData there is browser event flush, which causes scheduleDeferred flush => HeaderPanel.forceLayout => onResize and IllegalStateException, everything is really twisted here, so will just suppress ensurePendingState
+                ensurePendingState();
         }
 
         @Override
