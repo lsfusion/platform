@@ -23,8 +23,7 @@ import java.util.Map;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
-import static lsfusion.interop.form.property.Compare.CONTAINS;
-import static lsfusion.interop.form.property.Compare.EQUALS;
+import static lsfusion.interop.form.property.Compare.*;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -38,7 +37,7 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public Compare[] getFilterCompares() {
-        return Compare.values();
+        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE};
     }
 
     @Override

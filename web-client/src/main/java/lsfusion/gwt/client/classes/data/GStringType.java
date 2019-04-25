@@ -1,15 +1,11 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.StringGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.controller.TextGridCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.controller.rich.RichTextGridCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.StringGridCellRenderer;
-import lsfusion.gwt.client.form.property.cell.classes.view.TextGridCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.GridCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.GridCellRenderer;
@@ -18,6 +14,7 @@ import java.text.ParseException;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
+import static lsfusion.gwt.client.form.filter.user.GCompare.*;
 
 public class GStringType extends GDataType {
 
@@ -27,7 +24,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GCompare[] getFilterCompares() {
-        return GCompare.values();
+        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE};
     }
 
     @Override
