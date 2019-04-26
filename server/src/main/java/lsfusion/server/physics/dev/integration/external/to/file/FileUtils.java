@@ -22,17 +22,25 @@ import static lsfusion.base.file.WriteUtils.appendExtension;
 public class FileUtils {
 
     public static void moveFile(String sourcePath, String destinationPath) throws SQLException, JSchException, SftpException, IOException {
+        copyFile(sourcePath, destinationPath, true);
+    }
+
+    public static void copyFile(String sourcePath, String destinationPath) throws SQLException, JSchException, SftpException, IOException {
+        copyFile(sourcePath, destinationPath, false);
+    }
+
+    private static void copyFile(String sourcePath, String destinationPath, boolean move) throws IOException, SftpException, JSchException, SQLException {
         Path srcPath = Path.parsePath(sourcePath);
         Path destPath = Path.parsePath(destinationPath);
 
-        if(srcPath.type.equals("file") && destPath.type.equals("file")) {
-            moveFile(new File(srcPath.path), new File(destPath.path));
-        } else if (equalFTPServers(srcPath, destPath)) {
+        if (srcPath.type.equals("file") && destPath.type.equals("file")) {
+            copyFile(new File(srcPath.path), new File(destPath.path), move);
+        } else if (move && equalFTPServers(srcPath, destPath)) {
             renameFTP(srcPath.path, destPath.path, null);
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false, null);
             if (readResult != null) {
-                RawFileData rawFile = (RawFileData) readResult.fileBytes;  
+                RawFileData rawFile = (RawFileData) readResult.fileBytes;
                 switch (destPath.type) {
                     case "file":
                         rawFile.write(destPath.path);
@@ -44,12 +52,14 @@ public class FileUtils {
                         WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
                         break;
                 }
-                delete(srcPath);
+                if (move) {
+                    delete(srcPath);
+                }
             }
         }
     }
 
-    private static void moveFile(File srcFile, File destFile) throws IOException {
+    private static void copyFile(File srcFile, File destFile, boolean move) throws IOException {
         if (!srcFile.exists()) {
             throw new FileNotFoundException("Source '" + srcFile + "' does not exist");
         }
@@ -59,13 +69,17 @@ public class FileUtils {
         if (destFile.isDirectory()) {
             throw new IOException("Destination '" + destFile + "' is a directory");
         }
-        boolean rename = srcFile.renameTo(destFile);
-        if (!rename) {
-            org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
-            if (!srcFile.delete()) {
-                org.apache.commons.io.FileUtils.deleteQuietly(destFile);
-                throw new IOException("Failed to delete original file '" + srcFile + "' after copy to '" + destFile + "'");
+        if(move) {
+            boolean rename = srcFile.renameTo(destFile);
+            if (!rename) {
+                org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
+                if (!srcFile.delete()) {
+                    org.apache.commons.io.FileUtils.deleteQuietly(destFile);
+                    throw new IOException("Failed to delete original file '" + srcFile + "' after copy to '" + destFile + "'");
+                }
             }
+        } else {
+            org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
         }
     }
 

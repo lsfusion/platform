@@ -65,6 +65,10 @@ delete '{utils.delete}'  INTERNAL  'lsfusion.server.physics.dev.integration.exte
 delete '{utils.delete}' (ISTRING[500] path)  { delete(path, NULL); }
 deleteClient '{utils.delete.client}' (ISTRING[500] path)  { delete(path, TRUE); }
 //sourcePath, destinationPath, isClient
+copy '{utils.move}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.CopyAction' (ISTRING[500], ISTRING[500], BOOLEAN);
+copy '{utils.move}' (ISTRING[500] source, ISTRING[500] destination)  { copy(source, destination, NULL); }
+copyClient '{utils.move.client}' (ISTRING[500] source, ISTRING[500] destination)  { copy(source, destination, TRUE); }
+//sourcePath, destinationPath, isClient
 move '{utils.move}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MoveAction' (ISTRING[500], ISTRING[500], BOOLEAN);
 move '{utils.move}' (ISTRING[500] source, ISTRING[500] destination)  { move(source, destination, NULL); }
 moveClient '{utils.move.client}' (ISTRING[500] source, ISTRING[500] destination)  { move(source, destination, TRUE); }
