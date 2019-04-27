@@ -99,12 +99,13 @@ check()  {
 executeLocalEvents  INTERNAL  'lsfusion.server.logics.event.ExecuteLocalEventsAction' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
-staticName '{system.static.name.object}' = DATA BPSTRING[250] (Object); // temporary for migration
-staticName '{system.static.name.object}' (StaticObject object) = staticName[Object](object) MATERIALIZED TABLE staticObject;
-nameStatic (name) = GROUP MAX StaticObject object BY staticName(object);
+staticName '{system.static.name.object}' = DATA BPSTRING[250] (StaticObject) TABLE staticObject;
+nameStatic (name) = GROUP NAGGR StaticObject object BY staticName(object);
 
-staticCaption '{system.static.caption.object}' = DATA BPISTRING[100] (Object); // temporary for migration
-staticCaption '{system.static.caption.object}' (StaticObject object) = staticCaption[Object](object) MATERIALIZED TABLE staticObject IN id;
+fillingIDs = DATA LOCAL BOOLEAN ();
+CONSTRAINT CHANGED(staticName(StaticObject object)) AND NOT fillingIDs() MESSAGE '{system.constraint.change.staticname.forbidden}';
+
+staticCaption '{system.static.caption.object}' = DATA BPISTRING[100] (StaticObject) TABLE staticObject IN id;
 
 objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(objectClass(o));
 prevObjectClassName '{system.object.class.name.object}' (Object o) = staticCaption(PREV(objectClass(o)));

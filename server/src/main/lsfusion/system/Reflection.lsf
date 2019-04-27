@@ -38,9 +38,7 @@ isNavigatorFolder (NavigatorElement element) = element IS NavigatorFolder;
 isNavigatorAction (NavigatorElement element) = element IS NavigatorAction;
 isNavigatorForm (NavigatorElement element) = element IS NavigatorForm;
 
-CLASS Form '{reflection.form}' {
-    noForm '{reflection.form.no.form}'
-};
+CLASS Form '{reflection.form}';
 
 TABLE form (Form);
 TABLE formNames (STRING[100]);
@@ -49,6 +47,14 @@ caption '{reflection.caption.form}' = DATA STRING[250] (Form);
 canonicalName '{reflection.canonical.name.form}' = DATA STRING[100] (Form);
 form '{reflection.form}' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // для profiler'а
 is (Form form) = form IS Form;
+
+// need this for profiler
+CLASS NoForm { // do it with inheritance, because it is impossible to use Form.noForm (for example SET(f = Form.noForm) or even SET(f IS Form) AND form = Form.noForm), because compiler always thinks that Form.noForm is the constant of the constant class 
+    instance '{reflection.form.no.form}'
+} : Form;
+WHEN SET(NoForm f IS NoForm) DO { // need this for forms synchronization (for this object not to be deleted)
+    canonicalName(f) <- '_NOFORM';
+}
 
 currentForm = NATIVE STRING[100] (); // canonical name
 

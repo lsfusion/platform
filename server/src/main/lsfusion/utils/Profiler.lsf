@@ -72,7 +72,7 @@ writeProfilerBatch ()  {
     }     
     
     FOR ProfileObject p1 == profileObject(TEXT t1) AND ProfileObject p2 == profileObject(TEXT t2) AND callCount(t1, t2, INTEGER u, STRING[100] f) 
-            AND u == id(User user) AND (Form form == form(f) OR (f == '' AND form == Form.noForm)) INLINE DO {
+            AND u == id(User user) AND (Form form == form(f) OR (f == '' AND form == NoForm.instance)) INLINE DO {
         totalTime(p1, p2, user, form) <- totalTime(p1, p2, user, form) (+) totalTime(t1, t2, u, f); 
         totalSQLTime(p1, p2, user, form) <- totalSQLTime(p1, p2, user, form) (+) totalSQLTime(t1, t2, u, f); 
         totalUserInteractionTime(p1, p2, user, form) <- totalUserInteractionTime(p1, p2, user, form) (+) totalUserInteractionTime(t1, t2, u, f); 

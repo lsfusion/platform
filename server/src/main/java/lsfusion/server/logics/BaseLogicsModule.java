@@ -186,6 +186,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP networkPath;
 
+    public LP fillingIDs;
+
     public AbstractGroup privateGroup;
 
     public TableFactory tableFactory;
@@ -420,6 +422,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             makeActionPublic(watch, "watch");
         }
 
+        // need it before initMainLogic because it is used in constraints
+        cancel = addCancelAProp(null, LocalizedString.NONAME, SetFact.<SessionDataProperty>EMPTY());
+
         super.initMainLogic();
         initGroups();
         addClassDataPropsToGroup();
@@ -427,7 +432,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // через JOIN (не операторы)
 
         apply = findAction("apply[]");
-        cancel = findAction("cancel[]");
+//        cancel = findAction("cancel[]");
 
         onStarted = findAction("onStarted[]");
 
@@ -483,7 +488,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         reportToStretch = findProperty("reportToStretch[]");
 
         networkPath = findProperty("networkPath[]");
-        
+
+        fillingIDs = findProperty("fillingIDs[]");
+
         // Настройка форм
         defaultBackgroundColor = findProperty("defaultBackgroundColor[]");
         defaultOverrideBackgroundColor = findProperty("defaultOverrideBackgroundColor[]");
