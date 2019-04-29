@@ -10,7 +10,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
-import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
@@ -18,9 +18,9 @@ import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ConcreteValueClass;
 import lsfusion.server.logics.classes.StaticClass;
@@ -28,6 +28,7 @@ import lsfusion.server.logics.classes.user.set.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -181,6 +182,15 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("id not found");
     }
 
+    public LocalizedString getObjectCaption(String name) {
+        for(ObjectInfo info : getStaticObjectsInfoIt()) {
+            if (info.name.equals(name)) {
+                return info.caption;
+            }
+        }
+        throw new RuntimeException("name not found");
+    }
+
     public final void addStaticObjects(List<String> names, List<LocalizedString> captions, Version version) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
@@ -204,28 +214,30 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return names;
     }
 
-    public Map<DataObject, String> fillIDs(DataSession session, LP name, LP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
-        Map<DataObject, String> modifiedCaptions = new HashMap<>();
+    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP name, LP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
 
         // Получаем старые sid и name
         QueryBuilder<String, String> allClassesQuery = new QueryBuilder<>(SetFact.singleton("key"));
         Expr key = allClassesQuery.getMapExprs().singleValue();
-        Expr sidExpr = staticName.getExpr(session.getModifier(), key);
+        Expr sidExpr = staticName.getExpr(key);
         allClassesQuery.and(sidExpr.getWhere());
         allClassesQuery.and(key.isClass(this));
         allClassesQuery.addProperty("sid", sidExpr);
-        allClassesQuery.addProperty("name", name.getExpr(session.getModifier(), key));
-        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(session.sql, session.env);
+        allClassesQuery.addProperty("name", name.getExpr(key));
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(sql, env);
 
         // Забрасываем результат запроса в map: sid -> <id, name>
         Map<String, Pair<Long, String>> oldClasses = new HashMap<>();
         for (int i = 0, size = qResult.size(); i < size; i++) {
             ImMap<String, Object> resultKey = qResult.getKey(i);
             ImMap<String, Object> resultValue = qResult.getValue(i);
-            oldClasses.put(((String) resultValue.get("sid")).trim(), new Pair<>((Long) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("name"))));
+            String sid = ((String) resultValue.get("sid")).trim();
+            Pair<Long, String> prevValue = oldClasses.put(sid, new Pair<>((Long) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("name"))));
+            if(prevValue != null) // temporary, CONSTRAINT on static name change, it should not happen
+                dbChanges.removed.add(new DBManager.IDRemove(new DataObject(prevValue.first, this), sid));
         }
 
-        // новый sid -> старый sid
+        // new sid -> old sid
         Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
 
         for (ObjectInfo info : getStaticObjectsInfoIt()) {
@@ -234,30 +246,32 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             if ((usedClass = usedSIds.put(newSID, this)) != null)
                 throw new RuntimeException(ThreadLocalContext.localize(LocalizedString.createFormatted("{classes.objects.have.the.same.id}", newSID, caption, usedClass.caption)));
 
-            String oldSID = newSID;
+            Pair<Long, String> oldObject;
             if (reversedChanges.containsKey(newSID)) {
-                oldSID = reversedChanges.get(newSID);
-                if (oldClasses.containsKey(oldSID)) {
-                    modifiedObjects.put(new DataObject(oldClasses.get(oldSID).first, this), newSID);
+                oldObject = oldClasses.remove(reversedChanges.get(newSID));
+                if (oldObject != null) {
+                    dbChanges.modifiedSIDs.put(new DataObject(oldObject.first, this), newSID);
                 }
-            }
+            } else
+                oldObject = oldClasses.remove(newSID);
 
             String staticObjectCaption = ThreadLocalContext.localize(info.caption);
-            if (oldClasses.containsKey(oldSID)) {
-                if (!staticObjectCaption.equals(oldClasses.get(oldSID).second)) {
-                    modifiedCaptions.put(new DataObject(oldClasses.get(oldSID).first, this), staticObjectCaption);
+            if (oldObject != null) {
+                if (!staticObjectCaption.equals(oldObject.second)) {
+                    dbChanges.modifiedCaptions.put(new DataObject(oldObject.first, this), staticObjectCaption);
                 }
-                info.id = oldClasses.get(oldSID).first;
+                info.id = oldObject.first;
             } else {
-                DataObject classObject = session.addObject(this);
-                name.change(staticObjectCaption, session, classObject);
-                staticName.change(newSID, session, classObject);
-                info.id = (Long) classObject.object;
+                Long id = idGen.call();
+                dbChanges.added.add(new DBManager.IDAdd(id, this, newSID, staticObjectCaption));
+                info.id = id;
             }
 
             usedIds.add(info.id);
         }
-        return modifiedCaptions;
+        for(Map.Entry<String, Pair<Long, String>> oldClass : oldClasses.entrySet())
+            if(!ID.equals(oldClass.getValue().first)) // need this for objectClass
+                dbChanges.removed.add(new DBManager.IDRemove(new DataObject(oldClass.getValue().first, this), oldClass.getKey()));
     }
 
     private String createStaticObjectSID(String objectName) {
@@ -278,8 +292,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public ClassDataProperty dataProperty;
-    public Long readData(Long data, SQLSession sql) throws SQLException, SQLHandledException {
-        return (Long) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+    public Long readData(Long data, SQLSession sql, QueryEnvironment env) throws SQLException, SQLHandledException {
+        return (Long) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, env);
     }
 
     public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {

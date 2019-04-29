@@ -17,6 +17,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.language.MigrationScriptLexer;
 import lsfusion.server.language.MigrationScriptParser;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -64,9 +65,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.*;
@@ -206,16 +205,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         long start = System.currentTimeMillis();
         if(log)
             BaseUtils.serviceLogger.info(String.format("Recalculate Class Stats: %s", String.valueOf(tableClasses)));
-        QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
+        QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
         KeyExpr countKeyExpr = new KeyExpr("count");
         Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
                 ValueExpr.COUNT, countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
-
         classes.addProperty(0, countExpr);
         classes.and(countExpr.getWhere());
-
         ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+
         ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
         MExclMap<Long, Integer> mResult = MapFact.mExclMap(concreteChilds.size());
         for (int i = 0, size = concreteChilds.size(); i < size; i++) {
@@ -995,6 +993,69 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return new OldDBStructure(inputDB);
     }
 
+    public static class IDAdd {
+        public final long object;
+
+        public final ConcreteCustomClass customClass;
+        public final String sID;
+        public final String caption;
+
+        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String caption) {
+            this.object = object;
+            this.customClass = customClass;
+            this.sID = sID;
+            this.caption = caption;
+        }
+    }
+
+    public static class IDRemove {
+        public final DataObject object;
+
+        public final String sID; // SID value only for logging
+
+        public IDRemove(DataObject object, String sID) {
+            this.object = object;
+            this.sID = sID;
+        }
+    }
+
+    public static class IDChanges {
+
+        public final List<IDAdd> added = new ArrayList<>();
+        public final List<IDRemove> removed = new ArrayList<>();
+
+        public final Map<DataObject, String> modifiedSIDs = new HashMap<>();
+        public final Map<DataObject, String> modifiedCaptions = new HashMap<>();
+
+        public void apply(DataSession session, BaseLogicsModule LM, boolean isFirstStart) throws SQLException, SQLHandledException {
+            LM.fillingIDs.change(true, session); // need this to avoid constraint on staticName changing
+
+            for (IDAdd addedObject : added) {
+                if(!isFirstStart)
+                    startLogger.info("adding static object with id " + addedObject.object + ", sid " + addedObject.sID + " and name " + addedObject.caption);
+                DataObject classObject = new DataObject(addedObject.object, LM.baseClass.unknown);
+                session.changeClass(classObject, addedObject.customClass);
+                LM.staticName.change(addedObject.sID, session, classObject);
+                LM.staticCaption.change(addedObject.caption, session, classObject);
+            }
+
+            for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
+                startLogger.info("changing sid of static object with id " + modifiedSID.getKey() + " to " + modifiedSID.getValue());
+                LM.staticName.change(modifiedSID.getValue(), session, modifiedSID.getKey());
+            }
+
+            for (Map.Entry<DataObject, String> modifiedCaption : modifiedCaptions.entrySet()) {
+                startLogger.info("renaming static object with id " + modifiedCaption.getKey() + " to " + modifiedCaption.getValue());
+                LM.staticCaption.change(modifiedCaption.getValue(), session, modifiedCaption.getKey());
+            }
+
+            for (IDRemove removedObject : removed) {
+                startLogger.info("removing static object with id " + removedObject.object.object + " and sid " + removedObject.sID);
+                session.changeClass(removedObject.object, LM.baseClass.unknown);
+            }
+        }
+    }
+
     public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         SQLSession sql = getThreadLocalSql();
 
@@ -1016,7 +1077,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
-
+        if(!oldDBStructure.isEmpty() && oldDBStructure.version < 30)
+            throw new RuntimeException("You should update to version 30 first");
         checkModules(oldDBStructure);
 
         // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
@@ -1169,7 +1231,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
                 sql.addColumn(property.getTable(), property.property.field);
-                if (oldDBStructure.version > 0) // если все свойства "новые" то ничего перерасчитывать не надо
+                if (!oldDBStructure.isEmpty()) // если все свойства "новые" то ничего перерасчитывать не надо
                     recalculateProperties.add(property.property);
             }
 
@@ -1259,12 +1321,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger); // если таблица новая нет смысла логировать
                 }
 
-            try(DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
-                startLogger.info("Filling static objects ids");
-                LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, 
-                        getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
-                apply(session);
+            startLogger.info("Filling static objects ids");
+            IDChanges idChanges = new IDChanges();
+            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), new SQLCallable<Long>() {
+                        public Long call() {
+                            return generateID();
+                        }
+                    }, LM.staticCaption, LM.staticName,
+                    getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges), idChanges);
 
+            for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
+                newClass.ID = newClass.customClass.ID;
+            }
+
+            try(DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
                 if (oldDBStructure.isEmpty()) {
                     startLogger.info("Recalculate class stats");
                     recalculateClassStats(session, false);
@@ -1274,9 +1344,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 startLogger.info("Updating stats");
                 ImMap<String, Integer> tableStats = updateStats(sql, false);  // пересчитаем статистику
 
-                for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
-                    newClass.ID = newClass.customClass.ID;
-                }
+                startLogger.info("Writing static objects changes");
+                idChanges.apply(session, LM, oldDBStructure.isEmpty());
+                apply(session);
 
                 startLogger.info("Migrating reflection properties and actions");
                 migrateReflectionProperties(session, oldDBStructure);
@@ -2379,7 +2449,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public NewDBStructure(DBVersion dbVersion) {
-            version = 30; // need this for migration (to remove staticName[Object])
+            version = 31; // need this for migration
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

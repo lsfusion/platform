@@ -1305,6 +1305,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         });
     }
 
+    public ImMap<ImMap<T, DataObject>, DataObject> readAllClasses(SQLSession session, Modifier modifier, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+        String readValue = "readvalue";
+        QueryBuilder<T, Object> readQuery = new QueryBuilder<>(interfaces);
+        Expr expr = getExpr(readQuery.getMapExprs(), modifier);
+        readQuery.addProperty(readValue, expr);
+        readQuery.and(expr.getWhere());
+        return readQuery.executeClasses(session, env, baseClass).getMap().mapValues(new GetValue<DataObject, ImMap<Object, ObjectValue>>() {
+            public DataObject getMapValue(ImMap<Object, ObjectValue> value) {
+                return (DataObject)value.singleValue();
+            }
+        });
+    }
+
     public ObjectValue readClasses(ExecutionContext context) throws SQLException, SQLHandledException {
         return readClasses(context.getEnv());
     }
@@ -1347,6 +1360,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public ImMap<ImMap<T, Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return readAll(env.getSession().sql, env.getModifier(), env.getQueryEnv());
+    }
+    public ImMap<ImMap<T, DataObject>, DataObject> readAllClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return readAllClasses(env.getSession().sql, env.getModifier(), env.getQueryEnv(), env.getSession().baseClass);
     }
 
     // используется для оптимизации - если Stored то попытать использовать это значение

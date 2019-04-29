@@ -23,6 +23,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass navigatorFolder;
     public ConcreteCustomClass navigatorAction;
     public ConcreteCustomClass form;
+    public ConcreteCustomClass noForm;
     public ConcreteCustomClass propertyDraw;
     public ConcreteCustomClass propertyDrawShowStatus;
     public ConcreteCustomClass table;
@@ -210,6 +211,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         navigatorFolder = (ConcreteCustomClass) findClass("NavigatorFolder");
         navigatorAction = (ConcreteCustomClass) findClass("NavigatorAction");
         form = (ConcreteCustomClass) findClass("Form");
+        noForm = (ConcreteCustomClass) findClass("NoForm");
         propertyDraw = (ConcreteCustomClass) findClass("PropertyDraw");
         propertyDrawShowStatus = (ConcreteCustomClass) findClass("PropertyDrawShowStatus");
         table = (ConcreteCustomClass) findClass("Table");

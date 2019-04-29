@@ -12,6 +12,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.classes.IsClassType;
@@ -19,17 +20,18 @@ import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.table.NamedTable;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.FullTablesInterface;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.apache.log4j.Logger;
@@ -108,7 +110,7 @@ public class BaseClass extends AbstractCustomClass {
         ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, version);
     }
 
-    public void fillIDs(DataSession session, LP staticCaption, LP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
+    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP staticCaption, LP<?> staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<>();
         Set<Long> usedIds = new HashSet<>();
 
@@ -117,17 +119,13 @@ public class BaseClass extends AbstractCustomClass {
 
         objectClass.ID = Long.MAX_VALUE - 5; // в явную обрабатываем objectClass
 
-        if(objectClass.readData(objectClass.ID, session.sql) == null) {
-            DataObject classObject = new DataObject(objectClass.ID, unknown);
-            session.changeClass(classObject, objectClass);
-            staticCaption.change(ThreadLocalContext.localize(objectClass.caption), session, classObject);
-            staticName.change(objectClass.getSID(), session, classObject);
-        }
+        if(objectClass.readData(objectClass.ID, sql, env) == null)
+            dbChanges.added.add(new DBManager.IDAdd(objectClass.ID, objectClass, objectClass.getSID(), ThreadLocalContext.localize(objectClass.caption)));
+
         usedSIds.put(objectClass.getSID(), objectClass);
         usedIds.add(objectClass.ID);
 
-        Map<DataObject, String> modifiedSIDs = new HashMap<>();
-        Map<DataObject, String> modifiedCaptions = objectClass.fillIDs(session, staticCaption, staticName, usedSIds, usedIds, sidChanges, modifiedSIDs);
+        objectClass.fillIDs(sql, env, idGen, staticCaption, staticName, usedSIds, usedIds, sidChanges, dbChanges);
 
         Set<CustomClass> allClasses = getAllChildren().toJavaSet();
         allClasses.remove(objectClass);
@@ -144,7 +142,7 @@ public class BaseClass extends AbstractCustomClass {
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof ConcreteCustomClass)
-                modifiedCaptions.putAll(((ConcreteCustomClass) customClass).fillIDs(session, staticCaption, staticName, usedSIds, usedIds, objectSIDChanges, modifiedSIDs));
+                ((ConcreteCustomClass) customClass).fillIDs(sql, env, idGen, staticCaption, staticName, usedSIds, usedIds, objectSIDChanges, dbChanges);
 
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {
@@ -152,17 +150,6 @@ public class BaseClass extends AbstractCustomClass {
                     free++;
                 customClass.ID = free++;
             }
-
-        for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
-            startLogger.info("changing sid of class with id " + modifiedSID.getKey() + " to " + modifiedSID.getValue());
-            staticName.change(modifiedSID.getValue(), session, modifiedSID.getKey());
-        }
-
-        // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
-        for (Map.Entry<DataObject, String> modifiedCaption : modifiedCaptions.entrySet()) {
-            startLogger.info("renaming class with id " + modifiedCaption.getKey() + " to " + modifiedCaption.getValue());
-            staticCaption.change(modifiedCaption.getValue(), session, modifiedCaption.getKey());
-        }
     }
 
     public int getCount() {

@@ -79,6 +79,13 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
             }
         });
     }
+    public ImMap<ImList<DataObject>, DataObject> readAllClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return property.readAllClasses(env).mapKeys(new GetValue<ImList<DataObject>, ImMap<T, DataObject>>() {
+            public ImList<DataObject> getMapValue(ImMap<T, DataObject> value) {
+                return listInterfaces.mapList(value);
+            }
+        });
+    }
 
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
         return property.read(session, getMapValues(objects), modifier, env);

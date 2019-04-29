@@ -248,6 +248,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         for (FormEntity form : businessLogics.getFormEntities()) {
             formsData.add(asList((Object) form.getCanonicalName(), ThreadLocalContext.localize(form.getCaption())));
         }
+        formsData.add(asList((Object)"_NOFORM", ThreadLocalContext.localize(reflectionLM.noForm.getObjectCaption("instance"))));
 
         startLogger.info("synchronizeForms integration service started");
         List<ImportProperty<?>> props = new ArrayList<>();
