@@ -67,7 +67,7 @@ public class RichEditorPane extends JPanel {
         ImageIcon image = new ImageIcon(ShowTypeView.class.getResource("/images/richtext/image.png"));
     }
     
-    private static final String INVALID_TAGS[] = {"html", "head", "body", "title", "o", "/o", "!--EndFragment--", "!--StartFragment--"};
+    private static final String INVALID_TAGS[] = {"html", "head", "body", "title", "o", "/o", "!--EndFragment--", "!--StartFragment--", "link", "!--(?s)(.*)--"};
 
     private static final String[] fontSizeLabels = new String[] {"default", "xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large"};
     private static final int[] fontSizes = new int[] {-1, 8, 10, 12, 14, 18, 24, 36};
@@ -395,6 +395,8 @@ public class RichEditorPane extends JPanel {
             html = html.replaceAll("<" + invalidTag + "[^>]*>", "");
             html = html.replaceAll("</" + invalidTag + ">", "");
         }
+        
+        html = html.replaceFirst("Version.*?StartHTML.*?([^<]+)", ""); // remove header when copying from Word
 
         return html.trim();
     }
