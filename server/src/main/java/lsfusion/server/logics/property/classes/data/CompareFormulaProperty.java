@@ -58,11 +58,6 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
         return inferJoinInterfaceClasses(operator1, operator2, inferType);
     }
 
-    @Override
-    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.logical;
-    }
-    
     public <T extends PropertyInterface> Inferred<T> inferJoinInterfaceClasses(PropertyInterfaceImplement<T> operator1, PropertyInterfaceImplement<T> operator2, InferType inferType) {
         Compared<T> compared;
         if(this.compare == Compare.EQUALS || this.compare == Compare.NOT_EQUALS)

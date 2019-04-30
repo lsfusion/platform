@@ -215,19 +215,19 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
     }
 
     public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM);
+        setupLoggable(ownerModule, systemEventsLM, false);
         property.setLoggable(true);
     }
 
     public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM);
+        setupLoggable(ownerModule, systemEventsLM, true);
         property.setLoggable(true);
     }
 
-    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
+    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean reflection) {
         if (property.getLogValueProperty() == null) {
-            LP logValueProperty = ownerModule.addLProp(systemEventsLM, this);
-            LP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this);
+            LP logValueProperty = ownerModule.addLProp(systemEventsLM, this, reflection);
+            LP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this, reflection);
             
             property.setLogValueProperty(logValueProperty);
             property.setLogWhereProperty(ownerModule.addLWhereProp(logValueProperty, logDropProperty));

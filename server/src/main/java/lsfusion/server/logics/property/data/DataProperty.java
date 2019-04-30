@@ -48,7 +48,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
-public abstract class DataProperty extends Property<ClassPropertyInterface> {
+public abstract class DataProperty extends AbstractDataProperty {
 
     public ValueClass value;
 
@@ -63,16 +63,9 @@ public abstract class DataProperty extends Property<ClassPropertyInterface> {
         this.value = value;
     }
 
-    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
+    @Override
+    protected ClassWhere<Object> getDataClassValueWhere() {
         return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
-    }
-
-    // перегружаем из-за assertion'а с depends
-    public Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
-    }
-    public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.toExValue(value);
     }
 
     public ChangeEvent<?> event = null;
@@ -117,7 +110,7 @@ public abstract class DataProperty extends Property<ClassPropertyInterface> {
 
         Result<ImSet<ClassPropertyInterface>> checkKeyChanges = new Result<>();
         Result<Boolean> checkValueChange = new Result<>();
-        ClassType classType = ClassType.storedPolicy;
+        AlgType classType = AlgType.storedType; // actually id doesn't really matter because it is dataproperty
         boolean updatedClasses = change.checkClasses(sql, baseClass, true, owner, true, getInterfaceClasses(classType), getValueClass(classType), checkKeyChanges, checkValueChange, checkTransaction, classRemove, timestamp); // тут фиг поймешь какое policy
         
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();

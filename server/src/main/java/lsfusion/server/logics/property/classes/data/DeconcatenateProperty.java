@@ -52,6 +52,6 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
         ExClassSet exClassSet = inferred.get(getInterface());
         if(exClassSet != null)
             return ConcatenateProperty.getPart(part, exClassSet);            
-        return super.calcInferValueClass(inferred, inferType);
+        return ExClassSet.FALSE;
     }
 }

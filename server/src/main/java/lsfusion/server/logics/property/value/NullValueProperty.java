@@ -32,4 +32,9 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface> {
     protected Inferred<PropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         return Inferred.FALSE();
     }
+
+    @Override
+    protected ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.FALSE;
+    }
 }

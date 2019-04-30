@@ -397,6 +397,17 @@
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
+                <ref bean="initStoredTask"/> <!-- reading from db so need stored initialized-->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="initStoredTask" class="lsfusion.server.physics.exec.db.controller.init.InitStoredTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="finalizeCalcAbstractTask"/>
+                <ref bean="initFullTablesTask"/> <!-- has markStored inside-->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -405,7 +416,7 @@
     <bean id="initClassDataIndicesTask" class="lsfusion.server.logics.classes.controller.init.InitClassDataIndicesTask">
         <property name="dependencies">
             <set>
-                <ref bean="initReflectionEventsTask"/>  <!-- чисто для хака initStats -->
+                <ref bean="initReflectionEventsTask"/>  <!-- because of initStats hack-->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -502,6 +513,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
+                <ref bean="initStoredTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

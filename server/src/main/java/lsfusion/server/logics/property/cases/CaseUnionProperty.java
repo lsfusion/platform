@@ -35,10 +35,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.property.classes.infer.CalcClassType;
-import lsfusion.server.logics.property.classes.infer.ExClassSet;
-import lsfusion.server.logics.property.classes.infer.InferType;
-import lsfusion.server.logics.property.classes.infer.Inferred;
+import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -194,9 +191,6 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        if(isAbstract() && calcType instanceof CalcClassType)
-            return getVirtualTableExpr(joinImplement, (CalcClassType) calcType);
-
         ImList<CalcCase<Interface>> cases = getCases();
 
         // до непосредственно вычисления, для хинтов
@@ -427,9 +421,16 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return classValueWhere != null;
     }
 
+    @Override
+    protected boolean isClassVirtualized(CalcClassType calcType) {
+        return isAbstract(); // for optimization purposes
+    }
+
     public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
-        if(isAbstract())
+        if(isAbstract() && !finalized) {
+            assert !AlgType.useInfer;
             return classValueWhere;
+        }
 
         return super.calcClassValueWhere(type);
     }

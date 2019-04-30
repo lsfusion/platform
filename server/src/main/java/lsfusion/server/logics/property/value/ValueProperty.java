@@ -11,6 +11,7 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.NoIncrementProperty;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -35,6 +36,11 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
 
     protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return staticClass.getStaticExpr(value);
+    }
+
+    @Override
+    protected Inferred<PropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return Inferred.EMPTY();
     }
 
     @Override

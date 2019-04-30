@@ -49,7 +49,4 @@ public class CalcClassType extends CalcType implements AlgType {
         property.calcCheckAllImplementations(intersects, maps, this);
     }
 
-    public boolean replaceIs() {
-        return this == PREVSAME;
-    }
 }

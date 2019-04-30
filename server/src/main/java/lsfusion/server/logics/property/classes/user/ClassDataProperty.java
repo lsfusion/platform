@@ -31,15 +31,16 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.CalcClassType;
+import lsfusion.server.logics.property.data.AbstractDataProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
 
-// первично свойство, соответствующее полю хранящему значение класса
-// строго системное свойство, в логике предполагается использование ObjectClassProperty
-public class ClassDataProperty extends Property<ClassPropertyInterface> implements ObjectClassField {
+// virtual "data property" storing object class
+// strictly system property, on application level ObjectClassProperty should be used
+public class ClassDataProperty extends AbstractDataProperty implements ObjectClassField {
 
     public final ObjectValueClassSet set;
 
@@ -57,7 +58,8 @@ public class ClassDataProperty extends Property<ClassPropertyInterface> implemen
         throw new RuntimeException("should not be");
     }
 
-    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
+    @Override
+    protected ClassWhere<Object> getDataClassValueWhere() {
         return new ClassWhere<>(MapFact.<Object, AndClassSet>toMap(interfaces.single(), set, "value", set.getBaseClass().objectClass));
     }
 

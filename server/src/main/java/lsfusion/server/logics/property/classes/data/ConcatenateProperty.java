@@ -82,6 +82,6 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
             ImList<ResolveClassSet> andClassSets = getOrderInterfaces().mapList(ExClassSet.fromExAnd(inferred));
             return new ExClassSet(new ResolveConcatenateClassSet(andClassSets.toArray(new ResolveClassSet[andClassSets.size()])), false);
         }
-        return super.calcInferValueClass(inferred, inferType);
+        return ExClassSet.FALSE;
     }
 }

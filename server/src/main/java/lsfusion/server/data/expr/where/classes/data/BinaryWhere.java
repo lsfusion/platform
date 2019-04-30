@@ -21,7 +21,6 @@ import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.join.select.ExprIndexedJoin;
 import lsfusion.server.data.expr.join.where.GroupJoinsWheres;
 import lsfusion.server.data.expr.join.where.WhereJoin;
-import lsfusion.server.data.expr.value.InfiniteExpr;
 import lsfusion.server.data.expr.value.StaticExpr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.query.compile.CompileSource;
@@ -54,7 +53,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         assert checkStaticClass(operator1, operator2);
         assert operator1 instanceof StaticExpr || operator1 instanceof StaticParamNullableExpr;
         assert operator2 instanceof StaticExpr || operator2 instanceof StaticParamNullableExpr;
-        assert operator1.getClass() == operator2.getClass() || operator1 instanceof InfiniteExpr || operator2 instanceof InfiniteExpr;
+        assert operator1.getClass() == operator2.getClass();
 
         // не равны, и если static, то типы у них одинаковые, потому как в противном случае СУБД будет считать, что равны, а сервер приложений нет
         return !checkEquals(operator1, operator2) && !(operator1 instanceof StaticExpr && operator2 instanceof StaticExpr && !BaseUtils.hashEquals(((StaticExpr) operator1).getType(), ((StaticExpr) operator2).getType()));

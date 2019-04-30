@@ -40,9 +40,12 @@ public class SessionDataProperty extends DataProperty {
     }
 
     @Override
+    protected boolean isClassVirtualized(CalcClassType calcType) {
+        return true; // because can be different from null, if there are changes
+    }
+
+    @Override
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(calcType instanceof CalcClassType)
-            return getVirtualTableExpr(joinImplement, (CalcClassType) calcType);
         if(propChanges.isEmpty())
             return CaseExpr.NULL;
         return super.calculateExpr(joinImplement, calcType, propChanges, changedWhere);

@@ -179,13 +179,13 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
     }
 
 
-    @Override
-    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
-        ClassWhere<Object> result = new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(calcType)));
-        if(calcType == CalcClassType.PREVBASE && !type.isNotNullNew())
-            result = result.getBase();
-        return result; // assert что full
-    }
+//    @Override
+//    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
+//        ClassWhere<Object> result = new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(calcType)));
+//        if(calcType == CalcClassType.PREVBASE && !type.isNotNullNew())
+//            result = result.getBase();
+//        return result; // assert что full
+//    }
 
     public Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         Inferred<T> result = property.inferInterfaceClasses(ExClassSet.notNull(commonValue), inferType);

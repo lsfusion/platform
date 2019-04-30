@@ -71,6 +71,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyObjectImplement;
@@ -1943,7 +1944,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         
         for (LP<?> lp : businessLogics.getNamedProperties()) {
-            if (lp.property.isFull(ClassType.useInsteadOfAssert.getCalc().getAlgInfo())) {
+            if (lp.property.isFull(AlgType.logType)) {
                 String logPropCN = LogicsModule.getLogPropertyCN(lp, "System", businessLogics.systemEventsLM);
                 if (logProperties.contains(logPropCN)) {
                     String propCN = lp.property.getCanonicalName();

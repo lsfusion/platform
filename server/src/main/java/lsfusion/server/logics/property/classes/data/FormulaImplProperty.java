@@ -37,6 +37,11 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
 
     private final FormulaJoinImpl formula;
 
+    @Override
+    protected boolean isNullable() {
+        return formula.hasNotNull();
+    }
+
     public FormulaImplProperty(LocalizedString caption, int intCount, FormulaJoinImpl formula) {
         super(caption, getInterfaces(intCount));
 

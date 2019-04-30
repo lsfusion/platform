@@ -106,6 +106,7 @@ import lsfusion.server.logics.property.Union;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -1092,15 +1093,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         String tableName = ps.table;
         if (tableName != null) {
             targetTable = findTable(tableName);
-            if (!targetTable.equalClasses(property.property.getOrderTableInterfaceClasses(ClassType.storedPolicy))) {
+            if (!targetTable.equalClasses(property.property.getOrderTableInterfaceClasses(AlgType.storedResolveType))) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
             }
         }
-        if (property.property instanceof StoredDataProperty) {
+        if (property.property instanceof StoredDataProperty || (ps.isPersistent && (property.property instanceof AggregateProperty))) {
             property.property.markStored(baseLM.tableFactory, targetTable);
-        } else if (ps.isPersistent && (property.property instanceof AggregateProperty)) {
-            addPersistent(property, targetTable);
         }
 
         if(ps.isComplex)
@@ -2457,7 +2456,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (type == GroupingType.SUM) {
             resultProp = addSGProp(null, false, false, emptyCaption, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
-            resultProp = addMGProp(null, false, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
             resultProp = addOGProp(null, false, emptyCaption, GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
@@ -2552,7 +2551,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             LP lp = addDProp(LocalizedString.NONAME, param.cls, aggClass);
 
             makePropertyPublic(lp, param.paramName, aggSignature);
-            ((StoredDataProperty) lp.property).markStored(baseLM.tableFactory);
+            ((StoredDataProperty) lp.property).markStored(baseLM.tableFactory, (ImplementTable)null);
 
             groupProps.add(new LPWithParams(lp, 0));
             resultSignature.add(param.cls.getResolveSet());
@@ -3893,7 +3892,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkIndexNecessaryProperty(lps);
-        checks.checkStoredProperties(lps);
+        checks.checkMarkStoredProperties(lps);
         checks.checkDistinctParametersList(lps);
         checks.checkIndexNumberOfParameters(params.size(), lps);
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(new GetValue<String, TypedParameter>() {

@@ -493,8 +493,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public void initFullSingleTables() {
         for(ImplementTable table : LM.tableFactory.getImplementTables()) {
-            if(table.markedFull && !table.isFull())  // для второго условия все и делается, чтобы не создавать лишние св-ва
-                LM.markFull(table, table.getMapFields().singleValue());
+            if(table.markedFull && !table.isFull())
+                LM.markFull(table, table.getOrderMapFields().valuesList());
         }
     }
 
@@ -537,7 +537,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             LM.addProperty(null, new LP<>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
             // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
-            dataProperty.markStored(LM.tableFactory, new MapKeysTable<>(table, MapFact.singletonRev(dataProperty.interfaces.single(), table.keys.single())));
+            dataProperty.markStored(new MapKeysTable<>(table, MapFact.singletonRev(dataProperty.interfaces.single(), table.keys.single())));
+            dataProperty.initStored(); // we need to initialize because we use calcClassValueWhere for init stored properties
 
             // помечаем dataProperty
             for(ConcreteCustomClass customClass : set)

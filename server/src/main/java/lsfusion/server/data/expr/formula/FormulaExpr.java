@@ -18,7 +18,6 @@ import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.expr.join.base.FormulaJoin;
 import lsfusion.server.data.expr.join.inner.InnerBaseJoin;
 import lsfusion.server.data.expr.key.KeyType;
-import lsfusion.server.data.expr.value.InfiniteExpr;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
@@ -294,20 +293,6 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     private static Expr createBase(ImList<BaseExpr> exprs, final FormulaJoinImpl formula) {
-        if (formula instanceof CustomFormulaImpl) {
-            CustomFormulaImpl customFormula = (CustomFormulaImpl) formula;
-            if (customFormula.formula.equals(MIN2)) {
-                assert !formula.hasNotNull();
-                BaseExpr operator1 = exprs.get(0);
-                BaseExpr operator2 = exprs.get(1);
-                if (operator1 instanceof InfiniteExpr) {
-                    return operator2;
-                }
-                if (operator2 instanceof InfiniteExpr) {
-                    return operator1;
-                }
-            }
-        }
         return BaseExpr.create(formula.hasNotNull() ? new FormulaNullableExpr(exprs, formula) : new FormulaExpr(exprs, formula));
     }
 }
