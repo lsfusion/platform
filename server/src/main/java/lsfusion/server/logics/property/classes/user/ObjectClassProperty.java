@@ -25,6 +25,9 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
@@ -39,6 +42,16 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
         this.baseClass = baseClass;
 
         finalizeInit();
+    }
+
+    @Override
+    protected Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
+    }
+
+    @Override
+    protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.toExValue(baseClass.objectClass);
     }
 
     public ValueClass getInterfaceClass() {

@@ -116,6 +116,7 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -1229,7 +1230,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 
         final Expr dataExpr = property.getInconsistentExpr(mapKeys, baseClass);
 
-        Where correctClasses = property.getClassValueWhere(ClassType.storedPolicy).getInconsistentWhere(new GetValue<Expr, Object>() {
+        Where correctClasses = property.getClassValueWhere(AlgType.storedType).getInconsistentWhere(new GetValue<Expr, Object>() {
             public Expr getMapValue(Object value) {
                 if(value instanceof PropertyInterface) {
                     return mapKeys.get((P)value);

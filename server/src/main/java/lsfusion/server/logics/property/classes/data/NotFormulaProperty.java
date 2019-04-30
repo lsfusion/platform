@@ -33,6 +33,12 @@ public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
 
     @Override
     public Inferred<PropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return new Inferred<>(MapFact.<PropertyInterface, ExClassSet>EMPTY());
+        return Inferred.EMPTY(); // need empty and not map i -> null, because last one means that i is not null (and it is not)
     }
+
+    @Override
+    protected ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.logical;
+    }
+
 }

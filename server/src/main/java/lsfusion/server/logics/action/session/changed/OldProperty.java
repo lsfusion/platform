@@ -44,15 +44,17 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(calcType instanceof CalcClassType) {
-            return getVirtualTableExpr(joinImplement, (CalcClassType) calcType);
-        }
         return property.getExpr(joinImplement, calcType); // возвращаем старое значение
     }
 
     @Override
+    protected boolean isClassVirtualized(CalcClassType calcType) {
+        return true;
+    }
+
+    @Override
     public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
-        ClassWhere<Object> classValueWhere = property.getClassValueWhere(type);
+        ClassWhere<Object> classValueWhere = super.calcClassValueWhere(type);
         if(type == CalcClassType.PREVBASE)
             return classValueWhere.getBase();
         return classValueWhere;

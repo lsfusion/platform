@@ -127,7 +127,6 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
-import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
@@ -446,28 +445,28 @@ public abstract class LogicsModule {
         table.setCanonicalName(canonicalName);
         addModuleTable(table);
         
-        if(isFull) {
-            if(classes.length == 1)
-                table.markedFull = true;
-            else
-                markFull(table, classes);
-        } else
+        if(isFull)
+            table.markedFull = true;
+        else
             table.markedExplicit = isExplicit;
         return table;
     }
 
-    protected void markFull(ImplementTable table, ValueClass... classes) {
+    protected void markFull(ImplementTable table, ImList<ValueClass> listClasses) {
         // создаем IS
-        ImList<ValueClass> listClasses = ListFact.toList(classes);
         PropertyRevImplement<?, Integer> mapProperty = IsClassProperty.getProperty(listClasses.toIndexedMap()); // тут конечно стремновато из кэша брать, так как остальные гарантируют создание
         LP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
 //        addProperty(null, lcp);
 
         // делаем public, persistent
-        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), ClassCanonicalNameUtils.getResolveList(classes));
-        addPersistent(lcp, table);
+        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), listClasses.mapListValues(new GetValue<ResolveClassSet, ValueClass>() {
+            public ResolveClassSet getMapValue(ValueClass value) {
+                return value.getResolveSet();
+            }}).toJavaList());
+        lcp.property.markStored(baseLM.tableFactory, table);
+        lcp.property.initStored(); // we need to initialize because we use calcClassValueWhere for init stored properties
 
-        // помечаем fullField из помеченного свойства
+        // marking full
         table.setFullField(lcp.property.field);
     }
 
@@ -1319,38 +1318,20 @@ public abstract class LogicsModule {
 
     // ------------------- GROUP MAX ----------------- //
 
-    protected LP addMGProp(AbstractGroup group, boolean persist, LocalizedString caption, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
-        return addMGProp(group, persist, new LocalizedString[]{caption}, 1, min, interfaces, explicitInnerClasses, params)[0];
-    }
-
-    protected LP[] addMGProp(AbstractGroup group, boolean persist, LocalizedString[] captions, int exprs, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    protected LP addMGProp(AbstractGroup group, LocalizedString caption, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addMGProp(group, persist, captions, exprs, min, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
-    }
-
-    protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, LocalizedString[] captions, int exprs, boolean min, ImOrderSet<T> listInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
-        LP[] result = new LP[exprs];
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
+        LP[] result = new LP[1];
 
         MSet<Property> mOverridePersist = SetFact.mSet();
 
-        ImList<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(exprs, listImplements.size());
-        ImList<PropertyImplement<?, PropertyInterfaceImplement<T>>> mgProps = PropertyFact.createMGProp(captions, listInterfaces, explicitInnerClasses, baseLM.baseClass,
-                listImplements.subList(0, exprs), groupImplements.getCol(), mOverridePersist, min);
-
-        ImSet<Property> overridePersist = mOverridePersist.immutable();
+        ImList<PropertyInterfaceImplement<PropertyInterface>> groupImplements = listImplements.subList(1, listImplements.size());
+        ImList<PropertyImplement<?, PropertyInterfaceImplement<PropertyInterface>>> mgProps = PropertyFact.createMGProp(new LocalizedString[]{caption}, innerInterfaces, explicitInnerClasses, baseLM.baseClass,
+                listImplements.subList(0, 1), groupImplements.getCol(), mOverridePersist, min);
 
         for (int i = 0; i < mgProps.size(); i++)
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
-
-        if (persist) {
-            if (overridePersist.size() > 0) {
-                for (Property property : overridePersist)
-                    addProperty(null, new LP(property));
-            } else
-                for (LP lcp : result) addPersistent(lcp);
-        }
-
-        return result;
+        return result[0];
     }
 
     // ------------------- CGProperty ----------------- //
@@ -1509,7 +1490,7 @@ public abstract class LogicsModule {
     // ------------------- Loggable ----------------- //
     // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #48),
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
-    public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp) {
+    public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp, boolean reflection) {
         assert lp.property.isNamed();
         String name = getLogPropertyName(lp, false);
         
@@ -1518,11 +1499,11 @@ public abstract class LogicsModule {
         LP result = addDCProp(LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
 
         makePropertyPublic(result, name, signature);
-        ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
+        markLoggableStored(result, reflection);
         return result;
     }
 
-    public LP addLDropProp(SystemEventsLogicsModule systemEventsLM, LP lp) {
+    public LP addLDropProp(SystemEventsLogicsModule systemEventsLM, LP lp, boolean reflection) {
         String name = getLogPropertyName(lp, true);
 
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
@@ -1540,9 +1521,15 @@ public abstract class LogicsModule {
         logDropProperty.setEventChange(systemEventsLM, true, params);
 
         makePropertyPublic(logDropProperty, name, signature);
-        ((StoredDataProperty)logDropProperty.property).markStored(baseLM.tableFactory);
+        markLoggableStored(logDropProperty, reflection);
 
         return logDropProperty;
+    }
+
+    private void markLoggableStored(LP lp, boolean reflection) {
+        ((StoredDataProperty)lp.property).markStored(baseLM.tableFactory, (ImplementTable)null);
+        if(reflection)
+            lp.property.initStored(); // we need to initialize it because reflection events initialized after init stored
     }
 
     private LP toLogical(LP property) {
@@ -1901,21 +1888,6 @@ public abstract class LogicsModule {
     public void addIndex(ImOrderSet<String> keyNames, Object... params) {
         ImList<PropertyObjectInterfaceImplement<String>> index = ActionOrPropertyUtils.readObjectImplements(keyNames, params);
         ThreadLocalContext.getDbManager().addIndex(index);
-    }
-
-    protected void addPersistent(LP lp) {
-        addPersistent((AggregateProperty) lp.property, null);
-    }
-
-    protected void addPersistent(LP lp, ImplementTable table) {
-        addPersistent((AggregateProperty) lp.property, table);
-    }
-
-    private void addPersistent(AggregateProperty property, ImplementTable table) {
-        assert property.isNamed();
-
-        logger.debug("Initializing stored property " + property + "...");
-        property.markStored(baseLM.tableFactory, table);
     }
 
     // нужен так как иначе начинает sID расширять

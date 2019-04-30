@@ -20,7 +20,6 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -204,9 +203,14 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
     @Override
-    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
-        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
+    protected boolean isClassVirtualized(CalcClassType calcType) {
+        return calcType == CalcClassType.PREVSAME || getInterfaceClass() instanceof BaseClass;
     }
+
+//    @Override
+//    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
+//        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
+//    }
 
 //    public static boolean checkSession(OuterContext context) {
 //        final Result<Boolean> found = new Result<>(false);
@@ -227,11 +231,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return interfaces.single().interfaceClass;
     }
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        ValueClass interfaceClass = getInterfaceClass();
-        if(calcType instanceof CalcClassType && (((CalcClassType)calcType).replaceIs() || interfaceClass instanceof BaseClass)) // жесткий хак
-            return getVirtualTableExpr(joinImplement, ((CalcClassType) calcType));
-
-        Where hadClass = joinImplement.singleValue().isUpClass(interfaceClass, calcType.isRecalc());
+        Where hadClass = joinImplement.singleValue().isUpClass(getInterfaceClass(), calcType.isRecalc());
 //        if(!hasChanges(propChanges))
         return ValueExpr.get(hadClass);
 

@@ -19,7 +19,7 @@ public abstract class IncrementUnionProperty extends UnionProperty {
     @Override
     protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         assert assertPropClasses(calcType, propChanges, changedWhere);
-        if(!(isStored() && hasChanges(propChanges)))
+        if(!(hasChanges(propChanges) && isStored())) // we need is stored after because initStored uses calcClassValueWhere, which uses calculate logics, and isStored may be not initialize at this point
             return calculateNewExpr(joinImplement, calcType, propChanges, changedWhere);
 
         assert calcType.isExpr();
