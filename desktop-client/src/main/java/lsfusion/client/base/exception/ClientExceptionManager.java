@@ -9,6 +9,7 @@ import lsfusion.interop.base.exception.*;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
+import java.awt.*;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -66,6 +67,8 @@ public class ClientExceptionManager {
             if(exceptionString.contains("Comparison method violates its general contract!") && exceptionString.contains("sun.awt.datatransfer.DataTransferer.setToSortedDataFlavorArray("))
                 return true;
         }
+        if(exception instanceof IllegalComponentStateException && ExceptionUtils.toString(exception).contains("component must be showing on the screen to determine its location"))
+            return true;
         return false;
     }
 
