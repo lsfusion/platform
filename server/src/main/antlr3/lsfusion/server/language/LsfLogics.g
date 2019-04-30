@@ -3342,7 +3342,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 	
 mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
 @init {
-    String varName = null;
+    String varName = "object"; // for INPUT =f() CHANGE and INPUT LONG;
 }
 @after {
 	if (inMainParseState()) {
@@ -3357,8 +3357,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithPa
     )
     |	
     ( 
-        { varName = "object"; } // для случая INPUT =f() CHANGE 
-        (varID=ID { varName = $varID.text; } )? 
+        (varID=ID { varName = $varID.text; } )?
         EQ pe=propertyExpression[context, false]
     )
 ;
