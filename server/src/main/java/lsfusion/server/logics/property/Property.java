@@ -1682,19 +1682,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return result;
     }
 
-    public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, PropertyInterfaceImplement<T>> operands, ImMap<I, ExClassSet> operandClasses, FunctionSet<I> operandNotNulls, InferType inferType, boolean or) {
-        Inferred<T> result = Inferred.EMPTY();
-        for(int i=0,size=operands.size();i<size;i++) {
-            Inferred<T> operandInferred = operands.getValue(i).mapInferInterfaceClasses(operandClasses.get(operands.getKey(i)), inferType);
-            if(!operandNotNulls.contains(operands.getKey(i)))
-                operandInferred = operandInferred.orAny();
-            if (i == 0)
-                result = operandInferred;
-            else
-                result = result.op(operandInferred, or, inferType);
-        }
-        return result;
-    }
     public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, PropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, ImSet<I>[] operandNotNulls, final InferType inferType) {
         ImMap<I, Inferred<T>> inferred = mapInfer(operands, operandClasses, inferType);
         return op(operandNotNulls, inferType, inferred);
