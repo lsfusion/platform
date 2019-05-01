@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.controller.dispatch;
 
 import com.google.gwt.media.client.Audio;
-import com.google.gwt.thirdparty.guava.common.base.Throwables;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.action.*;
@@ -85,9 +84,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 throwInServerInvocation(response.requestIndex, actionThrowable, continueIndex, continueRequestCallback);
             }
         } else {
-            if (actionThrowable != null) {
-                throw Throwables.propagate(actionThrowable);
-            }
+            if (actionThrowable != null)
+                throw GExceptionManager.propagate(actionThrowable);
             postDispatchResponse(response);
         }
     }
