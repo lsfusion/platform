@@ -77,7 +77,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     private void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
         authToken = token;
         String login = securityManager.parseToken(token);
-        user = login != null ? securityManager.readUser(login, session) : securityManager.getAdminUser();
+        user = login != null ? securityManager.readUser(login, session) : securityManager.getAnonymousUser();
     }
 
     // in theory its possible to cache all this
