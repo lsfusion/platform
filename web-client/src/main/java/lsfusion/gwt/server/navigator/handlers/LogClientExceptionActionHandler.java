@@ -8,6 +8,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
 import lsfusion.gwt.client.base.exception.NonFatalHandledException;
 import lsfusion.gwt.client.base.exception.RemoteInternalDispatchException;
+import lsfusion.gwt.client.base.exception.StackedException;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.server.MainDispatchServlet;
@@ -54,6 +55,17 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
             
             if(!(throwable instanceof DispatchException)) // we don't need to deobfuscate server exception (it is a round trip exception, so in theory there is no client stack trace)
                 getDeobfuscator().deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
+
+            if(throwable instanceof StackedException) {
+                StackedException stackedException = (StackedException) throwable;
+                String stacks = "";
+                for(SerializableThrowable stack : stackedException.stacks) {
+                    getDeobfuscator().deobfuscateStackTrace(stack, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
+                    stacks += '\n' + stack.getMessage() + '\n' + ExceptionUtils.getStackTrace(stack);
+                }
+                throwable = new SerializableThrowable("", ExceptionUtils.copyMessage(stackedException) + stacks);
+                ExceptionUtils.copyStackTraces(stackedException.thisStack, throwable);
+            }
 
             throwable = fromWebServerToAppServer(throwable);
 

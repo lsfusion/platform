@@ -185,7 +185,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     private DataObject adminUser = null;
-    public void initAdminUser() throws SQLException, SQLHandledException {
+    private DataObject anonymousUser = null;
+    public void initUsers() throws SQLException, SQLHandledException {
         try(DataSession session = createSession()) {
             DataObject adminUser = readUser("admin", session);
             if (adminUser == null) {
@@ -193,11 +194,22 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 apply(session);
             }
             this.adminUser = new DataObject((Long) adminUser.object, authenticationLM.customUser); // to update classes after apply
+
+            DataObject anonymousUser = readUser("anonymous", session);
+            if (anonymousUser == null) {
+                anonymousUser = addUser("anonymous", initialAdminPassword, session);
+                apply(session);
+            }
+            this.anonymousUser = new DataObject((Long) anonymousUser.object, authenticationLM.customUser); // to update classes after apply
         }
     }
 
     public DataObject getAdminUser() {
         return adminUser;
+    }
+
+    public DataObject getAnonymousUser() {
+        return anonymousUser;
     }
 
     private DataSession createSession() throws SQLException {
@@ -300,7 +312,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         
         securityPolicies.add(defaultPolicy);
 
-        if(userObject.equals(adminUser)) {
+        if(userObject.equals(adminUser) || userObject.equals(anonymousUser)) {
             securityPolicies.add(permitAllPolicy);
             securityPolicies.add(allowConfiguratorPolicy);
         }

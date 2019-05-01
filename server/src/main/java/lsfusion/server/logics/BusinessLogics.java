@@ -744,7 +744,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
-        securityManager.initAdminUser();
+        securityManager.initUsers();
         securityManager.initSecret();
     }
 

@@ -14,7 +14,7 @@ CLASS NonFatalHandledException '{system.events.not.fatal.handled.exception}' : H
 CLASS ServerException '{system.events.server.exception}' : Exception;
 TABLE exception (Exception);
 
-message '{system.events.message.exception}' = DATA ISTRING[250] (Exception);
+message '{system.events.message.exception}' = DATA ISTRING (Exception) CHARWIDTH 50;
 date '{system.events.date.exception}' = DATA DATETIME (Exception);
 fromDate '{system.events.from.date.exception}' (Exception d)= DATE(date(d));
 erTrace '{system.events.er.trace.exception}'= DATA TEXT (Exception);

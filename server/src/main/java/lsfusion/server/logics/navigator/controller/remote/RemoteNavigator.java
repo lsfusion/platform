@@ -251,6 +251,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean useBusyDialog;
         boolean useRequestTimeout;
         boolean forbidDuplicateForms;
+        boolean devMode;
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -258,12 +259,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
             useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
             forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
+            devMode = SystemProperties.inDevMode || businessLogics.authenticationLM.devMode.read(session) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, SystemProperties.inDevMode, configurationAccessAllowed, forbidDuplicateForms);
+                useRequestTimeout, devMode, configurationAccessAllowed, forbidDuplicateForms);
     }
 
     public void gainedFocus(FormInstance form) {

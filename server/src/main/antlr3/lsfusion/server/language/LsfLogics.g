@@ -3342,7 +3342,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 	
 mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
 @init {
-    String varName = null;
+    String varName = "object"; // for INPUT =f() CHANGE and INPUT LONG;
 }
 @after {
 	if (inMainParseState()) {
@@ -3357,8 +3357,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithPa
     )
     |	
     ( 
-        { varName = "object"; } // для случая INPUT =f() CHANGE 
-        (varID=ID { varName = $varID.text; } )? 
+        (varID=ID { varName = $varID.text; } )?
         EQ pe=propertyExpression[context, false]
     )
 ;
@@ -4889,8 +4888,8 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME
 				| 	'FILE' | 'EXCELFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' 
 				|   'WORDLINK' | 'IMAGELINK'
 				|   'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
-				|   'BPSTRING'('[' DIGITS ']') | 'BPISTRING'('[' DIGITS ']')
-				|	'STRING'('[' DIGITS ']') | 'ISTRING'('[' DIGITS ']') | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
+				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
+				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
 ID				:	ID_FRAGMENT;

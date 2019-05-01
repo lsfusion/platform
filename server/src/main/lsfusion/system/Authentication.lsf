@@ -160,6 +160,9 @@ currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser(
 useRequestTimeout '{authentication.use.request.timeout.user}' = DATA BOOLEAN(CustomUser); 
 useRequestTimeout() = useRequestTimeout(currentUser());
 
+devMode '{authentication.dev.mode.user}' = DATA BOOLEAN(CustomUser); // for debug purposes 
+devMode = devMode(currentUser());
+
 // GUI settings
 fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser); 
 
@@ -179,7 +182,7 @@ FORM customUser '{authentication.custom.user}'
                   firstName, lastName, email, phone, postAddress, birthday,
                   useClientLocale, userLanguage SHOWIF NOT useClientLocale(u), userCountry SHOWIF NOT useClientLocale(u), 
                   userTimeZone, userTwoDigitYearStart,
-                  useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes, 
+                  useBusyDialogCustom, useRequestTimeout, devMode, allowExcessAllocatedBytes, 
                   fontSize
 
     EDIT CustomUser OBJECT u
@@ -223,6 +226,7 @@ DESIGN customUser {
                     caption = '{authentication.custom.user.system}';
                     MOVE PROPERTY(useBusyDialogCustom(u));
                     MOVE PROPERTY(useRequestTimeout(u));
+                    MOVE PROPERTY(devMode(u));
                     MOVE PROPERTY(allowExcessAllocatedBytes(u));
                 }
                 NEW GUI {
@@ -260,7 +264,7 @@ FORM customUsers '{authentication.users}'
 
     PROPERTIES(u) READONLYIF isReadonly() name, login, email
     PROPERTIES(u) READONLYIF isReadonly() isLocked
-    PROPERTIES(u) READONLYIF isReadonly() useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes, fontSize
+    PROPERTIES(u) READONLYIF isReadonly() useBusyDialogCustom, useRequestTimeout, devMode, allowExcessAllocatedBytes, fontSize
     
     PROPERTIES(u) READONLY lastActivity, hostnameLastComputer
                   

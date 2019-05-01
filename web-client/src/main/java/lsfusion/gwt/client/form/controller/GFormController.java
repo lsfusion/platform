@@ -69,7 +69,6 @@ import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditEvent;
-import lsfusion.gwt.client.form.property.cell.controller.dispatch.GSimpleChangePropertyDispatcher;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.navigator.window.GModalityType;
@@ -93,7 +92,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher;
-    private final GSimpleChangePropertyDispatcher simpleDispatcher;
 
     private final FormsController formsController;
 
@@ -140,7 +138,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public GFormController(FormsController formsController, GForm gForm, final boolean isModal, boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
-        simpleDispatcher = new GSimpleChangePropertyDispatcher(this);
 
         this.formsController = formsController;
         this.form = gForm;
@@ -1197,10 +1194,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         for (GTreeGroupController treeController : treeControllers.values()) {
             treeController.afterShowingGrid();
         }
-    }
-
-    public GSimpleChangePropertyDispatcher getSimpleDispatcher() {
-        return simpleDispatcher;
     }
 
     @Override

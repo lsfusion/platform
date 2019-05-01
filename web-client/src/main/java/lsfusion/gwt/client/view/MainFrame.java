@@ -30,6 +30,7 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.CreateNavigatorAction;
@@ -151,6 +152,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             @Override
             public void onUncaughtException(Throwable t) {
                 GExceptionManager.logClientError(t);
+                DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
             }
         });
 

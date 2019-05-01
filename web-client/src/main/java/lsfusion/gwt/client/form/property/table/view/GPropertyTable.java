@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -161,6 +162,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         this.editContext = editContext;
         this.editCellParent = editCellParent;
 
+        GExceptionManager.addStackTrace("SET CONTEXT");
 
         //убираем фокус, чтобы не ловить последующие нажатия
         setFocus(false);
@@ -222,6 +224,9 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     @Override
     public void requestValue(GType valueType, Object oldValue) {
         editType = valueType;
+
+        if(editContext == null)
+            GExceptionManager.throwStackedException("EDIT CONTEXT IS NULL");
 
         GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext));
         if (cellEditor != null) {
@@ -292,6 +297,8 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         editContext = null;
         editCellParent = null;
         editType = null;
+
+        GExceptionManager.addStackTrace("CLEARED CONTEXT");
 
         setFocus(true);
         form.setCurrentEditingTable(null);

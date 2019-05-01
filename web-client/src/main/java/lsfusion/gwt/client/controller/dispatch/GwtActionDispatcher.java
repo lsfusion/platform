@@ -25,83 +25,73 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void dispatchResponse(ServerResponseResult response, int continueIndex) {
         assert response != null;
 
-        try {
-            Object[] actionResults = null;
-            Throwable actionThrowable = null;
-            GAction[] actions = response.actions;
-            if (actions != null) {
-                int beginIndex;
-                if (dispatchingPaused) {
-                    beginIndex = currentActionIndex + 1;
-                    actionResults = currentActionResults;
-                    continueIndex = currentContinueIndex;
+        Object[] actionResults = null;
+        Throwable actionThrowable = null;
+        GAction[] actions = response.actions;
+        if (actions != null) {
+            int beginIndex;
+            if (dispatchingPaused) {
+                beginIndex = currentActionIndex + 1;
+                actionResults = currentActionResults;
+                continueIndex = currentContinueIndex;
 
-                    currentActionIndex = -1;
-                    currentActionResults = null;
-                    currentResponse = null;
-                    dispatchingPaused = false;
-                } else {
-                    beginIndex = 0;
-                    actionResults = new Object[actions.length];
-                }
-
-                for (int i = beginIndex; i < actions.length; i++) {
-                    GAction action = actions[i];
-                    Object dispatchResult;
-                    try {
-                        //для неподдерживаемых action'ов присылается null-ссылка, чтобы сохранить порядок результатов выполнения action'ов
-                        dispatchResult = action == null ? null : action.dispatch(this);
-                    } catch (Throwable ex) {
-                        actionThrowable = ex;
-                        break;
-                    }
-
-                    if (dispatchingPaused) {
-                        currentResponse = response;
-                        currentActionResults = actionResults;
-                        currentActionIndex = i;
-                        currentContinueIndex = continueIndex;
-                        return;
-                    }
-
-                    actionResults[i] = dispatchResult;
-                }
-            }
-
-            if (response.resumeInvocation) {
-                continueIndex++;
-
-                final int fContinueIndex = continueIndex;
-                ErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
-                        new ErrorHandlingCallback<ServerResponseResult>() {
-                            @Override
-                            public void success(ServerResponseResult response) {
-                                dispatchResponse(response, fContinueIndex);
-                            }
-                        };
-                if (actionThrowable == null) {
-                    continueServerInvocation(response.requestIndex, actionResults, continueIndex, continueRequestCallback);
-                } else {
-                    throwInServerInvocation(response.requestIndex, actionThrowable, continueIndex, continueRequestCallback);
-                }
+                currentActionIndex = -1;
+                currentActionResults = null;
+                currentResponse = null;
+                dispatchingPaused = false;
             } else {
-                if (actionThrowable != null) {
-                    throw new RuntimeException(actionThrowable);
-                }
-                postDispatchResponse(response);
+                beginIndex = 0;
+                actionResults = new Object[actions.length];
             }
-        } catch (Exception e) {
-            handleDispatchException(e);
+
+            for (int i = beginIndex; i < actions.length; i++) {
+                GAction action = actions[i];
+                Object dispatchResult;
+                try {
+                    //для неподдерживаемых action'ов присылается null-ссылка, чтобы сохранить порядок результатов выполнения action'ов
+                    dispatchResult = action == null ? null : action.dispatch(this);
+                } catch (Throwable ex) {
+                    actionThrowable = ex;
+                    break;
+                }
+
+                if (dispatchingPaused) {
+                    currentResponse = response;
+                    currentActionResults = actionResults;
+                    currentActionIndex = i;
+                    currentContinueIndex = continueIndex;
+                    return;
+                }
+
+                actionResults[i] = dispatchResult;
+            }
+        }
+
+        if (response.resumeInvocation) {
+            continueIndex++;
+
+            final int fContinueIndex = continueIndex;
+            ErrorHandlingCallback<ServerResponseResult> continueRequestCallback =
+                    new ErrorHandlingCallback<ServerResponseResult>() {
+                        @Override
+                        public void success(ServerResponseResult response) {
+                            dispatchResponse(response, fContinueIndex);
+                        }
+                    };
+            if (actionThrowable == null) {
+                continueServerInvocation(response.requestIndex, actionResults, continueIndex, continueRequestCallback);
+            } else {
+                throwInServerInvocation(response.requestIndex, actionThrowable, continueIndex, continueRequestCallback);
+            }
+        } else {
+            if (actionThrowable != null)
+                throw GExceptionManager.propagate(actionThrowable);
+            postDispatchResponse(response);
         }
     }
 
     protected void postDispatchResponse(ServerResponseResult response) {
         assert !response.resumeInvocation;
-    }
-
-    protected void handleDispatchException(Throwable t) {
-        GExceptionManager.logClientError(t);
-        DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
     }
 
     protected abstract void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, AsyncCallback<ServerResponseResult> callback);

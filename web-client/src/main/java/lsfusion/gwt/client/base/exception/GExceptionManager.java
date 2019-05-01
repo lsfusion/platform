@@ -115,7 +115,7 @@ public class GExceptionManager {
         }
 
         NonFatalHandledException e = new NonFatalHandledException(copyMessage(t), reqId);
-        GExceptionManager.copyStackTraces(t, e);
+        GExceptionManager.copyStackTraces(t, e); // it seems that it is useless because only SerializableThrowable stacks are copied (see StackException)
         exceptions.add(e);
     }
 
@@ -141,6 +141,50 @@ public class GExceptionManager {
                 }
             });
         }
+    }
+
+    // for debug purposes
+    private static boolean rounded;
+    private static int current;
+    private static SerializableThrowable[] stacks = new SerializableThrowable[10];
+
+    public static void addStackTrace(String message) {
+        if(!MainFrame.devMode)
+            return;
+
+        SerializableThrowable throwable = new SerializableThrowable("", System.currentTimeMillis() + " " + message);
+        throwable.setStackTrace(new Exception().getStackTrace());
+        current++;
+        if(current >= stacks.length) {
+            current = 0;
+            rounded = true;
+        }
+        stacks[current] = throwable;
+    }
+
+    public static RuntimeException propagate(Throwable t) {
+        if(t instanceof Error)
+            throw (Error)t;
+        if(t instanceof RuntimeException)
+            throw (RuntimeException)t;
+        throw new RuntimeException(t);
+    }
+
+    public static void throwStackedException(String message) {
+        if(!MainFrame.devMode)
+            return;
+
+        SerializableThrowable[] result = new SerializableThrowable[rounded ? stacks.length : current + 1];
+        int f = current + 1;
+        for(int i=0;i<result.length;i++) {
+            if(f >= stacks.length)
+                f = 0;
+            result[i] = stacks[f++];
+        }
+        SerializableThrowable thisStack = new SerializableThrowable("", "");
+        StackedException exception = new StackedException(message, thisStack, result);
+        copyStackTraces(exception, thisStack); // we need this because serializable throwable by default has no stack
+        throw exception;
     }
 
     public static String getStackTrace(Throwable t) {

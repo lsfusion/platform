@@ -1,4 +1,6 @@
 package lsfusion.gwt.client.navigator;
 
-public class GNavigatorAction extends GNavigatorElement {
+import java.io.Serializable;
+
+public class GNavigatorAction extends GNavigatorElement implements Serializable {
 }
