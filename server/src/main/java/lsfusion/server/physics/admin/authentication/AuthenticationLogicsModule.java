@@ -67,6 +67,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP useBusyDialog;
     public LP useRequestTimeout;
+    public LP devMode;
 
     public LP language;
     public LP country;
@@ -154,6 +155,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         useBusyDialog = findProperty("useBusyDialog[]");
         useRequestTimeout = findProperty("useRequestTimeout[]");
+        devMode = findProperty("devMode[]");
 
         language = findProperty("language[CustomUser]");
         country = findProperty("country[CustomUser]");

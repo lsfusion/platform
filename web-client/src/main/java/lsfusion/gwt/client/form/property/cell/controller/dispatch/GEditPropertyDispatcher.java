@@ -4,6 +4,7 @@ import com.allen_sauer.gwt.log.client.Log;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.action.GUpdateEditValueAction;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -37,6 +38,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         valueRequested = false;
         simpleChangeProperty = null;
         readType = null;
+        GExceptionManager.addStackTrace("INIT DROPPED READTYPE");
         editColumnKey = null;
         oldValue = null;
         transferFocusAfterEdit = true;
@@ -93,6 +95,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         if (readType != null) {
             GType editType = readType;
             readType = null;
+            GExceptionManager.addStackTrace("DROPPED READTYPE");
             requestValue(editType);
         }
     }
@@ -144,6 +147,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     public Object execute(GRequestUserInputAction action) {
         readType = action.readType;
         oldValue = action.oldValue;
+        GExceptionManager.addStackTrace("SET READTYPE");
 
         pauseDispatching();
 
