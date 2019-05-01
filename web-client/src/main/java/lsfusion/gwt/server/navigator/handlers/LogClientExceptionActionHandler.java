@@ -43,6 +43,23 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         }, COUNTER_CLEANER_PERIOD, COUNTER_CLEANER_PERIOD);
     }
 
+    private void deobfuscate(Throwable throwable) {
+        String strongName = servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
+
+        if(!(throwable instanceof DispatchException)) // we don't need to deobfuscate server exception (it is a round trip exception, so in theory there is no client stack trace)
+            getDeobfuscator().deobfuscateStackTrace(throwable, strongName);
+
+        if(throwable instanceof NonFatalHandledException)
+            getDeobfuscator().deobfuscateStackTrace(((NonFatalHandledException) throwable).thisStack, strongName);
+
+        if(throwable instanceof StackedException) {
+            StackedException stackedException = (StackedException) throwable;
+            for(SerializableThrowable stack : stackedException.stacks)
+                getDeobfuscator().deobfuscateStackTrace(stack, strongName);
+            getDeobfuscator().deobfuscateStackTrace(stackedException.thisStack, strongName);
+        }
+    }
+
     @Override
     public VoidResult executeEx(LogClientExceptionAction action, ExecutionContext context) throws RemoteException {
         RemoteNavigatorInterface navigator = getRemoteNavigator(action);
@@ -52,20 +69,8 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         
         if (count == null || count < 20) {
             Throwable throwable = action.throwable;
-            
-            if(!(throwable instanceof DispatchException)) // we don't need to deobfuscate server exception (it is a round trip exception, so in theory there is no client stack trace)
-                getDeobfuscator().deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
 
-            if(throwable instanceof StackedException) {
-                StackedException stackedException = (StackedException) throwable;
-                String stacks = "";
-                for(SerializableThrowable stack : stackedException.stacks) {
-                    getDeobfuscator().deobfuscateStackTrace(stack, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
-                    stacks += '\n' + stack.getMessage() + '\n' + ExceptionUtils.getStackTrace(stack);
-                }
-                throwable = new SerializableThrowable("", ExceptionUtils.copyMessage(stackedException) + stacks);
-                ExceptionUtils.copyStackTraces(stackedException.thisStack, throwable);
-            }
+            deobfuscate(throwable);
 
             throwable = fromWebServerToAppServer(throwable);
 
@@ -86,9 +91,16 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         Throwable appThrowable;
         if (throwable instanceof RemoteInternalDispatchException)
             appThrowable = new RemoteInternalException(throwable.getMessage(), ((RemoteInternalDispatchException) throwable).lsfStack);
-        else if(throwable instanceof NonFatalHandledException)
+        else if(throwable instanceof NonFatalHandledException) {
             appThrowable = new NonFatalRemoteClientException(throwable.getMessage(), ((NonFatalHandledException) throwable).count, ((NonFatalHandledException) throwable).reqId);
-        else {
+            throwable = ((NonFatalHandledException) throwable).thisStack;
+        } else if(throwable instanceof StackedException) {
+            String stacks = "";
+            for(SerializableThrowable stack : ((StackedException) throwable).stacks)
+                stacks += '\n' + stack.getMessage() + '\n' + ExceptionUtils.getStackTrace(stack);
+            appThrowable = new Throwable(ExceptionUtils.copyMessage(throwable) + stacks);
+            throwable = ((StackedException) throwable).thisStack;
+        } else {
             assert throwable instanceof SerializableThrowable || throwable instanceof DispatchException;
             appThrowable = new Throwable(ExceptionUtils.copyMessage(throwable));
         }

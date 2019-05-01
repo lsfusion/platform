@@ -114,8 +114,9 @@ public class GExceptionManager {
             reqId = ind;
         }
 
-        NonFatalHandledException e = new NonFatalHandledException(copyMessage(t), reqId);
-        GExceptionManager.copyStackTraces(t, e); // it seems that it is useless because only SerializableThrowable stacks are copied (see StackException)
+        SerializableThrowable thisStack = new SerializableThrowable("", "");
+        NonFatalHandledException e = new NonFatalHandledException(copyMessage(t), thisStack, reqId);
+        GExceptionManager.copyStackTraces(t, thisStack); // it seems that it is useless because only SerializableThrowable stacks are copied (see StackException)
         exceptions.add(e);
     }
 
