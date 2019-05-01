@@ -162,6 +162,14 @@ public class GExceptionManager {
         stacks[current] = throwable;
     }
 
+    public static RuntimeException propagate(Throwable t) {
+        if(t instanceof Error)
+            throw (Error)t;
+        if(t instanceof RuntimeException)
+            throw (RuntimeException)t;
+        throw new RuntimeException(t);
+    }
+
     public static void throwStackedException(String message) {
         if(!MainFrame.devMode)
             return;
