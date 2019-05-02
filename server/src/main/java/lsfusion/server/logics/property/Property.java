@@ -1749,6 +1749,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public Inferred<T> inferInterfaceClasses(InferType inferType) {
         return inferInterfaceClasses(null, inferType);
     }
+    // make inferInterfaceClasses using explicitClasses (now it works different from plugin) but however it's not evident how it can cause problems in practice
     @IdentityStartLazy
     public Inferred<T> inferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         return calcInferInterfaceClasses(commonValue, inferType);

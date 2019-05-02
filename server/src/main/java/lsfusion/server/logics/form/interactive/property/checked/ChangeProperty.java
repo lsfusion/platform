@@ -22,12 +22,14 @@ public abstract class ChangeProperty<T extends PropertyInterface> extends Aggreg
     @Override
     protected Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         // they are used only in filters and in filters there is ignoreInInterface
-        throw new UnsupportedOperationException();
+        // however we still need this method, for empty, null, full, so we'll consider that property to be nullable with unknown classes
+        return Inferred.EMPTY();
     }
 
     @Override
     protected ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         // they are used only in filters and in filters there is ignoreInInterface
-        throw new UnsupportedOperationException();
+        // however we still need this method, for empty, null, full, so we'll consider that property to be nullable with unknown classes
+        return null;
     }
 }
