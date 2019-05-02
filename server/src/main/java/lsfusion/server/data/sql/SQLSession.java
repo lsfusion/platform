@@ -569,7 +569,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         try {
             if(Settings.get().isApplyVolatileStats())
                 pushVolatileStats(owner);
-//            fifo.add("ST"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+            if(isLoggerDebugEnabled())
+                fifo.add("ST"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             if(inTransaction++ == 0) {
                 transStartTime = System.currentTimeMillis();
 
@@ -658,7 +659,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                             ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
                             WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
-//                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExecutionStackAspect.getExStackTrace());
+                            if(isLoggerDebugEnabled())
+                                fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExecutionStackAspect.getExStackTrace());
 //                            
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
@@ -681,7 +683,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             problemInTransaction = null;
         }
 
-//        fifo.add("RBACK"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+        if(isLoggerDebugEnabled())
+            fifo.add("RBACK"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
@@ -701,7 +704,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void commitTransaction(OperationOwner owner) throws SQLException {
         if(inTransaction == 1)
             privateConnection.sql.commit();
-//        fifo.add("CMT"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+        if(isLoggerDebugEnabled())
+            fifo.add("CMT"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 
         endTransaction(owner, false);
     }
@@ -1060,9 +1064,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             totalSessionTablesCount = transactionTotalSessionTablesCount;
     }
 
-    public static Buffer fifo = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(1000000));
-    public static void outFifo() throws IOException {
-        String filename = "e:\\out.txt";
+    public static Buffer fifo = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(10000));
+    public static void outFifo(String filename) throws IOException {
+        // "e:\\out.txt";
         BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
         for (Object ff : fifo) {
             outputWriter.write(ff+"");
@@ -1070,6 +1074,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
         outputWriter.flush();
         outputWriter.close();
+        fifo.clear();
      }
     
     public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
@@ -1096,7 +1101,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             } finally {
                 temporaryTablesLock.unlock();
             }
-//            fifo.add("GET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+            if(isLoggerDebugEnabled())
+                fifo.add("GET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
@@ -1127,7 +1133,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             TableOwner tableOwner = entry.getValue().get();
             if (force || tableOwner == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
-//                fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+                if(isLoggerDebugEnabled())
+                    fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
                 truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
                 logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить, в основном keysTable из-за pendingCleaners 
@@ -1162,7 +1169,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         try {
             Result<Throwable> firstException = new Result<>();
-//            fifo.add("RETURN " + getCurrentTimeStamp() + " " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+            if(isLoggerDebugEnabled())
+                fifo.add("RETURN " + getCurrentTimeStamp() + " " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
                 runSuppressed(new SQLRunnable() {
@@ -1209,7 +1217,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 needPrivate();
 
                 WeakReference<TableOwner> value = new WeakReference<>(owner);
-//                            fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+                if(isLoggerDebugEnabled())
+                    fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 WeakReference<TableOwner> prevOwner = sessionTablesMap.put(table.getName(), value);
                 sessionDebugInfo.put(table.getName(), owner.getDebugInfo());
 
@@ -1672,8 +1681,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         SQLException e = (SQLException)t;            
         if(message == null)
             message = "PREPARING STATEMENT";
-        
-//        fifo.add("E"  + getCurrentTimeStamp() + " " + this + " " + e.getStackTrace());
+
+        if(isLoggerDebugEnabled())
+            fifo.add("E"  + getCurrentTimeStamp() + " " + this + " " + e.getStackTrace());
 
         boolean inTransaction = isInTransaction();
         if(inTransaction && syntax.hasTransactionSavepointProblem())
