@@ -374,7 +374,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     protected void onClose(Object o) throws SQLException {
         assert o == null;
         
-//        SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
+        if(sql.isLoggerDebugEnabled())
+            SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
         try {
             dropTables(SetFact.<SessionDataProperty>EMPTY());
             sessionEventChangedOld.clear(sql, getOwner());
@@ -518,7 +519,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         registerThreadStack(); // создающий поток также является владельцем сессии
         createdInTransaction = sql.isInTransaction(); // при synchronizeDB есть такой странный кейс
-//        SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
+        if(sql.isLoggerDebugEnabled())
+            SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + sql + '\n' + ExceptionUtils.getStackTrace());
     }
     
     private final static RegisterClassRemove NOREGISTER = new RegisterClassRemove() {
