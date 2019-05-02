@@ -404,6 +404,10 @@ DESIGN fullChat {
     }           
 }
 
+EXTEND FORM fullChat
+    EVENTS ON INIT {ACTIVATE TAB fullChat.recent;} 
+;
+
 editMessage (Chat c, Message m) + { 
     IF own(m) THEN {
         IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
@@ -474,14 +478,9 @@ replyChat '{chat.reply.chat}' (Message m)  {
 
 openChat '{chat.open.chat}' (Chat c, Message m)  { 
     markSeenMessages(currentUser());
-    SHOW fullChat NOWAIT;
-    NEWSESSION { NEWTHREAD {
-        ACTIVATE TAB fullChat.recent;
-        SEEK fullChat.c = chat(m);
-        SEEK LAST fullChat.m;
-        newMessage(c) <-reply(m);
-    } CONNECTION currentConnection(); }
+    newMessage(c) <-reply(m);
     APPLY NESTED (newMessage[Chat], reply[Message]);
+    SHOW fullChat OBJECTS c=chat(m) NOWAIT;
     formClose();
 };
 
