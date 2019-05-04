@@ -215,11 +215,6 @@ public class GExceptionManager {
     // assuming that there should be primitive copy (Strings and other very primitive Java classes)  
     public static void copyStackTraces(Throwable from, Throwable to) {
         from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
-        if (from instanceof StatusCodeException) { // temporary hack to understand how statuscodeexception can pass check in DispatchAsyncWrapper
-            assert false;
-            if(to instanceof SerializableThrowable) // serializableThrowable suppresses stacktrace
-                to.setStackTrace(new Exception().getStackTrace());
-        } else
-            to.setStackTrace(from.getStackTrace());
+        to.setStackTrace(from.getStackTrace());
     }
 }
