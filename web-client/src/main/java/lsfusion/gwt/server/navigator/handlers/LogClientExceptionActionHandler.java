@@ -65,6 +65,9 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
         RemoteNavigatorInterface navigator = getRemoteNavigator(action);
 
         Integer count = exceptionCounter.get(navigator);
+        int newCount = count == null ? 1 : count + 1;
+        exceptionCounter.put(navigator, newCount);
+
         invocationLogger.info("Before logging exception, count : " + count + ", navigator " + navigator);
         
         if (count == null || count < 20) {
@@ -77,8 +80,6 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
             try {
                 navigator.logClientException(null, throwable);
             } finally {
-                int newCount = count == null ? 1 : count + 1;
-                exceptionCounter.put(navigator, newCount);
                 invocationLogger.info("After logging exception, count : " + newCount + ", navigator " + navigator);
             }
         }
