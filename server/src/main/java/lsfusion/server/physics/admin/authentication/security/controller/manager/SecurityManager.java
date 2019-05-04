@@ -312,11 +312,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         
         securityPolicies.add(defaultPolicy);
 
-        if(userObject.equals(adminUser) || userObject.equals(anonymousUser)) {
-            securityPolicies.add(permitAllPolicy);
-            securityPolicies.add(allowConfiguratorPolicy);
-        }
-
         // политика по умолчанию из формы "Политика безопасности"
         applyDefaultNavigatorElementDefinedPolicy(securityPolicies, session);
 
@@ -330,6 +325,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             if (policy != null) {
                 securityPolicies.add(policy);
             }
+        }
+
+        if(userObject.equals(adminUser)) {
+            securityPolicies.add(permitAllPolicy);
+            securityPolicies.add(allowConfiguratorPolicy);
         }
 
         SecurityPolicy resultPolicy = new SecurityPolicy(-1);

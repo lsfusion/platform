@@ -16,6 +16,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.navigator.controller.env.*;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -77,7 +78,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     private void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
         authToken = token;
         String login = securityManager.parseToken(token);
-        user = login != null ? securityManager.readUser(login, session) : securityManager.getAnonymousUser();
+        user = login != null ? securityManager.readUser(login, session) : (SystemProperties.inDevMode ? securityManager.getAdminUser() : securityManager.getAnonymousUser());
     }
 
     // in theory its possible to cache all this
