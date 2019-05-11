@@ -172,9 +172,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     private String code = null;
     private String filename = null;
     private String path = null;
-    private final ScriptingErrorLog errLog;
-    private ScriptParser parser;
-    private ScriptingLogicsModuleChecks checks;
+    protected final ScriptingErrorLog errLog;
+    protected ScriptParser parser;
+    protected ScriptingLogicsModuleChecks checks;
     private List<String> warningList = new ArrayList<>();
     private Map<Property, String> alwaysNullProperties = new HashMap<>();
 

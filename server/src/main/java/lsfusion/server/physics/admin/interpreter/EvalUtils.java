@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
@@ -39,13 +40,12 @@ public class EvalUtils {
         String name = getUniqueName();
 
         String code = wrapScript(BL, namespace, require, priorities, script, name);
-        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, code);
+        ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, code);
         module.order = BL.getLogicModules().size() + 1;
         module.visible = FullFunctionSet.instance();
-        module.temporary = true;
         if(prevEventScope)
             module.setPrevScope(Event.SESSION);
-        String errString = "";
+        String errString;
         try {
             module.initModuleDependencies();
             module.initMetaAndClasses();
