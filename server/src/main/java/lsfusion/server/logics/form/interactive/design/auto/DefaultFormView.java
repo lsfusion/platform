@@ -75,18 +75,6 @@ public class DefaultFormView extends FormView {
     public ContainerView getFilterContainer(GroupObjectEntity groupObject) { return filtersContainers.get(getPropertyGroupContainer(groupObject)); }
 
     protected transient final Table<Optional<PropertyGroupContainerView>, AbstractGroup, ContainerView> groupPropertyContainers = HashBasedTable.create();
-    public void putGroupPropertyContainer(PropertyDrawEntity propertyDraw, AbstractGroup group, ContainerView container, Version version) {
-        PropertyGroupContainerView propertyContainer = getPropertyContainer(propertyDraw, version);
-        synchronized (groupPropertyContainers) {
-            groupPropertyContainers.put(Optional.fromNullable(propertyContainer), group, container);
-        }
-    }
-    public ContainerView getGroupPropertyContainer(PropertyDrawEntity propertyDraw, AbstractGroup group, Version version) {
-        PropertyGroupContainerView propertyContainer = getPropertyContainer(propertyDraw, version);
-        synchronized (groupPropertyContainers) {
-            return groupPropertyContainers.get(Optional.fromNullable(propertyContainer), group);
-        }
-    }
 
     public ContainerView objectsContainer;
     public ContainerView toolbarBoxContainer;
@@ -516,42 +504,35 @@ public class DefaultFormView extends FormView {
             return getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
         }
 
-        //ищем в созданных
-        ContainerView currentGroupContainer = getGroupPropertyContainer(propertyDraw, currentGroup, version);
-        if (currentGroupContainer == null) {
-            String currentGroupContainerSID = getPropertyGroupContainerSID(propertyDraw, currentGroup, version);
+        ContainerView propGroupContainer;
+        PropertyGroupContainerView propertyContainer = getPropertyContainer(propertyDraw, version);
+        synchronized (groupPropertyContainers) {
+            propGroupContainer = groupPropertyContainers.get(Optional.fromNullable(propertyContainer), currentGroup);
+            if(propGroupContainer != null)
+                return propGroupContainer;
 
-            //ищем по имени
-            currentGroupContainer = getContainerBySID(currentGroupContainerSID, Version.GLOBAL);
-            if (currentGroupContainer == null) {
-                //сначала создаём контейнеры для верхних групп, чтобы соблюдался порядок
-                getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
+            // first we'll create containers for upper groups to get right component order
+            getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
 
-                //затем создаём контейнер для текущей группы
-                currentGroupContainer = createContainer(currentGroup.caption, null, currentGroupContainerSID, Version.GLOBAL);
-                currentGroupContainer.setType(ContainerType.COLUMNS);
-                currentGroupContainer.columns = 4;
+            propGroupContainer = createContainer(currentGroup.caption, null, getPropGroupContainerSID(currentGroup, propertyContainer), Version.GLOBAL);
+            propGroupContainer.setType(ContainerType.COLUMNS);
+            propGroupContainer.columns = 4;
 
-                getPanelContainer(propertyDraw, version).add(currentGroupContainer, Version.GLOBAL);
-            }
-            
-            putGroupPropertyContainer(propertyDraw, currentGroup, currentGroupContainer, version);
+            getPanelContainer(propertyDraw, version).add(propGroupContainer, Version.GLOBAL);
+
+            groupPropertyContainers.put(Optional.fromNullable(propertyContainer), currentGroup, propGroupContainer);
         }
 
-        return currentGroupContainer;
+        return propGroupContainer;
     }
 
-    private String getPropertyGroupContainerSID(PropertyDrawEntity propertyDraw, AbstractGroup propertyGroup, Version version) {
-        String propertyGroupName = propertyGroup.getName();
-        PropertyGroupContainerView propertyContainer = getPropertyContainer(propertyDraw, version);
-        
-        String containerSID;
-        if (propertyContainer == null) {
-            return DefaultFormView.getGroupContainerSID(propertyGroupName);
-        } else {
-            containerSID = propertyContainer.getPropertyGroupContainerSID();
-        }
-        
-        return GroupObjectContainerSet.GROUP_CONTAINER + "(" + propertyGroupName + "," + containerSID + ")";
+    private String getPropGroupContainerSID(AbstractGroup currentGroup, PropertyGroupContainerView propertyContainer) {
+        String propertyGroupName = currentGroup.getName();
+        String currentGroupContainerSID;
+        if (propertyContainer == null)
+            currentGroupContainerSID = DefaultFormView.getGroupContainerSID(propertyGroupName);
+        else
+            currentGroupContainerSID = GroupObjectContainerSet.GROUP_CONTAINER + "(" + propertyGroupName + "," + propertyContainer.getPropertyGroupContainerSID() + ")";
+        return currentGroupContainerSID;
     }
 }
