@@ -118,11 +118,6 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public int getDefaultHeight(FontMetrics fontMetrics, int charHeight) {
-        return super.getDefaultHeight(fontMetrics, charHeight == 1 && length.isUnlimited() ? 4 : charHeight);
-    }
-
-    @Override
     public String toString() {
         return getTypeClass().toString() + "(" + length + ")";
     }
