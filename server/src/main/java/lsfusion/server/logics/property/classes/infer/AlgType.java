@@ -11,6 +11,7 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.SystemProperties;
 
 // нужны сами классы - в Info не нужны
 public interface AlgType {
@@ -35,7 +36,7 @@ public interface AlgType {
 
     boolean useInfer = true; // после разделения на infer / resolve и calculate ветки, использовать старую схему в основном из-за проблем с abstract'ами проблематично 
     boolean useInferForInfo = true;
-    boolean useCalcForStored = true; // for materialized properties, it's more reasonable to use "expr" (calculation) logics, because infer proceed every parameter / value separately, and calculation logics uses more complex dnf form (which is very efficient for generics, for example MULTI XA IF p IS YA, XB IF p IS YB), the problem that calculation logics is a lot more heavy, so it gives +10% per server start (depending on number of processors), so will use it only on heavy start
+    boolean useCalcForStored = !SystemProperties.lightStart; // for materialized properties, it's more reasonable to use "expr" (calculation) logics, because infer proceed every parameter / value separately, and calculation logics uses more complex dnf form (which is very efficient for generics, for example MULTI XA IF p IS YA, XB IF p IS YB), the problem that calculation logics is a lot more heavy, so it gives +10% per server start (depending on number of processors), so will use it only on heavy start
     boolean useClassInfer = useInfer;
     AlgInfoType defaultType = useInfer ? InferType.PREVBASE : CalcClassType.PREVBASE;
     AlgType caseCheckType = useInfer ? InferType.PREVSAME : CalcClassType.PREVSAME;
