@@ -10,7 +10,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 
@@ -58,7 +58,7 @@ public abstract class InternalAction extends ExplicitAction {
         return LM.findClass(name);
     }
 
-    protected AbstractGroup findGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected Group findGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
         return LM.findGroup(name);
     }
 

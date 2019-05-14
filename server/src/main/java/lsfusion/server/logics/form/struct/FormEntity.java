@@ -47,7 +47,7 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -597,7 +597,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addGroupObject(group, null, null, version);
     }
 
-    public void addPropertyDraw(ObjectEntity object, Version version, AbstractGroup group) {
+    public void addPropertyDraw(ObjectEntity object, Version version, Group group) {
         addPropertyDraw(group, false, version, SetFact.singletonOrder(object));
     }
 

@@ -37,7 +37,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
@@ -98,7 +98,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
 
-    public AbstractGroup group;
+    public Group group;
 
     public boolean attr;
 

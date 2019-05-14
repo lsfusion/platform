@@ -9,7 +9,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -121,7 +121,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    protected void addPropertyToGroup(ActionOrProperty<?> property, AbstractGroup group) {
+    protected void addPropertyToGroup(ActionOrProperty<?> property, Group group) {
         if (group != null && !property.isLocal()) { 
             if (isNewGroup(group)) {
                 super.addPropertyToGroup(property, group);
@@ -136,12 +136,12 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
                 (parser.getCurrentParserPositionInLine() + 1) + " " + message;
     }
     
-    private boolean isNewGroup(AbstractGroup group) {
+    private boolean isNewGroup(Group group) {
         return group.equals(getGroup(group.getName()));
     }
     
     private boolean isNewGroup(String groupName) throws ScriptingErrorLog.SemanticErrorException {
-        AbstractGroup group = findGroup(groupName);
+        Group group = findGroup(groupName);
         return isNewGroup(group);
     }
     

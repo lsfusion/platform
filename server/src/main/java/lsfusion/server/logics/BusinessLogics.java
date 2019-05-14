@@ -74,7 +74,7 @@ import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
@@ -929,7 +929,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public static final boolean disableImplicitCases = true;
     
-    public ImList<AbstractGroup> getChildGroups() {
+    public ImList<Group> getChildGroups() {
         return LM.getRootGroup().getChildGroups();
     }
 
@@ -1793,7 +1793,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return findElementByCanonicalName(this, canonicalName, null, new ModuleClassFinder());
     }
 
-    public AbstractGroup findGroup(String canonicalName) {
+    public Group findGroup(String canonicalName) {
         return findElementByCanonicalName(this, canonicalName, null, new ModuleGroupFinder());
     }
 

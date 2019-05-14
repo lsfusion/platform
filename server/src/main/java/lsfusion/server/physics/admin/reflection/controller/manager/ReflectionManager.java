@@ -25,7 +25,7 @@ import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -637,7 +637,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         List<List<Object>> data = new ArrayList<>();
 
-        for (AbstractGroup group : businessLogics.getChildGroups()) {
+        for (Group group : businessLogics.getChildGroups()) {
             data.add(asList(group.getSID(), (Object) ThreadLocalContext.localize(group.caption)));
         }
 
@@ -653,7 +653,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         List<List<Object>> data2 = new ArrayList<>();
 
-        for (AbstractGroup group : businessLogics.getChildGroups()) {
+        for (Group group : businessLogics.getChildGroups()) {
             if (group.getParent() != null) {
                 data2.add(asList(group.getSID(), (Object) group.getParent().getSID(), getNumberInListOfChildren(group)));
             }
@@ -684,7 +684,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
 
     private Integer getNumberInListOfChildren(AbstractNode abstractNode) {
-        AbstractGroup nodeParent = abstractNode.getParent();
+        Group nodeParent = abstractNode.getParent();
         int counter = 0;
         for (AbstractNode node : nodeParent.getChildrenIt()) {
             if(abstractNode instanceof ActionOrProperty && counter > 20)  // оптимизация
@@ -696,8 +696,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                         return counter;
                     }
             } else {
-                if (node instanceof AbstractGroup)
-                    if (((AbstractGroup) node).getCanonicalName().equals(((AbstractGroup) abstractNode).getCanonicalName())) {
+                if (node instanceof Group)
+                    if (((Group) node).getCanonicalName().equals(((Group) abstractNode).getCanonicalName())) {
                         return counter;
                     }
             }
