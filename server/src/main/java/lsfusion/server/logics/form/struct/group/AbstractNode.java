@@ -17,9 +17,9 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public abstract class AbstractNode extends ImmutableObject {
 
-    NFProperty<AbstractGroup> parent = NFFact.property(true);
-    public AbstractGroup getParent() { return parent.get(); }
-    public AbstractGroup getNFParent(Version version) { return parent.getNF(version); }
+    NFProperty<Group> parent = NFFact.property(true);
+    public Group getParent() { return parent.get(); }
+    public Group getNFParent(Version version) { return parent.getNF(version); }
     
     public void finalizeAroundInit() {
         parent.finalizeChanges();

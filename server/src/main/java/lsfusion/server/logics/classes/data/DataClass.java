@@ -34,7 +34,7 @@ import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.form.interactive.instance.object.DataObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -86,7 +86,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return getDefaultObjectValue().getExpr();
     }
 
-    public AbstractGroup getParent() {
+    public Group getParent() {
         return null;
     }
 

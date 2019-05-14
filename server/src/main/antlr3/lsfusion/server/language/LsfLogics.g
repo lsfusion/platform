@@ -4284,8 +4284,8 @@ formContainersComponentSelector returns [String sid]
     :   gt = groupObjectTreeComponentSelector { $sid = $gt.sid; }
     |   gs = componentSingleSelectorType { $sid = $gs.text; }
     |   'GROUP' '(' (   ',' ggo = groupObjectTreeSelector { $sid = "GROUP(," + $ggo.sid + ")"; }
-                    |   ggr = ID ',' ggo = groupObjectTreeSelector { $sid = "GROUP(" + $ggr.text + "," + $ggo.sid + ")"; }
-                    |   ggr = ID { $sid = "GROUP(" + $ggr.text + ")"; }
+                    |   ggr = compoundID ',' ggo = groupObjectTreeSelector { if(inMainParseState()) $sid = "GROUP(" + self.findGroup($ggr.sid).getCanonicalName() + "," + $ggo.sid + ")"; }
+                    |   ggr = compoundID { if(inMainParseState()) $sid = "GROUP(" + self.findGroup($ggr.sid).getCanonicalName() + ")"; }
                     |   { $sid = "GROUP()"; }
                     ) ')'
     |   'FILTERGROUP' '(' gfg = ID ')' { $sid = "FILTERGROUP(" + $gfg.text + ")"; }

@@ -8,7 +8,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
@@ -31,7 +31,7 @@ public class ResolveManager {
     private ElementResolver<LA<?>, List<ResolveClassSet>> abstractNotEqualLAPResolver;
     private ElementResolver<LA<?>, List<ResolveClassSet>> indirectLAPResolver;
     
-    private ElementResolver<AbstractGroup, ?> groupResolver;
+    private ElementResolver<Group, ?> groupResolver;
     private ElementResolver<NavigatorElement, ?> navigatorResolver;
     private ElementResolver<FormEntity, ?> formResolver;
     private ElementResolver<AbstractWindow, ?> windowResolver;
@@ -118,7 +118,7 @@ public class ResolveManager {
         return metaCodeFragmentResolver.resolve(compoundName, paramCnt);
     }
 
-    public AbstractGroup findGroup(String compoundName) throws ResolvingErrors.ResolvingError {
+    public Group findGroup(String compoundName) throws ResolvingErrors.ResolvingError {
         return groupResolver.resolve(compoundName);
     }    
     

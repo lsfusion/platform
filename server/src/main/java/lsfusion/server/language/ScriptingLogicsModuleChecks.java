@@ -22,7 +22,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.property.JoinProperty;
@@ -54,7 +54,7 @@ public class ScriptingLogicsModuleChecks {
         this.parser = LM.getParser();
     } 
     
-    public void checkGroup(AbstractGroup group, String name) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkGroup(Group group, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (group == null) {
             errLog.emitGroupNotFoundError(parser, name);
         }

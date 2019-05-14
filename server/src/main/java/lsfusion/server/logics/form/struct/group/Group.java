@@ -22,7 +22,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
-public class AbstractGroup extends AbstractNode {
+public class Group extends AbstractNode {
 
     private final String canonicalName;
 
@@ -30,7 +30,7 @@ public class AbstractGroup extends AbstractNode {
 
     private NFOrderSet<AbstractNode> children = NFFact.orderSet(true);
 
-    public AbstractGroup(String canonicalName, LocalizedString caption) {
+    public Group(String canonicalName, LocalizedString caption) {
         this.canonicalName = canonicalName;
         this.caption = caption;
     }
@@ -68,7 +68,7 @@ public class AbstractGroup extends AbstractNode {
     }
 
     public void add(AbstractNode prop, Version version) {
-        AbstractGroup prevParent = prop.getNFParent(version);
+        Group prevParent = prop.getNFParent(version);
         if (prevParent != null) {
             if (prevParent == this) // не только оптимизация, но и mutable логика
             {
@@ -124,28 +124,28 @@ public class AbstractGroup extends AbstractNode {
         return result.immutableOrder();
     }
     
-    public ImList<AbstractGroup> getParentGroups() {
-        MList<AbstractGroup> mResult = ListFact.mList();
+    public ImList<Group> getParentGroups() {
+        MList<Group> mResult = ListFact.mList();
         fillParentGroups(mResult);
         return mResult.immutableList();        
     }
-    public void fillParentGroups(MList<AbstractGroup> mResult) {
-        AbstractGroup parent = getParent();
+    public void fillParentGroups(MList<Group> mResult) {
+        Group parent = getParent();
         if (parent != null) {
             parent.fillParentGroups(mResult);
         }
         mResult.add(this);
     }
-    public ImList<AbstractGroup> getChildGroups() {
-        MList<AbstractGroup> mResult = ListFact.mList();
+    public ImList<Group> getChildGroups() {
+        MList<Group> mResult = ListFact.mList();
         fillChildGroups(mResult);
         return mResult.immutableList();
     }
-    public void fillChildGroups(MList<AbstractGroup> mResult) {
+    public void fillChildGroups(MList<Group> mResult) {
         mResult.add(this);
         for (AbstractNode child : getChildrenListIt()) {
-            if (child instanceof AbstractGroup) {
-                ((AbstractGroup) child).fillChildGroups(mResult);
+            if (child instanceof Group) {
+                ((Group) child).fillChildGroups(mResult);
             }
         }
     }

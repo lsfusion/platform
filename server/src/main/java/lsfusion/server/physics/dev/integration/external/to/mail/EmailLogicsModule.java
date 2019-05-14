@@ -7,7 +7,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.antlr.runtime.RecognitionException;
@@ -82,7 +82,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         unpackAccount = findProperty("unpack[Account]");
     }
 
-    public LA<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params) {
+    public LA<ClassPropertyInterface> addEAProp(Group group, LocalizedString caption, ValueClass[] params) {
         return addAction(group, new LA<>(new SendEmailAction(caption, params)));
     }
 

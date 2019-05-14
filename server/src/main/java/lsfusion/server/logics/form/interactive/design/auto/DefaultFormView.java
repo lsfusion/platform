@@ -25,7 +25,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyGroupCont
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -74,7 +74,7 @@ public class DefaultFormView extends FormView {
     protected final Map<PropertyGroupContainerView,ContainerView> filtersContainers = synchronizedMap(new HashMap<PropertyGroupContainerView, ContainerView>());
     public ContainerView getFilterContainer(GroupObjectEntity groupObject) { return filtersContainers.get(getPropertyGroupContainer(groupObject)); }
 
-    protected transient final Table<Optional<PropertyGroupContainerView>, AbstractGroup, ContainerView> groupPropertyContainers = HashBasedTable.create();
+    protected transient final Table<Optional<PropertyGroupContainerView>, Group, ContainerView> groupPropertyContainers = HashBasedTable.create();
 
     public ContainerView objectsContainer;
     public ContainerView toolbarBoxContainer;
@@ -435,14 +435,14 @@ public class DefaultFormView extends FormView {
     }
 
     //    private void addPropertyDrawToLayout(GroupObjectView groupObject, PropertyDrawView propertyDraw) {
-//        AbstractGroup propertyParentGroup = propertyDraw.entity.propertyObject.property.getParent();
+//        Group propertyParentGroup = propertyDraw.entity.propertyObject.property.getParent();
 //
 //        Pair<ContainerView, ContainerView> groupContainers = getPropGroupContainer(groupObject, propertyParentGroup);
 //        groupContainers.second.add(propertyDraw);
 //    }
 //
 //    //возвращает контейнер группы и контейнер свойств этой группы
-//    private Pair<ContainerView, ContainerView> getPropGroupContainer(GroupObjectView groupObject, AbstractGroup currentGroup) {
+//    private Pair<ContainerView, ContainerView> getPropGroupContainer(GroupObjectView groupObject, Group currentGroup) {
 //        if (currentGroup == null) {
 //            return new Pair<ContainerView, ContainerView>(panelContainers.get(groupObject), groupContainers.get(groupObject));
 //        }
@@ -495,7 +495,7 @@ public class DefaultFormView extends FormView {
 //    }
 
     //возвращает контейнер группы и контейнер свойств этой группы
-    private ContainerView getPropGroupContainer(PropertyDrawEntity propertyDraw, AbstractGroup currentGroup, Version version) {
+    private ContainerView getPropGroupContainer(PropertyDrawEntity propertyDraw, Group currentGroup, Version version) {
         if (currentGroup == null) {
             return getPanelPropsContainer(propertyDraw, version);
         }
@@ -526,8 +526,8 @@ public class DefaultFormView extends FormView {
         return propGroupContainer;
     }
 
-    private String getPropGroupContainerSID(AbstractGroup currentGroup, PropertyGroupContainerView propertyContainer) {
-        String propertyGroupName = currentGroup.getName();
+    private String getPropGroupContainerSID(Group currentGroup, PropertyGroupContainerView propertyContainer) {
+        String propertyGroupName = currentGroup.getCanonicalName();
         String currentGroupContainerSID;
         if (propertyContainer == null)
             currentGroupContainerSID = DefaultFormView.getGroupContainerSID(propertyGroupName);

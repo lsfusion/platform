@@ -42,7 +42,7 @@ import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.interactive.property.ObjectValueProperty;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -84,14 +84,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public BaseClass baseClass;
 
     // groups
-    public AbstractGroup actionGroup;
-    public AbstractGroup drillDownGroup; // для того чтобы в reflection'е можно было для всех drillDown одну политику безопасности проставлять
-    public AbstractGroup propertyPolicyGroup; // для того чтобы в reflection'е можно было для всех propertyPolicy одну политику безопасности проставлять
+    public Group actionGroup;
+    public Group drillDownGroup; // для того чтобы в reflection'е можно было для всех drillDown одну политику безопасности проставлять
+    public Group propertyPolicyGroup; // для того чтобы в reflection'е можно было для всех propertyPolicy одну политику безопасности проставлять
 
-    public AbstractGroup rootGroup;
-    public AbstractGroup publicGroup;
-    public AbstractGroup baseGroup;
-    public AbstractGroup recognizeGroup;
+    public Group rootGroup;
+    public Group publicGroup;
+    public Group baseGroup;
+    public Group recognizeGroup;
     
     // properties
     public LP groeq2;
@@ -188,7 +188,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP fillingIDs;
 
-    public AbstractGroup privateGroup;
+    public Group privateGroup;
 
     public TableFactory tableFactory;
 

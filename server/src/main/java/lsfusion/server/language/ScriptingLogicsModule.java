@@ -92,7 +92,7 @@ import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -539,9 +539,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public AbstractGroup findGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public Group findGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            AbstractGroup group = resolveGroup(name);
+            Group group = resolveGroup(name);
             checks.checkGroup(group, name);
             return group;
         } catch (ResolvingError e) {
@@ -736,8 +736,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedGroup(String groupName, LocalizedString captionStr, String integrationSID, String parentName) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateGroup(groupName);
         LocalizedString caption = (captionStr == null ? LocalizedString.create(groupName) : captionStr);
-        AbstractGroup parentGroup = (parentName == null ? null : findGroup(parentName));
-        AbstractGroup group = addAbstractGroup(groupName, caption, parentGroup);
+        Group parentGroup = (parentName == null ? null : findGroup(parentName));
+        Group group = addAbstractGroup(groupName, caption, parentGroup);
         group.setIntegrationSID(integrationSID);
     }
 
@@ -1073,7 +1073,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamsClasses(params, signature);
 
         String groupName = ps.groupName;
-        AbstractGroup group = (groupName == null ? null : findGroup(groupName));
+        Group group = (groupName == null ? null : findGroup(groupName));
         property.getActionOrProperty().caption = (caption == null ? LocalizedString.create(name) : caption);
         addPropertyToGroup(property.getActionOrProperty(), group);
     }

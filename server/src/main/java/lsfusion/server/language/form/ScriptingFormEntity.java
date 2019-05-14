@@ -34,7 +34,7 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.group.AbstractGroup;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
@@ -135,7 +135,7 @@ public class ScriptingFormEntity {
         }
 
         String propertyGroupName = groupObject.propertyGroupName;
-        AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
+        Group propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
         if(propertyGroup != null)
             groupObj.propertyGroup = propertyGroup;
 
@@ -521,7 +521,7 @@ public class ScriptingFormEntity {
             property.setIntegrationSID(integrationSID);
         
         String groupName = options.getGroupName();
-        AbstractGroup group = (groupName == null ? null : LM.findGroup(groupName));
+        Group group = (groupName == null ? null : LM.findGroup(groupName));
         if(group != null)
             property.group = group;
 
