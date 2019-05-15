@@ -40,6 +40,7 @@ import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -276,7 +277,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public DataObject refresh(SessionChanges session, ValueClass upClass) throws SQLException, SQLHandledException {
-        return session.getDataObject(upClass, object);
+        if(upClass instanceof CustomClass)
+            return session.getDataObject((CustomClass)upClass, (Long)object);
+        return this;
     }
 
     public boolean isNull() {

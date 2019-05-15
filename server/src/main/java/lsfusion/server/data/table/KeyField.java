@@ -21,7 +21,7 @@ public class KeyField extends Field implements Comparable<KeyField> {
         super(inStream);
     }
 
-    byte getType() {
+    public byte getType() {
         return 0;
     }
 

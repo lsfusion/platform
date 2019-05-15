@@ -15,7 +15,7 @@ public class PropertyField extends Field {
         super(inStream);
     }
 
-    byte getType() {
+    public byte getType() {
         return 1;
     }
 }
