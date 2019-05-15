@@ -113,7 +113,7 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
         throw new IOException();
     }
 
-    abstract byte getType();
+    public abstract byte getType();
 
     public boolean calcTwins(TwinImmutableObject o) {
         return name.equals(((Field)o).name) && type.equals(((Field)o).type);

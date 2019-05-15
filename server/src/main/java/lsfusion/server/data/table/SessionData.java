@@ -25,6 +25,7 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.translate.MapValuesTranslate;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.AbstractWhere;
@@ -117,21 +118,40 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         pullQuery.set(query);
         return null;
     }
-
-    // есть оптимизации вроде table instanceof SessionRows, writeRows.size() <= SESSION_ROWS, то есть полагаемся на инвариант что при передаче в JDBC СУБД само закастит (этот инвариант все равно будет, потому как когда идет insertSessionSelect там никаких Cast'ов нет и мы опять таки полагаемся на cast СУБД)
-    public static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {
+    
+    public static <F, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values, final Type.Getter<F> typeGetter) {
         return values.mapValues(new GetKeyValue<D, F, D>() {
             @Override
             public D getMapValue(F key, D value) {
-                if(!(key.type instanceof DataClass && value instanceof DataObject))
+                Type type = typeGetter.getType(key);
+                if(!(type instanceof DataClass && value instanceof DataObject))
                     return value;
-
-                DataClass dataClass = (DataClass) key.type;
+                
+                DataClass dataClass = (DataClass) type;
                 DataObject dataObject = (DataObject)value;
                 if(BaseUtils.hashEquals(dataClass, dataObject.objectClass))
                     return value;
 
                 return (D) new DataObject(dataClass.readCast(dataObject.object, dataObject.objectClass), dataClass);
+            }
+        });
+    }
+    public static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {
+        return castTypes(values, Field.<F>typeGetter());
+    }
+    public static <K, V> ImOrderMap<ImMap<K, DataObject>, V> castTypes(ImOrderMap<ImMap<K, DataObject>, V> map, final Type.Getter<K> typeGetter) {
+        // optimization will check first
+        if(map.isEmpty())
+            return map;
+        
+        ImMap<K, DataObject> firstRow = map.getKey(0);
+        ImMap<K, DataObject> castFirstRow = castTypes(firstRow, typeGetter);
+        if(firstRow.equals(castFirstRow)) // not hash equals because usually they are equal
+            return map;
+        
+        return map.mapOrderKeys(new GetValue<ImMap<K, DataObject>, ImMap<K, DataObject>>() {
+            public ImMap<K, DataObject> getMapValue(ImMap<K, DataObject> value) {
+                return castTypes(value, typeGetter);
             }
         });
     }

@@ -42,7 +42,7 @@ public class DefaultWYSObjectAction<P extends PropertyInterface> extends Abstrac
         Object oldValue = implement.read(context, keys);
         ObjectValue changeValue = context.requestUserData(ObjectType.idClass, oldValue);
         if(changeValue != null)
-            changeValue = context.getSession().getObjectValue(valueClass, changeValue.getValue());
+            changeValue = context.getSession().getObjectValue(valueClass, (Long)changeValue.getValue());
         return changeValue;
     }
 }

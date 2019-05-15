@@ -61,7 +61,6 @@ import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -587,6 +586,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         else
             return expandTable.getWhere(mapKeys);
     }
+    
+    // the problem that here it is not guaranteed that DataObject types will be the same as in ObjectInstance (and this will lead to incorrect equals, for example in updateDrawProps where is equal to keysTable, which types are object base classes)
+    private <V> ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> castExecuteObjects(ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> rows) throws SQLException, SQLHandledException {
+        return SessionData.castTypes(rows, typeGetter);        
+    }
 
     private ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> executeTree(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         assert isInTree();
@@ -632,8 +636,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
         });
 
-        return new Query<>(mapKeys, mPropertyExprs.immutable(), getWhere(mapKeys, modifier, reallyChanged).and(expandWhere)).
-                    executeClasses(session, env, baseClass, orderExprs);
+        return castExecuteObjects(new Query<>(mapKeys, mPropertyExprs.immutable(), getWhere(mapKeys, modifier, reallyChanged).and(expandWhere)).
+                    executeClasses(session, env, baseClass, orderExprs));
     }
 
     private Expr getHasSubElementsExpr(final ImRevMap<ObjectInstance, KeyExpr> outerMapKeys, final Modifier modifier, final ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
@@ -1193,8 +1197,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             String filterKey = "filter";
             ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> orderFilterValues = 
-                    new Query<>(mapKeys, MapFact.addExcl(orderExprs, filterKey, ValueExpr.get(getWhere(mapKeys, modifier, reallyChanged))), CompareWhere.compareInclValues(orderExprs, dataObjects)).
-                        executeClasses(session, env, baseClass);
+                    castExecuteObjects(new Query<>(mapKeys, MapFact.addExcl(orderExprs, filterKey, ValueExpr.get(getWhere(mapKeys, modifier, reallyChanged))), CompareWhere.compareInclValues(orderExprs, dataObjects)).
+                        executeClasses(session, env, baseClass));
 
             ObjectValue filterValue = orderFilterValues.singleValue().get(filterKey);
             ImMap<OrderInstance, ObjectValue> orderValues = BaseUtils.immutableCast(orderFilterValues.singleValue().removeIncl(filterKey));
@@ -1248,8 +1252,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
             }
 
-            return new Query<>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(orderWhere)).
-                        executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass, env);
+            return castExecuteObjects(new Query<>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(orderWhere)).
+                        executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass, env));
         }
 
         // считывает одну запись
@@ -1284,12 +1288,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public NoPropertyTableUsage<ObjectInstance> createKeyTable(String debugInfo) {
-        return new NoPropertyTableUsage<>(debugInfo, GroupObjectInstance.getOrderObjects(getOrderUpTreeGroups()), new Type.Getter<ObjectInstance>() {
-            public Type getType(ObjectInstance key) {
-                return key.getType();
-            }
-        });                
+        return new NoPropertyTableUsage<>(debugInfo, GroupObjectInstance.getOrderObjects(getOrderUpTreeGroups()), typeGetter);                
     }
+
+    private final static Type.Getter<ObjectInstance> typeGetter = new Type.Getter<ObjectInstance>() {
+        public Type getType(ObjectInstance key) {
+            return key.getType();
+        }
+    };
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {
         public PropertyObjectInstance getPropertyObjectInstance() {

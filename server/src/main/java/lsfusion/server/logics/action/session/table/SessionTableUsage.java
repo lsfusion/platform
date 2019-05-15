@@ -209,7 +209,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public void writeRows(SQLSession session,ImMap<ImMap<K,DataObject>,ImMap<V,ObjectValue>> writeRows, OperationOwner opOwner) throws SQLException, SQLHandledException {
         assert aspectNoCorrelations();
         
-        // тут castTypes может идти как по safe веткам (где тип field гарантировано тот же, что и в ObjectValue), но все же большинство не safe поэтому на всякий случай сделаем
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<K, DataObject>>() {
             public ImMap<KeyField, DataObject> getMapValue(ImMap<K, DataObject> value) {
                 return mapKeys.join(value);
@@ -217,14 +216,15 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<V, ObjectValue> value) {
                 return mapProps.join(value);
             }});
-        if(writeRows.size() <= SessionRows.MAX_ROWS)
-            mapWriteRows = mapWriteRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<KeyField, DataObject>>() {
-                public ImMap<KeyField, DataObject> getMapValue(ImMap<KeyField, DataObject> value) {
-                    return castTypes(value);
-            }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
-                public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
-                    return castTypes(value);
-            }});
+        // concerning castTypes some branches are safe (where field field type is guaranteed to be the same as in ObjectValue), however most branches are not
+        // we need this casts not only for SessionRows, but also for SessionDataTable, because insertBatch with writeParam is used, and inside writeParam there are assertions that types are correct
+        mapWriteRows = mapWriteRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<KeyField, DataObject>>() {
+            public ImMap<KeyField, DataObject> getMapValue(ImMap<KeyField, DataObject> value) {
+                return castTypes(value);
+        }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
+            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
+                return castTypes(value);
+        }});
         
         try {
             table = table.rewrite(session, mapWriteRows, this, opOwner);
