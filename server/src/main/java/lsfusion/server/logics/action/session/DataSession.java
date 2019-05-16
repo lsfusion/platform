@@ -373,7 +373,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @Override
     protected void onClose(Object o) throws SQLException {
         assert o == null;
-        
+
         if(sql.isLoggerDebugEnabled())
             SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
         try {
@@ -1706,7 +1706,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         savePropertyChanges(implementTable, changeTable.getValues().toMap(), changeTable.getKeys().toRevMap(), changeTable, true);
     }
 
-    private <T extends PropertyInterface> void savePropertyChanges(Property<T> property, PropertyChangeTableUsage<T> change) throws SQLException, SQLHandledException {
+    @StackMessage("{message.save.property.changes}")
+    private <T extends PropertyInterface> void savePropertyChanges(@ParamMessage Property<T> property, PropertyChangeTableUsage<T> change) throws SQLException, SQLHandledException {
         // тут может быть нюанс с корреляциями, если их изменения сохраняются, то уже считанные корреляции могут стать не актуальными
         // по идее это актуально только для верхних по стеку singleApply для которых еще не apply'ты изменения в другие ветки (с PREV'ами, отдельно разбирается updateCurrentClasses, в DATA изменений с удаляемыми классами быть не должно, а хинты почистятся при splitRemove и записи в news)
         // но пока будем считать что AGGR это или DATA или ABSTRACT (то есть ветка одна), поэтому никаких updateCorrelations делать не будем
