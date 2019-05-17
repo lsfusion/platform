@@ -8,7 +8,7 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ModuleList {
     private static final String[] systemModulesNames = {"System", "Authentication", "Email", "Reflection",
-            "Scheduler", "Security", "Service", "SystemEvents", "Time"};
+            "Scheduler", "Security", "Service", "SystemEvents", "Time", "Utils"};
     
     private List<LogicsModule> modules = new ArrayList<>();
 
