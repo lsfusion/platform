@@ -338,7 +338,7 @@ public class ScriptingLogicsModuleChecks {
 
     public void checkGPropSumConstraints(GroupingType type, ScriptingLogicsModule.LPWithParams mainProp) throws ScriptingErrorLog.SemanticErrorException {
         if (type == GroupingType.SUM && mainProp.getLP() != null) {
-            if (!(mainProp.getLP().property.getValueClass(ClassType.valuePolicy).getType() instanceof IntegralClass)) {
+            if (!(mainProp.getLP().property.getType() instanceof IntegralClass)) {
                 errLog.emitNonIntegralSumArgumentError(parser);
             }
         }
@@ -609,7 +609,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkImportFromFileExpression(LPWithParams params) throws ScriptingErrorLog.SemanticErrorException {
-        if (params.getLP() != null && !(params.getLP().property.getValueClass(ClassType.valuePolicy).getType() instanceof FileClass)) {
+        if (params.getLP() != null && !(params.getLP().property.getType() instanceof FileClass)) {
             errLog.emitImportFromWrongClassError(parser);    
         }
     }
