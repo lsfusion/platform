@@ -1640,11 +1640,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                 type = paramClass.getType();
             else {
                 LP<?> property = paramProps.get(i).getLP();
-                if(property != null) {
-                    ValueClass valueClass = property.property.getValueClass(ClassType.valuePolicy);
-                    if (valueClass != null)
-                        type = valueClass.getType();
-                }
+                if(property != null)
+                    type = property.property.getType();
             }
             mTypes.add(type);
         }
