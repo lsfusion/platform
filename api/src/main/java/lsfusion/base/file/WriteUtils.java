@@ -93,7 +93,9 @@ public class WriteUtils {
                     ftpClient.enterLocalPassiveMode();
                 }
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+                if(properties.binaryTransferMode) {
+                    ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+                }
 
                 InputStream inputStream = file.getInputStream();
                 boolean done = ftpClient.storeFile(remoteFile, inputStream);
