@@ -115,7 +115,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        logger.info("Starting RMI Manager.");
+        logger.info("Starting RMI Manager (port : " + port + ").");
         try {
             initJMX(); // важно, что до initRMI, так как должен использовать SocketFactory по умолчанию
             initRegistry();
