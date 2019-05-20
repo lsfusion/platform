@@ -958,7 +958,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Result<Cost> rLastBaseCosts = new Result<>(Cost.ONE);
                 Result<ImRevMap<Value, Expr>> rVirtParams = new Result<>();
-                ClassWhere<KeyExpr> keyClasses = ClassWhere.get(mapKeys.reverse(), groupWhere);
+                ClassWhere<KeyExpr> keyClasses = ClassWhere.get(mapKeys.reverse(), pushedInWhere != null ? pushedInWhere : groupWhere); // we have to use actual topWhere because classes (TC) there can be wider than in groupWhere (GC), and using groupWhere will lead to conditions like c IS GC will be eliminated 
                 ImRevMap<String, SubQueryExprSelect> propertySelect = getLastExprSources(level, rVirtParams, mapKeys, keyClasses, rLastBaseCosts, optAdjustLimit, debugInfoWriter);
 
                 Where pushedOutWhere = null;
