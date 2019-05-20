@@ -304,13 +304,13 @@ public class ActionDebugger implements DebuggerService {
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object evalAction(Action action, ExecutionContext context, String namespace, String require, String priorities, String statements)
-            throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+            throws SQLException, SQLHandledException {
         return evalAction(context, namespace, require, priorities, "{" + StringEscapeUtils.unescapeJava(statements) + "}", null);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object eval(Action action, ExecutionContext<?> context, String namespace, String require, String priorities, String expression)
-        throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        throws SQLException, SQLHandledException {
 
 //        context.showStack();
         if (!isEnabled()) {
@@ -326,7 +326,7 @@ public class ActionDebugger implements DebuggerService {
         return evalAction(context, namespace, require, priorities, actionText, valueName);
     }
 
-    private Object evalAction(ExecutionContext<?> context, String namespace, String require, String priorities, String expression, final String valueName) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private Object evalAction(ExecutionContext<?> context, String namespace, String require, String priorities, String expression, final String valueName) throws SQLException, SQLHandledException {
         //используем все доступные в контексте параметры
         ExecutionStack stack = context.stack;
 
@@ -372,7 +372,7 @@ public class ActionDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {
@@ -394,14 +394,12 @@ public class ActionDebugger implements DebuggerService {
 
         watchHack.set(false);
 
-        ScriptingLogicsModule module = EvalUtils.evaluate(bl, namespace, require, priorities, locals, prevEventScope, script);
+        LA la = EvalUtils.evaluateAndFindAction(bl, namespace, require, priorities, locals, prevEventScope, script, "evalStub");
 
         boolean forExHack = watchHack.get();
         watchHack.set(null);
 
-        String evalPropName = module.getNamespace() + "." + "evalStub";
-
-        return new Pair<>((LA<PropertyInterface>) module.findAction(evalPropName), forExHack);
+        return new Pair<>((LA<PropertyInterface>) la, forExHack);
     }
 
     private static ActionWatchEntry getWatchEntry(ImMap<String, ObjectValue> row, String valueName) {

@@ -449,8 +449,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             if (runAction != null) {
                 runAction.execute(session, getStack());
             }
-        } catch (EvalUtils.EvaluationException | RecognitionException e) {
-            throw Throwables.propagate(e);
         }
     }
 
