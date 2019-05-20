@@ -38,7 +38,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         valueRequested = false;
         simpleChangeProperty = null;
         readType = null;
-        GExceptionManager.addStackTrace("INIT DROPPED READTYPE");
+//        GExceptionManager.addStackTrace("INIT DROPPED READTYPE");
         editColumnKey = null;
         oldValue = null;
         transferFocusAfterEdit = true;
@@ -95,7 +95,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         if (readType != null) {
             GType editType = readType;
             readType = null;
-            GExceptionManager.addStackTrace("DROPPED READTYPE");
+//            GExceptionManager.addStackTrace("DROPPED READTYPE");
             requestValue(editType);
         }
     }
@@ -147,7 +147,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     public Object execute(GRequestUserInputAction action) {
         readType = action.readType;
         oldValue = action.oldValue;
-        GExceptionManager.addStackTrace("SET READTYPE");
+//        GExceptionManager.addStackTrace("SET READTYPE");
 
         pauseDispatching();
 
