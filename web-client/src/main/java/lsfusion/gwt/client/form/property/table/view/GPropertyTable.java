@@ -154,7 +154,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         if (isEditableAwareEditEvent(actionSID) && !isEditable(editContext)) {
             return;
         }
-
+        
+        if(this.editContext != null) // we don't need edit event if editing lifecycle has already started (however requestvalue wasn't called, so form.isEditing is false), because in that case started lifecycle will drop context, and this event will have no context
+            return;
+            
         editEvent.stopPropagation();
 
         this.editCell = editCell;
@@ -162,7 +165,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         this.editContext = editContext;
         this.editCellParent = editCellParent;
 
-        GExceptionManager.addStackTrace("SET CONTEXT");
+//        GExceptionManager.addStackTrace("SET CONTEXT");
 
         //убираем фокус, чтобы не ловить последующие нажатия
         setFocus(false);
@@ -225,8 +228,8 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     public void requestValue(GType valueType, Object oldValue) {
         editType = valueType;
 
-        if(editContext == null)
-            GExceptionManager.throwStackedException("EDIT CONTEXT IS NULL");
+//        if(editContext == null)
+//            GExceptionManager.throwStackedException("EDIT CONTEXT IS NULL");
 
         GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext));
         if (cellEditor != null) {
@@ -298,7 +301,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         editCellParent = null;
         editType = null;
 
-        GExceptionManager.addStackTrace("CLEARED CONTEXT");
+//        GExceptionManager.addStackTrace("CLEARED CONTEXT");
 
         setFocus(true);
         form.setCurrentEditingTable(null);
