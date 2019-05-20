@@ -43,7 +43,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     protected EditEvent editEvent;
     protected Context editContext;
     protected Element editCellParent;
-    protected GType editType;
 
     public GPropertyTable(GFormController iform, Resources resources) {
         this(iform, resources, false);
@@ -154,9 +153,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         if (isEditableAwareEditEvent(actionSID) && !isEditable(editContext)) {
             return;
         }
-        
-        if(this.editContext != null) // we don't need edit event if editing lifecycle has already started (however requestvalue wasn't called, so form.isEditing is false), because in that case started lifecycle will drop context, and this event will have no context
-            return;
+
+        // editContext is not dropped when there is no actual input
+//        if(this.editContext != null) // we don't need edit event if editing lifecycle has already started (however requestvalue wasn't called, so form.isEditing is false), because in that case started lifecycle will drop context, and this event will have no context
+//            return;
             
         editEvent.stopPropagation();
 
@@ -226,8 +226,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     @Override
     public void requestValue(GType valueType, Object oldValue) {
-        editType = valueType;
-
 //        if(editContext == null)
 //            GExceptionManager.throwStackedException("EDIT CONTEXT IS NULL");
 
@@ -253,9 +251,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     @Override
     public void updateEditValue(Object value) {
-        if (editContext != null) {
-            setValueAt(editContext, value);
-        }
+        setValueAt(editContext, value);
     }
 
     @Override
@@ -296,10 +292,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     private void clearEditState() {
-        editCell = null;
-        editContext = null;
-        editCellParent = null;
-        editType = null;
+        // editContext is not dropped when there is no actual input, so we will not drop if there was actual input (and there will be no editContext is null exception)
+//        editCell = null;
+//        editContext = null;
+//        editCellParent = null;
 
 //        GExceptionManager.addStackTrace("CLEARED CONTEXT");
 
