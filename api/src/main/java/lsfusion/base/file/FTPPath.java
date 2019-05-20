@@ -18,8 +18,10 @@ public class FTPPath {
     public Integer port;
     public String remoteFile;
     public boolean passiveMode;
+    public boolean binaryTransferMode;
 
-    public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile, boolean passiveMode) {
+    public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile,
+                   boolean passiveMode, boolean binaryTransferMode) {
         this.username = username;
         this.password = password;
         this.charset = charset;
@@ -27,6 +29,7 @@ public class FTPPath {
         this.port = port;
         this.remoteFile = remoteFile;
         this.passiveMode = passiveMode;
+        this.binaryTransferMode = binaryTransferMode;
     }
 
     public static FTPPath parseFTPPath(String path) {
@@ -38,7 +41,7 @@ public class FTPPath {
     }
 
     private static FTPPath parseFTPPath(String path, Integer defaultPort) {
-        /*username:password;charset@host:port/path_to_file?passivemode=false*/
+        /*username:password;charset@host:port/path_to_file?passivemode=false&binarytransfermode=false*/
         Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]+))?(?:/([^?]*))?(?:\\?(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
@@ -50,14 +53,20 @@ public class FTPPath {
             String remoteFile = connectionStringMatcher.group(6);
             List<NameValuePair> extraParams = URLEncodedUtils.parse(connectionStringMatcher.group(7), charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8);
             boolean passiveMode = isPassiveMode(extraParams);
-            return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode);
+            boolean binaryTransferMode = isBinaryTransferMode(extraParams);
+            return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode, binaryTransferMode);
         } else {
-            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file?passivemode=false");
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file?passivemode=false&binarytransfermode=false");
         }
     }
 
     private static boolean isPassiveMode(List<NameValuePair> queryParams) {
         String result = getParameterValue(queryParams, "passivemode");
+        return result == null || result.equals("true");
+    }
+
+    private static boolean isBinaryTransferMode(List<NameValuePair> queryParams) {
+        String result = getParameterValue(queryParams, "binarytransfermode");
         return result == null || result.equals("true");
     }
 
