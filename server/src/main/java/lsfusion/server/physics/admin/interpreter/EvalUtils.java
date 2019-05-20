@@ -5,7 +5,9 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.server.language.EvalScriptingLogicsModule;
+import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
@@ -20,23 +22,17 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class EvalUtils {
-    public static class EvaluationException extends Exception {
-        public EvaluationException(String errString) {
-            super(errString);
-        }
-    }
-
     private static final AtomicLong uniqueNameCounter = new AtomicLong(0);
 
     private static String getUniqueName() {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
-    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String script, boolean action) throws EvaluationException {
-        return evaluate(BL, null, null, null, null, false, action ? EvalActionParser.parse(script) : script);
+    public static LA evaluateAndFindAction(BusinessLogics BL, String script, boolean action) {
+        return evaluateAndFindAction(BL, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
-    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script) throws EvaluationException {
+    public static LA evaluateAndFindAction(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
 
         String code = wrapScript(BL, namespace, require, priorities, script, name);
@@ -45,7 +41,6 @@ public class EvalUtils {
         module.visible = FullFunctionSet.instance();
         if(prevEventScope)
             module.setPrevScope(Event.SESSION);
-        String errString;
         try {
             module.initModuleDependencies();
             module.initMetaAndClasses();
@@ -58,25 +53,21 @@ public class EvalUtils {
 
             module.initMainLogic();
 
-            errString = module.getErrorsDescription();
-        } catch (RecognitionException e) {
-            errString = module.getErrorsDescription() + e.getMessage();
+            // not sure about this check, if it is needed
+            String errString = module.getErrorsDescription();
+            if(!errString.isEmpty())
+                throw new ScriptParsingException(errString);
+
+            return module.findAction(module.getNamespace() + '.' + action);
         } catch (Exception e) {
-            if (!module.getErrorsDescription().isEmpty()) {
-                errString = module.getErrorsDescription() + e.getMessage();
-            } else {
-                throw Throwables.propagate(e);
-            }
+            String errString = module.getErrorsDescription();
+            if (e instanceof RecognitionException || !errString.isEmpty())
+                throw new ScriptParsingException(errString + e.getMessage());
+            throw Throwables.propagate(e);
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);
         }
-
-        if (!errString.isEmpty()) {
-            throw new EvaluationException(errString);
-        }
-        
-        return module;
     }
 
     private static String wrapScript(BusinessLogics BL, String namespace, String require, String priorities, String script, String name) {

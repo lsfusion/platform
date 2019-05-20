@@ -54,13 +54,9 @@ public class EvalAction<P extends PropertyInterface> extends SystemExplicitActio
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String script = getScript(context);
 
-        try {
-            LA<?> runAction = context.getBL().evaluateRun(script, action);
-            if (runAction != null)
-                runAction.execute(context, getParams(context));
-        } catch (EvalUtils.EvaluationException | RecognitionException e) {
-            throw Throwables.propagate(e);
-        }
+        LA<?> runAction = context.getBL().evaluateRun(script, action);
+        if (runAction != null)
+            runAction.execute(context, getParams(context));
     }
     @Override
     public boolean hasFlow(ChangeFlowType type) {

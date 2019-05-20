@@ -46,7 +46,6 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.metacode.MetaCodeFragment;
@@ -265,10 +264,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
     @IdentityLazy
-    public LA<?> evaluateRun(String script, boolean action) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException  {
-        ScriptingLogicsModule module = EvalUtils.evaluate(this, script, action);
-        String runName = module.getName() + ".run";
-        return module.findAction(runName);
+    public LA<?> evaluateRun(String script, boolean action) {
+        return EvalUtils.evaluateAndFindAction(this, script, action);
     }
 
     public void setTopModule(String topModule) {

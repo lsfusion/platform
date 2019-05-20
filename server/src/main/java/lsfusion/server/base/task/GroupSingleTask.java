@@ -68,26 +68,15 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
                 }
 
                 public void run(Logger logger) {
-                    Exception runException = null;
                     try {
                         long l = System.currentTimeMillis();
                         runTask(element);
                         runTime = System.currentTimeMillis() - l;
-                    } catch (RecognitionException e) {
-                        runException = new ScriptParsingException(e.getMessage());
                     } catch (Exception e) {
-                        runException = e;
-                    }
-
-                    String syntaxErrors = getErrorsDescription(element);
-
-                    if (!syntaxErrors.isEmpty()) {
-                        if (runException != null) {
-                            syntaxErrors = syntaxErrors + runException.getMessage();
-                        }
-                        throw new ScriptParsingException(syntaxErrors);
-                    } else if (runException != null) {
-                        throw Throwables.propagate(runException);
+                        String errString = getErrorsDescription(element);
+                        if (e instanceof RecognitionException || !errString.isEmpty())
+                            throw new ScriptParsingException(errString + e.getMessage());
+                        throw Throwables.propagate(e);
                     }
                 }
             };
