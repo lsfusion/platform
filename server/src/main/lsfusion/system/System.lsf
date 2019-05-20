@@ -177,8 +177,8 @@ addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
 
 exportObject = DATA LOCAL Object ();
-exportBpString = DATA LOCAL BPSTRING[4000] ();
-exportString = DATA LOCAL STRING[4000] ();
+exportBpString = DATA LOCAL BPSTRING ();
+exportString = DATA LOCAL STRING ();
 exportText = DATA LOCAL TEXT ();
 exportInteger = DATA LOCAL INTEGER ();
 exportLong = DATA LOCAL LONG ();
