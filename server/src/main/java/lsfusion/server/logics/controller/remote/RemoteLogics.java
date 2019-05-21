@@ -130,8 +130,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
-        RemoteSession.checkEnableApi(token.isAnonymous());
-
         return createSession(rmiManager.getExportPort(), token, sessionInfo);
     }
 
