@@ -120,7 +120,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     @Override
     protected String getCurrentAuthToken() {
-        assert authException == null; // in theory checkEnableApi always should be called first
+        //assert authException == null; // in theory checkEnableApi always should be called first
         return super.getCurrentAuthToken();
     }
 
