@@ -6,8 +6,11 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.base.exception.RemoteServerException;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
+import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -38,16 +41,22 @@ public class RemoteExceptionsAspect {
             throwable = fromAppServerToWebServerAndDesktopClient(throwable);
 
             if(!suppressLog)
-                logException(throwable, (ContextAwarePendingRemoteObject) target);
+                logException(throwable, target);
             
             throw throwable;
         }
     }
 
-    public void logException(Throwable throwable, ContextAwarePendingRemoteObject target) {
+    public void logException(Throwable throwable, Object target) {
         if(throwable instanceof RemoteInternalException) {                                
             try {
-                target.logServerException((RemoteInternalException) throwable);
+                BusinessLogics businessLogics = ThreadLocalContext.getBusinessLogics();
+                if(target instanceof ContextAwarePendingRemoteObject)
+                    ThreadLocalContext.assureRmi((ContextAwarePendingRemoteObject)target);
+                else
+                    ThreadLocalContext.assureRmi((RmiServer) target);
+                NewThreadExecutionStack stack = ThreadLocalContext.getStack();
+                businessLogics.systemEventsLM.logException(businessLogics, stack, throwable, null, null, false, false);
             } catch (Throwable t) {
                 logger.error("Error when logging exception: ", t);
             }

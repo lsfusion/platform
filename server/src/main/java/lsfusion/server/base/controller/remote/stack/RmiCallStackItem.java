@@ -8,8 +8,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 
 public class RmiCallStackItem extends ExecutionStackItem {
 
-    public RmiCallStackItem(ProceedingJoinPoint joinPoint, ContextAwarePendingRemoteObject remoteObject) {
-        super(joinPoint, Profiler.PROFILER_ENABLED ? new RMICallProfileObject(remoteObject.getProfiledObject(), joinPoint.getSignature().getName()) : null);
+    public RmiCallStackItem(ProceedingJoinPoint joinPoint, Object profiledObject) {
+        super(joinPoint, Profiler.PROFILER_ENABLED ? new RMICallProfileObject(profiledObject, joinPoint.getSignature().getName()) : null);
     }
     
     @Override

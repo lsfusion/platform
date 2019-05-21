@@ -7,6 +7,7 @@ import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
+import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.base.controller.remote.stack.RmiCallStackItem;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.HandledException;
@@ -178,9 +179,15 @@ public class ExecutionStackAspect {
     }
 
     @Around(RemoteContextAspect.allUserRemoteCalls)
-    public Object execute(ProceedingJoinPoint joinPoint, ContextAwarePendingRemoteObject target) throws Throwable {
+    public Object execute(ProceedingJoinPoint joinPoint, Object target) throws Throwable {
         assert target == joinPoint.getTarget();
-        RmiCallStackItem item = new RmiCallStackItem(joinPoint, target);
+        Object profiledObject;
+        if(target instanceof ContextAwarePendingRemoteObject)
+            profiledObject = ((ContextAwarePendingRemoteObject) target).getProfiledObject();
+        else
+            profiledObject = ((RmiServer) target).getEventName();
+        
+        RmiCallStackItem item = new RmiCallStackItem(joinPoint, profiledObject);
         return processStackItem(joinPoint, item);
     }
     

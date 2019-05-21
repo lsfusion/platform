@@ -1,5 +1,6 @@
 package lsfusion.server.base.controller.remote.context;
 
+import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.base.controller.thread.EventThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadInfo;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -10,14 +11,14 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class RemoteContextAspect {
     
-    public static final String allRemoteCalls = "execution(public * (lsfusion.interop.base.remote.PendingRemoteInterface+ && *..*Interface).*(..))" +
+    public static final String allRemoteCalls = "execution(public * (lsfusion.interop.base.remote.RemoteInterface+ && *..*Interface).*(..))" +
             " && !execution(public * *.ping(..))" +
             " && !execution(public * *.findClass(..))" +
             " && !execution(public * *.toString())" +
             " && target(target)";
 
     // за исключением системных вызовов, так как иначе они будут учавствовать в getLastThread, а значит в interrupt (и в итоге могут interrupt'ся они)
-    public static final String allUserRemoteCalls = "execution(public * (lsfusion.interop.base.remote.PendingRemoteInterface+ && *..*Interface).*(..))" +
+    public static final String allUserRemoteCalls = "execution(public * (lsfusion.interop.base.remote.RemoteInterface+ && *..*Interface).*(..))" +
             " && !execution(public * *.ping(..))" +
             " && !execution(public * *.findClass(..))" +
             " && !execution(public * *.toString())" +
@@ -26,14 +27,23 @@ public class RemoteContextAspect {
 
     @Around(allRemoteCalls)
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
-        ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) target;
+        ThreadLocalContext.AspectState prevState;
+        ThreadInfo threadInfo;
+        ContextAwarePendingRemoteObject remoteObject = null;
+        if(target instanceof ContextAwarePendingRemoteObject) {
+            remoteObject = (ContextAwarePendingRemoteObject) target;
+            threadInfo = EventThreadInfo.RMI((ContextAwarePendingRemoteObject) target);
 
-        ThreadInfo threadInfo = EventThreadInfo.RMI(remoteObject);
-        ThreadLocalContext.AspectState prevState = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, threadInfo); // because there can be explicit remote call (for example for Remote
+            prevState = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, threadInfo); // because there can be explicit remote call
+        } else {
+            RmiServer rmiServer = (RmiServer) target;
+            threadInfo = EventThreadInfo.RMI(rmiServer);
 
-        // because there can be explicit remote call (for example for Remote
+            prevState = ThreadLocalContext.aspectBeforeRmi(rmiServer, false, threadInfo);
+        }
+
         try {
-            if(remoteObject.isLocal())
+            if(remoteObject == null || remoteObject.isLocal())
                 return thisJoinPoint.proceed();
 
             remoteObject.addContextThread(Thread.currentThread());
