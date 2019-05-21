@@ -17,6 +17,7 @@ public class RemoteInternalException extends RemoteServerException {
     // the same as in RemoteInternalDispatchException
     // returns server stacks if present, should be called outside remote calls (where aspect will wrap exceptions in remoteInternalException)
     public static Pair<String, Pair<String, String>> toString(Throwable e) {
+        assert !(e instanceof RemoteMessageException); // should be handled before 
         Throwable throwable = new Throwable(ExceptionUtils.copyMessage(e));
         ExceptionUtils.copyStackTraces(e, throwable);
         return new Pair<>(throwable.getMessage(), getExStacks(throwable));
