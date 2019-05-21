@@ -4,9 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
-import lsfusion.server.language.EvalScriptingLogicsModule;
-import lsfusion.server.language.ScriptParsingException;
-import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.*;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
@@ -52,13 +50,6 @@ public class EvalUtils {
             }
 
             module.initMainLogic();
-
-            // not sure about this check, if it is needed
-            String errString = module.getErrorsDescription();
-            if(!errString.isEmpty())
-                throw new ScriptParsingException(errString);
-
-            return module.findAction(module.getNamespace() + '.' + action);
         } catch (Exception e) {
             String errString = module.getErrorsDescription();
             if (e instanceof RecognitionException || !errString.isEmpty())
@@ -67,6 +58,19 @@ public class EvalUtils {
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);
+        }
+
+        // not sure about this check, if it is needed
+        String errString = module.getErrorsDescription();
+        if(!errString.isEmpty())
+            throw new ScriptParsingException(errString);
+
+        try {
+            return module.findAction(module.getNamespace() + '.' + action);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw new UnsupportedOperationException(); // should not be since there is no currentParser in module
+        } catch (ScriptErrorException e) {  // we don't need stack for ScriptErrorException, since it is obvious, so will convert it to scriptParsingException
+            throw new ScriptParsingException(e.getMessage());
         }
     }
 
