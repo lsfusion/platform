@@ -75,9 +75,9 @@ public abstract class RemoteConnection extends RemoteRequestObject {
         }
     }
 
-    private void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
-        authToken = token;
+    protected void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
         String login = securityManager.parseToken(token);
+        authToken = token;
         user = login != null ? securityManager.readUser(login, session) : (SystemProperties.inDevMode ? securityManager.getAdminUser() : securityManager.getAnonymousUser());
     }
 
@@ -236,7 +236,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
         return user != null ? (Long)user.object : null;
     }
 
-    public String getCurrentAuthToken() {
+    protected String getCurrentAuthToken() {
         return authToken != null ? authToken.string : null;
     }
 

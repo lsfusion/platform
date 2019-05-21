@@ -30,6 +30,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
+import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
@@ -106,6 +107,23 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return readResult(request.returnNames, property.action);
     }
 
+    private AuthenticationException authException;
+    @Override
+    protected void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
+        try {
+            super.initUser(securityManager, token, session);
+        } catch (AuthenticationException e) { // if we have authentication exception, postpone it maybe only noauth will be used (authenticate with anonymous token)
+            authException = e;
+            super.initUser(securityManager, AuthenticationToken.ANONYMOUS, session);
+        }
+    }
+
+    @Override
+    protected String getCurrentAuthToken() {
+        assert authException == null; // in theory checkEnableApi always should be called first
+        return super.getCurrentAuthToken();
+    }
+
     private void checkEnableApi(LA<?> property) {
         boolean forceAPI = false;
         String annotation = property.action.annotation;
@@ -114,6 +132,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 return;
             forceAPI = annotation.equals("api");
         }
+        if(authException != null)
+            throw authException;        
         checkEnableApi(authToken.isAnonymous(), forceAPI);
     }
     
@@ -128,9 +148,6 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
         if(anonymous && enableApi == 1)
             throw new AuthenticationException();        
-    }
-    public static void checkEnableApi(boolean anonymous) {
-        checkEnableApi(anonymous, false);
     }
 
     public void writeRequestInfo(DataSession session, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
