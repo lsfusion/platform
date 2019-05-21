@@ -5,6 +5,7 @@ import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
 import lsfusion.gwt.client.base.exception.RemoteInternalDispatchException;
+import lsfusion.gwt.client.base.exception.RemoteMessageDispatchException;
 import lsfusion.gwt.client.base.exception.RemoteRetryException;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
 import lsfusion.gwt.server.form.handlers.*;
@@ -16,6 +17,7 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
+import lsfusion.interop.base.exception.RemoteMessageException;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
@@ -220,8 +222,11 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     public static DispatchException fromWebServerToWebClient(Throwable e) {
         if(e instanceof DispatchException) // mainly AppServerNotAvailableDispatchException, but in theory can be some InvalidSessionException
             return (DispatchException) e;
-        if(e instanceof AuthenticationException) // we need to wrap this exception, otherwise it will be treated like RemoteInternalDispatchException (unknown server exception)
+        // we need to wrap next two exceptions, otherwise they will be treated like RemoteInternalDispatchException (unknown server exception)
+        if(e instanceof AuthenticationException)
             return new AuthenticationDispatchException(e.getMessage());
+        if(e instanceof RemoteMessageException)
+            return new RemoteMessageDispatchException(e.getMessage());
         if(e instanceof RemoteException && !(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException)) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
             return new RemoteRetryException(e, e instanceof SessionInvalidatedException ? 3 : ExceptionUtils.getFatalRemoteExceptionCount(e));
 

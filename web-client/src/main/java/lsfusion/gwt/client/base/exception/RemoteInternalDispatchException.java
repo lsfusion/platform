@@ -18,6 +18,8 @@ public class RemoteInternalDispatchException extends DispatchException {
 
     // the same as in RemoteInternalException
     public static String[] toString(Throwable e) {
+        assert !(e instanceof RemoteMessageDispatchException); // should be handled before
+
         SerializableThrowable throwable = new SerializableThrowable("", GExceptionManager.copyMessage(e));
         GExceptionManager.copyStackTraces(e, throwable);
         String[] exStacks = getExStacks(throwable);

@@ -42,6 +42,9 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
                 });
                 return;
             }
+        } else if (caught instanceof RemoteMessageDispatchException) {
+            DialogBoxHelper.showMessageBox(true, messages.error(), caught.getMessage(), false, null);
+            return;
         }
         // messages.internalServerError();
         String[] actualStacks = RemoteInternalDispatchException.toString(caught);
