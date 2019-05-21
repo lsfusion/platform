@@ -619,7 +619,7 @@ public class ScriptingErrorLog {
             String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
             emitSemanticError(msg, e);
         } else {
-            throw new RuntimeException(message);
+            throw new ScriptErrorException(message);
         }
     }
 }
