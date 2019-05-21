@@ -244,11 +244,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return closed;
     }
 
-    public void logServerException(RemoteInternalException t) throws SQLException, SQLHandledException {
-        BusinessLogics businessLogics = getContext().getLogicsInstance().getBusinessLogics();
-        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, null, false, false);
-    }
-
     public void interrupt(boolean cancelable) throws RemoteException {
         try {
             Thread thread = ExecutionStackAspect.getLastThread(getContextThreads());

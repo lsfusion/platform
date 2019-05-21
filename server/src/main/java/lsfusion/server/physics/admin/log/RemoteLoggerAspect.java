@@ -31,10 +31,6 @@ public class RemoteLoggerAspect {
         //final long id = Thread.currentThread().getId();
         //putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         //try {
-            ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) target;
-            Context context = remoteObject.getContext();
-            assert context == ThreadLocalContext.get();
-
             long startTime = System.currentTimeMillis();
             Object result = thisJoinPoint.proceed();
             long runTime = System.currentTimeMillis() - startTime;
@@ -42,6 +38,7 @@ public class RemoteLoggerAspect {
             if(result instanceof ServerResponse)
                 ((ServerResponse)result).timeSpent = runTime;
 
+            Context context = ThreadLocalContext.get();
             Long user = context.getCurrentUser();
             Long computer = context.getCurrentComputer();
 //            Long connection = context.getCurrentConnection();
