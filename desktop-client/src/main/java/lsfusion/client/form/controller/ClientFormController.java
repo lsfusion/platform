@@ -1402,13 +1402,20 @@ public class ClientFormController implements AsyncListener {
         return new FormUserPreferences(groupObjectGeneralPreferencesList, groupObjectUserPreferencesList);
     }
 
-    public void hideForm() {
+    protected void onFormHidden() {
         if (autoRefreshScheduler != null) {
             autoRefreshScheduler.shutdown();
         }
-        // здесь мы сбрасываем ссылку на remoteForm для того, чтобы сборщик мусора быстрее собрал удаленные объекты
-        // это нужно, чтобы connection'ы на сервере закрывались как можно быстрее
         remoteForm = null;
+    }
+    
+    // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
+    private boolean formHidden;
+    public void hideForm() {
+        if(!formHidden) {
+            onFormHidden();
+            formHidden = true;
+        }
     }
 
     public void runEditReport(List<ReportPath> customReportPathList) {

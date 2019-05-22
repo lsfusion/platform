@@ -28,8 +28,8 @@ public class ModalForm extends ResizableModalWindow {
 
         form = new GFormController(formsController, gForm, true, isDialog) {
             @Override
-            public void hideForm() {
-                super.hideForm();
+            public void onFormHidden() {
+                super.onFormHidden();
                 ModalForm.this.hide();
                 dropCurrentForm();
             }

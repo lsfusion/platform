@@ -142,7 +142,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         minReceivedRequestIndex = lastReceivedRequestIndex;
     }
 
-    protected abstract ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack);
+    protected abstract ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack);
 
     protected ServerResponse processPausableRMIRequest(final long requestIndex, long lastReceivedRequestIndex, final EExecutionStackRunnable runnable) throws RemoteException {
 
@@ -151,7 +151,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             protected ServerResponse callInvocation() throws Throwable {
                 ExecutionStack stack = getStack();
                 runnable.run(stack);
-                return prepareResponse(requestIndex, delayedActions, delayedGetRemoteChanges, delayedHideForm, stack);
+                return prepareResponse(requestIndex, delayedActions, stack);
             }
 
             @Override
