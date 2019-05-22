@@ -31,6 +31,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if (actions != null) {
             int beginIndex;
             if (dispatchingPaused) {
+                GExceptionManager.addStackTrace("RESUMED RESPONSE " + this);
+                        
                 beginIndex = currentActionIndex + 1;
                 actionResults = currentActionResults;
                 continueIndex = currentContinueIndex;
@@ -56,6 +58,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 }
 
                 if (dispatchingPaused) {
+                    GExceptionManager.addStackTrace("PAUSED RESPONSE " + this);
+
                     currentResponse = response;
                     currentActionResults = actionResults;
                     currentActionIndex = i;
@@ -110,6 +114,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if (currentActionResults != null && currentActionIndex >= 0) {
             currentActionResults[currentActionIndex] = currentActionResult;
         }
+        if(currentResponse == null)
+            GExceptionManager.throwStackedException("CURRENT RESPONSE IS NULL");
         dispatchResponse(currentResponse);
     }
 

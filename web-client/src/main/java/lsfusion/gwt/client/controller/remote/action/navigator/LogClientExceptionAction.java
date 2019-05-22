@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
 import com.google.gwt.core.shared.SerializableThrowable;
+import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.exception.NonFatalHandledException;
 import lsfusion.gwt.client.base.exception.StackedException;
@@ -19,6 +20,12 @@ public class LogClientExceptionAction extends NavigatorAction<VoidResult> {
             return t;
         if(t instanceof NonFatalHandledException || t instanceof StackedException) // this exception are shared
             return t;
+        
+        if(t instanceof StatusCodeException) {
+            StackedException stackedException = GExceptionManager.getStackedException("STATUSCODE");
+            if(stackedException != null)
+                return stackedException;
+        }
         
         Throwable webServerException = new SerializableThrowable("", GExceptionManager.copyMessage(t));
         GExceptionManager.copyStackTraces(t, webServerException);

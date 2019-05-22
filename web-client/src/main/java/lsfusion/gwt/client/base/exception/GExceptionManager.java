@@ -172,9 +172,15 @@ public class GExceptionManager {
     }
 
     public static void throwStackedException(String message) {
-        if(!MainFrame.devMode)
-            return;
+        StackedException exception = getStackedException(message);
+        if(exception != null)
+            throw exception;
+    }
 
+    public static StackedException getStackedException(String message) {
+        if(!MainFrame.devMode)
+            return null;
+        
         SerializableThrowable[] result = new SerializableThrowable[rounded ? stacks.length : current + 1];
         int f = current + 1;
         for(int i=0;i<result.length;i++) {
@@ -185,7 +191,7 @@ public class GExceptionManager {
         SerializableThrowable thisStack = new SerializableThrowable("", "");
         StackedException exception = new StackedException(message, thisStack, result);
         copyStackTraces(exception, thisStack); // we need this because serializable throwable by default has no stack
-        throw exception;
+        return exception;
     }
 
     public static String getStackTrace(Throwable t) {
