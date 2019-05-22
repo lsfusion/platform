@@ -38,8 +38,6 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     protected List<ClientAction> delayedActions = new ArrayList<>();
 
     protected MessageClientAction delayedMessageAction = null; 
-    protected boolean delayedGetRemoteChanges = false;
-    protected boolean delayedHideForm = false;
 
     private Object[] actionResults;
     private Throwable clientThrowable;
@@ -52,26 +50,16 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
             ServerLoggers.pausableLog("Interaction " + sid + " called delayUserInteraction: " + action);
         }
 
-        if (action instanceof AsyncGetRemoteChangesClientAction) {
-            if (!delayedGetRemoteChanges) {
-                delayedActions.add(action);
-                delayedGetRemoteChanges = true;
-            }
-        } else if (action instanceof HideFormClientAction) { // оптимизация, чтобы не делать round-trip в HideFormClientAction
-            if (!delayedHideForm) {
-                delayedActions.add(action);
-                delayedHideForm = true;
-            }
-        } else if (action instanceof MessageClientAction) {
-            if (delayedMessageAction == null) {
-                delayedActions.add(action);
+        if (action instanceof MessageClientAction) {
+            if (delayedMessageAction == null)
                 delayedMessageAction = (MessageClientAction) action;
-            } else {
+            else {
                 delayedMessageAction.message += "\n" + ((MessageClientAction) action).message;
+                return; // we've already added message to existing action
             }
-        } else {
-            delayedActions.add(action);
         }
+
+        delayedActions.add(action);
     }
 
     /**

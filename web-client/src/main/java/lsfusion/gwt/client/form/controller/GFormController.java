@@ -127,7 +127,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private boolean blocked = false;
     private boolean selected = true;
-    private boolean formHidden = false;
 
     public FormsController getFormsController() {
         return formsController;
@@ -1091,10 +1090,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void hideForm() {
-        formHidden = true;
+    protected void onFormHidden() {
         setFiltersVisible(false);
         dispatcher.close();
+    }
+
+    // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
+    private boolean formHidden;
+    public void hideForm() {
+        if(!formHidden) {
+            onFormHidden();
+            formHidden = true;
+        }
     }
 
     public void blockingConfirm(String caption, String message, boolean cancel, final DialogBoxHelper.CloseCallback callback) {

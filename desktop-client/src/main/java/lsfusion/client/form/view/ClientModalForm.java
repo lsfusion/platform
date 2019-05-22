@@ -43,9 +43,9 @@ public class ClientModalForm extends JDialog {
 
         form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, firstChanges, null, true, isDialog) {
             @Override
-            public void hideForm() {
+            public void onFormHidden() {
                 hideDialog();
-                super.hideForm();
+                super.onFormHidden();
             }
         };
 

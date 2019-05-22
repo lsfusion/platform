@@ -19,7 +19,7 @@ public class ClientFormDockable extends ClientDockable {
 
         clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator) {
             @Override
-            public void hideForm() {
+            public void onFormHidden() {
                 if (control() != null) {
                     setVisible(false);
                 }
@@ -27,7 +27,7 @@ public class ClientFormDockable extends ClientDockable {
                 if (closeListener != null) {
                     closeListener.formClosed();
                 }
-                super.hideForm();
+                super.onFormHidden();
             }
 
             @Override

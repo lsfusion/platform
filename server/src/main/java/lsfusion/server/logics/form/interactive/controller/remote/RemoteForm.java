@@ -38,7 +38,6 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
@@ -790,11 +789,18 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private boolean delayedHideFormSent;
 
     @Override
-    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
-        return prepareRemoteChangesResponse(requestIndex, pendingActions, delayedGetRemoteChanges, delayedHideForm, stack);
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack) {
+        return prepareRemoteChangesResponse(requestIndex, pendingActions, stack);
     }
 
-    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
+    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack) {
+        boolean delayedGetRemoteChanges = false;
+        boolean delayedHideForm = false;
+        for(ClientAction action : pendingActions) {
+            delayedGetRemoteChanges = delayedGetRemoteChanges || action instanceof AsyncGetRemoteChangesClientAction;
+            delayedHideForm = delayedHideForm || action instanceof HideFormClientAction;
+        }        
+
         if(delayedHideForm) {
             delayedHideFormSent = true;
         }
