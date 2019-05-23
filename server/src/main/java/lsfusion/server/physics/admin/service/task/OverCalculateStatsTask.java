@@ -9,7 +9,6 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -23,7 +22,7 @@ public class OverCalculateStatsTask extends GroupPropertiesSingleTask<ImplementT
     }
 
     @Override
-    protected void runInnerTask(ImplementTable element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(ImplementTable element, ExecutionStack stack) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
             element.overCalculateStat(getBL().reflectionLM, session, propertiesSet, null/*progressBar*/);
             session.applyException(getBL(), stack);
@@ -45,11 +44,6 @@ public class OverCalculateStatsTask extends GroupPropertiesSingleTask<ImplementT
     @Override
     protected String getElementCaption(ImplementTable element) {
         return element.getName();
-    }
-
-    @Override
-    protected String getErrorsDescription(ImplementTable element) {
-        return "";
     }
 
     @Override

@@ -15,7 +15,6 @@ import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -41,7 +40,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     }
 
     @Override
-    protected void runInnerTask(final Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(final Object element, ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLSession sql = getDbManager().getThreadLocalSql();
         if (element instanceof Integer) {
             getDbManager().recalculateExclusiveness(sql, true);
@@ -105,11 +104,6 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     protected String getElementCaption(Object element) {
         return element instanceof ImplementTable ? ((ImplementTable) element).getName() :
                 element instanceof Property ? ((Property) element).getSID() : null;
-    }
-
-    @Override
-    protected String getErrorsDescription(Object element) {
-        return "";
     }
 
     @Override

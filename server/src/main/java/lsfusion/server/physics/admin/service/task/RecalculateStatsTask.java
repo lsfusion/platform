@@ -20,7 +20,6 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     }
 
     @Override
-    protected void runInnerTask(Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(Object element, ExecutionStack stack) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
             if (element instanceof ImplementTable) {
                 ((ImplementTable) element).recalculateStat(getBL().reflectionLM, session);
@@ -80,11 +79,6 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     protected String getElementCaption(Object element) {
         return element instanceof ImplementTable ? ((ImplementTable) element).getName() :
                 element instanceof ObjectValueClassSet ? String.valueOf(element) : null;
-    }
-
-    @Override
-    protected String getErrorsDescription(Object element) {
-        return "";
     }
 
     @Override

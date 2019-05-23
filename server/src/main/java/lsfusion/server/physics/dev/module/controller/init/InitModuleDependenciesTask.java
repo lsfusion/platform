@@ -13,7 +13,7 @@ public class InitModuleDependenciesTask extends GroupModuleTask {
         return false;
     }
 
-    protected void runTask(LogicsModule module) throws RecognitionException {
+    protected void runInnerTask(LogicsModule module) throws RecognitionException {
         module.initModuleDependencies();
     }
 }

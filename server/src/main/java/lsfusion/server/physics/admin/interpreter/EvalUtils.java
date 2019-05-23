@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.interpreter;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
@@ -14,6 +13,7 @@ import lsfusion.server.logics.event.Event;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +30,7 @@ public class EvalUtils {
         return evaluateAndFindAction(BL, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
-    public static LA evaluateAndFindAction(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
+    public static LA evaluateAndFindAction(BusinessLogics BL, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
 
         String code = wrapScript(BL, namespace, require, priorities, script, name);
@@ -40,30 +40,24 @@ public class EvalUtils {
         if(prevEventScope)
             module.setPrevScope(Event.SESSION);
         try {
-            module.initModuleDependencies();
-            module.initMetaAndClasses();
-            
-            if(locals != null) {
-                for(Pair<LP, List<ResolveClassSet>> local : locals) {
-                    module.addWatchLocalDataProperty(local.first, local.second);
-                }                
-            }
+            module.runInit(new LogicsModule.InitRunnable() {
+                public void run(LogicsModule module) throws RecognitionException, FileNotFoundException {
+                    module.initModuleDependencies();
+                    module.initMetaAndClasses();
 
-            module.initMainLogic();
-        } catch (Exception e) {
-            String errString = module.getErrorsDescription();
-            if (e instanceof RecognitionException || !errString.isEmpty())
-                throw new ScriptParsingException(errString + e.getMessage());
-            throw Throwables.propagate(e);
+                    if(locals != null) {
+                        for(Pair<LP, List<ResolveClassSet>> local : locals) {
+                            ((ScriptingLogicsModule)module).addWatchLocalDataProperty(local.first, local.second);
+                        }
+                    }
+
+                    module.initMainLogic();
+                }
+            });
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);
         }
-
-        // not sure about this check, if it is needed
-        String errString = module.getErrorsDescription();
-        if(!errString.isEmpty())
-            throw new ScriptParsingException(errString);
 
         try {
             return module.findAction(module.getNamespace() + '.' + action);

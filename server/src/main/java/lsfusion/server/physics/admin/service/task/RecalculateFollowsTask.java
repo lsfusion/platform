@@ -7,7 +7,6 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 
@@ -26,7 +25,7 @@ public class RecalculateFollowsTask extends GroupGraphTask<Action> {
     }
 
     @Override
-    protected void runInnerTask(Action element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(Action element, ExecutionStack stack) throws SQLException, SQLHandledException {
         assert element.hasResolve();
 
         try {
@@ -42,10 +41,5 @@ public class RecalculateFollowsTask extends GroupGraphTask<Action> {
     @Override
     protected String getElementCaption(Action element) {
         return element.getSID();
-    }
-
-    @Override
-    protected String getErrorsDescription(Action element) {
-        return "";
     }
 }

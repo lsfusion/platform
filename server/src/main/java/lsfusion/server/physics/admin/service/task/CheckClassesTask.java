@@ -11,7 +11,6 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
     }
 
     @Override
-    protected void runInnerTask(Object property, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(Object property, ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLSession sql = getDbManager().getThreadLocalSql();
         String result = null;
         if(property instanceof Integer) {
@@ -63,11 +62,6 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
     protected String getElementCaption(Object element) {
         return element instanceof ImplementTable ? ((ImplementTable) element).getName() :
                 element instanceof Property ? ((Property) element).getSID() : null;
-    }
-
-    @Override
-    protected String getErrorsDescription(Object element) {
-        return "";
     }
 
     @Override

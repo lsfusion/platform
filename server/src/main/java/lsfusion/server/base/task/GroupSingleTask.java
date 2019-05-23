@@ -22,7 +22,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
 
     protected abstract boolean isGraph();
 
-    protected abstract void runTask(T module) throws RecognitionException;
+    protected abstract void runTask(T module);
 
     protected long getTaskComplexity(T module) {
         return 1;
@@ -33,8 +33,6 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
     protected abstract String getElementCaption(T element, int all, int current);
 
     protected abstract String getElementCaption(T element);
-
-    protected abstract String getErrorsDescription(T element);
 
     protected abstract ImSet<T> getDependElements(T key);
 
@@ -68,16 +66,9 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
                 }
 
                 public void run(Logger logger) {
-                    try {
-                        long l = System.currentTimeMillis();
-                        runTask(element);
-                        runTime = System.currentTimeMillis() - l;
-                    } catch (Exception e) {
-                        String errString = getErrorsDescription(element);
-                        if (e instanceof RecognitionException || !errString.isEmpty())
-                            throw new ScriptParsingException(errString + e.getMessage());
-                        throw Throwables.propagate(e);
-                    }
+                    long l = System.currentTimeMillis();
+                    runTask(element);
+                    runTime = System.currentTimeMillis() - l;
                 }
             };
             mMapTasks.revAdd(element, task);
