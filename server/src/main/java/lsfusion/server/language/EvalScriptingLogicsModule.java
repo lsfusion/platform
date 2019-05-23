@@ -109,7 +109,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     
     @Override
     public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean resolve, boolean single) {
-        throw new RuntimeException(constructFullErrorMessage("event creation is forbidden in EVAL module"));
+        throw new RuntimeException(constructErrorMessage("event creation is forbidden in EVAL module"));
     }
 
     @Override
@@ -126,14 +126,19 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
             if (isNewGroup(group)) {
                 super.addPropertyToGroup(property, group);
             } else {
-                throw new RuntimeException(constructFullErrorMessage("addition of property or action to a group from another module is forbidden in EVAL module"));
+                throw new RuntimeException(constructErrorMessage("addition of property or action to a group from another module is forbidden in EVAL module"));
             }
         } 
     }    
     
-    private String constructFullErrorMessage(String message) {
-        return "[error]:\t" + getName() + ":" + parser.getCurrentParserLineNumber() + ":" +
-                (parser.getCurrentParserPositionInLine() + 1) + " " + message;
+    private String constructErrorMessage(String message) {
+        String resMessage = null;
+        try {
+            errLog.emitSimpleError(parser, message);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            resMessage =  e.getMessage();
+        }
+        return resMessage;
     }
     
     private boolean isNewGroup(Group group) {
