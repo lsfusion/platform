@@ -7,14 +7,14 @@ import static lsfusion.base.BaseUtils.compareInts;
 
 public interface LifecycleListener {
     int LOGICS_ORDER = 100;
-    int SYSTEM_ORDER = 200;
-    int DBMANAGER_ORDER = SYSTEM_ORDER + 100;
-    int SECURITYMANAGER_ORDER = SYSTEM_ORDER + 200;
-    int RMIMANAGER_ORDER = SYSTEM_ORDER + 300;
-    int BLLOADER_ORDER = SYSTEM_ORDER + 400;
+    int DBMANAGER_ORDER = 300;
 
+    int SECURITYMANAGER_ORDER = 400;
+    int RMIMANAGER_ORDER = 500;
+    int BLLOADER_ORDER = 600;
     int DAEMON_ORDER = 8000;
-    int REFLECTION_ORDER = 9000;
+
+    int REFLECTION_ORDER = 9000; //the last because the most heavyweight
 
     Comparator<LifecycleListener> ORDER_COMPARATOR = new Comparator<LifecycleListener>() {
         @Override

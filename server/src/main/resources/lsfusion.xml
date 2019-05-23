@@ -185,7 +185,7 @@
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
         
-        <property name="initTask" ref="writeModulesHashTask"/>
+        <property name="initTask" ref="initReflectionTask"/>
     </bean>
 
     <bean id="restartManager" class="lsfusion.server.logics.controller.manager.RestartManager">
@@ -541,7 +541,6 @@
     <bean id="syncTablesTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncTablesTask">
         <property name="dependencies">
             <set>
-                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncPropertyEntitiesTask"/>
             </set>
         </property>
@@ -560,7 +559,6 @@
     <bean id="syncPropertyParentsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncPropertyParentsTask">
         <property name="dependencies">
             <set>
-                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncPropertyEntitiesTask"/>
                 <ref bean="syncGroupPropertiesTask"/>
             </set>
@@ -571,7 +569,6 @@
     <bean id="syncPropertyDrawsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncPropertyDrawsTask">
         <property name="dependencies">
             <set>
-                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
                 <ref bean="syncGroupObjectsTask"/>
             </set>
@@ -582,7 +579,6 @@
     <bean id="syncParentsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncParentsTask">
         <property name="dependencies">
             <set>
-                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
@@ -592,7 +588,6 @@
     <bean id="syncNavigatorElementsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncNavigatorElementsTask">
         <property name="dependencies">
             <set>
-                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncPropertyEntitiesTask"/> <!--> так как ссылка на живой объект, а не varstring, вообще конечно нужны action'ы но они пока вместе синхронизируются <-->
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
@@ -621,7 +616,6 @@
     <bean id="syncGroupObjectsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncGroupObjectsTask">
         <property name="dependencies">
             <set>
-                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
@@ -688,12 +682,11 @@
     <bean id="initReflectionTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
-                <ref bean="syncReflectionTask"/>
                 <ref bean="resetConnectionStatusTask"/>
                 <ref bean="logLaunchTask"/>
                 <ref bean="prereadCachesTask"/>
                 <ref bean="prereadPropertyCachesTask"/>
-                <ref bean="firstRecalculateStatsTask"/>
+                <ref bean="writeModulesHashTask"/>
             </set>
         </property>
     </bean>
@@ -709,7 +702,7 @@
     <bean id="writeModulesHashTask" class="lsfusion.server.physics.admin.reflection.controller.init.WriteModulesHashTask">
         <property name="dependencies">
             <set>
-                <ref bean="initReflectionTask"/>
+                <ref bean="firstRecalculateStatsTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
