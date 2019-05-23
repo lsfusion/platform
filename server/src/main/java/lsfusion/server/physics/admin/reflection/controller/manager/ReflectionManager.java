@@ -10,13 +10,17 @@ import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.language.ScriptingErrorLog;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -36,6 +40,7 @@ import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
@@ -84,6 +89,9 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     private SystemEventsLogicsModule systemEventsLM;
     private TimeLogicsModule timeLM;
 
+    private String modulesHash;
+    private boolean sourceHashChanged;
+
     public ReflectionManager() {
         super(REFLECTION_ORDER);
     }
@@ -120,8 +128,34 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         return session;
     }
 
+    public void readModulesHash(DataSession session) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        List<Integer> moduleHashCodes = new ArrayList<>();
+        for (LogicsModule module : businessLogics.getLogicModules()) {
+            if (module instanceof ScriptingLogicsModule) {
+                moduleHashCodes.add(((ScriptingLogicsModule) module).getCode().hashCode());
+            }
+        }
+        moduleHashCodes.add((SystemProperties.lightStart ? "light" : "full").hashCode());
+        modulesHash = Integer.toHexString(moduleHashCodes.hashCode());
+
+        String oldModulesHash = (String) LM.findProperty("hashModules[]").read(session);
+        sourceHashChanged = checkModulesHashChanged(oldModulesHash, modulesHash);
+    }
+
+    private boolean checkModulesHashChanged(String oldHash, String newHash) {
+        startLogger.info(String.format("Comparing modulesHash: old %s, new %s", oldHash, newHash));
+        return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
+    }
+
+    public void writeModulesHash(DataSession session) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        startLogger.info("Writing modulesHash " + modulesHash);
+        LM.findProperty("hashModules[]").change(modulesHash, session);
+        apply(session);
+        startLogger.info("Writing modulesHash finished successfully");
+    }
+
     public boolean isSourceHashChanged() {
-        return dbManager.sourceHashChanged;
+        return sourceHashChanged;
     }
 
     public void synchronizeNavigatorElements() {
@@ -797,17 +831,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public void runOnStarted() {
-        try {
-            try (DataSession session = createSession()) {
-                LM.onStarted.execute(session, getStack());
-                apply(session);
-            }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
         }
     }
     
