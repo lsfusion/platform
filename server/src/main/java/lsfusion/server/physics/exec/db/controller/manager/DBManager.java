@@ -606,7 +606,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(getSyntax().getSyntaxType() == SQLSyntaxType.MSSQL)
                 Expr.useCasesCount = 5;
 
-            startLogger.info("Synchronizing DB.");
+            startLogger.info("Synchronizing DB");
             synchronizeDB();
         } catch (Exception e) {
             throw new RuntimeException("Error synchronizing DB: ", e);
@@ -1387,12 +1387,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             classForNameSQL();
 
-            try {
-                LM.onStarted.execute(session, getStack());
-                apply(session);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
+            LM.onStarted.execute(session, getStack());
+            apply(session);
         }
     }
 
