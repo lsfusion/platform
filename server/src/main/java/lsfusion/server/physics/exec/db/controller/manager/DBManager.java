@@ -72,7 +72,6 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
-import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyObjectImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectInterfaceImplement;
@@ -599,8 +598,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         Assert.notNull(restartManager, "restartManager must be specified");
     }
 
-    public boolean sourceHashChanged;
-    public String hashModules;
     @Override
     protected void onInit(LifecycleEvent event) {
         this.LM = businessLogics.LM;
@@ -610,7 +607,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 Expr.useCasesCount = 5;
 
             startLogger.info("Synchronizing DB.");
-            sourceHashChanged = synchronizeDB();
+            synchronizeDB();
         } catch (Exception e) {
             throw new RuntimeException("Error synchronizing DB: ", e);
         }
@@ -1057,7 +1054,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    public void synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
@@ -1390,7 +1387,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             classForNameSQL();
 
-            return compareHashModules(session);
+            try {
+                LM.onStarted.execute(session, getStack());
+                apply(session);
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
         }
     }
 
@@ -1414,12 +1416,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             reflectionLM.revisionDropColumn.change(getRevision(), session, object);
         }
         apply(session);
-    }
-
-    public boolean compareHashModules(DataSession session) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-        String oldHashModules = (String) LM.findProperty("hashModules[]").read(session);
-        hashModules = calculateHashModules();
-        return checkHashModulesChanged(oldHashModules, hashModules);
     }
 
     private void setDefaultUserLocalePreferences(DataSession session) throws SQLException, SQLHandledException {
@@ -1483,13 +1479,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
             
         table.updateStat(MapFact.singleton(table.getName(), calculateStatResult.rows), calculateStatResult.keys, calculateStatResult.props, fields != null ? fields.keys() : null, false);
-    }
-
-    public void writeModulesHash(DataSession session) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-        startLogger.info("Writing hashModules " + hashModules);
-        LM.findProperty("hashModules[]").change(hashModules, session);
-        apply(session);
-        startLogger.info("Writing hashModules finished successfully");
     }
 
     private void migrateReflectionProperties(DataSession session, OldDBStructure oldDBStructure) {
@@ -1804,22 +1793,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         if (denyDropModules && !droppedModules.isEmpty())
             throw new RuntimeException("Dropped modules: " + droppedModules.substring(0, droppedModules.length() - 2));
-    }
-
-    private String calculateHashModules() {
-        List<Integer> moduleHashCodes = new ArrayList<>();
-        for (LogicsModule module : businessLogics.getLogicModules()) {
-            if (module instanceof ScriptingLogicsModule) {
-                moduleHashCodes.add(((ScriptingLogicsModule) module).getCode().hashCode());
-            }
-        }
-        moduleHashCodes.add((SystemProperties.lightStart ? "light" : "full").hashCode());
-        return Integer.toHexString(moduleHashCodes.hashCode());
-    }
-
-    private boolean checkHashModulesChanged(String oldHash, String newHash) {
-        startLogger.info(String.format("Comparing hashModules: old %s, new %s", oldHash, newHash));
-        return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
     }
 
     private synchronized void runMigrationScript() {

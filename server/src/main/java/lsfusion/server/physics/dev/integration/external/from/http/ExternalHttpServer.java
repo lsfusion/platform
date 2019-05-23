@@ -67,7 +67,7 @@ public class ExternalHttpServer extends MonitorServer {
     }
 
     public ExternalHttpServer() {
-        super(HIGH_DAEMON_ORDER);
+        super(DAEMON_ORDER);
     }
 
     public void setLogicsInstance(LogicsInstance logicsInstance) {

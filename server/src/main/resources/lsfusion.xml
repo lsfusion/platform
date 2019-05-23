@@ -185,13 +185,6 @@
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
         
-        <property name="initTask" ref="initReflectionTask"/>
-    </bean>
-
-    <bean id="modulesHashManager" class="lsfusion.server.logics.controller.manager.ModulesHashManager">
-        <property name="businessLogics" ref="businessLogics"/>
-        <property name="dbManager" ref="dbManager"/>
-
         <property name="initTask" ref="writeModulesHashTask"/>
     </bean>
 
@@ -545,18 +538,10 @@
     
     <!-- Задачи инициализации reflection manager'а -->
 
-    <bean id="executeOnStartedTask" class="lsfusion.server.logics.controller.init.ExecuteOnStartedTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="logLaunchTask"/>
-            </set>
-        </property>
-        <property name="reflectionManager" ref="reflectionManager"/>
-    </bean>
-
     <bean id="syncTablesTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncTablesTask">
         <property name="dependencies">
             <set>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncPropertyEntitiesTask"/>
             </set>
         </property>
@@ -566,7 +551,7 @@
     <bean id="syncPropertyEntitiesTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncPropertyEntitiesTask">
         <property name="dependencies">
             <set>
-                <ref bean="executeOnStartedTask"/>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -575,6 +560,7 @@
     <bean id="syncPropertyParentsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncPropertyParentsTask">
         <property name="dependencies">
             <set>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncPropertyEntitiesTask"/>
                 <ref bean="syncGroupPropertiesTask"/>
             </set>
@@ -585,6 +571,7 @@
     <bean id="syncPropertyDrawsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncPropertyDrawsTask">
         <property name="dependencies">
             <set>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
                 <ref bean="syncGroupObjectsTask"/>
             </set>
@@ -595,6 +582,7 @@
     <bean id="syncParentsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncParentsTask">
         <property name="dependencies">
             <set>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
@@ -604,9 +592,9 @@
     <bean id="syncNavigatorElementsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncNavigatorElementsTask">
         <property name="dependencies">
             <set>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncPropertyEntitiesTask"/> <!--> так как ссылка на живой объект, а не varstring, вообще конечно нужны action'ы но они пока вместе синхронизируются <-->
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
-                <ref bean="executeOnStartedTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -615,7 +603,7 @@
     <bean id="syncFormsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncFormsTask">
         <property name="dependencies">
             <set>
-                <ref bean="executeOnStartedTask"/>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -624,7 +612,7 @@
     <bean id="syncGroupPropertiesTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncGroupPropertiesTask">
         <property name="dependencies">
             <set>
-                <ref bean="executeOnStartedTask"/>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -633,6 +621,7 @@
     <bean id="syncGroupObjectsTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncGroupObjectsTask">
         <property name="dependencies">
             <set>
+                <ref bean="readModulesHashTask"/> <!--sync tasks need isSourceHashChanged -->
                 <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
@@ -642,7 +631,6 @@
     <bean id="resetConnectionStatusTask" class="lsfusion.server.physics.admin.monitor.controller.init.ResetConnectionStatusTask">
         <property name="dependencies">
             <set>
-                <ref bean="executeOnStartedTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -676,20 +664,13 @@
     <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.db.controller.init.FirstRecalculateStatsTask">
         <property name="dependencies">
             <set>
-                <ref bean="syncTablesTask"/>
-                <ref bean="syncPropertyParentsTask"/>
-                <ref bean="syncPropertyEntitiesTask"/>
-                <ref bean="syncPropertyDrawsTask"/>
-                <ref bean="syncParentsTask"/>
-                <ref bean="syncNavigatorElementsTask"/>
-                <ref bean="syncGroupPropertiesTask"/>
-                <ref bean="syncGroupObjectsTask"/>
+                <ref bean="syncReflectionTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initReflectionTask" class="lsfusion.server.base.task.GroupTask">
+    <bean id="syncReflectionTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncTablesTask"/>
@@ -700,8 +681,16 @@
                 <ref bean="syncNavigatorElementsTask"/>
                 <ref bean="syncGroupPropertiesTask"/>
                 <ref bean="syncGroupObjectsTask"/>
+            </set>
+        </property>
+    </bean>
+
+    <bean id="initReflectionTask" class="lsfusion.server.base.task.GroupTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="syncReflectionTask"/>
                 <ref bean="resetConnectionStatusTask"/>
-                <!--<ref bean="logLaunchTask"/>-->
+                <ref bean="logLaunchTask"/>
                 <ref bean="prereadCachesTask"/>
                 <ref bean="prereadPropertyCachesTask"/>
                 <ref bean="firstRecalculateStatsTask"/>
@@ -709,12 +698,21 @@
         </property>
     </bean>
 
-    <bean id="writeModulesHashTask" class="lsfusion.server.logics.controller.init.WriteModulesHashTask">
+    <bean id="readModulesHashTask" class="lsfusion.server.physics.admin.reflection.controller.init.ReadModulesHashTask">
         <property name="dependencies">
             <set>
             </set>
         </property>
-        <property name="BL" ref="businessLogics"/>
+        <property name="reflectionManager" ref="reflectionManager"/>
+    </bean>
+
+    <bean id="writeModulesHashTask" class="lsfusion.server.physics.admin.reflection.controller.init.WriteModulesHashTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initReflectionTask"/>
+            </set>
+        </property>
+        <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
     <!-- Список для переопределения custom-объектов -->
@@ -796,7 +794,6 @@
         <ref bean="remoteLogics"/>
         <ref bean="remoteLogicsLoader"/>
         <ref bean="reflectionManager"/>
-        <ref bean="modulesHashManager"/>
         <ref bean="scheduler"/>
         <ref bean="externalHttpServer"/>
     </util:list>
