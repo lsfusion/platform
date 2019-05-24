@@ -819,34 +819,4 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             throw new RuntimeException(e);
         }
     }
-
-    public void resetConnectionStatus() {
-        try {
-            try (DataSession session = createSession()) {
-                PropertyChange statusChanges = new PropertyChange(systemEventsLM.connectionStatus.getDataObject("disconnectedConnection"),
-                        systemEventsLM.connectionStatusConnection.property.interfaces.single(),
-                        systemEventsLM.connectionStatus.getDataObject("connectedConnection"));
-                session.change((Property) systemEventsLM.connectionStatusConnection.property, statusChanges);
-                apply(session);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    public void logLaunch() {
-        try {
-            try (DataSession session = createSession()) {
-                DataObject newLaunch = session.addObject(systemEventsLM.launch);
-                systemEventsLM.computerLaunch.change(dbManager.getServerComputer(), session, newLaunch);
-                systemEventsLM.timeLaunch.change(timeLM.currentDateTime.readClasses(session), session, newLaunch);
-                systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
-                systemEventsLM.currentLaunch.change(newLaunch, session);
-                apply(session);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

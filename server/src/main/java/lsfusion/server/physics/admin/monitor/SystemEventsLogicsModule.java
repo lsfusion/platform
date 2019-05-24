@@ -70,6 +70,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP computerLaunch;
     public LP timeLaunch;
     public LP revisionLaunch;
+    public LP currentRevision;
 
     public LP messageException;
     public LP dateException;
@@ -154,6 +155,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         computerLaunch = findProperty("computer[Launch]");
         timeLaunch = findProperty("time[Launch]");
         revisionLaunch = findProperty("revision[Launch]");
+        currentRevision = findProperty("currentRevision[]");
 
         // Ошибки выполнения
         messageException = findProperty("message[Exception]");

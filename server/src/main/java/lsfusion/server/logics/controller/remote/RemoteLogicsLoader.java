@@ -61,8 +61,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
         } catch (Exception e) {
             throw new RuntimeException("Error executing on started: ", e);
         }
-
-        logger.info("Binding Remote Logics Loader");
+        logger.info("Exporting RMI Logics object (port: " + rmiManager.getPort() + ")");
         try {
             rmiManager.export(remoteLogics);
             rmiManager.bindAndExport(EXPORT_NAME, this);

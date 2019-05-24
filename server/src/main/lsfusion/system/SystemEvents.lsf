@@ -102,7 +102,18 @@ disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionS
 currentLaunch = DATA Launch();
 launch = DATA Launch(Connection);
 
+currentRevision = DATA LOCAL STRING[10]();
+getCurrentRevision INTERNAL 'lsfusion.server.physics.admin.monitor.action.GetCurrentRevisionAction' ();
+
 onStarted() + { 
+    getCurrentRevision();
+    NEW launch = Launch {
+        computer(launch) <- currentComputer();
+        time(launch) <- currentDateTime();
+        revision(launch) <- currentRevision();
+        currentLaunch() <- launch;
+    }
+
     connectionStatus(connection) <- ConnectionStatus.disconnectedConnection 
         WHERE connectionStatus(connection) == ConnectionStatus.connectedConnection AND currentLaunch() != launch(connection);
 }
