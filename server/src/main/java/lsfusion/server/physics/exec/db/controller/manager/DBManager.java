@@ -1388,9 +1388,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             initSystemUser(session);
 
             classForNameSQL();
-
-            LM.onStarted.execute(session, getStack());
-            apply(session);
         }
     }
 

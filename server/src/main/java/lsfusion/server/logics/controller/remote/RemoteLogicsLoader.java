@@ -6,6 +6,7 @@ import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -13,6 +14,8 @@ import org.springframework.util.Assert;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
+
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.createSession;
 
 public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoaderInterface, InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
@@ -50,12 +53,21 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        logger.info("Binding Remote Logics Loader.");
+
+        try(DataSession session = createSession()) {
+            logger.info("Executing on started");
+            remoteLogics.baseLM.onStarted.execute(session, getStack());
+            apply(session);
+        } catch (Exception e) {
+            throw new RuntimeException("Error executing on started: ", e);
+        }
+
+        logger.info("Binding Remote Logics Loader");
         try {
             rmiManager.export(remoteLogics);
             rmiManager.bindAndExport(EXPORT_NAME, this);
         } catch (AlreadyBoundException e) {
-            throw new RuntimeException("Port (" + rmiManager.getPort() + ") is already bound. Maybe another server is already running.");
+            throw new RuntimeException("Port (" + rmiManager.getPort() + ") is already bound. Maybe another server is already running");
         } catch (Exception e) {
             throw new RuntimeException("Error binding Remote Logics Loader: ", e);
         }
@@ -65,7 +77,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     @Override
     protected void onStopping(LifecycleEvent event) {
         if (started) {
-            logger.info("Stopping Remote Logics Loader.");
+            logger.info("Stopping Remote Logics Loader");
             try {
                 rmiManager.unexport(remoteLogics);
                 rmiManager.unbindAndUnexport(EXPORT_NAME, this);
