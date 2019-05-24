@@ -104,7 +104,7 @@ public class EmailReceiver {
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
             for(ImMap<Object, Object> entry : emailResult.values()) {
                 skipEmails.add(getEmailId((Timestamp) entry.get("dateTimeSentEmail"), (String) entry.get("fromAddressEmail"),
-                        (String) entry.get("subjectEmail")));
+                        (String) entry.get("subjectEmail"), null));
             }
 
         } catch (Exception e) {
@@ -241,6 +241,7 @@ public class EmailReceiver {
             int count = 0;
             int messageCount = emailFolder.getMessageCount();
             ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messageCount));
+            Set<String> usedEmails = new HashSet<>();
             while(count < messageCount && (maxMessagesAccount == null ||  count < maxMessagesAccount)) {
                 try {
                     Message message = emailFolder.getMessage(messageCount - count);
@@ -248,7 +249,8 @@ public class EmailReceiver {
                     if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
                         String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
                         String subjectEmail = message.getSubject();
-                        String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail);
+                        String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail, usedEmails);
+                        usedEmails.add(idEmail);
                         if (!skipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
@@ -329,8 +331,18 @@ public class EmailReceiver {
         return new RawFileData(out);
     }
 
-    private String getEmailId(Timestamp dateTime, String fromAddress, String subject) {
-        return String.format("%s/%s/%s", dateTime == null ? "" : dateTime.getTime(), fromAddress, subject == null ? "" : subject);
+    private String getEmailId(Timestamp dateTime, String fromAddress, String subject, Set<String> usedEmails) {
+        String id = String.format("%s/%s/%s", dateTime == null ? "" : dateTime.getTime(), fromAddress, subject == null ? "" : subject);
+        if(usedEmails != null) {
+            int i = 0;
+            while(usedEmails.contains(id + (i == 0 ? "" : ("/" + i)))) {
+                i++;
+            }
+            if(i > 0) {
+                id += "/" + i;
+            }
+        }
+        return id;
     }
 
     private MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack) throws IOException, MessagingException {
