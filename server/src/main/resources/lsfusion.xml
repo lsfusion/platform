@@ -622,22 +622,6 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="resetConnectionStatusTask" class="lsfusion.server.physics.admin.monitor.controller.init.ResetConnectionStatusTask">
-        <property name="dependencies">
-            <set>
-            </set>
-        </property>
-        <property name="reflectionManager" ref="reflectionManager"/>
-    </bean>
-
-    <bean id="logLaunchTask" class="lsfusion.server.physics.admin.log.controller.init.LogLaunchTask">
-        <property name="dependencies">
-            <set>
-            </set>
-        </property>
-        <property name="reflectionManager" ref="reflectionManager"/>
-    </bean>
-
     <!-- Не имеет отношения к reflection manager'у, но желательно чтобы выполнялся после export'а remote объекта -->
     <bean id="prereadCachesTask" class="lsfusion.server.logics.controller.init.PrereadCachesTask">
         <property name="dependencies">
@@ -682,8 +666,6 @@
     <bean id="initReflectionTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
-                <ref bean="resetConnectionStatusTask"/>
-                <ref bean="logLaunchTask"/>
                 <ref bean="prereadCachesTask"/>
                 <ref bean="prereadPropertyCachesTask"/>
                 <ref bean="writeModulesHashTask"/>
