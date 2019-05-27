@@ -12,3 +12,7 @@ resizeImage  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ResizeIm
 //        open(resizedImage());
 //    }
 //}
+
+convertedImage = DATA LOCAL IMAGEFILE ();
+//file, convert extension 
+convertImage  INTERNAL  'lsfusion.server.logics.classes.data.utils.image.ConvertImageAction' (IMAGEFILE, STRING);
