@@ -45,9 +45,9 @@ import java.util.Set;
 import static lsfusion.server.physics.dev.id.resolve.SignatureMatcher.isClassesSoftCompatible;
 
 public class ScriptingLogicsModuleChecks {
-    private ScriptingLogicsModule LM;
-    private ScriptingErrorLog errLog;
-    private ScriptParser parser;
+    private final ScriptingLogicsModule LM;
+    private final ScriptingErrorLog errLog;
+    private final ScriptParser parser;
     
     public ScriptingLogicsModuleChecks(ScriptingLogicsModule LM) {
         this.LM = LM;

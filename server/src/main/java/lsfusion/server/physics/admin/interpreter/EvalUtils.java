@@ -30,11 +30,24 @@ public class EvalUtils {
         return evaluateAndFindAction(BL, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
+    private static class WrapResult {
+        public int additionalLines;
+        public String code;
+        
+        public WrapResult(String code, int additionalLines) {
+            this.code = code;
+            this.additionalLines = additionalLines;
+        }
+    }
+    
     public static LA evaluateAndFindAction(BusinessLogics BL, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
-
-        String code = wrapScript(BL, namespace, require, priorities, script, name);
+        WrapResult wrapResult = wrapScript(BL, namespace, require, priorities, script, name);
+        
+        String code = wrapResult.code;
         ScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, code);
+        module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
+        
         module.order = BL.getLogicModules().size() + 1;
         module.visible = FullFunctionSet.instance();
         if(prevEventScope)
@@ -74,7 +87,7 @@ public class EvalUtils {
         }
     }
 
-    private static String wrapScript(BusinessLogics BL, String namespace, String require, String priorities, String script, String name) {
+    private static WrapResult wrapScript(BusinessLogics BL, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);
@@ -94,21 +107,24 @@ public class EvalUtils {
             }
         }
         strBuilder.append(";\n");
-
+        int additionalLines = 2;
+        
         if(priorities != null) {
             strBuilder.append("PRIORITY ");
             strBuilder.append(priorities);
             strBuilder.append(";\n");
+            ++additionalLines;
         }
 
         if(namespace != null) {
             strBuilder.append("NAMESPACE ");
             strBuilder.append(namespace);
             strBuilder.append(";\n");
+            ++additionalLines;
         }
 
         strBuilder.append(script);
-        return strBuilder.toString();
+        return new WrapResult(strBuilder.toString(), additionalLines);
     }
 
     private static class EvalActionParser {

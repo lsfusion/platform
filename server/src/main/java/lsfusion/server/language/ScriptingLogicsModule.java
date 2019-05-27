@@ -137,7 +137,6 @@ import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
 import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailAction;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
@@ -170,8 +169,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     protected final BusinessLogics BL;
 
-    private String code = null;
-    private String filename = null;
+    private final String code;
     private String path = null;
     protected final ScriptingErrorLog errLog;
     protected ScriptParser parser;
@@ -186,31 +184,25 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
-    public ScriptingLogicsModule(String filename, BaseLogicsModule baseModule, BusinessLogics BL) {
-        this(baseModule, BL);
-        this.filename = filename;
-    }
-
     public ScriptingLogicsModule(InputStream stream, String path, BaseLogicsModule baseModule, BusinessLogics BL) throws IOException {
         this(stream, path, "utf-8", baseModule, BL);
     }
 
     public ScriptingLogicsModule(InputStream stream, String path, String charsetName, BaseLogicsModule baseModule, BusinessLogics BL) throws IOException {
-        this(baseModule, BL);
-        this.code = IOUtils.readStreamToString(stream, charsetName);
+        this(IOUtils.readStreamToString(stream, charsetName), baseModule, BL);
         this.path = path;
-        errLog.setModuleId(getIdentifier());
     }
 
-    public ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String code) {
-        this(baseModule, BL);
-        this.code = code;
-    }
-
-    private ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL) {
+    protected ScriptingLogicsModule(String code, BaseLogicsModule baseModule, BusinessLogics BL) {
+        assert code != null;
+        
         setBaseLogicsModule(baseModule);
         this.BL = BL;
-        errLog = new ScriptingErrorLog("");
+        this.code = code;
+        
+        errLog = new ScriptingErrorLog();
+        errLog.setModuleId(getIdentifier());
+        
         parser = new ScriptParser(errLog);
         checks = new ScriptingLogicsModuleChecks(this);
     }
@@ -303,11 +295,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private CharStream createStream() throws IOException {
-        if (code != null) {
-            return new ANTLRStringStream(code);
-        } else {
-            return new ANTLRFileStream(filename, "UTF-8");
-        }
+        return new ANTLRStringStream(code);
     }
 
     @Override
