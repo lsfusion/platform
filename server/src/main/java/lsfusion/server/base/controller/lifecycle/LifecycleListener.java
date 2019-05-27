@@ -6,12 +6,13 @@ import static java.lang.System.identityHashCode;
 import static lsfusion.base.BaseUtils.compareInts;
 
 public interface LifecycleListener {
-    int LOGICS_ORDER = 100;
-    int DBMANAGER_ORDER = 300;
-
-    int SECURITYMANAGER_ORDER = 400;
-    int RMIMANAGER_ORDER = 500;
-    int BLLOADER_ORDER = 600;
+    int LOGICS_ORDER = 100; // logical model
+    int DBMANAGER_ORDER = 300; // physical model (execution)
+    int SECURITYMANAGER_ORDER = 400; // physical model (management)
+    
+    int RMIMANAGER_ORDER = 500;    
+    int BLLOADER_ORDER = 600; // onStarted is executed here to have all managers initialized, but just before exposing logics to the world, to guarantee that all system onStarted are called (however daemons are initialized later)
+    
     int DAEMON_ORDER = 8000;
 
     int REFLECTION_ORDER = 9000; //the last because the most heavyweight
