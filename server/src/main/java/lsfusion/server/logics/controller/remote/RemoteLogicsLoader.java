@@ -8,14 +8,14 @@ import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
-
-import static lsfusion.server.base.controller.thread.ThreadLocalContext.createSession;
+import java.sql.SQLException;
 
 public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoaderInterface, InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
@@ -23,6 +23,8 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     public static final String EXPORT_NAME = "RemoteLogicsLoader";
 
     private RmiManager rmiManager;
+    
+    private DBManager dbManager;
 
     private RemoteLogics remoteLogics;
 
@@ -45,6 +47,10 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
         this.remoteLogics = remoteLogics;
     }
 
+    private DataSession createSession() throws SQLException {
+        return dbManager.createSession();
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(remoteLogics, "remoteLogics must be specified");
@@ -55,7 +61,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     protected void onStarted(LifecycleEvent event) {
 
         try(DataSession session = createSession()) {
-            logger.info("Executing on started");
+            logger.info("Executing onStarted action");
             remoteLogics.baseLM.onStarted.execute(session, getStack());
             apply(session);
         } catch (Exception e) {

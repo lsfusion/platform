@@ -128,18 +128,22 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         return session;
     }
 
-    public void readModulesHash(DataSession session) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-        List<Integer> moduleHashCodes = new ArrayList<>();
-        for (LogicsModule module : businessLogics.getLogicModules()) {
-            if (module instanceof ScriptingLogicsModule) {
-                moduleHashCodes.add(((ScriptingLogicsModule) module).getCode().hashCode());
+    public void readModulesHash() {
+        try(DataSession session = createSession()){
+            List<Integer> moduleHashCodes = new ArrayList<>();
+            for (LogicsModule module : businessLogics.getLogicModules()) {
+                if (module instanceof ScriptingLogicsModule) {
+                    moduleHashCodes.add(((ScriptingLogicsModule) module).getCode().hashCode());
+                }
             }
-        }
-        moduleHashCodes.add((SystemProperties.lightStart ? "light" : "full").hashCode());
-        modulesHash = Integer.toHexString(moduleHashCodes.hashCode());
+            moduleHashCodes.add((SystemProperties.lightStart ? "light" : "full").hashCode());
+            modulesHash = Integer.toHexString(moduleHashCodes.hashCode());
 
-        String oldModulesHash = (String) LM.findProperty("hashModules[]").read(session);
-        sourceHashChanged = checkModulesHashChanged(oldModulesHash, modulesHash);
+            String oldModulesHash = (String) LM.findProperty("hashModules[]").read(session);
+            sourceHashChanged = checkModulesHashChanged(oldModulesHash, modulesHash);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private boolean checkModulesHashChanged(String oldHash, String newHash) {
@@ -147,11 +151,15 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
     }
 
-    public void writeModulesHash(DataSession session) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-        startLogger.info("Writing modulesHash " + modulesHash);
-        LM.findProperty("hashModules[]").change(modulesHash, session);
-        apply(session);
-        startLogger.info("Writing modulesHash finished successfully");
+    public void writeModulesHash() {
+        try(DataSession session = createSession()) {
+            startLogger.info("Writing modulesHash " + modulesHash);
+            LM.findProperty("hashModules[]").change(modulesHash, session);
+            apply(session);
+            startLogger.info("Writing modulesHash finished successfully");
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public boolean isSourceHashChanged() {
@@ -235,7 +243,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronizeNavigatorElements finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -304,7 +312,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronizeForms finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
     
@@ -335,7 +343,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronizeParents finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -464,7 +472,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronizePropertyDraws finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -510,7 +518,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronizeGroupObjects finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -656,7 +664,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Parents finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -712,7 +720,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronizeGroupProperties finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -816,7 +824,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 startLogger.info("synchronizeTables finished");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 }

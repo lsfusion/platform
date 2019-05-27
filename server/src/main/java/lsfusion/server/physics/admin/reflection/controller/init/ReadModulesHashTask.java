@@ -19,10 +19,6 @@ public class ReadModulesHashTask extends ReflectionTask {
 
     @Override
     public void run(Logger logger) {
-        try(DataSession session = createSession()) {
-            getReflectionManager().readModulesHash(session);
-        } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
-        }
+        getReflectionManager().readModulesHash();
     }
 }

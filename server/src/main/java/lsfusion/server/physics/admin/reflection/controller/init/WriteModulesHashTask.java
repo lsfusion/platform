@@ -19,10 +19,6 @@ public class WriteModulesHashTask extends ReflectionTask {
 
     @Override
     public void run(Logger logger) {
-        try(DataSession session = createSession()) {
-            getReflectionManager().writeModulesHash(session);
-        } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
-        }
+        getReflectionManager().writeModulesHash();
     }
 }

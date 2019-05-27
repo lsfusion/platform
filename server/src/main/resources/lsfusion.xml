@@ -729,6 +729,7 @@
 
     <bean id="remoteLogicsLoader" class="lsfusion.server.logics.controller.remote.RemoteLogicsLoader">
         <property name="rmiManager" ref="rmiManager"/>
+        <property name="dbManager" ref="dbManager"/>
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>
 
