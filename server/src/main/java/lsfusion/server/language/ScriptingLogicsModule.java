@@ -147,6 +147,7 @@ import org.codehaus.janino.SimpleCompiler;
 import javax.mail.Message;
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -264,9 +265,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNamespacePriority(namespacePriority);
     }
 
-    @Override
     public String getErrorsDescription() {
         return errLog.toString();
+    }
+
+    public interface InitRunnable {
+        void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException;
+    }
+
+    public void runInit(InitRunnable runnable) {
+        try {
+            runnable.run(this);
+        } catch (Exception e) {
+            String errString = getErrorsDescription();
+            if (e instanceof RecognitionException || !errString.isEmpty())
+                throw new ScriptParsingException(errString + e.getMessage());
+            throw Throwables.propagate(e);
+        }
+
+        // in theory when there are syntax errors, they can be recovered and there will be no exception 
+        String errString = getErrorsDescription();
+        if(!errString.isEmpty())
+            throw new ScriptParsingException(errString);
     }
 
     private void setModuleName(String moduleName) {

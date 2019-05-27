@@ -3,6 +3,7 @@ package lsfusion.server.physics.dev.module.controller.init;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
@@ -17,8 +18,8 @@ public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
     protected abstract boolean isGraph();
 
     protected void runTask(LogicsModule module) {
-        module.runInit(new LogicsModule.InitRunnable() {
-            public void run(LogicsModule module) throws RecognitionException, FileNotFoundException {
+        ((ScriptingLogicsModule)module).runInit(new ScriptingLogicsModule.InitRunnable() {
+            public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
                 runInnerTask(module);
             }
         });
