@@ -20,7 +20,7 @@ import java.util.List;
 
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String code) {
-        super(baseModule, BL, code);
+        super(code, baseModule, BL);
     }
 
     @Override
