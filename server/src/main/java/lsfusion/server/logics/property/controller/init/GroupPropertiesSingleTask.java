@@ -50,12 +50,12 @@ public abstract class GroupPropertiesSingleTask<T> extends BLGroupSingleTask<T> 
         ThreadLocalContext.assureContext(threadLocalContext);
     }
 
-    protected abstract void runInnerTask(T element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException;
+    protected abstract void runInnerTask(T element, ExecutionStack stack) throws SQLException, SQLHandledException;
 
     protected abstract String getTaskCaption(T element);
 
     @Override
-    protected void runTask(final T element) throws RecognitionException {
+    protected void runTask(final T element) {
         String caption = getTaskCaption(element);
 
         //integer - exclusiveness task

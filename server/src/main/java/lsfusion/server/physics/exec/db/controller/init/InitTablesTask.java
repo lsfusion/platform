@@ -14,7 +14,7 @@ public class InitTablesTask extends GroupModuleTask {
         return "Initializing tables";
     }
 
-    protected void runTask(LogicsModule module) throws RecognitionException {
+    protected void runInnerTask(LogicsModule module) throws RecognitionException {
         module.initTables();
     }
 }

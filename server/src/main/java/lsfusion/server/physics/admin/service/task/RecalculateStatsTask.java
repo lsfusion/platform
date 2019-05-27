@@ -82,11 +82,6 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     }
 
     @Override
-    protected String getErrorsDescription(Object element) {
-        return "";
-    }
-
-    @Override
     protected ImSet<Object> getDependElements(Object key) {
         return SetFact.EMPTY();
     }

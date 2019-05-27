@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -28,6 +29,7 @@ import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.metacode.MetaCodeFragment;
@@ -164,6 +166,26 @@ public abstract class LogicsModule {
     public abstract void initIndexes() throws RecognitionException;
 
     public String getErrorsDescription() { return "";}
+
+    public interface InitRunnable {
+        void run(LogicsModule module) throws RecognitionException, FileNotFoundException;
+    }
+
+    public void runInit(InitRunnable runnable) {
+        try {
+            runnable.run(this);
+        } catch (Exception e) {
+            String errString = getErrorsDescription();
+            if (e instanceof RecognitionException || !errString.isEmpty())
+                throw new ScriptParsingException(errString + e.getMessage());
+            throw Throwables.propagate(e);
+        }
+
+        // in theory when there are syntax errors, they can be recovered and there will be no exception 
+        String errString = getErrorsDescription();
+        if(!errString.isEmpty())
+            throw new ScriptParsingException(errString);
+    }
 
     public BaseLogicsModule baseLM;
 

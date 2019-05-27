@@ -10,7 +10,7 @@ public class InitMetaAndClassesTask extends GroupModuleTask {
         return true;
     }
 
-    protected void runTask(LogicsModule module) throws RecognitionException {
+    protected void runInnerTask(LogicsModule module) throws RecognitionException {
         module.initMetaAndClasses();
     }
 

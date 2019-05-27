@@ -9,13 +9,22 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.controller.init.BLGroupSingleTask;
 import org.antlr.runtime.RecognitionException;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 
 public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
 
     protected abstract boolean isGraph();
 
-    protected abstract void runTask(LogicsModule module) throws RecognitionException;
+    protected void runTask(LogicsModule module) {
+        module.runInit(new LogicsModule.InitRunnable() {
+            public void run(LogicsModule module) throws RecognitionException, FileNotFoundException {
+                runInnerTask(module);
+            }
+        });
+    }
+    
+    protected abstract void runInnerTask(LogicsModule module) throws RecognitionException, FileNotFoundException;
 
     protected long getTaskComplexity(LogicsModule module) {
         return 1;
@@ -33,10 +42,6 @@ public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
 
     protected String getElementCaption(LogicsModule element) {
         return element.getName();
-    }
-
-    protected String getErrorsDescription(LogicsModule element) {
-        return element.getErrorsDescription();
     }
 
     protected ImSet<LogicsModule> getDependElements(LogicsModule key) {

@@ -14,7 +14,7 @@ public class InitIndicesTask extends GroupModuleTask {
         return false;
     }
 
-    protected void runTask(LogicsModule module) throws RecognitionException {
+    protected void runInnerTask(LogicsModule module) throws RecognitionException {
         module.initIndexes();
     }
 }

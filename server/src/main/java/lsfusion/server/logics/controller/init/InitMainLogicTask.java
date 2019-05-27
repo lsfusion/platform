@@ -25,11 +25,7 @@ public class InitMainLogicTask extends GroupModuleTask {
         return "Initializing main logic";
     }
 
-    protected void runTask(LogicsModule module) throws RecognitionException {
-        try {
-            module.initMainLogic();
-        } catch (FileNotFoundException e) {
-            throw Throwables.propagate(e);
-        }
+    protected void runInnerTask(LogicsModule module) throws RecognitionException, FileNotFoundException {
+        module.initMainLogic();
     }
 }

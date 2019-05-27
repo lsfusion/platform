@@ -9,14 +9,13 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public class CheckAggregationsTask extends GroupPropertiesSingleTask<AggregateProperty> {
     @Override
-    protected void runInnerTask(AggregateProperty element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(AggregateProperty element, ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLSession sql = getDbManager().getThreadLocalSql();
         String result = element.checkAggregation(sql, getBL().LM.baseClass);
         if (result != null && !result.isEmpty())
@@ -41,11 +40,6 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask<AggregatePr
     @Override
     protected String getElementCaption(AggregateProperty element) {
         return element.getSID();
-    }
-
-    @Override
-    protected String getErrorsDescription(AggregateProperty element) {
-        return "";
     }
 
     @Override
