@@ -39,18 +39,24 @@ public class EvalUtils {
         module.visible = FullFunctionSet.instance();
         if(prevEventScope)
             module.setPrevScope(Event.SESSION);
-        try {
-            module.runInit(new LogicsModule.InitRunnable() {
-                public void run(LogicsModule module) throws RecognitionException, FileNotFoundException {
-                    module.initModuleDependencies();
-                    module.initMetaAndClasses();
-
-                    if(locals != null) {
-                        for(Pair<LP, List<ResolveClassSet>> local : locals) {
-                            ((ScriptingLogicsModule)module).addWatchLocalDataProperty(local.first, local.second);
-                        }
-                    }
-
+        try { // we need separated runInit, to fail after recovered syntax errors
+            module.runInit(new ScriptingLogicsModule.InitRunnable() {
+                   public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
+                       module.initModuleDependencies();
+                   }
+               });
+            module.runInit(new ScriptingLogicsModule.InitRunnable() {
+                   public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
+                       module.initMetaAndClasses();
+                   }
+               });
+            if(locals != null) {
+                for(Pair<LP, List<ResolveClassSet>> local : locals) {
+                    module.addWatchLocalDataProperty(local.first, local.second);
+                }
+            }
+            module.runInit(new ScriptingLogicsModule.InitRunnable() {
+                public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
                     module.initMainLogic();
                 }
             });
