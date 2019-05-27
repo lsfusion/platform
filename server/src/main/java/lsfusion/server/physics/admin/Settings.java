@@ -1737,16 +1737,6 @@ public class Settings implements Cloneable {
         this.savePointCountForExceptions = savePointCountForExceptions;
     }
 
-    private boolean useSavepointsForExceptions = false;
-
-    public boolean isUseSavepointsForExceptions() {
-        return useSavepointsForExceptions;
-    }
-
-    public void setUseSavepointsForExceptions(boolean useSavepointsForExceptions) {
-        this.useSavepointsForExceptions = useSavepointsForExceptions;
-    }
-
     private int maxNumericLength = 127;
 
     public int getMaxNumericLength() {
