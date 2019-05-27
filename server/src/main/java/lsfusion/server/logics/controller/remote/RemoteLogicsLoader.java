@@ -26,6 +26,14 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     
     private DBManager dbManager;
 
+    public DBManager getDbManager() {
+        return dbManager;
+    }
+
+    public void setDbManager(DBManager dbManager) {
+        this.dbManager = dbManager;
+    }
+
     private RemoteLogics remoteLogics;
 
     @Override
