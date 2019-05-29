@@ -1625,12 +1625,6 @@ public abstract class LogicsModule {
         return addAction(null, new LA(new AsyncUpdateEditValueAction(LocalizedString.create("Async Update"))));
     }
 
-    // ------------------- EVAL ----------------- //
-
-    public LA addEvalAProp(LP<?> scriptSource, List<LP<?>> params, boolean action) {
-        return addAProp(null, new EvalAction(LocalizedString.NONAME, scriptSource, params, action));
-    }
-
     // ------------------- DRILLDOWN ----------------- //
 
     public void setupDrillDownProperty(Property property, boolean isLightStart) {
