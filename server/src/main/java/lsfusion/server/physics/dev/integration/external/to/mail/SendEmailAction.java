@@ -85,7 +85,7 @@ public class SendEmailAction extends SystemExplicitAction {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
-            String fromAddress = fromAddressAccount != null ? (String) fromAddressAccount.read(context, context.getKeys()) : null;
+            String fromAddress = fromAddressAccount != null ? trimToNull((String) fromAddressAccount.read(context, context.getKeys())) : null;
             ObjectValue account = emailLM.inboxAccount.readClasses(context, fromAddress != null ? new DataObject(fromAddress) : NullValue.instance);
 
             if (account instanceof DataObject) {
@@ -93,7 +93,7 @@ public class SendEmailAction extends SystemExplicitAction {
                 String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, account);
                 String smtpPortAccount = (String) emailLM.smtpPortAccount.read(context, account);
 
-                String fromAddressAccount = (String) (fromAddress != null ? fromAddress : emailLM.fromAddressAccount.read(context, account));
+                String fromAddressAccount = fromAddress != null ? fromAddress : trimToNull((String) emailLM.fromAddressAccount.read(context, account));
 
                 String subject = this.subject != null ? (String) this.subject.read(context, context.getKeys()) : localize("{mail.nosubject}");
                 String nameAccount = (String) emailLM.nameAccount.read(context, account);
@@ -114,7 +114,7 @@ public class SendEmailAction extends SystemExplicitAction {
                     return;
                 }
 
-                EmailSender sender = new EmailSender(nullTrim(smtpHostAccount), nullTrim(smtpPortAccount), nullTrim(encryptedConnectionType), nullTrim(fromAddressAccount), nullTrim(nameAccount),nullTrim(passwordAccount), recipients);
+                EmailSender sender = new EmailSender(nullTrim(smtpHostAccount), nullTrim(smtpPortAccount), nullTrim(encryptedConnectionType), fromAddressAccount, nullTrim(nameAccount),nullTrim(passwordAccount), recipients);
 
                 List<EmailSender.AttachmentFile> attachFiles = new ArrayList<>();
                 List<String> inlineFiles = new ArrayList<>();
