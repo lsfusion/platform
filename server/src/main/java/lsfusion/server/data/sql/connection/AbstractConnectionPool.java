@@ -311,12 +311,16 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     @Override
     public boolean registerUseSavePoint() {
         int usedCount = usedSavePoints.getAndIncrement();
-        return usedCount < getUseSafeThreshold();        
+        boolean useSavePoint = usedCount < getUseSafeThreshold();
+        if(useSavePoint)
+            ServerLoggers.sqlConnectionLogger.info("CREATE SAVEPOINT, CURRENT : " + usedCount);
+        return useSavePoint;        
     }
 
     @Override
     public void unregisterUseSavePoint() {
-        usedSavePoints.decrementAndGet();
+        int usedCount = usedSavePoints.decrementAndGet();
+        ServerLoggers.sqlConnectionLogger.info("DROP SAVEPOINT, CURRENT : " + usedCount);
     }
     
     private int updateCount;
