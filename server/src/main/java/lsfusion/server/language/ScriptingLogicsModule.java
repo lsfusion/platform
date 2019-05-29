@@ -118,6 +118,7 @@ import lsfusion.server.logics.property.set.AggregateGroupProperty;
 import lsfusion.server.logics.property.set.Cycle;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.interpreter.action.EvalAction;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
 import lsfusion.server.physics.admin.reflection.property.CanonicalNameProperty;
@@ -1680,7 +1681,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getValueClassesByParamProperties(Collections.singletonList(paramProp), params).single();
     }
 
-    public ImList<Type> getTypesForExternalProp(List<LPWithParams> paramProps, List<TypedParameter> params) {
+    public ImList<Type> getTypesForEvalAction(List<LPWithParams> paramProps, List<TypedParameter> params) {
+        return getTypesByParamProperties(paramProps, params);
+    }
+    
+    public ImList<Type> getTypesForExternalAction(List<LPWithParams> paramProps, List<TypedParameter> params) {
         return getTypesByParamProperties(paramProps, params);
     }
 
@@ -1689,12 +1694,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedExternalDBAction(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalDBAction(getTypesForExternalProp(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
+        return addScriptedJoinAProp(addAProp(new ExternalDBAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.mergeList(Arrays.asList(connectionString, exec), params));
     }
 
     public LAWithParams addScriptedExternalDBFAction(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalDBFAction(getTypesForExternalProp(params, context), charset, findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
+        return addScriptedJoinAProp(addAProp(new ExternalDBFAction(getTypesForExternalAction(params, context), charset, findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.addList(connectionString, params));
     }
 
@@ -1706,7 +1711,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP headersToProperty = headersTo != null ? findLPStringParamByPropertyUsage(headersTo) : null;
         LP cookiesToProperty = cookiesTo != null ? findLPStringParamByPropertyUsage(cookiesTo) : null;
         return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(method != null ? method : ExternalHttpMethod.POST,
-                        getTypesForExternalProp(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
+                        getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
                         headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
                 bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
     }
@@ -2096,22 +2101,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedEvalAction(LPWithParams property, List<LPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {
+        if(params == null)
+            params = Collections.emptyList();
+
         Type exprType = getTypeByParamProperty(property, contextParams);
         if (!(exprType instanceof StringClass)) {
             errLog.emitEvalExpressionError(parser);
         }
+        ImList<Type> paramTypes = getTypesForEvalAction(params, contextParams);
 
-        List<LP<?>> paramsLCP = new ArrayList<>();
-        Set<Integer> allParams = new TreeSet<>(property.usedParams);
-        if (params != null) {
-            for (LPWithParams param : params) {
-                paramsLCP.add(param.getLP());
-                allParams.addAll(param.usedParams);
-            }
-        }
-
-        LA<?> res = addEvalAProp(property.getLP(), paramsLCP, action);
-        return new LAWithParams(res, new ArrayList<>(allParams));
+        return addScriptedJoinAProp(addAProp(new EvalAction(paramTypes, action)), BaseUtils.addList(property, params));
     }
 
     public LAWithParams addScriptedDrillDownAction(LPWithParams property) {
