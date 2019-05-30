@@ -111,6 +111,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.sqlSuppLog;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> implements AutoCloseable {
     private PreparedStatement executingStatement;
@@ -427,9 +428,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Statement statement = createSingleStatement(connection);
         try {
             syntax.setACID(statement, ACID);
-        } catch (SQLException e) {
-            logger.error(statement.toString());
-            throw e;
+        } catch (SQLException e) { // there can be permission denied, so we'll just suppress that exception
+            sqlSuppLog(e);
         } finally {
             statement.close();
         }
