@@ -114,7 +114,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     public RemoteNavigatorInterface createNavigator(ExecutionStack stack, AuthenticationToken token, NavigatorInfo navigatorInfo) {
         try {
-            RemoteNavigator navigator =  new RemoteNavigator(rmiManager.getExportPort(), logicsInstance, token, navigatorInfo, stack);
+            RemoteNavigator navigator =  new RemoteNavigator(rmiManager.getPort(), logicsInstance, token, navigatorInfo, stack);
 
             if (restartManager.isPendingRestart() && !BaseUtils.hashEquals(navigator.getUser(), securityManager.getAdminUser()))
                 throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));

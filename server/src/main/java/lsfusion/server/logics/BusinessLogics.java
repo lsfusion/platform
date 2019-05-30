@@ -345,17 +345,17 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private DBNamingPolicy getDBNamingPolicy() {
         DBNamingPolicy dbNamingPolicy = null;
+        int maxIdLength = getDbManager().getDbMaxIdLength();
         try {
             String policyName = getDbManager().getDbNamingPolicy();
             if (policyName != null && !policyName.isEmpty()) {
-                Integer maxIdLength = getDbManager().getDbMaxIdLength();
                 Class cls = Class.forName(policyName);
                 dbNamingPolicy = (DBNamingPolicy) cls.getConstructors()[0].newInstance(maxIdLength);
             }
         } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             logger.error("Failed to get DBNamingPolicy, used default", e);
         }
-        return dbNamingPolicy == null ? new DefaultDBNamingPolicy(63) : dbNamingPolicy;
+        return dbNamingPolicy == null ? new DefaultDBNamingPolicy(maxIdLength) : dbNamingPolicy;
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {

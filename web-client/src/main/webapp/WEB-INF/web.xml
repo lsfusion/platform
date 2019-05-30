@@ -23,6 +23,11 @@
         <param-name>port</param-name>
         <param-value>7652</param-value>
     </context-param>
+    <context-param>
+        <description>Application export name</description>
+        <param-name>exportName</param-name>
+        <param-value>default</param-value>
+    </context-param>
 
 
     <!-- UI (gwt) dispatch servlet-->

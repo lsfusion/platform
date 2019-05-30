@@ -35,8 +35,6 @@ public class RmiManager extends LogicsManager implements InitializingBean {
         throw new UnsupportedOperationException();
     }
     
-    public static final String DEFAULT_EXPORT_NAME = "default";
-
     private Registry registry;
 
     private String exportName;
@@ -47,20 +45,10 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     private int debuggerPort = 0;
 
-    private int exportPort = 0;
-
     private int jmxPort = 0;
 
     public RmiManager() {
         super(RMIMANAGER_ORDER);
-    }
-
-    public int getExportPort() {
-        return exportPort;
-    }
-
-    public void setExportPort(int exportPort) {
-        this.exportPort = exportPort;
     }
 
     public int getPort() {
@@ -106,11 +94,6 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.state(0 < port && port <= 65535, "port must be between 0 and 65535");
-        Assert.state(0 <= exportPort && exportPort <= 65535, "exportPort must be between 0 and 65535");
-
-        if (isRedundantString(exportName)) {
-            exportName = DEFAULT_EXPORT_NAME;
-        }
     }
 
     @Override
@@ -190,7 +173,6 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 //            registry.list();
 //        } catch (RemoteException e) {
         registry = RMIUtils.createRmiRegistry(port, ZipServerSocketFactory.getInstance());
-        exportPort = port;
 //        }
     }
 
@@ -199,7 +181,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     }
 
     public void export(Remote remote) throws RemoteException {
-        RemoteObject.export(remote, exportPort);
+        RemoteObject.export(remote, port);
     }
 
     public void unexport(Remote remote) throws RemoteException {
