@@ -141,10 +141,10 @@
         </bean>
 
     <bean id="dataAdapter" class="lsfusion.server.data.sql.adapter.PostgreDataAdapter">
-        <constructor-arg value="${db.name}"/>
-        <constructor-arg value="${db.server}"/>
-        <constructor-arg value="${db.user}"/>
-        <constructor-arg value="${db.password}"/>
+        <constructor-arg value="${db.name:lsfusion}"/>
+        <constructor-arg value="${db.server:localhost}"/>
+        <constructor-arg value="${db.user:postgres}"/>
+        <constructor-arg value="${db.password:}"/>
         <constructor-arg value="${db.connectTimeout:10000}"/>
         <constructor-arg value="${backup.binPath:}"/>
         <constructor-arg value="${backup.dumpDir:}"/>
