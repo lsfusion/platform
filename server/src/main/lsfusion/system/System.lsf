@@ -312,11 +312,6 @@ loadLogicsIcon '{system.logics.icon.load}'()  { INPUT=logicsIcon() CHANGE; }
 openLogicsIcon '{system.logics.icon.open}'()  { open(logicsIcon()); }
 resetLogicsIcon '{system.logics.icon.reset}'()  { logicsIcon() <- NULL; }
 
-platformVersion = DATA TEXT();
-apiVersion = DATA INTEGER();
-synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
-onStarted() + { synchronizeVersions(); }
-
 META applicationForm(sid, name)
     FORM sid name;
     
