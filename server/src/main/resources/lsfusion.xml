@@ -174,7 +174,7 @@
         <property name="denyDropModules" value="${db.denyDropModules:false}"/>
         <property name="denyDropTables" value="${db.denyDropTables:false}"/>
         <property name="dbNamingPolicy" value="${db.namingPolicy:}"/>
-        <property name="dbMaxIdLength" value="${db.maxIdLength:}"/>
+        <property name="dbMaxIdLength" value="${db.maxIdLength:63}"/>
         <property name="defaultTwoDigitYearStart" value="${user.twoDigitYearStart:#{null}}"/>
         <property name="defaultUserTimeZone" value="${user.timeZone:#{null}}"/>
         <property name="defaultUserLanguage" value="${user.defaultLanguage:#{null}}"/>
@@ -205,7 +205,7 @@
     <bean id="securityManager" class="lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
-        <property name="initialAdminPassword" value="${logics.initialAdminPassword:#{null}}"/>
+        <property name="initialAdminPassword" value="${logics.initialAdminPassword:fusion}"/>
     </bean>
 
     <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
@@ -713,8 +713,7 @@
         <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
-        <property name="exportPort" value="${rmi.exportPort:0}"/>
-        <property name="exportName" value="${rmi.exportName:}"/>
+        <property name="exportName" value="${rmi.exportName:default}"/>
     </bean>
 
     <bean id="remoteLogics" class="lsfusion.server.logics.controller.remote.RemoteLogics">

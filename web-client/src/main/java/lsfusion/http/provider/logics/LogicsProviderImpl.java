@@ -51,9 +51,9 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     public void afterPropertiesSet() throws Exception {
         String host = servletContext.getInitParameter(hostKey);
         String port = servletContext.getInitParameter(portKey);
-        String exportName = nvl(servletContext.getInitParameter(exportNameKey), "default");
-        if (host == null || port == null) {
-            throw new IllegalStateException(hostKey + " or " + portKey + " parameters aren't set in web.xml");
+        String exportName = servletContext.getInitParameter(exportNameKey);
+        if (host == null || port == null || exportName == null) {
+            throw new IllegalStateException(hostKey + " or " + portKey + " or " + exportNameKey + " parameters aren't set in web.xml");
         }
 
         String appPath = servletContext.getRealPath("");

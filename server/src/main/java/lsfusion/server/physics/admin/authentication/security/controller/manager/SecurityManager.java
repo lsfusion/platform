@@ -111,9 +111,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
-        if (initialAdminPassword == null) {
-            initialAdminPassword = "fusion";
-        }
     }
 
     @Override
