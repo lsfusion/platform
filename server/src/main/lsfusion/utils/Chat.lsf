@@ -1,6 +1,6 @@
 MODULE Chat;
 
-REQUIRE Authentication, Integration, Time, SystemEvents, Utils;
+REQUIRE Authentication, Integration, Time, SystemEvents, Service, Utils;
 
 CLASS Chat '{chat.chat}';
 TABLE chat(Chat);

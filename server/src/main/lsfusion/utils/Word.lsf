@@ -1,6 +1,6 @@
 MODULE Word;
 
-REQUIRE System, MasterData, Utils;
+REQUIRE System, SystemEvents, MasterData, Utils;
 
 CLASS Template '{word.template}';
 TABLE template(Template);

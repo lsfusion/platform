@@ -35,7 +35,6 @@ logMessage = DATA LOCAL TEXT ();
 
 apply  { APPLY; }
 cancel  { CANCEL; }
-onStarted  ABSTRACT LIST ( );
 
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;

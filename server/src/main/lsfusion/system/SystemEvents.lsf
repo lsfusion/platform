@@ -1,6 +1,10 @@
 MODULE SystemEvents;
 
-REQUIRE System, Reflection, Time, Service;
+REQUIRE System, Reflection, Time;
+
+onStarted  ABSTRACT LIST ( );
+onDesktopClientStarted  ABSTRACT LIST ( );
+onWebClientStarted  ABSTRACT LIST ( );
 
 CLASS ABSTRACT Exception '{system.events.exception}';
 CLASS ClientException '{system.events.client.exception}' : Exception;
@@ -229,38 +233,6 @@ javaVersion '{system.events.java.version.connection}' (Computer computer) = java
 is64Java '{system.events.is64java.connection}' (Computer computer) = is64Java(lastConnection(computer));
 
 countDaysClearPings '{system.events.count.days.clear.pings}' = DATA INTEGER (); 
-
-onDesktopClientStarted  ABSTRACT LIST ( );
-
-onWebClientStarted  ABSTRACT LIST ( );
-
-showDefaultForms()  { 
-    IF defaultForms(currentUser()) == DefaultForms.default THEN {
-        LOCAL firstForm = STRING[100] ();
-        FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
-            LOCAL NESTED action = TEXT ();
-            LOCAL NESTED maximize = BOOLEAN();
-            FOR formName = canonicalName(form(e)) DO { 
-                IF NOT firstForm() THEN {
-                    firstForm() <- formName;
-                    maximize() <- TRUE;
-                }
-                action() <- 'SHOW ' + formName + ' NOWAIT';
-            } ELSE
-                action() <- actionName + '()';
-                
-            NEWSESSION EVAL 'run() \{ ' + action() + '; \};';
-            IF maximize() THEN 
-                maximizeForm();
-        }
-        //IF firstForm() THEN {
-            //EVAL 'run() = \{ ACTIVATE FORM ' + firstForm() +'; \};';
-        //}
-    }
-}
-
-onDesktopClientStarted() + {  showDefaultForms(); }
-onWebClientStarted() + {  showDefaultForms(); }
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    

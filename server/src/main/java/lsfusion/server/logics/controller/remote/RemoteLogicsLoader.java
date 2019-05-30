@@ -70,7 +70,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
 
         try(DataSession session = createSession()) {
             logger.info("Executing onStarted action");
-            remoteLogics.baseLM.onStarted.execute(session, getStack());
+            remoteLogics.businessLogics.systemEventsLM.onStarted.execute(session, getStack());
             apply(session);
         } catch (Exception e) {
             throw new RuntimeException("Error executing on started: ", e);

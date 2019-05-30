@@ -1,6 +1,6 @@
 MODULE Security;
 
-REQUIRE System, Reflection, Email, Utils;
+REQUIRE System, SystemEvents, Email, Utils;
 
 CLASS UserRole '{security.user.role}';
 TABLE userRole (UserRole);
@@ -332,6 +332,31 @@ copy (UserRole from, UserRole to) +{
     defaultForms(to) <- defaultForms(from);
     defaultNumber(to, NavigatorElement navigatorElement) <- defaultNumber(from, navigatorElement);
 }
+
+showDefaultForms()  { 
+    IF defaultForms(currentUser()) == DefaultForms.default THEN {
+        LOCAL firstForm = STRING[100] ();
+        FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
+            LOCAL NESTED action = TEXT ();
+            LOCAL NESTED maximize = BOOLEAN();
+            FOR formName = canonicalName(form(e)) DO { 
+                IF NOT firstForm() THEN {
+                    firstForm() <- formName;
+                    maximize() <- TRUE;
+                }
+                action() <- 'SHOW ' + formName + ' NOWAIT';
+            } ELSE
+                action() <- actionName + '()';
+                
+            NEWSESSION EVAL 'run() \{ ' + action() + '; \};';
+            IF maximize() THEN 
+                maximizeForm();
+        }
+    }
+}
+
+onDesktopClientStarted() + {  showDefaultForms(); }
+onWebClientStarted() + {  showDefaultForms(); }
 
 // ------------------ Custom policies ---------------- //
 CLASS Policy '{security.policy}';
