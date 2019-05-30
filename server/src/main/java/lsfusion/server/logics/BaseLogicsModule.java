@@ -127,7 +127,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LA<?> apply;
     public LP<?> canceled;
-    public LA<?> onStarted;
 
     public LP statusHttp;
     
@@ -433,8 +432,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         apply = findAction("apply[]");
 //        cancel = findAction("cancel[]");
-
-        onStarted = findAction("onStarted[]");
 
         statusHttp = findProperty("statusHttp[]");
         

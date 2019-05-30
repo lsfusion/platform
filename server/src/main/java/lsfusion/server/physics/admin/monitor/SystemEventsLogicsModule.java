@@ -8,6 +8,7 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
@@ -44,6 +45,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass connection;
     public ConcreteCustomClass connectionStatus;
     public ConcreteCustomClass session;
+
+    public LA<?> onStarted;
 
     public LP computerConnection;
     public LP remoteAddressConnection;
@@ -128,6 +131,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         makePropertyPublic(currentConnection, "currentConnection", new ArrayList<ResolveClassSet>());
 
         super.initMainLogic();
+
+        onStarted = findAction("onStarted[]");
 
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");

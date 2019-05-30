@@ -1,6 +1,6 @@
 MODULE Scheduler;
 
-REQUIRE System, Reflection, Service;
+REQUIRE System, SystemEvents, Service;
 
 
 CLASS SchedulerStartType '{scheduler.scheduler.start.type}' {

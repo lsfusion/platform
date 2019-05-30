@@ -1,6 +1,6 @@
 MODULE Profiler;
 
-REQUIRE Security, Service, Utils;
+REQUIRE SystemEvents, Security, Service, Utils;
 
 CLASS ProfileObject {
     top '{profiler.profile.object.top}'
