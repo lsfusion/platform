@@ -167,39 +167,6 @@ WHEN CHANGED(execEnv(User user)) DO {
 }
 nameExecEnv '{service.exec.env.user}' (User user) = captionExecEnv(execEnv(user)) IN base;
 
-// --------------- Удаление прикладных логов ------------------------ //
-
-clearApplicationLog '{service.clear.application.log}'  ABSTRACT LIST ( ) ;
-
-META defineLog (object, caption, container)
-    countDaysClear##object '{service.define.log.count.days.clear.object} '##caption = DATA INTEGER (); 
-    
-    EXTEND FORM options PROPERTIES countDaysClear##object();
-    DESIGN options { container { MOVE PROPERTY(countDaysClear##object());} }    
-END
-META defineLog (object, dateProp)
-    clearApplicationLog () + { 
-	NEWSESSION {
-	        IF countDaysClear##object() THEN {
-	            DELETE object d WHERE d IS object AND dateProp(d)<= subtract(currentDate(), countDaysClear##object());
-	        }
-	        apply();
-	    }
-}   
-END
-META defineLog (object, caption, container, dateProp)
-    @defineLog (object, caption, container);
-    @defineLog (object, dateProp);    
-END
-
-DESIGN options {
-    pane {
-        NEW log {
-            caption = '{service.form.options.caption.logging}';
-        }
-    }
-}
-
 @defineLog (Email, '{service.define.log.of.incoming.email}', log, dateSent);
 
 countDaysClearFusionTempFiles '{service.count.days.clear.fusion.temp.files}' = DATA INTEGER (); 
