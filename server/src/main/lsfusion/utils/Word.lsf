@@ -66,10 +66,6 @@ isTableTemplateEntry '{word.is.table.template.entry}' (TemplateEntry t) = type(t
 isListTemplateEntry '{word.is.list.template.entry}' (TemplateEntry t) = type(t) == Type.list;
 notPlainTemplateEntry (TemplateEntry t) = isTableTemplateEntry(t) OR isListTemplateEntry(t);
 
-
-dataFirstRow = DATA INTEGER (TemplateEntry);
-firstRow '{word.first.row.template.entry}' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
-
 dataColumnSeparator = DATA STRING[20] (TemplateEntry);
 columnSeparator '{word.column.separator.template.entry}' (TemplateEntry e)= OVERRIDE dataColumnSeparator(e), ';'; 
 
@@ -86,7 +82,7 @@ FORM template '{word.form.template}'
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) nameType, key, description, value, NEW, DELETE GRID
-    PROPERTIES (te) PANEL SHOWIF isTableTemplateEntry(te) firstRow, columnSeparator
+    PROPERTIES (te) PANEL SHOWIF isTableTemplateEntry(te) columnSeparator
     PROPERTIES (te) PANEL SHOWIF notPlainTemplateEntry(te) rowSeparator
     PROPERTIES (t) DRAW te TOOLBAR openProcess
 
