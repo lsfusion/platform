@@ -31,6 +31,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ProcessTemplateAction extends InternalAction {
     public final ClassPropertyInterface templateInterface;
@@ -62,9 +64,9 @@ public class ProcessTemplateAction extends InternalAction {
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
-                    String[] templateEntryNames = new String[]{"objValue", "key", "value", "type", "firstRow", "columnSeparator", "rowSeparator"};
+                    String[] templateEntryNames = new String[]{"objValue", "key", "value", "type", "columnSeparator", "rowSeparator"};
                     LP[] templateEntryProperties = findProperties("objValue[TemplateEntry]", "key[TemplateEntry]", "value[TemplateEntry]", "idType[TemplateEntry]",
-                            "firstRow[TemplateEntry]", "columnSeparator[TemplateEntry]", "rowSeparator[TemplateEntry]");
+                            "columnSeparator[TemplateEntry]", "rowSeparator[TemplateEntry]");
                     for (int i = 0; i < templateEntryProperties.length; i++) {
                         templateEntryQuery.addProperty(templateEntryNames[i], templateEntryProperties[i].getExpr(context.getModifier(), templateEntryExpr));
                     }
@@ -78,12 +80,11 @@ public class ProcessTemplateAction extends InternalAction {
                         String key = (String) templateEntry.get("key");
                         String value = (String) templateEntry.get("value");
                         String type = (String) templateEntry.get("type");
-                        Integer firstRow = (Integer) templateEntry.get("firstRow");
                         String columnSeparator = (String) templateEntry.get("columnSeparator");
                         String rowSeparator = (String) templateEntry.get("rowSeparator");
 
                         if (key != null && value != null) {
-                            TemplateEntry entry = new TemplateEntry(key, value.replace('\n', '\r'), type, firstRow, columnSeparator, rowSeparator);
+                            TemplateEntry entry = new TemplateEntry(key, value.replace('\n', '\r'), type, columnSeparator, rowSeparator);
                             if(entry.isList()) {
                                 listTemplateEntriesList.add(entry);
                             } else {
@@ -135,36 +136,30 @@ public class ProcessTemplateAction extends InternalAction {
 
     private void replaceTableDataDocx(XWPFTable tbl, TemplateEntry entry) {
         if(entry.isTable()) {
-            XWPFTableRow row = tbl.getRow(entry.firstRow);
-            if (row == null) return;
-            XWPFTableCell cell = row.getCell(0);
-            String text = cell.getText();
-            if (text != null && text.contains(entry.key)) {
-                String[] tableRows = entry.value.split(entry.rowSeparator);
-                int i = entry.firstRow;
-                for (String tableRow : tableRows) {
-                    if (i == entry.firstRow) {
-                        XWPFTableRow newRow = tbl.getRow(i);
+            for(int rowIndex = 0; rowIndex < tbl.getNumberOfRows(); rowIndex++) {
+                XWPFTableRow row = tbl.getRow(rowIndex);
+                if (row == null) return;
+                XWPFTableCell cell = row.getCell(0);
+                String text = cell.getText();
+                if (text != null && text.contains(entry.key)) {
+                    String[] tableRows = entry.value.split(entry.rowSeparator);
+                    int i = rowIndex;
+                    boolean firstRow = true;
+                    for (String tableRow : tableRows) {
+                        XWPFTableRow newRow = firstRow ? tbl.getRow(i) : tbl.createRow();
                         int j = 0;
-                        for (String tableCell : tableRow.split(entry.columnSeparator)) {
+                        for (CellValue cellValue : parseTableRow(tableRow, entry.columnSeparator)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
-                            if (newCell.getText().isEmpty())
-                                newCell.setText(tableCell);
-                            else {
-                                newCell.getParagraphs().get(0).getRuns().get(0).setText(tableCell, 0);
-                            }
+                            XWPFParagraph paragraph = newCell.getParagraphs().get(0);
+                            XWPFRun run = newCell.getText().isEmpty() ? paragraph.createRun() : paragraph.getRuns().get(0);
+                            run.setBold(cellValue.bold);
+                            run.setText(cellValue.text, 0);
                             j++;
                         }
-                    } else {
-                        XWPFTableRow newRow = tbl.createRow();
-                        int j = 0;
-                        for (String tableCell : tableRow.split(entry.columnSeparator)) {
-                            XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
-                            newCell.setText(tableCell);
-                            j++;
-                        }
+                        firstRow = false;
+                        i++;
                     }
-                    i++;
+                    break;
                 }
             }
         } else {
@@ -271,15 +266,13 @@ public class ProcessTemplateAction extends InternalAction {
         public String key;
         public String value;
         public String type;
-        public Integer firstRow;
         public String columnSeparator;
         public String rowSeparator;
 
-        public TemplateEntry(String key, String value, String type, Integer firstRow, String columnSeparator, String rowSeparator) {
+        public TemplateEntry(String key, String value, String type, String columnSeparator, String rowSeparator) {
             this.key = key;
             this.value = value;
             this.type = type;
-            this.firstRow = firstRow;
             this.columnSeparator = columnSeparator;
             this.rowSeparator = rowSeparator;
         }
@@ -290,6 +283,31 @@ public class ProcessTemplateAction extends InternalAction {
 
         public boolean isList() {
            return type != null && type.endsWith("list");
+        }
+    }
+
+    private List<CellValue> parseTableRow(String tableRow, String columnSeparator) {
+        List<CellValue> result = new ArrayList<>();
+        for (String tableCell : tableRow.split(columnSeparator)) {
+            result.add(parseCellValue(tableCell));
+        }
+        return result;
+    }
+
+    private CellValue parseCellValue(String value) {
+        Pattern p = Pattern.compile("<b>(.*)</b>");
+        Matcher m = p.matcher(value);
+        boolean matches = m.matches();
+        return new CellValue(matches ? m.group(1) : value, matches);
+    }
+
+    private class CellValue {
+        public String text;
+        public boolean bold;
+
+        public CellValue(String text, boolean bold) {
+            this.text = text;
+            this.bold = bold;
         }
     }
 }
