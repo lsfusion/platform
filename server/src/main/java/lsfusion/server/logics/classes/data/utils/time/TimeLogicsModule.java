@@ -34,8 +34,6 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     public LP sumDate;
     public LP subtractDate;
 
-    public LP numberDOW;
-
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(TimeLogicsModule.class.getResourceAsStream("/system/Time.lsf"), "/system/Time.lsf", baseLM, BL);
     }
@@ -70,8 +68,6 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         toTime = findProperty("toTime[DATETIME]");
         sumDate = findProperty("sum[DATE,LONG]");
         subtractDate = findProperty("subtract[DATE,LONG]");
-
-        numberDOW = findProperty("number[DOW]");
 
         currentTime = findProperty("currentTime[]");
     }
