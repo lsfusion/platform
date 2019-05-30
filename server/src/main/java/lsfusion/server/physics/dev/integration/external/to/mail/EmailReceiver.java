@@ -121,7 +121,7 @@ public class EmailReceiver {
 
         ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[STRING[100]]").getMapping(idEmailField));
+                LM.findProperty("emailId[STRING[200]]").getMapping(idEmailField));
         keys.add(emailKey);
         props.add(new ImportProperty(idEmailField, LM.findProperty("id[Email]").getMapping(emailKey)));
         props.add(new ImportProperty(accountObject, LM.findProperty("account[Email]").getMapping(emailKey)));

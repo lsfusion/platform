@@ -124,7 +124,7 @@ FORM accounts '{email.form.accounts}'
 CLASS Email '{email.email}';
 TABLE email(Email);
 
-id = DATA STRING[100] (Email);  
+id = DATA STRING[200] (Email);  
 emailId = GROUP AGGR Email email WHERE email IS Email BY id (email);
  
 account = DATA Account (Email) NONULL DELETE;
