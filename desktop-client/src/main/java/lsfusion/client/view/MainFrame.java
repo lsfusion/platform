@@ -99,13 +99,14 @@ public abstract class MainFrame extends JFrame {
             MainController.configurationAccessAllowed = clientSettings.configurationAccessAllowed;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
 
-            Locale.setDefault(userPreferences.locale);
+            Locale userLocale = userPreferences.locale;
+            Locale.setDefault(userLocale);
 
-            UIManager.getDefaults().setDefaultLocale(userPreferences.locale);
-            UIManager.getLookAndFeelDefaults().setDefaultLocale(userPreferences.locale);
+            UIManager.getDefaults().setDefaultLocale(userLocale);
+            UIManager.getLookAndFeelDefaults().setDefaultLocale(userLocale);
 
-            JFileChooser.setDefaultLocale(userPreferences.locale);
-            JColorChooser.setDefaultLocale(userPreferences.locale);
+            JFileChooser.setDefaultLocale(userLocale);
+            JColorChooser.setDefaultLocale(userLocale);
 
             setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
 
