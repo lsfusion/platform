@@ -22,6 +22,7 @@ import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.base.log.StringDebugInfoWriter;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.server.base.exception.ApplyCanceledException;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheStats;
@@ -316,7 +317,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 getDbManager().ensureLogLevel();
                 
                 if(setLanguage != null) {
-                    Locale.setDefault(new Locale(setLanguage, setCountry != null ? setCountry : ""));
+                    Locale.setDefault(LocalePreferences.getLocale(setLanguage, setCountry));
                 }
 
                 TimeZone timeZone = setTimezone == null ? null : TimeZone.getTimeZone(setTimezone);

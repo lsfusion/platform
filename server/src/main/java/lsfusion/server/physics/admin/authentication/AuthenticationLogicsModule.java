@@ -79,9 +79,14 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP defaultLanguage;
     public LP defaultCountry;
-    public LP defaultTimeZone;
+    public LP defaultTimezone;
     public LP defaultTwoDigitYearStart;
-    
+
+    public LP serverLanguage;
+    public LP serverCountry;
+    public LP serverTimezone;
+    public LP serverTwoDigitYearStart;
+
     public LP userFontSize;
     
     public LA deliveredNotificationAction;
@@ -167,8 +172,13 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         defaultLanguage = findProperty("defaultUserLanguage[]");
         defaultCountry = findProperty("defaultUserCountry[]");
-        defaultTimeZone = findProperty("defaultUserTimeZone[]");
+        defaultTimezone = findProperty("defaultUserTimezone[]");
         defaultTwoDigitYearStart = findProperty("defaultUserTwoDigitYearStart[]");
+
+        serverLanguage = findProperty("serverLanguage[]");
+        serverCountry = findProperty("serverCountry[]");
+        serverTimezone = findProperty("serverTimezone[]");
+        serverTwoDigitYearStart = findProperty("serverTwoDigitYearStart[]");
         
         userFontSize = findProperty("fontSize[CustomUser]");
         
