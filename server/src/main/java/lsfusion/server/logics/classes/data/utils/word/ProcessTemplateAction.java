@@ -144,13 +144,15 @@ public class ProcessTemplateAction extends InternalAction {
                 String text = cell.getText();
                 if (text != null && text.contains(entry.key)) {
                     String[] tableRows = entry.value.split(entry.rowSeparator);
-                    int i = rowIndex + 1; //start from next row
+                    int i = rowIndex;
+                    boolean firstRow = true;
                     for (String tableRow : tableRows) {
-                        XWPFTableRow newRow = i < numberOfRows ? tbl.getRow(i) : tbl.createRow();
+                        XWPFTableRow newRow = firstRow ? tbl.getRow(i) : tbl.insertNewTableRow(i);
                         int j = 0;
-                        for (CellValue cellValue : parseTableRow(tableRow, entry.columnSeparator, cell)) {
+                        for (CellValue cellValue : parseTableRow(tableRow, entry.columnSeparator, row)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
                             XWPFParagraph paragraph = newCell.getParagraphs().get(0);
+                            if(cellValue.alignment != null) paragraph.setAlignment(cellValue.alignment);
                             XWPFRun run = newCell.getText().isEmpty() ? paragraph.createRun() : paragraph.getRuns().get(0);
                             if (cellValue.fontFamily != null) run.setFontFamily(cellValue.fontFamily);
                             if (cellValue.fontSize != null) run.setFontSize(cellValue.fontSize);
@@ -161,6 +163,7 @@ public class ProcessTemplateAction extends InternalAction {
                             j++;
                         }
                         i++;
+                        firstRow = false;
                     }
                     break;
                 }
@@ -289,15 +292,14 @@ public class ProcessTemplateAction extends InternalAction {
         }
     }
 
-    private List<CellValue> parseTableRow(String tableRow, String columnSeparator, XWPFTableCell templateCell) {
-
+    private List<CellValue> parseTableRow(String tableRow, String columnSeparator, XWPFTableRow templateRow) {
         String fontFamily = null;
         Integer fontSize = null;
         String color = null;
         boolean bold = false;
         boolean italic = false;
 
-        XWPFParagraph templateParagraph = templateCell.getParagraphArray(0);
+        XWPFParagraph templateParagraph = templateRow.getCell(0).getParagraphArray(0);
         if(templateParagraph != null) {
             XWPFRun templateRun = templateParagraph.getRuns().get(0);
             if(templateRun != null) {
@@ -310,34 +312,39 @@ public class ProcessTemplateAction extends InternalAction {
         }
 
         List<CellValue> result = new ArrayList<>();
+        int cellIndex = 0;
         for (String tableCell : tableRow.split(columnSeparator)) {
-            result.add(parseCellValue(tableCell, fontFamily, fontSize, color, bold, italic));
+            ParagraphAlignment alignment = templateRow.getCell(cellIndex).getParagraphArray(0).getAlignment();
+            result.add(parseCellValue(alignment, tableCell, fontFamily, fontSize, color, bold, italic));
+            cellIndex++;
         }
         return result;
     }
 
-    private CellValue parseCellValue(String value, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic) {
+    private CellValue parseCellValue(ParagraphAlignment alignment, String value, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic) {
         Pattern p = Pattern.compile("<b>(.*)</b>");
         Matcher m = p.matcher(value);
         boolean matches = m.matches();
-        return new CellValue(matches ? m.group(1) : value, fontFamily, fontSize, color, bold || matches, italic);
+        return new CellValue(alignment, fontFamily, fontSize, color, bold || matches, italic, matches ? m.group(1) : value);
     }
 
     private class CellValue {
-        public String text;
+        public ParagraphAlignment alignment;
         public String fontFamily;
         public Integer fontSize;
         public String color;
         public boolean bold;
         public boolean italic;
+        public String text;
 
-        public CellValue(String text, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic) {
-            this.text = text;
+        public CellValue(ParagraphAlignment alignment, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic, String text) {
+            this.alignment = alignment;
             this.fontFamily = fontFamily;
             this.fontSize = fontSize;
             this.color = color;
             this.bold = bold;
             this.italic = italic;
+            this.text = text;
         }
     }
 }
