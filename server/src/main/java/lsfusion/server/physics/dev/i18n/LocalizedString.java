@@ -38,7 +38,7 @@ public final class LocalizedString {
     private final boolean needToBeLocalized;
     
     private boolean isFormatted;
-    private Object[] params = null;
+    private Object[] params;
     private static Object[] NOPARAMS = new Object[]{};
     
     private LocalizedString(String source) {
@@ -103,7 +103,7 @@ public final class LocalizedString {
 
     public static class FormatError extends Exception {
         public FormatError(String text) {
-            super(text);
+            super("localized string: " + text);
         }
     }
 
