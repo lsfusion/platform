@@ -159,8 +159,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private String defaultUserLanguage;
     private String defaultUserCountry;
-    private String defaultUserTimeZone;
-    private Integer defaultTwoDigitYearStart;
+    private String defaultUserTimezone;
+    private Integer defaultUserTwoDigitYearStart;
+
+    private Integer serverTwoDigitYearStart;
 
     public DBManager() {
         super(DBMANAGER_ORDER);
@@ -1416,8 +1418,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void setDefaultUserLocalePreferences(DataSession session) throws SQLException, SQLHandledException {
         businessLogics.authenticationLM.defaultLanguage.change(defaultUserLanguage, session);
         businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
-        businessLogics.authenticationLM.defaultTimeZone.change(defaultUserTimeZone, session);
-        businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultTwoDigitYearStart, session);
+        businessLogics.authenticationLM.defaultTimezone.change(defaultUserTimezone, session);
+        businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultUserTwoDigitYearStart, session);
+
+        Locale locale = Locale.getDefault();
+        businessLogics.authenticationLM.serverLanguage.change(locale.getLanguage(), session);
+        businessLogics.authenticationLM.serverCountry.change(locale.getCountry(), session);
+        businessLogics.authenticationLM.serverTimezone.change(TimeZone.getDefault().getID(), session);
+        businessLogics.authenticationLM.serverTwoDigitYearStart.change(serverTwoDigitYearStart, session);
+
         apply(session);
     }
 
@@ -2553,11 +2562,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         this.defaultUserCountry = defaultUserCountry;
     }
 
-    public void setDefaultUserTimeZone(String defaultUserTimeZone) {
-        this.defaultUserTimeZone = defaultUserTimeZone;
+    public void setDefaultUserTimezone(String defaultUserTimezone) {
+        this.defaultUserTimezone = defaultUserTimezone;
     }
 
-    public void setDefaultTwoDigitYearStart(Integer defaultTwoDigitYearStart) {
-        this.defaultTwoDigitYearStart = defaultTwoDigitYearStart;
+    public void setDefaultUserTwoDigitYearStart(Integer defaultUserTwoDigitYearStart) {
+        this.defaultUserTwoDigitYearStart = defaultUserTwoDigitYearStart;
+    }
+
+    public void setServerTwoDigitYearStart(Integer serverTwoDigitYearStart) {
+        this.serverTwoDigitYearStart = serverTwoDigitYearStart;
     }
 }

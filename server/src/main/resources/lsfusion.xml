@@ -175,10 +175,11 @@
         <property name="denyDropTables" value="${db.denyDropTables:false}"/>
         <property name="dbNamingPolicy" value="${db.namingPolicy:}"/>
         <property name="dbMaxIdLength" value="${db.maxIdLength:63}"/>
-        <property name="defaultTwoDigitYearStart" value="${user.twoDigitYearStart:#{null}}"/>
-        <property name="defaultUserTimeZone" value="${user.timeZone:#{null}}"/>
         <property name="defaultUserLanguage" value="${user.defaultLanguage:#{null}}"/>
         <property name="defaultUserCountry" value="${user.defaultCountry:#{null}}"/>
+        <property name="defaultUserTimezone" value="${user.defaultTimezone:#{null}}"/>
+        <property name="defaultUserTwoDigitYearStart" value="${user.defaultTwoDigitYearStart:#{null}}"/>
+        <property name="serverTwoDigitYearStart" value="${user.serverTwoDigitYearStart:#{null}}"/>
     </bean>
 
     <bean id="reflectionManager" class="lsfusion.server.physics.admin.reflection.controller.manager.ReflectionManager">

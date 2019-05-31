@@ -133,13 +133,18 @@ useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (Custom
 
 defaultUserLanguage '{authentication.default.user.language}' = DATA STRING[3] ();
 defaultUserCountry '{authentication.default.user.country}' = DATA STRING[3] ();
-defaultUserTimeZone '{authentication.default.user.time.zone}' = DATA STRING[30] ();
+defaultUserTimezone '{authentication.default.user.time.zone}' = DATA STRING[30] ();
 defaultUserTwoDigitYearStart '{authentication.default.user.two.digit.year.start}' = DATA INTEGER ();
 
-language '{authentication.language.user}' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage();
+serverLanguage '{authentication.server.language}' = DATA STRING[3] ();
+serverCountry '{authentication.server.country}' = DATA STRING[3] ();
+serverTimezone '{authentication.server.time.zone}' = DATA STRING[30] ();
+serverTwoDigitYearStart '{authentication.server.two.digit.year.start}' = DATA INTEGER ();
+
+language '{authentication.language.user}' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage(), serverLanguage();
 country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
                                                                 THEN clientCountry(user)
-                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
+                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE IF defaultUserCountry() THEN defaultUserCountry() ELSE serverCountry();
 
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
@@ -147,8 +152,8 @@ getCurrentUserLocale() {
         EXPORT JSON FROM language(user), country(user); 
 } @@api;
 
-timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
-twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
+timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();
+twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart(), serverTwoDigitYearStart();
 
 // Technical settings
 useBusyDialogCustom '{authentication.use.busy.dialog.user}' = DATA BOOLEAN (CustomUser);
@@ -278,7 +283,8 @@ FORM customUsers '{authentication.users}'
                                            userTimeZone BACKGROUND RGB(232,232,255), userTwoDigitYearStart BACKGROUND RGB(232,232,255) 
     PROPERTIES(lu) NEWSESSION EDIT
 
-    PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimeZone, defaultUserTwoDigitYearStart
+    PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimezone, defaultUserTwoDigitYearStart
+    PROPERTIES() READONLY serverLanguage, serverCountry, serverTimezone, serverTwoDigitYearStart
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 ;
@@ -298,8 +304,12 @@ DESIGN customUsers {
                     type = CONTAINERH;
                     MOVE PROPERTY(defaultUserLanguage());
                     MOVE PROPERTY(defaultUserCountry());
-                    MOVE PROPERTY(defaultUserTimeZone());
+                    MOVE PROPERTY(defaultUserTimezone());
                     MOVE PROPERTY(defaultUserTwoDigitYearStart());
+                    MOVE PROPERTY(serverLanguage());
+                    MOVE PROPERTY(serverCountry());
+                    MOVE PROPERTY(serverTimezone());
+                    MOVE PROPERTY(serverTwoDigitYearStart());
                 }
                 MOVE BOX(lu) {
                     GRID(lu) { headerHeight = 50; }

@@ -226,10 +226,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     }
 
     public Locale getLocale() {
-        Locale locale = this.locale;
-        if(locale != null)
-            return locale;
-        return Locale.getDefault();
+        return locale;
     }
 
     public Long getCurrentUser() {
