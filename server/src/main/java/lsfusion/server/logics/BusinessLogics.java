@@ -173,6 +173,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private String orderDependencies;
 
+    private String setTimezone;
+    private String setLanguage;
+    private String setCountry;
+
     private LocalizedString.Localizer localizer;
     
     private PublicTask initTask;
@@ -276,6 +280,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         this.orderDependencies = orderDependencies;
     }
 
+    public void setSetTimezone(String setTimezone) {
+        this.setTimezone = setTimezone;
+    }
+
+    public void setSetLanguage(String setLanguage) {
+        this.setLanguage = setLanguage;
+    }
+
+    public void setSetCountry(String setCountry) {
+        this.setCountry = setCountry;
+    }
+
     public void setInitTask(PublicTask initTask) {
         this.initTask = initTask;
     }
@@ -298,6 +314,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             startLogger.info("Initializing BusinessLogics");
             try {
                 getDbManager().ensureLogLevel();
+                
+                if(setLanguage != null) {
+                    Locale.setDefault(new Locale(setLanguage, setCountry != null ? setCountry : ""));
+                }
+
+                TimeZone timeZone = setTimezone == null ? null : TimeZone.getTimeZone(setTimezone);
+                if (timeZone != null) {
+                    TimeZone.setDefault(timeZone);
+                }
                 
                 new TaskRunner(this).runTask(initTask, startLogger);
             } catch (RuntimeException re) {
