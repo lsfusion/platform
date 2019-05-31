@@ -136,27 +136,30 @@ public class ProcessTemplateAction extends InternalAction {
 
     private void replaceTableDataDocx(XWPFTable tbl, TemplateEntry entry) {
         if(entry.isTable()) {
-            for(int rowIndex = 0; rowIndex < tbl.getNumberOfRows(); rowIndex++) {
+            int numberOfRows = tbl.getNumberOfRows();
+            for(int rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
                 XWPFTableRow row = tbl.getRow(rowIndex);
                 if (row == null) return;
                 XWPFTableCell cell = row.getCell(0);
                 String text = cell.getText();
                 if (text != null && text.contains(entry.key)) {
                     String[] tableRows = entry.value.split(entry.rowSeparator);
-                    int i = rowIndex;
-                    boolean firstRow = true;
+                    int i = rowIndex + 1; //start from next row
                     for (String tableRow : tableRows) {
-                        XWPFTableRow newRow = firstRow ? tbl.getRow(i) : tbl.createRow();
+                        XWPFTableRow newRow = i < numberOfRows ? tbl.getRow(i) : tbl.createRow();
                         int j = 0;
-                        for (CellValue cellValue : parseTableRow(tableRow, entry.columnSeparator)) {
+                        for (CellValue cellValue : parseTableRow(tableRow, entry.columnSeparator, cell)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
                             XWPFParagraph paragraph = newCell.getParagraphs().get(0);
                             XWPFRun run = newCell.getText().isEmpty() ? paragraph.createRun() : paragraph.getRuns().get(0);
+                            if (cellValue.fontFamily != null) run.setFontFamily(cellValue.fontFamily);
+                            if (cellValue.fontSize != null) run.setFontSize(cellValue.fontSize);
+                            if (cellValue.color != null) run.setColor(cellValue.color);
                             run.setBold(cellValue.bold);
+                            run.setItalic(cellValue.italic);
                             run.setText(cellValue.text, 0);
                             j++;
                         }
-                        firstRow = false;
                         i++;
                     }
                     break;
@@ -286,28 +289,55 @@ public class ProcessTemplateAction extends InternalAction {
         }
     }
 
-    private List<CellValue> parseTableRow(String tableRow, String columnSeparator) {
+    private List<CellValue> parseTableRow(String tableRow, String columnSeparator, XWPFTableCell templateCell) {
+
+        String fontFamily = null;
+        Integer fontSize = null;
+        String color = null;
+        boolean bold = false;
+        boolean italic = false;
+
+        XWPFParagraph templateParagraph = templateCell.getParagraphArray(0);
+        if(templateParagraph != null) {
+            XWPFRun templateRun = templateParagraph.getRuns().get(0);
+            if(templateRun != null) {
+                fontFamily = templateRun.getFontFamily();
+                fontSize = templateRun.getFontSize();
+                color = templateRun.getColor();
+                bold = templateRun.isBold();
+                italic = templateRun.isItalic();
+            }
+        }
+
         List<CellValue> result = new ArrayList<>();
         for (String tableCell : tableRow.split(columnSeparator)) {
-            result.add(parseCellValue(tableCell));
+            result.add(parseCellValue(tableCell, fontFamily, fontSize, color, bold, italic));
         }
         return result;
     }
 
-    private CellValue parseCellValue(String value) {
+    private CellValue parseCellValue(String value, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic) {
         Pattern p = Pattern.compile("<b>(.*)</b>");
         Matcher m = p.matcher(value);
         boolean matches = m.matches();
-        return new CellValue(matches ? m.group(1) : value, matches);
+        return new CellValue(matches ? m.group(1) : value, fontFamily, fontSize, color, bold || matches, italic);
     }
 
     private class CellValue {
         public String text;
+        public String fontFamily;
+        public Integer fontSize;
+        public String color;
         public boolean bold;
+        public boolean italic;
 
-        public CellValue(String text, boolean bold) {
+        public CellValue(String text, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic) {
             this.text = text;
+            this.fontFamily = fontFamily;
+            this.fontSize = fontSize;
+            this.color = color;
             this.bold = bold;
+            this.italic = italic;
         }
     }
 }
