@@ -782,8 +782,8 @@
 
         <property name="topModule" value="${logics.topModule:}"/>
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
-        <property name="setTimezone" value="${user.setTimezone:}"/>
-        <property name="setLanguage" value="${user.setLanguage:}"/>
-        <property name="setCountry" value="${user.setCountry:}"/>
+        <property name="setTimezone" value="${user.setTimezone:#{null}}"/>
+        <property name="setLanguage" value="${user.setLanguage:#{null}}"/>
+        <property name="setCountry" value="${user.setCountry:#{null}}"/>
     </bean>
 </beans>
