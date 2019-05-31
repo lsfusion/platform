@@ -422,9 +422,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static void setACID(Connection connection, boolean ACID, SQLSyntax syntax) throws SQLException {
+        if(ACID) // setting parameters before starting / after ending transaction to do not have transaction aborted exception 
+            setEnvParams(connection, true, syntax);
+
         connection.setAutoCommit(!ACID);
         connection.setReadOnly(!ACID);
 
+        if(!ACID)
+            setEnvParams(connection, false, syntax);
+    }
+
+    public static void setEnvParams(Connection connection, boolean ACID, SQLSyntax syntax) throws SQLException {
         Statement statement = createSingleStatement(connection);
         try {
             syntax.setACID(statement, ACID);
