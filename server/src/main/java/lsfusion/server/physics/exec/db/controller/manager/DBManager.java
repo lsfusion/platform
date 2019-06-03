@@ -1863,12 +1863,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         for (NamedTable table : oldData.tables.keySet()) {
-            String tableName = table.getName();
-            if (tableChanges.containsKey(tableName)) {
-                String newSID = tableChanges.get(tableName);
-                startLogger.info("Renaming table from " + table + " to " + newSID);
-                sql.renameTable(table, newSID);
-                table.setName(newSID);
+            String tableDBName = table.getName();
+            if (tableChanges.containsKey(tableDBName)) {
+                String newDBName = tableChanges.get(tableDBName);
+                startLogger.info("Renaming table from " + tableDBName + " to " + newDBName);
+                sql.renameTable(table, newDBName);
+                table.setName(newDBName);
             }
         }
     }
@@ -2044,8 +2044,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         addSIDChange(classSIDChanges, version, transformUSID(oldSID), transformUSID(newSID));
     }
 
-    public void addTableSIDChange(String version, String oldSID, String newSID) {
-        addSIDChange(tableSIDChanges, version, transformUSID(oldSID), transformUSID(newSID));
+    public void addTableSIDChange(String version, String oldCN, String newCN) {
+        addSIDChange(tableSIDChanges, version, LM.getDBNamingPolicy().transformTableCNToDBName(oldCN), 
+                                               LM.getDBNamingPolicy().transformTableCNToDBName(newCN));
     }
 
     public void addObjectSIDChange(String version, String oldSID, String newSID) {

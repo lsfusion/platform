@@ -381,7 +381,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             logger.error("Failed to get DBNamingPolicy, used default", e);
         }
-        return dbNamingPolicy == null ? new DefaultDBNamingPolicy(maxIdLength) : dbNamingPolicy;
+        return dbNamingPolicy == null ? new FullDBNamingPolicy(maxIdLength) : dbNamingPolicy;
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {

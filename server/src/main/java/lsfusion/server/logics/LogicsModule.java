@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -29,7 +28,6 @@ import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.metacode.MetaCodeFragment;
@@ -121,7 +119,6 @@ import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
-import lsfusion.server.physics.admin.interpreter.action.EvalAction;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
@@ -436,7 +433,8 @@ public abstract class LogicsModule {
 
     protected ImplementTable addTable(String name, boolean isFull, boolean isExplicit, ValueClass... classes) {
         String canonicalName = elementCanonicalName(name);
-        ImplementTable table = baseLM.tableFactory.include(CanonicalNameUtils.toSID(canonicalName), getVersion(), classes);
+        String dbName = baseLM.getDBNamingPolicy().transformTableCNToDBName(canonicalName);
+        ImplementTable table = baseLM.tableFactory.include(dbName, getVersion(), classes);
         table.setCanonicalName(canonicalName);
         addModuleTable(table);
         
