@@ -95,7 +95,8 @@ number '{time.number.month}' (Month m) = CASE EXCLUSIVE
     WHEN m == Month.september THEN 9
     WHEN m == Month.october THEN 10
     WHEN m == Month.november THEN 11
-    WHEN m == Month.december THEN 12;
+    WHEN m == Month.december THEN 12
+    MATERIALIZED;
 
 month '{time.month.number}' (number) = GROUP AGGR Month month BY number(month);
 
@@ -132,7 +133,8 @@ number '{time.number.dow}' (DOW d) = CASE EXCLUSIVE
     WHEN d == DOW.wednesday THEN 3 
     WHEN d == DOW.thursday THEN 4 
     WHEN d == DOW.friday THEN 5 
-    WHEN d == DOW.saturday THEN 6;
+    WHEN d == DOW.saturday THEN 6
+    MATERIALIZED;
 
 numberM '{time.number.dow}' (DOW d) = CASE EXCLUSIVE 
     WHEN d == DOW.monday THEN 0 
@@ -141,7 +143,8 @@ numberM '{time.number.dow}' (DOW d) = CASE EXCLUSIVE
     WHEN d == DOW.thursday THEN 3 
     WHEN d == DOW.friday THEN 4 
     WHEN d == DOW.saturday THEN 5 
-    WHEN d == DOW.sunday THEN 6;
+    WHEN d == DOW.sunday THEN 6
+    MATERIALIZED;
 
 FORM DOWs '{time.form.dows}'
     OBJECTS d = DOW
