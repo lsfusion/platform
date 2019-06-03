@@ -345,7 +345,7 @@ FORM physicalModel '{reflection.form.physical.model}'
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity CHANGEABLE ON CHANGE changeQuantity(tc), quantityTop,
                    notNullQuantity CHANGEABLE ON CHANGE changeNotNullQuantity(tc), percentNotNull, lastRecalculateProperty
-    PROPERTIES(tc) GRID disableAggregations, notRecalculate, disableClasses, disableStatsTableColumn, recalculateAggregation, recalculateAggregationWithDependencies, 
+    PROPERTIES(tc) GRID disableAggregations, disableClasses, disableStatsTableColumn, recalculateAggregation, recalculateAggregationWithDependencies, 
             recalculateAggregationWithDependents, checkAggregation
 
     OBJECTS dc=DropColumn
