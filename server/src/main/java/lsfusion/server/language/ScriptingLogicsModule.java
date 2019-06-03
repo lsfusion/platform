@@ -3835,7 +3835,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         boolean isCustomObjectClassTable = isCustomObjectClassTable(name, classIds);
 
         ValueClass[] classes = new ValueClass[classIds.size()];
-        if (!isCustomObjectClassTable(name, classIds)) {
+        if (!isCustomObjectClassTable) {
             for (int i = 0; i < classIds.size(); i++) {
                 classes[i] = findClass(classIds.get(i));
             }
