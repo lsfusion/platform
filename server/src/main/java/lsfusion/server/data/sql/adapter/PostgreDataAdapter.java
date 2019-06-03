@@ -71,8 +71,10 @@ public class PostgreDataAdapter extends DataAdapter {
             try {
                 connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
             } catch (PSQLException e) {
-                logger.error(e);
-                Thread.sleep(connectTimeout);
+                logger.error("EnsureDB error: ", e);
+                if (e.getSQLState() != null && e.getSQLState().equals("08001")) {
+                    Thread.sleep(connectTimeout);
+                } else throw e;
             }
         }
         if (cleanDB) {

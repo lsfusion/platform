@@ -1056,7 +1056,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public void synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    public void synchronizeDB() throws Exception {
+
+        adapter.ensure(false);
+
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы

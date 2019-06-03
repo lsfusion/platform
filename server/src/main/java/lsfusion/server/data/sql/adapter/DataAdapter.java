@@ -38,7 +38,7 @@ import java.util.Set;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements TypePool {
     public final static SQLSyntax debugSyntax = PostgreSQLSyntax.instance;
-    protected final static Logger logger = Logger.getLogger(DataAdapter.class);
+    protected final static Logger logger = ServerLoggers.sqlLogger;
     public final SQLSyntax syntax;
 
     public String server;
@@ -62,7 +62,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         this.password = password;
         this.connectTimeout = connectTimeout;
         this.instance = instance;
+    }
 
+    public void ensure(boolean cleanDB) throws Exception {
         ensureDB(cleanDB);
 
         ensureConnection = startConnection();
