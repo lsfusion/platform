@@ -13,6 +13,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
@@ -81,7 +82,7 @@ public class PostgreDataAdapter extends DataAdapter {
             try {
                 connect.createStatement().execute("DROP DATABASE " + dataBase);
             } catch (SQLException e) {
-                logger.error("Error creating database :", e);
+                ServerLoggers.sqlSuppLog(e);
             }
         }
 
@@ -89,7 +90,7 @@ public class PostgreDataAdapter extends DataAdapter {
             // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
             connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
         } catch (SQLException e) {
-            logger.info("Error creating database :", e);
+            ServerLoggers.sqlSuppLog(e);
         }
         connect.close();
     }
