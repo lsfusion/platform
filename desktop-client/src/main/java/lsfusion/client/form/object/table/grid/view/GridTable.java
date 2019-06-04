@@ -1,12 +1,11 @@
 package lsfusion.client.form.object.table.grid.view;
 
 import com.google.common.base.Throwables;
-import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientLogicalClass;
-import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
@@ -39,7 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.TableHeaderUI;
-import javax.swing.plaf.synth.SynthTableHeaderUI;
+import javax.swing.plaf.basic.BasicTableHeaderUI;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -219,10 +218,14 @@ public class GridTable extends ClientPropertyTable {
         };
 
         TableHeaderUI ui = getTableHeader().getUI();
-        if (ui instanceof WindowsTableHeaderUI) {
-            getTableHeader().setUI(new WindowsGridTableHeaderUI());
-        } else if (ui instanceof SynthTableHeaderUI) {
-            getTableHeader().setUI(new SynthGridTableHeaderUI());
+        if (ui instanceof BasicTableHeaderUI) {
+            // change default CellRendererPane to draw corner triangles
+            JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
+            CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
+            header.remove(oldRendererPane);
+            GridCellRendererPane newRendererPane = new GridCellRendererPane();
+            ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
+            header.add(newRendererPane);
         }
 
         tableHeader.addMouseListener(sortableHeaderManager);
@@ -1883,28 +1886,6 @@ public class GridTable extends ClientPropertyTable {
                     paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 2, -3, w, h);
                 }
             }
-        }
-    }
-
-    private class WindowsGridTableHeaderUI extends WindowsTableHeaderUI {
-        @Override
-        public void installUI(JComponent c) {
-            super.installUI(c);
-
-            header.remove(rendererPane);
-            rendererPane = new GridCellRendererPane();
-            header.add(rendererPane);
-        }
-    }
-
-    private class SynthGridTableHeaderUI extends SynthTableHeaderUI {
-        @Override
-        public void installUI(JComponent c) {
-            super.installUI(c);
-
-            header.remove(rendererPane);
-            rendererPane = new GridCellRendererPane();
-            header.add(rendererPane);
         }
     }
 
