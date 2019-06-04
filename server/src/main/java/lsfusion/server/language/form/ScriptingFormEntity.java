@@ -196,7 +196,7 @@ public class ScriptingFormEntity {
             for (ObjectEntity obj : group.getOrderObjects()) {
                 classSets.add(obj.baseClass.getResolveSet());
             }
-            return LM.findLCPByNameAndClasses(property.name, property.getSourceName(), classSets);
+            return LM.findLPByNameAndClasses(property.name, property.getSourceName(), classSets);
         }
     }
     
@@ -320,7 +320,7 @@ public class ScriptingFormEntity {
 
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
             
-            LAP property = null;
+            LAP<?, ?> property = null;
             ImOrderSet<ObjectEntity> objects = null;
             String forceIntegrationSID = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
@@ -363,7 +363,7 @@ public class ScriptingFormEntity {
                 objects = prop.mapping;
 
                 if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.FormLAPUsage) {
-                    property = LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.FormLAPUsage) pDrawUsage));
+                    LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.FormLAPUsage) pDrawUsage));
                 }
             }
 

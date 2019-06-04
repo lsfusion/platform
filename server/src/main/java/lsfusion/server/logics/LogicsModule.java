@@ -1022,43 +1022,25 @@ public abstract class LogicsModule {
     // ------------------- Алгебраические операции ----------------- //
 
     protected LP addSumProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("sum"), 2, new SumFormulaImpl())));
+        return baseLM.addSumProp();
     }
 
     protected LP addMultProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("multiply"), 2, new MultiplyFormulaImpl())));
+        return baseLM.addMultProp();
     }
 
     protected LP addSubtractProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("subtract"), 2, new SubtractFormulaImpl())));
+        return baseLM.addSubtractProp();
     }
 
     protected LP addDivideProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, new DivideFormulaImpl())));
+        return baseLM.addDivideProp();
     }
 
     // ------------------- cast ----------------- //
 
     protected <P extends PropertyInterface> LP addCastProp(DataClass castClass) {
         return baseLM.addCastProp(castClass);
-    }
-
-    // ------------------- Операции со строками ----------------- //
-
-    protected <P extends PropertyInterface> LP addSProp(int intNum) {
-        return addSProp(intNum, " ");
-    }
-
-    protected <P extends PropertyInterface> LP addSProp(int intNum, String separator) {
-        return addProperty(null, new LP<>(new StringConcatenateProperty(LocalizedString.create("{logics.join}"), intNum, separator)));
-    }
-
-    protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum) {
-        return addInsensitiveSProp(intNum, " ");
-    }
-
-    protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum, String separator) {
-        return addProperty(null, new LP<>(new StringConcatenateProperty(LocalizedString.create("{logics.join}"), intNum, separator, true)));
     }
 
     // ------------------- AND ----------------- //

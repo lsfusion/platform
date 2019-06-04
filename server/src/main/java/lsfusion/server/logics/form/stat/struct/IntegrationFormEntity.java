@@ -10,6 +10,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -91,7 +92,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
 
-            propertyDraw.group = null; // without group
+            propertyDraw.group = Group.NOGROUP; // without group
 
             if(groupObject != null && !addMapping.valuesSet().intersect(groupObject.getObjects()))
                 propertyDraw.toDraw = groupObject;

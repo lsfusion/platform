@@ -14,7 +14,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.data.expr.formula.CastFormulaImpl;
+import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
@@ -646,6 +646,31 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     protected LP addCastProp(DataClass castClass) {
         return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
+
+    @Override
+    @IdentityStrongLazy
+    protected LP addSumProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("sum"), 2, new SumFormulaImpl())));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    protected LP addMultProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("multiply"), 2, new MultiplyFormulaImpl())));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    protected LP addSubtractProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("subtract"), 2, new SubtractFormulaImpl())));
+    }
+
+    @Override
+    @IdentityStrongLazy
+    protected LP addDivideProp() {
+        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, new DivideFormulaImpl())));
+    }
+
 
     @Override
     public SessionDataProperty getAddedObjectProperty() {

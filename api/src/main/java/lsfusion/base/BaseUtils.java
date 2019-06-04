@@ -167,6 +167,24 @@ public class BaseUtils {
             result.add(map.get(element));
         return result;
     }
+//
+//    // mapList - zero-based, reverseable, size of list
+//    public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
+//        List<K> result = new ArrayList<>();
+//        for(int i=0,size=list.size();i<size;i++)
+//            result.add(list.get(mapList[i]));
+//        return result;
+//    }
+//
+    // mapList - zero-based, reverseable, size of list
+    public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
+        List<K> result = new ArrayList<>(list.size());
+        for(int i=0,size=list.size();i<size;i++)
+            result.add(null);
+        for(int i=0,size=list.size();i<size;i++)
+            result.set(mapList[i], list.get(i));
+        return result;
+    }
 
     public static <K, V> OrderedMap<K, V> mapOrder(List<? extends K> list, Map<K, ? extends V> map) {
         OrderedMap<K, V> result = new OrderedMap<>();

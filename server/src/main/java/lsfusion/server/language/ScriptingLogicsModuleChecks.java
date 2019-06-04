@@ -236,9 +236,14 @@ public class ScriptingLogicsModuleChecks {
     }
 
 
-    public void checkCIInExpr(ScriptingLogicsModule.LPContextIndependent lcp) throws ScriptingErrorLog.SemanticErrorException {
-        if (lcp != null) {
+    public void checkCIInExpr(ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
+        if (lcp instanceof ScriptingLogicsModule.LPContextIndependent) {
             errLog.emitCIInExpr(parser);
+        }
+    }
+    public void checkTLAInExpr(ScriptingLogicsModule.LPNotExpr lcp) throws ScriptingErrorLog.SemanticErrorException {
+        if (lcp instanceof ScriptingLogicsModule.LPTrivialLA) {
+            errLog.emitLAInExprError(parser);
         }
     }
 

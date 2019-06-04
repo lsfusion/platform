@@ -34,6 +34,8 @@ public class Group extends AbstractNode {
         this.canonicalName = canonicalName;
         this.caption = caption;
     }
+    
+    public static final Group NOGROUP = new Group(null, null); 
 
     public boolean system = false;
 

@@ -96,6 +96,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
 
     public Group group;
+    
+    public Group getGroup() {
+        return (group != null ? (group == Group.NOGROUP ? null : group) : getInheritedProperty().getParent());
+    }
+    public Group getNFGroup(Version version) {
+        return (group != null ? (group == Group.NOGROUP ? null : group) : getInheritedProperty().getNFParent(version));
+    }
 
     public boolean attr;
 
@@ -249,12 +256,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return ReportConstants.showIfSuffix;
         }
     };
+    
+    private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(int ID, ActionOrPropertyObjectEntity<P, ?> propertyObject) {
+    public PropertyDrawEntity(int ID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
         super(ID);
         setSID("propertyDraw" + ID);
         setIntegrationSID("propertyDraw" + ID);
         this.propertyObject = propertyObject;
+        this.inheritedProperty = inheritedProperty;
     }
 
     public DataClass getRequestInputType(SecurityPolicy policy) {
@@ -526,6 +536,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         getInheritedProperty().drawOptions.proceedDefaultDesign(propertyView);
     }
 
+    public void proceedDefaultDraw(FormEntity form) {
+        getInheritedProperty().drawOptions.proceedDefaultDraw(this, form);
+    }
+
     @Override
     public String toString() {
         return (formPath == null ? "" : formPath) + " property:" + propertyObject.toString();
@@ -670,7 +684,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // presentation info, probably should be merged with inheritDrawOptions mechanism
     public ActionOrProperty getInheritedProperty() {
-        return propertyObject.property;
+        return inheritedProperty;
     }
 
     public ActionOrProperty getSecurityProperty() {

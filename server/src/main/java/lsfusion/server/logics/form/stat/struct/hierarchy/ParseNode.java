@@ -81,7 +81,7 @@ public abstract class ParseNode {
         }
 
         public Group getParent() {
-            return property.group;
+            return property.getGroup();
         }
 
         public ParseNode createNode(Map<Group, MOrderExclSet<PGNode>> childGroupNodes, StaticDataGenerator.Hierarchy hierarchy, boolean isExclusive) {
