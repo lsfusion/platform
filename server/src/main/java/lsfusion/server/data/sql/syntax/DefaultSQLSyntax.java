@@ -36,7 +36,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         for(SQLSyntax syntax : getSyntaxes())
             if(syntax.getClassName().equals(driverName))
                 return syntax;
-        throw new RuntimeException("SQL syntax for the specified driver was not found");
+        return UnknownSQLSyntax.instance;
     }
     
     protected static String genTypePostfix(ImList<Type> types) {
