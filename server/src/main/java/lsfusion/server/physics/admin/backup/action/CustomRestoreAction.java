@@ -18,6 +18,7 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
@@ -195,7 +196,7 @@ public class CustomRestoreAction extends InternalAction {
                                 keyObject = context.getSession().addObject((ConcreteCustomClass) valueClass, keyObject);
                                 keyObject.object = keysEntry.get(k);
                             }
-                            keysMap = keysMap.addExcl(new KeyField("key" + k, valueClass instanceof CustomClass ? LongClass.instance : (Type) valueClass), keyObject);
+                            keysMap = keysMap.addExcl(new KeyField("key" + k, valueClass instanceof CustomClass ? ObjectType.instance : (Type) valueClass), keyObject);
                         }
 
                         mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
@@ -300,7 +301,7 @@ public class CustomRestoreAction extends InternalAction {
         } else if(key instanceof Integer) {
             keyType = IntegerClass.instance;
         } else {
-            keyType = LongClass.instance;
+            keyType = ObjectType.instance;
         }
         return keyType;
     }
