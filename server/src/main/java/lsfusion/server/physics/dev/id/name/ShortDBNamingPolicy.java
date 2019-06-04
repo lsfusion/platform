@@ -10,4 +10,9 @@ public class ShortDBNamingPolicy extends FixedSizeUnderscoreDBNamingPolicy {
         String name = PropertyCanonicalNameParser.getName(canonicalName);
         return super.transformActionOrPropertyCNToDBName(name);
     }
+    
+    @Override
+    public String transformTableCNToDBName(String canonicalName) {
+        return cutToMaxLength(CanonicalNameUtils.getName(canonicalName));
+    }
 }
