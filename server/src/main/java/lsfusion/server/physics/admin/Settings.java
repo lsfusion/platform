@@ -1727,7 +1727,7 @@ public class Settings implements Cloneable {
         this.maxRecursionStatsIterations = maxRecursionStatsIterations;
     }
 
-    private int savePointCountForExceptions = 1;
+    private int savePointCountForExceptions = 0;
 
     public int getSavePointCountForExceptions() {
         return savePointCountForExceptions;
