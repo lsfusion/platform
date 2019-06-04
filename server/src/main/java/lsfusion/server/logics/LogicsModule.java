@@ -2076,7 +2076,7 @@ public abstract class LogicsModule {
         addConstraint(constraint, caption, false, debugPoint);
     }
 
-    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, ImList<PropertyFollowsDebug> resolve) {
+    public <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, ImList<PropertyFollowsDebug> resolve) {
         setNotNull(lp, null, Event.APPLY, resolve);
     }
 
@@ -2095,7 +2095,7 @@ public abstract class LogicsModule {
         return property.getRevMap(mapList);
     }
 
-    protected void makeUserLoggable(SystemEventsLogicsModule systemEventsLM, LP... lps) {
+    public void makeUserLoggable(SystemEventsLogicsModule systemEventsLM, LP... lps) {
         for (LP lp : lps)
             lp.makeUserLoggable(this, systemEventsLM);
     }

@@ -6,7 +6,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -38,14 +37,12 @@ import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -108,7 +105,6 @@ import lsfusion.server.physics.admin.scheduler.SchedulerLogicsModule;
 import lsfusion.server.physics.admin.scheduler.controller.manager.Scheduler;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
-import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.*;
@@ -618,114 +614,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public void initReflectionEvents() {
-
-        try {
-            SQLSession sql = getDbManager().getThreadLocalSql();
-            boolean prevSuppressErrorLogging = sql.suppressErrorLogging;
-            try {                
-                sql.suppressErrorLogging = true;
-
-                // temp hack
-                try {
-                    getDbManager().updateReflectionStats(sql);
-                } catch (Exception ignored) {
-                    startLogger.info("Error updating stats, while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
-                    ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);
-                }
-
-                startLogger.info("Setting user logging for properties");
-                setUserLoggableProperties(sql);
-
-                startLogger.info("Setting user not null constraints for properties");
-                setNotNullProperties(sql);
-            } finally {
-                sql.suppressErrorLogging = prevSuppressErrorLogging;
-            }
-        } catch (Exception ignored) {
-            startLogger.info("Error while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
-            ServerLoggers.exInfoLogger.error("Error while initializing reflection events", ignored);
-        }
-    }
-
     // временный хак для перехода на явную типизацию
     public static boolean useReparse = false;
     public static final ThreadLocal<ImMap<String, String>> reparse = new ThreadLocal<>();
-
-    private void setUserLoggableProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
-        Map<String, String> changes = getDbManager().getPropertyCNChanges(sql);
-        
-        Integer maxStatsProperty = null;
-        try {
-            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
-        } catch (Exception ignored) {
-        }
-
-        LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
-        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.addProperty("overStatsProperty", reflectionLM.overStatsProperty.getExpr(key));
-        query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
-        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
-
-        for (ImMap<Object, Object> values : result.valueIt()) {
-            String canonicalName = values.get("CNProperty").toString().trim();
-            if (changes.containsKey(canonicalName)) {
-                canonicalName = changes.get(canonicalName);
-            }
-            LP<?> lcp = null;
-            try {
-                lcp = findProperty(canonicalName);
-            } catch (Exception ignored) {
-            }
-            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
-                Integer statsProperty = (Integer) values.get("overStatsProperty");
-                statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
-                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
-                    LM.makeUserLoggable(systemEventsLM, lcp);
-                }
-            }            
-        }
-    }
-
-    public Integer getStatsProperty (Property property) {
-        Integer statsProperty = null;
-        if (property instanceof AggregateProperty) {
-            StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
-            if (classStats != null && classStats.getRows() != null)
-                statsProperty = classStats.getRows().getCount();
-        }
-        return statsProperty;
-    }
-
-    private void setNotNullProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
-        
-        LP isProperty = LM.is(reflectionLM.property);
-        ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.and(reflectionLM.isSetNotNullProperty.getExpr(key).getWhere());
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
-
-        for (ImMap<Object, Object> values : result.valueIt()) {
-            LP<?> prop = findProperty(values.get("CNProperty").toString().trim());
-            if(prop != null) {
-                prop.property.reflectionNotNull = true;
-                LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
-            }
-        }
-    }
-
-    private void finishLogInit() {
-        // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
-        // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь
-        for (Property property : getProperties()) {
-            finishLogInit(property);
-        }
-    }
 
     public <P extends PropertyInterface> void finishLogInit(Property property) {
         if (property.isLoggable()) {
