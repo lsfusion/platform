@@ -734,12 +734,11 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 	$points = new ArrayList<>(); 
 	String alias = null;
 	LocalizedString caption = null;
-    FormLAPUsage lpUsage = null;
-    List<ResolveClassSet> signature = null;
+    AbstractFormActionOrPropertyUsage lpUsage = null;
 }
 	:	{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
 		(		
-			(id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })? mappedProp=formMappedProperty
+			mappedProp=formMappedProperty
 			{
         		$properties.add($mappedProp.propUsage);
 			} 
@@ -747,16 +746,21 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 		    (
 		    	(id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
 				EQ
-				(	expr=formExprDeclaration { signature = $expr.signature; }
+				(   mappedProp = formMappedPredefinedOrAction // formMappedProperty without simple f(a,b) - formExprDeclaration will proceed this (otherwise x=f(a,b)*g(a,b) will be parsed as x=f(a,b))
+                    { lpUsage = $mappedProp.propUsage; }                        
+				|   expr=formExprOrTrivialLADeclaration
 				    {
                         if(inMainParseState()) {
-                            lpUsage = self.checkPropertyIsNew(new FormLPUsage($expr.property, $expr.mapping, signature));
+                            if($expr.fu != null)
+                                lpUsage = $expr.fu;
+                            else // we don't need checkPropertyIsNew because it is checked in makeActionOrPropertyPublic(FormLAPUsage)
+                                lpUsage = new FormLPUsage($expr.property, $expr.mapping, $expr.signature);
                         }
 				    }
-				|	action=formActionDeclaration { signature = $action.signature; }
+				|	action=formActionDeclaration
 				    {
                         if(inMainParseState()) {
-                            lpUsage = new FormLAUsage($action.action, $action.mapping, signature);
+                            lpUsage = new FormLAUsage($action.action, $action.mapping, $action.signature);
                         }
 				    })
 				)
@@ -773,35 +777,40 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 		(','
             { alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
             (		
-                    (id=simpleNameOrWithCaption EQ { alias = $id.name; caption = $id.caption; })? mappedProp=formMappedProperty
-                    {
-                        $properties.add($mappedProp.propUsage);
-                    } 
-                | 	
-                    (
+                mappedProp=formMappedProperty
+                {
+                    $properties.add($mappedProp.propUsage);
+                } 
+            | 	
+                (
                     (id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
                     EQ
-                    (	expr=formExprDeclaration { signature = $expr.signature; }
+                    (   mappedProp = formMappedPredefinedOrAction // formMappedProperty without simple f(a,b) - formExprDeclaration will proceed this (otherwise x=f(a,b)*g(a,b) will be parsed as x=f(a,b))
+                        { lpUsage = $mappedProp.propUsage; }                        
+                    |   expr=formExprOrTrivialLADeclaration
                         {
                             if(inMainParseState()) {
-                                lpUsage = self.checkPropertyIsNew(new FormLPUsage($expr.property, $expr.mapping, signature));
+                                if($expr.fu != null)
+                                    lpUsage = $expr.fu;
+                                else
+                                    lpUsage = new FormLPUsage($expr.property, $expr.mapping, $expr.signature);
                             }
                         }
-                    |	action=formActionDeclaration { signature = $action.signature; }
+                    |	action=formActionDeclaration
                         {
                             if(inMainParseState()) {
-                                lpUsage = new FormLAUsage($action.action, $action.mapping, signature);
+                                lpUsage = new FormLAUsage($action.action, $action.mapping, $action.signature);
                             }
-                        })                    
+                        })
                     )
                     {
                         $properties.add(lpUsage);
-                    }
-            )
+                    } 
+                )
             opts=formPropertyOptionsList
             {
                 $aliases.add(alias);
-    			$captions.add(caption);
+                $captions.add(caption);
                 $options.add($opts.options);
             }
 		)*
@@ -861,6 +870,16 @@ formMappedProperty returns [BaseFormActionOrPropertyUsage propUsage]
     $propUsage.setMapping($objects.ids); // // need this because mapping is parsed after usage
 }
 	:	pu=formPropertyUsage[null] { $propUsage = $pu.propUsage; }
+		'('
+			objects=idList
+		')'
+	;
+
+formMappedPredefinedOrAction returns [BaseFormActionOrPropertyUsage propUsage] // actually FormPredefinedUsage or FormActionUsage 
+@after {
+    $propUsage.setMapping($objects.ids); // // need this because mapping is parsed after usage
+}
+	:	pu=formPredefinedOrActionUsage[null] { $propUsage = $pu.propUsage; }
 		'('
 			objects=idList
 		')'
@@ -927,7 +946,6 @@ formPropertyUList[List<String> mapping] returns [List<String> aliases, List<Loca
 		)*
 	;
 
-
 formPropertyUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage propUsage]
 @init {
    String systemName = null;
@@ -935,8 +953,19 @@ formPropertyUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage p
 }
 	:	fpp = actionOrPropertyUsage { $propUsage = $fpp.propUsage.createFormUsage(mapping); } 
 	    |	
-	    (
-			(
+	    fpd = formPredefinedUsage[mapping] { $propUsage = $fpd.propUsage; }
+   ;
+   
+formPredefinedUsage[List<String> mapping] returns [FormPredefinedUsage propUsage]
+@init {
+   String systemName = null;
+   List<String> signature = null;
+}
+@after {
+	$propUsage = new FormPredefinedUsage(new NamedPropertyUsage(systemName, signature), mapping);
+}
+    :
+        (
 				(	cid='NEW'		{ systemName = $cid.text; }
 				|	cid='NEWEDIT'	{ systemName = $cid.text; }
 				|	cid='EDIT'		{ systemName = $cid.text; }
@@ -945,8 +974,14 @@ formPropertyUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage p
 			)
 		|	cid='VALUE'		{ systemName = $cid.text; }
 		|	cid='DELETE'	{ systemName = $cid.text; }
-		) { $propUsage = new FormPredefinedUsage(new NamedPropertyUsage(systemName, signature), mapping); }
-   ;
+;
+
+formPredefinedOrActionUsage[List<String> mapping] returns [BaseFormActionOrPropertyUsage propUsage] // actually FormPredefinedUsage or FormActionUsage
+	:	('ACTION' pu = propertyUsage { $propUsage = new ActionUsage($pu.propUsage).createFormUsage(mapping); }) 
+	    |	
+	    fpd = formPredefinedUsage[mapping] { $propUsage = $fpd.propUsage; }
+
+;
 
 actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
 @init {
@@ -1075,6 +1110,28 @@ formExprDeclaration returns [LP property, ImOrderSet<String> mapping, List<Resol
 	:	expr=propertyExpression[context, false] { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.getLP(); } }
 	;
 
+formExprOrTrivialLADeclaration returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, FormActionOrPropertyUsage fu]
+@init {
+	List<TypedParameter> context = new ArrayList<>();
+	if (inMainParseState()) {
+		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
+	}
+}
+@after {
+	if (inMainParseState()) {
+	    if($expr.la != null)
+	        $fu = $expr.la.action;
+	    else { 
+	        self.getChecks().checkNecessaryProperty($expr.property); 
+            $property = $expr.property.getLP();
+            $mapping = self.getUsedNames(context, $expr.property.usedParams);
+            $signature = self.getUsedClasses(context, $expr.property.usedParams);
+        }  
+	}	
+}
+	:	expr=propertyExpressionOrTrivialLA[context]
+	;
+
 formActionDeclaration returns [LA action, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
@@ -1192,7 +1249,7 @@ scope {
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[context, dynamic, false] { $property = $ciPD.property; $signature = $ciPD.signature; }
-	|	exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
+	|	exprOrCIPD=propertyExpressionOrContextIndependent[context, dynamic, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
                                                     else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $signature = self.getClassesFromTypedParams(context); $property = $exprOrCIPD.property.getLP(); } }}
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inMainParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
@@ -1205,11 +1262,21 @@ actionOrPropertyDeclaration returns [String name, LocalizedString caption, List<
 
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-    :   exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic, false] { $property = $exprOrCIPD.property; }
-        { if(inMainParseState()) { self.checkCIInExpr($exprOrCIPD.ci); } }
+    :   exprOrCIPD=propertyExpressionOrContextIndependent[context, dynamic, false] { $property = $exprOrCIPD.property; }
+        { if(inMainParseState()) { self.checkNotExprInExpr($exprOrCIPD.property, $exprOrCIPD.ci); } }
 ;
 
-propertyExpressionOrContextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPContextIndependent ci]
+propertyExpressionOrContextIndependent[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPContextIndependent ci]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic, needFullContext] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $ci = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
+;
+
+propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+        { if(inMainParseState()) { $la = self.checkCIInExpr($exprOrNotExpr.ci); } }
+;
+
+propertyExpressionOrNot[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
@@ -1217,15 +1284,20 @@ propertyExpressionOrContextIndependentPD[List<TypedParameter> context, boolean d
     if (inMainParseState()) {
         if($ci == null)
             $property = self.propertyExpressionCreated($property, context, needFullContext);
-            
-        self.propertyDefinitionCreated($ci != null ? $ci.property : $property.getLP(), point);
+
+        LP propertyCreated = null;
+        if($property != null)
+            propertyCreated = $property.getLP();
+        else if(!($ci instanceof LPTrivialLA))
+            propertyCreated = ((LPContextIndependent)$ci).property;
+        self.propertyDefinitionCreated(propertyCreated, point);
     }
 }
 	:	pe=ifPE[context, dynamic] { $property = $pe.property; $ci = $pe.ci; }
 	;
 
 
-ifPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+ifPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 }
@@ -1235,12 +1307,12 @@ ifPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams proper
 	}
 } 
 	:	firstExpr=orPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-        ( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+        ( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($firstExpr.property, $ci); } }
         'IF' nextExpr=orPE[context, dynamic] { props.add($nextExpr.property); }
-        { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+        { if(inMainParseState()) { self.checkNotExprInExpr($nextExpr.property, $nextExpr.ci); } })*
 	;
 
-orPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+orPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 }
@@ -1250,12 +1322,12 @@ orPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams proper
 	}
 } 
 	:	firstExpr=xorPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($firstExpr.property, $ci); } }
 		'OR' nextExpr=xorPE[context, dynamic] { props.add($nextExpr.property); }
-		 { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		 { if(inMainParseState()) { self.checkNotExprInExpr($nextExpr.property, $nextExpr.ci); } })*
 	;
 
-xorPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+xorPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 }
@@ -1265,12 +1337,12 @@ xorPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams prope
 	}
 } 
 	:	firstExpr=andPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($firstExpr.property, $ci); } }
 		'XOR' nextExpr=andPE[context, dynamic] { props.add($nextExpr.property); }
-		{ if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		{ if(inMainParseState()) { self.checkNotExprInExpr($nextExpr.property, $nextExpr.ci); } })*
 	;
 
-andPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+andPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 }
@@ -1280,12 +1352,12 @@ andPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams prope
 	}
 }
 	:	firstExpr=notPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($firstExpr.property, $ci); } }
 		'AND' nextExpr=notPE[context, dynamic] { props.add($nextExpr.property); }
-        { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+        { if(inMainParseState()) { self.checkNotExprInExpr($nextExpr.property, $nextExpr.ci); } })*
 	;
 
-notPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+notPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	boolean notWas = false;
 }
@@ -1294,11 +1366,11 @@ notPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams prope
 		$property = self.addScriptedNotProp($notExpr.property);  
 	}
 }
-	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } { if(inMainParseState()) { self.checkCIInExpr($notExpr.ci); } }
+	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } { if(inMainParseState()) { self.checkNotExprInExpr($notExpr.property, $notExpr.ci); } }
 	|	expr=equalityPE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
-equalityPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+equalityPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	LPWithParams leftProp = null, rightProp = null;
 	String op = null;
@@ -1311,14 +1383,14 @@ equalityPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams 
 	}
 }
 	:	lhs=relationalPE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($lhs.property, $ci); } }
 		(operand=EQ_OPERAND { op = $operand.text; } | operand=EQ { op = $operand.text; })
 		rhs=relationalPE[context, dynamic] { rightProp = $rhs.property; }
-		{ if(inMainParseState()) { self.checkCIInExpr($rhs.ci); } })?
+		{ if(inMainParseState()) { self.checkNotExprInExpr($rhs.property, $rhs.ci); } })?
 	;
 
 
-relationalPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+relationalPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	LPWithParams leftProp = null, rightProp = null;
 	LP mainProp = null;
@@ -1336,16 +1408,16 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 }
 	:	lhs=likePE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
 		(
-			(   { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+			(   { if(inMainParseState()) { $ci = self.checkNotExprInExpr($lhs.property, $ci); } }
 			    operand=relOperand { op = $operand.text; }
 			    rhs=likePE[context, dynamic] { rightProp = $rhs.property; }
-			    { if(inMainParseState()) { self.checkCIInExpr($rhs.ci); } }
+			    { if(inMainParseState()) { self.checkNotExprInExpr($rhs.property, $rhs.ci); } }
 			)
 		)?
 	;
 
 
-likePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+likePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	LPWithParams leftProp = null, rightProp = null;
 }
@@ -1358,13 +1430,13 @@ likePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams prop
 	}
 }
 	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($lhs.property, $ci); } }
 		'LIKE'
 		rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; }
-        { if(inMainParseState()) { self.checkCIInExpr($rhs.ci); } })?
+        { if(inMainParseState()) { self.checkNotExprInExpr($rhs.property, $rhs.ci); } })?
 	;
 
-additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 	List<String> ops = new ArrayList<>();
@@ -1375,13 +1447,13 @@ additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 	}
 }
 	:	firstExpr=additivePE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($firstExpr.property, $ci); } }
 		(operand=ADDOR_OPERAND nextExpr=additivePE[context, dynamic] { ops.add($operand.text); props.add($nextExpr.property); }
-        { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } }))*
+        { if(inMainParseState()) { self.checkNotExprInExpr($nextExpr.property, $nextExpr.ci); } }))*
 	;
 	
 	
-additivePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+additivePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 	List<String> ops = new ArrayList<>();
@@ -1392,14 +1464,14 @@ additivePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams 
 	}
 }
 	:	firstExpr=multiplicativePE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($firstExpr.property, $ci); } }
 		(operand=PLUS | operand=MINUS) { ops.add($operand.text); }
 		nextExpr=multiplicativePE[context, dynamic] { props.add($nextExpr.property); }
-		{ if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		{ if(inMainParseState()) { self.checkNotExprInExpr($nextExpr.property, $nextExpr.ci); } })*
 	;
 		
 	
-multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 	List<String> ops = new ArrayList<>();
@@ -1410,13 +1482,13 @@ multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LPWithP
 	}
 }
 	:	firstExpr=unaryMinusPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($firstExpr.property, $ci); } }
 		operand=multOperand { ops.add($operand.text); }
 		nextExpr=unaryMinusPE[context, dynamic] { props.add($nextExpr.property); }
-		{ if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		{ if(inMainParseState()) { self.checkNotExprInExpr($nextExpr.property, $nextExpr.ci); } })*
 	;
 
-unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci] 
+unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci] 
 @init {
 	boolean minusWas = false;
 }
@@ -1425,12 +1497,12 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkCIInExpr($expr.ci); } }
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkNotExprInExpr($expr.property, $expr.ci); } }
 	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; $ci = $simpleExpr.ci; }
 	;
 
 		 
-postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci] 
+postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci] 
 @init {	
 	boolean hasPostfix = false;
 	Boolean type = null;
@@ -1445,7 +1517,7 @@ postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LPWithPar
 }
 	:	expr=simplePE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 		(
-		    { if(inMainParseState()) { self.checkCIInExpr($expr.ci); } }
+		    { if(inMainParseState()) { $ci = self.checkNotExprInExpr($expr.property, $ci); } }
 		    (
 			    '[' index=uintLiteral ']' { hasPostfix = true; }
                 |
@@ -1456,13 +1528,13 @@ postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LPWithPar
 	;		 
 
 		 
-simplePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+simplePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 	:	'(' expr=propertyExpression[context, dynamic] ')' { $property = $expr.property; } 
 	|	primitive=expressionPrimitive[context, dynamic] { $property = $primitive.property; $ci = $primitive.ci; } 
 	;
 
 	
-expressionPrimitive[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+expressionPrimitive[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 	:	param=singleParameter[context, dynamic] { $property = $param.property; }
 	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
@@ -1479,13 +1551,13 @@ singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithPa
 	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
 	;
 	
-expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
+expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @after {
 	if (inMainParseState() && $ci == null) {
 		self.checkPropertyValue($property.getLP());
 	}
 }
-	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
+	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; $ci = $joinDef.la; } 
 	|	multiDef=multiPropertyDefinition[context, dynamic] { $property = $multiDef.property; }
 	|	overDef=overridePropertyDefinition[context, dynamic] { $property = $overDef.property; }
 	|	ifElseDef=ifElsePropertyDefinition[context, dynamic] { $property = $ifElseDef.property; }
@@ -1520,7 +1592,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
 
-joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPTrivialLA la]
 @init {
 	boolean isInline = false;
 	boolean ci = false;
@@ -1531,7 +1603,9 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 		if (isInline) {
 			$property = self.addScriptedJProp(true, $iProp.property, $exprList.props, usedContext, ci);
 		} else {
-			$property = self.addScriptedJProp(true, $uProp.propUsage, $exprList.props, context);	
+		    Pair<LPWithParams, LPTrivialLA> actionOrProperty = self.addScriptedJProp(true, $uProp.propUsage, $exprList.props, context);
+            $property = actionOrProperty.first;
+            $la = actionOrProperty.second;	
 		}
 	}
 }
@@ -2282,7 +2356,7 @@ inlineProperty[List<TypedParameter> context] returns [LP property, List<Integer>
 	}
 }
 	:	'[' 	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
-				|   exprOrCIPD=propertyExpressionOrContextIndependentPD[newContext, true, false] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
+				|   exprOrCIPD=propertyExpressionOrContextIndependent[newContext, true, false] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
                                                                     else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
 				)
 		']'
@@ -3649,11 +3723,11 @@ scope {
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+='
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
-        expr=propertyExpressionOrContextIndependentPD[context, false, when == null] // for abstract VALUE will also support patch / explicit classes params (because param classes are also explicitly set in property definition, for WHEN will keep as it is)  
+        expr=propertyExpressionOrContextIndependent[context, false, when == null] // for abstract VALUE will also support patch / explicit classes params (because param classes are also explicitly set in property definition, for WHEN will keep as it is)  
         { 
             property = $expr.property;
             if(inMainParseState()) {
-                self.checkCIInExpr($expr.ci);
+                self.checkNotExprInExpr($expr.property,$expr.ci);
                 if(when == null)
                     property = self.checkAndSetExplicitClasses(property, self.getClassesFromTypedParams(context)); // just like in property declaration we need explicit classes (that will add implicit IF paramater IS class even if there is no parameter usage in expression)
             }

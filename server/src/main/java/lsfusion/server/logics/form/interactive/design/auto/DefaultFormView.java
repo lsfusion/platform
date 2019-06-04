@@ -372,7 +372,7 @@ public class DefaultFormView extends FormView {
         } else {
             // иерархическая структура контейнеров групп: каждый контейнер группы - это CONTAINERH,
             // в который сначала добавляется COLUMNS для свойств этой группы, а затем - контейнеры подгрупп
-            propertyContainer = getPropGroupContainer(drawEntity, propertyDraw.entity.group, version);
+            propertyContainer = getPropGroupContainer(drawEntity, propertyDraw.entity.getNFGroup(version), version);
         }
 
         propertyContainer.add(propertyDraw, version);

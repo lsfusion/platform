@@ -300,8 +300,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "BY clause in GROUP operator cannot be used in expressions");
     }
 
+    public void emitLAInExprError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "actions cannot be used in expressions");
+    }
+
     public void emitInputDataClassError(ScriptParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, format("input class must be a built-in class, '%s' class is given", className));
+        emitSimpleError(parser, format("input class must be a built-in class, '%s' class is given", className));    
     }
 
     public void emitIncompatibleTypesError(ScriptParser parser, String propType) throws SemanticErrorException {
