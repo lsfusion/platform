@@ -10,12 +10,9 @@ import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
-import lsfusion.server.data.value.DataObject;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -23,7 +20,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
@@ -55,7 +51,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static lsfusion.base.SystemUtils.getRevision;
 
 public class ReflectionManager extends LogicsManager implements InitializingBean {
 
@@ -584,7 +579,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotation, 
-                            (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty((Property)actionOrProperty))));
+                            (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : DBManager.getStatsProperty((Property)actionOrProperty))));
                 }
             }
 

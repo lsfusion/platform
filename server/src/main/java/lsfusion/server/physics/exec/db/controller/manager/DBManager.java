@@ -2,6 +2,7 @@ package lsfusion.server.physics.exec.db.controller.manager;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
@@ -18,6 +19,7 @@ import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.lambda.SQLCallable;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.language.MigrationScriptLexer;
 import lsfusion.server.language.MigrationScriptParser;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -81,7 +83,9 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
+import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
@@ -147,8 +151,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private Integer dbMaxIdLength;
 
     private BaseLogicsModule LM;
-
     private ReflectionLogicsModule reflectionLM;
+    private SystemEventsLogicsModule systemEventsLM;
 
     private long systemUser;
     public long serverComputer;
@@ -168,6 +172,110 @@ public class DBManager extends LogicsManager implements InitializingBean {
         super(DBMANAGER_ORDER);
 
         threadLocalSql = new ThreadLocal<>();
+    }
+
+    public void initReflectionEvents() {
+        assert LM == null && reflectionLM == null;
+        LM = businessLogics.LM;
+        reflectionLM = businessLogics.reflectionLM;
+        systemEventsLM = businessLogics.systemEventsLM;
+
+        try {
+            SQLSession sql = getThreadLocalSql();
+            boolean prevSuppressErrorLogging = sql.suppressErrorLogging;
+            try {                
+                sql.suppressErrorLogging = true;
+
+                try {
+                    updateReflectionStats(sql);
+                } catch (Exception ignored) {
+                    startLogger.info("Error updating stats, while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
+                    ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);
+                }
+
+                startLogger.info("Setting user logging for properties");
+                setUserLoggableProperties(sql);
+
+                startLogger.info("Setting user not null constraints for properties");
+                setNotNullProperties(sql);
+            } finally {
+                sql.suppressErrorLogging = prevSuppressErrorLogging;
+            }
+        } catch (Exception ignored) {
+            startLogger.info("Error while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
+            ServerLoggers.exInfoLogger.error("Error while initializing reflection events", ignored);
+        } finally {
+            LM = null;
+            reflectionLM = null;
+            systemEventsLM = null;
+        }
+    }
+
+    private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
+        
+        Integer maxStatsProperty = null;
+        try {
+            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+        } catch (Exception ignored) {
+        }
+
+        LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
+        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("overStatsProperty", reflectionLM.overStatsProperty.getExpr(key));
+        query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
+
+        for (ImMap<Object, Object> values : result.valueIt()) {
+            String canonicalName = values.get("CNProperty").toString().trim();
+            if (changes.containsKey(canonicalName)) {
+                canonicalName = changes.get(canonicalName);
+            }
+            LP<?> lcp = null;
+            try {
+                lcp = businessLogics.findProperty(canonicalName);
+            } catch (Exception ignored) {
+            }
+            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
+                Integer statsProperty = (Integer) values.get("overStatsProperty");
+                statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
+                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
+                    LM.makeUserLoggable(systemEventsLM, lcp);
+                }
+            }            
+        }
+    }
+
+    public static Integer getStatsProperty (Property property) {
+        Integer statsProperty = null;
+        if (property instanceof AggregateProperty) {
+            StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
+            if (classStats != null && classStats.getRows() != null)
+                statsProperty = classStats.getRows().getCount();
+        }
+        return statsProperty;
+    }
+
+    private void setNotNullProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        
+        LP isProperty = LM.is(reflectionLM.property);
+        ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.and(reflectionLM.isSetNotNullProperty.getExpr(key).getWhere());
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
+
+        for (ImMap<Object, Object> values : result.valueIt()) {
+            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
+            if(prop != null) {
+                prop.property.reflectionNotNull = true;
+                LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
+            }
+        }
     }
 
     public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
@@ -299,18 +407,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    // temp hack
-    public ImMap<String, Integer> updateReflectionStats(SQLSession sql) throws SQLException, SQLHandledException {
-        assert LM == null && reflectionLM == null;
-        LM = businessLogics.LM;
-        reflectionLM = businessLogics.reflectionLM;
-        
-        try {
-            return updateStats(sql, true);
-        } finally {
-            LM = null;
-            reflectionLM = null;                    
-        }
+    private ImMap<String, Integer> updateReflectionStats(SQLSession sql) throws SQLException, SQLHandledException {
+        return updateStats(sql, true);
     }
     
     private ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
@@ -604,6 +702,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     protected void onInit(LifecycleEvent event) {
         this.LM = businessLogics.LM;
         this.reflectionLM = businessLogics.reflectionLM;
+        this.systemEventsLM = businessLogics.systemEventsLM;
         try {
             if(getSyntax().getSyntaxType() == SQLSyntaxType.MSSQL)
                 Expr.useCasesCount = 5;
@@ -1145,8 +1244,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         if(oldKey == null)
                             throw new RuntimeException("Key " + key + " is not found in table : " + oldTable + ". New table : " + table);
                         if (!(key.type.equals(oldKey.type))) {
-                            sql.modifyColumn(table, key, oldKey.type);
                             startLogger.info("Changing type of key column " + key + " in table " + table + " from " + oldKey.type + " to " + key.type);
+                            sql.modifyColumn(table, key, oldKey.type);
                         }
                     }
                 }
@@ -1212,7 +1311,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         Savepoint savepoint = null;
                         try {
                             savepoint = connection.setSavepoint();
-                            sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.getDBName(), newName);
+                            String oldName = oldProperty.getDBName();
+                            startLogger.info("Deleting column " + oldName + " " + "(renaming to " + newName + ")  in table " + oldProperty.tableName);
+                            sql.renameColumn(oldProperty.getTableName(syntax), oldName, newName);
                             columnsToDrop.put(newName, oldProperty.tableName);
                         } catch (PSQLException e) { // колонка с новым именем уже существует
                             if(savepoint != null)
