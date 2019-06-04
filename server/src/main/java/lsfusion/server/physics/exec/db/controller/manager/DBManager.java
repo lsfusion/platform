@@ -1244,8 +1244,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         if(oldKey == null)
                             throw new RuntimeException("Key " + key + " is not found in table : " + oldTable + ". New table : " + table);
                         if (!(key.type.equals(oldKey.type))) {
-                            sql.modifyColumn(table, key, oldKey.type);
                             startLogger.info("Changing type of key column " + key + " in table " + table + " from " + oldKey.type + " to " + key.type);
+                            sql.modifyColumn(table, key, oldKey.type);
                         }
                     }
                 }
@@ -1311,7 +1311,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         Savepoint savepoint = null;
                         try {
                             savepoint = connection.setSavepoint();
-                            sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.getDBName(), newName);
+                            String oldName = oldProperty.getDBName();
+                            startLogger.info("Deleting column " + oldName + " " + "(renaming to " + newName + ")  in table " + oldProperty.tableName);
+                            sql.renameColumn(oldProperty.getTableName(syntax), oldName, newName);
                             columnsToDrop.put(newName, oldProperty.tableName);
                         } catch (PSQLException e) { // колонка с новым именем уже существует
                             if(savepoint != null)
