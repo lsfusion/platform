@@ -146,10 +146,28 @@ public class ProcessTemplateAction extends InternalAction {
                     String[] tableRows = entry.value.split(entry.rowSeparator);
                     int i = rowIndex;
                     boolean firstRow = true;
+
+                    String fontFamily = null;
+                    Integer fontSize = null;
+                    String color = null;
+                    boolean bold = false;
+                    boolean italic = false;
+                    XWPFParagraph templateParagraph = row.getCell(0).getParagraphArray(0);
+                    if(templateParagraph != null) {
+                        XWPFRun templateRun = templateParagraph.getRuns().get(0);
+                        if(templateRun != null) {
+                            fontFamily = templateRun.getFontFamily();
+                            fontSize = templateRun.getFontSize();
+                            color = templateRun.getColor();
+                            bold = templateRun.isBold();
+                            italic = templateRun.isItalic();
+                        }
+                    }
+
                     for (String tableRow : tableRows) {
                         XWPFTableRow newRow = firstRow ? tbl.getRow(i) : tbl.insertNewTableRow(i);
                         int j = 0;
-                        for (CellValue cellValue : parseTableRow(tableRow, entry.columnSeparator, row)) {
+                        for (CellValue cellValue : parseTableRow(tableRow, entry.columnSeparator, row, fontFamily, fontSize, color, bold, italic)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
                             XWPFParagraph paragraph = newCell.getParagraphs().get(0);
                             if(cellValue.alignment != null) paragraph.setAlignment(cellValue.alignment);
@@ -292,25 +310,7 @@ public class ProcessTemplateAction extends InternalAction {
         }
     }
 
-    private List<CellValue> parseTableRow(String tableRow, String columnSeparator, XWPFTableRow templateRow) {
-        String fontFamily = null;
-        Integer fontSize = null;
-        String color = null;
-        boolean bold = false;
-        boolean italic = false;
-
-        XWPFParagraph templateParagraph = templateRow.getCell(0).getParagraphArray(0);
-        if(templateParagraph != null) {
-            XWPFRun templateRun = templateParagraph.getRuns().get(0);
-            if(templateRun != null) {
-                fontFamily = templateRun.getFontFamily();
-                fontSize = templateRun.getFontSize();
-                color = templateRun.getColor();
-                bold = templateRun.isBold();
-                italic = templateRun.isItalic();
-            }
-        }
-
+    private List<CellValue> parseTableRow(String tableRow, String columnSeparator, XWPFTableRow templateRow, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic) {
         List<CellValue> result = new ArrayList<>();
         int cellIndex = 0;
         for (String tableCell : tableRow.split(columnSeparator)) {
