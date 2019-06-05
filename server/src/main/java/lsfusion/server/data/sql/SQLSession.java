@@ -946,16 +946,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + field.getDeclare(syntax, env), env.finish()); //COLUMN
     }
 
-    public void dropColumn(NamedTable table, Field field) throws SQLException {
-        innerDropColumn(table.getName(syntax), field.getName(syntax));
+    public void dropColumn(NamedTable table, Field field, boolean ifExists) throws SQLException {
+        innerDropColumn(table.getName(syntax), field.getName(syntax), ifExists);
     }
 
-    public void dropColumn(String table, String field) throws SQLException {
-        innerDropColumn(syntax.getTableName(table), syntax.getFieldName(field));
+    public void dropColumn(String table, String field, boolean ifExists) throws SQLException {
+        innerDropColumn(syntax.getTableName(table), syntax.getFieldName(field), ifExists);
     }
 
-    private void innerDropColumn(String table, String field) throws SQLException {
-        executeDDL("ALTER TABLE " + table + " DROP COLUMN " + field);
+    private void innerDropColumn(String table, String field, boolean ifExists) throws SQLException {
+        executeDDL("ALTER TABLE " + table + " DROP COLUMN " + (ifExists ? "IF EXISTS " : "" ) + field);
     }
 
     public void renameColumn(String table, String columnName, String newColumnName) throws SQLException {
