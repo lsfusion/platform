@@ -2240,8 +2240,9 @@ public class Settings implements Cloneable {
     public void setDefaultCompareForStringContains(boolean defaultCompareForStringContains) {
         this.defaultCompareForStringContains = defaultCompareForStringContains;
     }
-    
-    private boolean disableCorrelations = true; // enable'ить только при включенном sinpleApplyRemoveClasses (если включен singleApply) иначе при включенном singleApply изменения корреляции применятся, а в изменениях где корреляция используется ее никто не обновит
+
+    // should be enabled only when there will be constraint that AGGR property should not be changed
+    private boolean disableCorrelations = true; // enable onl;y when sinpleApplyRemoveClasses is on (if singleApply is on), otherwise when singleApply is on, aggregation property changes (correlations) are applied, and in changes where this aggregation properties are used, no one refresh their values
 
     public boolean isDisableCorrelations() {
         if(SystemProperties.inTestMode)

@@ -5,10 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
@@ -342,10 +339,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             if (editAction != null)
                 return editAction;
         }
-        
-        ActionMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
+
+        ActionOrProperty<P> editProperty = getEditProperty();
+        ActionMapImplement<?, P> editActionImplement = editProperty.getEditAction(actionId);
         if(editActionImplement != null)
-            return editActionImplement.mapObjects(propertyObject.mapping);
+            return editActionImplement.mapObjects(getEditMapping());
 
         // default implementations for group change and change wys
         if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
@@ -358,9 +356,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
                         return editAction;
                     else {
-                        ActionMapImplement<?, P> defaultWYSAction = propertyObject.property.getDefaultWYSAction();
+                        ActionMapImplement<?, P> defaultWYSAction = editProperty.getDefaultWYSAction();
                         if(defaultWYSAction != null) // assert getSimpleRequestInputType != null
-                            return defaultWYSAction.mapObjects(propertyObject.mapping);
+                            return defaultWYSAction.mapObjects(getEditMapping());
                     }
                 }
             }
@@ -414,9 +412,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         editActions.put(actionSID, editAction);
     }
 
-
+    private ActionOrProperty<P> getEditProperty() {
+        return propertyObject.property;
+    }     
+    private ImRevMap<P, ObjectEntity> getEditMapping() {
+        return propertyObject.mapping;
+    }     
+    
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getInheritedProperty().getContextMenuBindings();
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEditProperty().getContextMenuBindings(); 
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
@@ -444,7 +448,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public Map<KeyStroke, String> getKeyBindings() {
-        ImMap<KeyStroke, String> propertyKeyBindings = getInheritedProperty().getKeyBindings();
+        ImMap<KeyStroke, String> propertyKeyBindings = getEditProperty().getKeyBindings();
         if (propertyKeyBindings.isEmpty()) {
             return keyBindings;
         }
@@ -457,7 +461,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public String getMouseBinding() {
-        return mouseBinding != null ? mouseBinding : getInheritedProperty().getMouseBinding();
+        return mouseBinding != null ? mouseBinding : getEditProperty().getMouseBinding();
     }
 
     @LongMutable
