@@ -1401,7 +1401,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             MSet<ImplementTable> mPackTables = SetFact.mSet();
             for (Pair<String, String> dropColumn : mDropColumns.immutable()) {
                 startLogger.info("Dropping column " + dropColumn.second + " from table " + dropColumn.first);
-                sql.dropColumn(dropColumn.first, dropColumn.second);
+                sql.dropColumn(dropColumn.first, dropColumn.second, Settings.get().isStartServerAnyWay());
                 ImplementTable table = (ImplementTable) newDBStructure.getTable(dropColumn.first);
                 if (table != null) mPackTables.add(table);
             }
@@ -2282,7 +2282,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         SQLSession sql = getThreadLocalSql();
         sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
         try {
-            sql.dropColumn(tableName, columnName);
+            sql.dropColumn(tableName, columnName, Settings.get().isStartServerAnyWay());
             ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
             if (table != null)
                 sql.packTable(table, OperationOwner.unknown, TableOwner.global);
