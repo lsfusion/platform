@@ -92,6 +92,13 @@ public class PostgreDataAdapter extends DataAdapter {
         } catch (SQLException e) {
             ServerLoggers.sqlSuppLog(e);
         }
+
+        try {
+            connect.createStatement().execute("ALTER DATABASE " + dataBase + " SET TIMEZONE='" + TimeZone.getDefault().getID() + "'");
+        } catch (SQLException e) {
+            ServerLoggers.sqlSuppLog(e);
+        }
+
         connect.close();
     }
 
