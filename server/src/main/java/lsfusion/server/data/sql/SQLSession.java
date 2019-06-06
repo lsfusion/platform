@@ -1639,7 +1639,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 }
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
                 if (noAnalyze || thr == 0 || ttime >= thr) {
-                    String statementInfo = statement.toString() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime + '\n' +
+                    String statementInfo = statement.toString() + " timeout : " + getQueryTimeout() + " actual time : " + actualTime + '\n' +
                                             ExecutionStackAspect.getStackString();
                     if (Settings.get().isExplainJavaStack())
                         statementInfo += '\n' + ExceptionUtils.getStackTrace();
