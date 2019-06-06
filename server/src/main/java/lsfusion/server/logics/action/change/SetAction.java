@@ -106,7 +106,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
 
             Result<SessionTableUsage> rUsedTable = new Result<>();
             try {
-                if (writeFrom.mapIsComplex() && PropertyChange.needMaterializeWhere(exprWhere)) // оптимизация с materialize'ингом
+                if (writeFrom.mapIsOrDependsPreread() && PropertyChange.needMaterializeWhere(exprWhere)) // оптимизация с materialize'ингом
                     exprWhere = PropertyChange.materializeWhere("setmwh", changeWhere, session, innerKeys, innerValues, innerExprs, exprWhere, rUsedTable);
 
                 if (!exprWhere.isFalse()) {

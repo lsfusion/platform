@@ -1111,8 +1111,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.property.markStored(baseLM.tableFactory, targetTable);
         }
 
-        if(ps.isComplex)
-            property.property.complex = true;
+        if(ps.isComplex != null)
+            property.property.setComplex(ps.isComplex);
+        if(ps.isPreread)
+            property.property.setPreread(ps.isPreread);
 
         if(ps.noHint)
             property.property.noHint = true;

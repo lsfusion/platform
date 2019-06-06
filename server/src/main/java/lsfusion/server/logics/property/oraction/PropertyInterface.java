@@ -152,7 +152,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return 0;
     }
 
-    public boolean mapIsComplex() {
+    public boolean mapIsOrDependsPreread() {
         return false;
     }
 

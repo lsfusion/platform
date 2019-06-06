@@ -93,14 +93,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }});
     }
     
-    // оптимизация для логических констант настройки (остальные случаи пока не интересны)
     public static <P extends PropertyInterface> boolean checkPrereadNull(ImMap<P, ? extends Expr> joinImplement, boolean notNull, ImCol<PropertyInterfaceImplement<P>> col, final CalcType calcType, final PropertyChanges propChanges) {
         if(!notNull || !calcType.isExpr())
             return false;
 
         ImCol<PropertyInterfaceImplement<P>> complexMapping = col.filterCol(new SFunctionSet<PropertyInterfaceImplement<P>>() {
             public boolean contains(PropertyInterfaceImplement<P> element) {
-                return element.mapIsComplex();
+                return element.mapIsOrDependsPreread(); // for prereads
             }
         });
         if(!complexMapping.isEmpty()) {
