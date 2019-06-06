@@ -14,6 +14,7 @@ import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
+import lsfusion.server.base.controller.thread.WrappingScheduledExecutorService;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -402,6 +403,9 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             final Result<Long> threadId = new Result<>();
             Future<Boolean> future = null;
             try {
+                if (daemonTasksExecutor instanceof WrappingScheduledExecutorService) {
+                    schedulerLogger.info(((WrappingScheduledExecutorService) daemonTasksExecutor).getThreadPoolInfo());
+                }
                 boolean isTimeToRun = isTimeToRun(timeFrom, timeTo, daysOfWeek, daysOfMonth);
                 schedulerLogger.info(String.format("Task %s. TimeFrom %s, TimeTo %s, daysOfWeek %s, daysOfMonth %s. %s",
                         nameScheduledTask, timeFrom == null ? "-" : timeFrom, timeTo == null ? "-" : timeTo,

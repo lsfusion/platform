@@ -1,9 +1,7 @@
 package lsfusion.server.base.controller.thread;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+
 public abstract class WrappingScheduledExecutorService extends WrappingExecutorService
         implements ScheduledExecutorService {
     final ScheduledExecutorService delegate;
@@ -33,5 +31,11 @@ public abstract class WrappingScheduledExecutorService extends WrappingExecutorS
     public final ScheduledFuture<?> scheduleWithFixedDelay(
             Runnable command, long initialDelay, long delay, TimeUnit unit) {
         return delegate.scheduleWithFixedDelay(wrapTask(command), initialDelay, delay, unit);
+    }
+
+    public String getThreadPoolInfo() {
+        return delegate instanceof ScheduledThreadPoolExecutor ?
+                String.format("Active threads: %s, total threads: %s",
+                        ((ScheduledThreadPoolExecutor) delegate).getActiveCount(), ((ScheduledThreadPoolExecutor) delegate).getCorePoolSize()) : null;
     }
 }
