@@ -10,6 +10,6 @@ public class NamespaceDBNamingPolicy extends FixedSizeUnderscoreDBNamingPolicy {
         String namespace = PropertyCanonicalNameParser.getNamespace(canonicalName);
         String name = PropertyCanonicalNameParser.getName(canonicalName);
         String compoundName = CompoundNameUtils.createCompoundName(namespace, name);
-        return super.transformActionOrPropertyCNToDBName(compoundName);
+        return cutToMaxLength(transformToIDSymbolsOnlyFormat(compoundName));
     }
 }

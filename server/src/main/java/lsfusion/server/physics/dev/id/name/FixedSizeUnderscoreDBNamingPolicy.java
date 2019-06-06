@@ -40,11 +40,15 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
     @Override
     public String transformActionOrPropertyCNToDBName(String canonicalName) {
         String dbName = replaceUnknownClassesWithNull(canonicalName);
-        dbName = replaceAllNonIDLettersWithUnderscore(dbName);
-        dbName = removeTrailingUnderscores(dbName);
+        dbName = transformToIDSymbolsOnlyFormat(dbName);
         return cutToMaxLength(dbName);
     }
- 
+
+    protected String transformToIDSymbolsOnlyFormat(String name) {
+        name = replaceAllNonIDLettersWithUnderscore(name);
+        return removeTrailingUnderscores(name);
+    }
+
     private String removeTrailingUnderscores(String name) {
         return name.replaceAll("_+$", "");
     }
