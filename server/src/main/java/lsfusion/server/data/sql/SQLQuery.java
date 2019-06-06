@@ -274,7 +274,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         session.executeSelect(this, queryExecEnv, outerEnv, owner, queryParams, transactTimeout, handler);
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result;
         if(uniqueViolation) {
-            result = BaseUtils.immutableCast(((ReadUniqueViolationResultHandler<String, String>)handler).terminate());
+            result = BaseUtils.immutableCast(((ReadUniqueViolationResultHandler<String, String>)handler).terminate().toOrderMap());
             propertyReaders = propertyReaders.keys().toMap(StringClass.text);
         } else
             result = ((ReadAllResultHandler<String, String>)handler).terminate();
