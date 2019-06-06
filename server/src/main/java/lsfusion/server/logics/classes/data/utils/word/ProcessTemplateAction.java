@@ -157,7 +157,9 @@ public class ProcessTemplateAction extends InternalAction {
                         XWPFRun templateRun = templateParagraph.getRuns().get(0);
                         if(templateRun != null) {
                             fontFamily = templateRun.getFontFamily();
-                            fontSize = templateRun.getFontSize();
+                            int fontSizeValue = templateRun.getFontSize();
+                            if(fontSizeValue > 0)
+                                fontSize = fontSizeValue;
                             color = templateRun.getColor();
                             bold = templateRun.isBold();
                             italic = templateRun.isItalic();
