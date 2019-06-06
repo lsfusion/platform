@@ -1727,7 +1727,7 @@ public class Settings implements Cloneable {
         this.maxRecursionStatsIterations = maxRecursionStatsIterations;
     }
 
-    private int savePointCountForExceptions = 0;
+    private int savePointCountForExceptions = -1;
 
     public int getSavePointCountForExceptions() {
         return savePointCountForExceptions;
@@ -2327,7 +2327,7 @@ public class Settings implements Cloneable {
     }
 
     private int useSavePointsThreshold = 5;
-    private int updateSavePointsPeriod = 1; // in seconds
+    private int updateSavePointsPeriod = 30; // in seconds
     private int updateSavePointsResultPeriod = 30*60; // in seconds
     private double updateSavePointsCoeff = 1.3;
     private double updateSavePointsMinMultiplier = 0.8;

@@ -653,7 +653,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                 if(session.syntax.hasTransactionSavepointProblem()) {
                     Integer count;
                     int savePointCountForExceptions = Settings.get().getSavePointCountForExceptions();
-                    if (savePointCountForExceptions > 0 && (count = session.getTransactTimeouts()) != null && count >= savePointCountForExceptions) {
+                    if (savePointCountForExceptions >= 0 && (count = session.getTransactTimeouts()) != null && count >= savePointCountForExceptions) {
                         useSavePoint = session.registerUseSavePoint();
                         needSavePoint = true;
                     }
