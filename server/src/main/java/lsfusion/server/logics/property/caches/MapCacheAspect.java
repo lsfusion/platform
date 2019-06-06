@@ -539,7 +539,7 @@ public class MapCacheAspect {
     // должно быть consistent с SessionModifier.allowPrereadValues
     // нужен чтобы не подцелялись кэши, когда хинты были отключены (так как тогда preread тогда срабатывать не будут)
     private static boolean prereadHintEnabled(Property property) {
-        if(!property.isComplex()) // если не complex, то preread'ов не может быть
+        if(!property.isOrDependsPreread()) // если не complex, то preread'ов не может быть
             return true;
         SessionModifier modifier = AutoHintsAspect.catchAutoHint.get();
         return modifier != null && modifier.prereadProps.isEmpty(); // если есть SessionModifier и это не preread разрешаем использовать кэш (предполагается что остальные параметры allowPrereadValues уже включены в ключи кэша) 

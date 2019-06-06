@@ -851,14 +851,39 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getDepends(true);
     }
 
-    public boolean complex = false;
+    private Boolean complex; // also forces preread for value and params
+    public void setComplex(Boolean complex) {
+        this.complex = complex;
+    }
+    private boolean preread;
+    public void setPreread(boolean preread) {
+        this.preread = preread;
+    }
+
+    // we use this check instead of isPreread when we've already calculated expr (and all prereads are executed, so we need to ignore them)
+    public boolean isComplex() {  
+        return complex != null && complex;
+    }
+    public boolean isPreread() {
+        return preread || isComplex();
+    }
     @IdentityLazy
-    public boolean isComplex() {
-        if(complex)
+    public boolean isOrDependsComplex() {
+        if(complex != null)
+            return complex;
+
+        for(Property property : getDepends())
+            if(property.isOrDependsComplex())
+                return true;
+        return false;
+    }
+    @IdentityLazy
+    public boolean isOrDependsPreread() {
+        if(isPreread())
             return true;
 
         for(Property property : getDepends())
-            if(property.isComplex())
+            if(property.isOrDependsPreread())
                 return true;
         return false;
     }
@@ -971,7 +996,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ModifyChange<T> modify = propChanges.getModify(this);
         if(modify!=null) {
-            if(complex) { // вообще rightJoin, но вдруг случайно мимо AutoHint'а может пройти
+            if(isPreread()) { // вообще rightJoin, но вдруг случайно мимо AutoHint'а может пройти
                 ImMap<T, Expr> joinValues = getJoinValues(joinImplement); Pair<ObjectValue, Boolean> row;
                 if(joinValues!=null && (row = modify.preread.readValues.get(joinValues))!=null) {
                     if(changedWhere!=null) changedWhere.add(row.second ? Where.TRUE : Where.FALSE);

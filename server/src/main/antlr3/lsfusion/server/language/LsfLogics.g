@@ -2397,6 +2397,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
     :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
     |   persistentSetting [ps]
 	|	complexSetting [ps]
+	|	prereadSetting [ps]
 	|	noHintSetting [ps]
 	|	tableSetting [ps]
 	|   defaultCompareSetting [property]
@@ -2441,7 +2442,11 @@ persistentSetting [PropertySettings ps]
 	;
 
 complexSetting [PropertySettings ps]
-	:	'COMPLEX' { ps.isComplex = true; }
+	:	('COMPLEX' { ps.isComplex = true; } | 'NOCOMPLEX' { ps.isComplex = false; } )
+	;
+
+prereadSetting [PropertySettings ps]
+	:	'PREREAD' { ps.isPreread = true; }
 	;
 
 noHintSetting [PropertySettings ps]

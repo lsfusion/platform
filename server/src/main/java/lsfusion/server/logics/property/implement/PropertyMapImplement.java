@@ -180,8 +180,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getChangeProps();
     }
 
-    public boolean mapIsComplex() {
-        return property.isComplex();
+    public boolean mapIsOrDependsPreread() {
+        return property.isOrDependsPreread();
     }
     public long mapComplexity() {
         return property.getComplexity();

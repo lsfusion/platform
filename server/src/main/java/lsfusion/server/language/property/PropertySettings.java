@@ -7,7 +7,8 @@ import lsfusion.server.physics.dev.debug.BooleanDebug;
 public class PropertySettings extends ActionOrPropertySettings {
     public String table = null;
     public boolean isPersistent = false;
-    public boolean isComplex = false;
+    public Boolean isComplex = null;
+    public boolean isPreread = false;
     public boolean noHint = false;
     public boolean isLoggable = false;
     public BooleanDebug notNull = null;

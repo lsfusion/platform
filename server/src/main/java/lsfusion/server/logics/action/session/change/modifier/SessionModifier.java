@@ -252,7 +252,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     protected <P extends PropertyInterface> boolean allowPropertyPrereadValues(Property<P> property) {
-        if(!property.complex)
+        if(!property.isPreread())
             return false;
 
         if(Settings.get().isDisablePrereadValues())
@@ -341,7 +341,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public <P extends PropertyInterface> void addPrereadValues(Property<P> property, ImMap<P, Expr> values) throws SQLException, SQLHandledException {
-        assert property.complex && allowPrereadValues(property, values);
+        assert property.isPreread() && allowPrereadValues(property, values);
 
         try {
             prereadProps.add(property);
