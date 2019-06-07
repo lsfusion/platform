@@ -2406,15 +2406,4 @@ public class Settings implements Cloneable {
     public void setAuthTokenExpiration(int authTokenExpiration) {
         this.authTokenExpiration = authTokenExpiration;
     }
-
-    //for PostgreDataAdapter, seconds
-    private int connectTimeout = 0;
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public void setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
 }

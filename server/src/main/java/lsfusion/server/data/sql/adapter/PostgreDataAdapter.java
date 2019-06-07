@@ -107,9 +107,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws SQLException {
-        Settings settings = Settings.get();
-        int timeout = settings != null ? settings.getConnectTimeout() : 0;
-        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + timeout);
+        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + (int) (connectTimeout / 1000));
     }
 
     @Override
