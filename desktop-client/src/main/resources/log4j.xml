@@ -68,8 +68,8 @@
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="5"/>
-            <param name="activeFileName" value="${user.home}/.fusion/logs/client-jasperReports.log"/>
-            <param name="fileNamePattern" value="${user.home}/.fusion/logs/client-jasperReports-%i.log.zip"/>
+            <param name="activeFileName" value="${user.home}/.fusion/logs/jasperReports.log"/>
+            <param name="fileNamePattern" value="${user.home}/.fusion/logs/jasperReports-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
             <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
