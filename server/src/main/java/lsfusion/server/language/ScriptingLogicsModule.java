@@ -166,7 +166,7 @@ import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
 public class ScriptingLogicsModule extends LogicsModule {
 
-    private static final Logger scriptLogger = ServerLoggers.scriptLogger;
+    private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     protected final BusinessLogics BL;
 
@@ -2301,10 +2301,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedCancelAProp(List<NamedPropertyUsage> keepSessionProps, boolean keepAllSessionProps)
             throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedCancelAProp();");
-
         LA result = addCancelAProp(null, LocalizedString.NONAME, getMigrateProps(keepSessionProps, keepAllSessionProps));
-
         return new LAWithParams(result, new ArrayList<Integer>());
     }
 
@@ -4402,7 +4399,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void showWarnings() {
         for (String warningText : warningList) {
-            scriptLogger.warn("WARNING!" + warningText);
+            systemLogger.warn("WARNING!" + warningText);
         }
     }
 
