@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.imports.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
+import com.monitorjbl.xlsx.exceptions.NotSupportedException;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.Type;
@@ -160,7 +161,11 @@ public class ImportXLSIterator extends ImportMatrixIterator {
                 case BOOLEAN:
                     return CellValue.valueOf(cell.getBooleanCellValue());
                 case ERROR:
-                    return CellValue.getError(cell.getErrorCellValue());
+                    try {
+                        return CellValue.getError(cell.getErrorCellValue());
+                    } catch (NotSupportedException e) {
+                        return null;
+                    }
                 case FORMULA:
                     switch (cell.getCachedFormulaResultTypeEnum()) {
                         case NUMERIC:
