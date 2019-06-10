@@ -121,7 +121,7 @@ public final class ClassCanonicalNameUtils {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(VARSTRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\]))$")) {
+        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\]))$")) {
             if (name.startsWith("BPSTRING[")) {
                 name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));
@@ -130,9 +130,6 @@ public final class ClassCanonicalNameUtils {
                 return StringClass.geti(new ExtInt(Integer.parseInt(name)));
             } else if (name.startsWith("STRING[")) {
                 name = name.substring("STRING[".length(), name.length() - 1);
-                return StringClass.getv(new ExtInt(Integer.parseInt(name)));
-            } else if (name.startsWith("VARSTRING[")) { // temporary fix for generateJnlp
-                name = name.substring("VARSTRING[".length(), name.length() - 1);
                 return StringClass.getv(new ExtInt(Integer.parseInt(name)));
             } else if (name.startsWith("ISTRING[")) {
                 name = name.substring("ISTRING[".length(), name.length() - 1);
