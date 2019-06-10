@@ -197,7 +197,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder) {
         assert name != null && namespace != null;
-        assert canonicalName == null && dbName == null;
+        assert canonicalName == null;
 
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
 

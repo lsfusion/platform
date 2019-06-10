@@ -72,9 +72,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkAction(LA lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAction(LA lp, String name, List<ResolveClassSet> signature, boolean orPropertyMessage) throws ScriptingErrorLog.SemanticErrorException {
         if (lp == null) {
-            errLog.emitActionNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
+            if(orPropertyMessage)
+                errLog.emitPropertyOrActionNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
+            else
+                errLog.emitActionNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
         }
     }
 

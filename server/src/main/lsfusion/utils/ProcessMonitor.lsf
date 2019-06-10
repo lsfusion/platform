@@ -97,14 +97,14 @@ sumBlocking '{process.monitor.sum.blocking}' (STRING[10] process) = sumPlusOneBl
 activeSQLProcess (STRING[10] i) = querySQLProcess(i) AND (isActiveSQLProcess(i) OR inTransactionSQLProcess(i));
 activeJavaBlockingProcess (STRING[10] i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i);
 activeJavaProcess (STRING[10] i) = activeJavaBlockingProcess(i)
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1)
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1)
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1)
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketOutputStream.socketWrite') == 1)                                        
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl') == 1)
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.io.FileInputStream.readBytes') == 1)
-                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.lang.UNIXProcess.waitForProcessExit') == 1);
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl')
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop')
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0')
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0')
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'java.net.SocketOutputStream.socketWrite')                                        
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl')
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'java.io.FileInputStream.readBytes')
+                                   AND NOT startsWith(stackTraceJavaProcess(i), 'java.lang.UNIXProcess.waitForProcessExit');
 activeBlockingProcess '{process.monitor.status.process.active}' (STRING[10] i) = activeSQLProcess(i) OR activeJavaBlockingProcess(i);
 activeProcess '{process.monitor.status.process.active}' (STRING[10] i) = activeSQLProcess(i) OR activeJavaProcess(i);
 
