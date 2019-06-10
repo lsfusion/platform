@@ -113,7 +113,6 @@ import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModul
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
-import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -124,7 +123,6 @@ import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -353,7 +351,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public void createModules() throws IOException {
-        LM = addModule(new BaseLogicsModule(this, getDBNamingPolicy()));
+        LM = addModule(new BaseLogicsModule(this));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
         authenticationLM = addModule(new AuthenticationLogicsModule(this, LM));
@@ -363,16 +361,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
         utilsLM = addModule(new UtilsLogicsModule(this, LM));        
-    }
-
-    private DBNamingPolicy getDBNamingPolicy() {
-        int maxIdLength = getDbManager().getDbMaxIdLength();
-        String policyName = getDbManager().getDbNamingPolicy();
-        try {
-            return (DBNamingPolicy) ((Class) Class.forName(policyName)).getConstructors()[0].newInstance(maxIdLength);
-        } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {
@@ -505,10 +493,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
     
-    public void initFullSingleTables() {
+    public void initFullSingleTables(DBNamingPolicy namingPolicy) {
         for(ImplementTable table : LM.tableFactory.getImplementTables()) {
             if(table.markedFull && !table.isFull())
-                LM.markFull(table, table.getOrderMapFields().valuesList());
+                LM.markFull(table, table.getOrderMapFields().valuesList(), namingPolicy);
         }
     }
 
@@ -526,10 +514,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return false;
     }
 
-    public void initClassDataProps() {
+    public void initClassDataProps(final DBNamingPolicy namingPolicy) {
         ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
             public ImplementTable group(ConcreteCustomClass customClass) {
-                return LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", (ValueClass) customClass)).table;
+                return LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", (ValueClass) customClass), namingPolicy).table;
             }
         });
 
@@ -551,8 +539,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             LM.addProperty(null, new LP<>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
             // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
-            dataProperty.markStored(new MapKeysTable<>(table, MapFact.singletonRev(dataProperty.interfaces.single(), table.keys.single())));
-            dataProperty.initStored(); // we need to initialize because we use calcClassValueWhere for init stored properties
+            dataProperty.markStored(table);
+            dataProperty.initStored(LM.tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
 
             // помечаем dataProperty
             for(ConcreteCustomClass customClass : set)
@@ -601,11 +589,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             classAggrProps.getKey(i).aggrProps = classAggrProps.getValue(i).immutable();
     }
 
-    public void initClassDataIndices() {
+    public void initClassDataIndices(DBManager dbManager) {
         for(ObjectClassField classField : LM.baseClass.getUpObjectClassFields().keyIt()) {
             ClassDataProperty classProperty = classField.getProperty();
             if(needIndex(classProperty.set))
-                LM.addIndex(classProperty);
+                dbManager.addIndex(classProperty);
         }
     }
 
@@ -1301,9 +1289,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         ImSet<String> skipProperties = query.execute(session).keys().mapSetValues(new GetValue<String, ImMap<String,Object>>() {
             @Override
             public String getMapValue(ImMap<String, Object> value) {
-            return (String)value.singleValue();
+                return (String)value.singleValue();
             }
-    });
+        });
 
 
         final ImSet<String> fSkipProperties = skipProperties;
@@ -1934,7 +1922,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private void checkExceededAllocatedBytes(Map<Long, Thread> threadMap, Set<Long> excessAllocatedBytesSet) {
 
-        int accessInterruptCount = Settings.get().getAccessInterruptCount();
+        int accessInterruptCount = Settings.get().getExcessInterruptCount();
 
         for (Iterator<Map.Entry<Long, Integer>> it = excessAllocatedBytesMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<Long, Integer> entry = it.next();

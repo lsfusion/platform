@@ -15,6 +15,6 @@ public class InitTablesTask extends GroupModuleTask {
     }
 
     protected void runInnerTask(LogicsModule module) throws RecognitionException {
-        module.initTables();
+        module.initTables(getDBNamingPolicy());
     }
 }

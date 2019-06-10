@@ -19,7 +19,6 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;
@@ -114,7 +113,6 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.ValueProperty;
@@ -127,11 +125,13 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
@@ -157,11 +157,11 @@ public abstract class LogicsModule {
 
     public abstract void initMetaAndClasses() throws RecognitionException;
 
-    public abstract void initTables() throws RecognitionException;
+    public abstract void initTables(DBNamingPolicy namingPolicy) throws RecognitionException;
 
     public abstract void initMainLogic() throws FileNotFoundException, RecognitionException;
 
-    public abstract void initIndexes() throws RecognitionException;
+    public abstract void initIndexes(DBManager dbManager) throws RecognitionException;
 
     public BaseLogicsModule baseLM;
 
@@ -273,7 +273,7 @@ public abstract class LogicsModule {
 
     @NFLazy
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
-        lp.getActionOrProperty().setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamingPolicy());
+        lp.getActionOrProperty().setCanonicalName(getNamespace(), name, signature, lp.listInterfaces);
         propClasses.put(lp, signature);
         addModuleLAP(lp);
     }
@@ -432,9 +432,9 @@ public abstract class LogicsModule {
         return customClass;
     }
 
-    protected ImplementTable addTable(String name, boolean isFull, boolean isExplicit, ValueClass... classes) {
+    protected ImplementTable addTable(String name, boolean isFull, boolean isExplicit, DBNamingPolicy namingPolicy, ValueClass... classes) {
         String canonicalName = elementCanonicalName(name);
-        String dbName = baseLM.getDBNamingPolicy().transformTableCNToDBName(canonicalName);
+        String dbName = namingPolicy.transformTableCNToDBName(canonicalName);
         ImplementTable table = baseLM.tableFactory.include(dbName, getVersion(), classes);
         table.setCanonicalName(canonicalName);
         addModuleTable(table);
@@ -446,7 +446,7 @@ public abstract class LogicsModule {
         return table;
     }
 
-    protected void markFull(ImplementTable table, ImList<ValueClass> listClasses) {
+    protected void markFull(ImplementTable table, ImList<ValueClass> listClasses, DBNamingPolicy namingPolicy) {
         // создаем IS
         PropertyRevImplement<?, Integer> mapProperty = IsClassProperty.getProperty(listClasses.toIndexedMap()); // тут конечно стремновато из кэша брать, так как остальные гарантируют создание
         LP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
@@ -457,8 +457,8 @@ public abstract class LogicsModule {
             public ResolveClassSet getMapValue(ValueClass value) {
                 return value.getResolveSet();
             }}).toJavaList());
-        lcp.property.markStored(baseLM.tableFactory, table);
-        lcp.property.initStored(); // we need to initialize because we use calcClassValueWhere for init stored properties
+        lcp.property.markStored(table);
+        lcp.property.initStored(baseLM.tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
 
         // marking full
         table.setFullField(lcp.property.field);
@@ -1490,7 +1490,7 @@ public abstract class LogicsModule {
     // ------------------- Loggable ----------------- //
     // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #1725),
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
-    public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp, boolean reflection) {
+    public LP addLProp(SystemEventsLogicsModule systemEventsLM, LP lp, DBNamingPolicy namingPolicy) {
         assert lp.property.isNamed();
         String name = getLogPropertyName(lp, false);
         
@@ -1499,11 +1499,11 @@ public abstract class LogicsModule {
         LP result = addDCProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
 
         makePropertyPublic(result, name, signature);
-        markLoggableStored(result, reflection);
+        markLoggableStored(result, namingPolicy);
         return result;
     }
 
-    public LP addLDropProp(SystemEventsLogicsModule systemEventsLM, LP lp, boolean reflection) {
+    public LP addLDropProp(SystemEventsLogicsModule systemEventsLM, LP lp, DBNamingPolicy namingPolicy) {
         String name = getLogPropertyName(lp, true);
 
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
@@ -1521,15 +1521,15 @@ public abstract class LogicsModule {
         logDropProperty.setEventChange(systemEventsLM, true, params);
 
         makePropertyPublic(logDropProperty, name, signature);
-        markLoggableStored(logDropProperty, reflection);
+        markLoggableStored(logDropProperty, namingPolicy);
 
         return logDropProperty;
     }
 
-    private void markLoggableStored(LP lp, boolean reflection) {
-        ((StoredDataProperty)lp.property).markStored(baseLM.tableFactory, (ImplementTable)null);
-        if(reflection)
-            lp.property.initStored(); // we need to initialize it because reflection events initialized after init stored
+    private void markLoggableStored(LP lp, DBNamingPolicy namingPolicy) {
+        lp.property.markStored((ImplementTable)null);
+        if(namingPolicy != null)
+            lp.property.initStored(baseLM.tableFactory, namingPolicy); // we need to initialize it because reflection events initialized after init stored
     }
 
     private LP toLogical(LP property) {
@@ -1867,23 +1867,6 @@ public abstract class LogicsModule {
         return lp;
     }
 
-    public void addIndex(LP lp) {
-        ImOrderSet<String> keyNames = SetFact.toOrderExclSet(lp.listInterfaces.size(), new GetIndex<String>() {
-            public String getMapValue(int i) {
-                return "key"+i;
-            }});
-        addIndex(keyNames, directLI(lp));
-    }
-
-    public void addIndex(Property property) {
-        addIndex(new LP(property));
-    }
-
-    public void addIndex(ImOrderSet<String> keyNames, Object... params) {
-        ImList<PropertyObjectInterfaceImplement<String>> index = ActionOrPropertyUtils.readObjectImplements(keyNames, params);
-        ThreadLocalContext.getDbManager().addIndex(index);
-    }
-
     // нужен так как иначе начинает sID расширять
 
     public <T extends PropertyInterface> LP<T> addOldProp(LP<T> lp, PrevScope scope) {
@@ -2093,11 +2076,6 @@ public abstract class LogicsModule {
 
     private static <P extends PropertyInterface, T extends PropertyInterface> ImRevMap<P, T> getMapping(LAP<P, ?> property, final ImOrderSet<T> mapList) {
         return property.getRevMap(mapList);
-    }
-
-    public void makeUserLoggable(SystemEventsLogicsModule systemEventsLM, LP... lps) {
-        for (LP lp : lps)
-            lp.makeUserLoggable(this, systemEventsLM);
     }
 
     public LP not() {
@@ -2327,7 +2305,7 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface> void addLocal(LP<P> lcp, LocalPropertyData data) {
         locals.put(lcp, data);
-        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces, baseLM.getDBNamingPolicy());
+        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces);
     }
 
     protected void removeLocal(LP<?> lcp) {

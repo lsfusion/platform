@@ -251,7 +251,7 @@ public class Settings implements Cloneable {
 
     private long excessThreadAllocatedBytes = 5368709120L; //5GB
 
-    private int accessInterruptCount = 4;
+    private int excessInterruptCount = 4;
     
     private boolean logSqlProcesses = false;
 
@@ -1673,12 +1673,12 @@ public class Settings implements Cloneable {
         this.excessThreadAllocatedBytes = excessThreadAllocatedBytes;
     }
 
-    public int getAccessInterruptCount() {
-        return accessInterruptCount;
+    public int getExcessInterruptCount() {
+        return excessInterruptCount;
     }
 
-    public void setAccessInterruptCount(int accessInterruptCount) {
-        this.accessInterruptCount = accessInterruptCount;
+    public void setExcessInterruptCount(int excessInterruptCount) {
+        this.excessInterruptCount = excessInterruptCount;
     }
 
     public boolean isLogSqlProcesses() {

@@ -58,6 +58,7 @@
                 <entry key="limitClassWhereComplexity" value="${settings.limitClassWhereComplexity:}"/>
                 <entry key="limitWhereJoinPack" value="${settings.limitWhereJoinPack:}"/>
                 <entry key="limitHintIncrementComplexity" value="${settings.limitHintIncrementComplexity:}"/>
+                <entry key="limitHintIncrementValueComplexity" value="${settings.limitHintIncrementValueComplexity:}"/>
                 <entry key="noApplyIncrement" value="${settings.noApplyIncrement:}"/>
                 <entry key="limitApplyHintIncrementComplexity" value="${settings.limitApplyHintIncrementComplexity:}"/>
                 <entry key="limitHintIncrementStat" value="${settings.limitHintIncrementStat:}"/>
@@ -114,7 +115,7 @@
                 <entry key="enableAPI" value="${settings.enableAPI:}"/>
                 <entry key="enableUI" value="${settings.enableUI:}"/>
                 <entry key="excessThreadAllocatedBytes" value="${settings.excessThreadAllocatedBytes:}"/>
-                <entry key="accessInterruptCount" value="${settings.accessInterruptCount:}"/>
+                <entry key="excessInterruptCount" value="${settings.excessInterruptCount:}"/>
                 <entry key="tempTablesTimeThreshold" value="${settings.tempTablesTimeThreshold:}"/>
                 <entry key="tempTablesCountThreshold" value="${settings.tempTablesCountThreshold:}"/>
                 <entry key="queryRowCountOptDivider" value="${settings.queryRowCountOptDivider:}"/>

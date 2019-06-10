@@ -15,6 +15,6 @@ public class InitIndicesTask extends GroupModuleTask {
     }
 
     protected void runInnerTask(LogicsModule module) throws RecognitionException {
-        module.initIndexes();
+        module.initIndexes(getDbManager());
     }
 }

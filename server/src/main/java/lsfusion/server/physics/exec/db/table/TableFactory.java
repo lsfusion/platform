@@ -40,12 +40,10 @@ import java.util.*;
 public class TableFactory implements FullTablesInterface {
     private static final Logger startLogger = ServerLoggers.startLogger;
 
-    private DBNamingPolicy policy;
     private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<>();
     private Map<Integer, List<ImplementTable>> includedTablesMap = new HashMap<>(); // для решения \ выделения проблем с mutability и детерминированностью, без этого можно было бы implementTablesMap обойтись 
 
-    public TableFactory(DBNamingPolicy policy) {
-        this.policy = policy;
+    public TableFactory() {
     }
 
     @NFLazy // только NFOrderSet'ов в implementTablesMap и parents недостаточно, так алгоритм include не thread-safe (хотя и устойчив к перестановкам версий)
@@ -89,7 +87,7 @@ public class TableFactory implements FullTablesInterface {
         });
     }
 
-    public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem) {
+    public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if (tables != null)
             for (ImplementTable implementTable : tables.getListIt()) {
@@ -97,10 +95,10 @@ public class TableFactory implements FullTablesInterface {
                 if (mapTable != null) return mapTable;
             }
 
-        return getAutoMapTable(findItem);
+        return getAutoMapTable(findItem, policy);
     }
 
-    public <T> MapKeysTable<T> getClassMapTable(ImOrderMap<T, ValueClass> findItem) {
+    public <T> MapKeysTable<T> getClassMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if (tables != null) {
             for (ImplementTable implementTable : tables.getListIt()) {
@@ -115,7 +113,7 @@ public class TableFactory implements FullTablesInterface {
                     return table;
             }
         }
-        return getAutoMapTable(findItem);
+        return getAutoMapTable(findItem, policy);
     }
 
     public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImOrderMap<T, ValueClass> findItem, ImplementTable table) {
@@ -149,7 +147,7 @@ public class TableFactory implements FullTablesInterface {
 
     // получает "автоматическую таблицу"
     @NFLazy
-    private <T> MapKeysTable<T> getAutoMapTable(ImOrderMap<T, ValueClass> findItem) {
+    private <T> MapKeysTable<T> getAutoMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
         int classCount = findItem.size();
         List<ImplementTable> incTables = includedTablesMap.get(classCount);
         if(incTables==null) {

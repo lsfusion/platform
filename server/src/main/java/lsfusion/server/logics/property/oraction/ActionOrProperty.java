@@ -48,7 +48,6 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
@@ -67,7 +66,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }};
 
     private int ID = 0;
-    private String dbName;
     protected String canonicalName;
     public String annotation;
 
@@ -178,11 +176,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public abstract boolean isNotNull();
-
-    public String getDBName() {
-        return dbName;
-    }
-
+    
     public String getName() {
         if (isNamed()) {
             return PropertyCanonicalNameParser.getName(canonicalName);
@@ -201,25 +195,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return canonicalName;
     }
 
-    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, DBNamingPolicy policy) {
+    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder) {
         assert name != null && namespace != null;
 
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
-        this.dbName = policy.transformActionOrPropertyCNToDBName(this.canonicalName);
 
         setExplicitClasses(signatureOrder, signature);
-    }
-
-    public void setCanonicalName(String canonicalName, DBNamingPolicy policy) {
-        checkCanonicalName(canonicalName);
-        this.canonicalName = canonicalName;
-        this.dbName = policy.transformActionOrPropertyCNToDBName(canonicalName);
-    }
-
-    private void checkCanonicalName(String canonicalName) {
-        assert canonicalName != null;
-        PropertyCanonicalNameParser.getName(canonicalName);
-        PropertyCanonicalNameParser.getNamespace(canonicalName);
     }
 
     final public boolean isNamed() {

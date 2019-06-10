@@ -556,6 +556,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     String returnClass = null;
                     String classProperty = "";
                     String tableSID = "";
+                    String fieldSID = "";
                     Long complexityProperty = null;
 
                     try {
@@ -566,8 +567,10 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                             complexityProperty = property.getComplexity();
                             if (property.mapTable != null) {
                                 tableSID = property.mapTable.table.getName();
+                                fieldSID = property.field.getName();
                             } else {
                                 tableSID = "";
+                                fieldSID = "";
                             }
 
                             returnClass = ((Property)actionOrProperty).getValueClass(ClassType.syncPolicy).getSID();
@@ -575,7 +578,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(actionOrProperty.getCanonicalName(),(Object) actionOrProperty.getDBName(), ThreadLocalContext.localize(actionOrProperty.caption), actionOrProperty instanceof Property && ((Property)actionOrProperty).isLoggable() ? true : null,
+                    dataProperty.add(asList(actionOrProperty.getCanonicalName(), (Object)fieldSID, ThreadLocalContext.localize(actionOrProperty.caption), actionOrProperty instanceof Property && ((Property)actionOrProperty).isLoggable() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotation, 

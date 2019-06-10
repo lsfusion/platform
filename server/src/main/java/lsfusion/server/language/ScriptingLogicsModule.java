@@ -125,6 +125,7 @@ import lsfusion.server.physics.admin.reflection.property.CanonicalNameProperty;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
@@ -137,6 +138,7 @@ import lsfusion.server.physics.dev.integration.external.to.file.ReadAction;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
 import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailAction;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
@@ -219,8 +221,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     @Override
-    public void initTables() throws RecognitionException {
-        addScriptedTables();
+    public void initTables(DBNamingPolicy namingPolicy) throws RecognitionException {
+        addScriptedTables(namingPolicy);
     }
 
     @Override
@@ -235,16 +237,34 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     @Override
-    public void initIndexes() throws RecognitionException {
+    public void initIndexes(DBManager dbManager) throws RecognitionException {
         for (TemporaryIndexInfo info : tempIndicies) {
-            addIndex(info.keyNames, info.params);
+            checkIndexDifferentTables(info.params);
+            dbManager.addIndex(info.keyNames, info.params);
         }
         tempIndicies.clear();
         
         for (LP property : indexedProperties) {
-            addIndex(property);
+            dbManager.addIndex(property);
         }
         indexedProperties.clear();
+    }
+
+    public void checkIndexDifferentTables(Object[] params) throws ScriptingErrorLog.SemanticErrorException {
+        ImplementTable table = null;
+        String firstProperty = null;
+        for (Object param : params) {
+            if (param instanceof LP) {
+                Property<?> property = ((LP)param).property;
+                String name = property.toString();
+                if (table == null) {
+                    table = property.mapTable.table;
+                    firstProperty = property.toString();
+                } else if (table != property.mapTable.table) {
+                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstProperty, name);
+                }
+            }
+        }
     }
 
     public void initScriptingModule(String name, String namespace, List<String> requiredModules, List<String> namespacePriority) {
@@ -1108,7 +1128,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         if (property.property instanceof StoredDataProperty || (ps.isPersistent && (property.property instanceof AggregateProperty))) {
-            property.property.markStored(baseLM.tableFactory, targetTable);
+            property.property.markStored(targetTable);
         }
 
         if(ps.isComplex != null)
@@ -2554,7 +2574,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             LP lp = addDProp(LocalizedString.NONAME, param.cls, aggClass);
 
             makePropertyPublic(lp, param.paramName, aggSignature);
-            ((StoredDataProperty) lp.property).markStored(baseLM.tableFactory, (ImplementTable)null);
+            ((StoredDataProperty) lp.property).markStored((ImplementTable)null);
 
             groupProps.add(new LPWithParams(lp, 0));
             resultSignature.add(param.cls.getResolveSet());
@@ -3847,13 +3867,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return classIds.size() == 1 && classIds.get(0).equals("CustomObjectClass");
     }
     
-    private void addScriptedTables() {
+    private void addScriptedTables(DBNamingPolicy namingPolicy) {
         for (TemporaryTableInfo info : tempTables) {
             ValueClass[] classes = info.classes;
             if (info.isCustomObjectClassTable) {
                 classes = new ValueClass[] {baseLM.baseClass.objectClass};
             }
-            addTable(info.name, info.isFull, info.isExplicit, classes);
+            addTable(info.name, info.isFull, info.isExplicit, namingPolicy, classes);
         }
         tempTables.clear(); 
     } 

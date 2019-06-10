@@ -10,6 +10,6 @@ public class InitFullSingleTablesTask extends SimpleBLTask {
     }
 
     public void run(Logger logger) {
-        getBL().initFullSingleTables();
+        getBL().initFullSingleTables(getDBNamingPolicy());
     }
 }

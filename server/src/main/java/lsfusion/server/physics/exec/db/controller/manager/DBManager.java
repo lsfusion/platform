@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
@@ -52,7 +53,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -78,6 +78,7 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyObjectImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
+import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
@@ -88,6 +89,7 @@ import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.integration.service.*;
@@ -100,6 +102,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -109,6 +112,7 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.directLI;
 
 public class DBManager extends LogicsManager implements InitializingBean {
     public static final Logger logger = Logger.getLogger(DBManager.class);
@@ -174,6 +178,23 @@ public class DBManager extends LogicsManager implements InitializingBean {
         threadLocalSql = new ThreadLocal<>();
     }
 
+    public void addIndex(Property property) {
+        addIndex(new LP(property));
+    }
+
+    public void addIndex(LP lp) {
+        ImOrderSet<String> keyNames = SetFact.toOrderExclSet(lp.listInterfaces.size(), new GetIndex<String>() {
+            public String getMapValue(int i) {
+                return "key"+i;
+            }});
+        addIndex(keyNames, directLI(lp));
+    }
+
+    public void addIndex(ImOrderSet<String> keyNames, Object... params) {
+        ImList<PropertyObjectInterfaceImplement<String>> index = ActionOrPropertyUtils.readObjectImplements(keyNames, params);
+        addIndex(index);
+    }
+
     public void initReflectionEvents() {
         assert LM == null && reflectionLM == null;
         LM = businessLogics.LM;
@@ -211,6 +232,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private DBNamingPolicy namingPolicy;
+    public DBNamingPolicy getNamingPolicy() {
+        return namingPolicy;
+    }
+
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
         Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
         
@@ -243,7 +269,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 Integer statsProperty = (Integer) values.get("overStatsProperty");
                 statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
                 if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
-                    LM.makeUserLoggable(systemEventsLM, lcp);
+                    lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
                 }
             }            
         }
@@ -696,6 +722,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         Assert.notNull(adapter, "adapter must be specified");
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(restartManager, "restartManager must be specified");
+
+        // it is also sort of DI so will do it here
+        int maxIdLength = getDbMaxIdLength();
+        String policyName = getDbNamingPolicy();
+        try {
+            namingPolicy = (DBNamingPolicy) ((Class) Class.forName(policyName)).getConstructors()[0].newInstance(maxIdLength);
+        } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
@@ -1171,7 +1206,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             Properties props = new Properties();
             props.put("dayoff.tablename", lp.property.mapTable.table.getName(sql.syntax));
-            props.put("dayoff.fieldname", lp.property.getDBName());
+            props.put("dayoff.fieldname", lp.property.field.getName(sql.syntax));
             adapter.ensureScript("jumpWorkdays.sql", props);
         }
 
@@ -1909,11 +1944,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         Map<String, String> propertyChanges = getChangesAfter(oldData.dbVersion, storedPropertyCNChanges);
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             boolean found = false;
-            String newDBName = LM.getDBNamingPolicy().transformActionOrPropertyCNToDBName(entry.getValue());
+            String newDBName = getNamingPolicy().transformActionOrPropertyCNToDBName(entry.getValue());
             for (DBStoredProperty oldProperty : oldData.storedProperties) {
                 if (entry.getKey().equals(oldProperty.getCanonicalName())) {
                     renameColumn(sql, oldData, oldProperty, newDBName);
-                    oldProperty.setCanonicalName(entry.getValue());
+                    oldProperty.migrateNames(entry.getValue());
                     found = true;
                     break;
                 }
@@ -1975,9 +2010,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 if (tableNewClassProps.containsKey(tableName)) {
                     String newName = tableNewClassProps.get(tableName);
                     nameRenames.put(cls.sDataPropID, newName);
-                    String newDBName = LM.getDBNamingPolicy().transformActionOrPropertyCNToDBName(newName);
+                    String newDBName = getNamingPolicy().transformActionOrPropertyCNToDBName(newName);
                     renameColumn(sql, oldData, oldClassProp, newDBName);
-                    oldClassProp.setCanonicalName(newName);
+                    oldClassProp.migrateNames(newName);
                     cls.sDataPropID = newName;
                 }
             } else {
@@ -1998,7 +2033,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 if (!newProperty.getDBName().equals(oldProperty.getDBName())) {
                     renameColumn(sql, oldData, oldProperty, newProperty.getDBName());
                     // переустанавливаем каноническое имя, чтобы получить новый dbName
-                    oldProperty.setCanonicalName(oldProperty.getCanonicalName());
+                    oldProperty.migrateNames(oldProperty.getCanonicalName());
                 }
             }
         }
@@ -2115,8 +2150,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void addTableSIDChange(String version, String oldCN, String newCN) {
-        addSIDChange(tableSIDChanges, version, LM.getDBNamingPolicy().transformTableCNToDBName(oldCN), 
-                                               LM.getDBNamingPolicy().transformTableCNToDBName(newCN));
+        DBNamingPolicy namingPolicy = getNamingPolicy();
+        addSIDChange(tableSIDChanges, version, namingPolicy.transformTableCNToDBName(oldCN), 
+                                               namingPolicy.transformTableCNToDBName(newCN));
     }
 
     public void addObjectSIDChange(String version, String oldSID, String newSID) {
@@ -2343,7 +2379,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public DBStoredProperty(Property<?> property) {
             assert property.isNamed();
-            this.setCanonicalName(property.getCanonicalName());
+            this.canonicalName = property.getCanonicalName();
+            this.dbName = property.getDBName();
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
             mapKeys = ((Property<PropertyInterface>)property).mapTable.mapKeys.mapKeys(new GetValue<Integer, PropertyInterface>() {
@@ -2354,7 +2391,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public DBStoredProperty(String canonicalName, String dbName, Boolean isDataProperty, String tableName, ImMap<Integer, KeyField> mapKeys) {
-            this.setCanonicalName(canonicalName, dbName);
+            this.canonicalName = canonicalName;
+            this.dbName = dbName;
             this.isDataProperty = isDataProperty;
             this.tableName = tableName;
             this.mapKeys = mapKeys;
@@ -2368,16 +2406,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             return canonicalName;
         }
 
-        public void setCanonicalName(String canonicalName) {
+        public void migrateNames(String canonicalName) {
             this.canonicalName = canonicalName;
-            if (canonicalName != null) {
-                this.dbName = LM.getDBNamingPolicy().transformActionOrPropertyCNToDBName(canonicalName);
-            }
-        }
-
-        public void setCanonicalName(String canonicalName, String dbName) {
-            this.canonicalName = canonicalName;
-            this.dbName = dbName;
+            this.dbName = getNamingPolicy().transformActionOrPropertyCNToDBName(canonicalName);
         }
     }
 

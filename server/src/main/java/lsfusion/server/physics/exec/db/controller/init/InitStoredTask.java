@@ -22,7 +22,7 @@ public class InitStoredTask extends GroupPropertiesTask {
 
     protected void runTask(ActionOrProperty property) {
         if (property instanceof Property && ((Property) property).isMarkedStored() && ((Property) property).field == null) { // last check we need because we already initialized some stored (see other initStored usages)
-            ((Property) property).initStored();
+            ((Property) property).initStored(getTableFactory(), getDBNamingPolicy());
         }
     }
 }
