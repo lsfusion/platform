@@ -89,6 +89,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "property", name);
     }
 
+    public void emitPropertyOrActionNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "property or action", name);
+    }
+
     public void emitActionNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "action", name);
     }
