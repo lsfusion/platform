@@ -88,7 +88,7 @@
         <informix.version>4.10.9</informix.version>
         <mysql.version>5.1.21</mysql.version>
         <slf4j.version>1.6.1</slf4j.version>
-        <janino.version>2.7.8</janino.version>
+        <janino.version>3.0.12</janino.version>
         <commons.httpclient.version>3.1</commons.httpclient.version>
         <jdbf.version>2.1.0</jdbf.version>
         <org.jdbf.version>1.1</org.jdbf.version>
