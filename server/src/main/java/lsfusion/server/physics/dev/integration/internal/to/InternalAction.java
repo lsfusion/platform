@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.internal.to;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -71,6 +72,18 @@ public abstract class InternalAction extends ExplicitAction {
         return ActionDelegationType.IN_DELEGATE; // jump to java code
     }
 
+    protected ClassPropertyInterface getParamInterface(int i) {
+        return getOrderInterfaces().get(i);
+    }
+
+    protected Object getParam(int i, ExecutionContext<ClassPropertyInterface> context) {
+        return context.getKeyObject(getParamInterface(i));
+    }
+
+    protected ObjectValue getParamValue(int i, ExecutionContext<ClassPropertyInterface> context) {
+        return context.getKeyValue(getParamInterface(i));
+    }
+    
     @Override
     protected boolean isSync() {
         return true;
