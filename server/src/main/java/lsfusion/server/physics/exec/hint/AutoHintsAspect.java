@@ -286,7 +286,7 @@ public class AutoHintsAspect {
                 whereComplexity = changed.getComplexity(false);
             long complexity = max(exprComplexity, whereComplexity);
 
-            if(interfaceValues.isEmpty() || (complexity > catchHint.getLimitHintIncrementValueComplexity() && !property.isComplex())) { // нужен чтобы не цеплять много лишних записей, потенциально конечно опасно, для этого сделан отдельный порог и проверка на complex (но все равно не максимально надежное решение, в общем случае надо по аналогии с preread change'и для interfaceValues хранить)
+            if(interfaceValues.isEmpty() || (complexity > catchHint.getLimitHintIncrementValueComplexity() && !property.isOrDependsComplex())) { // нужен чтобы не цеплять много лишних записей, потенциально конечно опасно, для этого сделан отдельный порог и проверка на complex (но все равно не максимально надежное решение, в общем случае надо по аналогии с preread change'и для interfaceValues хранить)
                 int limitComplexity = catchHint.getLimitHintIncrementComplexity();
                 if(complexity > limitComplexity && property.hasChanges(propChanges)) { // сложность большая, если нет изменений то ничем не поможешь
                     if (interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
