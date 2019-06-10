@@ -173,7 +173,7 @@
         <property name="restartManager" ref="restartManager"/>
         <property name="denyDropModules" value="${db.denyDropModules:false}"/>
         <property name="denyDropTables" value="${db.denyDropTables:false}"/>
-        <property name="dbNamingPolicy" value="${db.namingPolicy:}"/>
+        <property name="dbNamingPolicy" value="${db.namingPolicy:lsfusion.server.physics.dev.id.name.FullDBNamingPolicy}"/>
         <property name="dbMaxIdLength" value="${db.maxIdLength:63}"/>
         <property name="defaultUserLanguage" value="${user.defaultLanguage:#{null}}"/>
         <property name="defaultUserCountry" value="${user.defaultCountry:#{null}}"/>
