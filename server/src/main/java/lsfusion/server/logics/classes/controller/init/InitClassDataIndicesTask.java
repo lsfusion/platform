@@ -10,6 +10,6 @@ public class InitClassDataIndicesTask extends SimpleBLTask {
     }
 
     public void run(Logger logger) {
-        getBL().initClassDataIndices();
+        getBL().initClassDataIndices(getDbManager());
     }
 }

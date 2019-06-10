@@ -66,6 +66,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.AbstractPropertyNameParser;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.TableFactory;
 import org.antlr.runtime.RecognitionException;
 
@@ -194,17 +195,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     // счетчик идентификаторов
     private static final IDGenerator idGenerator = new DefaultIDGenerator();
 
-    private lsfusion.server.physics.dev.id.name.DBNamingPolicy DBNamingPolicy;
-    
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
     private final BusinessLogics BL;
 
-    public BaseLogicsModule(BusinessLogics BL, DBNamingPolicy DBNamingPolicy) throws IOException {
+    public BaseLogicsModule(BusinessLogics BL) throws IOException {
         super(BaseLogicsModule.class.getResourceAsStream("/system/System.lsf"), "/system/System.lsf", null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
-        this.DBNamingPolicy = DBNamingPolicy;
         namedProperties = NFFact.simpleMap(namedProperties);
         namedActions = NFFact.simpleMap(namedActions);
     }
@@ -362,11 +360,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         }
     }
 
-
-    public DBNamingPolicy getDBNamingPolicy() {
-        return DBNamingPolicy;
-    }
-    
     public AbstractPropertyNameParser.ClassFinder getClassFinder() {
         return new PropertyCanonicalNameParser.CanonicalNameClassFinder(BL);    
     }
@@ -379,11 +372,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initTables() throws RecognitionException {
-        tableFactory = new TableFactory(getDBNamingPolicy());
+    public void initTables(DBNamingPolicy namingPolicy) throws RecognitionException {
+        tableFactory = new TableFactory();
         baseClass.initFullTables(tableFactory);
         
-        super.initTables();
+        super.initTables(namingPolicy);
     }
 
     @Override
@@ -546,9 +539,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initIndexes() throws RecognitionException {
-        super.initIndexes();
-        addIndex(staticCaption);
+    public void initIndexes(DBManager dbManager) throws RecognitionException {
+        super.initIndexes(dbManager);
+        dbManager.addIndex(staticCaption);
     }
 
     @IdentityStrongLazy

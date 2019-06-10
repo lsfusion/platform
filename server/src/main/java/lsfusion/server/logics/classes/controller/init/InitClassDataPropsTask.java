@@ -10,6 +10,6 @@ public class InitClassDataPropsTask extends SimpleBLTask {
     }
 
     public void run(Logger logger) {
-        getBL().initClassDataProps();
+        getBL().initClassDataProps(getDBNamingPolicy());
     }
 }

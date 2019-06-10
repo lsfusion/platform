@@ -415,8 +415,8 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkMarkStoredProperties(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        ImplementTable table = null;
-        String firstPropertyName = null;
+//        ImplementTable table = null;
+//        String firstPropertyName = null;
         for (ScriptingLogicsModule.LPWithParams lp : lps) {
             if (lp.getLP() != null) {
                 Property<?> property = lp.getLP().property;
@@ -424,12 +424,12 @@ public class ScriptingLogicsModuleChecks {
                 if (!property.isMarkedStored()) {
                     errLog.emitShouldBeStoredError(parser, name);
                 }
-                if (table == null) {
-                    table = property.mapTable.table;
-                    firstPropertyName = name;
-                } else if (table != property.mapTable.table) {
-                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, name);
-                }
+//                if (table == null) {
+//                    table = property.mapTable.table;
+//                    firstPropertyName = name;
+//                } else if (table != property.mapTable.table) {
+//                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, name);
+//                }
             }
         }
     }

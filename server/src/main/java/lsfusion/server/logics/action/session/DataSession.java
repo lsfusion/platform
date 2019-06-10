@@ -1873,8 +1873,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         Integer changed = data.size();
         String dataChanged = "";
         for(Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> entry : data.entrySet()){
-            if(entry.getKey().getDBName() != null)
-                dataChanged+=entry.getKey().getDBName() + ": " + entry.getValue().getCount() + "\n";
+            String canonicalName = entry.getKey().getCanonicalName();
+            if(canonicalName != null)
+                dataChanged += canonicalName + ": " + entry.getValue().getCount() + "\n";
         }
 
         Result<Integer> addedCount = new Result<>();

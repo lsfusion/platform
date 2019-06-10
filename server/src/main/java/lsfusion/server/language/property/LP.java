@@ -39,6 +39,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.log.form.LogFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -215,19 +216,19 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
     }
 
     public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM, false);
+        setupLoggable(ownerModule, systemEventsLM, null);
         property.setLoggable(true);
     }
 
-    public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM, true);
+    public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
+        setupLoggable(ownerModule, systemEventsLM, namingPolicy);
         property.setLoggable(true);
     }
 
-    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean reflection) {
+    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
         if (property.getLogValueProperty() == null) {
-            LP logValueProperty = ownerModule.addLProp(systemEventsLM, this, reflection);
-            LP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this, reflection);
+            LP logValueProperty = ownerModule.addLProp(systemEventsLM, this, namingPolicy);
+            LP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this, namingPolicy);
             
             property.setLogValueProperty(logValueProperty);
             property.setLogWhereProperty(ownerModule.addLWhereProp(logValueProperty, logDropProperty));

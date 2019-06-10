@@ -95,6 +95,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClas
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.*;
+import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.*;
@@ -107,6 +108,7 @@ import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.log.LogTime;
 import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
@@ -1054,31 +1056,37 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public boolean aggProp;
 
     public boolean isMarkedStored() {
-        return mapTable != null;
+        return markedStored;
     }
+    
+    private boolean markedStored;
 
-    public void markStored(TableFactory tableFactory, ImplementTable table) {
-        MapKeysTable<T> mapTable = null;
+    public void markStored(ImplementTable table) {
+        markedStored = true;
 
-        ImOrderMap<T, ValueClass> keyClasses = getOrderTableInterfaceClasses(AlgType.storedResolveType);
         if (table != null) {
-            mapTable = table.getMapKeysTable(keyClasses);
-            assert mapTable!=null; // таблица не подходящих классов явно задана
+            ImOrderMap<T, ValueClass> keyClasses = getOrderTableInterfaceClasses(AlgType.storedResolveType);
+            if(interfaces.size() == 1) { // optimization + hack
+                mapTable = new MapKeysTable<>(table, MapFact.singletonRev(interfaces.single(), table.keys.single()));
+                assert this instanceof ClassDataProperty || mapTable.equals(table.getMapKeysTable(keyClasses)); // for classdataprops it's a hack, because there can be really different classes inside and their commonParent (in interfaceClasses) can be really different from full table (explicit table for class dataprops)   
+            } else {
+                mapTable = table.getMapKeysTable(keyClasses);
+                assert mapTable != null; // in theory there should be an error table of classes that can't be mapped (it's checked just before markStored)
+            }
         }
-
-        if (mapTable == null) {
-            mapTable = tableFactory.getMapTable(keyClasses);
-        }
-
-        markStored(mapTable);
     }
 
-    public void markStored(MapKeysTable<T> mapTable) {
-        this.mapTable = mapTable;
+    public String getDBName() {
+        return field.getName();
     }
 
-    public void initStored() {
-        PropertyField field = new PropertyField(getDBName(), getType());
+    public void initStored(TableFactory tableFactory, DBNamingPolicy policy) {
+        if(mapTable == null)
+            mapTable = tableFactory.getMapTable(getOrderTableInterfaceClasses(AlgType.storedResolveType), policy);
+
+        String dbName = policy.transformActionOrPropertyCNToDBName(this.canonicalName);
+
+        PropertyField field = new PropertyField(dbName, getType());
         fieldClassWhere = getClassWhere(mapTable, field);
         mapTable.table.addField(field, fieldClassWhere);
 
