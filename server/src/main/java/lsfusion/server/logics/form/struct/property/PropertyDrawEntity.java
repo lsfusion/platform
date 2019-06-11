@@ -259,10 +259,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     
     private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(int ID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
+    public PropertyDrawEntity(int ID, String sID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
         super(ID);
-        setSID("propertyDraw" + ID);
-        setIntegrationSID("propertyDraw" + ID);
+        setSID(sID);
+        setIntegrationSID(sID);
         this.propertyObject = propertyObject;
         this.inheritedProperty = inheritedProperty;
     }
