@@ -886,9 +886,14 @@ public class ClientFormController implements AsyncListener {
 
                 GridController controller = controllers.get(property.groupObject);
 
-                ClientGroupObjectValue propertyKey = controller != null && !controller.hasPanelProperty(property)
-                                                     ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey)
-                                                     : columnKey;
+                ClientGroupObjectValue propertyKey;
+                if (controller != null && !controller.hasPanelProperty(property)) { // if is grid
+                    ClientGroupObjectValue currentObject = controller.getCurrentObject();
+                    if(currentObject.isEmpty())
+                        return;
+                    propertyKey = new ClientGroupObjectValue(currentObject, columnKey);
+                } else 
+                    propertyKey = columnKey;
 
                 pendingChangePropertyRequests.put(property, propertyKey,
                                                     new PropertyChange(requestIndex, newValue, oldValue, property.canUseChangeValueForRendering())
@@ -943,6 +948,8 @@ public class ClientFormController implements AsyncListener {
             value = new ClientGroupObjectValue(object, ID);
         } else {
             value = controller.getCurrentObject();
+            if(value.isEmpty())
+                return;
             ID = (Long) BaseUtils.singleValue(value);
         }
         
