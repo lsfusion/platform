@@ -682,7 +682,7 @@ vmargs '{security.vm.args.memory.limit}' = DATA STRING[1000] (MemoryLimit);
 generateJnlpUrls () {
 
     LOCAL execURL = STRING();
-    execURL() <- CONCAT '', '\{contextPath\}/exec?', IF query() THEN query() + '&' ELSE '', 'action=Security.generateJnlp%5BSTRING%5B10%5D,STRING%5B1000%5D%5D';
+    execURL() <- CONCAT '', '\{contextPath\}/exec?', IF query() THEN query() + '&' ELSE '', 'action=Security.generateJnlp';
 
     FOR MemoryLimit ml IS MemoryLimit DO {
         exportText() <- CONCAT '', exportText(), '<a href="', execURL(), '&p=', IF maxHeapSize(ml) THEN maxHeapSize(ml) ELSE '';
