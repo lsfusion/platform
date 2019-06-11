@@ -453,6 +453,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
                 grid.font = font;
                 grid.columnsPreferencesChanged();
                 focusPanel.setFocus(true);
+                super.failure(caught);
             }
         };
     }
