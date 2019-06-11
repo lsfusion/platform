@@ -153,6 +153,7 @@ import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -1643,16 +1644,26 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LA addScriptedCustomAction(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            Action instance;
+            Object instanceObject = null;
+            Class<?> javaClass = Class.forName(javaClassName);
             if (classes == null || classes.isEmpty()) {
-                instance = (Action) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this);
-            } else {
-                ValueClass[] classList = new ValueClass[classes.size()];
-                for (int i = 0; i < classes.size(); i++) {
-                    classList[i] = findClass(classes.get(i));
+                try {
+                    instanceObject = javaClass.getConstructor(this.getClass()).newInstance(this);
+                } catch (NoSuchMethodException e) {
                 }
-                instance = (Action) Class.forName(javaClassName).getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList);
             }
+            if(instanceObject == null) {
+                ValueClass[] classList; 
+                if(classes != null) {
+                    classList = new ValueClass[classes.size()];
+                    for (int i = 0; i < classes.size(); i++) {
+                        classList[i] = findClass(classes.get(i));
+                    }
+                } else
+                    classList = new ValueClass[0];
+                instanceObject = javaClass.getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList);
+            }
+            Action instance = (Action)instanceObject;
             if (instance instanceof ExplicitAction && allowNullValue) {
                 ((ExplicitAction) instance).allowNullValue = true;
             }

@@ -142,6 +142,11 @@ public class ScriptingFormView {
         return ScriptingFormEntity.addPropertyObject(LM, view.entity, property);
     }
 
+    public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
+        return ScriptingFormEntity.getTypedObjectsNames(LM, view.entity, version);
+    }
+
+
     public ContainerView getMainContainer() {
         return view.mainContainer;
     }
