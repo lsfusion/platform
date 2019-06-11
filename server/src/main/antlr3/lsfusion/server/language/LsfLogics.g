@@ -817,21 +817,19 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 	;
 
 formPropertyObject returns [PropertyObjectEntity property = null]
-	:   fd = formDesignOrFormPropertyObject[null] { $property = $fd.property; }	
+	:   fd = designOrFormPropertyObject[null] { $property = $fd.property; }	
 	;
 
 designPropertyObject returns [PropertyObjectEntity property = null]
-	:   fd = formDesignOrFormPropertyObject[$designStatement::design] { $property = $fd.property; }
+	:   fd = designOrFormPropertyObject[$designStatement::design] { $property = $fd.property; }
 	;
 
 // may be used in design
-formDesignOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEntity property = null]
+designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEntity property = null]
 @init {
     AbstractFormPropertyUsage propUsage = null;
 }
-	:	(	mProperty=mappedPropertyObjectUsage { propUsage = new FormPropertyUsage($mProperty.propUsage, $mProperty.mapping); }
-		|	expr=formExprDeclaration { propUsage = new FormLPUsage($expr.property, $expr.mapping); }
-        )
+	:	expr=designOrFormExprDeclaration[design] { propUsage = new FormLPUsage($expr.property, $expr.mapping); }
 		{
 			if (inMainParseState()) {
 			    if(design != null)
@@ -1095,10 +1093,17 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
     ;
 	
 formExprDeclaration returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
+    :   dfe = designOrFormExprDeclaration[null] { $property = $dfe.property; $mapping = $dfe.mapping; $signature = $dfe.signature; }
+    ;
+
+designOrFormExprDeclaration[ScriptingFormView design] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	if (inMainParseState()) {
-		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
+	    if(design != null)
+	        context = design.getTypedObjectsNames(self.getVersion());
+	    else
+		    context = $formStatement::form.getTypedObjectsNames(self.getVersion());
 	}
 }
 @after {

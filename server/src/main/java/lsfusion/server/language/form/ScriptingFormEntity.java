@@ -704,7 +704,7 @@ public class ScriptingFormEntity {
         return (CustomClass) valueClass;
     }
 
-    public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
+    public static List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(ScriptingLogicsModule LM, FormEntity form, Version version) {
         List<ValueClass> classes = new ArrayList<>();
         List<String> objNames = form.getNFObjectsNamesAndClasses(classes, version);
         List<ScriptingLogicsModule.TypedParameter> typedObjects = new ArrayList<>();
@@ -712,6 +712,9 @@ public class ScriptingFormEntity {
             typedObjects.add(LM.new TypedParameter(classes.get(i), objNames.get(i)));
         }
         return typedObjects;
+    }
+    public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
+        return getTypedObjectsNames(LM, form, version);
     }
     
     public static class RegularFilterInfo {
