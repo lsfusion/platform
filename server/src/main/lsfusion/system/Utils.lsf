@@ -107,18 +107,18 @@ protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.server.logics.classes.
 
 lower (TEXT p1) = FORMULA 'lower($1)';
 
-isWordInCSV = FORMULA NULL BOOLEAN PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN TRUE ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN TRUE ELSE NULL END';
+isWordInCSV = FORMULA NULL BOOLEAN PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
 
 getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA TEXT '(string_to_array($1,$2))[($3)]';
 wordCount (TEXT p1, TEXT p2) = FORMULA INTEGER 'array_length((string_to_array($1,$2)),1)';
 
-istartsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN TRUE ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN TRUE ELSE NULL END';
-startsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN TRUE ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN TRUE ELSE NULL END';
-endsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN TRUE ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN TRUE ELSE NULL END';
+istartsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+startsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+endsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN 1 ELSE NULL END';
 
 // todo : для MS SQL пофиксить формулу, чтобы правильно работало, если в подстроке есть %
-isISubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN TRUE ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN TRUE ELSE NULL END'; 
-isSubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(($2) in ($1)) > 0 THEN TRUE ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN TRUE ELSE NULL END';
+isISubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
+isSubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(($2) in ($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
 
 replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
 
@@ -146,7 +146,7 @@ rpad (TEXT p1, INTEGER p2, TEXT p3) = FORMULA TEXT PG 'rpad($1,$2,$3)';
 
 repeat (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'repeat($1,$2)', MS 'REPLICATE ($1,$2)';
 
-onlyDigits (TEXT p1) = FORMULA NULL BOOLEAN PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN TRUE ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN TRUE ELSE NULL END';
+onlyDigits (TEXT p1) = FORMULA NULL BOOLEAN PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN 1 ELSE NULL END';
 
 encode = FORMULA TEXT 'encode(($1),($2))';
 decode = FORMULA RAWFILE 'decode(($1),($2))';
