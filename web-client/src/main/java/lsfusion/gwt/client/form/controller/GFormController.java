@@ -796,15 +796,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void changeProperty(GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey), value, null), new ServerResponseCallback());
-
         GTableController controller = getGroupObjectLogicsSupplier(property.groupObject);
 
-        GGroupObjectValue propertyKey = controller != null && !controller.hasPanelProperty(property)
-                                        ? columnKey != null
-                                            ? new GGroupObjectValueBuilder(controller.getCurrentKey(), columnKey).toGroupObjectValue()
-                                            : controller.getCurrentKey()
-                                        : columnKey;
+        GGroupObjectValue propertyKey;
+        if (controller != null && !controller.hasPanelProperty(property)) { // if is grid
+            GGroupObjectValue currentKey = controller.getCurrentKey();
+            if(currentKey.isEmpty())
+                return;
+            propertyKey = columnKey != null ? new GGroupObjectValueBuilder(currentKey, columnKey).toGroupObjectValue() : currentKey;
+        } else 
+            propertyKey = columnKey;
+
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey), value, null), new ServerResponseCallback());
 
         putToDoubleNativeMap(pendingChangePropertyRequests, property, propertyKey, new Change(requestIndex, value, oldValue, property.canUseChangeValueForRendering()));
     }
@@ -837,6 +840,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             });
         } else {
             final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
+            if(value.isEmpty())
+                return;
             final long ID = (Long) value.getValue(0);
             executeModifyObject(property, columnKey, object, add, ID, value, position);
         }

@@ -855,7 +855,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     public void modifyGroupObject(GGroupObjectValue rowKey, boolean add, int position) {
         if (add) {
-            if (position >= 0) {
+            if (position >= 0 && position <= rowKeys.size()) {
                 rowKeys.add(position, rowKey);
             } else {
                 rowKeys.add(rowKey);
