@@ -25,7 +25,6 @@ public class DataType {
     public final static byte DYNAMICFORMATFILE = 21;
     public final static byte TIME = 22;
     public final static byte COLOR = 23;
-    public final static byte VARSTRING = 24;
     public final static byte PDFLINK = 25;
     public final static byte IMAGELINK = 26;
     public final static byte WORDLINK = 27;

@@ -1299,10 +1299,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     private class ServerResponseCallback extends ErrorHandlingCallback<ServerResponseResult> {
 
-        public ServerResponseCallback() {
-            GExceptionManager.addStackTrace("RESPONSE " + actionDispatcher); // both for statuscode and current response is null
-        }
-
         @Override
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);

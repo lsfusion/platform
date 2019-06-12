@@ -1570,10 +1570,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // Postgres - иногда может быть большое время планирования, но пока проблема была локальная на других базах не повторялась
     public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml, Provider<String> fullText) throws SQLException {
         long l = System.currentTimeMillis();
-        long actualTime = System.currentTimeMillis() - l;
         int minSpaces = Integer.MAX_VALUE;
         Integer rows = null;
         try (ResultSet result = statement.executeQuery()) {
+            long actualTime = System.currentTimeMillis() - l;
             int thr = Settings.get().getExplainThreshold();
             int i = 0;
             String row = null;
