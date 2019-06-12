@@ -93,7 +93,7 @@ public class ImportEMLAction extends EmailAction {
                     DataObject attachmentObject = session.addObject((ConcreteCustomClass) emailLM.findClass("AttachmentEmail"));
                     emailLM.findProperty("email[AttachmentEmail]").change(emailObject, session, attachmentObject);
                     emailLM.findProperty("id[AttachmentEmail]").change(String.valueOf(attachment.id), session, attachmentObject);
-                    emailLM.findProperty("name[AttachmentEmail]").change(attachment.name, session, attachmentObject);
+                    emailLM.findProperty("name[AttachmentEmail]").change(getFileNameWithoutExt(attachment.name), session, attachmentObject);
                     emailLM.findProperty("file[AttachmentEmail]").change(attachment.file, session, attachmentObject);
                 }
                 String result = session.applyMessage();
