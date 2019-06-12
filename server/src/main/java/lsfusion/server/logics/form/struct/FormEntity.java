@@ -698,7 +698,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath, String propertySID, ActionOrProperty inheritedProperty, Version version) {
         if(inheritedProperty == null)
             inheritedProperty = propertyImplement.property;
-        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement, inheritedProperty);
+        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), "propertyDraw" + version.getOrder() + propertyDraws.size(version), propertyImplement, inheritedProperty);
 
         newPropertyDraw.proceedDefaultDraw(this);
 

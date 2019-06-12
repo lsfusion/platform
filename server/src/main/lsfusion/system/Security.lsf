@@ -682,6 +682,7 @@ vmargs '{security.vm.args.memory.limit}' = DATA STRING[1000] (MemoryLimit);
 generateJnlpUrls () {
 
     LOCAL execURL = STRING();
+    //we use generateJnlp without params because linux mint cut from url '%5'
     execURL() <- CONCAT '', '\{contextPath\}/exec?', IF query() THEN query() + '&' ELSE '', 'action=Security.generateJnlp';
 
     FOR MemoryLimit ml IS MemoryLimit DO {

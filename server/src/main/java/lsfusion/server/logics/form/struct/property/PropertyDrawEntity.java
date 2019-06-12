@@ -259,10 +259,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     
     private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(int ID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
+    public PropertyDrawEntity(int ID, String sID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
         super(ID);
-        setSID("propertyDraw" + ID);
-        setIntegrationSID("propertyDraw" + ID);
+        setSID(sID);
+        setIntegrationSID(sID);
         this.propertyObject = propertyObject;
         this.inheritedProperty = inheritedProperty;
     }
@@ -349,7 +349,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             if (editAction != null)
                 return editAction;
         }
-        
+
         ActionOrProperty<P> editProperty = getEditProperty();
         ActionMapImplement<?, P> editActionImplement = editProperty.getEditAction(actionId);
         if(editActionImplement != null)
@@ -428,7 +428,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private ImRevMap<P, ObjectEntity> getEditMapping() {
         return propertyObject.mapping;
     }     
-
+    
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {
         ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEditProperty().getContextMenuBindings(); 
         if (propertyContextMenuBindings.isEmpty()) {

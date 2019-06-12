@@ -264,7 +264,7 @@ public class EmailReceiver {
                             int counter = 1;
                             if (messageEmail.attachments != null) {
                                 for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
-                                    dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
+                                    dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), getFileNameWithoutExt(entry.getKey()), entry.getValue()));
                                     counter++;
                                 }
                             }
