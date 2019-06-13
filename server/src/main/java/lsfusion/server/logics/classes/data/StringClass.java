@@ -8,10 +8,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.classes.data.file.CSVClass;
-import lsfusion.server.logics.classes.data.file.HTMLClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
-import lsfusion.server.logics.classes.data.file.XMLClass;
+import lsfusion.server.logics.classes.data.file.*;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -54,7 +51,7 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        if (typeFrom instanceof CSVClass || typeFrom instanceof HTMLClass || typeFrom instanceof JSONClass || typeFrom instanceof XMLClass) {
+        if (typeFrom instanceof TXTClass || typeFrom instanceof CSVClass || typeFrom instanceof HTMLClass || typeFrom instanceof JSONClass || typeFrom instanceof XMLClass) {
             return "cast_file_to_string(" + value + ")";
         }
         String result = super.getCast(value, syntax, typeEnv, typeFrom);

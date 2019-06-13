@@ -94,6 +94,7 @@ public class TypeSerializer {
         if (type == DataType.IMAGE) return ImageClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.WORD) return WordClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.EXCEL) return ExcelClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.TXT) return TXTClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CSV) return CSVClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.JSON) return JSONClass.get(inStream.readBoolean(), inStream.readBoolean());
@@ -122,6 +123,7 @@ public class TypeSerializer {
         if (type == DataType.IMAGELINK) return ImageLinkClass.get(inStream.readBoolean());
         if (type == DataType.WORDLINK) return WordLinkClass.get(inStream.readBoolean());
         if (type == DataType.EXCELLINK) return ExcelLinkClass.get(inStream.readBoolean());
+        if (type == DataType.TXTLINK) return TXTLinkClass.get(inStream.readBoolean());
         if (type == DataType.CSVLINK) return CSVLinkClass.get(inStream.readBoolean());
         if (type == DataType.HTMLLINK) return HTMLLinkClass.get(inStream.readBoolean());
         if (type == DataType.JSONLINK) return JSONLinkClass.get(inStream.readBoolean());
