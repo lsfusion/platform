@@ -9,6 +9,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import org.apache.commons.net.util.Base64;
 
@@ -38,7 +39,9 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        if (typeFrom instanceof DynamicFormatFileClass) {
+        if (typeFrom instanceof StringClass) {
+            return "cast_string_to_file(" + value + ")";
+        } else if (typeFrom instanceof DynamicFormatFileClass) {
             return "cast_from_custom_file(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);

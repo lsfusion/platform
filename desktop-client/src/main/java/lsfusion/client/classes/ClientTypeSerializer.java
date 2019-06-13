@@ -82,6 +82,7 @@ public class ClientTypeSerializer {
         if (type == DataType.IMAGE) return new ClientImageClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.WORD) return new ClientWordClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.EXCEL) return new ClientExcelClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.TXT) return new ClientTXTClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CSV) return new ClientCSVClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.HTML) return new ClientHTMLClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.JSON) return new ClientJSONClass(inStream.readBoolean(), inStream.readBoolean());
@@ -94,6 +95,7 @@ public class ClientTypeSerializer {
         if (type == DataType.IMAGELINK) return new ClientImageLinkClass(inStream.readBoolean());
         if (type == DataType.WORDLINK) return new ClientWordLinkClass(inStream.readBoolean());
         if (type == DataType.EXCELLINK) return new ClientExcelLinkClass(inStream.readBoolean());
+        if (type == DataType.TXTLINK) return new ClientTXTLinkClass(inStream.readBoolean());
         if (type == DataType.CSVLINK) return new ClientCSVLinkClass(inStream.readBoolean());
         if (type == DataType.HTMLLINK) return new ClientHTMLLinkClass(inStream.readBoolean());
         if (type == DataType.JSONLINK) return new ClientJSONLinkClass(inStream.readBoolean());

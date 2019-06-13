@@ -110,6 +110,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return initializeFileClass(excelClass, new GExcelType());
     }
 
+    @Converter(from = ClientTXTClass.class)
+    public GTXTType convertTXTClass(ClientTXTClass txtClass) {
+        return initializeFileClass(txtClass, new GTXTType());
+    }
+
     @Converter(from = ClientCSVClass.class)
     public GCSVType convertCSVClass(ClientCSVClass csvClass) {
         return initializeFileClass(csvClass, new GCSVType());
@@ -165,6 +170,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientExcelLinkClass.class)
     public GExcelLinkType convertExcelLinkClass(ClientExcelLinkClass excelClass) {
         return initializeLinkClass(excelClass, new GExcelLinkType());
+    }
+
+    @Converter(from = ClientTXTLinkClass.class)
+    public GTXTLinkType convertTXTLinkClass(ClientTXTLinkClass txtClass) {
+        return initializeLinkClass(txtClass, new GTXTLinkType());
     }
 
     @Converter(from = ClientCSVLinkClass.class)

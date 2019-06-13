@@ -96,6 +96,7 @@ public final class ClassCanonicalNameUtils {
         put("RAWFILE", CustomStaticFormatFileClass.get());
         put("FILE", DynamicFormatFileClass.get());
         put("EXCELFILE", ExcelClass.get());
+        put("TEXTFILE", TXTClass.get());
         put("CSVFILE", CSVClass.get());
         put("HTMLFILE", HTMLClass.get());
         put("JSONFILE", JSONClass.get());
@@ -107,6 +108,7 @@ public final class ClassCanonicalNameUtils {
         put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
+        put("TEXTLINK", TXTLinkClass.get(false));
         put("CSVLINK", CSVLinkClass.get(false));
         put("HTMLLINK", HTMLLinkClass.get(false));
         put("JSONLINK", JSONLinkClass.get(false));
@@ -158,6 +160,7 @@ public final class ClassCanonicalNameUtils {
         put("RAWFILE", CustomStaticFormatFileClass.get());
         put("FILE", DynamicFormatFileClass.get());
         put("EXCELFILE", ExcelClass.get());
+        put("TEXTFILE", TXTClass.get());
         put("CSVFILE", CSVClass.get());
         put("HTMLFILE", HTMLClass.get());
         put("JSONFILE", JSONClass.get());
@@ -169,6 +172,7 @@ public final class ClassCanonicalNameUtils {
         put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
+        put("TEXTLINK", TXTLinkClass.get(false));
         put("CSVLINK", CSVLinkClass.get(false));
         put("HTMLLINK", HTMLLinkClass.get(false));
         put("JSONLINK", JSONLinkClass.get(false));

@@ -6,50 +6,49 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class CSVClass extends StaticFormatFileClass {
+public class TXTClass extends StaticFormatFileClass {
 
     protected String getFileSID() {
-        return "CSVFILE";
+        return "TEXTFILE";
     }
 
-    private static Collection<CSVClass> instances = new ArrayList<>();
+    private static Collection<TXTClass> instances = new ArrayList<>();
 
-    public static CSVClass get() {
+    public static TXTClass get() {
         return get(false, false);
     }
-    
-    public static CSVClass get(boolean multiple, boolean storeName) {
-        for (CSVClass instance : instances)
+
+    public static TXTClass get(boolean multiple, boolean storeName) {
+        for (TXTClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
                 return instance;
 
-        CSVClass instance = new CSVClass(multiple, storeName);
+        TXTClass instance = new TXTClass(multiple, storeName);
         instances.add(instance);
         DataClass.storeClass(instance);
         return instance;
     }
 
-    private CSVClass(boolean multiple, boolean storeName) {
+    private TXTClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
     }
 
     public byte getTypeID() {
-        return DataType.CSV;
+        return DataType.TXT;
     }
 
     public String getOpenExtension(RawFileData file) {
-        return "csv";
+        return "txt";
     }
 
     @Override
     public String getExtension() {
-        return "csv";
+        return "txt";
     }
 
     @Override
@@ -59,6 +58,6 @@ public class CSVClass extends StaticFormatFileClass {
 
     @Override
     public FormIntegrationType getIntegrationType() {
-        return FormIntegrationType.CSV;
+        return FormIntegrationType.TEXT;
     }
 }

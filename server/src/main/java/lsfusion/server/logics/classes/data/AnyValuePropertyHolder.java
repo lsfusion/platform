@@ -52,6 +52,7 @@ public class AnyValuePropertyHolder {
     private final LP rawFileProperty;
     private final LP customFileProperty;
     private final LP excelFileProperty;
+    private final LP textFileProperty;
     private final LP csvFileProperty;
     private final LP htmlFileProperty;
     private final LP jsonFileProperty;
@@ -63,6 +64,7 @@ public class AnyValuePropertyHolder {
     private final LP rawLinkProperty;
     private final LP customLinkProperty;
     private final LP excelLinkProperty;
+    private final LP textLinkProperty;
     private final LP csvLinkProperty;
     private final LP htmlLinkProperty;
     private final LP jsonLinkProperty;
@@ -72,9 +74,9 @@ public class AnyValuePropertyHolder {
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty,
                                   LP<?> dateTimeProperty, LP<?> logicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> wordFileProperty, LP<?> imageFileProperty,
                                   LP<?> pdfFileProperty, LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty,
-                                  LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
+                                  LP<?> textFileProperty, LP<?> csvFileProperty, LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty,
                                   LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> rawLinkProperty,
-                                  LP<?> customLinkProperty, LP<?> excelLinkProperty, LP<?> csvLinkProperty,
+                                  LP<?> customLinkProperty, LP<?> excelLinkProperty, LP<?> textLinkProperty, LP<?> csvLinkProperty,
                                   LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
@@ -96,6 +98,7 @@ public class AnyValuePropertyHolder {
                 && rawFileProperty.property.getType() == CustomStaticFormatFileClass.get()
                 && customFileProperty.property.getType() == DynamicFormatFileClass.get()
                 && excelFileProperty.property.getType() == ExcelClass.get()
+                && textFileProperty.property.getType() == TXTClass.get()
                 && csvFileProperty.property.getType() == CSVClass.get()
                 && htmlFileProperty.property.getType() == HTMLClass.get()
                 && jsonFileProperty.property.getType() == JSONClass.get()
@@ -107,6 +110,7 @@ public class AnyValuePropertyHolder {
                 && rawLinkProperty.property.getType() == CustomStaticFormatLinkClass.get()
                 && customLinkProperty.property.getType() == DynamicFormatLinkClass.get(false)
                 && excelLinkProperty.property.getType() == ExcelLinkClass.get(false)
+                && textLinkProperty.property.getType() == TXTLinkClass.get(false)
                 && csvLinkProperty.property.getType() == CSVLinkClass.get(false)
                 && htmlLinkProperty.property.getType() == HTMLLinkClass.get(false)
                 && jsonLinkProperty.property.getType() == JSONLinkClass.get(false)
@@ -134,6 +138,7 @@ public class AnyValuePropertyHolder {
         this.rawFileProperty = rawFileProperty;
         this.customFileProperty = customFileProperty;
         this.excelFileProperty = excelFileProperty;
+        this.textFileProperty = textFileProperty;
         this.csvFileProperty = csvFileProperty;
         this.htmlFileProperty = htmlFileProperty;
         this.jsonFileProperty = jsonFileProperty;
@@ -145,6 +150,7 @@ public class AnyValuePropertyHolder {
         this.rawLinkProperty = rawLinkProperty;
         this.customLinkProperty = customLinkProperty;
         this.excelLinkProperty = excelLinkProperty;
+        this.textLinkProperty = textLinkProperty;
         this.csvLinkProperty = csvLinkProperty;
         this.htmlLinkProperty = htmlLinkProperty;
         this.jsonLinkProperty = jsonLinkProperty;
@@ -193,6 +199,8 @@ public class AnyValuePropertyHolder {
             return customFileProperty;
         } else if (valueType instanceof ExcelClass) {
             return excelFileProperty;
+        } else if (valueType instanceof TXTClass) {
+            return textFileProperty;
         } else if (valueType instanceof CSVClass) {
             return csvFileProperty;
         } else if (valueType instanceof HTMLClass) {
@@ -217,6 +225,8 @@ public class AnyValuePropertyHolder {
             return customLinkProperty;
         } else if (valueType instanceof ExcelLinkClass) {
             return excelLinkProperty;
+        } else if (valueType instanceof TXTLinkClass) {
+            return textLinkProperty;
         } else if (valueType instanceof CSVLinkClass) {
             return csvLinkProperty;
         } else if (valueType instanceof HTMLLinkClass) {
@@ -239,7 +249,7 @@ public class AnyValuePropertyHolder {
         return SetFact.toOrderExclSet(
                 // files
                 customFileProperty, rawFileProperty, wordFileProperty, imageFileProperty, pdfFileProperty, excelFileProperty,
-                csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty,
+                textFileProperty, csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty,
                 // strings
                 textProperty, stringProperty, bpStringProperty,
                 // numbers
@@ -248,7 +258,7 @@ public class AnyValuePropertyHolder {
                 dateTimeProperty, dateProperty, timeProperty, yearProperty,
                 // links
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty,  excelLinkProperty,
-                csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
+                textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
                 logicalProperty, colorProperty, objectProperty 
         ).mapOrderSetValues(new GetValue<SessionDataProperty, LP>() {

@@ -54,9 +54,6 @@ public class XMLClass extends StaticFormatFileClass {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        if (typeFrom instanceof StringClass) {
-            return "cast_string_to_file(" + value + ")";
-        }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }
 
