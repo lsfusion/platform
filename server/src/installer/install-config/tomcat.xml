@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context path="">
+    <Parameter name="host" value="localhost" override="false"/>
+    <Parameter name="port" value="7652" override="false"/>
+</Context>

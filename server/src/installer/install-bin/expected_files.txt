@@ -4,10 +4,10 @@ apache-tomcat-<version>-windows-x86.zip
 ideaIC-<version>.exe
 jdk-<version>-windows-i586.exe
 jdk-<version>-windows-x64.exe
-lsfusion-client-<version>.jar
-lsfusion-client-<version>.war
+lsfusion-client.jar
+lsfusion-client.war
 lsfusion-idea-plugin.zip
-lsfusion-server-<version>.jar
+lsfusion-server.jar
 postgresql-<version>-windows-x64.exe
 postgresql-<version>-windows.exe
 TIB_js-studiocomm_<version>.final_windows_x86_64.exe

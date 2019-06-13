@@ -14,4 +14,4 @@
 
 !define JASPER_VERSION 6.6.0
 
-#LSFUSION_VERSION and VI_LSFUSION_VERSION will be added automatically before building installers
+# LSFUSION_MAJOR_VERSION, LSFUSION_VERSION and VI_LSFUSION_VERSION will be added automatically before building installers

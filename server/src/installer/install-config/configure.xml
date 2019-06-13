@@ -5,30 +5,16 @@
     <property file="configure.properties" />
 
     <target name="configureWebClient">
-        <unzip src="${web.archive}" dest=".">
-            <patternset>
-                <include name="WEB-INF/web.xml"/>
-            </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-
-        <replace file="web.xml" token="localhost" value="${server.host}" encoding="UTF-8"/>
-        <replace file="web.xml" token="7652" value="${server.port}" encoding="UTF-8"/>
-
-        <zip destfile="${web.archive}" update="true">
-            <zipfileset dir="." includes="web.xml" fullpath="WEB-INF/web.xml"/>
-        </zip>
-
-        <delete verbose="true">
-            <file file="web.xml" />
-        </delete>
+        <replace file="${web.conf}" token="localhost" value="${server.host}" encoding="UTF-8"/>
+        <replace file="${web.conf}" token="7652" value="${server.port}" encoding="UTF-8"/>
 
         <if>
             <not>
                 <equals arg1="${web.dir}" arg2="" />
             </not>
             <then>
-                <copy file="${web.archive}" tofile="${web.dir}/${web.context}.war" />
+                <copy file="${web.conf}" tofile="${web.dir}/../conf/catalina/localhost/${web.context.file}.xml" />
+                <copy file="${web.archive}" tofile="${web.dir}/${web.context.file}.war" />
             </then>
         </if>
     </target>

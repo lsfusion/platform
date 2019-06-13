@@ -22,11 +22,11 @@ RequestExecutionLevel user
 !define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition ${IDEA_VERSION} with lsFusion plugin"
 !define JASPER_SECTION_NAME "Jaspersoft Studio ${JASPER_VERSION}"
 
-!define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
-!define SERVER_JAR "lsfusion-server-${VERSION}.jar"
-!define SERVER_LIBRARY_NAME "lsfusion-server-${VERSION}"
-!define SERVER_SOURCES_JAR "lsfusion-server-${VERSION}-sources.jar"
-!define WEBCLIENT_WAR "lsfusion-client-${VERSION}.war"
+!define CLIENT_JAR "lsfusion-client.jar"
+!define SERVER_JAR "lsfusion-server.jar"
+!define SERVER_LIBRARY_NAME "lsfusion-server"
+!define SERVER_SOURCES_JAR "lsfusion-server-sources.jar"
+!define WEBCLIENT_WAR "lsfusion-client.war"
 
 !define INSTBINDIR "$INSTDIR\install-bin"
 !define INSTCONFDIR "$INSTDIR\install-config"
@@ -223,11 +223,13 @@ Function .onInit
     StrCpy $tomcatShutdownPort "8005"
     StrCpy $tomcatHttpPort "8080"
     StrCpy $tomcatAjpPort "8009"
-    StrCpy $tomcatServiceName "Tomcat${TOMCAT_MAJOR_VERSION}"
+    StrCpy $tomcatServiceName "lsfusion${LSFUSION_MAJOR_VERSION}_client"
 
     StrCpy $platformServerPort "7652"
-    StrCpy $platformServiceName "lsfusion-server"
-    StrCpy $webClientContext "lsfusion"
+    StrCpy $platformServiceName "lsfusion{$LSFUSION_MAJOR_VERSION}-server"
+    StrCpy $webClientContextFile "ROOT"
+    ; should be equal to webClientContextFile with slash in the end, or empty IF ROOT
+    StrCpy $webClientContext ""
     
     !insertmacro MUI_LANGDLL_DISPLAY
 
@@ -375,7 +377,8 @@ Function execAntConfiguration
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.port=" "$platformServerPort" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.dir=" "$webClientDirectory" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.archive=" "$INSTDIR\${WEBCLIENT_WAR}" $R0
-        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.context=" "$webClientContext" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.conf=" "${INSTCONFDIR}\tomcat.xml" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "web.context.file=" "$webClientContextFile" $R0
         nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureWebClient'
         Pop $0
 
@@ -459,7 +462,7 @@ Function createServices
                 WriteRegStr HKLM "${REGKEY}" "platformServiceName" "$platformServiceName"
     
                 nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --Startup auto'
-                nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --Classpath "$INSTDIR\${SERVER_JAR};$INSTDIR\deploy-lib\*;$INSTDIR\deploy-class" --StartClass lsfusion.server.logics.BusinessLogicsBootstrap --StopClass lsfusion.server.logics.BusinessLogicsBootstrap --StartMethod start --StopMethod stop --StartMode jvm --StopMode jvm'
+                nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --Classpath "$INSTDIR\${SERVER_JAR};$INSTDIR\deploy\*;$INSTDIR\deploy" --StartClass lsfusion.server.logics.BusinessLogicsBootstrap --StopClass lsfusion.server.logics.BusinessLogicsBootstrap --StartMethod start --StopMethod stop --StartMode jvm --StopMode jvm'
                 nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --JvmMs=512 --JvmMx=1024'
                 nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --StdOutput auto --StdError auto'
     
@@ -502,8 +505,8 @@ Function createShortcuts
     ${endIf}
 
     ${if} ${SectionIsSelected} ${SecWebClient}
-        CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\lsFusion Web Client.lnk" "http://127.0.0.1:$tomcatHttpPort/$webClientContext/" "" "$INSTDIR\resources\lsfusion.ico"
-        CreateShortCut "$DESKTOP\lsFusion Web Client.lnk" "http://127.0.0.1:$tomcatHttpPort/$webClientContext/" "" "$INSTDIR\resources\lsfusion.ico"
+        CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\lsFusion Web Client.lnk" "http://127.0.0.1:$tomcatHttpPort/$webClientContext" "" "$INSTDIR\resources\lsfusion.ico"
+        CreateShortCut "$DESKTOP\lsFusion Web Client.lnk" "http://127.0.0.1:$tomcatHttpPort/$webClientContext" "" "$INSTDIR\resources\lsfusion.ico"
     ${endIf}
 
     CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\Uninstall lsFusion Platform.lnk" "$INSTDIR\uninstall.exe"
