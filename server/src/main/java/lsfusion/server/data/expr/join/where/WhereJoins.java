@@ -1065,6 +1065,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         ImMap<Expr, ? extends Expr> translatedPushGroup = queryJoin.getPushGroup(translatedPush, true, pushExtraWhere);
         if(pushExtraWhere.result != null)
             upPushWhere = upPushWhere.and(pushExtraWhere.result.translateExpr(translator));
+
+        KeyExpr hasExprIndexedNoKeys = null;
         if(pushJoinWhere != null && queryJoins.size() == pushedKeys.size()) { // последняя проверка - оптимизация
             assert queryJoin instanceof GroupJoin;
             assert BaseUtils.hashEquals(translatedPush, translatedPushGroup);
@@ -1072,7 +1074,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             // хак для "висячих" ключей, проблема вот в чем : для LIMIT 1 subquery expr (GROUP LAST) оптимизации используется условие проталкивания (для итерации по нему), а этим условием может быть X<=a<=Z (оно не вырезается если внутри не KeyExpr см. removeJoin), соответственно при компиляции этого условия проталкивания будет exception (emptystack)     
             // соответственно ищем ExprIndexedJoin с KeyExpr и без giveNoKeys (по аналогии с removeJoin, именно с ним могут быть проблемы) и если эти KeyExpr в других keepJoins не учавствуют (по аналогии с ExprIndexedJoin.getInnerKeys)
             // теоретически можно и на ExprIndexedJoin с BaseExpr (а не KeyExpr) которые translate'ся проверять, но этот случай при самом проталкивании не учитывается (то есть [=GROUP BY key](f(x)) WHERE Z<=f(x)<=Y )
-            boolean hasExprIndexedNoKeys = false;
             ImSet<KeyExpr> innerKeys = null;
             for(BaseJoin keep : keepJoins)
                 if(keep instanceof ExprIntervalJoin && ((ExprIntervalJoin)keep).givesNoKeys()) {
@@ -1081,13 +1082,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                         if(innerKeys == null)
                             innerKeys = ExprIndexedJoin.getInnerKeys(keepJoins.toArray(new BaseJoin[keepJoins.size()]), (WhereJoin)keep);
                         if(!innerKeys.contains(keyExpr)) {
-                            hasExprIndexedNoKeys = true;
+                            hasExprIndexedNoKeys = keyExpr;
                             break;
                         }                            
                     }                        
                 }                
             
-            if(!hasExprIndexedNoKeys) {
+            if(hasExprIndexedNoKeys == null) {
                 ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
                 pushJoinWhere.set(new Pair<>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
             }
@@ -1096,7 +1097,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
 
         if(debugInfoWriter != null)
-            debugInfoWriter.addLines("TRANSLATE : " + translateKeys + '\n' + "FULL EXPRS : " + fullExprs + '\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + getDetailedWhere(upPushWhere) + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
+            debugInfoWriter.addLines("TRANSLATE : " + translateKeys + '\n' + "FULL EXPRS : " + fullExprs + '\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + getDetailedWhere(upPushWhere) + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where + '\n' + "PUSHED LAST OPT : " + hasExprIndexedNoKeys + " " + queryJoins.size() + " " + pushedKeys.size());
         
         return where;
     }
