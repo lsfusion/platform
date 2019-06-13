@@ -226,7 +226,7 @@ Function .onInit
     StrCpy $tomcatServiceName "lsfusion${LSFUSION_MAJOR_VERSION}_client"
 
     StrCpy $platformServerPort "7652"
-    StrCpy $platformServiceName "lsfusion{$LSFUSION_MAJOR_VERSION}-server"
+    StrCpy $platformServiceName "lsfusion${LSFUSION_MAJOR_VERSION}-server"
     StrCpy $webClientContextFile "ROOT"
     ; should be equal to webClientContextFile with slash in the end, or empty IF ROOT
     StrCpy $webClientContext ""
