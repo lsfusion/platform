@@ -22,11 +22,11 @@ RequestExecutionLevel user
 !define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition ${IDEA_VERSION} with lsFusion plugin"
 !define JASPER_SECTION_NAME "Jaspersoft Studio ${JASPER_VERSION}"
 
-!define CLIENT_JAR "lsfusion-client.jar"
-!define SERVER_JAR "lsfusion-server.jar"
-!define SERVER_LIBRARY_NAME "lsfusion-server"
-!define SERVER_SOURCES_JAR "lsfusion-server-sources.jar"
-!define WEBCLIENT_WAR "lsfusion-client.war"
+!define CLIENT_JAR "client.jar"
+!define SERVER_JAR "server.jar"
+!define SERVER_LIBRARY_NAME "server"
+!define SERVER_SOURCES_JAR "server-sources.jar"
+!define WEBCLIENT_WAR "client.war"
 
 !define INSTBINDIR "$INSTDIR\install-bin"
 !define INSTCONFDIR "$INSTDIR\install-config"
