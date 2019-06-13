@@ -75,6 +75,7 @@ Var platformServerHost
 Var platformServerPort
 Var platformServerPassword
 Var platformServiceName
+Var webClientContextFile
 Var webClientContext
 Var webClientDirectory
 
