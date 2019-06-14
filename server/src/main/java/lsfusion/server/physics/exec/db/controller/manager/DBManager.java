@@ -1749,6 +1749,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void ensureLogLevel() {
         getSyntax().setLogLevel(Settings.get().getLogLevelJDBC());
+        getAdapter().ensureLogLevel();
     }
 
     public interface RunServiceData {
