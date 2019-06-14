@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.stat.struct;
 import lsfusion.interop.form.print.FormStaticType;
 
 public enum FormIntegrationType implements FormStaticType {
-    XLS, XLSX, DBF, TEXT, CSV, XML, JSON, TABLE;
+    XLS, XLSX, DBF, CSV, XML, JSON, TABLE;
 
     public String getExtension() {
         switch (this) {
@@ -15,8 +15,6 @@ public enum FormIntegrationType implements FormStaticType {
                 return "xlsx";
             case JSON:
                 return "json";
-            case TEXT:
-                return "txt";
             case CSV:
                 return "csv";
             case DBF:
