@@ -58,6 +58,6 @@ public class TXTClass extends StaticFormatFileClass {
 
     @Override
     public FormIntegrationType getIntegrationType() {
-        return FormIntegrationType.TEXT;
+        throw new UnsupportedOperationException();
     }
 }
