@@ -19,10 +19,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.server.data.sql.lambda.SQLCallable;
-import lsfusion.server.data.stat.StatKeys;
-import lsfusion.server.language.MigrationScriptLexer;
-import lsfusion.server.language.MigrationScriptParser;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
@@ -46,13 +42,17 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.language.MigrationScriptLexer;
+import lsfusion.server.language.MigrationScriptParser;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -67,7 +67,9 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.user.*;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.env.*;
@@ -200,19 +202,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         LM = businessLogics.LM;
         reflectionLM = businessLogics.reflectionLM;
         systemEventsLM = businessLogics.systemEventsLM;
-
+        boolean isFirstStart = false;
+        
         try {
             SQLSession sql = getThreadLocalSql();
             boolean prevSuppressErrorLogging = sql.suppressErrorLogging;
+            sql.suppressErrorLogging = true;
+            
             try {                
-                sql.suppressErrorLogging = true;
-
-                try {
-                    updateReflectionStats(sql);
-                } catch (Exception ignored) {
-                    startLogger.info("Error updating stats, while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
-                    ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);
-                }
+                isFirstStart = isFirstStart(sql);
+                
+                updateReflectionStats(sql);
 
                 startLogger.info("Setting user logging for properties");
                 setUserLoggableProperties(sql);
@@ -222,9 +222,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             } finally {
                 sql.suppressErrorLogging = prevSuppressErrorLogging;
             }
-        } catch (Exception ignored) {
-            startLogger.info("Error while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
-            ServerLoggers.exInfoLogger.error("Error while initializing reflection events", ignored);
+        } catch (Throwable e) {
+            if (!isFirstStart) {
+                Throwables.propagate(e);
+            }
         } finally {
             LM = null;
             reflectionLM = null;
@@ -232,6 +233,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private boolean isFirstStart(SQLSession sql) {
+        try {
+            OldDBStructure dbStructure = getOldDBStructure(sql);
+            return dbStructure.isEmpty();
+        } catch (SQLException | SQLHandledException | IOException e) {
+            return true;
+        } catch (Throwable e) {
+            if (e.getCause() instanceof PSQLException && ((PSQLException) e.getCause()).getSQLState().equals("3D000")) {
+                return true;
+            }
+            return false;
+        }
+    }
+    
     private DBNamingPolicy namingPolicy;
     public DBNamingPolicy getNamingPolicy() {
         return namingPolicy;
