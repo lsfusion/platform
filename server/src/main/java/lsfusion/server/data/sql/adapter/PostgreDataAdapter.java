@@ -12,7 +12,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -25,6 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -99,6 +100,11 @@ public class PostgreDataAdapter extends DataAdapter {
         recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.sql"));
         safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.sql"));
         executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/cast.sql")));
+    }
+
+    @Override
+    public void ensureLogLevel() {
+        LogManager.getLogManager().getLogger("org.postgresql.Driver").setLevel(Level.OFF);
     }
 
     @Override

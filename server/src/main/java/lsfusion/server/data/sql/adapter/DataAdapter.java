@@ -76,6 +76,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         throw new UnsupportedOperationException();        
     }
 
+    public void ensureLogLevel() {
+    }
+
     public String getBackupFilePath(String dumpFileName) throws IOException, InterruptedException {
         return null;
     }
