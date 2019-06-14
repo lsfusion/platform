@@ -41,12 +41,12 @@ SubSection "!${PLATFORM_SECTION_NAME}" SecPlatform
         SetOutPath $INSTDIR
         SetOverwrite on
         
-        File /r "deploy-lib"
-        File /r "deploy-class"
+        File /r "deploy"
         ${SFile} install-bin\${SERVER_JAR}
         ${SFile} install-bin\${SERVER_SOURCES_JAR}
 
         SetOutPath $INSTDIR\bin
+        File /oname=lsfusion.exe bin\lsfusion${ARCH}.exe
         File /oname=lsfusion.exe bin\lsfusion${ARCH}.exe
 
         WriteRegStr HKLM "${REGKEY}\Components" "${SERVER_SECTION_NAME}" 1

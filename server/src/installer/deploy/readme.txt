@@ -1,0 +1,1 @@
+Content of this directory goes to server classpath. Put any custom classes, jars and other files into this directory.

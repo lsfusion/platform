@@ -489,7 +489,7 @@ Function createShortcuts
         ${else}
             CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\Start lsFusion Server as console application.lnk" \
                             "$javaExe" \
-                            "-Xmx1200m -cp ${SERVER_JAR};deploy-lib\*;deploy-class lsfusion.server.logics.BusinessLogicsBootstrap" \
+                            "-Xmx1200m -cp ${SERVER_JAR};deploy\*;deploy lsfusion.server.logics.BusinessLogicsBootstrap" \
                             "$INSTDIR\resources\lsfusion.ico"
         ${endIf}
     ${endIf}
