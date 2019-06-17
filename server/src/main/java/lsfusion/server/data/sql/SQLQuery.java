@@ -310,7 +310,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     @StackMessage("{message.subquery.materialize}")
     public MaterializedQuery materialize(final SQLSession session, final DynamicExecuteEnvironment subQueryExecEnv, final OperationOwner owner, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final ImMap<String, ParseInterface> queryParams, final int transactTimeout) throws SQLException, SQLHandledException {
         if(pessQuery != null && !Settings.get().isDisablePessQueries())
-            return pessQuery.materialize(session, subQueryExecEnv, owner, materializedQueries, queryParams, transactTimeout);
+            return materializePessQuery(session, subQueryExecEnv, owner, materializedQueries, queryParams, transactTimeout);
         
         Result<Integer> actual = new Result<>();
         final MaterializedQuery.Owner tableOwner = new MaterializedQuery.Owner();
@@ -337,6 +337,11 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         String mapFields = SQLSession.stringExpr(keys.mapSet(keyOrder.mapOrderSetValues(Field.<KeyField>nameGetter(session.syntax))),
                                                 properties.mapSet(propOrder.mapOrderSetValues(Field.<PropertyField>nameGetter(session.syntax))));
         return new MaterializedQuery(table, mapFields, SystemProperties.inDevMode ? keyOrder : null, SystemProperties.inDevMode ?  propOrder.getSet() : null, actual.result, pureTime.get(), tableOwner);
+    }
+
+    @StackMessage("{message.subquery.materialize.pess.mode}")
+    public MaterializedQuery materializePessQuery(SQLSession session, DynamicExecuteEnvironment subQueryExecEnv, OperationOwner owner, ImMap<SQLQuery, MaterializedQuery> materializedQueries, ImMap<String, ParseInterface> queryParams, int transactTimeout) throws SQLException, SQLHandledException {
+        return pessQuery.materialize(session, subQueryExecEnv, owner, materializedQueries, queryParams, transactTimeout);
     }
 
     private static SQLExecute getExecute(SQLDML dml, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv, ImMap<SQLQuery, MaterializedQuery> materializedQueries, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {
