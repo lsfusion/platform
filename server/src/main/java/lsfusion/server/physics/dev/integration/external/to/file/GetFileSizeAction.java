@@ -26,7 +26,7 @@ public class GetFileSizeAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            findProperty("fileSize[]").change(((FileData) context.getDataKeyValue(fileInterface).object).getRawFile().getLength(), context);
+            findProperty("fileSize[]").change((long) ((FileData) context.getDataKeyValue(fileInterface).object).getRawFile().getLength(), context);
         } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
