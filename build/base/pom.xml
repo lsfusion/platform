@@ -123,6 +123,9 @@
         <moxieapps.gwt.uploader.version>1.1.0</moxieapps.gwt.uploader.version>
         <gwt.selection.version>1.1</gwt.selection.version>
 
+        <javax.xml.bind.version>2.2.11</javax.xml.bind.version>
+        <javax.activation.version>1.1.1</javax.activation.version>
+
         <asm.version>5.0.4</asm.version>
 
         <tess4j.version>4.3.1</tess4j.version>
@@ -773,6 +776,28 @@
                 <groupId>com.bfr.client</groupId>
                 <artifactId>gwt-selection</artifactId>
                 <version>${gwt.selection.version}</version>
+            </dependency>
+
+            <!--java 11 dependencies-->
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${javax.xml.bind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>${javax.xml.bind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>${javax.xml.bind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>${javax.activation.version}</version>
             </dependency>
 
             <!--optional dependencies-->
