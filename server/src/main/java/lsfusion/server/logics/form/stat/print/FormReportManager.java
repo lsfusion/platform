@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -92,14 +93,23 @@ public abstract class FormReportManager extends FormDataManager {
         return getCustomReportPath(fileName, projDir, target);
     }
     // only for development / debug, если нет отчета и его нужно создать
-    public ReportPath getDefaultCustomReportPath(String fileName) {
+    public ReportPath getDefaultCustomReportPath(String fileName) throws IOException {
         String projDir;
         String target;
         projDir = SystemProperties.userDir;
 
         Path targetPath = Paths.get(projDir, "target/classes");
-        if(!Files.exists(targetPath)) // если не мавен, значит из idea
-            targetPath = Paths.get(projDir, "out/production");
+        if(!Files.exists(targetPath)) { // если не мавен, значит из idea
+            targetPath = Paths.get(projDir, "out/production"); //first subdirectory
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(targetPath)) {
+                for (Path path : stream) {
+                    if(path.toFile().isDirectory()) {
+                        targetPath = path;
+                        break;
+                    }
+                }
+            }
+        }
 
         target = targetPath.toString();
 
