@@ -100,15 +100,14 @@ public abstract class FormReportManager extends FormDataManager {
 
         Path targetPath = Paths.get(projDir, "target/classes");
         if(!Files.exists(targetPath)) { // если не мавен, значит из idea
-            targetPath = Paths.get(projDir, "out/production"); //first subdirectory
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(targetPath)) {
-                for (Path path : stream) {
-                    if(path.toFile().isDirectory()) {
-                        targetPath = path;
-                        break;
-                    }
-                }
-            }
+            Path parentPath = Paths.get(projDir);
+            Path productionPath;
+            do {
+                parentPath = parentPath.getParent();
+                productionPath = parentPath != null ? Paths.get(parentPath.toString(), "out/production") : null;
+            } while(productionPath != null && !Files.exists(productionPath));
+            if(productionPath != null)
+                targetPath = productionPath;
         }
 
         target = targetPath.toString();
