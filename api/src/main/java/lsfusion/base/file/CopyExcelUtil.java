@@ -3,6 +3,7 @@ package lsfusion.base.file;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.PaneInformation;
 import org.apache.poi.xssf.usermodel.*;
 
 import java.util.*;
@@ -55,6 +56,7 @@ public final class CopyExcelUtil {
         for (int i = 0; i <= maxColumnNum; i++) {
             newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
         }
+        copyFreezePane(newSheet, sheet);
     }
 
     public static void copyHSSFRow(HSSFSheet destSheet, HSSFRow srcRow, HSSFRow destRow, Map<Integer, HSSFCellStyle> styleMap, List<CellRangeAddress> sheetMergedRegions, Set<String> mergedRegions) {
@@ -228,6 +230,8 @@ public final class CopyExcelUtil {
                 newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
             }
         }
+
+        copyFreezePane(newSheet, sheet);
     }
 
     public static void copyXSSFRow(XSSFSheet destSheet, XSSFRow srcRow, XSSFRow destRow, Map<Integer, XSSFCellStyle> styleMap, List<CellRangeAddress> sheetMergedRegions, Set<String> mergedRegions) {
@@ -295,6 +299,21 @@ public final class CopyExcelUtil {
                 break;
         }
 
+    }
+
+    private static void copyFreezePane(Sheet newSheet, Sheet sheet) {
+        //copy freeze pane
+        PaneInformation panelInformation = sheet.getPaneInformation();
+        if(panelInformation != null) {
+            boolean isFreezePane = panelInformation.isFreezePane();
+            if(isFreezePane) {
+                int horizontalSplitTopRow = panelInformation.getHorizontalSplitTopRow();
+                int verticalSplitLeftColumn = panelInformation.getVerticalSplitLeftColumn();
+                if(horizontalSplitTopRow > 0 || verticalSplitLeftColumn > 0) {
+                    newSheet.createFreezePane(verticalSplitLeftColumn, horizontalSplitTopRow);
+                }
+            }
+        }
     }
 
     private static void copyPictures(HSSFSheet newSheet, HSSFSheet sheet) {
