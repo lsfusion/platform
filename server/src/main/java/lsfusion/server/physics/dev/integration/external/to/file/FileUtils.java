@@ -12,10 +12,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.sql.Timestamp;
+import java.util.*;
 
 import static lsfusion.base.file.WriteUtils.appendExtension;
 
@@ -367,9 +365,9 @@ public class FileUtils {
         }
     }
 
-    public static Map<String, Boolean> listFiles(String sourcePath, String charset) throws IOException {
+    public static List<Object> listFiles(String sourcePath, String charset) throws IOException {
         Path path = Path.parsePath(sourcePath);
-        Map<String, Boolean> filesList;
+        List<Object> filesList;
         switch (path.type) {
             case "file":
                 filesList = listFilesFile(path.path);
@@ -384,21 +382,28 @@ public class FileUtils {
         return filesList;
     }
 
-    private static Map<String, Boolean> listFilesFile(String url) {
-        TreeMap<String, Boolean> result = new TreeMap<>();
+    private static List<Object> listFilesFile(String url) {
+        List<Object> result;
 
         File[] filesList = new File(url).listFiles();
         if (filesList != null) {
-            for (File file : filesList) {
-                result.put(file.getName(), file.isDirectory());
+            String[] nameValues = new String[filesList.length];
+            Boolean[] isDirectoryValues = new Boolean[filesList.length];
+            Timestamp[] modifiedDateTimeValues = new Timestamp[filesList.length];
+            for (int i = 0; i < filesList.length; i++) {
+                File file = filesList[i];
+                nameValues[i] = file.getName();
+                isDirectoryValues[i] = file.isDirectory() ? true : null;
+                modifiedDateTimeValues[i] = new Timestamp(file.lastModified());
             }
+            result = Arrays.asList((Object) nameValues, isDirectoryValues, modifiedDateTimeValues);
         } else {
             throw new RuntimeException(String.format("Path '%s' not found", url));
         }
         return result;
     }
 
-    private static Map<String, Boolean> listFilesFTP(String path, String charset) throws IOException {
+    private static List<Object> listFilesFTP(String path, String charset) throws IOException {
         FTPPath ftpPath = FTPPath.parseFTPPath(path);
         FTPClient ftpClient = new FTPClient();
         try {
@@ -410,12 +415,19 @@ public class FileUtils {
                 ftpClient.enterLocalPassiveMode();
             }
 
-            Map<String, Boolean> result = new HashMap<>();
+            List<Object> result;
             if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
                 FTPFile[] ftpFileList = ftpClient.listFiles();
-                for (FTPFile file : ftpFileList) {
-                    result.put(file.getName(), file.isDirectory());
+                String[] nameValues = new String[ftpFileList.length];
+                Boolean[] isDirectoryValues = new Boolean[ftpFileList.length];
+                Timestamp[] modifiedDateTimeValues = new Timestamp[ftpFileList.length];
+                for (int i = 0; i < ftpFileList.length; i++) {
+                    FTPFile file = ftpFileList[i];
+                    nameValues[i] = file.getName();
+                    isDirectoryValues[i] = file.isDirectory() ? true : null;
+                    modifiedDateTimeValues[i] = new Timestamp(file.getTimestamp().getTimeInMillis());
                 }
+                result = Arrays.asList((Object) nameValues, isDirectoryValues, modifiedDateTimeValues);
             } else {
                 throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
             }
