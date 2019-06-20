@@ -470,7 +470,7 @@ public class LoginDialog extends JDialog {
         if(serverInfo == null)
             serverInfo = new LogicsConnection("localhost", 7652, "default");
         if(userInfo == null)
-            userInfo = new UserInfo("", false, "");
+            userInfo = UserInfo.ANONYMOUS;
         if(userInfos == null)
             userInfos = new ArrayList<>();
 
