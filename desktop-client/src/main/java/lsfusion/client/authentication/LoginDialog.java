@@ -382,6 +382,7 @@ public class LoginDialog extends JDialog {
         passwordLabel.setEnabled(enable);
         passwordField.setEnabled(enable);
         savePasswordCheckBox.setEnabled(enable);
+        updateOK();
     }
 
     private UserInfo getUserInfo(String userName) {
@@ -402,7 +403,7 @@ public class LoginDialog extends JDialog {
     }
 
     private boolean isOkEnabled() {
-        return checkVersionError == null && isValid(getUserInfo()) && isValid(getServerInfo());
+        return checkVersionError == null && (useAnonymousUI() || (isValid(getUserInfo()) && isValid(getServerInfo())));
     }
 
     private void updateOK() {
