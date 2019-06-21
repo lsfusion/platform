@@ -115,9 +115,10 @@ public abstract class FormReportManager extends FormDataManager {
         Path targetDir = Paths.get(projDir, "target/classes");
         if(!Files.exists(targetDir)) { // если не мавен, значит из idea
             Path parentPath = Paths.get(projDir);
+            String moduleDir = parentPath.toFile().getName();
             Path outProductionPath;
             do {
-                outProductionPath = parentPath != null ? Paths.get(parentPath.toString(), "out/production") : null;
+                outProductionPath = parentPath != null ? Paths.get(parentPath.toString(), "out/production/" + moduleDir) : null;
                 parentPath = parentPath != null ? parentPath.getParent() : null;
             } while(outProductionPath != null && !Files.exists(outProductionPath));
 
