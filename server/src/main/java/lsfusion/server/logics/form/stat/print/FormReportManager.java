@@ -69,6 +69,7 @@ public abstract class FormReportManager extends FormDataManager {
         }
         return ret;
     }
+
     // only for development / debug
     public ReportPath getCustomReportPath(String fileName) {
         return getDirectoriesFromTarget(getTargetDir(fileName), fileName);
@@ -78,9 +79,9 @@ public abstract class FormReportManager extends FormDataManager {
         Path projDirPath = Paths.get(targetDir, "../..");
         if(!Files.exists(Paths.get(projDirPath.toString(), "target/classes"))) {
             Path parentPath = Paths.get(targetDir);
-            do {
+            while(parentPath != null && !Files.exists(Paths.get(parentPath.toString(), "out/production"))) {
                 parentPath = parentPath.getParent();
-            } while(parentPath != null && !Files.exists(Paths.get(parentPath.toString(), "out/production")));
+            }
 
             projDirPath = parentPath;
         }
@@ -116,8 +117,8 @@ public abstract class FormReportManager extends FormDataManager {
             Path parentPath = Paths.get(projDir);
             Path outProductionPath;
             do {
-                parentPath = parentPath.getParent();
                 outProductionPath = parentPath != null ? Paths.get(parentPath.toString(), "out/production") : null;
+                parentPath = parentPath != null ? parentPath.getParent() : null;
             } while(outProductionPath != null && !Files.exists(outProductionPath));
 
             targetDir = outProductionPath;
