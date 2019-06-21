@@ -153,7 +153,6 @@ import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -3774,7 +3773,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             params.add(sheet);
 
         ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.<GroupObjectEntity>EMPTYORDER();
-        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, whereProp != null), params);
+        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, whereProp != null, !groupFiles.isEmpty()), params);
     }
 
     public LP addTypeProp(ValueClass valueClass, boolean bIs) {

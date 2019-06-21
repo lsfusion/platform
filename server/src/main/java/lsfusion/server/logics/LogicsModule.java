@@ -608,7 +608,7 @@ public abstract class LogicsModule {
         return addAction(group, new LA<>(exportAction));
     }
 
-    protected <O extends ObjectSelector> LA addAutoImportFAProp(FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LA addAutoImportFAProp(FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere, Boolean isPlain) {
         // getExtension(FILE(prm1))
         // FOR x = getExtension(prm1) DO {
         //    CASE EXCLUSIVE
@@ -617,11 +617,10 @@ public abstract class LogicsModule {
         // }
         
         Object[] cases = new Object[0];
-        boolean isPlain = !groupFiles.isEmpty();
         for(FormIntegrationType importType : FormIntegrationType.values()) 
-            if(importType.isPlain() == isPlain) {
+            if(isPlain == null || (isPlain.equals(importType.isPlain()))) {
                 cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
-                    directLI(addImportFAProp(importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere)))); // IMPORT type form...
+                    directLI(addImportFAProp(importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere, isPlain)))); // IMPORT type form...
             }        
         
         return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
@@ -630,11 +629,11 @@ public abstract class LogicsModule {
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
     }
     
-    protected <O extends ObjectSelector> LA addImportFAProp(FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LA addImportFAProp(FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere, Boolean isPlain) {
         ImportAction importAction;
 
         if(format == null)
-            return addAutoImportFAProp(formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere);
+            return addAutoImportFAProp(formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere, isPlain);
 
         switch (format) {
             // hierarchical
@@ -718,7 +717,7 @@ public abstract class LogicsModule {
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
         
         // create action
-        return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere);
+        return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere, null);
     }
 
     // ------------------- Set property action ----------------- //
