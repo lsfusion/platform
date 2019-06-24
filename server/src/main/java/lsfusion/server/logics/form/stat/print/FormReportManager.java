@@ -78,16 +78,15 @@ public abstract class FormReportManager extends FormDataManager {
     private ReportPath getDirectoriesFromTarget(String targetDir, String fileName) {
         Path projDirPath = Paths.get(targetDir, "../..");
         if(!Files.exists(Paths.get(projDirPath.toString(), "target/classes"))) {
-            Path parentPath = Paths.get(targetDir);
-            while(parentPath != null && !Files.exists(Paths.get(parentPath.toString(), "out/production"))) {
-                parentPath = parentPath.getParent();
+            projDirPath = Paths.get(projDirPath.toString(), "..");
+            if(!Files.exists(Paths.get(projDirPath.toString(), "out/production"))) {
+                projDirPath = null;
             }
-
-            projDirPath = parentPath;
         }
 
         //if nor target/classes nor out/production found, then project dir = target dir
-        Path customPath = projDirPath == null ? Paths.get(targetDir, fileName) : Paths.get(projDirPath.toString(),"src/main/lsfusion/", fileName);
+        Path srcPath = projDirPath == null ? null : Paths.get(projDirPath.toString(), "src/main/lsfusion/");
+        Path customPath = srcPath == null || !Files.exists(srcPath) ? Paths.get(targetDir, fileName) : Paths.get(srcPath.toString(), fileName);
         Path targetPath = Paths.get(targetDir, fileName);
         return new ReportPath(customPath.toString(), targetPath.toString());
     }
@@ -114,19 +113,14 @@ public abstract class FormReportManager extends FormDataManager {
     private ReportPath getDirectoriesFromSource(String projDir, String fileName) {
         Path targetDir = Paths.get(projDir, "target/classes");
         if(!Files.exists(targetDir)) { // если не мавен, значит из idea
-            Path parentPath = Paths.get(projDir);
-            String moduleDir = parentPath.toFile().getName();
-            Path outProductionPath;
-            do {
-                outProductionPath = parentPath != null ? Paths.get(parentPath.toString(), "out/production/" + moduleDir) : null;
-                parentPath = parentPath != null ? parentPath.getParent() : null;
-            } while(outProductionPath != null && !Files.exists(outProductionPath));
-
-            targetDir = outProductionPath;
+            targetDir = Paths.get(projDir, "out/production/" + Paths.get(projDir).toFile().getName());
+            if(!Files.exists(targetDir))
+                targetDir = null;
         }
 
         //if nor target/classes nor out/production found, then target dir = project dir
-        Path customPath = targetDir == null ? Paths.get(projDir, fileName) : Paths.get(projDir, "src/main/lsfusion/", fileName);
+        Path srcPath = targetDir == null ? null : Paths.get(projDir, "src/main/lsfusion/");
+        Path customPath = srcPath == null || !Files.exists(srcPath) ? Paths.get(projDir, fileName) : Paths.get(srcPath.toString(), fileName);
         Path targetPath = targetDir == null ? Paths.get(projDir, fileName) : Paths.get(targetDir.toString(), fileName);
 
         return new ReportPath(customPath.toString(), targetPath.toString());
