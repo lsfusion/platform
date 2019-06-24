@@ -76,12 +76,9 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     private ReportPath getDirectoriesFromTarget(String targetDir, String fileName) {
-        Path projDirPath = Paths.get(targetDir, "../..");
-        if(!Files.exists(Paths.get(projDirPath.toString(), "target/classes"))) {
-            projDirPath = Paths.get(projDirPath.toString(), "..");
-            if(!Files.exists(Paths.get(projDirPath.toString(), "out/production"))) {
-                projDirPath = null;
-            }
+        Path projDirPath = getTargetClassesParentPath(targetDir);
+        if(projDirPath == null) {
+            projDirPath = getOutProductionParentPath(targetDir);
         }
 
         //if nor target/classes nor out/production found, then project dir = target dir
@@ -89,6 +86,23 @@ public abstract class FormReportManager extends FormDataManager {
         Path customPath = srcPath == null || !Files.exists(srcPath) ? Paths.get(targetDir, fileName) : Paths.get(srcPath.toString(), fileName);
         Path targetPath = Paths.get(targetDir, fileName);
         return new ReportPath(customPath.toString(), targetPath.toString());
+    }
+
+    private Path getTargetClassesParentPath(String currentPath) {
+        Path classesDir = Paths.get(currentPath);
+        Path targetDir = classesDir.getParent();
+        return equalName(classesDir, "classes") && equalName(targetDir, "target") ? Paths.get(currentPath, "../..") : null;
+    }
+
+    private Path getOutProductionParentPath(String currentPath) {
+        Path moduleDir = Paths.get(currentPath);
+        Path productionDir = moduleDir.getParent();
+        Path outDir = productionDir.getParent();
+        return equalName(productionDir, "production") && equalName(outDir, "out") && equalName(outDir.getParent(), moduleDir.toFile().getName()) ? Paths.get(currentPath, "../../..") : null;
+    }
+
+    private boolean equalName(Path path, String name) {
+        return path.toFile().getName().equals(name);
     }
 
     private String getTargetDir(String fileName) {
