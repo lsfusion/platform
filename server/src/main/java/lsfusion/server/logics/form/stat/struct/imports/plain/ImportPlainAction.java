@@ -143,8 +143,10 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
 
     private Map<GroupObjectEntity, RawFileData> getFiles(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         Map<GroupObjectEntity, RawFileData> files = new HashMap<>();
-        for(int i=0,size=fileInterfaces.size();i<size;i++)
-            files.put(fileInterfaces.getKey(i), readFile(context.getKeyValue(fileInterfaces.getValue(i))));
+        for(int i=0,size=fileInterfaces.size();i<size;i++) {
+            GroupObjectEntity fileObject = fileInterfaces.getKey(i);
+            files.put(fileObject == GroupObjectEntity.NULL ? null : fileObject, readFile(context.getKeyValue(fileInterfaces.getValue(i))));
+        }
         return files;
     }
 }

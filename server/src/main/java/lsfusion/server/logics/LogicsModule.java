@@ -718,7 +718,7 @@ public abstract class LogicsModule {
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
         
         // create action
-        return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere, form.groupObject != null ? null : false); // if there is no group object, only hierarchical formats will do 
+        return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere, null); 
     }
 
     // ------------------- Set property action ----------------- //
