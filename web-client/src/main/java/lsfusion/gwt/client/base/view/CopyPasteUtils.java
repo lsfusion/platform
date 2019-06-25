@@ -45,7 +45,9 @@ public class CopyPasteUtils {
 
     public static native void setClipboardData2(String text)
     /*-{
-        clipboard.copy(text) // в Firefox не работает
+        if(clipboard) {
+            clipboard.copy(text) // в Firefox не работает
+        }
     }-*/;
 
     public static void setEmptySelection(final Element element) {
