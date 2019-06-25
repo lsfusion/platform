@@ -2083,23 +2083,25 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
-                final Path path = Paths.get(BaseUtils.removeTrailingSlash(element + "/" + FormReportManager.reportsDir));
+                if(!element.endsWith("*")) {
+                    final Path path = Paths.get(BaseUtils.removeTrailingSlash(element + "/" + FormReportManager.reportsDir));
 //                logger.info("Reset reports cache: processing path : " + path);
-                if (Files.isDirectory(path)) {
+                    if (Files.isDirectory(path)) {
 //                    logger.info("Reset reports cache: path is directory: " + path);
-                    tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {
-                        @Override
-                        public void run(ExecutionStack stack) throws Exception {
-                            logger.info("Reset reports cache: run scheduler task for " + path);
-                            ResourceUtils.watchPathForChange(path, new Runnable() {
-                                @Override
-                                public void run() {
-                                    logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
-                                    customReports = null;
-                                }
-                            }, Pattern.compile(".*\\.jrxml"));
-                        }
-                    }, true, null, false, "Custom Reports"));
+                        tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {
+                            @Override
+                            public void run(ExecutionStack stack) throws Exception {
+                                logger.info("Reset reports cache: run scheduler task for " + path);
+                                ResourceUtils.watchPathForChange(path, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
+                                        customReports = null;
+                                    }
+                                }, Pattern.compile(".*\\.jrxml"));
+                            }
+                        }, true, null, false, "Custom Reports"));
+                    }
                 }
             }
         }
