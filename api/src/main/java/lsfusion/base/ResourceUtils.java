@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -18,18 +15,22 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ResourceUtils {
 
-    public static Collection<String> getResources(final Pattern pattern) {
+    public static Collection<String> getResources(final List<Pattern> patterns) {
         final ArrayList<String> retval = new ArrayList<>();
         for (final String element : getClassPathElements()) {
             if (!isRedundantString(element)) {
                 assert !element.endsWith("/"); // нужен для другого использования getClassPathElements
-                retval.addAll(getResources(element, pattern));
+                retval.addAll(getResources(element, patterns));
             }
         }
         return retval;
     }
+    
+    public static Collection<String> getResources(final Pattern pattern) {
+        return getResources(Collections.singletonList(pattern));
+    }
 
-    private static Collection<String> getResources(final String element, final Pattern pattern) {
+    private static Collection<String> getResources(final String element, final List<Pattern> patterns) {
         final ArrayList<String> retval = new ArrayList<>();
 
         if (element.endsWith("*")) {
@@ -40,7 +41,7 @@ public class ResourceUtils {
                 if (childFiles != null) {
                     for (File childFile : childFiles) {
                         if (childFile.getName().endsWith(".jar")) {
-                            retval.addAll(getResourcesFromJarFile(childFile, pattern));
+                            retval.addAll(getResourcesFromJarFile(childFile, patterns));
                         }
                     }
                 }
@@ -48,15 +49,15 @@ public class ResourceUtils {
         } else {
             final File file = new File(element);
             if (file.isDirectory()) {
-                retval.addAll(getResourcesFromDirectory(file, "/", pattern));
+                retval.addAll(getResourcesFromDirectory(file, "/", patterns));
             } else {
-                retval.addAll(getResourcesFromJarFile(file, pattern));
+                retval.addAll(getResourcesFromJarFile(file, patterns));
             }
         }
         return retval;
     }
 
-    private static Collection<String> getResourcesFromJarFile(final File file, final Pattern pattern) {
+    private static Collection<String> getResourcesFromJarFile(final File file, final List<Pattern> patterns) {
         final ArrayList<String> retval = new ArrayList<>();
         ZipFile zf;
         try {
@@ -69,7 +70,7 @@ public class ResourceUtils {
             final ZipEntry ze = (ZipEntry) e.nextElement();
             final String fileName = ze.getName();
             assert !fileName.startsWith("/");
-            fillResourcesResult("/" + fileName, pattern, retval);
+            fillResourcesResult("/" + fileName, patterns, retval);
         }
         try {
             zf.close();
@@ -79,28 +80,32 @@ public class ResourceUtils {
         return retval;
     }
 
-    private static Collection<String> getResourcesFromDirectory(final File directory, final String relativePath, final Pattern pattern) {
+    private static Collection<String> getResourcesFromDirectory(final File directory, final String relativePath, final List<Pattern> patterns) {
         final ArrayList<String> result = new ArrayList<>();
 
         final File[] fileList = directory.listFiles();
         if (fileList != null) {
             for (final File file : fileList) {
                 if (file.isDirectory()) {
-                    result.addAll(getResourcesFromDirectory(file, relativePath + file.getName() +"/", pattern));
+                    result.addAll(getResourcesFromDirectory(file, relativePath + file.getName() +"/", patterns));
                 } else {
                     final String fileName = relativePath + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
-                    fillResourcesResult(fileName, pattern, result);
+                    fillResourcesResult(fileName, patterns, result);
                 }
             }
         }
         return result;
     }
 
-    private static void fillResourcesResult(String fileName, Pattern pattern, List<String> result) {
+    private static void fillResourcesResult(String fileName, List<Pattern> patterns, List<String> result) {
         assert fileName.startsWith("/");
-        Matcher matcher = pattern.matcher(fileName);
-        if (matcher.matches())
-            result.add(matcher.groupCount() > 0 ? matcher.group(1) : fileName);
+        for (Pattern pattern : patterns) {
+            Matcher matcher = pattern.matcher(fileName);
+            if (matcher.matches()) {
+                result.add(matcher.groupCount() > 0 ? matcher.group(1) : fileName);
+                break;
+            }
+        }
     }
 
     public static String getClassPath() {

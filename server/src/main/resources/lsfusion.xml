@@ -778,8 +778,8 @@
     <util:list id="customLifecycleListeners"/>
 
     <bean id="businessLogics" class="lsfusion.server.language.ScriptingBusinessLogics">
-        <property name="scriptFilePaths" value="${logics.includedPaths:}"/>
-        <property name="excludedScriptFilePaths" value="${logics.excludedPaths:}"/>
+        <property name="includePaths" value="${logics.includePaths:*}"/>
+        <property name="excludePaths" value="${logics.excludePaths:}"/>
 
         <property name="initTask" ref="initBLTask"/>
 

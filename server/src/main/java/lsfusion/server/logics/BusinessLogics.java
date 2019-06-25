@@ -22,7 +22,6 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.base.log.StringDebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.server.base.exception.ApplyCanceledException;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;
@@ -33,6 +32,7 @@ import lsfusion.server.base.controller.lifecycle.LifecycleAdapter;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
+import lsfusion.server.base.exception.ApplyCanceledException;
 import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.base.version.NFLazy;
@@ -107,12 +107,16 @@ import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.id.name.*;
+import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
+import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -144,8 +148,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
-    public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("/system");
-    public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
+    public static final String systemScriptsPath = "/system/*.lsf";
 
     private ModuleList modules = new ModuleList();
     
@@ -363,73 +366,57 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         utilsLM = addModule(new UtilsLogicsModule(this, LM));        
     }
 
-    protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {
-        if (excludedPaths == null || excludedPaths.isEmpty()) {
-            excludedPaths = defaultExcludedScriptPaths;
-        } else {
-            excludedPaths = new ArrayList<>(excludedPaths);
-            excludedPaths.addAll(defaultExcludedScriptPaths);
+    protected void addModulesFromResource(List<String> includePaths, List<String> excludePaths) throws IOException {
+        Set<String> includedLSF = findLSFFiles(includePaths);
+        Set<String> excludedLSF = findLSFFiles(excludePaths);
+        Set<String> systemLSF = findLSFFiles(Collections.singletonList(systemScriptsPath));
+        
+        includedLSF.removeAll(excludedLSF);
+        includedLSF.removeAll(systemLSF);
+        
+        for (String filePath : includedLSF) {
+            addModuleFromResource(filePath);
         }
+    }
 
-        List<String> excludedLSF = new ArrayList<>();
-
-        for (String filePath : excludedPaths) {
-            if(!filePath.startsWith("/"))
-                filePath = "/" + filePath;
-            
-            if (filePath.contains("*")) {
-                filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
-                Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
-                Collection<String> list = ResourceUtils.getResources(pattern);
-                for (String name : list) {
-                    excludedLSF.add(name);
-                }
-            } else if (filePath.endsWith(".lsf")) {
-                excludedLSF.add(filePath);
-            } else {
-                Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
-                Collection<String> list = ResourceUtils.getResources(pattern);
-                for (String name : list) {
-                    excludedLSF.add(name);
-                }
-            }
-        }
-
+    private Set<String> findLSFFiles(List<String> paths) {
+        List<Pattern> patterns = new ArrayList<>();
         for (String filePath : paths) {
-            if(!filePath.startsWith("/"))
-                filePath = "/" + filePath;
+            String pathRegex = convertPathToRegex(prependPathWithSlash(filePath));
+            patterns.add(Pattern.compile(pathRegex));
+        }
 
-            if (filePath.contains("*")) {
-                filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
-                Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
-                Collection<String> list = ResourceUtils.getResources(pattern);
-                for (String name : list) {
-                    if (!excludedLSF.contains(name)) {
-                        addModulesFromResource(name);
-                    }
-                }
-            } else if (filePath.endsWith(".lsf")) {
-                if (!excludedLSF.contains(filePath)) {
-                    addModulesFromResource(filePath);
-                }
-            } else {
-                Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
-                Collection<String> list = ResourceUtils.getResources(pattern);
-                for (String name : list) {
-                    if (!excludedLSF.contains(name)) {
-                        addModulesFromResource(name);
-                    }
-                }
+        Collection<String> list = ResourceUtils.getResources(patterns);
+            
+        Set<String> resFiles = new HashSet<>();
+        for (String filename : list) {
+            if (isLSFFile(filename)) {
+                resFiles.add(filename);
             }
         }
+        return resFiles;
     }
 
-    private void addModulesFromResource(String... paths) throws IOException {
-        for (String path : paths) {
-            addModuleFromResource(path);
+    private static String convertPathToRegex(String path) {
+        String[] parts = path.split("[*]", -1);
+        for (int i = 0; i < parts.length; ++i) {
+            parts[i] = Pattern.quote(parts[i]);
+        }
+        return StringUtils.join(parts, ".*");
+    }
+
+    private static String prependPathWithSlash(String path) {
+        if (!path.startsWith("/")) {
+            return "/" + path;
+        } else {
+            return path;
         }
     }
 
+    private static boolean isLSFFile(String fileName) {
+        return fileName.endsWith(".lsf");
+    }
+    
     private void addModuleFromResource(String path) throws IOException {
         InputStream is = getClass().getResourceAsStream(path);
         if (is == null)
