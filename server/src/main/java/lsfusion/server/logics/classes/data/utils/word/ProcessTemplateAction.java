@@ -179,7 +179,7 @@ public class ProcessTemplateAction extends InternalAction {
                             if (cellValue.color != null) run.setColor(cellValue.color);
                             run.setBold(cellValue.bold);
                             run.setItalic(cellValue.italic);
-                            run.setText(cellValue.text, 0);
+                            setText(run, cellValue.text);
                             j++;
                         }
                         i++;
@@ -196,7 +196,7 @@ public class ProcessTemplateAction extends InternalAction {
                             String text = r.getText(0);
                             if (text != null && text.contains(entry.key)) {
                                 text = text.replace(entry.key, entry.value);
-                                r.setText(text, 0);
+                                setText(r, text);
                             }
                         }
                     }
@@ -264,7 +264,7 @@ public class ProcessTemplateAction extends InternalAction {
                             newParagraph.getCTP().setPPr(p.getCTP().getPPr());
                             XWPFRun newRun = newParagraph.createRun();
                             newRun.getCTR().setRPr(p.getRuns().get(0).getCTR().getRPr());
-                            newRun.setText(row, 0);
+                            setText(newRun, row);
                             XmlCursor newCursor = newParagraph.getCTP().newCursor();
                             newCursor.moveXml(cursor);
                             newCursor.dispose();
@@ -324,10 +324,10 @@ public class ProcessTemplateAction extends InternalAction {
     }
 
     private CellValue parseCellValue(ParagraphAlignment alignment, String value, String fontFamily, Integer fontSize, String color, boolean bold, boolean italic) {
-        Pattern p = Pattern.compile("<b>(.*)</b>");
-        Matcher m = p.matcher(value);
-        boolean matches = m.matches();
-        return new CellValue(alignment, fontFamily, fontSize, color, bold || matches, italic, matches ? m.group(1) : value);
+        boolean matches = value != null && value.startsWith("<b>") && value.endsWith("</b>");
+        if (matches)
+            value = value.substring(3, value.length() - 4);
+        return new CellValue(alignment, fontFamily, fontSize, color, bold || matches, italic, value);
     }
 
     private class CellValue {
