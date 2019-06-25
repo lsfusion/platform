@@ -295,17 +295,18 @@
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
         </dependency>
+        <!-- you need to override scope provided if you really need to use these dependencies -->
         <!--text recognition-->
         <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
         <!--connection with fax-->
         <dependency>
             <groupId>net.sf.fax4j</groupId>
             <artifactId>fax4j</artifactId>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
         <!--java 11 dependencies-->
