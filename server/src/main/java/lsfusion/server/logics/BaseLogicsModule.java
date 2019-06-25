@@ -461,8 +461,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc[]");
         applyAll = findAction("applyAll[]");
 
-        staticName = findProperty("staticName[Object]");
-        staticCaption = findProperty("staticCaption[Object]");
+        staticName = findProperty("staticName[StaticObject]");
+        staticCaption = findProperty("staticCaption[StaticObject]");
         
         sessionOwners = findProperty("sessionOwners[]");
         ((SessionDataProperty)sessionOwners.property).noNestingInNestedSession = true;
