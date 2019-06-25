@@ -3,46 +3,25 @@ package lsfusion.server.language;
 import lsfusion.server.logics.BusinessLogics;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ScriptingBusinessLogics extends BusinessLogics {
-    private List<String> scriptFilePaths;
-    private List<String> excludedScriptFilePaths;
+    private List<String> includePaths;
+    private List<String> excludePaths;
 
-    public void setScriptFilePaths(String scriptFilePaths) {
-        if (!isRedundantString(scriptFilePaths)) {
-            this.scriptFilePaths = asList(scriptFilePaths.split(";"));
-        } else {
-            this.scriptFilePaths = defaultIncludedScriptPaths;
-        }
+    public void setIncludePaths(String includePaths) {
+        this.includePaths = asList(includePaths.split(";"));
     }
 
-    public void setExcludedScriptFilePaths(String excludedScriptFilePaths) {
-        if (!isRedundantString(excludedScriptFilePaths)) {
-            this.excludedScriptFilePaths = asList(excludedScriptFilePaths.split(";"));
-        }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        super.afterPropertiesSet();
-
-        if (scriptFilePaths == null) {
-            scriptFilePaths = Collections.emptyList();
-        }
-
-        if (excludedScriptFilePaths == null) {
-            excludedScriptFilePaths = Collections.emptyList();
-        }
+    public void setExcludePaths(String excludePaths) {
+        this.excludePaths = asList(excludePaths.split(";"));
     }
 
     @Override
     public void createModules() throws IOException {
         super.createModules();
-        addModulesFromResource(scriptFilePaths, excludedScriptFilePaths);
+        addModulesFromResource(includePaths, excludePaths);
     }
 }
