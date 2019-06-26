@@ -5,6 +5,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Timer;
@@ -222,9 +224,10 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
         actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController);
 
-        Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
+        //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
+        Window.addCloseHandler(new CloseHandler<Window>() { // добавляем после инициализации окон
             @Override
-            public void onWindowClosing(Window.ClosingEvent event) {
+            public void onClose(CloseEvent event) {
                 try {
                     windowsController.storeWindowsSizes();
                 } finally {
