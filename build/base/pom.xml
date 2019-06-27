@@ -848,4 +848,26 @@
         </dependencies>
     </dependencyManagement>
 
+    <!--  in theory should be in logics/pom.xml, but maven release plugin will fail in that case (it can ignore ${lsfusion.version} in this file, but not in child's poms) -->
+    <profiles>
+        <profile>
+            <id>noserver</id>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>lsfusion.platform</groupId>
+                        <artifactId>api</artifactId>
+                        <version>${lsfusion.version}</version>
+                        <scope>provided</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>lsfusion.platform</groupId>
+                        <artifactId>server</artifactId>
+                        <version>${lsfusion.version}</version>
+                        <scope>provided</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+    </profiles>
 </project>

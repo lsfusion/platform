@@ -45,25 +45,6 @@
                 </dependency>
             </dependencies>
         </profile>
-        <profile>
-            <id>noserver</id>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>lsfusion.platform</groupId>
-                        <artifactId>api</artifactId>
-                        <version>${platform.assemble.version}</version>
-                        <scope>provided</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>lsfusion.platform</groupId>
-                        <artifactId>server</artifactId>
-                        <version>${platform.assemble.version}</version>
-                        <scope>provided</scope>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
     </profiles>
     
     <build>
