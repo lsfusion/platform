@@ -52,13 +52,13 @@
                     <dependency>
                         <groupId>lsfusion.platform</groupId>
                         <artifactId>api</artifactId>
-                        <version>${platform.assemble.version}</version>
+                        <version>${lsfusion.version}</version>
                         <scope>provided</scope>
                     </dependency>
                     <dependency>
                         <groupId>lsfusion.platform</groupId>
                         <artifactId>server</artifactId>
-                        <version>${platform.assemble.version}</version>
+                        <version>${lsfusion.version}</version>
                         <scope>provided</scope>
                     </dependency>
                 </dependencies>
