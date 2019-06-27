@@ -54,7 +54,9 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <configuration>
                     <finalName>${assemble.finalName}</finalName>
-                    <shadedArtifactAttached>false</shadedArtifactAttached>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <shadedClassifierName>assembly</shadedClassifierName>
+<!--                    <createSourcesJar>true</createSourcesJar>-->
                     <filters>
                         <filter>
                             <artifact>net.sf.jasperreports:jasperreports</artifact>

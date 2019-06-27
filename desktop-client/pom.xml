@@ -20,25 +20,6 @@
     <build>
         <plugins>
             <plugin>
-                <!-- uber jar : install and deploy -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                            </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <!-- sign (for JWS) and pack -->
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -85,13 +66,6 @@
                         </goals>
                         <configuration>
                             <artifacts>
-                                <!-- multiple inheritance - platform assemble, it's impossible to put it there because in that case platform-assemble will be deployed and nexus refuses to do this-->
-                                <!-- uber jar : install and deploy -->
-                                <artifact>
-                                    <file>${assemble.jar}</file>
-                                    <type>${project.packaging}</type>
-                                    <classifier>assembly</classifier>
-                                </artifact>
                                 <artifact>
                                     <file>${assemble.packed}</file>
                                     <type>pack.gz</type>
