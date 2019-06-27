@@ -215,8 +215,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 startLogger.info("Setting user not null constraints for properties");
                 setNotNullProperties(sql);
             }
-        } catch (Throwable e) {
-            Throwables.propagate(e);
+        } catch (SQLHandledException | SQLException | IOException e) {
+            throw new RuntimeException(e);
         } finally {
             LM = null;
             reflectionLM = null;
@@ -233,17 +233,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
             OldDBStructure dbStructure = getOldDBStructure(sql);
             return dbStructure.isEmpty();
         } catch (Exception e) {
-            String sqlState = "";
-            if (e instanceof PSQLException) {
-                sqlState = ((PSQLException) e).getSQLState();
-            } else if (e.getCause() instanceof PSQLException) {
-                sqlState = ((PSQLException) e.getCause()).getSQLState();  
-            }
-            // PostgreSQL error with code 3D000 (invalid_catalog_name) is thrown when the database is absent,
-            // when there is an empty database then error with code 42P01 (undefined_table) is thrown  
-            // https://www.postgresql.org/docs/9.4/errcodes-appendix.html
-            if ("3D000".equals(sqlState) || "42P01".equals(sqlState)) {
-                return true;
+            Throwable cause = ExceptionUtils.getRootCause(e);
+            if (cause instanceof PSQLException) {
+                String sqlState = ((PSQLException) cause).getSQLState();
+                // PostgreSQL error with code 3D000 (invalid_catalog_name) is thrown when the database is absent,
+                // when there is an empty database then error with code 42P01 (undefined_table) is thrown  
+                // https://www.postgresql.org/docs/9.4/errcodes-appendix.html
+                if ("3D000".equals(sqlState) || "42P01".equals(sqlState)) {
+                    return true;
+                }
             }
             throw e;
         } finally {
