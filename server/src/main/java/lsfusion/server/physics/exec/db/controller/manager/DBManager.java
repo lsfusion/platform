@@ -202,16 +202,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         LM = businessLogics.LM;
         reflectionLM = businessLogics.reflectionLM;
         systemEventsLM = businessLogics.systemEventsLM;
-        boolean isFirstStart = false;
         
         try {
             SQLSession sql = getThreadLocalSql();
-            boolean prevSuppressErrorLogging = sql.suppressErrorLogging;
-            sql.suppressErrorLogging = true;
-            
-            try {                
-                isFirstStart = isFirstStart(sql);
-                
+             
+            if (!isFirstStart(sql)) {
                 updateReflectionStats(sql);
 
                 startLogger.info("Setting user logging for properties");
@@ -219,13 +214,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 startLogger.info("Setting user not null constraints for properties");
                 setNotNullProperties(sql);
-            } finally {
-                sql.suppressErrorLogging = prevSuppressErrorLogging;
             }
         } catch (Throwable e) {
-            if (!isFirstStart) {
-                Throwables.propagate(e);
-            }
+            Throwables.propagate(e);
         } finally {
             LM = null;
             reflectionLM = null;
@@ -233,17 +224,30 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private boolean isFirstStart(SQLSession sql) {
+    // Checks for an absence of a database or for an empty database  
+    private boolean isFirstStart(SQLSession sql) throws IOException, SQLException, SQLHandledException {
+        boolean prevSuppressErrorLogging = sql.suppressErrorLogging;
+        sql.suppressErrorLogging = true;
+        
         try {
             OldDBStructure dbStructure = getOldDBStructure(sql);
             return dbStructure.isEmpty();
-        } catch (SQLException | SQLHandledException | IOException e) {
-            return true;
-        } catch (Throwable e) {
-            if (e.getCause() instanceof PSQLException && ((PSQLException) e.getCause()).getSQLState().equals("3D000")) {
+        } catch (Exception e) {
+            String sqlState = "";
+            if (e instanceof PSQLException) {
+                sqlState = ((PSQLException) e).getSQLState();
+            } else if (e.getCause() instanceof PSQLException) {
+                sqlState = ((PSQLException) e.getCause()).getSQLState();  
+            }
+            // PostgreSQL error with code 3D000 (invalid_catalog_name) is thrown when the database is absent,
+            // when there is an empty database then error with code 42P01 (undefined_table) is thrown  
+            // https://www.postgresql.org/docs/9.4/errcodes-appendix.html
+            if ("3D000".equals(sqlState) || "42P01".equals(sqlState)) {
                 return true;
             }
-            return false;
+            throw e;
+        } finally {
+            sql.suppressErrorLogging = prevSuppressErrorLogging;
         }
     }
     
