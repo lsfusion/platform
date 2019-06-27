@@ -57,7 +57,9 @@
                         <artifactId>maven-shade-plugin</artifactId>
                         <configuration>
                             <finalName>${assemble.finalName}</finalName>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>assembly</shadedClassifierName>
+<!--                            <createSourcesJar>true</createSourcesJar>-->
                             <filters>
                                 <filter>
                                     <artifact>net.sf.jasperreports:jasperreports</artifact>
@@ -112,29 +114,6 @@
                                 <goals>
                                     <goal>shade</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <!-- uber jar : install and deploy -->
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-assembly</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>attach-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <artifacts>
-                                        <artifact>
-                                            <file>${assemble.jar}</file>
-                                            <type>jar</type>
-                                            <classifier>assembly</classifier>
-                                        </artifact>
-                                    </artifacts>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
