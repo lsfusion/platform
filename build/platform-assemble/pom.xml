@@ -56,7 +56,7 @@
                     <finalName>${assemble.finalName}</finalName>
                     <shadedArtifactAttached>true</shadedArtifactAttached>
                     <shadedClassifierName>assembly</shadedClassifierName>
-<!--                    <createSourcesJar>true</createSourcesJar>-->
+                    <createSourcesJar>true</createSourcesJar>
                     <filters>
                         <filter>
                             <artifact>net.sf.jasperreports:jasperreports</artifact>
