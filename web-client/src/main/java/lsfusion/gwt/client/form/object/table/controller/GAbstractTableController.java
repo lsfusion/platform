@@ -97,7 +97,8 @@ public abstract class GAbstractTableController implements GTableController {
     }
 
     public void replaceFilter() {
-        filter.replaceConditionPressed();
+        if(filter != null)
+            filter.replaceConditionPressed();
     }
 
     public void addFilter() {
