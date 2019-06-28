@@ -529,14 +529,14 @@ public class LoginDialog extends JDialog {
         settingsPanel.setLayout(new GridBagLayout());
         mainPanel.add(settingsPanel);
 
-        JLabel serverLabel = new JLabel(ClientResourceBundle.getString("dialog.server"));
+        JLabel serverLabel = new JLabel(ClientResourceBundle.getString("dialog.server.address"));
         settingsPanel.add(serverLabel, getGridBagConstraints(0, 0, true));
 
         serverHostComboBox = new JComboBox();
         serverHostComboBox.setEditable(true);
         settingsPanel.add(serverHostComboBox, getGridBagConstraints(0, 1, true));
 
-        JLabel serverDBLabel = new JLabel(ClientResourceBundle.getString("dialog.database"));
+        JLabel serverDBLabel = new JLabel(ClientResourceBundle.getString("dialog.server.name"));
         serverDBLabel.setLabelFor(serverDBComboBox);
         settingsPanel.add(serverDBLabel, getGridBagConstraints(1, 0, true));
 
