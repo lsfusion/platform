@@ -1529,6 +1529,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedEqualityProp(String op, LPWithParams leftProp, LPWithParams rightProp, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkComparisonCompatibility(leftProp, rightProp, context);
+        return addScriptedEqualityProp(op, leftProp, rightProp);
+    }
+    public LPWithParams addScriptedEqualityProp(String op, LPWithParams leftProp, LPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJProp(getRelationProp(op), asList(leftProp, rightProp));
     }
 
@@ -2205,15 +2208,33 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(res, property.usedParams);
     }
 
-    public LAWithParams addScriptedAssignPropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedChangePropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         LP toPropertyLP = findLPByPropertyUsage(toPropertyUsage, toPropertyMapping, newContext);
 
+        // to make change operator work with join property, we need identity parameters : 
+        // we have to run through all toPropertyMapping if there is lp, or duplicate parameter, add virtual parameter to newContext with equals this parameter and AND it with whereProperty
+        toPropertyMapping = new ArrayList<>(toPropertyMapping);
+        Set<Integer> usedParams = new HashSet<>();
+        int exParams = newContext.size();
+        for (int i = 0; i < toPropertyMapping.size(); i++) {
+            LPWithParams toParam = toPropertyMapping.get(i);
+            if (toParam.getLP() != null || !usedParams.add(toParam.usedParams.get(0))) {
+                LPWithParams newToParam = new LPWithParams(exParams++);
+                LPWithParams paramWhere = addScriptedEqualityProp("=", newToParam, toParam);
+                if(whereProperty != null)
+                    whereProperty = addScriptedJProp(and(false), asList(paramWhere, whereProperty));
+                else 
+                    whereProperty = paramWhere;
+                toPropertyMapping.set(i, newToParam);
+            }
+        }
+        
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
-        return addScriptedAssignAProp(context, fromProperty, whereProperty, toProperty);
+        return addScriptedChangeAProp(context, fromProperty, whereProperty, toProperty);
     }
 
-    private LAWithParams addScriptedAssignAProp(List<TypedParameter> context, LPWithParams fromProperty, LPWithParams whereProperty, LPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
+    private LAWithParams addScriptedChangeAProp(List<TypedParameter> context, LPWithParams fromProperty, LPWithParams whereProperty, LPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkAssignProperty(fromProperty, toProperty);
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, fromProperty, whereProperty);
@@ -3002,7 +3023,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> mapping = new ArrayList<>();
         MList<Boolean> mNulls = ListFact.mListMax(allObjects.size());
 
-        MList<Pair<LPWithParams, DebugInfo.DebugPoint>> mAssignProps = ListFact.mListMax(allObjects.size());
+        MList<Pair<LPWithParams, DebugInfo.DebugPoint>> mChangeProps = ListFact.mListMax(allObjects.size());
 
         MList<O> mContextObjects = ListFact.mListMax(allObjects.size() + 1);
         MList<Property> mContextProps = ListFact.mListMax(allObjects.size() + 1);
@@ -3040,14 +3061,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 Pair<LPWithParams, DebugInfo.DebugPoint> assignProp = null;
                 if(objectProp.assign)
                     assignProp = new Pair<>(changeProp, objectProp.assignDebugPoint);
-                mAssignProps.add(assignProp);
+                mChangeProps.add(assignProp);
             }
         }
         ImList<O> inputObjects = mInputObjects.immutableList();
         ImList<Boolean> inputNulls = mInputNulls.immutableList();
         ImList<LP> inputProps = mInputProps.immutableList();
 
-        ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> assignProps = mAssignProps.immutableList();
+        ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = mChangeProps.immutableList();
 
         ImList<O> contextObjects = mContextObjects.immutableList();
         ImList<Property> contextProps = mContextProps.immutableList();
@@ -3084,12 +3105,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             formAction = new LAWithParams(action, allParams);
         }
 
-        return proceedInputDoClause(doAction, elseAction, oldContext, newContext, inputProps, formAction, assignProps);
+        return proceedInputDoClause(doAction, elseAction, oldContext, newContext, inputProps, formAction, changeProps);
     }
 
-    private LAWithParams proceedInputDoClause(LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LP> inputParamProps, LAWithParams proceedAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> assignProps) throws ScriptingErrorLog.SemanticErrorException {
+    private LAWithParams proceedInputDoClause(LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LP> inputParamProps, LAWithParams proceedAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps) throws ScriptingErrorLog.SemanticErrorException {
         if (doAction != null) {
-            doAction = extendDoParams(doAction, newContext, oldContext.size(), false, inputParamProps, null, assignProps);
+            doAction = extendDoParams(doAction, newContext, oldContext.size(), false, inputParamProps, null, changeProps);
             return addScriptedRequestAProp(proceedAction, doAction, elseAction);
         }
 
@@ -3121,11 +3142,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LAWithParams extendImportDoAction(boolean noParams, int paramOld, List<TypedParameter> oldContext, List<TypedParameter> newContext, LAWithParams doAction, LAWithParams elseAction, LP<?> whereLCP, ImList<LP> importParamProps, ImList<Boolean> nulls) throws ScriptingErrorLog.SemanticErrorException {
-        ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> assignProps = ListFact.toList(importParamProps.size(), new GetIndex<Pair<LPWithParams, DebugInfo.DebugPoint>>() {
+        ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = ListFact.toList(importParamProps.size(), new GetIndex<Pair<LPWithParams, DebugInfo.DebugPoint>>() {
             public Pair<LPWithParams, DebugInfo.DebugPoint> getMapValue(int i) {
                 return null;
             }});
-        doAction = extendDoParams(doAction, newContext, paramOld, !noParams, importParamProps, nulls, assignProps); // row parameter consider to be external (it will be proceeded separately)
+        doAction = extendDoParams(doAction, newContext, paramOld, !noParams, importParamProps, nulls, changeProps); // row parameter consider to be external (it will be proceeded separately)
         if(!noParams) { // adding row parameter
             modifyContextFlowActionDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext, false);
 
@@ -3150,7 +3171,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 DataClass cls = (DataClass) newContext.get(i).cls;
                 LPWithParams defaultValueProp = new LPWithParams(addCProp(cls, PropertyFact.getValueForProp(cls.getDefaultValue(), cls)));
                 // prop(row) <- defvalue WHERE NOT prop(row)
-                fillNulls.add(addScriptedAssignAProp(oldAndRowContext, defaultValueProp, addScriptedNotProp(importProp), importProp));
+                fillNulls.add(addScriptedChangeAProp(oldAndRowContext, defaultValueProp, addScriptedNotProp(importProp), importProp));
             }
         }
         if(fillNulls != null) {
@@ -3194,9 +3215,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // recursive
-    private LAWithParams extendDoParams(LAWithParams doAction, List<TypedParameter> context, int paramOld, boolean isLastParamRow, ImList<LP> resultProps, ImList<Boolean> nulls, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> assignProps) throws ScriptingErrorLog.SemanticErrorException {
+    private LAWithParams extendDoParams(LAWithParams doAction, List<TypedParameter> context, int paramOld, boolean isLastParamRow, ImList<LP> resultProps, ImList<Boolean> nulls, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps) throws ScriptingErrorLog.SemanticErrorException {
         assert context.size() - paramOld == resultProps.size();
-        assert resultProps.size() == assignProps.size();
+        assert resultProps.size() == changeProps.size();
 
         List<TypedParameter> currentContext = new ArrayList<>(context);
         int paramNum;
@@ -3205,9 +3226,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             List<TypedParameter> removedContext = BaseUtils.remove(currentContext, paramNum);
 
             LPWithParams paramLP = new LPWithParams(paramNum);
-            Pair<LPWithParams, DebugInfo.DebugPoint> assignLP = assignProps.get(paramNum - paramOld);
+            Pair<LPWithParams, DebugInfo.DebugPoint> assignLP = changeProps.get(paramNum - paramOld);
             if(assignLP != null) {
-                LAWithParams assignAction = addScriptedAssignAProp(currentContext, paramLP, null, assignLP.first);
+                LAWithParams assignAction = addScriptedChangeAProp(currentContext, paramLP, null, assignLP.first);
 
                 ScriptingLogicsModule.setDebugInfo(null, assignLP.second, assignAction.getLP().action);
 
@@ -4446,6 +4467,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         else
             return null;
         return (LPContextIndependent)ci;
+    }
+
+    public void checkNoExtendContext(List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkNoExtendContext(oldContext, newContext);
     }
 
     public void initModulesAndNamespaces(List<String> requiredModules, List<String> namespacePriority) throws ScriptingErrorLog.SemanticErrorException {

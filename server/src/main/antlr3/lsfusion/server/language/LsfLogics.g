@@ -2801,19 +2801,22 @@ leafContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWi
 
 leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
-	if (inMainParseState() && dynamic) {
+    boolean isKeepContext = false; // hack for execActionDefinitionBody
+}
+@after {
+	if (inMainParseState() && dynamic && !isKeepContext) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
 }
-	:	setADB=assignActionDefinitionBody[context] { $action = $setADB.action; }
+	// actually exec is keepContextActionDB but to make grammar LL* we need to combine it with change (do a left-factoring) 
+	:	setADB=changeOrExecActionDefinitionBody[context, dynamic] { $action = $setADB.action; isKeepContext = $setADB.isKeepContext; }
 	|	classADB=changeClassActionDefinitionBody[context] { $action = $classADB.action; }
 	|	delADB=deleteActionDefinitionBody[context] { $action = $delADB.action; }
 	|	addADB=newWhereActionDefinitionBody[context] { $action = $addADB.action; }
 	;
 
 leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
-	:	execADB=execActionDefinitionBody[context, dynamic] { $action = $execADB.action; }
-	|	termADB=terminalFlowActionDefinitionBody { $action = $termADB.action; }
+	:	termADB=terminalFlowActionDefinitionBody { $action = $termADB.action; }
 	|  	cancelPDB=cancelActionDefinitionBody[context, dynamic] { $action = $cancelPDB.action; }
 	|	formADB=formActionDefinitionBody[context, dynamic] { $action = $formADB.action; }
 	|	printADB=printActionDefinitionBody[context, dynamic] { $action = $printADB.action; }
@@ -3520,45 +3523,31 @@ localDataPropertyDefinition returns [List<LP<?>> properties]
 		')'
 	;
 
-execActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
-@init {
-	boolean isInline = false;
-} 
-@after {
-	if (inMainParseState()) {
-//		if (isInline) {
-//			$action = self.addScriptedJoinAProp($iProp.property, $exprList.props);
-//		} else {
-			$action = self.addScriptedJoinAProp($uProp.propUsage, $exprList.props, context);
-//		}
-	}
-}
-	:	('EXEC')?
-		(	uProp=propertyUsage
-//		|	iProp=inlineProperty { isInline = true; }
-		)
-		'('
-		exprList=propertyExpressionList[context, dynamic]
-		')'
-	;
-
-assignActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
+changeOrExecActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action, boolean isKeepContext = false]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context); 
 	LPWithParams condition = null;
+	boolean isChange = false;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedAssignPropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
+	    if(isChange)
+    		$action = self.addScriptedChangePropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
+        else {
+            if(!dynamic)
+                self.checkNoExtendContext(context, newContext);
+			$action = self.addScriptedJoinAProp($propUsage.propUsage, $params.props, context);
+			$isKeepContext = true;
+        }
 	}
 }
-	:	('CHANGE')?
+	:	('CHANGE' | 'EXEC')?
 		propUsage=propertyUsage
-		'(' params=singleParameterList[newContext, true] ')'
-		'<-'
+		'(' params=propertyExpressionList[newContext, true] ')'
+		('<-' { isChange = true; }
 		expr=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left side
 		('WHERE'
-		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
+		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?)?
 	;
 
 tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
