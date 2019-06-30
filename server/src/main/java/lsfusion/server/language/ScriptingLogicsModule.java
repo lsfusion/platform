@@ -2223,19 +2223,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (int i = 0; i < toPropertyMapping.size(); i++) {
             LPWithParams toParam = toPropertyMapping.get(i);
             if (toParam.getLP() != null || !usedParams.add(toParam.usedParams.get(0))) {
-                LPWithParams newToParam = new LPWithParams(exParams++);
-                LPWithParams paramWhere = addScriptedEqualityProp("=", newToParam, toParam);
-                if(whereProperty != null)
-                    whereProperty = addScriptedJProp(and(false), asList(paramWhere, whereProperty));
-                else 
-                    whereProperty = paramWhere;
-                toPropertyMapping.set(i, newToParam);
+                Result<LPWithParams> rWhereProperty = new Result<>(whereProperty);
+                toPropertyMapping.set(i, addVirtualParam(exParams, toParam, rWhereProperty));
+                whereProperty = rWhereProperty.result;
+                exParams++;
             }
         }
         
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
         return addScriptedChangeAProp(context, fromProperty, whereProperty, toProperty);
+    }
+
+    private LPWithParams addVirtualParam(int exParams, LPWithParams toParam, Result<LPWithParams> rWhereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        LPWithParams newToParam = new LPWithParams(exParams);
+        LPWithParams paramWhere = addScriptedEqualityProp("=", newToParam, toParam);
+        if(rWhereProperty.result != null)
+            rWhereProperty.set(addScriptedJProp(and(false), asList(paramWhere, rWhereProperty.result)));
+        else 
+            rWhereProperty.set(paramWhere);
+        return newToParam;
     }
 
     private LAWithParams addScriptedChangeAProp(List<TypedParameter> context, LPWithParams fromProperty, LPWithParams whereProperty, LPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
@@ -2299,6 +2306,19 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LAWithParams addScriptedChangeClassAProp(int oldContextSize, List<TypedParameter> newContext, LPWithParams param, ConcreteObjectClass cls, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkChangeClassWhere(oldContextSize, param, whereProperty, newContext);
+        
+        if(param.getLP() != null) {
+            checkNoExtendContext(oldContextSize, newContext);
+
+            Result<LPWithParams> rWhereProperty = new Result<>(whereProperty);
+            param = addVirtualParam(oldContextSize, param, rWhereProperty);
+            whereProperty = rWhereProperty.result;
+        }
+        return addScriptedChangeClassAProp(oldContextSize, param, cls, whereProperty);
+    }
+    private LAWithParams addScriptedChangeClassAProp(int oldContextSize, LPWithParams param, ConcreteObjectClass cls, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        
         List<LAPWithParams> paramList = new ArrayList<>();
         paramList.add(param);
         if (whereProperty != null) {
@@ -2315,8 +2335,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultInterfaces.add(paramIndex);
         }
         boolean contextExtended = allParams.size() > resultInterfaces.size();
-
-        checks.checkChangeClassWhere(contextExtended, param, whereProperty, newContext);
 
         List<LAPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
@@ -4467,8 +4485,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (LPContextIndependent)ci;
     }
 
-    public void checkNoExtendContext(List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkNoExtendContext(oldContext, newContext);
+    public void checkNoExtendContext(int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkNoExtendContext(oldContextSize, newContext);
     }
 
     public void initModulesAndNamespaces(List<String> requiredModules, List<String> namespacePriority) throws ScriptingErrorLog.SemanticErrorException {
