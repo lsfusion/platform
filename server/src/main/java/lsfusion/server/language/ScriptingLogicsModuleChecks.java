@@ -36,10 +36,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static lsfusion.server.physics.dev.id.resolve.SignatureMatcher.isClassesSoftCompatible;
 
@@ -381,6 +378,15 @@ public class ScriptingLogicsModuleChecks {
     public void checkForActionConstraints(boolean isRecursive, List<Integer> oldContext, List<Integer> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (!isRecursive && oldContext.size() == newContext.size()) {
             errLog.emitForActionSameContextError(parser);
+        }
+    }
+
+    public void checkNoExtendContext(List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (newContext.size() > oldContext.size()) {
+            List<String> exParams = new ArrayList<>();
+            for(int i=oldContext.size();i<newContext.size();i++)
+                exParams.add(newContext.get(i).paramName);            
+            errLog.emitNoExtendContextError(parser, exParams);
         }
     }
 

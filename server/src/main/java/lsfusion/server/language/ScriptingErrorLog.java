@@ -372,6 +372,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "FOR action statement must introduce new parameters, use IF or WHILE instead");
     }
 
+    public void emitNoExtendContextError(ScriptParser parser, List<String> newParameters) throws SemanticErrorException {
+        emitSimpleError(parser, "introducing new parameters (" + newParameters + ") is not allowed in this context");
+    }
+
     public void emitNestedRecursionError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "RECURSION property inside another recursive step is forbidden");
     }
