@@ -399,10 +399,10 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkNoExtendContext(List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (newContext.size() > oldContext.size()) {
+    public void checkNoExtendContext(int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (newContext.size() > oldContextSize) {
             List<String> exParams = new ArrayList<>();
-            for(int i=oldContext.size();i<newContext.size();i++)
+            for(int i=oldContextSize;i<newContext.size();i++)
                 exParams.add(newContext.get(i).paramName);            
             errLog.emitNoExtendContextError(parser, exParams);
         }
@@ -547,8 +547,8 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkChangeClassWhere(boolean contextExtended, ScriptingLogicsModule.LPWithParams param, LPWithParams where, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (contextExtended && (where == null || !where.usedParams.contains(param.usedParams.get(0)))) {
+    public void checkChangeClassWhere(int oldContext, ScriptingLogicsModule.LPWithParams param, LPWithParams where, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (param.getLP() == null && param.usedParams.get(0) >= oldContext && (where == null || !where.usedParams.contains(param.usedParams.get(0)))) {
             errLog.emitChangeClassWhereError(parser, newContext.get(newContext.size() - 1).paramName);
         }
     }

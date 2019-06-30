@@ -3354,7 +3354,7 @@ changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithPar
 		$action = self.addScriptedChangeClassAProp(context.size(), newContext, $param.property, $className.sid, condition);	
 	}
 }
-	:	'CHANGECLASS' param=singleParameter[newContext, true] 'TO' className=classId 
+	:	'CHANGECLASS' param=propertyExpression[newContext, true] 'TO' className=classId 
 		('WHERE' pe=propertyExpression[newContext, false] { condition = $pe.property; })?
 	;  
 
@@ -3368,7 +3368,7 @@ deleteActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams a
 		$action = self.addScriptedDeleteAProp(context.size(), newContext, $param.property, condition);	
 	}
 }
-	:	'DELETE' param=singleParameter[newContext, true] 
+	:	'DELETE' param=propertyExpression[newContext, true] 
 		('WHERE' pe=propertyExpression[newContext, false] { condition = $pe.property; })?
 	;  
 
@@ -3535,7 +3535,7 @@ changeOrExecActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
     		$action = self.addScriptedChangePropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
         else {
             if(!dynamic)
-                self.checkNoExtendContext(context, newContext);
+                self.checkNoExtendContext(context.size(), newContext);
 			$action = self.addScriptedJoinAProp($propUsage.propUsage, $params.props, context);
 			$isKeepContext = true;
         }
