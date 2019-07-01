@@ -2215,14 +2215,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         // we have to run through all toPropertyMapping if there is lp, or duplicate parameter, add virtual parameter to newContext with equals this parameter and AND it with whereProperty
         toPropertyMapping = new ArrayList<>(toPropertyMapping);
         Set<Integer> usedParams = new HashSet<>();
+        int oldContextSize = context.size();
         int exParams = newContext.size();
         for (int i = 0; i < toPropertyMapping.size(); i++) {
             LPWithParams toParam = toPropertyMapping.get(i);
             if (toParam.getLP() != null || !usedParams.add(toParam.usedParams.get(0))) {
                 Result<LPWithParams> rWhereProperty = new Result<>(whereProperty);
-                toPropertyMapping.set(i, addVirtualParam(exParams, toParam, rWhereProperty));
+                toPropertyMapping.set(i, addVirtualParam(exParams, toParam, rWhereProperty, oldContextSize, newContext));
                 whereProperty = rWhereProperty.result;
                 exParams++;
+            } else {
+                Integer param = toParam.usedParams.get(0);
+                if(param >= oldContextSize) { // adding new parameters to context
+                    assert param == oldContextSize;
+                    oldContextSize++;
+                }
             }
         }
         
@@ -2231,7 +2238,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedChangeAProp(context, fromProperty, whereProperty, toProperty);
     }
 
-    private LPWithParams addVirtualParam(int exParams, LPWithParams toParam, Result<LPWithParams> rWhereProperty) throws ScriptingErrorLog.SemanticErrorException {
+    private LPWithParams addVirtualParam(int exParams, LPWithParams toParam, Result<LPWithParams> rWhereProperty, int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        checkNoExtendContext(toParam.usedParams, oldContextSize, newContext);
+                
         LPWithParams newToParam = new LPWithParams(exParams);
         LPWithParams paramWhere = addScriptedEqualityProp("=", newToParam, toParam);
         if(rWhereProperty.result != null)
@@ -2305,10 +2314,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkChangeClassWhere(oldContextSize, param, whereProperty, newContext);
         
         if(param.getLP() != null) {
-            checkNoExtendContext(oldContextSize, newContext);
-
             Result<LPWithParams> rWhereProperty = new Result<>(whereProperty);
-            param = addVirtualParam(oldContextSize, param, rWhereProperty);
+            param = addVirtualParam(oldContextSize, param, rWhereProperty, oldContextSize, newContext);
             whereProperty = rWhereProperty.result;
         }
         return addScriptedChangeClassAProp(oldContextSize, param, cls, whereProperty);
@@ -4489,6 +4496,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void checkNoExtendContext(int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNoExtendContext(oldContextSize, newContext);
+    }
+
+    public void checkNoExtendContext(List<Integer> usedParams, int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkNoExtendContext(usedParams, oldContextSize, newContext);
     }
 
     public void initModulesAndNamespaces(List<String> requiredModules, List<String> namespacePriority) throws ScriptingErrorLog.SemanticErrorException {

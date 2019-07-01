@@ -408,6 +408,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    public void checkNoExtendContext(List<Integer> usedParams, int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        for(int usedParam : usedParams)
+            if(usedParam >= oldContextSize)
+                errLog.emitNoExtendContextError(parser, Collections.singletonList(newContext.get(usedParam).paramName));
+    }
+
     public void checkRecursionContext(List<String> context, List<Integer> usedParams) throws ScriptingErrorLog.SemanticErrorException {
         for (String param : context) {
             if (param.startsWith("$")) {
