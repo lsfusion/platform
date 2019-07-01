@@ -5,7 +5,9 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.log.Log;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.base.exception.*;
+import lsfusion.interop.base.exception.RemoteAbandonedException;
+import lsfusion.interop.base.exception.RemoteClientException;
+import lsfusion.interop.base.exception.RemoteHandledException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -50,7 +53,7 @@ public class ClientExceptionManager {
             public void run() {
                 logger.error("Client error: ", e);
 
-                if(e instanceof RemoteAbandonedException) // we don't need to log that exception
+                if(e instanceof RemoteAbandonedException || e instanceof CancellationException) // we don't need to log that exception
                     return;
 
                 reportThrowable(e);
