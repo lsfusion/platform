@@ -20,12 +20,12 @@ public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFail
 
     public static String getCachedRequest(String defaultURL, HttpServletRequest request, HttpServletResponse response) {
         String redirectUrl;
-        SavedRequest savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request, response);
+        String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
 
         if (savedRequest == null) {
             redirectUrl = getURLPreservingParameters(defaultURL, request);
         } else {
-            redirectUrl = savedRequest.getRedirectUrl();
+            redirectUrl = savedRequest;
         }
         return redirectUrl;
     }
