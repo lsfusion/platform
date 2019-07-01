@@ -28,9 +28,9 @@ public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucc
         }
         response.addCookie(localeCookie);
 
-        SavedRequest savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request, response);
+        String savedRequest = LSFLoginUrlAuthenticationEntryPoint.requestCache.getRequest(request);
         if (savedRequest != null) {
-            getRedirectStrategy().sendRedirect(request, response, savedRequest.getRedirectUrl());
+            getRedirectStrategy().sendRedirect(request, response, savedRequest);
         } else {
             super.onAuthenticationSuccess(request, response, authentication);
         }

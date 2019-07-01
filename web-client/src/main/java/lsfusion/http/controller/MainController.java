@@ -84,7 +84,7 @@ public class MainController {
     }
 
     private String getLogicsIcon(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "static/noauth/images/favicon.ico";
+        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "favicon.ico";
     }
     
     private String getLogicsName(ServerSettings serverSettings) {
