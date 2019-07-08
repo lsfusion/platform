@@ -50,6 +50,7 @@ import lsfusion.server.data.query.LimitOptions;
 import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
+import lsfusion.server.data.table.Table;
 import lsfusion.server.data.translate.JoinExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.value.Value;

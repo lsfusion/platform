@@ -45,13 +45,17 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         private final boolean isLogical;
         private final ImRevMap<KeyExpr, KeyExpr> mapIterate;
 
-        public Query(InnerExprFollows<KeyExpr> follows, Where initialWhere, Where stepWhere, boolean cyclePossible, boolean isLogical, ImRevMap<KeyExpr, KeyExpr> mapIterate) {
+        private final boolean noInnerFollows;
+
+        public Query(InnerExprFollows<KeyExpr> follows, Where initialWhere, Where stepWhere, boolean cyclePossible, boolean isLogical, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean noInnerFollows) {
             super(follows);
             this.initialWhere = initialWhere;
             this.stepWhere = stepWhere;
             this.cyclePossible = cyclePossible;
             this.isLogical = isLogical;
             this.mapIterate = mapIterate;
+
+            this.noInnerFollows = noInnerFollows;
         }
 
         public Query(Query query, Where initialWhere) {
@@ -61,6 +65,9 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             mapIterate = query.mapIterate;
             cyclePossible = query.cyclePossible;
             isLogical = query.isLogical;
+            
+            assert !query.noInnerFollows;
+            noInnerFollows = query.noInnerFollows;
         }
 
         public Query(Query query, MapTranslate translator) {
@@ -70,17 +77,19 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             this.cyclePossible = query.cyclePossible;
             this.isLogical = query.isLogical;
             this.mapIterate = translator.translateRevMap(query.mapIterate);
+            
+            this.noInnerFollows = query.noInnerFollows;
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return super.calcTwins(o) && initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate) && cyclePossible==((Query)o).cyclePossible && isLogical==((Query)o).isLogical;
+            return super.calcTwins(o) && initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate) && cyclePossible==((Query)o).cyclePossible && isLogical==((Query)o).isLogical && noInnerFollows==((Query)o).noInnerFollows;
         }
 
         protected boolean isComplex() {
             return true;
         }
         public int hash(HashContext hash) {
-            return 31 * (31 * (31 * (31 * (31 * super.hash(hash) + hashMapOuter(mapIterate, hash)) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash)) + (isLogical ? 1 : 0)) + (cyclePossible ? 1 : 0);
+            return 31 * (31 * (31 * (31 * (31 * (31 * super.hash(hash) + hashMapOuter(mapIterate, hash)) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash)) + (isLogical ? 1 : 0)) + (cyclePossible ? 1 : 0)) + (noInnerFollows ? 1 : 0);
         }
         protected Query translate(MapTranslate translator) {
             return new Query(this, translator);
@@ -99,8 +108,8 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         super(join, new Query(join.query, pushedInitialWhere));
     }
 
-    public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, ImMap<KeyExpr, BaseExpr> group) {
-        super(keys, values, new Query(InnerExprFollows.<KeyExpr>EMPTYEXPR(), initialWhere, stepWhere, cyclePossible, isLogical, mapIterate), group);
+    public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, ImMap<KeyExpr, BaseExpr> group, boolean noInnerFollows) {
+        super(keys, values, new Query(InnerExprFollows.<KeyExpr>EMPTYEXPR(), initialWhere, stepWhere, cyclePossible, isLogical, mapIterate, noInnerFollows), group);
     }
 
     public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {
@@ -138,7 +147,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     @IdentityLazy
     public InnerExprFollows<KeyExpr> getInnerFollows() {
-        if(Settings.get().isDisableInnerFollows())
+        if(Settings.get().isDisableInnerFollows() || query.noInnerFollows)
             return InnerExprFollows.EMPTYEXPR();
 
         ImSet<KeyExpr> groupKeys = group.keys();

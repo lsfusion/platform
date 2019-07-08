@@ -3,11 +3,15 @@ package lsfusion.server.data.expr.query;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.data.caches.OuterContext;
+import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
@@ -23,27 +27,27 @@ import lsfusion.server.data.translate.PartialKeyExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 
-public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, SubQueryExpr.QueryInnerContext> {
+public class SubQueryExpr extends QueryExpr<KeyExpr, SubQueryExpr.Query, SubQueryJoin, SubQueryExpr, SubQueryExpr.QueryInnerContext> {
 
-    public SubQueryExpr(Expr query, ImMap<KeyExpr, BaseExpr> group) {
+    public SubQueryExpr(Query query, ImMap<KeyExpr, BaseExpr> group) {
         super(query, group);
     }
 
-    public static class QueryInnerContext extends QueryExpr.QueryInnerContext<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, QueryInnerContext> {
+    public static class QueryInnerContext extends QueryExpr.QueryInnerContext<KeyExpr, SubQueryExpr.Query, SubQueryJoin, SubQueryExpr, QueryInnerContext> {
         public QueryInnerContext(SubQueryExpr thisObj) {
             super(thisObj);
         }
 
         public Type getType() {
-            return thisObj.query.getType(thisObj.query.getWhere());
+            return thisObj.query.getType();
         }
 
         protected Expr getMainExpr() {
-            return thisObj.query;
+            return thisObj.query.getMainExpr();
         }
 
         protected Where getFullWhere() {
-            return thisObj.query.getWhere();
+            return thisObj.query.getFullWhere();
         }
 
         protected boolean isSelect() {
@@ -54,7 +58,68 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         return new QueryInnerContext(this);
     }
 
-    protected SubQueryExpr createThis(Expr query, ImMap<KeyExpr, BaseExpr> group) {
+    public static class Query extends QueryExpr.Query<SubQueryExpr.Query> {
+        public final Expr expr; // может содержать и старый и новый контекст
+
+        public Query(Expr expr, boolean noInnerFollows) {
+            super(noInnerFollows);
+            this.expr = expr;
+        }
+
+        protected Query(SubQueryExpr.Query query, MapTranslate translator) {
+            super(query, translator);
+            this.expr = query.expr.translateOuter(translator);
+        }
+
+        protected SubQueryExpr.Query translate(MapTranslate translator) {
+            return new SubQueryExpr.Query(this, translator);
+        }
+
+        protected Query(SubQueryExpr.Query query, ExprTranslator translator) {
+            super(query, translator);
+            this.expr = query.expr.translateExpr(translator);
+        }
+
+        protected SubQueryExpr.Query translate(ExprTranslator translator) {
+            return new SubQueryExpr.Query(this, translator);
+        }
+
+        protected ImSet<OuterContext> calculateOuterDepends() {
+            return SetFact.<OuterContext>toSet(expr);
+        }
+
+        public Type getType() {
+            return expr.getType(expr.getWhere());
+        }
+
+        public Where getFullWhere() {
+            return expr.getWhere();
+        }
+
+        public boolean calcTwins(TwinImmutableObject o) {
+            return super.calcTwins(o) && expr.equals(((SubQueryExpr.Query)o).expr);
+        }
+        
+        public Expr getMainExpr() {
+            return expr;
+        }
+
+        public SubQueryExpr.Query calculatePack() {
+            return new SubQueryExpr.Query(expr.pack(), noInnerFollows);
+        }
+
+        public int hash(HashContext hash) {
+            return 31 * expr.hashOuter(hash) + super.hash(hash);
+        }
+
+        @Override
+        public String toString() {
+            return "INNER(" + expr + ")";
+        }
+    }
+
+    @Override
+    protected SubQueryExpr createThis(Query query, ImMap<KeyExpr, BaseExpr> group) {
         return new SubQueryExpr(query, group);
     }
 
@@ -89,30 +154,30 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
     @Override
     public Expr packFollowFalse(Where falseWhere) {
         ImMap<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
-        Expr packedQuery = query.pack();
+        Query packedQuery = query.pack();
         if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
             return create(packedQuery, packedGroup);
         else
             return this;
     }
 
-    public static Expr create(Expr expr) {
-        return create(expr, BaseUtils.<ImMap<KeyExpr, BaseExpr>>immutableCast(expr.getOuterKeys().toMap()), null);
+    public static Expr create(Expr expr, boolean noInnerFollows) {
+        return create(expr, BaseUtils.<ImMap<KeyExpr, BaseExpr>>immutableCast(expr.getOuterKeys().toMap()), null, noInnerFollows);
     }
 
-    public static Where create(Where where) {
-        return create(ValueExpr.get(where)).getWhere();
+    public static Where create(Where where, boolean noInnerFollows) {
+        return create(ValueExpr.get(where), noInnerFollows).getWhere();
     }
 
-    public static Expr create(final Expr expr, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull) {
+    public static Expr create(final Expr expr, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull, boolean noInnerFollows) {
         ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys(expr)).filterFn(new SFunctionSet<KeyExpr>() {
             public boolean contains(KeyExpr key) {
                 return key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull);
             }}).toMap();
-        return create(expr, MapFact.addExcl(group, pullKeys));
+        return create(new Query(expr, noInnerFollows), MapFact.addExcl(group, pullKeys));
     }
 
-    public static Expr create(final Expr expr, ImMap<KeyExpr, ? extends Expr> group) {
+    public static Expr create(final Query expr, ImMap<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(ImMap<KeyExpr, BaseExpr> map) {
                 return createBase(expr, map);
@@ -120,7 +185,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         }.proceed(group);
     }
 
-    public static Expr createBase(Expr expr, ImMap<KeyExpr, BaseExpr> group) {
+    public static Expr createBase(Query query, ImMap<KeyExpr, BaseExpr> group) {
         Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<>();
         ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
             public Boolean getMapValue(KeyExpr key, BaseExpr value) {
@@ -130,10 +195,10 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
 
         if(translate.size()>0) {
             ExprTranslator translator = new PartialKeyExprTranslator(translate, true);
-            expr = expr.translateExpr(translator);
+            query = query.translate(translator);
         }
 
-        return BaseExpr.create(new SubQueryExpr(expr, restGroup.result));
+        return BaseExpr.create(new SubQueryExpr(query, restGroup.result));
     }
 
     @Override

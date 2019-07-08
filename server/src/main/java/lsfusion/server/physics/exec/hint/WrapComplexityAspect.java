@@ -17,6 +17,7 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyQueryType;
+import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -30,12 +31,12 @@ public class WrapComplexityAspect {
         Expr wrapExpr = expr;
         if(expr.getComplexity(true) > Settings.get().getLimitWrapComplexity()) {
 //            System.out.println("WRAP COMPLEX EXPR " + property + "(" + property.getSID() + ") : " + expr.getComplexity(true));
-            wrapExpr = SubQueryExpr.create(expr);
+            wrapExpr = SubQueryExpr.create(expr, calcType instanceof CalcClassType);
         }
         if(where != null) {
             if(where.getComplexity(true) > Settings.get().getLimitWrapComplexity()) {
 //                System.out.println("WRAP COMPLEX WHERE " + property + " : " + where.getComplexity(true));
-                where = SubQueryExpr.create(where.and(expr.getWhere().or(property.getExpr(joinImplement, calcType).getWhere())));
+                where = SubQueryExpr.create(where.and(expr.getWhere().or(property.getExpr(joinImplement, calcType).getWhere())), calcType instanceof CalcClassType);
             }
             changedWhere.add(where);
         }

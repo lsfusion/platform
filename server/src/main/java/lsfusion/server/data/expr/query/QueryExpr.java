@@ -9,6 +9,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.caches.AbstractInnerContext;
 import lsfusion.server.data.caches.AbstractInnerHashContext;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
@@ -26,6 +27,7 @@ import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
+import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.type.Type;
@@ -37,7 +39,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.admin.Settings;
 
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
-public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J extends QueryJoin<?, ?, ?, ?>,
+public abstract class QueryExpr<K extends Expr,I extends QueryExpr.Query<I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends QueryExpr<K, I, J, T, IC>, IC extends QueryExpr.QueryInnerContext<K, I, J, T, IC>> extends InnerExpr {
 
     public I query;
@@ -62,6 +64,36 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     @Override
     public ImSet<StaticValueExpr> getOuterStaticValues() {
         return super.getOuterStaticValues().merge(getInner().getInnerStaticValues());
+    }
+    
+    public static abstract class Query<I extends QueryExpr.Query<I>> extends AbstractOuterContext<I> {
+        public final boolean noInnerFollows;
+
+        public Query(boolean noInnerFollows) {
+            this.noInnerFollows = noInnerFollows;
+        }
+
+        protected Query(I query, MapTranslate translate) {
+            this.noInnerFollows = query.noInnerFollows;
+        }
+
+        protected Query(I query, ExprTranslator translator) {
+            this.noInnerFollows = query.noInnerFollows;
+        }        
+
+        @Override
+        public int hash(HashContext hash) {
+            return noInnerFollows ? 1 : 0;
+        }
+
+        @Override
+        protected boolean calcTwins(TwinImmutableObject o) {
+            return noInnerFollows == ((Query)o).noInnerFollows;
+        }
+    }
+
+    protected boolean isNoInnerFollows() {
+        return query.noInnerFollows;
     }
 
     protected long calculateComplexity(boolean outer) {
@@ -94,7 +126,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
 
     protected abstract T createThis(I query, ImMap<K, BaseExpr> group);
 
-    protected abstract static class QueryInnerHashContext<K extends Expr,I extends OuterContext<I>, J extends QueryJoin<?, ?, ?, ?>,
+    protected abstract static class QueryInnerHashContext<K extends Expr,I extends Query<I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends QueryExpr<K, I, J, T, IC>, IC extends QueryExpr.QueryInnerContext<K, I, J, T, IC>> extends AbstractInnerHashContext {
 
         protected final T thisObj;
@@ -124,7 +156,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     }
 
     // вообще должно быть множественное наследование самого QueryExpr от InnerContext
-    protected abstract static class QueryInnerContext<K extends Expr,I extends OuterContext<I>, J extends QueryJoin<?, ?, ?, ?>,
+    protected abstract static class QueryInnerContext<K extends Expr,I extends Query<I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends QueryExpr<K, I, J, T, IC>, IC extends QueryExpr.QueryInnerContext<K, I, J, T, IC>> extends AbstractInnerContext<IC> {
 
         // вообще должно быть множественное наследование от QueryInnerHashContext, правда нюанс что вместе с верхним своего же Inner класса
@@ -165,11 +197,11 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         }
 
         public InnerExprFollows<K> getInnerFollows() { // не делаем IdentityLazy так как только при конструировании InnerJoin используется
-            if(Settings.get().isDisableInnerFollows())
+            if(Settings.get().isDisableInnerFollows() || thisObj.isNoInnerFollows())
                 return InnerExprFollows.EMPTYEXPR();
 
             ImSet<K> groupKeys = thisObj.group.keys();
-            return new InnerExprFollows<>(Query.<K, K, K>getClassWhere(getFullWhere(), MapFact.<K, BaseExpr>EMPTY(), groupKeys.toRevMap()), groupKeys);
+            return new InnerExprFollows<>(lsfusion.server.data.query.Query.<K, K, K>getClassWhere(getFullWhere(), MapFact.<K, BaseExpr>EMPTY(), groupKeys.toRevMap()), groupKeys);
         }
 
         protected IC translate(MapTranslate translate) {

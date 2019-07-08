@@ -75,12 +75,16 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     public static class Query extends AggrExpr.Query<GroupType, Query> implements AndContext<Query> {
 
         public Query(Expr expr, GroupType type) {
-            this(ListFact.singleton(expr), MapFact.<Expr, Boolean>EMPTYORDER(), false, type);
+            this(expr, type, false);
+        }
+        
+        public Query(Expr expr, GroupType type, boolean noInnerFollows) {
+            this(ListFact.singleton(expr), MapFact.<Expr, Boolean>EMPTYORDER(), false, type, noInnerFollows);
             assert type.hasAdd();
         }
 
-        public Query(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type) {
-            super(exprs, orders, ordersNotNull, type);
+        public Query(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type, boolean noInnerFollows) {
+            super(exprs, orders, ordersNotNull, type, noInnerFollows);
         }
 
         public Query(Query query, MapTranslate translate) {
@@ -92,7 +96,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         public Query translateExpr(ExprTranslator translator) {
-            return new Query(translator.translate(exprs), translator.translate(orders), ordersNotNull, type);
+            return new Query(translator.translate(exprs), translator.translate(orders), ordersNotNull, type, noInnerFollows);
         }
 
         public Type getType(Where groupWhere) {
@@ -104,7 +108,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         public Query followFalse(Where falseWhere, boolean pack) {
-            return new Query(falseWhere.followFalse(exprs, pack), falseWhere.followFalse(orders, pack), ordersNotNull, type);
+            return new Query(falseWhere.followFalse(exprs, pack), falseWhere.followFalse(orders, pack), ordersNotNull, type, noInnerFollows);
         }
 
         public String toString() {
@@ -118,7 +122,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
                         value = value.and(where);
                     return value;
                 }
-            }), orders, ordersNotNull, type);
+            }), orders, ordersNotNull, type, noInnerFollows);
         }
 
         public String getSource(ImMap<Expr, String> fromPropertySelect, ImMap<Expr, ClassReader> propReaders, lsfusion.server.data.query.Query<KeyExpr, Expr> query, SQLSyntax syntax, TypeEnvironment typeEnv, Type resultType) {
@@ -407,11 +411,15 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
 
     public static <K> Expr create(ImMap<K, ? extends Expr> inner, Expr expr, GroupType type, ImMap<K, ? extends Expr> outer) {
-        return createTypeAdjust(inner, new Query(expr, type), outer);
+        return create(inner, expr, type, outer, false);
+    }
+    
+    public static <K> Expr create(ImMap<K, ? extends Expr> inner, Expr expr, GroupType type, ImMap<K, ? extends Expr> outer, boolean noInnerFollows) {
+        return createTypeAdjust(inner, new Query(expr, type, noInnerFollows), outer);
     }
 
-    public static <K> Expr create(ImMap<K, ? extends Expr> group, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type, ImMap<K, ? extends Expr> implement) {
-        return createTypeAdjust(group, new Query(exprs, orders, ordersNotNull, type), implement);
+    public static <K> Expr create(ImMap<K, ? extends Expr> group, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type, ImMap<K, ? extends Expr> implement, boolean noInnerFollows) {
+        return createTypeAdjust(group, new Query(exprs, orders, ordersNotNull, type, noInnerFollows), implement);
     }
     
     private static <K> Type getType(ImMap<K, ? extends Expr> group, Query query) {
@@ -423,7 +431,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         assert group.keys().equals(implement.keys());
 
         if(query.type.isSelect() && !query.type.isSelectNotInWhere() && getType(group, query) instanceof LogicalClass)
-            query = new Query(query.exprs, query.orders, query.ordersNotNull, GroupType.LOGICAL()); // boolean
+            query = new Query(query.exprs, query.orders, query.ordersNotNull, GroupType.LOGICAL(), query.noInnerFollows); // boolean
         return createOuterCases(group, query, implement);
     }
 

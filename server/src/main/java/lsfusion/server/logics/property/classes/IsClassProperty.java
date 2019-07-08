@@ -202,9 +202,10 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
             mSet.exclAdd(getChanged(type, scope));
     }
 
+    // we don't want real tables to be used for classes (because it will lead to too early cache reading)
     @Override
     protected boolean isClassVirtualized(CalcClassType calcType) {
-        return calcType == CalcClassType.PREVSAME || getInterfaceClass() instanceof BaseClass;
+        return true;//calcType == CalcClassType.PREVSAME || getInterfaceClass() instanceof BaseClass;
     }
 
 //    @Override

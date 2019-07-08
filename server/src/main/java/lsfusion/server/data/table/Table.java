@@ -82,6 +82,7 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.SerializedTable;
@@ -707,7 +708,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
         @TwinLazy
         public InnerFollows<KeyField> getInnerFollows() {
-            if(Settings.get().isDisableInnerFollows())
+            if(Settings.get().isDisableInnerFollows() || Table.this instanceof Property.VirtualTable)
                 return InnerFollows.EMPTY();
 
             return new InnerFollows<>(getClassWhere(), keys.getSet(), Table.this);
