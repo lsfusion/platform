@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
@@ -46,7 +45,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         return new RecursiveExpr(this, translator);
     }
 
-    public static class Query extends AbstractOuterContext<Query> {
+    public static class Query extends QueryExpr.Query<Query> {
         public final ImRevMap<KeyExpr, KeyExpr> mapIterate; // новые на старые
         public final Expr initial; // может содержать и старый и новый контекст
         public final Expr step; // может содержать и старый и новый контекст
@@ -56,7 +55,8 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
             return true;
         }
 
-        protected Query(ImRevMap<KeyExpr, KeyExpr> mapIterate, Expr initial, Expr step, boolean cyclePossible) {
+        protected Query(ImRevMap<KeyExpr, KeyExpr> mapIterate, Expr initial, Expr step, boolean cyclePossible, boolean noInnerFollows) {
+            super(noInnerFollows);
             this.mapIterate = mapIterate;
             this.initial = initial;
             this.step = step;
@@ -64,6 +64,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }
 
         protected Query(Query query, MapTranslate translator) {
+            super(query, translator);
             this.mapIterate = translator.translateRevMap(query.mapIterate);
             this.initial = query.initial.translateOuter(translator);
             this.step = query.step.translateOuter(translator);
@@ -85,15 +86,15 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return mapIterate.equals(((Query)o).mapIterate) && initial.equals(((Query)o).initial) && step.equals(((Query)o).step) && cyclePossible == ((Query)o).cyclePossible;
+            return super.calcTwins(o) && mapIterate.equals(((Query)o).mapIterate) && initial.equals(((Query)o).initial) && step.equals(((Query)o).step) && cyclePossible == ((Query)o).cyclePossible;
         }
 
         public Query calculatePack() {
-            return new Query(mapIterate, initial.pack(), step.pack(), cyclePossible);
+            return new Query(mapIterate, initial.pack(), step.pack(), cyclePossible, noInnerFollows);
         }
 
         public int hash(HashContext hash) {
-            return 31 * (31 * (31 * hashMapOuter(mapIterate, hash) + initial.hashOuter(hash)) + step.hashOuter(hash)) + (cyclePossible?1:0);
+            return 31 * (31 * (31 * (31 * hashMapOuter(mapIterate, hash) + initial.hashOuter(hash)) + step.hashOuter(hash)) + (cyclePossible?1:0)) + (noInnerFollows ? 1 : 0);
         }
 
         @Override
@@ -133,23 +134,26 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
     }
 
     public RecursiveJoin getInnerJoin() {
-        return new RecursiveJoin(getInner().getQueryKeys(), getInner().getInnerValues(), query.initial.getWhere(), query.step.getWhere(), query.mapIterate, query.cyclePossible, query.getType() instanceof LogicalClass, group);
+        return new RecursiveJoin(getInner().getQueryKeys(), getInner().getInnerValues(), query.initial.getWhere(), query.step.getWhere(), query.mapIterate, query.cyclePossible, query.getType() instanceof LogicalClass, group, query.noInnerFollows);
     }
 
     public Expr translate(ExprTranslator translator) {
-        return create(query.mapIterate, query.initial, query.step, query.cyclePossible, translator.translate(group));
+        return create(query.mapIterate, query.initial, query.step, query.cyclePossible, translator.translate(group), query.noInnerFollows);
     }
 
-    // новый на старый
     public static Expr create(final ImRevMap<KeyExpr, KeyExpr> mapIterate, final Expr initial, final Expr step, final boolean cyclePossible, ImMap<KeyExpr, ? extends Expr> group) {
+        return create(mapIterate, initial, step, cyclePossible, group, false);
+    }
+    
+    public static Expr create(final ImRevMap<KeyExpr, KeyExpr> mapIterate, final Expr initial, final Expr step, final boolean cyclePossible, ImMap<KeyExpr, ? extends Expr> group, final boolean noInnerFollows) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(ImMap<KeyExpr, BaseExpr> map) {
-                return createBase(mapIterate, initial, step, cyclePossible, map);
+                return createBase(mapIterate, initial, step, cyclePossible, map, noInnerFollows);
             }
         }.proceed(group);
     }
 
-    public static Expr createBase(final ImRevMap<KeyExpr, KeyExpr> mapIterate, Expr initial, Expr step, boolean cyclePossible, ImMap<KeyExpr, BaseExpr> group) {
+    public static Expr createBase(final ImRevMap<KeyExpr, KeyExpr> mapIterate, Expr initial, Expr step, boolean cyclePossible, ImMap<KeyExpr, BaseExpr> group, boolean noInnerFollows) {
         Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<>();
         ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
             public Boolean getMapValue(KeyExpr key, BaseExpr value) {
@@ -166,10 +170,10 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         if(initial.isNull()) // потому как иначе в getInnerJoin используется getType который assert'ит что не null
             return NULL;
 
-        RecursiveExpr expr = new RecursiveExpr(new Query(mapIterate, initial, step, cyclePossible), restGroup.result);
+        RecursiveExpr expr = new RecursiveExpr(new Query(mapIterate, initial, step, cyclePossible, noInnerFollows), restGroup.result);
         RecursiveJoin innerJoin = expr.getInnerJoin();
         if(innerJoin.isOnlyInitial()) // чтобы кэшировалось
-            return GroupExpr.create(restGroup.result.keys().toMap(), initial, innerJoin.isLogical() ? GroupType.LOGICAL() : GroupType.SUM, restGroup.result); // boolean
+            return GroupExpr.create(restGroup.result.keys().toMap(), initial, innerJoin.isLogical() ? GroupType.LOGICAL() : GroupType.SUM, restGroup.result, noInnerFollows); // boolean
 
         return BaseExpr.create(expr);
     }
@@ -194,7 +198,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         ImMap<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
         Query packedQuery = query.pack();
         if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
-            return create(packedQuery.mapIterate, packedQuery.initial, packedQuery.step, packedQuery.cyclePossible, packedGroup);
+            return create(packedQuery.mapIterate, packedQuery.initial, packedQuery.step, packedQuery.cyclePossible, packedGroup, packedQuery.noInnerFollows);
         else
             return this;
     }

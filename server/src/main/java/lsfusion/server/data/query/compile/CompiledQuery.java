@@ -697,7 +697,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return getSource((SubQueryExpr)joinExpr, needValue);
         }
 
-        private abstract class QuerySelect<K extends Expr, I extends OuterContext<I>,J extends QueryJoin<K,?,?,?>,E extends QueryExpr<K,I,J,?,?>> extends JoinSelect<J> {
+        private abstract class QuerySelect<K extends Expr, I extends QueryExpr.Query<I>,J extends QueryJoin<K,?,?,?>,E extends QueryExpr<K,I,J,?,?>> extends JoinSelect<J> {
             ImRevMap<String, K> group;
 
             protected ImMap<String, BaseExpr> initJoins(J groupJoin, SQLSyntax syntax) {
@@ -1164,7 +1164,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
         }
 
-        private class SubQuerySelect extends QuerySelect<KeyExpr,Expr, SubQueryJoin,SubQueryExpr> {
+        private class SubQuerySelect extends QuerySelect<KeyExpr, SubQueryExpr.Query, SubQueryJoin,SubQueryExpr> {
 
             final ImMap<KeyExpr,BaseExpr> mapKeys;
             private SubQuerySelect(SubQueryJoin subQueryJoin) {
@@ -1186,7 +1186,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImMap<String, String>> propertySelect = new Result<>();
                 Result<ImCol<String>> whereSelect = new Result<>();
                 Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
-                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries, innerWhere).compile(new CompileOptions<String>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
+                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries.mapValues(new GetValue<Expr, SubQueryExpr.Query>() {
+                    public Expr getMapValue(SubQueryExpr.Query value) {
+                        return value.expr;                        
+                    }
+                }), innerWhere).compile(new CompileOptions<String>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "SUBQUERY", innerJoin));
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect.result,propertySelect.result),
                     whereSelect.result.toString(" AND "),"","","", "") + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
@@ -1477,7 +1481,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Where stepWhere = innerJoin.getStepWhere();
                 final Where wrapClassWhere = wrapStep ? tableJoin.getIsClassWhere() : null;
                 if(wrapStep) // чтобы избавляться от проблем с 2-м использованием
-                    stepWhere = SubQueryExpr.create(stepWhere.and(wrapClassWhere));
+                    stepWhere = SubQueryExpr.create(stepWhere.and(wrapClassWhere), false);
 
                 Result<RecursiveTable> recursiveTable = new Result<>();
                 final Join<String> recJoin = tableJoin.getRecJoin(propTypes, tableName, keyNames, adjustStat, recursiveTable);
@@ -1490,7 +1494,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         public Expr getMapValue(String key, RecursiveExpr.Query value) {
                             Expr step = value.step;
                             if (wrapStep)
-                                step = SubQueryExpr.create(step.and(wrapClassWhere));
+                                step = SubQueryExpr.create(step.and(wrapClassWhere), false);
                             return recJoin.getExpr(key).mult(step, (IntegralClass) value.getType());
                         }});
                 }
@@ -1610,7 +1614,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             QueryJoin exprJoin = queryExpr.getInnerJoin();
 
             QuerySelect select = null;
-            Result<OuterContext> query = new Result<>(queryExpr.query);
+            Result<QueryExpr.Query> query = new Result<>(queryExpr.query);
             
             if(select == null && isSingle(exprJoin)) {
                 select = getSingleSelect(queryExpr);
@@ -1644,7 +1648,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             usedJoin(join);
             return join;
         }
-        private QuerySelect getQuerySelect(QueryJoin exprJoin, Result<OuterContext> query) {
+        private QuerySelect getQuerySelect(QueryJoin exprJoin, Result<QueryExpr.Query> query) {
             QuerySelect select = null;
             // группировка query / кэгирование
             for (int i = 0, size = queries.size(); i < size; i++) {
@@ -1652,7 +1656,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if ((translator = exprJoin.mapInnerIdentity(queries.getKey(i), false)) != null) {
                     select = queries.getValue(i);
                     if(query != null)
-                        query.set(query.result.translateOuter(translator));
+                        query.set((QueryExpr.Query<?>)query.result.translateOuter(translator));
                 }
             }
 

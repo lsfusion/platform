@@ -42,8 +42,8 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     public static class Query extends AggrExpr.Query<PartitionType, Query> {
         public ImSet<Expr> partitions;
 
-        public Query(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, ImSet<Expr> partitions, PartitionType type) {
-            super(exprs, orders, ordersNotNull, type);
+        public Query(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, ImSet<Expr> partitions, PartitionType type, boolean noInnerFollows) {
+            super(exprs, orders, ordersNotNull, type, noInnerFollows);
             this.partitions = partitions;
         }
 
@@ -72,7 +72,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
                         value = value.and(where);
                     return value;
                 }
-            }), orders, ordersNotNull, newPartitions, type);
+            }), orders, ordersNotNull, newPartitions, type, noInnerFollows);
         }
 
         @Override
@@ -100,7 +100,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
         @Override
         public Query calculatePack() {
-            return new Query(Expr.pack(exprs), Expr.pack(orders), ordersNotNull, Expr.pack(partitions), type);
+            return new Query(Expr.pack(exprs), Expr.pack(orders), ordersNotNull, Expr.pack(partitions), type, noInnerFollows);
         }
 
         @Override
@@ -250,22 +250,25 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         }
         ImOrderMap<Expr, Boolean> removedOrders = MapFact.imOrderFilter(mRemovedOrders, query.orders);
         if(removedOrders.size() < query.orders.size()) // оптимизация
-            return BaseExpr.create(new PartitionExpr(new Query(query.exprs, removedOrders, query.ordersNotNull, query.partitions, query.type), group)).and(removeWhere);
+            return BaseExpr.create(new PartitionExpr(new Query(query.exprs, removedOrders, query.ordersNotNull, query.partitions, query.type, query.noInnerFollows), group)).and(removeWhere);
 
         assert removeWhere.isTrue();
         return BaseExpr.create(new PartitionExpr(query, group));
     }
 
-    public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, final ImSet<? extends Expr> partitions, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull) {
+    public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, final ImSet<? extends Expr> partitions, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull, boolean noInnerFollows) {
         ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterColKeys(exprs.getCol()).merge(getOuterSetKeys(orders.keys())).merge(getOuterSetKeys(partitions))).filterFn(new SFunctionSet<KeyExpr>() {
             public boolean contains(KeyExpr key) {
                 return key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull);
             }}).toMap();
-        return create(partitionType, exprs, orders, ordersNotNull, partitions, MapFact.addExcl(group, pullKeys));
+        return create(partitionType, exprs, orders, ordersNotNull, partitions, MapFact.addExcl(group, pullKeys), noInnerFollows);
     }
 
     public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, final boolean ordersNotNull, final ImSet<? extends Expr> partitions, ImMap<KeyExpr, ? extends Expr> group) {
-        return create(new Query(exprs, orders, ordersNotNull, (ImSet<Expr>) partitions, partitionType), group);
+        return create(partitionType, exprs, orders, ordersNotNull, partitions, group, false);
+    }
+    public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, final boolean ordersNotNull, final ImSet<? extends Expr> partitions, ImMap<KeyExpr, ? extends Expr> group, boolean noInnerFollows) {
+        return create(new Query(exprs, orders, ordersNotNull, (ImSet<Expr>) partitions, partitionType, noInnerFollows), group);
     }
 
     public static Expr create(Query query, ImMap<KeyExpr, ? extends Expr> group) {

@@ -27,17 +27,18 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
         super(queryExpr, translator);
     }
 
-    public static abstract class Query<G extends AggrType, I extends Query<G, I>> extends AbstractOuterContext<I> {
+    public static abstract class Query<G extends AggrType, I extends Query<G, I>> extends QueryExpr.Query<I> {
         public final ImList<Expr> exprs;
         public final ImOrderMap<Expr, Boolean> orders;
         public final boolean ordersNotNull;
-        public final G type;
+        public final G type;        
 
         protected boolean isComplex() {
             return true;
         }
 
-        protected Query(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, G type) {
+        protected Query(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, G type, boolean noInnerFollows) {
+            super(noInnerFollows);
             this.exprs = exprs;
             this.orders = orders;
             this.ordersNotNull = ordersNotNull;
@@ -45,14 +46,15 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return exprs.equals(((Query)o).exprs) && orders.equals(((Query)o).orders)  && ordersNotNull == ((Query)o).ordersNotNull && type.equals(((Query) o).type);
+            return super.calcTwins(o) && exprs.equals(((Query)o).exprs) && orders.equals(((Query)o).orders)  && ordersNotNull == ((Query)o).ordersNotNull && type.equals(((Query) o).type);
         }
 
         public int hash(HashContext hashContext) {
-            return (31 * (AbstractOuterContext.hashOuter(exprs, hashContext) * 31 + AbstractOuterContext.hashOuter(orders, hashContext)) * 31 + type.hashCode()) + (ordersNotNull ? 1 : 0);
+            return 31 * ((31 * (AbstractOuterContext.hashOuter(exprs, hashContext) * 31 + AbstractOuterContext.hashOuter(orders, hashContext)) * 31 + type.hashCode()) + (ordersNotNull ? 1 : 0)) + super.hash(hashContext);
         }
 
         protected Query(I query, MapTranslate translate) {
+            super(query, translate);
             this.exprs = translate.translate(query.exprs);
             this.orders = translate.translate(query.orders);
             this.ordersNotNull = query.ordersNotNull;
@@ -60,6 +62,7 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
         }
 
         protected Query(I query, ExprTranslator translator) {
+            super(query, translator);
             this.exprs = translator.translate(query.exprs);
             this.orders = translator.translate(query.orders);
             this.ordersNotNull = query.ordersNotNull;

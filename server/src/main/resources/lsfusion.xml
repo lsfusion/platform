@@ -466,6 +466,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как в этом задании добавляются события -->
+                <ref bean="initIndicesTask"/> <!-- hideOlds -> STAT calculation -> getIndices cache  -->
                 <ref bean="showDependenciesTask"/> <!-- так как используется fillActionChangeProps, а его реализация не синхронизирована -->
             </set>
         </property>
@@ -480,6 +481,7 @@
                 <ref bean="setupDrillDownTask"/>
                 <ref bean="setupPropertyPolicyFormsTask"/>
                 <ref bean="setupActionPolicyFormsTask"/>
+                <ref bean="initIndicesTask"/> <!-- hideOlds -> STAT calculation -> getIndices cache  -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

@@ -21,6 +21,7 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
+import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
@@ -155,7 +156,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
                     getExprImplements(mapKeys, calcType, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, calcType, PropertyChanges.EMPTY, null), mapExprs.result));
         }
 
-        return PartitionExpr.create(partitionType, exprs, orderExprs, ordersNotNull, partitionImplements.values().toSet(), mapExprs.result, null);
+        return PartitionExpr.create(partitionType, exprs, orderExprs, ordersNotNull, partitionImplements.values().toSet(), mapExprs.result, null, calcType instanceof CalcClassType);
     }
 
     private Where getPartitionWhere(Where where, ImMap<PropertyInterfaceImplement<T>,Expr> partitionImplements, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<KeyExpr, Expr> mapExprs) {

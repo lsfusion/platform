@@ -19,6 +19,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
@@ -153,11 +154,11 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         Result<ImMap<KeyExpr, Expr>> group = new Result<>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
-        if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))
+        if(checkPrereadNull(recursiveKeys, calcType, propChanges))
             return Expr.NULL;
 
         return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, calcType, propChanges, null),
-                step.mapExpr(recursiveKeys, calcType, propChanges, null), isCyclePossible(), group.result);
+                step.mapExpr(recursiveKeys, calcType, propChanges, null), isCyclePossible(), group.result, calcType instanceof CalcClassType);
     }
 
     // проталкивание значений на уровне property

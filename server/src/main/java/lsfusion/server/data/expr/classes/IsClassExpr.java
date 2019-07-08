@@ -81,7 +81,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
             assert classTables.size() > inlineThreshold;
             // будем делить на inlineThreshold корзин
             Pair<KeyExpr,Expr> subQuery = getBaseClass().getSubQuery(classTables, type);
-            return new SubQueryExpr(subQuery.second, MapFact.singleton(subQuery.first, (BaseExpr) expr));
+            return new SubQueryExpr(new SubQueryExpr.Query(subQuery.second, false), MapFact.singleton(subQuery.first, (BaseExpr) expr));
         }
     }
 
