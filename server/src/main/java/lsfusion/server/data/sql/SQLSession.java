@@ -577,7 +577,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         try {
             if(Settings.get().isApplyVolatileStats())
                 pushVolatileStats(owner);
-            if(isLoggerDebugEnabled())
+            if(isExplainTemporaryTablesEnabled())
                 fifo.add("ST"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             if(inTransaction++ == 0) {
                 transStartTime = System.currentTimeMillis();
@@ -667,7 +667,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                             ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
                             WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
-                            if(isLoggerDebugEnabled())
+                            if(isExplainTemporaryTablesEnabled())
                                 fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExecutionStackAspect.getExStackTrace());
 //                            
 //                            if(Settings.get().isEnableHacks())
@@ -691,7 +691,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             problemInTransaction = null;
         }
 
-        if(isLoggerDebugEnabled())
+        if(isExplainTemporaryTablesEnabled())
             fifo.add("RBACK"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 
         runSuppressed(new SQLRunnable() {
@@ -712,7 +712,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void commitTransaction(OperationOwner owner) throws SQLException {
         if(inTransaction == 1)
             privateConnection.sql.commit();
-        if(isLoggerDebugEnabled())
+        if(isExplainTemporaryTablesEnabled())
             fifo.add("CMT"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 
         endTransaction(owner, false);
@@ -1109,7 +1109,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             } finally {
                 temporaryTablesLock.unlock();
             }
-            if(isLoggerDebugEnabled())
+            if(isExplainTemporaryTablesEnabled())
                 fifo.add("GET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
@@ -1141,7 +1141,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             TableOwner tableOwner = entry.getValue().get();
             if (force || tableOwner == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
-                if(isLoggerDebugEnabled())
+                if(isExplainTemporaryTablesEnabled())
                     fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
                 truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
@@ -1177,7 +1177,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         try {
             Result<Throwable> firstException = new Result<>();
-            if(isLoggerDebugEnabled())
+            if(isExplainTemporaryTablesEnabled())
                 fifo.add("RETURN " + getCurrentTimeStamp() + " " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
@@ -1225,7 +1225,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 needPrivate();
 
                 WeakReference<TableOwner> value = new WeakReference<>(owner);
-                if(isLoggerDebugEnabled())
+                if(isExplainTemporaryTablesEnabled())
                     fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 WeakReference<TableOwner> prevOwner = sessionTablesMap.put(table.getName(), value);
                 sessionDebugInfo.put(table.getName(), owner.getDebugInfo());
@@ -1509,6 +1509,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private static Map<Long, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
     private static boolean explainNoAnalyze;
     private static Map<Long, Boolean> loggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> explainTemporaryTablesEnabled = MapFact.getGlobalConcurrentHashMap();
     private static Map<Long, Boolean> userVolatileStats = MapFact.getGlobalConcurrentHashMap();
 
     public static void setExplainAnalyzeMode(Long user, Boolean mode) {
@@ -1521,6 +1522,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public static void setLoggerDebugEnabled(Long user, Boolean enabled) {
         loggerDebugEnabled.put(user, enabled != null && enabled);
+    }
+    
+    public static void setExplainTemporaryTablesEnabled(Long user, Boolean enabled) {
+        explainTemporaryTablesEnabled.put(user, enabled != null && enabled);
     }
     
     public static void setVolatileStats(Long user, Boolean enabled, OperationOwner owner) throws SQLException {
@@ -1545,6 +1550,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             return false;
         Boolean lde = loggerDebugEnabled.get(currentUser);
         return lde != null && lde;
+    }
+    
+    public boolean isExplainTemporaryTablesEnabled() {
+        Long currentUser = contextProvider.getCurrentUser();
+        if(currentUser == null)
+            return false;
+        Boolean ett = explainTemporaryTablesEnabled.get(currentUser);
+        return ett != null && ett;
     }
     
     public boolean getVolatileStats(Long user) {
@@ -1690,7 +1703,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(message == null)
             message = "PREPARING STATEMENT";
         
-        if(isLoggerDebugEnabled())
+        if(isExplainTemporaryTablesEnabled())
             fifo.add("E"  + getCurrentTimeStamp() + " " + this + " " + e.getStackTrace());
 
         boolean inTransaction = isInTransaction();

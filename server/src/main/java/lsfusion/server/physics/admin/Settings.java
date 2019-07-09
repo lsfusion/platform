@@ -1324,6 +1324,16 @@ public class Settings implements Cloneable {
         this.logTimeThreshold = logTimeThreshold;
     }
     
+    private long allocatedBytesThreshold = 100 * 1024 * 1024;
+    
+    public long getAllocatedBytesThreshold() {
+        return allocatedBytesThreshold;
+    }
+    
+    public void setAllocatedBytesThreshold(long allocatedBytesThreshold) {
+        this.allocatedBytesThreshold = allocatedBytesThreshold;
+    }
+
     // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)
     private boolean useRecalculateClassesInsteadOfInconsisentExpr = true;
 
