@@ -117,7 +117,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
-import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -374,7 +373,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     protected void onClose(Object o) throws SQLException {
         assert o == null;
 
-        if(sql.isLoggerDebugEnabled())
+        if(sql.isExplainTemporaryTablesEnabled())
             SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
         try {
             dropTables(SetFact.<SessionDataProperty>EMPTY());
@@ -519,7 +518,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         registerThreadStack(); // создающий поток также является владельцем сессии
         createdInTransaction = sql.isInTransaction(); // при synchronizeDB есть такой странный кейс
-        if(sql.isLoggerDebugEnabled())
+        if(sql.isExplainTemporaryTablesEnabled())
             SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + sql + '\n' + ExceptionUtils.getStackTrace());
     }
     

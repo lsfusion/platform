@@ -14,6 +14,8 @@ import lsfusion.server.data.sql.exception.HandledException;
 import lsfusion.server.logics.action.controller.stack.ExecuteActionStackItem;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
 import lsfusion.server.physics.admin.profiler.ProfileObject;
 import lsfusion.server.physics.admin.profiler.Profiler;
@@ -21,6 +23,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.*;
 
 import static lsfusion.server.physics.admin.profiler.Profiler.PROFILER_ENABLED;
@@ -190,6 +194,20 @@ public class ExecutionStackAspect {
         RmiCallStackItem item = new RmiCallStackItem(joinPoint, profiledObject);
         return processStackItem(joinPoint, item);
     }
+
+    private static Map<Long, Boolean> explainAllocationEnabled = MapFact.getGlobalConcurrentHashMap();
+    
+    public static void setExplainAllocationEnabled(Long user, Boolean enabled) {
+        explainAllocationEnabled.put(user, enabled != null && enabled);
+    }
+
+    public boolean isExplainAllocationEnabled() {
+        Long currentUser = ThreadLocalContext.getCurrentUser();
+        if (currentUser == null)
+            return false;
+        Boolean ett = explainAllocationEnabled.get(currentUser);
+        return ett != null && ett;
+    }
     
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
@@ -220,6 +238,15 @@ public class ExecutionStackAspect {
                 }
             }
 
+            long allocatedBytesOnStart = 0;
+            ThreadMXBean threadMXBean = null;
+            if (isExplainAllocationEnabled()) {
+                threadMXBean = ManagementFactory.getThreadMXBean();
+                if (threadMXBean instanceof com.sun.management.ThreadMXBean) {
+                    allocatedBytesOnStart = ((com.sun.management.ThreadMXBean) threadMXBean).getThreadAllocatedBytes(Thread.currentThread().getId());
+                }
+            }
+
             Object result = joinPoint.proceed();
 
             if (start > 0 && PROFILER_ENABLED) {
@@ -236,6 +263,13 @@ public class ExecutionStackAspect {
                         executionTimeCounter.sqlTime - sqlStart, 
                         executionTimeCounter.userInteractionTime - uiStart
                 );
+            }
+
+            if (isExplainAllocationEnabled() && threadMXBean instanceof com.sun.management.ThreadMXBean) {
+                long allocatedBytes = ((com.sun.management.ThreadMXBean) threadMXBean).getThreadAllocatedBytes(Thread.currentThread().getId()) - allocatedBytesOnStart;
+                if (allocatedBytes > Settings.get().getAllocatedBytesThreshold()) {
+                    ServerLoggers.allocatedBytesLogger.info("Allocated bytes: " + (allocatedBytes) + " : " + item);
+                }
             }
                 
             return result;

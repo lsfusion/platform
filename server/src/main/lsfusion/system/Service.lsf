@@ -117,6 +117,15 @@ WHEN CHANGED(loggerDebugEnabled(User user)) DO {
     refreshLoggerDebugEnabled(user);
 }
 
+setExplainTemporaryTablesEnabled '{service.set.explain.temporary.tables.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetExplainTemporaryTablesEnabledUserAction' (BOOLEAN, User);
+explainTemporaryTablesEnabled '{service.explain.temporary.tables.enabled}' = DATA BOOLEAN (User);
+refreshExplainTemporaryTablesEnabled '' (User user)  { 
+    setExplainTemporaryTablesEnabled(explainTemporaryTablesEnabled(user), user);
+}
+WHEN CHANGED(explainTemporaryTablesEnabled(User user)) DO {
+    refreshExplainTemporaryTablesEnabled(user);
+}
+
 setRemoteLoggerDebugEnabled '{service.set.remote.logger.debug.enabled}'  INTERNAL  'lsfusion.server.physics.admin.service.action.SetRemoteLoggerDebugEnabledUserAction' (BOOLEAN, User);
 remoteLoggerDebugEnabled '{service.remote.logger.debug.enabled}' = DATA BOOLEAN (User);
 refreshRemoteLoggerDebugEnabled ''(User user)  { 
@@ -142,6 +151,15 @@ refreshPausableLogEnabled ''(User user)  {
 }
 WHEN CHANGED(remotePausableLogEnabled(User user)) DO {
     refreshPausableLogEnabled(user);
+}
+
+setExplainAllocationEnabled '{service.set.explain.allocation.enabled}' INTERNAL 'lsfusion.server.physics.admin.service.action.SetExplainAllocationEnabledUserAction' (BOOLEAN, User);
+explainAllocationEnabled '{service.explain.allocation.enabled}' = DATA BOOLEAN (User);
+refreshExplainAllocationEnabled '' (User user) {
+    setExplainAllocationEnabled(explainAllocationEnabled(user), user);
+}
+WHEN CHANGED(explainAllocationEnabled(User user)) DO {
+    refreshExplainAllocationEnabled(user);
 }
 
 CLASS TypeExecEnv {
@@ -188,6 +206,8 @@ onStarted() + {
         refreshExplainAnalyzeMode(u);
     FOR loggerDebugEnabled(User u) DO 
         refreshLoggerDebugEnabled(u);
+    FOR explainTemporaryTablesEnabled(User u) DO 
+        refreshExplainTemporaryTablesEnabled(u);
     FOR volatileStatsEnabled(User u) DO 
         refreshVolatileStatsEnabled(u);
     FOR remoteLoggerDebugEnabled(User u) DO 
@@ -196,6 +216,8 @@ onStarted() + {
         refreshExLogEnabled(u);
     FOR remotePausableLogEnabled(User u) DO 
         refreshPausableLogEnabled(u);
+    FOR explainAllocationEnabled(User u) DO
+        refreshExplainAllocationEnabled(u);
     FOR execEnv(User u) DO 
         refreshExecEnv(u);
 } 
@@ -327,7 +349,7 @@ FORM settings '{service.form.settings}'
                  initHeapSize, maxHeapSize, minHeapFreeRatio, maxHeapFreeRatio, vmargs
     OBJECTS u=User
     PROPERTIES(u) READONLY name, login, nameMainRole
-    PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
+    PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, explainTemporaryTablesEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, explainAllocationEnabled, nameExecEnv, volatileStatsEnabled
     
     OBJECTS uc=User
     PROPERTIES(uc) READONLY name, login
