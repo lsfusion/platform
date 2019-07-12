@@ -70,20 +70,20 @@ public class ScriptingFormEntity {
         return form;
     }
 
-    public void addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         for (ScriptingGroupObject groupObject : groupObjects) {
             GroupObjectEntity neighbour = groupObject.neighbourGroupObject;
             Boolean isRightNeighbour = groupObject.isRightNeighbour;
             checkNeighbour(neighbour, isRightNeighbour);
-            addScriptingGroupObject(groupObject, null, neighbour, isRightNeighbour, version);
+            addScriptingGroupObject(groupObject, null, neighbour, isRightNeighbour, version, debugPoint);
         }
     }
-    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groups = new ArrayList<>();
 
         boolean reverseList = neighbourGroupObject != null && !isRightNeighbour;
         for (ScriptingGroupObject groupObject : (reverseList ? BaseUtils.reverse(groupObjects) : groupObjects)) {
-            GroupObjectEntity groupObj = addScriptingGroupObject(groupObject, treeGroup, neighbourGroupObject, isRightNeighbour, version);
+            GroupObjectEntity groupObj = addScriptingGroupObject(groupObject, treeGroup, neighbourGroupObject, isRightNeighbour, version, debugPoint);
             if(neighbourGroupObject != null)
                 neighbourGroupObject = groupObj;
             groups.add(groupObj);
@@ -91,8 +91,9 @@ public class ScriptingFormEntity {
         return (reverseList ? BaseUtils.reverse(groups) : groups);
     }
 
-    private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
+        groupObj.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
 
         for (int j = 0; j < groupObject.objects.size(); j++) {
             String className = groupObject.classes.get(j);
@@ -158,11 +159,11 @@ public class ScriptingFormEntity {
         return groupObj;
     }
 
-    public void addScriptingTreeGroupObject(String treeSID, GroupObjectEntity neighbour, boolean isRightNeighbour, List<ScriptingGroupObject> groupObjects, List<List<ScriptingLogicsModule.NamedPropertyUsage>> parentProperties, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptingTreeGroupObject(String treeSID, GroupObjectEntity neighbour, boolean isRightNeighbour, List<ScriptingGroupObject> groupObjects, List<List<ScriptingLogicsModule.NamedPropertyUsage>> parentProperties, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         checkNeighbour(neighbour, isRightNeighbour);
 
         TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
-        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, isRightNeighbour, version);
+        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, isRightNeighbour, version, debugPoint);
         for (ScriptingGroupObject groupObject : groupObjects) {
             List<ScriptingLogicsModule.NamedPropertyUsage> properties = parentProperties.get(groupObjects.indexOf(groupObject));
 
@@ -367,13 +368,16 @@ public class ScriptingFormEntity {
                 }
             }
 
-            String formPath = points.get(i).toString();
+            DebugInfo.DebugPoint debugPoint = points.get(i);
+            String formPath = debugPoint.toString();
             PropertyDrawEntity propertyDraw;
             ActionOrPropertyObjectEntity propertyObject = property.createObjectEntity(objects);
             if(inherited.result != null)
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, version);
             else
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, version);
+            propertyDraw.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
+
 
             if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
                 propertyDraw.setIntegrationSID(forceIntegrationSID);

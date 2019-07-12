@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.struct.object;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -66,6 +67,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public UpdateType updateType;
     
     public Group propertyGroup; // used for integration (export / import)
+
+    private Pair<Integer, Integer> scriptIndex;
 
     private String integrationSID;
     private boolean integrationKey; // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)
@@ -243,6 +246,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             if(!type.isPanel() && isAllowedClassView(type))
                 return false;
         return true;
+    }
+
+    public Pair<Integer, Integer> getScriptIndex() {
+        return scriptIndex;
+    }
+
+    public void setScriptIndex(Pair<Integer, Integer> scriptIndex) {
+        this.scriptIndex = scriptIndex;
     }
 
     public void setIntegrationSID(String integrationSID) {

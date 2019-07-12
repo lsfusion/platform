@@ -77,6 +77,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String eventID;
 
     private String formPath;
+
+    private Pair<Integer, Integer> scriptIndex;
     
     public LocalizedString initCaption = null; // чисто техническая особенность реализации
     
@@ -623,6 +625,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void setFormPath(String formPath) {
         this.formPath = formPath;
+    }
+
+    public Pair<Integer, Integer> getScriptIndex() {
+        return scriptIndex;
+    }
+
+    public void setScriptIndex(Pair<Integer, Integer> scriptIndex) {
+        this.scriptIndex = scriptIndex;
     }
 
     @Override
