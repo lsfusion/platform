@@ -2416,4 +2416,15 @@ public class Settings implements Cloneable {
     public void setAuthTokenExpiration(int authTokenExpiration) {
         this.authTokenExpiration = authTokenExpiration;
     }
+
+    //temporary setting, enable if order changed after update
+    private boolean groupIntegrationHierarchyOldOrder = false;
+
+    public boolean isGroupIntegrationHierarchyOldOrder() {
+        return groupIntegrationHierarchyOldOrder;
+    }
+
+    public void setGroupIntegrationHierarchyOldOrder(boolean groupIntegrationHierarchyOldOrder) {
+        this.groupIntegrationHierarchyOldOrder = groupIntegrationHierarchyOldOrder;
+    }
 }
