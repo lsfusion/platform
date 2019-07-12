@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.hierarchy;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -25,13 +26,36 @@ public abstract class ParseNode {
         // generating used property groups hierarchy
         Map<Group, MOrderExclSet<PGNode>> childGroupNodes = new HashMap<>(); // not MMap because we need null keys in this case
         childGroupNodes.put(null, SetFact.<PGNode>mOrderExclSet());
-        for(PropertyDrawEntity<?> property : hierarchy.getProperties(currentGroup))
-            fillPropertyGroupIntegrationHierarchy(new PropertyPGNode(property), childGroupNodes);
-        for(GroupObjectEntity group : hierarchy.getDependencies(currentGroup))
-            fillPropertyGroupIntegrationHierarchy(new GroupObjectPGNode(group), childGroupNodes);
+        ImOrderSet<PropertyDrawEntity> properties = hierarchy.getProperties(currentGroup);
+        ImOrderSet<GroupObjectEntity> groups = hierarchy.getDependencies(currentGroup);
+        int i = 0, j = 0;
+        while(i < properties.size() || j < groups.size()) {
+            PropertyDrawEntity property = i < properties.size() ? properties.get(i) : null;
+            GroupObjectEntity group = j < groups.size() ? groups.get(j) : null;
+            if((property != null && (group == null || compareIndexes(property.getScriptIndex(), group.getScriptIndex()) <= 0))) {
+                fillPropertyGroupIntegrationHierarchy(new PropertyPGNode(property), childGroupNodes);
+                i++;
+            } else {
+                fillPropertyGroupIntegrationHierarchy(new GroupObjectPGNode(group), childGroupNodes);
+                j++;
+            }
+        }
         
         // generating parse nodes recursively
         return getPropertyGroupIntegrationHierarchy(null, childGroupNodes, currentGroup, hierarchy);
+    }
+
+    private static int compareIndexes(Pair<Integer, Integer> propertyIndex, Pair<Integer, Integer> groupIndex) {
+        if(propertyIndex == null) {
+            return groupIndex == null ? 0 : -1;
+        } else {
+            if(groupIndex == null) {
+                return 1;
+            } else {
+                int compare = propertyIndex.first.compareTo(groupIndex.first);
+                return compare == 0 ? propertyIndex.second.compareTo(groupIndex.second) : compare;
+            }
+        }
     }
 
     private static ParseNode getPropertyGroupIntegrationHierarchy(Group currentPropertyGroup, final Map<Group, MOrderExclSet<PGNode>> childGroupNodes, final GroupObjectEntity currentGroup, final StaticDataGenerator.Hierarchy hierarchy) {
