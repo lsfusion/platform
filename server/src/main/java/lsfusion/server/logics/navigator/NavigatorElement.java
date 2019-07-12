@@ -22,6 +22,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
 import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
@@ -214,8 +215,13 @@ public abstract class NavigatorElement {
     }
 
     public final void setImage(String icon, DefaultIcon defaultIcon) {
-        this.image = new ImageIcon(NavigatorElement.class.getResource(icon), icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
-        this.defaultIcon = defaultIcon;
+        URL resource = NavigatorElement.class.getResource(icon);
+        if(resource != null) {
+            this.image = new ImageIcon(resource, icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
+            this.defaultIcon = defaultIcon;
+        } else {
+            throw new RuntimeException("Icon " + icon + " not found");
+        }
     }
 
     public ImageIcon getImage() {
