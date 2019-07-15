@@ -54,9 +54,9 @@ public class BusinessLogicsBootstrap {
                 String version = BaseUtils.getPlatformVersion();
                 if(version != null) {
                     logger.info("Desktop Client is available at:");
-                    logger.info("Java Web Start (with auto update, requires JDK): http://download.lsfusion.org/java/lsfusion-client-" + version + ".jnlp");
+                    logger.info("Java Web Start (with auto update, requires JDK): https://download.lsfusion.org/java/lsfusion-client-" + version + ".jnlp");
                     if(SystemUtils.IS_OS_WINDOWS) {
-                        logger.info("Installer for Windows (without auto update): http://download.lsfusion.org/exe/lsfusion-desktop-" + version + (SystemUtils.is64Arch() ? "-x64" : "") + ".exe");
+                        logger.info("Installer for Windows (without auto update): https://download.lsfusion.org/exe/lsfusion-desktop-" + version + (SystemUtils.is64Arch() ? "-x64" : "") + ".exe");
                     }
                 }
                 logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
