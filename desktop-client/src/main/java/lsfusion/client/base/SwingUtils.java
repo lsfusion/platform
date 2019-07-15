@@ -156,7 +156,7 @@ public class SwingUtils {
             options = BaseUtils.add(options, UIManager.getString("OptionPane.cancelButtonText"));
         }
 
-        JOptionPane dialogPane = new JOptionPane(message,
+        JOptionPane dialogPane = new JOptionPane(getMessageTextPane(message),
                 messageType,
                 cancel ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION,
                 null, options, options[initialValue]);
@@ -188,6 +188,37 @@ public class SwingUtils {
                 return JOptionPane.NO_OPTION;
             else
                 return JOptionPane.CANCEL_OPTION;
+        }
+    }
+
+    public static JTextPane getMessageTextPane(Object message) {
+        JTextPane textPane = new JTextPane();
+        textPane.setText(String.valueOf(message)); //message can be null
+        textPane.setEditable(false);
+        int width = (int) (MainFrame.instance.getRootPane().getWidth() * 0.3);
+        textPane.setSize(new Dimension(width, 10));
+        if(getWidth(String.valueOf(message)) >= width) { //set preferred size only for text with long lines
+            int height = Math.min((int) (MainFrame.instance.getRootPane().getHeight() * 0.9), textPane.getPreferredSize().height);
+            textPane.setPreferredSize((new Dimension(width, height)));
+        }
+        textPane.setBackground(null);
+        return textPane;
+    }
+
+    private static int getWidth(String message) {
+        try {
+            FontMetrics metrics = MainFrame.instance.getRootPane().getGraphics().getFontMetrics();
+            int maxWidth = 0;
+            if (metrics != null) {
+                for (String line : message.split("\n")) {
+                    int width = metrics.stringWidth(line);
+                    if (width > maxWidth)
+                        maxWidth = width;
+                }
+            }
+            return maxWidth;
+        } catch (Exception e) {
+            return 0;
         }
     }
 
