@@ -1535,7 +1535,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    @StackMessage("logics.save.objects.remove.classes")
+    @StackMessage("{logics.save.objects.remove.classes}")
     private void saveRemoveClasses(@ParamMessage ApplyRemoveClassesEvent event, UpdateCurrentClassesSession updateClasses, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
         // обновляем классы у уже подсчитанных prev'ов в updateApplyStart, только те до которых по depends можно дойти (хотя это допоптимизация)
         updateDependApplyStartCurrentClasses(event, updateClasses, BL);
