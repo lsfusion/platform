@@ -144,8 +144,6 @@ public class EmailSender {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 
-        if(inlineFiles.isEmpty())
-            inlineFiles = Collections.singletonList(localize("{mail.you.have.received.reports}"));
         for(String inlineFile : inlineFiles)
             if(inlineFile != null)
                 setText(mp, inlineFile);
