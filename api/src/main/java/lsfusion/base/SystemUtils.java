@@ -8,13 +8,12 @@ import org.apache.commons.io.FileUtils;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.util.jar.Manifest;
+import java.util.jar.JarFile;
 import java.util.prefs.Preferences;
 
 public class SystemUtils {
@@ -558,23 +557,27 @@ public class SystemUtils {
         return availableProcessors;
     }
 
-    public static String getRevision() {
-        String revision = null;
-        try {
-            Class clazz = SystemUtils.class;
-            String className = clazz.getSimpleName() + ".class";
-            String classPath = clazz.getResource(className).toString();
-            if (classPath.startsWith("jar")) { // Class from JAR
-                String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
-                InputStream manifestStream = new URL(manifestPath).openStream();
-                if (manifestStream != null) {
-                    Manifest manifest = new Manifest(manifestStream);
-                    revision = manifest.getMainAttributes().getValue("SCM-Version");
+    public static String getRevision(boolean inDevMode) {
+        if (!inDevMode) {
+            try {
+                String[] paths = ResourceUtils.getClassPathElements();
+                for (String path : paths) {
+                    if (!BaseUtils.isRedundantString(path) && path.toLowerCase().endsWith(".jar")) {
+                        File file = new File(path);
+                        if (file.exists()) {
+                            JarFile jarFile = new JarFile(file);
+                            String revisionString = jarFile.getManifest().getMainAttributes().getValue("SCM-Version");
+                            Integer revision = BaseUtils.parseInt(revisionString);
+                            if (revision != null && revision > 0) {
+                                return revisionString;
+                            }
+                        }
+                    }
                 }
+            } catch (IOException ignore) {
             }
-        } catch (IOException ignore) {
         }
-        return revision;
+        return null;
     }
 
     public static boolean isPortAvailable(int port) {
