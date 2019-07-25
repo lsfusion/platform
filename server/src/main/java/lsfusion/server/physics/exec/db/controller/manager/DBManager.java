@@ -1564,7 +1564,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             reflectionLM.sidDropColumn.change(sid, session, object);
             reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
             reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
-            reflectionLM.revisionDropColumn.change(getRevision(), session, object);
+            reflectionLM.revisionDropColumn.change(getRevision(SystemProperties.inDevMode), session, object);
         }
         apply(session);
     }
