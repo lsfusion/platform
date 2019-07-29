@@ -182,10 +182,10 @@ public class AutoHintsAspect {
             return proceed(thisJoinPoint, sessionModifier, resultHint);
 
         AutoHintImplement<P> implement = new AutoHintImplement<>(property, joinImplement, sessionModifier);
-        MAddCol<MapCacheAspect.CacheResult<AutoHintImplement<P>,Hint>> hashCaches = MapCacheAspect.getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.AUTOHINT);
+        MAddCol<MapCacheAspect.CacheResult<AutoHintImplement,Hint>> hashCaches = MapCacheAspect.getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.AUTOHINT);
         synchronized(hashCaches) {
             Hint cacheHint = null;
-            for(MapCacheAspect.CacheResult<AutoHintImplement<P>,Hint> cache : hashCaches.it()) {
+            for(MapCacheAspect.CacheResult<AutoHintImplement,Hint> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
                     if(cache.implement.translateValues(mapValues).equals(implement)) {
                         cacheHint = ((Hint<?>) cache.result).translateValues(mapValues);

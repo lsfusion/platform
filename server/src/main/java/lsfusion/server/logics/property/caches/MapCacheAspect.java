@@ -298,15 +298,15 @@ public class MapCacheAspect {
 
         DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<>(property, change, propChanges, changedWheres != null);
 
-        MAddCol<CacheResult<DataChangesInterfaceImplement<K>, DataChangesResult<K>>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.DATACHANGES);
+        MAddCol<CacheResult<DataChangesInterfaceImplement, DataChangesResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.DATACHANGES);
         synchronized(hashCaches) {
-            for(CacheResult<DataChangesInterfaceImplement<K>, DataChangesResult<K>> cache : hashCaches.it()) {
+            for(CacheResult<DataChangesInterfaceImplement, DataChangesResult> cache : hashCaches.it()) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
                     logger.debug("getDataChanges - cached "+property);
                     incrementHit(CacheType.DATA_CHANGES);
                     if(changedWheres!=null) changedWheres.add(cache.result.where.translateOuter(translator));
-                    return cache.result.changes.translateValues(translator.mapValues());
+                    return ((DataChangesResult<K>)cache.result).changes.translateValues(translator.mapValues());
                 }
             }
 
@@ -556,10 +556,10 @@ public class MapCacheAspect {
         JoinExprInterfaceImplement<K> implement = new JoinExprInterfaceImplement<>(property, joinExprs, calcType, propChanges, changedWheres != null);
 
         JoinExprInterfaceImplement<K> cachedImplement = null;
-        MAddCol<CacheResult<JoinExprInterfaceImplement<K>, ExprResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.JOINEXPR);
+        MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.JOINEXPR);
         synchronized(hashCaches) {
             Expr cacheResult = null;
-            for(CacheResult<JoinExprInterfaceImplement<K>, ExprResult> cache : hashCaches.it()) {
+            for(CacheResult<JoinExprInterfaceImplement, ExprResult> cache : hashCaches.it()) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
                     if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
