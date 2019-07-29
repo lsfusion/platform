@@ -13,6 +13,7 @@
         <lsfusion.snapshots.repo>https://repo.lsfusion.org/nexus/repository/snapshots</lsfusion.snapshots.repo>
 
         <!-- MAVEN PLUGIN VERSIONS -->
+        <aspectj.version>1.8.5</aspectj.version>
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.7.0-patched-1</gwt.version>
         
@@ -21,7 +22,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- used by compiler -->
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
 
         <!-- used by AspectJ-->
@@ -95,7 +96,7 @@
 
         <spring.version>4.3.22.RELEASE</spring.version>
         <spring.security.version>4.2.11.RELEASE</spring.security.version>
-        <aspectj.version>1.9.4</aspectj.version>
+        <aspectj.version>1.8.5</aspectj.version>
 
         <servlet.api.version>2.5</servlet.api.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
@@ -183,10 +184,6 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>gwt-maven-plugin</artifactId>
                     <version>2.7.0</version>
-                    <configuration>
-                        <!--<sourceLevel>${maven.compiler.source}</sourceLevel>-->
-                        <sourceLevel>1.7</sourceLevel>
-                    </configuration>        
                     <executions>
                         <execution>
                             <phase>compile</phase>
@@ -264,8 +261,6 @@
                         <!--<showWeaveInfo>true</showWeaveInfo>-->
                         
                         <complianceLevel>${maven.compiler.source}</complianceLevel>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.source}</target>                        
                     </configuration>
                     <executions>
                         <execution>
