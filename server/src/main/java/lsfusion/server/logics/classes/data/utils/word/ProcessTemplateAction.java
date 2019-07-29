@@ -31,8 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ProcessTemplateAction extends InternalAction {
     public final ClassPropertyInterface templateInterface;
@@ -212,7 +210,7 @@ public class ProcessTemplateAction extends InternalAction {
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             List<XWPFRun> runs = paragraph.getRuns();
 
-            TextSegement found = paragraph.searchText(find, new PositionInParagraph());
+            TextSegment found = paragraph.searchText(find, new PositionInParagraph());
             if (found != null) {
                 if (found.getBeginRun() == found.getEndRun()) {
                     // whole search string is in one Run
