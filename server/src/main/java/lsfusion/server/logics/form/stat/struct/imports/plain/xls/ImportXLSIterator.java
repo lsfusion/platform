@@ -202,8 +202,8 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         }
 
         @Override
-        public CellType evaluateFormulaCell(Cell cell) {
-            return CellType.NUMERIC;
+        public int evaluateFormulaCell(Cell cell) {
+            return 0;
         }
 
         @Override
