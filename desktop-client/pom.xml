@@ -80,8 +80,8 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <configuration>
-                    <showWeaveInfo>true</showWeaveInfo>
-                    <verbose>true</verbose>
+                    <!--<showWeaveInfo>true</showWeaveInfo>-->
+                    <!--<verbose>true</verbose>-->
                 </configuration>
             </plugin>
         </plugins>
