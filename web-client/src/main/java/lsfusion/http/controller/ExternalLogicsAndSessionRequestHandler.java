@@ -87,7 +87,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
     private String[] getRequestHeaderValues(HttpServletRequest request, String[] headerNames) {
         String[] headerValuesArray = new String[headerNames.length];
         for (int i = 0; i < headerNames.length; i++) {
-            headerValuesArray[i] = StringUtils.join(list(request.getHeaders(headerNames[i])).iterator(), ",");
+            headerValuesArray[i] = StringUtils.join(list(request.getHeaders(headerNames[i])), ",");
         }
         return headerValuesArray;
     }

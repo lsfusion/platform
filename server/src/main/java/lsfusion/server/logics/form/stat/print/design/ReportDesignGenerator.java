@@ -27,7 +27,7 @@ import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import net.sf.jasperreports.engine.type.OrientationEnum;
 import net.sf.jasperreports.engine.type.PositionTypeEnum;
 import net.sf.jasperreports.engine.type.StretchTypeEnum;
@@ -294,13 +294,13 @@ public class ReportDesignGenerator {
         }
         JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.headerClass);
         JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr, toStretch);
-        captionField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);
+        captionField.setHorizontalAlignment(HorizontalAlignEnum.CENTER);
         captionField.setBlankWhenNull(true);
         captionField.setKey(reportField.columnGroupName == null ? null : reportField.columnGroupName + ".caption");
 
         JRDesignExpression dataExpr = ReportUtils.createExpression(ReportUtils.createFieldString(reportField.sID), reportField.valueClass);
         JRDesignTextField dataField = ReportUtils.createTextField(style, dataExpr, toStretch);
-        dataField.setHorizontalTextAlign(reportField.alignment);
+        dataField.setHorizontalAlignment(HorizontalAlignEnum.getByValue(reportField.alignment));
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
         dataField.setKey(reportField.columnGroupName);

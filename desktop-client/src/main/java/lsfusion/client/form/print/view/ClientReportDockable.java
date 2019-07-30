@@ -10,8 +10,8 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.export.XlsReportConfiguration;
 import net.sf.jasperreports.swing.JRViewer;
 
 import javax.swing.*;
@@ -27,7 +27,7 @@ public class ClientReportDockable extends ClientDockable {
 
         try {
             final JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
-            print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
+            print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
             this.pageCount = print.getPages().size();
             final ReportViewer reportViewer = new ReportViewer(print, printerName, editInvoker);
             setContent(print.getName(), prepareViewer(reportViewer));

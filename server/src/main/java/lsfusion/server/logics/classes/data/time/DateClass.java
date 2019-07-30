@@ -15,7 +15,7 @@ import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 
@@ -46,7 +46,7 @@ public class DateClass extends DataClass<Date> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
-        reportField.alignment = HorizontalTextAlignEnum.RIGHT;
+        reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
     }
 
     public byte getTypeID() {

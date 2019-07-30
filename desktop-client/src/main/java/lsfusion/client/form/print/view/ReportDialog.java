@@ -8,7 +8,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.export.XlsReportConfiguration;
+import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +22,7 @@ public class ReportDialog extends JDialog {
 
         ReportGenerator report = new ReportGenerator(generationData);
         JasperPrint print = report.createReport(FormPrintType.PRINT);
-        print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
+        print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         pageCount = print.getPages().size();
 
         final ReportViewer viewer = new ReportViewer(print, printerName, editInvoker);

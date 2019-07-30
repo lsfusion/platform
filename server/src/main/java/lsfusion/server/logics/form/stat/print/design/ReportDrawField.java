@@ -1,7 +1,5 @@
 package lsfusion.server.logics.form.stat.print.design;
 
-import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
-
 // поле для отрисовки отчета
 public class ReportDrawField implements AbstractRowLayoutElement {
 
@@ -16,7 +14,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public int minimumWidth;
     public int preferredWidth;
     public Integer fixedCharWidth;
-    public HorizontalTextAlignEnum alignment;
+    public byte alignment;
 
     public int scale;
 
