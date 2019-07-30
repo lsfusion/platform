@@ -31,7 +31,7 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -104,7 +104,7 @@ public class ObjectType extends AbstractType<Long> {
 
     public void fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = Long.class;
-        reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
+        reportField.alignment = HorizontalTextAlignEnum.RIGHT;
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {

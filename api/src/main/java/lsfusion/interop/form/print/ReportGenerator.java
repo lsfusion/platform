@@ -8,12 +8,12 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
-import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
 import net.sf.jasperreports.engine.util.JRSwapFile;
+import net.sf.jasperreports.export.XlsReportConfiguration;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -752,7 +752,7 @@ public class ReportGenerator {
         ReportGenerator report = new ReportGenerator(generationData);
 
         JasperPrint print = report.createReport(type);
-        print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+        print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
 
         JRAbstractExporter exporter = getExporter(type);
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);

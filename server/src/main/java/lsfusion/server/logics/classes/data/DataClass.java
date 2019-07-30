@@ -38,7 +38,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -202,7 +202,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public void fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = getReportJavaClass();
-        reportField.alignment = HorizontalAlignEnum.LEFT.getValue();
+        reportField.alignment = HorizontalTextAlignEnum.LEFT;
     }
 
     public ObjectInstance newInstance(ObjectEntity entity) {
