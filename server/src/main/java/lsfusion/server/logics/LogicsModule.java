@@ -1089,20 +1089,20 @@ public abstract class LogicsModule {
 
     // ------------------- mapLProp ----------------- //
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(Group group, boolean persistent, PropertyMapImplement<L, P> implement, ImOrderSet<P> listInterfaces) {
-        return addProperty(group, new LP<>(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
+    private <P extends PropertyInterface> LP mapLProp(Group group, boolean persistent, PropertyMapImplement<?, P> implement, ImOrderSet<P> listInterfaces) {
+        return addProperty(group, new LP(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
     }
 
-    protected <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(Group group, boolean persistent, PropertyMapImplement<L, P> implement, LP<P> property) {
+    protected <P extends PropertyInterface> LP mapLProp(Group group, boolean persistent, PropertyMapImplement<?, P> implement, LP<P> property) {
         return mapLProp(group, persistent, implement, property.listInterfaces);
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(Group group, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
+    private <P extends PropertyInterface> LP mapLGProp(Group group, PropertyImplement<?, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
         return mapLGProp(group, false, implement, listImplements);
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(Group group, boolean persistent, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
-        return addProperty(group, new LP<>(implement.property, listImplements.toOrderExclSet().mapOrder(implement.mapping.toRevExclMap().reverse())));
+    private <P extends PropertyInterface> LP mapLGProp(Group group, boolean persistent, PropertyImplement<?, PropertyInterfaceImplement<P>> implement, ImList<PropertyInterfaceImplement<P>> listImplements) {
+        return addProperty(group, new LP(implement.property, listImplements.toOrderExclSet().mapOrder(implement.mapping.toRevExclMap().reverse())));
     }
 
     private <P extends PropertyInterface> LP mapLGProp(Group group, boolean persistent, GroupProperty property, ImList<PropertyInterfaceImplement<P>> listImplements) {
