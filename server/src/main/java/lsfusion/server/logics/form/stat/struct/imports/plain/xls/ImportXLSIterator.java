@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.struct.imports.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
 import com.monitorjbl.xlsx.exceptions.NotSupportedException;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.Type;
@@ -108,10 +109,26 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         Cell cell = row.getCell(fieldIndex);
         if(cell == null)
             return null;
-        CellValue cellValue = formulaEvaluator.evaluate(cell);
+        CellValue cellValue;
+        if (cell.getCellType() == CellType.BOOLEAN) {
+            cellValue = getBooleanCellValue(cell);
+        } else {
+            cellValue = formulaEvaluator.evaluate(cell);
+        }
         if(cellValue == null)
             return null;
         return type.parseXLS(cell, cellValue);
+    }
+
+    //default getBooleanCellValue of XSSFCell compares value only with "1"
+    private CellValue getBooleanCellValue(Cell cell) {
+        CellValue result = formulaEvaluator.evaluate(cell);
+        if(result == CellValue.FALSE) {
+            Object privateCell = ReflectionUtils.getPrivateFieldValue(cell, "_cell");
+            String cellValue = ReflectionUtils.getPrivateMethodValue(privateCell.getClass(), privateCell, "getV", new Class[]{}, new Object[]{});
+            result = cellValue != null && cellValue.equals("true") ? CellValue.TRUE : CellValue.FALSE;
+        }
+        return result;
     }
 
     @Override
