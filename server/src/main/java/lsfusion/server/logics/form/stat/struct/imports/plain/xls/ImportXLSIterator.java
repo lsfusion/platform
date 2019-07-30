@@ -110,7 +110,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         if(cell == null)
             return null;
         CellValue cellValue;
-        if (cell.getCellType() == CellType.BOOLEAN) {
+        if (cell.getCellTypeEnum() == CellType.BOOLEAN) {
             cellValue = getBooleanCellValue(cell);
         } else {
             cellValue = formulaEvaluator.evaluate(cell);
