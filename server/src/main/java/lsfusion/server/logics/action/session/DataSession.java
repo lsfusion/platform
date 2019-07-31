@@ -1993,14 +1993,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     if(attempts != null) {
                         if(conflict.updateConflict) { // update conflicts
                             if (attempts >= settings.getConflictSleepThreshold()) {
-                                ServerLoggers.sqlHandLogger.info("Sleep started after conflict updates : " + attempts);
-                                ThreadUtils.sleep((long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000));
-                                ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
+                                long sleep = (long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000);
+                                ServerLoggers.sqlConflictLogger.info(String.format("Sleep started after conflict updates : %s (sleep %s)", attempts, sleep));
+                                ThreadUtils.sleep(sleep);
+                                ServerLoggers.sqlConflictLogger.info("Sleep ended after conflict updates : " + attempts);
                             }
                         } else { // dead locks
                             if(attempts >= settings.getDeadLockThreshold()) {
                                 deadLockPriority = true;
-                                ServerLoggers.sqlHandLogger.info("Using deterministic dead-lock : " + attempts + ", " + deadLockPriority);
+                                ServerLoggers.sqlConflictLogger.info("Using deterministic dead-lock : " + attempts + ", " + deadLockPriority);
                             }
                         }
                     }
