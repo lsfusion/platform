@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.stat.print.design;
 import net.sf.jasperreports.engine.design.JRDesignStyle;
 import net.sf.jasperreports.engine.type.LineStyleEnum;
 import net.sf.jasperreports.engine.type.ModeEnum;
-import net.sf.jasperreports.engine.type.VerticalAlignEnum;
+import net.sf.jasperreports.engine.type.VerticalTextAlignEnum;
 
 import java.awt.*;
 
@@ -14,8 +14,8 @@ public class DesignStyles {
         style.setName("DefaultStyle");
 
         style.setFontName("lsf.TimesNewRoman");
-        style.setFontSize(10);
-        style.setVerticalAlignment(VerticalAlignEnum.MIDDLE);
+        style.setFontSize((float) 10);
+        style.setVerticalTextAlign(VerticalTextAlignEnum.MIDDLE);
 
         // используем getParagraph вместо getLineBox, поскольку JasperReports padding у LineBox вообще никак не уважает
         style.getParagraph().setLeftIndent(2);
@@ -36,8 +36,8 @@ public class DesignStyles {
         style.setName("DefaultStyle");
 
         style.setFontName("lsf.TimesNewRoman");
-        style.setFontSize(10);
-        style.setVerticalAlignment(VerticalAlignEnum.MIDDLE);
+        style.setFontSize((float) 10);
+        style.setVerticalTextAlign(VerticalTextAlignEnum.MIDDLE);
 
         // используем getParagraph вместо getLineBox, поскольку JasperReports padding у LineBox вообще никак не уважает
         style.getParagraph().setLeftIndent(2);

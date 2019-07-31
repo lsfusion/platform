@@ -11,7 +11,7 @@ import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
-import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.export.XlsReportConfiguration;
 
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
@@ -51,7 +51,7 @@ public class ClientReportUtils {
             try {
 
                 JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
-                print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+                print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
 
