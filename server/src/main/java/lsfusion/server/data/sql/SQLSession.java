@@ -1714,7 +1714,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         boolean deadLock = false;
         if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e))) {
             handled = new SQLConflictException(!deadLock);
-            sqlConflictLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message + (Settings.get().isLogConflictStack() ? '\n' + ExecutionStackAspect.getStackString() + '\n' + ExceptionUtils.getStackTrace() : ""));
+            sqlConflictLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + " " + message + (Settings.get().isLogConflictStack() ? '\n' + ExecutionStackAspect.getStackString() + '\n' + ExceptionUtils.getStackTrace() : ""));
         }
 
         // duplicate keys валится при :
