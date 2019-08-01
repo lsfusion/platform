@@ -23,7 +23,7 @@ public abstract class RmiServer extends EventServer implements RmiServerInterfac
     }
 
     protected DataSession createSession() throws SQLException {
-        ThreadLocalContext.assureRmi(this);
+        //ThreadLocalContext.assureRmi(this);
         return super.createSession();
     }
 }
