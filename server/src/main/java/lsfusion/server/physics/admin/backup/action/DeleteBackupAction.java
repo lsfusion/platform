@@ -10,8 +10,10 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -31,12 +33,25 @@ public class DeleteBackupAction extends InternalAction {
 
             String backupFilePath = (String) findProperty("file[Backup]").read(newContext, backupObject);
             String backupLogFilePath = (String) findProperty("fileLog[Backup]").read(newContext, backupObject);
+            boolean isMultithread = findProperty("isMultithread[Backup]").read(newContext, backupObject) != null;
             File f = new File(backupFilePath);
             File fLog = new File(backupLogFilePath);
             if (fLog.exists() && !fLog.delete()) {
                 fLog.deleteOnExit();
             }
-            if (!f.exists() || f.delete()) {
+
+            boolean deleted = false;
+            if(isMultithread) {
+                try {
+                    FileUtils.deleteDirectory(f);
+                    deleted = true;
+                } catch (IOException ignored) {
+                }
+            } else {
+                deleted = !f.exists() || f.delete();
+            }
+
+            if (deleted) {
                 ServerLoggers.systemLogger.info("Deleted backup " + f.getName());
                 findProperty("fileDeleted[Backup]").change(true, newContext, backupObject);
                 context.delayUserInteraction(new MessageClientAction("Deleted backup " + f.getName(), "Deleted backup"));

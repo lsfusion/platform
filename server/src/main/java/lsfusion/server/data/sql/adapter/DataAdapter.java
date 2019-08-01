@@ -83,7 +83,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         return null;
     }
 
-    public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException, InterruptedException {
         return null;
     }
 

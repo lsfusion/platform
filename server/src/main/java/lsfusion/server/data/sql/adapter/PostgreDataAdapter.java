@@ -134,7 +134,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException, InterruptedException {
         if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
             context.delayUserInterfaction(new MessageClientAction(ThreadLocalContext.localize("{logics.backup.path.not.specified}"), ThreadLocalContext.localize("{logics.backup.error}")));
             return null;
@@ -167,7 +167,12 @@ public class PostgreDataAdapter extends DataAdapter {
         }
         
         commandLine.addArgument("-F");
-        commandLine.addArgument("custom");
+        if(threadCount > 1) {
+            commandLine.addArgument("directory");
+            commandLine.addArgument("-j " + threadCount);
+        } else {
+            commandLine.addArgument("custom");
+        }
         commandLine.addArgument("-b");
         commandLine.addArgument("-v");
         commandLine.addArgument("-f");

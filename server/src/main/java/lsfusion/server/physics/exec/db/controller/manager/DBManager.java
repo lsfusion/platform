@@ -2302,8 +2302,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return adapter.getBackupFilePath(dumpFileName);
     }
 
-    public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
-        return adapter.backupDB(context, dumpFileName, excludeTables);
+    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException, InterruptedException {
+        return adapter.backupDB(context, dumpFileName, threadCount, excludeTables);
     }
 
     public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException {

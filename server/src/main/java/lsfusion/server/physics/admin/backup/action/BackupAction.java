@@ -40,6 +40,11 @@ public class BackupAction extends InternalAction {
     protected void makeBackup(ExecutionContext context, boolean partial) {
         try (ExecutionContext.NewSession newContext = context.newSession()) {
 
+            Integer threadCount = (Integer) findProperty("threadCount[]").read(newContext);
+            if(threadCount == null || threadCount < 1) {
+                threadCount = 1;
+            }
+
             Date currentDate = Calendar.getInstance().getTime();
             long currentTime = currentDate.getTime();
             String backupFileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(currentDate);
@@ -49,7 +54,7 @@ public class BackupAction extends InternalAction {
             String backupFilePath = context.getDbManager().getBackupFilePath(backupFileName);
             if (backupFilePath != null) {
                 String backupFileLogPath = backupFilePath + ".log";
-                String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
+                String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."));
 
                 DataObject backupObject = newContext.addObject((ConcreteCustomClass) findClass("Backup"));
                 findProperty("date[Backup]").change(new java.sql.Date(currentTime), newContext, backupObject);
@@ -57,6 +62,7 @@ public class BackupAction extends InternalAction {
                 findProperty("file[Backup]").change(backupFilePath, newContext, backupObject);
                 findProperty("name[Backup]").change(backupFileName + backupFileExtension, newContext, backupObject);
                 findProperty("fileLog[Backup]").change(backupFileLogPath, newContext, backupObject);
+                findProperty("isMultithread[Backup]").change(threadCount > 1, newContext, backupObject);
 
                 if(partial) {
                     findProperty("partial[Backup]").change(true, newContext, backupObject);
@@ -71,7 +77,7 @@ public class BackupAction extends InternalAction {
 
                 backupObject = new DataObject((Long)backupObject.object, (ConcreteCustomClass)findClass("Backup")); // обновляем класс после backup
 
-                context.getDbManager().backupDB(context, backupFileName, excludeTables);
+                context.getDbManager().backupDB(context, backupFileName, threadCount, excludeTables);
 
                 findProperty("backupFilePath[]").change(backupFilePath, context.getSession());
                 findProperty("backupFileName[]").change(backupFileName + backupFileExtension, context.getSession());
@@ -107,7 +113,7 @@ public class BackupAction extends InternalAction {
     @Override
     public ImMap<Property, Boolean> aspectChangeExtProps() {
         try {
-            return getChangeProps((Property) findProperty("date[Backup]").property, (Property) findProperty("time[Backup]").property);
+            return getChangeProps(findProperty("date[Backup]").property, findProperty("time[Backup]").property);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return null;
         }
