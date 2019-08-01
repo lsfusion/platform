@@ -51,9 +51,9 @@ META defineHierarchyCustom (object, class)
                            CHARWIDTH 50 MATERIALIZED;
 END
 
-META defineHierarchyFilter(object, class, property)
+META defineHierarchyFilter(object, class, property, caption)
     // фильтры по имени
-    filter###property###object '{hierarchy.filter.property}' = DATA LOCAL NESTED STRING[255] ();
+    filter###property###object caption = DATA LOCAL NESTED STRING[255] () CHARWIDTH 20;
     inFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isSubstring(name(child), filter###property###object()); 
     inIFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isISubstring(name(child), filter###property###object()); 
 END
