@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.interpreter.action;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -8,25 +7,17 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemAction;
-import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class EvalAction<P extends PropertyInterface> extends SystemAction {
 
@@ -56,7 +47,7 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
     }
 
     private ObjectValue[] getParams(ExecutionContext<PropertyInterface> context) {
-        return paramInterfaces.mapList(context.getKeys()).toArray(new ObjectValue[paramInterfaces.size()]);
+        return paramInterfaces.<ObjectValue>mapList(context.getKeys()).toArray(new ObjectValue[paramInterfaces.size()]);
     }
 
     @Override
