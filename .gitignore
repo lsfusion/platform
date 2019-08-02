@@ -1,0 +1,17 @@
+*.iml
+
+/api/target/
+/build/logics/target/
+
+/desktop-client/logs/
+/desktop-client/target/
+
+/server/target/
+
+/server/src/main/java/LsfLogics.tokens
+/server/src/main/java/MigrationScript.tokens
+
+/server/src/main/java/lsfusion/server/language/LsfLogicsLexer.java
+/server/src/main/java/lsfusion/server/language/LsfLogicsParser.java
+/server/src/main/java/lsfusion/server/language/MigrationScriptLexer.java
+/server/src/main/java/lsfusion/server/language/MigrationScriptParser.java
