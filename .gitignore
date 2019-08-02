@@ -1,0 +1,9 @@
+*.iml
+
+/api/target/
+/build/logics/target/
+
+/desktop-client/logs/
+/desktop-client/target/
+
+/server/target/
