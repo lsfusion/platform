@@ -106,6 +106,7 @@ public class TryAction extends KeepContextAction {
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         
         FlowResult result;
+        FlowResult catchResult = FlowResult.FINISH;
 
         try {
             result = tryAction.execute(context);
@@ -114,13 +115,13 @@ public class TryAction extends KeepContextAction {
                 context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
                 context.getBL().LM.javaStackTraceCaughtException.change(String.valueOf(e) + "\n" + ThreadUtils.getJavaStack(e.getStackTrace()), context);
                 context.getBL().LM.lsfStackTraceCaughtException.change(ExecutionStackAspect.getStackString(Thread.currentThread(), true, true), context);
-                catchAction.execute(context);
+                catchResult = catchAction.execute(context);
             }
 
             //ignore exception if finallyAction == null
             if (finallyAction == null) {
                 ExecutionStackAspect.getExceptionStackTrace(); // drop exception stack string
-                result = FlowResult.FINISH;
+                result = catchResult;
             } else {
                 throw Throwables.propagate(e);
             }
