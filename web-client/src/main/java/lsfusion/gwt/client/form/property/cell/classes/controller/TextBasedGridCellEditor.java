@@ -125,8 +125,8 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         int cursorPosition = textBoxImpl.getCursorPos(input);
         int selectionLength = textBoxImpl.getSelectionLength(input);
         String currentValue = input.getValue();
-        String firstPart = currentValue.substring(0, cursorPosition);
-        String secondPart = currentValue.substring(cursorPosition + selectionLength);
+        String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
+        String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
         
         return isStringValid(firstPart + stringToAdd + secondPart);
     }
