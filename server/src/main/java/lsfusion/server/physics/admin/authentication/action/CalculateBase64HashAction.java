@@ -12,6 +12,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import static lsfusion.base.BaseUtils.trim;
+
 public class CalculateBase64HashAction extends InternalAction {
     AuthenticationLogicsModule LM;
     private final ClassPropertyInterface algorithmInterface;
@@ -27,9 +29,14 @@ public class CalculateBase64HashAction extends InternalAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        String algorithm = String.valueOf(context.getDataKeyValue(algorithmInterface).getValue());
-        String password = String.valueOf(context.getDataKeyValue(passwordInterface).getValue()).trim();
+        String algorithm = trim((String) (context.getKeyValue(algorithmInterface).getValue()));
+        String password = trim((String) (context.getKeyValue(passwordInterface).getValue()));
 
         LM.calculatedHash.change(BaseUtils.calculateBase64Hash(algorithm, password, UserInfo.salt), context.getSession());
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

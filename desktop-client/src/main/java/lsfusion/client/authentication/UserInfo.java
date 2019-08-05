@@ -22,7 +22,7 @@ public class UserInfo {
     @Override
     public String toString() {
         String string = this.name + "\t" + savePassword;
-        if (savePassword) {
+        if (savePassword && password != null) {
             string += "\t" + Base64.encodeBase64URLSafeString(password.getBytes()) ;
         }
         return string;
