@@ -38,6 +38,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class ExternalDBAction extends ExternalAction {
 
@@ -124,7 +125,7 @@ public class ExternalDBAction extends ExternalAction {
                 for (String param : parsed.preparedParams)
                     paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
 
-                boolean isResultSet = parsed.statement.execute();
+                boolean isResultSet = (boolean) Executors.newSingleThreadExecutor().submit((Callable) () -> parsed.statement.execute()).get();
 
                 List<Object> results = new ArrayList<>();
                 while(true) {
@@ -139,10 +140,13 @@ public class ExternalDBAction extends ExternalAction {
                     isResultSet = parsed.statement.getMoreResults();
                 }
                 return results;
-            } finally {
+            }  catch (InterruptedException e) {
+                parsed.statement.cancel();
+                throw Throwables.propagate(e);
+            }finally {
                 parsed.statement.close();
             }
-        } catch (IOException e) {
+        } catch (IOException | ExecutionException e) {
             throw Throwables.propagate(e);
         } finally {
             for(String table : tempTables)
