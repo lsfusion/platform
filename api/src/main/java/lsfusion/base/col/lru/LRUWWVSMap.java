@@ -54,7 +54,7 @@ public class LRUWWVSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWWVSMap.AEntry
 
         @Override
         protected AEntry<K, W, V> createTail() {
-            return new AEntry<>(new Pair<K, W>(null, null), refQueue, null, -1, null, 0);
+            return new AEntry<>(new Pair<>(null, null), refQueue, null, -1, null, 0);
         }
 
         public final V get(K sKey, W wKey, int hash) {

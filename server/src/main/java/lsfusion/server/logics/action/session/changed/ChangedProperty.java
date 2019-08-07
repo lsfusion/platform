@@ -16,7 +16,6 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.session.change.ChangeType;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -24,13 +23,11 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
@@ -151,7 +148,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
                 MCol<Pair<ActionOrProperty<?>, LinkType>> mParentLinks = ListFact.mCol();
                 for(CustomClass parent : customClass.getParentsIt()) // добавляем очень слабую связь чтобы удаления классов по возможности группами шли
                     if(!parent.disableSingleApply())
-                        mParentLinks.add(new Pair<ActionOrProperty<?>, LinkType>(parent.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope), LinkType.REMOVEDCLASSES));
+                        mParentLinks.add(new Pair<>(parent.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope), LinkType.REMOVEDCLASSES));
                 result = result.mergeCol(mParentLinks.immutableCol());
             }
             return result;

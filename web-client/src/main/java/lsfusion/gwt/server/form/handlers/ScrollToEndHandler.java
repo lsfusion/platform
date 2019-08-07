@@ -4,7 +4,6 @@ import lsfusion.gwt.client.controller.remote.action.form.ScrollToEnd;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.remote.RemoteFormInterface;

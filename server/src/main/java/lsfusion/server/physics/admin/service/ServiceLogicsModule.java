@@ -51,7 +51,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initMainLogic() throws RecognitionException {
         isServerRestarting = addProperty(null, new LP<>(new IsServerRestartingProperty()));
-        makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<ResolveClassSet>());
+        makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<>());
         super.initMainLogic();
         // Управление сервером базы данных
         checkAggregationsAction = findAction("checkAggregationsAction[]");

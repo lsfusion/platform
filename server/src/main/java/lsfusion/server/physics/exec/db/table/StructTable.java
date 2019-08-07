@@ -24,7 +24,7 @@ public class StructTable extends DBTable {
 
         classes = ClassWhere.TRUE();
         
-        propertyClasses = MapFact.singleton(struct, new ClassWhere<Field>(struct, ByteArrayClass.instance));
+        propertyClasses = MapFact.singleton(struct, new ClassWhere<>(struct, ByteArrayClass.instance));
     }
 
     public TableStatKeys getTableStatKeys() {

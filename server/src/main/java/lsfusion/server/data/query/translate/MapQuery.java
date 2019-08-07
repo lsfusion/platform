@@ -69,7 +69,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
     public Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(BaseClass baseClass) {
         Pair<IQuery<MK, Object>, ImRevMap<Expr, Object>> classQuery = query.getClassQuery(baseClass);
 
-        return new Pair<IQuery<K, Object>, ImRevMap<Expr, Object>>(
+        return new Pair<>(
                 new MapQuery<>((Query<MK, Object>) classQuery.first, classQuery.second.valuesSet().toRevMap().addRevExcl(mapProps), mapKeys, mapValues),
                 mapValues.mapKeys().translateExprRevKeys(classQuery.second));
     }

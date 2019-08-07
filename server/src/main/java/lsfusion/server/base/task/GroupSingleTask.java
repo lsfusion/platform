@@ -1,6 +1,5 @@
 package lsfusion.server.base.task;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -10,8 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.language.ScriptParsingException;
-import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -93,7 +90,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
                 }
             }
         }
-        return new Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>>(mRootTasks.immutable(), mapTasks.valuesSet().remove(mDepTasks.immutable()));
+        return new Pair<>(mRootTasks.immutable(), mapTasks.valuesSet().remove(mDepTasks.immutable()));
     }
 
     public Pair<List<Task>, Long> calcFullDiameter(Task currentTask, Map<Task, Pair<List<Task>, Long>> marks, Map<Task, Map<Task, Long>> overMap, Task stopTask) { // initialTasks а не executor чтобы не synchronize'ть dependsFrom
@@ -101,7 +98,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
             return marks.get(currentTask);
         }
 
-        Pair<List<Task>, Long> current = new Pair<List<Task>, Long>(new ArrayList<Task>(), (long) 0);
+        Pair<List<Task>, Long> current = new Pair<>(new ArrayList<>(), (long) 0);
         if (currentTask == stopTask) {
             return current;
         }

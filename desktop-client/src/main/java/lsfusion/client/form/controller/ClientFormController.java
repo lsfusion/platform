@@ -1321,7 +1321,7 @@ public class ClientFormController implements AsyncListener {
                 return remoteForm.readGroupings(requestIndex, lastReceivedRequestIndex, groupObjectSID);
             }
         });
-        return result == null ? new ArrayList<FormGrouping>() : result;
+        return result == null ? new ArrayList<>() : result;
     }
 
     public Map<List<Object>, List<Object>> groupData(final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap, final Map<Integer,

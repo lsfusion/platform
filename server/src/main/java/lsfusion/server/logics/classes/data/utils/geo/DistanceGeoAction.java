@@ -1,6 +1,5 @@
 package lsfusion.server.logics.classes.data.utils.geo;
 
-import com.google.common.base.Throwables;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;

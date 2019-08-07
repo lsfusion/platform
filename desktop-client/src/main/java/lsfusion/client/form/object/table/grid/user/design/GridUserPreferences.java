@@ -20,7 +20,7 @@ public class GridUserPreferences {
     private Boolean hasUserPreferences;
     
     public GridUserPreferences(ClientGroupObject groupObject) {
-        this(groupObject, new HashMap<ClientPropertyDraw, ColumnUserPreferences>(), null, null, null, null);
+        this(groupObject, new HashMap<>(), null, null, null, null);
     }
     
     public GridUserPreferences(ClientGroupObject groupObject, Map<ClientPropertyDraw, ColumnUserPreferences> columnUserPreferences,
@@ -34,7 +34,7 @@ public class GridUserPreferences {
     }
     
     public GridUserPreferences(GridUserPreferences prefs) {
-        this(prefs.groupObject, new HashMap<ClientPropertyDraw, ColumnUserPreferences>(), prefs.fontInfo, prefs.pageSize, prefs.headerHeight, prefs.hasUserPreferences);
+        this(prefs.groupObject, new HashMap<>(), prefs.fontInfo, prefs.pageSize, prefs.headerHeight, prefs.hasUserPreferences);
         
         for (Map.Entry<ClientPropertyDraw, ColumnUserPreferences> entry : prefs.columnUserPreferences.entrySet()) {
             columnUserPreferences.put(entry.getKey(), new ColumnUserPreferences(entry.getValue()));

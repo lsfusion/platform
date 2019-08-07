@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.form.order.user;
 
-import java.io.IOException;
-
 public enum GOrder {
     REPLACE, ADD, REMOVE, DIR;
 

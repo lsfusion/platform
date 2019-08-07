@@ -538,7 +538,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, new FormEnvironment<P>(null, null, newEnv.getFormInstance()), stack);
+        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {

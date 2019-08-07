@@ -265,7 +265,7 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     public <T> boolean equalClasses(ImOrderMap<T, ValueClass> mapClasses) {
-        int compResult = compare(mapClasses, new Result<ImRevMap<T, KeyField>>());
+        int compResult = compare(mapClasses, new Result<>());
         return compResult == COMPARE_EQUAL || compResult == COMPARE_UP;
     }
 
@@ -276,7 +276,7 @@ public class ImplementTable extends DBTable { // последний интерф
         boolean wasRemove = false; // для assertiona
         while(i.hasNext()) {
             ImplementTable item = i.next();
-            int relation = item.compare(getOrderMapFields(),new Result<ImRevMap<KeyField, KeyField>>());
+            int relation = item.compare(getOrderMapFields(), new Result<>());
             if(relation==COMPARE_DOWN) { // снизу в дереве, добавляем ее как промежуточную
                 if(checkSiblings(item, parents, this))
                     parents.add(item, version);
@@ -308,7 +308,7 @@ public class ImplementTable extends DBTable { // последний интерф
         for(ImplementTable siblingTable : tables.getNFList(Version.CURRENT)) {
             if(BaseUtils.hashEquals(item, siblingTable))
                 return false;
-            int compare = siblingTable.compare(item.getOrderMapFields(), new Result<ImRevMap<KeyField, KeyField>>());
+            int compare = siblingTable.compare(item.getOrderMapFields(), new Result<>());
             if(compare==COMPARE_UP || compare == COMPARE_DOWN)
                 return false;
         }

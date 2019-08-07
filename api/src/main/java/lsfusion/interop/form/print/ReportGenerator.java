@@ -564,7 +564,7 @@ public class ReportGenerator {
                     String groupKey = element.getKey();
                     if (groupKey != null) {
                         if (!fieldsInGroup.containsKey(groupKey)) {
-                            fieldsInGroup.put(groupKey, new ArrayList<JRDesignTextField>());
+                            fieldsInGroup.put(groupKey, new ArrayList<>());
                         }
                         fieldsInGroup.get(groupKey).add((JRDesignTextField) element);
                     }

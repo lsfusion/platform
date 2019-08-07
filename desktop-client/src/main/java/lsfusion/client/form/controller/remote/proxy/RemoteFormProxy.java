@@ -3,7 +3,6 @@ package lsfusion.client.form.controller.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
-import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;

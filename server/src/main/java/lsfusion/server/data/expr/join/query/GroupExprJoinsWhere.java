@@ -25,13 +25,13 @@ public class GroupExprJoinsWhere<K extends Expr> {
         for(int i=0,size=joinsWheres.size();i<size;i++) {
             GroupJoinsWhere joinsWhere = joinsWheres.get(i);
             if(joinsWhere.keyEqual.isEmpty())
-                mResult.add(new GroupExprJoinsWhere<K>(mapExprs, joinsWhere));
+                mResult.add(new GroupExprJoinsWhere<>(mapExprs, joinsWhere));
             else {
                 ExprTranslator translator = joinsWhere.keyEqual.getTranslator();
                 ImMap<K, Expr> transMapExprs = translator.translate(mapExprs);
                 ImMap<K, BaseExpr> transMapBaseExprs = BaseExpr.onlyBaseExprs(transMapExprs);
                 if(transMapBaseExprs != null)
-                    mResult.add(new GroupExprJoinsWhere<K>(transMapBaseExprs, joinsWhere));
+                    mResult.add(new GroupExprJoinsWhere<>(transMapBaseExprs, joinsWhere));
                 else
                     mResult.addAll(joinsWhere.getFullWhere().getGroupExprJoinsWheres(transMapExprs, statType, forcePackReduce));
             }

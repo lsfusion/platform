@@ -189,6 +189,6 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         Object thisObj = getUserObject();
         Object otherObj = otherNode.getUserObject();
 
-        return thisObj != null && otherObj != null && thisObj.equals(otherObj);
+        return thisObj != null && thisObj.equals(otherObj);
     }
 }

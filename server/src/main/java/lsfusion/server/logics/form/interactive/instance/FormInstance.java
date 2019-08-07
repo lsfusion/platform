@@ -1284,7 +1284,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 String groupingSID = (String) values.get("groupingSID");
                 FormGrouping grouping = groupings.get(groupingSID);
                 if (grouping == null) {
-                    grouping = new FormGrouping((String) values.get("groupingSID"), groupObjectSID, (Boolean) values.get("itemQuantity"), new ArrayList<FormGrouping.PropertyGrouping>());
+                    grouping = new FormGrouping((String) values.get("groupingSID"), groupObjectSID, (Boolean) values.get("itemQuantity"), new ArrayList<>());
                     groupings.put(groupingSID, grouping);
                 }
                 grouping.propertyGroupings.add(grouping.new PropertyGrouping((String) values.get("propertySID"), (Integer) values.get("groupOrder"), (Boolean) values.get("sum"), (Boolean) values.get("max"), (Boolean) values.get("pivot")));

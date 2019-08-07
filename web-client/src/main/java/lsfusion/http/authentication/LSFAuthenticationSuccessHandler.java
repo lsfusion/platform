@@ -3,7 +3,6 @@ package lsfusion.http.authentication;
 import lsfusion.base.ServerUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.SavedRequest;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;

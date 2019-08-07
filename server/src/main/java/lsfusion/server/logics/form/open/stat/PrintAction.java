@@ -106,7 +106,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                 writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password));
             else {
                 String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-                List<ReportPath> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<ReportPath>(); // checking that form is not in script, etc.
+                List<ReportPath> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
                 Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, form.getSID(), syncType, reportData, staticType, pName, SystemProperties.inDevMode, password, sheetName));
                 formPageCount.change(pageCount, context);
             }

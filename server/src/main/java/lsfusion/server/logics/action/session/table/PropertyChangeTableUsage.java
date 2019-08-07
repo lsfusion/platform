@@ -244,6 +244,6 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
         modifyQuery.addProperty(mapProps.singleKey(), join.getExpr(mapProps.singleKey()));
         modifyQuery.and(join.getWhere());
 
-        return table.modifyRows(session.sql, correlations.fullMap(modifyQuery.getQuery(), session.modifier), session.baseClass, Modify.UPDATE, session.env, this, new Result<Boolean>(), false); // тут будет избыточная запись UPDATE значений, но строго говоря она же будет избыточной в MODIFY для correlations, когда идет UPDATE (явный UPDATE пока не используется), собственно мы этим и пользуемся
+        return table.modifyRows(session.sql, correlations.fullMap(modifyQuery.getQuery(), session.modifier), session.baseClass, Modify.UPDATE, session.env, this, new Result<>(), false); // тут будет избыточная запись UPDATE значений, но строго говоря она же будет избыточной в MODIFY для correlations, когда идет UPDATE (явный UPDATE пока не используется), собственно мы этим и пользуемся
     }
 }

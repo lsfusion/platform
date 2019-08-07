@@ -60,7 +60,7 @@ public class ObjectConverter {
 
                     boolean foundParameter = false;
                     for (Object contextObject : fullContext) {
-                        if (contextObject != null && paramType.isInstance(contextObject)) {
+                        if (paramType.isInstance(contextObject)) {
                             parameters[i] = contextObject;
                             foundParameter = true;
                             break;

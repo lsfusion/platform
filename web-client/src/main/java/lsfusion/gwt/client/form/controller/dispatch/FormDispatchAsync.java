@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
-import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.RemoteDispatchAsync;

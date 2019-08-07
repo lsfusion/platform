@@ -35,8 +35,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     private final SequentialRequestLock requestLock;
     private RemotePausableInvocation currentInvocation = null;
 
-    private final Map<Long, Optional<?>> recentResults = Collections.synchronizedMap(new HashMap<Long, Optional<?>>());
-    private final Map<Long, Integer> requestsContinueIndices = Collections.synchronizedMap(new HashMap<Long, Integer>());
+    private final Map<Long, Optional<?>> recentResults = Collections.synchronizedMap(new HashMap<>());
+    private final Map<Long, Integer> requestsContinueIndices = Collections.synchronizedMap(new HashMap<>());
 
     private long minReceivedRequestIndex = 0;
 

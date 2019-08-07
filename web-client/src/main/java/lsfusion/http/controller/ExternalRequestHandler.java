@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 
-import static lsfusion.base.ServerMessages.getString;
-
 public abstract class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
 
     protected abstract void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception;

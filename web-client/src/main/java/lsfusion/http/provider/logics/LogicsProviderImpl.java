@@ -1,10 +1,7 @@
 package lsfusion.http.provider.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.remote.RMIUtils;
-import lsfusion.base.remote.ZipSocketFactory;
 import lsfusion.client.controller.remote.proxy.RemoteLogicsLoaderProxy;
-import lsfusion.client.controller.remote.proxy.RemoteLogicsProxy;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
@@ -13,7 +10,6 @@ import lsfusion.interop.logics.AbstractLogicsProviderImpl;
 import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.ServerSettings;
-import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,8 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-
-import static lsfusion.base.BaseUtils.nvl;
 
 // singleton, one for whole application
 // needed for custom handler requests + RemoteAuthenticationManager (where gwt is not used)

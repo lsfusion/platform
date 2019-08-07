@@ -342,7 +342,7 @@ public class CustomDbfRecord {
     }
 
     public Map<String, Object> toMap() throws ParseException {
-        Map<String, Object> map = new LinkedHashMap<String, Object>(getFields().size() * 2);
+        Map<String, Object> map = new LinkedHashMap<>(getFields().size() * 2);
 
         for (DbfField f : getFields()) {
             String name = f.getName();

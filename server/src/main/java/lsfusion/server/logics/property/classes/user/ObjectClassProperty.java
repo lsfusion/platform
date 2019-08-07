@@ -58,7 +58,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
         return interfaces.single().interfaceClass;
     }
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        Expr prevExpr = joinImplement.singleValue().classExpr(baseClass);;
+        Expr prevExpr = joinImplement.singleValue().classExpr(baseClass);
 //        if(!hasChanges(propChanges))
             return prevExpr;
 

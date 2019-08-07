@@ -315,7 +315,7 @@ public class MapCacheAspect {
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             DataChanges changes = (DataChanges) thisJoinPoint.proceed(new Object[]{property, change, propChanges, cacheWheres});
 
-            cacheNoBig(implement, hashCaches, new DataChangesResult<K>(changes, changedWheres != null ? cacheWheres.toWhere() : null));
+            cacheNoBig(implement, hashCaches, new DataChangesResult<>(changes, changedWheres != null ? cacheWheres.toWhere() : null));
 
             if(changedWheres!=null) changedWheres.add(cacheWheres.toWhere());
             return changes;

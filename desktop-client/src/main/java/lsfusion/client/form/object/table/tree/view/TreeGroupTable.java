@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.ClientType;
-import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
@@ -414,7 +413,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 if (Arrays.asList(expandedPath.getPath()).contains(node))
                     inExpanded = true;
             if (!inExpanded && (node.getChildCount() > 1 || (node.getChildCount() == 1 && node.getChildAt(0) instanceof TreeGroupNode))) {
-                TreePath path = new TreePath(getTreePath(node, new ArrayList<TreeTableNode>()).toArray());
+                TreePath path = new TreePath(getTreePath(node, new ArrayList<>()).toArray());
                 expandPathManually(path);
             }
         }
@@ -564,7 +563,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     public void saveVisualState() {
         Enumeration paths = getExpandedDescendants(new TreePath(rootNode));
         expandedPathes = paths == null
-                         ? new HashSet<TreePath>()
+                         ? new HashSet<>()
                          : new HashSet<TreePath>(Collections.list(paths));
     }
 

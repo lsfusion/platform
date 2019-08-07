@@ -7,7 +7,6 @@ import lsfusion.client.classes.*;
 import lsfusion.client.classes.data.ClientFormatClass;
 import lsfusion.client.classes.data.ClientIntegralClass;
 import lsfusion.client.classes.data.ClientLongClass;
-import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;

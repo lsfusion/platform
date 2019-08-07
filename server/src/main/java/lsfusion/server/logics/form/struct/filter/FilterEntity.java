@@ -53,7 +53,7 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
     public ContextFilter getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {
         return new ContextFilter() {
             public FilterInstance getFilter(InstanceFactory instanceNewFactory) {
-                return new NotNullFilterInstance<P>(property.getRemappedInstance(oldObject, newObject.getInstance(instanceNewFactory), instanceOldFactory), checkChange, resolveAdd);
+                return new NotNullFilterInstance<>(property.getRemappedInstance(oldObject, newObject.getInstance(instanceNewFactory), instanceOldFactory), checkChange, resolveAdd);
             }
         };
     }

@@ -1,7 +1,6 @@
 package lsfusion.gwt.server.form;
 
 import lsfusion.client.controller.remote.proxy.RemoteObjectProxy;
-import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GThrowExceptionAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;

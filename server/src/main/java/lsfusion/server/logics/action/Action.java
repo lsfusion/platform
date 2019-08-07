@@ -343,7 +343,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
                 mResult.add(new Pair<ActionOrProperty<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
 
-            mResult.add(new Pair<ActionOrProperty<?>, LinkType>(property, rec ? LinkType.RECUSED : LinkType.USEDACTION));
+            mResult.add(new Pair<>(property, rec ? LinkType.RECUSED : LinkType.USEDACTION));
         }
 
 //        раньше зачем-то было, но зачем непонятно

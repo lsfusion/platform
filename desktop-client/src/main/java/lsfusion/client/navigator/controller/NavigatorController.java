@@ -34,7 +34,7 @@ public class NavigatorController implements INavigatorController {
         Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result = new HashMap<>();
 
         for (ClientNavigatorWindow wind : mainNavigator.windows.values()) {
-            result.put(wind, new LinkedHashSet<ClientNavigatorElement>());
+            result.put(wind, new LinkedHashSet<>());
         }
 
         dfsAddElements(mainNavigator.rootElement, null, result);

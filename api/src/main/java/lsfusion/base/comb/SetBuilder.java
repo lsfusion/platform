@@ -28,7 +28,7 @@ public class SetBuilder<T> {
             buildList = new ArrayList<>(buildSet);
 
         List<List<T>> result = new ArrayList<>();
-        recFillSubSetList(buildList,0,result,new ArrayList<T>());
+        recFillSubSetList(buildList,0,result, new ArrayList<>());
         return result;
     }
 
@@ -50,7 +50,7 @@ public class SetBuilder<T> {
     public static <T> Collection<List<T>> buildSetCombinations(int count, List<T> listElements) {
 
         Collection<List<T>> result = new ArrayList<>();
-        recBuildSetCombinations(count, listElements, 0, new ArrayList<T>(), result);
+        recBuildSetCombinations(count, listElements, 0, new ArrayList<>(), result);
         return result;
     }
 }

@@ -243,7 +243,7 @@ public class ExternalHTTPAction extends ExternalAction {
         for(int i = 0, size = targetPropList.size(); i < size; i++) {
             LP<?> targetProp = targetPropList.get(i);
 
-            Object value = null;;
+            Object value = null;
             if (i < results.size()) // для недостающих записываем null
                 value = results.get(i);
 

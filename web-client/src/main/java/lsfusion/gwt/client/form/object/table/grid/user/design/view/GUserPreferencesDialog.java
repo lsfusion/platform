@@ -239,7 +239,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
     private void okPressed() {
         for (Widget label : columnsDualListBox.getVisibleWidgets()) {
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
-            grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true),
+            grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(),
                     columnsDualListBox.getVisibleIndex(label), false);
         }
 
@@ -247,7 +247,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
         for (int i = 0; i < columnsDualListBox.getInvisibleWidgets().size(); i++) {
             Widget label = columnsDualListBox.getInvisibleWidgets().get(i);
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
-            grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true),
+            grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(),
                     columnsDualListBox.getVisibleCount() + i, true);
             if (property.inGrid == null || property.inGrid) {
                 hiddenPropSids[i] = property.property.propertyFormName;
@@ -374,7 +374,7 @@ public abstract class GUserPreferencesDialog extends ResizableModalWindow {
     private void refreshPropertyUserPreferences(PropertyListItem property, boolean hide, int propertyOrder, Map<Boolean, Integer> userSortDirections) {
         Boolean sortDirection = userSortDirections != null ? userSortDirections.keySet().iterator().next() : null;
         Integer sortIndex = userSortDirections != null ? userSortDirections.values().iterator().next() : null;
-        grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true), propertyOrder, hide);
+        grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(), propertyOrder, hide);
         grid.setUserSort(property.property, sortDirection != null ? sortIndex : null);
         grid.setUserAscendingSort(property.property, sortDirection);
     }

@@ -816,7 +816,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         String contextPrefix = getFormPrefix(form);
         String name = "_NAVIGATORFORM" + contextPrefix;
 
-        makeActionPublic(result, name, new ArrayList<ResolveClassSet>());
+        makeActionPublic(result, name, new ArrayList<>());
         
         return result;
     }
@@ -828,7 +828,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
         String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls);
 
-        makeActionPublic(result, name, new ArrayList<ResolveClassSet>());
+        makeActionPublic(result, name, new ArrayList<>());
 
         return result;
     }

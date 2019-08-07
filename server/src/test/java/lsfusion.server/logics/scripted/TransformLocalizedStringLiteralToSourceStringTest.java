@@ -7,6 +7,7 @@ import org.junit.rules.ExpectedException;
 
 import static lsfusion.server.language.ScriptedStringUtils.transformLocalizedStringLiteralToSourceString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class TransformLocalizedStringLiteralToSourceStringTest {
     @Rule
@@ -77,7 +78,7 @@ public class TransformLocalizedStringLiteralToSourceStringTest {
     
     @Test 
     public void testNull() throws ScriptedStringUtils.TransformationError {
-        assertEquals(transformLocalizedStringLiteralToSourceString(null), null); 
+        assertNull(transformLocalizedStringLiteralToSourceString(null)); 
     }
 
     @Test

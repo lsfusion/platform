@@ -69,7 +69,7 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<MPair<K, W>, LRUWVWSMap.AEntr
 
         @Override
         protected AEntry<K, W, V> createTail() {
-            return new AEntry<>(new MPair<K, W>(null, null), refQueue, null, -1, null, 0);
+            return new AEntry<>(new MPair<>(null, null), refQueue, null, -1, null, 0);
         }
 
         public final Value<W, V> get(K key, int hash) {

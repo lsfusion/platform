@@ -792,7 +792,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private void aspectDropAllChanges(FunctionSet<SessionDataProperty> keepProps, Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> dropProps) throws SQLException {
-        Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> newData = new HashMap<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>>(filterSessionData(keepProps));
+        Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> newData = new HashMap<>(filterSessionData(keepProps));
         for (Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : dropProps.entrySet()) {
             e.getValue().drop(sql, getOwner());
         }
@@ -870,7 +870,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         updateSessionEvents(updateChanges);
 
-        ModifyResult changed = aspectChangeProperty(isDataChanged, new PropertyChange<ClassPropertyInterface>(DataObject.TRUE));
+        ModifyResult changed = aspectChangeProperty(isDataChanged, new PropertyChange<>(DataObject.TRUE));
 
         updateProperties(isDataChanged, changed, updateChanges);
 
@@ -1846,7 +1846,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(applyMessage != null)
             ThreadLocalContext.pushLogMessage();
         try {
-            return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
+            return transactApply(BL, stack, interaction, new HashMap<>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
         } finally {
             if(applyMessage != null)
                 applyMessage.set(getLogMessage(ThreadLocalContext.popLogMessage(), false));
@@ -2047,7 +2047,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         dropFormCaches();
 
-        final WeakReference<FormInstance> wForm = new WeakReference<FormInstance>(form);
+        final WeakReference<FormInstance> wForm = new WeakReference<>(form);
         Cleaner cleaner = new Cleaner() {
             @Override
             public void run() throws SQLException {
@@ -2471,7 +2471,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     ImSet<DataProperty> updateChanges = SetFact.singleton(property);
                     updateSessionEvents(updateChanges);
 
-                    ModifyResult tableRemoveChanged = table.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, removeWhere), baseClass, Modify.DELETE, getQueryEnv(), SessionTable.matGlobalQuery);
+                    ModifyResult tableRemoveChanged = table.modifyRows(sql, new Query<>(mapKeys, removeWhere), baseClass, Modify.DELETE, getQueryEnv(), SessionTable.matGlobalQuery);
                     if (table.isEmpty()) // есть удаление
                         iterator.remove();
 

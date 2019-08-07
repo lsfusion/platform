@@ -197,7 +197,7 @@ public class SpanningTreeWithBlackjackTest {
         try {
             writer.write(str + result);
         } catch (IOException e) {
-            Assert.assertFalse(true);
+            Assert.fail();
             e.printStackTrace();
         }
     }

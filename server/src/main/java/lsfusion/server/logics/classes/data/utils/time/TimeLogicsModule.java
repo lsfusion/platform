@@ -47,13 +47,13 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     public void initMainLogic() throws RecognitionException {
 
         currentDateTime = addTProp(LocalizedString.create("{logics.date.current.datetime}"), Time.DATETIME);
-        makePropertyPublic(currentDateTime, "currentDateTime", new ArrayList<ResolveClassSet>());
+        makePropertyPublic(currentDateTime, "currentDateTime", new ArrayList<>());
         currentMinute = addTProp(LocalizedString.create("{logics.date.current.minute}"), Time.MINUTE);
-        makePropertyPublic(currentMinute, "currentMinute", new ArrayList<ResolveClassSet>());
+        makePropertyPublic(currentMinute, "currentMinute", new ArrayList<>());
         currentHour = addTProp(LocalizedString.create("{logics.date.current.hour}"), Time.HOUR);
-        makePropertyPublic(currentHour, "currentHour", new ArrayList<ResolveClassSet>());
+        makePropertyPublic(currentHour, "currentHour", new ArrayList<>());
         currentEpoch = addTProp(LocalizedString.create("{logics.date.current.epoch}"), Time.EPOCH);
-        makePropertyPublic(currentEpoch, "currentEpoch", new ArrayList<ResolveClassSet>());
+        makePropertyPublic(currentEpoch, "currentEpoch", new ArrayList<>());
 
         super.initMainLogic();
 

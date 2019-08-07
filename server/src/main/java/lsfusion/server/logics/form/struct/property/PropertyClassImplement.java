@@ -27,6 +27,6 @@ public class PropertyClassImplement<P extends PropertyInterface> extends ActionO
     }
 
     public PropertyClassImplement<P> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap) {
-        return new PropertyClassImplement<P>(actionOrProperty, mapping.join(remap));
+        return new PropertyClassImplement<>(actionOrProperty, mapping.join(remap));
     }
 }

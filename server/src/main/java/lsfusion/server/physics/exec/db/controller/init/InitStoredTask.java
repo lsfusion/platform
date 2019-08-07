@@ -1,18 +1,8 @@
 package lsfusion.server.physics.exec.db.controller.init;
 
-import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesTask;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.physics.admin.service.task.GroupGraphTask;
-import org.antlr.runtime.RecognitionException;
-
-import java.sql.SQLException;
 
 public class InitStoredTask extends GroupPropertiesTask {
 

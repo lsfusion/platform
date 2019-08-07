@@ -107,7 +107,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
             public Interface<T, P> getMapValue(P value) {
                 return new KeyToInterface<>(value);
             }
-        })).addOrderExcl(new ValueInterface<T, P>(toChange));
+        })).addOrderExcl(new ValueInterface<>(toChange));
     }
 
     public OnChangeProperty(Property<T> onChange, Property<P> toChange) {

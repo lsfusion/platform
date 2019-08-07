@@ -12,7 +12,7 @@ import java.util.*;
 
 public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
 
-    private final List<T> list = Collections.synchronizedList(new ArrayList<T>());
+    private final List<T> list = Collections.synchronizedList(new ArrayList<>());
 
     public NFSimpleOrderSetImpl(ImList<T> startList) {
         list.addAll(startList.toJavaList());

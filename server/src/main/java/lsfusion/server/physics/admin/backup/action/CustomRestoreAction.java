@@ -34,7 +34,6 @@ import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
-import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;

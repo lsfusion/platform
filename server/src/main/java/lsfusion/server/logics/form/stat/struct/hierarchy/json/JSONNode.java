@@ -80,12 +80,12 @@ public class JSONNode implements Node<JSONNode> {
                 if (isIndex) {
                     JSONArray array = (JSONArray) child;
                     for (int i = 0, size = array.length(); i < size; i++)
-                        mResult.add(new Pair<Object, JSONNode>(i, getJSONNode(array.get(i), true)));
+                        mResult.add(new Pair<>(i, getJSONNode(array.get(i), true)));
                 } else {
                     JSONObject object = (JSONObject) child;
                     for (Iterator it = object.keys(); it.hasNext(); ) {
                         String objectKey = (String) it.next();
-                        mResult.add(new Pair<Object, JSONNode>(objectKey, getJSONNode(object.get(objectKey), true)));
+                        mResult.add(new Pair<>(objectKey, getJSONNode(object.get(objectKey), true)));
                     }
                 }
             }

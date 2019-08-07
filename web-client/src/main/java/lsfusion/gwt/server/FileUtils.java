@@ -153,7 +153,7 @@ public class FileUtils {
 
     public static Pair<String, String> exportReport(FormPrintType type, ReportGenerationData reportData) {
         try {
-            RawFileData report = ReportGenerator.exportToFileByteArray(reportData, type);;
+            RawFileData report = ReportGenerator.exportToFileByteArray(reportData, type);
             return new Pair<>(FileUtils.saveActionFile(report), type.getExtension());
         } catch (Exception e) {
             throw Throwables.propagate(e);

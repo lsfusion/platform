@@ -586,7 +586,7 @@ public class Query<K,V> extends IQuery<K,V> {
             expr.getReader(where).prepareClassesQuery(expr, where, mReadExprs, baseClass);
         ImSet<Expr> readExprs = mReadExprs.immutable();
         final ImRevMap<Expr, Object> objects = BaseUtils.generateObjects(readExprs);
-        return new Pair<IQuery<K, Object>, ImRevMap<Expr, Object>>(new Query<>(mapKeys, MapFact.addExcl(properties, objects.reverse().mapValues(new GetValue<Expr, Expr>() {
+        return new Pair<>(new Query<>(mapKeys, MapFact.addExcl(properties, objects.reverse().mapValues(new GetValue<Expr, Expr>() {
             public Expr getMapValue(Expr value) {
                 return value.classExpr(baseClass);
             }

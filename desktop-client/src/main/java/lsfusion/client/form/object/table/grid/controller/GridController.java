@@ -380,7 +380,7 @@ public class GridController extends AbstractTableController {
     public void applyUserOrders() throws IOException {
         OrderedMap<ClientPropertyDraw, Boolean> userOrders = getUserOrders();
         assert userOrders != null;
-        formController.applyOrders(userOrders == null ? new OrderedMap<ClientPropertyDraw, Boolean>() : userOrders, this);
+        formController.applyOrders(userOrders == null ? new OrderedMap<>() : userOrders, this);
     }
     
     public void applyDefaultOrders() throws IOException {

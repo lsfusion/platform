@@ -26,7 +26,6 @@ import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingBlocker;
 import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.Function2;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.result.ListResult;

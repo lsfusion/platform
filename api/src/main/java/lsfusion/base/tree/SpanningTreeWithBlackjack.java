@@ -54,7 +54,7 @@ public class SpanningTreeWithBlackjack<T> {
         assert !nodeIndex.containsKey(node);
         nodeIndex.put(node, nodeIndex.size());
         weights.add(weight);
-        graph.add(new ArrayList<Edge>());
+        graph.add(new ArrayList<>());
     }
 
     public void addEdge(T nodeFrom, T nodeTo, int weight) {

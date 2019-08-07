@@ -142,7 +142,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     private void checkUsed() throws SQLException {
         new SyncAfterRun<List<ExConnection>>() {
             protected List<ExConnection> executeAfter() {
-                List<ExConnection> connectionsToClose = new ArrayList<ExConnection>();
+                List<ExConnection> connectionsToClose = new ArrayList<>();
                 Iterator<Map.Entry<ExConnection,WeakReference<MutableObject>>> it = usedConnections.entrySet().iterator();
                 while(it.hasNext()) {
                     Map.Entry<ExConnection, WeakReference<MutableObject>> usedEntry = it.next();

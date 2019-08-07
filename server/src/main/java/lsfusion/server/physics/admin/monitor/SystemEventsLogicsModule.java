@@ -128,7 +128,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initMainLogic() throws RecognitionException {
         currentConnection = addProperty(null, new LP<>(new CurrentConnectionProperty(connection)));
-        makePropertyPublic(currentConnection, "currentConnection", new ArrayList<ResolveClassSet>());
+        makePropertyPublic(currentConnection, "currentConnection", new ArrayList<>());
 
         super.initMainLogic();
 

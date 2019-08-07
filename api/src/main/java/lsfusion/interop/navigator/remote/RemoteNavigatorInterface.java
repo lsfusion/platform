@@ -2,7 +2,6 @@ package lsfusion.interop.navigator.remote;
 
 import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientSettings;

@@ -40,7 +40,7 @@ public class DuplicateElementsChecker {
             for (E element : helper.getElements(module)) {
                 String cn = helper.getCanonicalName(element);
                 if (!canonicalNameToElement.containsKey(cn)) {
-                    canonicalNameToElement.put(cn, new ArrayList<FoundItem<E>>());
+                    canonicalNameToElement.put(cn, new ArrayList<>());
                 }
                 canonicalNameToElement.get(cn).add(new FoundItem<>(element, module));
             }

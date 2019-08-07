@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static lsfusion.server.physics.dev.i18n.LocalizedString.escapeForLocalization;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class EscapeForLocalizationTest {
 
@@ -44,6 +45,6 @@ public class EscapeForLocalizationTest {
     
     @Test
     public void nullTest() {
-        assertEquals(escapeForLocalization(null), null); 
+        assertNull(escapeForLocalization(null)); 
     }
 }

@@ -1,6 +1,5 @@
 package lsfusion.base.tree;
 
-import lsfusion.base.tree.GreedyTreeBuilding.*;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

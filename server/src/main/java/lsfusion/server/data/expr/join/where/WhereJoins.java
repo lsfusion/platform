@@ -50,7 +50,6 @@ import lsfusion.server.data.query.LimitOptions;
 import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
-import lsfusion.server.data.table.Table;
 import lsfusion.server.data.translate.JoinExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.value.Value;
@@ -112,7 +111,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private static BaseUtils.ExChildrenInterface<WhereJoin> getJoins = new BaseUtils.ExChildrenInterface<WhereJoin>() {
         public Iterable<WhereJoin> getChildrenIt(WhereJoin element) {
-            return BaseUtils.immutableCast(element.getJoinFollows(new Result<UpWheres<InnerJoin>>(), null).it());
+            return BaseUtils.immutableCast(element.getJoinFollows(new Result<>(), null).it());
         }
 
         public ImSet<WhereJoin> getAllChildren(WhereJoin element) {
@@ -808,7 +807,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 rows.set(Stat.ONE);
             if(compileInfo != null)
                 compileInfo.set(CompileInfo.EMPTY);
-            return new StatKeys<K>(groups, Stat.ONE);
+            return new StatKeys<>(groups, Stat.ONE);
         }
 
         return calculateCost(groups, compileInfo != null, keyStat, type, new CostResult<StatKeys<K>>() {
@@ -1131,7 +1130,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             int vertexIndex = treeBuilding.getVertexIndex(join); // заполняем матрицу смежности
             inJoins.set(vertexIndex);
             
-            edgesIn.add(new ArrayList<Edge<K>>());
+            edgesIn.add(new ArrayList<>());
         }
 
         for (Edge edge : edges) {
@@ -1414,8 +1413,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
                         ImSet<BaseExpr> usedNotNulls = compileInfo ? SetFact.<BaseExpr>EMPTY() : null;                        
                         StatKeys<Z> pushedStatKeys;
-                        Result<ImSet<Z>> rPushedKeys = pushJoin != null ? new Result<ImSet<Z>>() : null;
-                        Result<ImSet<BaseExpr>> rPushedProps = compileInfo ? new Result<ImSet<BaseExpr>>() : null;
+                        Result<ImSet<Z>> rPushedKeys = pushJoin != null ? new Result<>() : null;
+                        Result<ImSet<BaseExpr>> rPushedProps = compileInfo ? new Result<>() : null;
                         if (bv instanceof QueryJoin) { // для query join можно протолкнуть внутрь предикаты
                             pushedStatKeys = ((QueryJoin) bv).getPushedStatKeys(type, aCost, aStat, pushKeys, pushNotNullKeys, rPushedKeys);
 
@@ -1725,7 +1724,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
             Pair<BaseJoin<Object>, Object> singleEdge = null; // оптимизация, чтобы не создавать не нужные вершины
             BaseExpr singleExpr = null;            
-            KeyJoinExpr keyJoinExpr = null;;
+            KeyJoinExpr keyJoinExpr = null;
             for(int j=0,sizeJ=exprEdges.size();j<sizeJ;j++) {
                 Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(j);
                 if(((BaseJoin)exprEdge.first) instanceof ExprJoin && !((ExprJoin)exprEdge.first).canBeKeyJoined()) { // не создаем промежуточную вершину, чтобы не протолкнулся висячий ключ
@@ -1762,7 +1761,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 if (notNullJoin != null && !mJoins.add(notNullJoin)) {
                     if(pushInfo != null) {
                         adjIntervalWheres = adjIntervalWheres.addList(notNullJoin);
-                        upAdjWheres.set(new UpWheres<WhereJoin>(upAdjWheres.result.addExcl(notNullJoin, innerExpr.getUpNotNullWhere())));
+                        upAdjWheres.set(new UpWheres<>(upAdjWheres.result.addExcl(notNullJoin, innerExpr.getUpNotNullWhere())));
                     }
                     mEdges.exclAdd(new Edge(notNullJoin, 0, innerExpr));
                 }

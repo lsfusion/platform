@@ -342,7 +342,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 boolean checkClasses;
                 ValueClass inconsistentTableClass;
                 if(inconsistent && (inconsistentTableClass = inconsistentTableClasses.get(field)) != null) { // проверка для correlations
-                    Result<Boolean> rereadChange = new Result<Boolean>();
+                    Result<Boolean> rereadChange = new Result<>();
                     checkClasses = checkClasses(classSet, (CustomClass)inconsistentTableClass, rereadChange, classRemove, timestamp);
                     if(rereadChange.result)
                         mInconsistentCheckChanges.exclAdd(field);

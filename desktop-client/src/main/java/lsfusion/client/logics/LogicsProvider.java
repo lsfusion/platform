@@ -1,11 +1,8 @@
 package lsfusion.client.logics;
 
 import lsfusion.client.controller.remote.proxy.RemoteLogicsLoaderProxy;
-import lsfusion.client.controller.remote.proxy.RemoteLogicsProxy;
-import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.logics.AbstractLogicsProviderImpl;
 import lsfusion.interop.logics.LogicsConnection;
-import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 
 import java.net.MalformedURLException;

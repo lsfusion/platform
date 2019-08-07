@@ -4,15 +4,12 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.form.interactive.property.checked.ChangeProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
-import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class AbstractDataProperty extends Property<ClassPropertyInterface> {

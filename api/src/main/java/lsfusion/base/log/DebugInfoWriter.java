@@ -18,6 +18,7 @@ public abstract class DebugInfoWriter {
         return new PrefixDebugInfoWriter(getTabPrefix() + '\t', getStringDebugInfoWriter());
     }
 
-    protected abstract StringDebugInfoWriter getStringDebugInfoWriter();;
+    protected abstract StringDebugInfoWriter getStringDebugInfoWriter();
+
     protected abstract String getTabPrefix();
 }

@@ -252,7 +252,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         
         vertices.add(vertex);
         vertexIndex.put(vertex, vertexIndex.size());
-        adjList.add(new ArrayList<E>());
+        adjList.add(new ArrayList<>());
         costs.add(cost);
     }
 
@@ -327,7 +327,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             for (int j = i+1; j < vertexCnt; ++j) {
                 ComplexEdge<V, C, E> complexEdge = adjMatrix.get(i).get(j);
                 if (complexEdge == null) {
-                    complexEdge = new ComplexEdge<>(nodes.get(i), nodes.get(j), new EdgeLinkedList<E>(), null, true);
+                    complexEdge = new ComplexEdge<>(nodes.get(i), nodes.get(j), new EdgeLinkedList<>(), null, true);
                     adjMatrix.get(i).set(j, complexEdge);
                     adjMatrix.get(j).set(i, complexEdge);
                 }

@@ -97,7 +97,7 @@ public class TaskRunner {
     }
     
     public static class ThrowableConsumer {
-        private List<ThrowableWithStack> throwables = Collections.synchronizedList(new ArrayList<ThrowableWithStack>());
+        private List<ThrowableWithStack> throwables = Collections.synchronizedList(new ArrayList<>());
         
         public final void consume(ThrowableWithStack t) {
             throwables.add(t);

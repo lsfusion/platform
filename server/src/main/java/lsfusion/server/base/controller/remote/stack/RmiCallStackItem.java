@@ -1,6 +1,5 @@
 package lsfusion.server.base.controller.remote.stack;
 
-import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.stack.ExecutionStackItem;
 import lsfusion.server.physics.admin.profiler.Profiler;
 import lsfusion.server.physics.admin.profiler.RMICallProfileObject;
