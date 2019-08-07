@@ -6,6 +6,8 @@
 /desktop-client/logs/
 /desktop-client/target/
 
+/web-client/target/
+
 /server/target/
 
 /server/src/main/java/LsfLogics.tokens
