@@ -439,4 +439,10 @@ public class FileUtils {
             }
         }
     }
+
+    public static void safeDelete(File file) {
+        if (file != null && !file.delete()) {
+            file.deleteOnExit();
+        }
+    }
 }

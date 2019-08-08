@@ -188,6 +188,11 @@
             <groupId>net.sf.fax4j</groupId>
             <artifactId>fax4j</artifactId>
         </dependency>
+        <!--need to print pdf files-->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+        </dependency>
         <!--this plugin fix errors of default ImageIO-->
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
