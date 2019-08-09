@@ -216,7 +216,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         Stat min = pushStat;
         for(Stat stat : pushNotNullKeys.valueIt())
             min = min.min(stat);
-        return StatKeys.create(pushCost, pushStat, new DistinctKeys<K>(pushKeys)).replaceStat(min);
+        return StatKeys.create(pushCost, pushStat, new DistinctKeys<>(pushKeys)).replaceStat(min);
     }
 
     public StatKeys<K> getPushedStatKeys(StatType type, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys, Result<ImSet<K>> rPushedKeys) {

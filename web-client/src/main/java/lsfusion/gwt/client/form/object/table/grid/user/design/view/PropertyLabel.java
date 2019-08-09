@@ -24,7 +24,7 @@ public class PropertyLabel extends Label {
     }
 
     public String getUserPattern() {
-        return propertyItem.getUserPattern(true);
+        return propertyItem.getUserPattern();
     }
     
     public void setUserCaption(String userCaption) {

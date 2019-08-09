@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
-import java.rmi.ServerException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;

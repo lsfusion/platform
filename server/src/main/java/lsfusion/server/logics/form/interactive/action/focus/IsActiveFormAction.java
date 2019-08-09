@@ -32,7 +32,7 @@ public class IsActiveFormAction extends SystemExplicitAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance activeFormInstance = context.getFormInstance(true, false);
         FormEntity activeForm = activeFormInstance == null ? null : activeFormInstance.entity;
-        Boolean isActive = activeForm != null && requestedForm != null && activeForm.equals(requestedForm);
+        Boolean isActive = activeForm != null && activeForm.equals(requestedForm);
         isActiveFormProperty.change(isActive, context);
     }
 }

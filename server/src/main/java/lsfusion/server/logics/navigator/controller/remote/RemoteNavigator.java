@@ -89,7 +89,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     
     private final WeakIdentityHashSet<RemoteForm> forms = new WeakIdentityHashSet<>();
 
-    private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<Pair<DataObject, String>>());
+    private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<>());
 
     private String formID = null;
 
@@ -502,7 +502,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         JSONObject result = new JSONObject();
         result.put("initial", remoteForm.getFormChangesExternal(getStack()).get("modify"));
         result.put("meta", remoteForm.getMetaExternal().serialize());
-        return new Pair<RemoteFormInterface, String>(remoteForm, result.toString());
+        return new Pair<>(remoteForm, result.toString());
     }
 
     private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {

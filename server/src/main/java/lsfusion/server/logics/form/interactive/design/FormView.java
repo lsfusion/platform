@@ -133,19 +133,19 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     protected PropertyDrawView okButton;
     protected PropertyDrawView closeButton;
 
-    protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = synchronizedMap(new HashMap<TreeGroupEntity, TreeGroupView>());
+    protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = synchronizedMap(new HashMap<>());
     public TreeGroupView get(TreeGroupEntity treeGroup) { return mtreeGroups.get(treeGroup); }
 
-    protected transient Map<GroupObjectEntity, GroupObjectView> mgroupObjects = synchronizedMap(new HashMap<GroupObjectEntity, GroupObjectView>());
+    protected transient Map<GroupObjectEntity, GroupObjectView> mgroupObjects = synchronizedMap(new HashMap<>());
     public GroupObjectView get(GroupObjectEntity groupObject) { return mgroupObjects.get(groupObject); }
 
-    protected transient Map<ObjectEntity, ObjectView> mobjects = synchronizedMap(new HashMap<ObjectEntity, ObjectView>());
+    protected transient Map<ObjectEntity, ObjectView> mobjects = synchronizedMap(new HashMap<>());
     public ObjectView get(ObjectEntity object) { return mobjects.get(object); }
 
-    protected transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = synchronizedMap(new HashMap<PropertyDrawEntity, PropertyDrawView>());
+    protected transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = synchronizedMap(new HashMap<>());
     public PropertyDrawView get(PropertyDrawEntity property) { return mproperties.get(property); }
 
-    protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = synchronizedMap(new HashMap<RegularFilterGroupEntity, RegularFilterGroupView>());
+    protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = synchronizedMap(new HashMap<>());
     public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilters.get(filterGroup); }
 
     public ComponentView findById(int id) {

@@ -230,6 +230,6 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         }
 
         if(upAdjWheres != null)
-            upAdjWheres.set(new UpWheres<WhereJoin>(upAdjWheres.result.addExcl(mUpIntervalWheres.immutable())));
+            upAdjWheres.set(new UpWheres<>(upAdjWheres.result.addExcl(mUpIntervalWheres.immutable())));
     }
 }

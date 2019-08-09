@@ -53,7 +53,7 @@ public class GridSelectionController {
     public void addProperty(ClientPropertyDraw newProperty) {
         Pair<ClientPropertyDraw, ClientGroupObjectValue> property = new Pair<>(newProperty, ClientGroupObjectValue.EMPTY);
         if (!selectedCells.containsKey(property)) {
-            selectedCells.put(property, new HashMap<ClientGroupObjectValue, Object>());
+            selectedCells.put(property, new HashMap<>());
         }
     }
 
@@ -93,7 +93,7 @@ public class GridSelectionController {
             Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = table.getColumnProperty(column);
             Map<ClientGroupObjectValue, Object> valueMap = selectedCells.get(propertyColumn) != null ?
                     new HashMap<>(selectedCells.get(propertyColumn)) :
-                    new HashMap<ClientGroupObjectValue, Object>();
+                    new HashMap<>();
             for (ClientGroupObjectValue key : temporaryValues.keySet()) {
                 if (temporaryValues.containsKey(key) && temporaryValues.get(key).containsKey(propertyColumn)) {
                     if (temporarySelectionAddition) {
@@ -192,7 +192,7 @@ public class GridSelectionController {
         resetTemporarySelection();
         selectedCells.clear();
         for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : getProperties()) {
-            selectedCells.put(propertyColumn, new HashMap<ClientGroupObjectValue, Object>());
+            selectedCells.put(propertyColumn, new HashMap<>());
         }
 
         gridKeys = new ArrayList<>();

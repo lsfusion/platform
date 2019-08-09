@@ -25,8 +25,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-
 public class RmiManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
 

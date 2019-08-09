@@ -46,7 +46,7 @@ public class ElementResolver<T, P> {
 
     protected List<FoundItem<T>> finalizeNamespaceResult(List<FoundItem<T>> result, String name, P param) throws ResolvingError {
         FoundItem<T> finalRes = finalizeResult(result, name, param);
-        return finalRes.value == null ? new ArrayList<FoundItem<T>>() : Collections.singletonList(finalRes);
+        return finalRes.value == null ? new ArrayList<>() : Collections.singletonList(finalRes);
     }
 
     // реализация по умолчанию, предполагающая, что не может быть более одного подходящего объекта

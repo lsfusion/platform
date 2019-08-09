@@ -502,7 +502,7 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public Map<Integer, List<byte[]>> getSelectedMaxMap() {
-        return getSelectedMap(new LinkedHashMap<Integer, List<byte[]>>(), maxChecks);
+        return getSelectedMap(new LinkedHashMap<>(), maxChecks);
     }
 
     private Map<Integer, List<byte[]>> getSelectedMap(Map<Integer, List<byte[]>> selectedMap, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> checks) {

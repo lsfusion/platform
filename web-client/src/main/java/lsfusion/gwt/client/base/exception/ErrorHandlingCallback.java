@@ -2,7 +2,6 @@ package lsfusion.gwt.client.base.exception;
 
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
-import com.google.gwt.user.client.rpc.InvocationException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.AsyncCallbackEx;

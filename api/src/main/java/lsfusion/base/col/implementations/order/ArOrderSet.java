@@ -12,11 +12,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
 
     public ArOrderSet() {
-        super(new ArSet<K>());
+        super(new ArSet<>());
     }
 
     public ArOrderSet(int size) {
-        super(new ArSet<K>(size));
+        super(new ArSet<>(size));
     }
 
     public ArOrderSet(ArSet<K> wrapSet) {
@@ -53,6 +53,6 @@ public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
         // упорядочиваем Set
         int[] order = new int[wrapSet.size];
         ArSet.sortArray(wrapSet.size, wrapSet.array, order);
-        return new ArOrderIndexedSet<>(new ArIndexedSet<K>(wrapSet.size, wrapSet.array), order);
+        return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size, wrapSet.array), order);
     }
 }

@@ -715,7 +715,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 CustomClass customClass = (CustomClass) valueClass;
                 for(Property<K> aggrProp : customClass.getUpAggrProps())
 //                    if(!BaseUtils.hashEquals(aggrProp, this)) // себя тоже надо коррелировать (в общем-то для удаления, как правило удаляется тоже объекты агрегированные в один объект)
-                    mResult.exclAdd(new PropCorrelation<K, T>(aggrProp, propertyInterface, classType));
+                    mResult.exclAdd(new PropCorrelation<>(aggrProp, propertyInterface, classType));
             }
         }
 
@@ -753,7 +753,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     
     public PropertyChange<T> getPrevChange(PropertyChangeTableUsage<T> table) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return new PropertyChange<T>(mapKeys, getExpr(mapKeys), table.join(mapKeys).getWhere());
+        return new PropertyChange<>(mapKeys, getExpr(mapKeys), table.join(mapKeys).getWhere());
     }
 
     public PropertyChangeTableUsage<T> readChangeTable(String debugInfo, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {

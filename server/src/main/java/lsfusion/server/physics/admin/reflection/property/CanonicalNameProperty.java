@@ -11,7 +11,6 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.classes.data.FormulaProperty;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
-import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

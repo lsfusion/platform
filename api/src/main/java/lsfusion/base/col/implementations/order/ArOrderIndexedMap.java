@@ -105,7 +105,7 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
                 keys[i] = getKey(i);
                 values[i] = getValue(i);
             }
-            return new ArOrderMap<>(new ArMap<K, V>(arMap.size, keys, values));
+            return new ArOrderMap<>(new ArMap<>(arMap.size, keys, values));
         }
 
         if(arMap.keys.length > arMap.size * SetFact.factorNotResize) {
@@ -122,6 +122,6 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new ArOrderIndexedSet<>(new ArIndexedSet<K>(arMap.size, arMap.keys), order);
+        return new ArOrderIndexedSet<>(new ArIndexedSet<>(arMap.size, arMap.keys), order);
     }
 }

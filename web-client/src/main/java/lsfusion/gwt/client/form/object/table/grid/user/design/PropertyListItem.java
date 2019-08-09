@@ -22,8 +22,8 @@ public class PropertyListItem {
         return userCaption != null ? userCaption : (ignoreDefault ? null : property.getNotEmptyCaption());
     }
 
-    public String getUserPattern(boolean ignoreDefault) {
-        return userPattern != null ? userPattern : null;
+    public String getUserPattern() {
+        return userPattern;
     }
 
     public void setUserCaption(String userCaption) {

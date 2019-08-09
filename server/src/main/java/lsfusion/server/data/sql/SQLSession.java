@@ -566,7 +566,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(isolationLevel, owner, new HashMap<String, Integer>(), false, 0);
+        startTransaction(isolationLevel, owner, new HashMap<>(), false, 0);
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
@@ -2733,7 +2733,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public int modifyRecords(ModifyQuery modify) throws SQLException, SQLHandledException {
         try {
-            return modifyRecords(modify, new Result<Integer>());
+            return modifyRecords(modify, new Result<>());
         } catch (SQLUniqueViolationException e) {
             throw e.raceCondition();
         }

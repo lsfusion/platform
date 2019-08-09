@@ -133,7 +133,7 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             getForms = new Stack<>();
             getForm.set(getForms);
         }
-        getForms.push(new Result<RemoteForm>());
+        getForms.push(new Result<>());
     }
 
     public RemoteForm popGetForm() {

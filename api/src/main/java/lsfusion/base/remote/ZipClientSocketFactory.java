@@ -1,7 +1,6 @@
 package lsfusion.base.remote;
 
 import lsfusion.base.BaseUtils;
-import org.apache.tools.ant.taskdefs.Zip;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;

@@ -107,14 +107,14 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         outSelect(session, DataSession.emptyEnv(OperationOwner.debug), false);
     }
     public void outSelect(SQLSession session, QueryEnvironment env, boolean uniqueViolation) throws SQLException, SQLHandledException {
-        compile(new CompileOptions<V>(session.syntax)).outSelect(session, env, uniqueViolation);
+        compile(new CompileOptions<>(session.syntax)).outSelect(session, env, uniqueViolation);
     }
 
     public String readSelect(SQLSession session) throws SQLException, SQLHandledException {
         return readSelect(session,  DataSession.emptyEnv(OperationOwner.unknown));
     }
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return compile(new CompileOptions<V>(session.syntax)).readSelect(session, env);
+        return compile(new CompileOptions<>(session.syntax)).readSelect(session, env);
     }
 
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N

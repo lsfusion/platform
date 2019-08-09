@@ -49,7 +49,7 @@ public class BackupAction extends InternalAction {
             long currentTime = currentDate.getTime();
             String backupFileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(currentDate);
 
-            List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<String>();
+            List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<>();
 
             String backupFilePath = context.getDbManager().getBackupFilePath(backupFileName);
             if (backupFilePath != null) {

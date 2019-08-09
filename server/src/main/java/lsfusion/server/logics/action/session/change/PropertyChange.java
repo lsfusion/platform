@@ -330,7 +330,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             });
             usedTable.set(result);
             
-            result.writeRows(session.sql, new Query<K, String>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);
+            result.writeRows(session.sql, new Query<>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);
             return result.join(mapKeys).getWhere();
         }
 
@@ -350,7 +350,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         usedTable.set(table);
 
         mapKeys = mapKeys.addRevExcl(KeyExpr.getMapKeys(mapDataValues.keys()));
-        table.writeRows(session.sql, new Query<T, String>(usedMapping.join(mapKeys), where, usedMapping.rightJoin(mapDataValues)), session.baseClass, session.env, SessionTable.matExprLocalQuery);
+        table.writeRows(session.sql, new Query<>(usedMapping.join(mapKeys), where, usedMapping.rightJoin(mapDataValues)), session.baseClass, session.env, SessionTable.matExprLocalQuery);
         return table.join(usedMapping.join(innerExprs)).getWhere();
     }
 

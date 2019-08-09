@@ -2,7 +2,6 @@ package lsfusion.client.form.property.panel.view;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -174,8 +173,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         Component editorComp = super.prepareEditor(editor, row, column);
         if (editorComp != null) {
             //вырезаем traversal-кнопки, потому что иначе фокус просто вернётся в таблицу
-            editorComp.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, new HashSet<AWTKeyStroke>());
-            editorComp.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, new HashSet<AWTKeyStroke>());
+            editorComp.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, new HashSet<>());
+            editorComp.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, new HashSet<>());
         }
         return editorComp;
     }

@@ -453,7 +453,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         for (LogicsModule module : modules.all()) {
             String namespace = module.getNamespace();
             if (!namespaceToModules.containsKey(namespace)) {
-                namespaceToModules.put(namespace, new ArrayList<LogicsModule>());
+                namespaceToModules.put(namespace, new ArrayList<>());
             }
             namespaceToModules.get(namespace).add(module);
         }
@@ -611,7 +611,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
             Action setupPolicyAction = setupPolicyLA.action;
-            LM.makeActionPublic(setupPolicyLA, setupPolicyActionName, new ArrayList<ResolveClassSet>());
+            LM.makeActionPublic(setupPolicyLA, setupPolicyActionName, new ArrayList<>());
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
         }
@@ -735,7 +735,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     String propertyName = property.getActionOrProperty().getName();
                     
                     if (result.get(propertyName) == null) {
-                        result.put(propertyName, new ArrayList<NamedDecl>());
+                        result.put(propertyName, new ArrayList<>());
                     }
                     List<NamedDecl> resultProps = result.get(propertyName);
                     
@@ -1200,11 +1200,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         String result = "";
 
         Stack<Link> forward = new Stack<>();
-        if (findDependency(property1, property2, new HSet<ActionOrProperty>(), forward, desiredType))
+        if (findDependency(property1, property2, new HSet<>(), forward, desiredType))
             result += outDependency("FORWARD (" + forward.size() + ")", property1, forward) + '\n';
 
         Stack<Link> backward = new Stack<>();
-        if (findDependency(property2, property1, new HSet<ActionOrProperty>(), backward, desiredType))
+        if (findDependency(property2, property1, new HSet<>(), backward, desiredType))
             result += outDependency("BACKWARD (" + backward.size() + ")", property2, backward) + '\n';
 
         if (result.isEmpty())
@@ -1217,11 +1217,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         String result = "";
 
         Stack<Property> forward = new Stack<>();
-        if (findCalcDependency(property1, property2, new HSet<Property>(), forward))
+        if (findCalcDependency(property1, property2, new HSet<>(), forward))
             result += outCalcDependency("FORWARD CALC (" + forward.size() + ")", property1, forward) + '\n';
 
         Stack<Property> backward = new Stack<>();
-        if (findCalcDependency(property2, property1, new HSet<Property>(), backward))
+        if (findCalcDependency(property2, property1, new HSet<>(), backward))
             result += outCalcDependency("BACKWARD CALC (" + backward.size() + ")", property2, backward) + '\n';
 
         if (result.isEmpty())
@@ -1323,7 +1323,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         MOrderExclSet<ActionOrProperty> mCancelResult = SetFact.mOrderExclSet();
         HSet<Link> firstRemoved = new HSet<>();
-        HSet<ActionOrProperty> proceeded = buildList(cancelActions, new HSet<ActionOrProperty>(), firstRemoved, mCancelResult, events, DebugInfoWriter.pushPrefix(debugInfoWriter, "CANCELABLE"));
+        HSet<ActionOrProperty> proceeded = buildList(cancelActions, new HSet<>(), firstRemoved, mCancelResult, events, DebugInfoWriter.pushPrefix(debugInfoWriter, "CANCELABLE"));
         ImOrderSet<ActionOrProperty> cancelResult = mCancelResult.immutableOrder();
 
         // потом бежим по всем остальным, за исключением proceeded
@@ -1537,7 +1537,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             fillSingleApplyDependFrom(old.property, event, sessionEnv, mMapDepends, canBeOutOfDepends);
             
             if(includeCorrelations)
-                for(Correlation<?> corProp : old.property.getCorrelations(ClassType.typePolicy.materializeChangePolicy))
+                for(Correlation<?> corProp : old.property.getCorrelations(ClassType.materializeChangePolicy))
                     fillSingleApplyDependFrom(corProp.getProperty(), event, sessionEnv, mMapDepends, true);
         }
 
@@ -1830,8 +1830,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     long userMissed = 0;
                     long userHit = 0;
 
-                    HashMap<CacheType, Long> userHitMap = hitStats.get(id) != null ? hitStats.get(id) : new HashMap<CacheType, Long>();
-                    HashMap<CacheType, Long> userMissedMap = missedStats.get(id) != null ? missedStats.get(id) : new HashMap<CacheType, Long>();
+                    HashMap<CacheType, Long> userHitMap = hitStats.get(id) != null ? hitStats.get(id) : new HashMap<>();
+                    HashMap<CacheType, Long> userMissedMap = missedStats.get(id) != null ? missedStats.get(id) : new HashMap<>();
                     for (CacheType cacheType : CacheType.values()) {
                         Long hit = nullToZero(userHitMap.get(cacheType));
                         Long missed = nullToZero(userMissedMap.get(cacheType));

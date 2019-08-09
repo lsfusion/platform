@@ -233,7 +233,7 @@ public abstract class ImportAction extends SystemAction {
         Join<PropertyObjectEntity> importJoin = importTable.join(mapKeys);
         try {
             for (PropertyObjectEntity<T> property : props)
-                context.getEnv().change(property.property, new PropertyChange<T>(property.mapping.join(mapKeys), importJoin.getExpr(property), importJoin.getWhere()));
+                context.getEnv().change(property.property, new PropertyChange<>(property.mapping.join(mapKeys), importJoin.getExpr(property), importJoin.getWhere()));
         } finally {
             importTable.drop(session.sql, session.getOwner());
         }

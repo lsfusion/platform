@@ -107,18 +107,18 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
         for(int i=0,size=whereJoins.size();i<size;i++) {
             GroupJoinsWhere joinsWhere = whereJoins.get(i);
             if(joinsWhere.keyEqual.isEmpty())
-                mResult.add(new Node<K>(mapExprs, joinsWhere.keyEqual, joinsWhere.joins));
+                mResult.add(new Node<>(mapExprs, joinsWhere.keyEqual, joinsWhere.joins));
             else {
                 ExprTranslator translator = joinsWhere.keyEqual.getTranslator();
                 ImMap<K, Expr> transMapExprs = translator.translate(mapExprs);
                 ImMap<K, BaseExpr> transMapBaseExprs = BaseExpr.onlyBaseExprs(transMapExprs);
                 if(transMapBaseExprs != null)
-                    mResult.add(new Node<K>(transMapBaseExprs, joinsWhere.keyEqual, joinsWhere.joins));
+                    mResult.add(new Node<>(transMapBaseExprs, joinsWhere.keyEqual, joinsWhere.joins));
                 else
                     joinsWhere.getFullWhere().getGroupExprWhereJoins(transMapExprs, statType, forcePackReduce).addAll(mResult);
             }
         }
-        return new GroupExprWhereJoins<K>(mResult.immutable());
+        return new GroupExprWhereJoins<>(mResult.immutable());
 
 //        return new GroupExprWhereJoins<>(whereJoins.mapMergeSetValues(new GetValue<Node<K>, GroupJoinsWhere>() {
 //            public Node<K> getMapValue(GroupJoinsWhere value) {

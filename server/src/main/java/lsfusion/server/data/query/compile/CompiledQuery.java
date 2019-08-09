@@ -507,7 +507,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     else {
                         stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet());
                         stackTranslate.push(MapFact.<String, String>mRevMap());
-                        stackUsedOuterPendingJoins.push(new Result<Boolean>());
+                        stackUsedOuterPendingJoins.push(new Result<>());
                         String exprJoin = keySource + "=" + expr.getSource(InnerSelect.this);
                         ImSet<KeyExpr> usedPendingKeys = stackUsedPendingKeys.pop().immutable();
                         ImRevMap<String, String> translate = stackTranslate.pop().immutableRev(); // их надо перетранслировать
@@ -578,7 +578,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             Result<ImOrderSet<BaseJoin>> joinOrder = new Result<>();
             whereJoins.fillCompileInfo(mBaseCost, mRows, usedNotNulls, joinOrder, mOptAdjustLimit, keys, keyStat, limit, orders, debugInfoWriter);
 
-            stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<Boolean>());
+            stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<>());
             
             // заполняем inner joins, чтобы заполнить все ключи (плюс сделать это в правильном порядке)
             // порядок получается не идеально правильный, так в архитектуре компиляции функциональная, а не реляционная логика (то есть учитывается разделение ключи значения), соответствено значение всегда "раньше" ключа, но всякие join_collapse_limit такой подход позволяет существенно снизить по идее
@@ -863,7 +863,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 // непонятно надо ли использовать или нет, но пока методики проталкивания его нет query.ordersNotNull
                 
                 final int limit = 1;
-                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(orders), new CompileOptions<Expr>(source.syntax, LimitOptions.get(limit), subQueryContext, debugInfoWriter != null));
+                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(orders), new CompileOptions<>(source.syntax, LimitOptions.get(limit), subQueryContext, debugInfoWriter != null));
                 rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost));
                 optAdjustLimit.set(optAdjustLimit.result || compiled.sql.optAdjustLimit);
                 final String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку 
@@ -908,7 +908,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             private SQLQuery getLastTopQuery(Where topWhere, ImRevMap<Expr, KeyExpr> mapKeys, final Result<ImMap<String, SQLQuery>> rSubQueries, StaticValueNullableExpr.Level level, Cost lastBaseCosts, ImRevMap<Value, Expr> virtParams, ImRevMap<String, SubQueryExprSelect> propertySelect, Where groupWhere, Cost costMax, DebugInfoWriter debugInfoWriter) {
                 final Query<Expr, Object> query = new Query<>(mapKeys, topWhere);
-                final CompiledQuery<Expr, Object> compiled = query.compile(new CompileOptions<Object>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
+                final CompiledQuery<Expr, Object> compiled = query.compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
 
                 final MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
                 mSubEnv.addNotMaterializable(level);
@@ -1018,9 +1018,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
                 final Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
                 final Query<KeyExpr, Expr> query = new Query<>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
-                final CompiledQuery<KeyExpr, Expr> compiled = query.compile(new CompileOptions<Expr>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
+                final CompiledQuery<KeyExpr, Expr> compiled = query.compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
 
-                String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "GROUP", innerJoin));
+                String fromSelect = compiled.fillSelect(new Result<>(), fromPropertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "GROUP", innerJoin));
 
                 ImMap<String, String> keySelect = group.join(fromPropertySelect.result);
                 ImMap<String, String> propertySelect = queries.mapValues(new GetValue<String, GroupExpr.Query>() {
@@ -1093,7 +1093,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
                 Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
                 Query<String, Expr> subQuery = new Query<>(group, queryExprs.toMap(), innerWhere);
-                CompiledQuery<String, Expr> compiledSubQuery = subQuery.compile(new CompileOptions<Expr>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
+                CompiledQuery<String, Expr> compiledSubQuery = subQuery.compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
                 String fromSelect = compiledSubQuery.fillSelect(keySelect, fromPropertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "PARTITION", innerJoin));
 
                 // обработка multi-level order'ов
@@ -1190,7 +1190,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     public Expr getMapValue(SubQueryExpr.Query value) {
                         return value.expr;                        
                     }
-                }), innerWhere).compile(new CompileOptions<String>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
+                }), innerWhere).compile(new CompileOptions<>(syntax, subcontext.pushSubQuery(), debugInfoWriter != null));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "SUBQUERY", innerJoin));
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect.result,propertySelect.result),
                     whereSelect.result.toString(" AND "),"","","", "") + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
@@ -1245,7 +1245,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImMap<String, String>> propertySelect = new Result<>();
                 Result<ImCol<String>> whereSelect = new Result<>();
                 Result<ImMap<String, SQLQuery>> innerSubQueries = new Result<>();
-                CompiledQuery<String, String> compiledQuery = new Query<>(keys.addRevExcl(itKeys), props, where).compile(new CompileOptions<String>(syntax, subcontext, recursive && !useRecursionFunction, debugInfoWriter != null));
+                CompiledQuery<String, String> compiledQuery = new Query<>(keys.addRevExcl(itKeys), props, where).compile(new CompileOptions<>(syntax, subcontext, recursive && !useRecursionFunction, debugInfoWriter != null));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, innerSubQueries, params, env, pushPrefix(debugInfoWriter, recursive ? "STEP" : "INITIAL", innerJoin));
 
                 ImMap<String, SQLQuery> compiledSubQueries = innerSubQueries.result;
@@ -1407,7 +1407,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     if (adjustStat.less(tableInnerJoin.getStatKeys(StatType.ADJUST_RECURSION).getRows())) { // если статистика
                         // выполняем с тем же контекстом чтобы проверить протолкнется ли такой предикат или нет (одновременно с самим запросом не получилось бы из-за подзапросов)
                         Result<ImMap<String, SQLQuery>> smallSubQueries = new Result<>();
-                        stepSmallSelect = getStepSelect(tableInnerJoin, wrapStep, adjustStat, recName, recKeys, propTypes, columnTypes, innerParams, useRecursionFunction, pushContext, isLogical, needRow, rowPath, rowKeys, rowType, rowSource, keyOrder, propOrder, StaticExecuteEnvironmentImpl.mEnv(), smallSubQueries, new Result<Cost>(), null);
+                        stepSmallSelect = getStepSelect(tableInnerJoin, wrapStep, adjustStat, recName, recKeys, propTypes, columnTypes, innerParams, useRecursionFunction, pushContext, isLogical, needRow, rowPath, rowKeys, rowType, rowSource, keyOrder, propOrder, StaticExecuteEnvironmentImpl.mEnv(), smallSubQueries, new Result<>(), null);
                         if(BaseUtils.hashEquals(stepSmallSelect, stepSelect) && BaseUtils.hashEquals(smallSubQueries.result, stepSubQueries.result)) { // в env'ы записываем только если протолкнулось
                             stepSmallSelect = "";
                         } else {
@@ -1709,7 +1709,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     private static <K,V> String getSelect(String from, ImMap<K, String> keySelect, ImRevMap<K, String> keyNames, Result<ImOrderSet<K>> keyOrder, ImMap<V, String> propertySelect, ImRevMap<V, String> propertyNames, Result<ImOrderSet<V>> propertyOrder, ImCol<String> whereSelect, SQLSyntax syntax, ImOrderMap<V, CompileOrder> orders, LimitOptions limit, boolean noInline) {
         return syntax.getSelect(from, SQLSession.stringExpr(SQLSession.mapNames(keySelect, keyNames, keyOrder),
                 SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)) + (noInline && syntax.inlineTrouble()?",random()":""),
-                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<Boolean>()),
+                whereSelect.toString(" AND "), Query.stringOrder(propertyOrder.result, keySelect.size(), orders, propertySelect, syntax, new Result<>()),
                 "", "", limit.getString());
     }
 
@@ -1906,7 +1906,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         for(CompileAndQuery and : andProps) {
             // закинем в And.Properties OrderBy, все равно какие порядки ключей и выражений
             ImMap<String, Expr> andProperties = and.properties.immutable();
-            String andSelect = "(" + getInnerSelect(mapKeys, and.innerSelect, andProperties, params, orderAnds, limit, syntax, keyNames, andProperties.keys().toRevMap(), new Result<ImOrderSet<K>>(), new Result<ImOrderSet<String>>(), null, subcontext, innerSelects.size()==1, mEnv, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, pushPrefix(debugInfoWriter, "FULL JOIN", and.innerSelect)) + ") " + and.alias;
+            String andSelect = "(" + getInnerSelect(mapKeys, and.innerSelect, andProperties, params, orderAnds, limit, syntax, keyNames, andProperties.keys().toRevMap(), new Result<>(), new Result<>(), null, subcontext, innerSelects.size()==1, mEnv, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, pushPrefix(debugInfoWriter, "FULL JOIN", and.innerSelect)) + ") " + and.alias;
 
             final ImRevMap<K, String> andKeySources = keyNames.mapRevValues(new AddAlias(and.alias));
 
@@ -1968,7 +1968,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return value.getParseInterface(env, typeEnv);
             }
         };
-    };
+    }
+
     public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env) {
         return getQueryParams(env, 0);
     }

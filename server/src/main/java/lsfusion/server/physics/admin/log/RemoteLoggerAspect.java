@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.server.base.controller.context.Context;
-import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.physics.admin.Settings;

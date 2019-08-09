@@ -15,9 +15,9 @@ public class Lookup {
 
     Lookup(){}
 
-    private Map<String, WeakReference<Object>> properties = Collections.synchronizedMap(new HashMap<String, WeakReference<Object>>());
+    private Map<String, WeakReference<Object>> properties = Collections.synchronizedMap(new HashMap<>());
 
-    private final Map<String, WeakIdentityHashSet<LookupResultChangeListener>> listeners = Collections.synchronizedMap(new HashMap<String, WeakIdentityHashSet<LookupResultChangeListener>>());
+    private final Map<String, WeakIdentityHashSet<LookupResultChangeListener>> listeners = Collections.synchronizedMap(new HashMap<>());
 
     public void setProperty(String name, Object object) {
         expungeStaleEntries();

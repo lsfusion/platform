@@ -1867,7 +1867,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
         try(DataSession dataSession = createRecalculateSession(session)) {
-            recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<Property>(), dependents);
+            recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<>(), dependents);
             apply(dataSession, stack);
         }
     }
@@ -2119,7 +2119,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                                     LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
 
                             if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
-                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
+                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<>());
                             }
                             storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
                         } catch (CanonicalNameUtils.ParseException e) {
@@ -2173,7 +2173,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void addSIDChange(TreeMap<DBVersion, List<SIDChange>> sidChanges, String version, String oldSID, String newSID) {
         DBVersion dbVersion = new DBVersion(version);
         if (!sidChanges.containsKey(dbVersion)) {
-            sidChanges.put(dbVersion, new ArrayList<SIDChange>());
+            sidChanges.put(dbVersion, new ArrayList<>());
         }
         sidChanges.get(dbVersion).add(new SIDChange(oldSID, newSID));
     }
@@ -2526,7 +2526,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public <P extends PropertyInterface> Map<NamedTable, Map<List<Field>, Boolean>> getIndicesMap() {
         Map<NamedTable, Map<List<Field>, Boolean>> res = new HashMap<>();
         for (ImplementTable table : LM.tableFactory.getImplementTablesMap().valueIt()) {
-            res.put(table, new HashMap<List<Field>, Boolean>());
+            res.put(table, new HashMap<>());
         }
 
         for (Map.Entry<ImList<PropertyObjectInterfaceImplement<String>>, Boolean> index : indexes.entrySet()) {

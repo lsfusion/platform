@@ -213,7 +213,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             // надо бы batch update сделать, то есть зная уже сколько запискй
             SessionRows sessionRows = new SessionRows(keys, properties);
             for (int i=0,size=readRows.size();i<size;i++)
-                sessionRows = (SessionRows) sessionRows.modifyRecord(session, readRows.getKey(i).addExcl(keyValues.result), readRows.getValue(i).addExcl(propValues.result), Modify.ADD, owner, opOwner, new Result<Boolean>());
+                sessionRows = (SessionRows) sessionRows.modifyRecord(session, readRows.getKey(i).addExcl(keyValues.result), readRows.getValue(i).addExcl(propValues.result), Modify.ADD, owner, opOwner, new Result<>());
             return sessionRows;
         }
     }
@@ -247,8 +247,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, final QueryEnvironment env, final TableOwner owner, final Result<Boolean> changed, boolean updateClasses) throws SQLException, SQLHandledException {
         if(!Settings.get().isDisableReadSingleValues()) {
-            SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new Result<ImMap<KeyField, DataObject>>(),
-                    new Result<ImMap<PropertyField, ObjectValue>>(), new ResultSingleValues<SessionData>() {
+            SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<>(), new Result<>(),
+                    new Result<>(), new ResultSingleValues<SessionData>() {
                 public SessionData empty() {
                     return SessionData.this;
                 }

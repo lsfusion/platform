@@ -19,7 +19,7 @@ public class UpWheres<J extends WhereJoin> extends WrapMap<J, UpWhere> {
     }
 
     public UpWheres<J> filterUp(ImSet<J> joins) {
-        return new UpWheres<J>(filterIncl(joins));
+        return new UpWheres<>(filterIncl(joins));
     }
 
     private static UpWheres EMPTY = new UpWheres(MapFact.EMPTY());

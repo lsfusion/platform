@@ -122,7 +122,7 @@ public class BusinessLogicsResolvingUtils {
     private static <L extends LAP<?, ?>> List<FoundItem<L>> findProperties(BusinessLogics BL, String namespace, String name,
                                                                            List<ResolveClassSet> classes,
                                                                            ModulePropertyOrActionFinder<L> finder) {
-        NamespaceLAPFinder<L> nsFinder = new NamespaceLAPFinder<L>(finder, BL.getNamespaceModules(namespace));
+        NamespaceLAPFinder<L> nsFinder = new NamespaceLAPFinder<>(finder, BL.getNamespaceModules(namespace));
         return nsFinder.findInNamespace(namespace, name, classes);
     }
 }

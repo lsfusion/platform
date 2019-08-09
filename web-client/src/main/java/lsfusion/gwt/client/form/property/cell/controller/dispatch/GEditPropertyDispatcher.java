@@ -4,7 +4,6 @@ import com.allen_sauer.gwt.log.client.Log;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.action.GUpdateEditValueAction;
 import lsfusion.gwt.client.base.exception.ErrorHandlingCallback;
-import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;

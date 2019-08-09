@@ -122,7 +122,7 @@ public abstract class DataProperty extends AbstractDataProperty {
         if(!wrongWhere.isFalse()) { // оптимизация
             if(checkTransaction != null)
                 checkTransaction.run();
-            deleted = change.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, change.getWhere(mapKeys).and(wrongWhere)), baseClass, Modify.DELETE, env, false); // только что их собственно обновили
+            deleted = change.modifyRows(sql, new Query<>(mapKeys, change.getWhere(mapKeys).and(wrongWhere)), baseClass, Modify.DELETE, env, false); // только что их собственно обновили
         }
         
         if(updatedClasses)
@@ -226,7 +226,7 @@ public abstract class DataProperty extends AbstractDataProperty {
         if(events) {
             if (event != null)
                 depends.addAll(event.getDepends());
-            depends.addAll(getDroppedDepends());;
+            depends.addAll(getDroppedDepends());
         }
     }
 

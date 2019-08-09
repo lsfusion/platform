@@ -226,7 +226,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initMainLogic() throws RecognitionException {
         currentForm = addProperty(null, new LP<>(new CurrentFormProperty(form)));
-        makePropertyPublic(currentForm, "currentForm", new ArrayList<ResolveClassSet>());
+        makePropertyPublic(currentForm, "currentForm", new ArrayList<>());
 
         super.initMainLogic();
 

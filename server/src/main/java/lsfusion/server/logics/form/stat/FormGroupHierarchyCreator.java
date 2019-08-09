@@ -90,7 +90,7 @@ public class FormGroupHierarchyCreator {
     private static Map<GroupObjectEntity, Set<GroupObjectEntity>> createNewGraph(ImOrderSet<GroupObjectEntity> groups) {
         Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = new HashMap<>();
         for (GroupObjectEntity group : groups) {
-            graph.put(group, new HashSet<GroupObjectEntity>());
+            graph.put(group, new HashSet<>());
         }
         return graph;
     }

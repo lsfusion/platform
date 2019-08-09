@@ -30,11 +30,11 @@ public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
 
     // ImValueMap
     public HOrderMap(HOrderMap<K, ?> orderMap) {
-        super(new HMap<K, V>(orderMap.wrapMap));
+        super(new HMap<>(orderMap.wrapMap));
     }
 
     public HOrderMap(HOrderSet<K> hOrderSet) {
-        super(new HMap<K, V>(hOrderSet.wrapSet));
+        super(new HMap<>(hOrderSet.wrapSet));
     }
 
     public HOrderMap(HOrderMap<K, V> orderMap, boolean clone) {
@@ -63,7 +63,7 @@ public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
                 keys[i] = getKey(i);
                 values[i] = getValue(i);
             }
-            return new ArOrderMap<>(new ArMap<K, V>(wrapMap.size, keys, values));
+            return new ArOrderMap<>(new ArMap<>(wrapMap.size, keys, values));
         }
         if(wrapMap.size >= SetFact.useIndexedArrayMin) {
             Object[] keys = new Object[wrapMap.size];
@@ -74,7 +74,7 @@ public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
             }
             int[] order = new int[wrapMap.size];
             ArSet.sortArray(wrapMap.size, keys, values, order);
-            return new ArOrderIndexedMap<>(new ArIndexedMap<K, V>(wrapMap.size, keys, values), order);
+            return new ArOrderIndexedMap<>(new ArIndexedMap<>(wrapMap.size, keys, values), order);
         }
 
         if(wrapMap.indexes.length > wrapMap.size * SetFact.factorNotResize) {
@@ -87,6 +87,6 @@ public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new HOrderSet<>(new HSet<K>(wrapMap.size, wrapMap.table, wrapMap.indexes));
+        return new HOrderSet<>(new HSet<>(wrapMap.size, wrapMap.table, wrapMap.indexes));
     }
 }

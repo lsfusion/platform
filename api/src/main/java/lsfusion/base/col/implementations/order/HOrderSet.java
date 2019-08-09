@@ -14,7 +14,7 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
 
     // mutable конструктор
     public HOrderSet() {
-        super(new HSet<K>());
+        super(new HSet<>());
     }
 
     public HOrderSet(HSet<K> wrapSet) {
@@ -22,7 +22,7 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
     }
 
     public HOrderSet(int size) {
-        super(new HSet<K>(size));
+        super(new HSet<>(size));
     }
 
     public HOrderSet(HOrderSet<K> orderSet) {
@@ -47,7 +47,7 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
             Object[] array = new Object[wrapSet.size];
             for(int i=0;i<wrapSet.size;i++)
                 array[i] = get(i);
-            return new ArOrderSet<>(new ArSet<K>(wrapSet.size, array));
+            return new ArOrderSet<>(new ArSet<>(wrapSet.size, array));
         }
         if(wrapSet.size >= SetFact.useIndexedArrayMin) {
             Object[] array = new Object[wrapSet.size];
@@ -55,7 +55,7 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
                 array[i] = get(i);
             int[] order = new int[wrapSet.size];
             ArSet.sortArray(wrapSet.size, array, order);
-            return new ArOrderIndexedSet<>(new ArIndexedSet<K>(wrapSet.size, array), order);
+            return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size, array), order);
         }
 
         if(wrapSet.indexes.length > wrapSet.size * SetFact.factorNotResize) {

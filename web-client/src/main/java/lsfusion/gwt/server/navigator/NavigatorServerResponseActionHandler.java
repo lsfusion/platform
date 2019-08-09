@@ -1,6 +1,5 @@
 package lsfusion.gwt.server.navigator;
 
-import lsfusion.client.navigator.controller.remote.proxy.RemoteNavigatorProxy;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.gwt.server.MainDispatchServlet;

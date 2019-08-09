@@ -265,7 +265,7 @@ public abstract class LogicsModule {
 
     private <T extends LAP<?, ?>> void putLAPToMap(Map<String, List<T>> moduleMap, T lap, String name) {
         if (!moduleMap.containsKey(name)) {
-            moduleMap.put(name, new ArrayList<T>());
+            moduleMap.put(name, new ArrayList<>());
         }
         moduleMap.get(name).add(lap);
     }
@@ -582,22 +582,22 @@ public abstract class LogicsModule {
         ExportAction<O> exportAction;
         switch(staticType) {
             case XML:
-                exportAction = new ExportXMLAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset, root, tag);
+                exportAction = new ExportXMLAction<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset, root, tag);
                 break;
             case JSON:
-                exportAction = new ExportJSONAction<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset);
+                exportAction = new ExportJSONAction<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, selectTop, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape);
+                exportAction = new ExportCSVAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape);
                 break;
             case XLS:
-                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, false, noHeader);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, false, noHeader);
                 break;
             case XLSX:
-                exportAction = new ExportXLSAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, true, noHeader);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset, true, noHeader);
                 break;
             case DBF:
-                exportAction = new ExportDBFAction<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
+                exportAction = new ExportDBFAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
                 break;
             case TABLE:
                 exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, staticType, exportFiles, selectTop, charset);
@@ -1416,7 +1416,7 @@ public abstract class LogicsModule {
         for (int i = 0; i < mapImplements.size() / 2; i++)
             mListCases.add(new CalcCase<>(mapImplements.get(2 * i), mapImplements.get(2 * i + 1)));
         if (mapImplements.size() % 2 != 0)
-            mListCases.add(new CalcCase<>(new PropertyMapImplement<PropertyInterface, UnionProperty.Interface>((Property<PropertyInterface>) baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
+            mListCases.add(new CalcCase<>(new PropertyMapImplement<>((Property<PropertyInterface>) baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
 
         return addProperty(group, new LP<>(new CaseUnionProperty(caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
     }

@@ -34,7 +34,7 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
 
     // ImValueMap
     public ArOrderMap(ArOrderMap<K, ?> orderMap) {
-        super(new ArMap<K, V>(orderMap.wrapMap));
+        super(new ArMap<>(orderMap.wrapMap));
     }
 
     public ArOrderMap(ArOrderMap<K, V> orderMap, boolean clone) {
@@ -47,7 +47,7 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
     }
 
     public ArOrderMap(ArOrderSet<K> orderSet) {
-        super(new ArMap<K, V>(orderSet.wrapSet));
+        super(new ArMap<>(orderSet.wrapSet));
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
@@ -75,16 +75,16 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
         // упорядочиваем Set
         int[] order = new int[wrapMap.size];
         ArSet.sortArray(wrapMap.size, wrapMap.keys, wrapMap.values, order);
-        return new ArOrderIndexedMap<>(new ArIndexedMap<K, V>(wrapMap.size, wrapMap.keys, wrapMap.values), order);
+        return new ArOrderIndexedMap<>(new ArIndexedMap<>(wrapMap.size, wrapMap.keys, wrapMap.values), order);
     }
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new ArOrderSet<>(new ArSet<K>(wrapMap.size, wrapMap.keys));
+        return new ArOrderSet<>(new ArSet<>(wrapMap.size, wrapMap.keys));
     }
 
     @Override
     public ImList<V> valuesList() {
-        return new ArList<>(new ArCol<V>(wrapMap.size, wrapMap.values));
+        return new ArList<>(new ArCol<>(wrapMap.size, wrapMap.values));
     }
 }

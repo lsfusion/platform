@@ -2,7 +2,6 @@ package lsfusion.interop.form.remote;
 
 import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;

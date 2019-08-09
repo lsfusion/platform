@@ -33,7 +33,7 @@ public final class UndirectedGraph<T> implements Iterable<T> {
             return false;
 
         /* Otherwise, add the node with an empty set of outgoing edges. */
-        mGraph.put(node, new HashMap<T, Integer>());
+        mGraph.put(node, new HashMap<>());
         return true;
     }
 

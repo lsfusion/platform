@@ -22,7 +22,6 @@ import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.where.pull.StatPullWheres;
-import lsfusion.server.data.query.Query;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;

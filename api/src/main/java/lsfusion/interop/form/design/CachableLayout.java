@@ -32,7 +32,7 @@ public abstract class CachableLayout<C> implements LayoutManager2, Serializable 
     public CachableLayout(Container target, boolean hasConstraints) {
         this.target = target;
         this.hasConstraints = hasConstraints;
-        this.constraintsMap = hasConstraints ? new HashMap<Component, C>() : null;
+        this.constraintsMap = hasConstraints ? new HashMap<>() : null;
     }
 
     protected void setConstraints(Component child, C constraints) {

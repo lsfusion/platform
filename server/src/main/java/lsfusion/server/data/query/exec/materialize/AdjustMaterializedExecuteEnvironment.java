@@ -518,7 +518,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
 
         public boolean fillSubQueries(MOrderExclSet<SQLQuery> mSubQueries, Step previousStep) {
-            if(previousStep != null && equals(previousStep)) // нашли
+            if(equals(previousStep)) // нашли
                 return true;
             if((previous != null && previous.fillSubQueries(mSubQueries, previousStep)) || (previous == null && previousStep == null)) {
                 mSubQueries.exclAddAll(subQueries);

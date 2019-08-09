@@ -109,7 +109,7 @@ public class XMLNode implements Node<XMLNode> {
 
     @Override
     public Object getValue(String key, boolean attr, Type type) throws ParseException {
-        String stringValue;;
+        String stringValue;
         if(attr)
             stringValue = getXMLAttributeValue(key);
         else {
@@ -125,12 +125,12 @@ public class XMLNode implements Node<XMLNode> {
         if(isIndex) {
             List children = key.equals("value") ? element.getChildren() : getXMLChildren(key);
             for (int i = 0; i < children.size(); i++)
-                mResult.add(new Pair<Object, XMLNode>(i, new XMLNode((Element)children.get(i))));
+                mResult.add(new Pair<>(i, new XMLNode((Element) children.get(i))));
         } else {
             Element child = getXMLChild(key, false);
             if(child != null)
                 for(Object value : child.getChildren())
-                    mResult.add(new Pair<Object, XMLNode>(((Element)value).getName(), new XMLNode((Element)value)));
+                    mResult.add(new Pair<>(((Element) value).getName(), new XMLNode((Element) value)));
         }
         return mResult.immutableList();
     }

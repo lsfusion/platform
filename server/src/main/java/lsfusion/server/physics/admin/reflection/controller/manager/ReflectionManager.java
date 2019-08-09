@@ -175,7 +175,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField formCNField = null;
         ImportField actionCNField = null;
         if(actions) {
-            formCNField = new ImportField(reflectionLM.formCanonicalNameClass);;
+            formCNField = new ImportField(reflectionLM.formCanonicalNameClass);
             actionCNField = new ImportField(reflectionLM.actionCanonicalNameClass);
         }
         

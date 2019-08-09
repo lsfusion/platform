@@ -254,8 +254,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
         lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<>(getInner().getQueryKeys().toRevMap(),
                 group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
-        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<Expr>(source.syntax, subcontext, debugInfoWriter != null));
-        String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null, DebugInfoWriter.pushPrefix(debugInfoWriter, "GROUP EXPR"));
+        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<>(source.syntax, subcontext, debugInfoWriter != null));
+        String fromSelect = compiled.fillSelect(new Result<>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null, DebugInfoWriter.pushPrefix(debugInfoWriter, "GROUP EXPR"));
         
         ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues(new GetKeyValue<String, Expr, BaseExpr>() {
             public String getMapValue(Expr key, BaseExpr value) {
@@ -501,7 +501,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
                 else
                     mGrouped.exclAdd(outerExpr.first, outerExpr.second);
             } else
-                mEquals.add(new Pair<Expr,A>(reversedExpr,outerExpr.second));
+                mEquals.add(new Pair<>(reversedExpr, outerExpr.second));
         }
         grouped.set(mGrouped.immutable());
         return mEquals.immutableList();

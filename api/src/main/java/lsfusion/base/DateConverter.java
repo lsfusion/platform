@@ -138,7 +138,7 @@ public class DateConverter {
         return simpleDateFormat;
     }
 
-    private static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>();
+    private static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<>();
     static {
         DATE_FORMAT_REGEXPS.put("^\\d{8}$", "yyyyMMdd");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
@@ -174,8 +174,8 @@ public class DateConverter {
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}t\\d{1,2}:\\d{2}:\\d{2}$", "dd MMM yyyy'T'HH:mm:ss");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy HH:mm:ss");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}t\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy'T'HH:mm:ss");
-    };
-    
+    }
+
     private static final String DATE_SYMBOLS_REGEXP = "[.-/:]"; 
     
     public static Date smartParse(String dateString) {

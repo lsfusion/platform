@@ -83,7 +83,7 @@ public class BaseUtils {
     public static boolean nullEquals(Object obj1, Object obj2) {
         if (obj1 == null)
             return obj2 == null;
-        return obj2 != null && obj1.equals(obj2);
+        return obj1.equals(obj2);
     }
 
     public static int nullCompareTo(Comparable obj1, Comparable obj2) {
@@ -961,7 +961,7 @@ public class BaseUtils {
     }
 
     public static <B, K1 extends B, K2 extends B, V> LinkedHashMap<B, V> mergeLinked(LinkedHashMap<K1, ? extends V> map1, LinkedHashMap<K2, ? extends V> map2) {
-        LinkedHashMap<B, V> result = new LinkedHashMap<B, V>(map1);
+        LinkedHashMap<B, V> result = new LinkedHashMap<>(map1);
         for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
             V prevValue = result.put(entry2.getKey(), entry2.getValue());
             assert prevValue == null || prevValue.equals(entry2.getValue());
@@ -975,7 +975,7 @@ public class BaseUtils {
         if(map1.isEmpty())
             return (Map<B, V>) map2;
 
-        Map<B, V> result = new HashMap<B, V>(map1);
+        Map<B, V> result = new HashMap<>(map1);
         for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
             V prevValue = result.put(entry2.getKey(), entry2.getValue());
             assert prevValue == null || prevValue.equals(entry2.getValue());
@@ -984,7 +984,7 @@ public class BaseUtils {
     }
 
     public static <B, K1 extends B, K2 extends B, V> Map<B, V> override(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
-        Map<B, V> result = new HashMap<B, V>(map1);
+        Map<B, V> result = new HashMap<>(map1);
         result.putAll(map2);
         return result;
     }
@@ -1025,25 +1025,25 @@ public class BaseUtils {
     }
 
     public static <B, K1 extends B, K2 extends B> Collection<B> merge(Collection<K1> col1, Collection<K2> col2) {
-        Collection<B> result = new ArrayList<B>(col1);
+        Collection<B> result = new ArrayList<>(col1);
         result.addAll(col2);
         return result;
     }
 
     public static <B, K1 extends B, K2 extends B> Set<B> mergeSet(Set<K1> set1, Set<K2> set2) {
-        Set<B> result = new HashSet<B>(set1);
+        Set<B> result = new HashSet<>(set1);
         result.addAll(set2);
         return result;
     }
 
     public static <B, K1 extends B, K2 extends B> Set<B> mergeColSet(Collection<K1> set1, Collection<K2> set2) {
-        Set<B> result = new HashSet<B>(set1);
+        Set<B> result = new HashSet<>(set1);
         result.addAll(set2);
         return result;
     }
 
     public static <B, K1 extends B, K2 extends B> Set<B> mergeItem(Set<K1> set, K2 item) {
-        Set<B> result = new HashSet<B>(set);
+        Set<B> result = new HashSet<>(set);
         result.add(item);
         return result;
     }
@@ -1071,7 +1071,7 @@ public class BaseUtils {
     }
 
     public static <V, MV, EV> Map<Object, EV> mergeMaps(Map<V, EV> map, Map<MV, EV> toMerge, Map<MV, Object> mergedMap) {
-        Map<Object, EV> merged = new HashMap<Object, EV>(map);
+        Map<Object, EV> merged = new HashMap<>(map);
         Map<EV, Object> reversed = BaseUtils.reverse(merged);
         for (Map.Entry<MV, EV> transEntry : toMerge.entrySet()) {
             Object mergedProp = reversed.get(transEntry.getValue());
@@ -1087,7 +1087,7 @@ public class BaseUtils {
     // строит декартово произведение нескольких упорядоченных множеств
     public static <T> List<List<T>> cartesianProduct(List<List<T>> data) {
         LinkedList<List<T>> queue = new LinkedList<>();
-        queue.add(new ArrayList<T>());
+        queue.add(new ArrayList<>());
         final int tupleSize = data.size();
         while (!queue.isEmpty()) {
             if (queue.peekFirst().size() == tupleSize) {
@@ -2751,7 +2751,7 @@ public class BaseUtils {
     }
     
     public static List<String> split(String s, String f) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         int i = 0;
         while (true) {
             int j = s.indexOf(f, i);

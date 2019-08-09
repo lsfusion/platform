@@ -86,7 +86,7 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
             Object[] orderArray = new Object[arSet.size];
             for(int i=0;i<arSet.size;i++)
                 orderArray[i] = get(i);
-            return new ArOrderSet<>(new ArSet<K>(arSet.size, orderArray));
+            return new ArOrderSet<>(new ArSet<>(arSet.size, orderArray));
         }
 
         if(arSet.array.length > arSet.size * SetFact.factorNotResize) {

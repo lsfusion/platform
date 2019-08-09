@@ -394,7 +394,7 @@ public class PropertyFact {
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, GroupProperty.Interface<T>> createSumGProp(ImSet<T> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<T>> groupInterfaces, PropertyInterfaceImplement<T> property) {
-        SumGroupProperty<T> groupProperty = new SumGroupProperty<T>(LocalizedString.NONAME, innerInterfaces, groupInterfaces, property);
+        SumGroupProperty<T> groupProperty = new SumGroupProperty<>(LocalizedString.NONAME, innerInterfaces, groupInterfaces, property);
         return groupProperty.getImplement();
     }
 
@@ -637,7 +637,7 @@ public class PropertyFact {
         // строим partition distribute св-во
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
-        if(roundfirst && true) {
+        if(roundfirst) {
             PartitionProperty<T> orderProperty = new PartitionProperty<>(caption, PartitionType.DISTR_CUM_PROPORTION(roundlen), innerInterfaces.getSet(), ListFact.toList(proportion, distribute), partitions, orders, ordersNotNull, false);
             return new PropertyMapImplement<>(orderProperty, orderProperty.getMapInterfaces());
         }

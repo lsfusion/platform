@@ -142,7 +142,7 @@ public class ModuleList {
         Set<String> used = new HashSet<>();
         for (String vertex : graph.keySet()) {
             if (!used.contains(vertex)) {
-                String foundCycle = checkCycles(vertex, new LinkedList<String>(), used, graph);
+                String foundCycle = checkCycles(vertex, new LinkedList<>(), used, graph);
                 if (foundCycle != null) {
                     throw new RuntimeException("[error]:\t" + errorMessage + ": " + foundCycle);
                 }
@@ -212,7 +212,7 @@ public class ModuleList {
     public Map<String, List<String>> buildModuleGraph() {
         Map<String, List<String>> graph = new HashMap<>();
         for (LogicsModule module : modules) {
-            graph.put(module.getName(), new ArrayList<String>());
+            graph.put(module.getName(), new ArrayList<>());
         }
 
         for (LogicsModule module : modules) {

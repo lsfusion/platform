@@ -50,6 +50,6 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
             });
         }
         ImCol<SingleProgramTask> tasks = mTasks.immutableCol();
-        return new Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>>(tasks, tasks);
+        return new Pair<>(tasks, tasks);
     }
 }

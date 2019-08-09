@@ -44,6 +44,6 @@ public class EventThreadInfo implements ThreadInfo {
     }
     public static EventThreadInfo UNREFERENCED(ContextAwarePendingRemoteObject object) {
         return create(object, "UNREFERENCED");
-    };
+    }
 
 }

@@ -7,7 +7,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.controller.init.BLGroupSingleTask;
 import lsfusion.server.physics.admin.Settings;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,15 +19,15 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 public abstract class GroupPropertiesSingleTask<T> extends BLGroupSingleTask<T> {
     Context threadLocalContext;
 
-    private List<String> currentTasks = Collections.synchronizedList(new ArrayList<String>());
-    private List<String> messages = Collections.synchronizedList(new ArrayList<String>());
+    private List<String> currentTasks = Collections.synchronizedList(new ArrayList<>());
+    private List<String> messages = Collections.synchronizedList(new ArrayList<>());
 
     protected long maxRecalculateTime;
 
     public GroupPropertiesSingleTask() {
         threadLocalContext = ThreadLocalContext.get();
         maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        setDependencies(new HashSet<PublicTask>());
+        setDependencies(new HashSet<>());
     }
 
     @Override

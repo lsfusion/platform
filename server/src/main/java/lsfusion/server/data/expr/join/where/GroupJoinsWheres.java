@@ -437,7 +437,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 priority.remove(firstEntry);
                 priority.remove(secondEntry);
 
-                SymmPair<CEntry, CEntry> newEntry = new SymmPair<CEntry, CEntry>(entry, element);
+                SymmPair<CEntry, CEntry> newEntry = new SymmPair<>(entry, element);
                 CMerged merged = new CMerged(newEntry, firstEntry.where.or(secondEntry.where), keepStat, keyStat, type, collapseStats);
                 matrix.put(newEntry, merged);
                 priority.add(merged);
