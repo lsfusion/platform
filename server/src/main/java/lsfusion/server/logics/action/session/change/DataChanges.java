@@ -11,6 +11,7 @@ import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractValuesContext;
 import lsfusion.server.data.caches.MapValuesIterable;
 import lsfusion.server.data.caches.hash.HashValues;
+import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.DataObject;
@@ -106,10 +107,7 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
     }
 
     private DataChanges(DataChanges dataChanges, boolean pack) {
-        changes = dataChanges.changes.mapValues(new GetValue<PropertyChange<ClassPropertyInterface>, PropertyChange<ClassPropertyInterface>>() {
-            public PropertyChange<ClassPropertyInterface> getMapValue(PropertyChange<ClassPropertyInterface> value) {
-                return value.pack();
-            }});
+        changes = dataChanges.changes.mapValues(PackInterface::pack);
     }
     @Override
     public DataChanges calculatePack() {

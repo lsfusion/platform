@@ -84,15 +84,12 @@ public class BusinessLogicsBootstrap {
     }
 
     private static void registerShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                if (!stopped) {
-                    logger.info("Executing shutdown hook.");
-                    BusinessLogicsBootstrap.stop();
-                }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (!stopped) {
+                logger.info("Executing shutdown hook.");
+                stop();
             }
-        });
+        }));
     }
 
 /*    private static void initLRUCaches() {

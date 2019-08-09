@@ -157,11 +157,7 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
                     return;
     
                 final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, exprWhere);
-                ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx(new GetExValue<Expr, PropertyInterfaceImplement<I>, SQLException, SQLHandledException>() {
-                    public Expr getMapValue(PropertyInterfaceImplement<I> value) throws SQLException, SQLHandledException {
-                        return value.mapExpr(fInnerExprs, modifier);
-                    }
-                });
+                ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((GetExValue<Expr, PropertyInterfaceImplement<I>, SQLException, SQLHandledException>) value -> value.mapExpr(fInnerExprs, modifier));
     
                 addedTable = context.addObjects("addobjap", readClass, new PropertyOrderSet<>(innerKeys, exprWhere, orderExprs, ordersNotNull));
                 resultChange = SinglePropertyTableUsage.getChange(addedTable);

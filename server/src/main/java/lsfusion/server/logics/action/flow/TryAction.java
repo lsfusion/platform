@@ -58,10 +58,7 @@ public class TryAction extends KeepContextAction {
         
         ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres = 
                 ((ImList<ActionMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>() {
-            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
-                return value.mapCalcWhereProperty();
-            }});
+                        (GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>) ActionMapImplement::mapCalcWhereProperty);
         return PropertyFact.createUnion(interfaces, listWheres);
     }
 

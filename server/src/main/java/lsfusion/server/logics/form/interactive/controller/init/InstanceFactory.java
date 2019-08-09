@@ -54,21 +54,12 @@ public class InstanceFactory {
 
         if (!groupInstances.containsKey(entity)) {
 
-            ImOrderSet<ObjectInstance> objects = entity.getOrderObjects().mapOrderSetValues(new GetValue<ObjectInstance, ObjectEntity>() { // последействие есть, но "статичное"
-                public ObjectInstance getMapValue(ObjectEntity value) {
-                    return getInstance(value);
-                }
-            });
+            // последействие есть, но "статичное"
+            ImOrderSet<ObjectInstance> objects = entity.getOrderObjects().mapOrderSetValues(this::getInstance);
 
             ImMap<ObjectInstance, PropertyObjectInstance> parentInstances = null;
             if(entity.isParent !=null) {
-                parentInstances = entity.isParent.mapKeyValues(new GetValue<ObjectInstance, ObjectEntity>() {
-                    public ObjectInstance getMapValue(ObjectEntity value) {
-                        return getInstance(value);
-                    }}, new GetValue<PropertyObjectInstance, PropertyObjectEntity<?>>() {
-                    public PropertyObjectInstance<?> getMapValue(PropertyObjectEntity value) {
-                        return getInstance(value);
-                    }});
+                parentInstances = entity.isParent.mapKeyValues(entity1 -> getInstance(entity1), entity2 -> getInstance(entity2));
             }
 
             groupInstances.exclAdd(entity, new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
@@ -87,11 +78,8 @@ public class InstanceFactory {
 
         if (!treeInstances.containsKey(entity)) {
 
-            ImOrderSet<GroupObjectInstance> groups = entity.getGroups().mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() { // тут как бы с последействием, но "статичным"
-                public GroupObjectInstance getMapValue(GroupObjectEntity value) {
-                    return getInstance(value);
-                }
-            });
+            // тут как бы с последействием, но "статичным"
+            ImOrderSet<GroupObjectInstance> groups = entity.getGroups().mapOrderSetValues(this::getInstance);
             treeInstances.exclAdd(entity, new TreeGroupInstance(entity, groups));
         }
 
@@ -99,10 +87,7 @@ public class InstanceFactory {
     }
 
     private <P extends PropertyInterface> ImMap<P, ObjectInstance> getInstanceMap(ActionOrPropertyObjectEntity<P, ?> entity) {
-        return entity.mapping.mapValues(new GetValue<ObjectInstance, ObjectEntity>() {
-            public ObjectInstance getMapValue(ObjectEntity value) {
-                return value.getInstance(InstanceFactory.this);
-            }});
+        return entity.mapping.mapValues(value -> value.getInstance(InstanceFactory.this));
     }
 
     public <P extends PropertyInterface> PropertyObjectInstance<P> getInstance(PropertyObjectEntity<P> entity) {
@@ -114,17 +99,11 @@ public class InstanceFactory {
     }
 
     private <P extends PropertyInterface> ImRevMap<P, ObjectInstance> getInstanceMap(PropertyRevImplement<P, ObjectEntity> entity) {
-        return entity.mapping.mapRevValues(new GetValue<ObjectInstance, ObjectEntity>() {
-            public ObjectInstance getMapValue(ObjectEntity value) {
-                return InstanceFactory.this.getInstance(value);
-            }});
+        return entity.mapping.mapRevValues((GetValue<ObjectInstance, ObjectEntity>) InstanceFactory.this::getInstance);
     }
 
     public <T, P extends PropertyInterface> ImMap<T, PropertyRevImplement<P, ObjectInstance>> getInstance(ImMap<T, PropertyRevImplement<P, ObjectEntity>> entities) {
-        return entities.mapValues(new GetValue<PropertyRevImplement<P, ObjectInstance>, PropertyRevImplement<P, ObjectEntity>>() {
-            public PropertyRevImplement<P, ObjectInstance> getMapValue(PropertyRevImplement<P, ObjectEntity> entity) {
-                return new PropertyRevImplement<>(entity.property, getInstanceMap(entity));
-            }});
+        return entities.mapValues(entity -> new PropertyRevImplement<>(entity.property, getInstanceMap(entity)));
     }
 
         // временно
@@ -146,11 +125,7 @@ public class InstanceFactory {
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
 
         if (!propertyDrawInstances.containsKey(entity)) {
-            ImOrderSet<GroupObjectInstance> columnGroupObjects = entity.getColumnGroupObjects().mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() {
-                public GroupObjectInstance getMapValue(GroupObjectEntity value) {
-                    return getInstance(value);
-                }
-            });
+            ImOrderSet<GroupObjectInstance> columnGroupObjects = entity.getColumnGroupObjects().mapOrderSetValues(this::getInstance);
 
             propertyDrawInstances.exclAdd(entity, new PropertyDrawInstance<>(
                     entity,

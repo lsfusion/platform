@@ -20,12 +20,10 @@ public class RecalculateFollowsAction extends InternalAction {
     }
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        ServiceDBAction.runData(context, new RunServiceData() {
-            public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculation.follows}")));
-            }
+        ServiceDBAction.runData(context, (session, isolatedTransaction) -> {
+            String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
+            if(result != null)
+                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculation.follows}")));
         });
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.follows}"))), localize("{logics.recalculation.follows}")));

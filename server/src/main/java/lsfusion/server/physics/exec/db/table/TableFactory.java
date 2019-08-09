@@ -20,6 +20,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.KeyField;
+import lsfusion.server.data.table.NamedTable;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.value.DataObject;
@@ -80,11 +81,7 @@ public class TableFactory implements FullTablesInterface {
     }
 
     public ImRevMap<String, ImplementTable> getImplementTablesMap() {
-        return getImplementTables().mapRevKeys(new GetValue<String, ImplementTable>() {
-            public String getMapValue(ImplementTable value) {
-                return value.getName();
-            }
-        });
+        return getImplementTables().mapRevKeys((GetValue<String, ImplementTable>) NamedTable::getName);
     }
 
     public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
@@ -138,11 +135,7 @@ public class TableFactory implements FullTablesInterface {
             valueClass = findItem.getOr().getCommonClass(true);
             skipTable = null;
         }
-        return getFullMapTables(MapFact.<String, ValueClass>singletonOrder("key", valueClass), skipTable).mapSetValues(new GetValue<ImplementTable, MapKeysTable<String>>() {
-            public ImplementTable getMapValue(MapKeysTable<String> value) {
-                return value.table;
-            }
-        });
+        return getFullMapTables(MapFact.<String, ValueClass>singletonOrder("key", valueClass), skipTable).mapSetValues(value -> value.table);
     }
 
     // получает "автоматическую таблицу"
@@ -164,7 +157,7 @@ public class TableFactory implements FullTablesInterface {
         for (int i = 0; i < classCount; i++) {
             valueClasses.add(findItem.getValue(i));
         }
-        Collections.sort(valueClasses, ValueClass.comparator);
+        valueClasses.sort(ValueClass.comparator);
 
         ImplementTable implementTable = new ImplementTable(policy.createAutoTableDBName(valueClasses), valueClasses.toArray(new ValueClass[classCount]));
         incTables.add(implementTable);

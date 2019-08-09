@@ -123,14 +123,12 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
     }
     
     public KeyStat getKeyStat(final KeyStat keyStat) {
-        return new KeyStat() {
-            public Stat getKeyStat(ParamExpr key, boolean forJoin) {
-                BaseExpr keyExpr = keyExprs.get(key);
-                if(keyExpr!=null)
-                    return keyExpr.getTypeStat(keyStat, forJoin);
-                else
-                    return keyStat.getKeyStat(key, forJoin);
-            }
+        return (key, forJoin) -> {
+            BaseExpr keyExpr = keyExprs.get(key);
+            if(keyExpr!=null)
+                return keyExpr.getTypeStat(keyStat, forJoin);
+            else
+                return keyStat.getKeyStat(key, forJoin);
         };
     }
 

@@ -18,13 +18,11 @@ public class NullReader extends AbstractReader<Object> implements ClassReader<Ob
     public static Type typeInstance = IntegerClass.instance;
 
     public static <K> Type.Getter<K> typeGetter(final ImMap<K, ? extends Reader> map) {
-        return new Type.Getter<K>() {
-            public Type getType(K key) {
-                Reader reader = map.get(key);
-                if (reader instanceof Type)
-                    return (Type) reader;
-                return NullReader.typeInstance;
-            }
+        return key -> {
+            Reader reader = map.get(key);
+            if (reader instanceof Type)
+                return (Type) reader;
+            return NullReader.typeInstance;
         };
     }
 

@@ -61,10 +61,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
     public static ImMap<ClassPropertyInterface, ValueClass> getMapClasses(ImSet<ClassPropertyInterface> interfaces) {
-        return interfaces.mapValues(new GetValue<ValueClass, ClassPropertyInterface>() {
-            public ValueClass getMapValue(ClassPropertyInterface value) {
-                return value.interfaceClass;
-            }});
+        return interfaces.mapValues((GetValue<ValueClass, ClassPropertyInterface>) value -> value.interfaceClass);
     }
 
     // по аналогии с SessionDataProperty
@@ -111,10 +108,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
     public static ImOrderSet<ClassPropertyInterface> getInterfaces(final ValueClass[] classes) {
-        return SetFact.toOrderExclSet(classes.length, new GetIndex<ClassPropertyInterface>() {
-            public ClassPropertyInterface getMapValue(int i) {
-                return new ClassPropertyInterface(i, classes[i]);
-            }});
+        return SetFact.toOrderExclSet(classes.length, i -> new ClassPropertyInterface(i, classes[i]));
     }
 
     public static boolean fitClass(ConcreteClass concreteClass, ValueClass valueClass) {
@@ -164,10 +158,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
                 }
             }
             mDependClasses.addAll(customClass.getAllChildrenParents());
-            return mDependClasses.immutable().mapSetValues(new GetValue<Property, CustomClass>() {
-                public Property getMapValue(CustomClass value) {
-                    return value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope);
-                }});
+            return mDependClasses.immutable().mapSetValues(value -> value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
         }
         return SetFact.EMPTY();
     }
@@ -191,10 +182,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         fillChangedProps(mResult, IncrementType.DROP);
         fillChangedProps(mResult, IncrementType.SET);
 
-        return mResult.immutable().mapSetValues(new GetValue<Pair<ActionOrProperty<?>, LinkType>, Property>() {
-            public Pair<ActionOrProperty<?>, LinkType> getMapValue(Property value) {
-                return new Pair<ActionOrProperty<?>, LinkType>(value, LinkType.DEPEND);
-            }});
+        return mResult.immutable().mapSetValues(value -> new Pair<ActionOrProperty<?>, LinkType>(value, LinkType.DEPEND));
     }
 
     public void fillChangedProps(MExclSet<Property> mSet, IncrementType type) {

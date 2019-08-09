@@ -168,10 +168,7 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getClasses(ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
         Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses = new Pair<>(ClassWhere.<KeyField>FALSE(), properties.toMap(ClassWhere.<Field>FALSE()));
-        ImSet<Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>> rowClasses = rows.mapMergeSetValues(new GetKeyValue<Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>, ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>() {
-            public Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> getMapValue(ImMap<KeyField, DataObject> key, ImMap<PropertyField, ObjectValue> value) {
-                return new Pair<>(DataObject.getMapDataClasses(key), ObjectValue.getMapClasses(value));
-            }});
+        ImSet<Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>> rowClasses = rows.mapMergeSetValues((key, value) -> new Pair<>(DataObject.getMapDataClasses(key), ObjectValue.getMapClasses(value)));
         for(int i=0,size=rowClasses.size();i<size;i++) {
             Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> classes = rowClasses.get(i);
             orClasses = SessionTable.orFieldsClassWheres(classes.first, classes.second, orClasses.first, orClasses.second);
@@ -255,10 +252,7 @@ public class SessionRows extends SessionData<SessionRows> {
 
     @Override
     public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) {
-        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRows = rows.mapValues(new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
-            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
-                return updateAdded(value, property, shifts);
-            }});
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRows = rows.mapValues(value -> updateAdded(value, property, shifts));
         return new SessionRows(keys, properties, updatedRows);
     }
 
@@ -307,27 +301,21 @@ public class SessionRows extends SessionData<SessionRows> {
         if(toCheckMap.isEmpty())
             return map;
         
-        ImMap<F, Expr> classExprs = toCheckMap.mapValues(new GetValue<Expr, DataObject>() {
-            @Override
-            public Expr getMapValue(DataObject value) {
-                ConcreteObjectClass objectClass = (ConcreteObjectClass) value.objectClass;
-                return value.getInconsistentExpr().classExpr(objectClass.getValueClassSet(), IsClassType.INCONSISTENT);// тут (как и в Table.readClasses) не совсем корректно брать текущий класс, но проверять куда может измениться этот класс (то есть baseClass использовать) убьет производительность
-            }
+        ImMap<F, Expr> classExprs = toCheckMap.mapValues(value -> {
+            ConcreteObjectClass objectClass = (ConcreteObjectClass) value.objectClass;
+            return value.getInconsistentExpr().classExpr(objectClass.getValueClassSet(), IsClassType.INCONSISTENT);// тут (как и в Table.readClasses) не совсем корректно брать текущий класс, но проверять куда может измениться этот класс (то есть baseClass использовать) убьет производительность
         });
 
         // тут можно было бы делать как в Table.readClasses, -2, -1, 0 но это сложнее реализовывать и в общем то нужно только для оптимизации, так как rereadChanges - удалит изменение (то есть -2 само обработает)
         ImMap<F, Object> classValues = Expr.readValues(session, classExprs, owner);
         final Result<Boolean> updated = new Result<>(false);
-        ImMap<F, DataObject> checkedMap = classValues.mapItValues(new GetKeyValue<DataObject, F, Object>() {
-            @Override
-            public DataObject getMapValue(F key, Object value) {
-                ConcreteObjectClass newConcreteClass = baseClass.findConcreteClassID((Long) value);
-                DataObject dataObject = toCheckMap.get(key);
-                if (BaseUtils.hashEquals(newConcreteClass, dataObject.objectClass))
-                    return dataObject;
-                updated.set(true);
-                return new DataObject((Long)dataObject.object, newConcreteClass);
-            }
+        ImMap<F, DataObject> checkedMap = classValues.mapItValues((key, value) -> {
+            ConcreteObjectClass newConcreteClass = baseClass.findConcreteClassID((Long) value);
+            DataObject dataObject = toCheckMap.get(key);
+            if (BaseUtils.hashEquals(newConcreteClass, dataObject.objectClass))
+                return dataObject;
+            updated.set(true);
+            return new DataObject((Long)dataObject.object, newConcreteClass);
         });
 
         if(!updated.result) // самый частый случай
@@ -364,18 +352,12 @@ public class SessionRows extends SessionData<SessionRows> {
     }
 
     public String getQuerySource(final SQLSyntax syntax, final ImOrderSet<Field> orderedFields) {
-        return rows.toString(new GetKeyValue<String, ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>() {
-            public String getMapValue(ImMap<KeyField, DataObject> key, ImMap<PropertyField, ObjectValue> value) {
-                return "(" +
-                        orderedFields.mapList(MapFact.addExcl(key, value)).toString(new GetValue<String, ObjectValue>() {
-                            public String getMapValue(ObjectValue value) {
-                                assert value.isSafeString(syntax);
-                                return value.getString(syntax);
-                            }
-                        }, ",")        
-                        +
-                        ")";
-            }
-        }, ",");
+        return rows.toString((key, value) -> "(" +
+                orderedFields.mapList(MapFact.addExcl(key, value)).toString(value1 -> {
+                    assert value1.isSafeString(syntax);
+                    return value1.getString(syntax);
+                }, ",")        
+                +
+                ")", ",");
     }
 }

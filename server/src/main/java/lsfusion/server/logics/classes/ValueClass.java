@@ -37,11 +37,9 @@ public interface ValueClass extends AClass {
     
     String getParsedName();
     
-    Comparator<ValueClass> comparator = new Comparator<ValueClass>() {
-        public int compare(ValueClass o1, ValueClass o2) {
-            String sid1 = o1.getSID();
-            String sid2 = o2.getSID();
-            return sid1.compareTo(sid2);
-        }
+    Comparator<ValueClass> comparator = (o1, o2) -> {
+        String sid1 = o1.getSID();
+        String sid2 = o2.getSID();
+        return sid1.compareTo(sid2);
     };
 }

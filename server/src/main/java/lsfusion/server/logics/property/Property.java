@@ -123,11 +123,7 @@ import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize
 
 public abstract class Property<T extends PropertyInterface> extends ActionOrProperty<T> implements MapKeysInterface<T> {
 
-    public static Modifier defaultModifier = new Modifier() {
-        public PropertyChanges getPropertyChanges() {
-            return PropertyChanges.EMPTY;
-        }
-    };
+    public static Modifier defaultModifier = () -> PropertyChanges.EMPTY;
 
     public String getTableDebugInfo(String operation) {
         return getClass() + "," + debugInfo + "-" + operation;
@@ -558,10 +554,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         public VirtualTable(final Property<P> property, AlgType algType) {
             super(property.getSID());
             
-            ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {
-                public KeyField getMapValue(P value) {
-                    return new KeyField(value.getSID(), property.getInterfaceType(value));
-                }});
+            ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues((GetValue<KeyField, P>) value -> new KeyField(value.getSID(), property.getInterfaceType(value)));
             mapFields = revMapFields.reverse();
             keys = property.getOrderInterfaces().mapOrder(revMapFields);
             
@@ -637,19 +630,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return newExpr;
     }
 
-    public final Type.Getter<T> interfaceTypeGetter = new Type.Getter<T>() {
-        public Type getType(T key) {
-            return getInterfaceType(key);
-        }
-    };
+    public final Type.Getter<T> interfaceTypeGetter = this::getInterfaceType;
     public final Type.Getter<T> interfaceWhereTypeGetter(final ImMap<T, DataObject> mapDataValues) {
-        return new Type.Getter<T>() {
-            public Type getType(T key) {
-                Type type = getWhereInterfaceType(key);
-                if(type == null)
-                    type = mapDataValues.get(key).getType();
-                return type;
-            }
+        return key -> {
+            Type type = getWhereInterfaceType(key);
+            if(type == null)
+                type = mapDataValues.get(key).getType();
+            return type;
         };
     }
 
@@ -1096,16 +1083,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index) {
         assert isStored();
 
-        ImList<Field> indexFields = index.mapListValues(new GetValue<Field, PropertyObjectInterfaceImplement<String>>() {
-            public Field getMapValue(PropertyObjectInterfaceImplement<String> indexField) {
-                if (indexField instanceof PropertyObjectImplement) {
-                    String key = ((PropertyObjectImplement<String>) indexField).object;
-                    return mapTable.mapKeys.get(mapping.reverse().get(key));
-                } else {
-                    Property property = ((PropertyRevImplement) indexField).property;
-                    assert BaseUtils.hashEquals(mapTable.table, property.mapTable.table);
-                    return property.field;
-                }
+        ImList<Field> indexFields = index.mapListValues((GetValue<Field, PropertyObjectInterfaceImplement<String>>) indexField -> {
+            if (indexField instanceof PropertyObjectImplement) {
+                String key = ((PropertyObjectImplement<String>) indexField).object;
+                return mapTable.mapKeys.get(mapping.reverse().get(key));
+            } else {
+                Property property = ((PropertyRevImplement) indexField).property;
+                assert BaseUtils.hashEquals(mapTable.table, property.mapTable.table);
+                return property.field;
             }
         });
         mapTable.table.addIndex(indexFields.toOrderExclSet());
@@ -1129,11 +1114,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ClassWhere<Object> getClassValueWhere(final ClassType type) {
-        return classToAlg(type, new CallableWithParam<AlgType, ClassWhere<Object>>() {
-            public ClassWhere<Object> call(AlgType arg) {
-                if(AlgType.checkInferCalc) checkInferClasses(type);
-                return getClassValueWhere(arg);
-            }
+        return classToAlg(type, arg -> {
+            if(AlgType.checkInferCalc) checkInferClasses(type);
+            return getClassValueWhere(arg);
         });
     }
 
@@ -1147,11 +1130,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, final ExClassSet valueClasses) {
-        return classToAlg(type, new CallableWithParam<AlgType, ImMap<T, ValueClass>>() {
-            public ImMap<T, ValueClass> call(AlgType arg) {
-                return getInterfaceClasses(arg, valueClasses);
-            }
-        });
+        return classToAlg(type, arg -> getInterfaceClasses(arg, valueClasses));
     }
 
     public ImMap<T, ValueClass> getInterfaceClasses(AlgType type) {
@@ -1168,11 +1147,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ValueClass getValueClass(ClassType classType) {
-        return classToAlg(classType, new CallableWithParam<AlgType, ValueClass>() {
-            public ValueClass call(AlgType arg) {
-                return getValueClass(arg);
-            }
-        });
+        return classToAlg(classType, this::getValueClass);
     }
 
     @IdentityLazy
@@ -1276,19 +1251,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public abstract ClassWhere<Object> calcClassValueWhere(CalcClassType calcType);
 
-    private static final Checker<ExClassSet> checker = new Checker<ExClassSet>() {
-        public boolean checkEquals(ExClassSet expl, ExClassSet calc) {
-            ResolveClassSet resExpl = ExClassSet.fromEx(expl);
-            ResolveClassSet resCalc = ExClassSet.fromEx(calc);
-            if(resExpl == null)
-                return resCalc == null;
-            if(resCalc == null)
-                return false;
-            
-            AndClassSet explAnd = resExpl.toAnd();
-            AndClassSet calcAnd = resCalc.toAnd();
-            return explAnd.containsAll(calcAnd, false) && calcAnd.containsAll(explAnd, false);
-        }
+    private static final Checker<ExClassSet> checker = (expl, calc) -> {
+        ResolveClassSet resExpl = ExClassSet.fromEx(expl);
+        ResolveClassSet resCalc = ExClassSet.fromEx(calc);
+        if(resExpl == null)
+            return resCalc == null;
+        if(resCalc == null)
+            return false;
+        
+        AndClassSet explAnd = resExpl.toAnd();
+        AndClassSet calcAnd = resCalc.toAnd();
+        return explAnd.containsAll(calcAnd, false) && calcAnd.containsAll(explAnd, false);
     };
 
     public ClassWhere<Object> inferClassValueWhere(final InferType inferType) {
@@ -1319,10 +1292,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType, final ExClassSet valueClasses) {
-        return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, new Callable<ImMap<T, ExClassSet>>() {
-            public ImMap<T, ExClassSet> call() throws Exception {
-                return inferInterfaceClasses(valueClasses, inferType).finishEx(inferType);
-            }}, "CALC ", this, checker);
+        return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, () -> inferInterfaceClasses(valueClasses, inferType).finishEx(inferType), "CALC ", this, checker);
     }
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
@@ -1346,11 +1316,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Expr expr = getExpr(readQuery.getMapExprs(), modifier);
         readQuery.addProperty(readValue, expr);
         readQuery.and(expr.getWhere());
-        return readQuery.execute(session, env).getMap().mapValues(new GetValue<Object, ImMap<Object, Object>>() {
-            public Object getMapValue(ImMap<Object, Object> value) {
-                return value.singleValue();                
-            }
-        });
+        return readQuery.execute(session, env).getMap().mapValues(ImMap::singleValue);
     }
 
     public ImMap<ImMap<T, DataObject>, DataObject> readAllClasses(SQLSession session, Modifier modifier, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
@@ -1359,11 +1325,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Expr expr = getExpr(readQuery.getMapExprs(), modifier);
         readQuery.addProperty(readValue, expr);
         readQuery.and(expr.getWhere());
-        return readQuery.executeClasses(session, env, baseClass).getMap().mapValues(new GetValue<DataObject, ImMap<Object, ObjectValue>>() {
-            public DataObject getMapValue(ImMap<Object, ObjectValue> value) {
-                return (DataObject)value.singleValue();
-            }
-        });
+        return readQuery.executeClasses(session, env, baseClass).getMap().mapValues(value -> (DataObject)value.singleValue());
     }
 
     public ObjectValue readClasses(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -1475,10 +1437,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ImMap<T, Expr> getChangeExprs() {
-        return interfaces.mapValues(new GetValue<Expr, T>() {
-            public Expr getMapValue(T value) {
-                return value.getChangeExpr();
-            }});
+        return interfaces.mapValues((GetValue<Expr, T>) PropertyInterface::getChangeExpr);
     }
 
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
@@ -1492,10 +1451,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public <D extends PropertyInterface> void setEventChange(PropertyMapImplement<D, T> valueImplement, ImList<PropertyMapImplement<?, T>> whereImplements, ImCol<PropertyMapImplement<?, T>> onChangeImplements) {
 
-        ImCol<PropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(new GetValue<PropertyMapImplement<?, T>, PropertyMapImplement<?, T>>() {
-                    public PropertyMapImplement<?, T> getMapValue(PropertyMapImplement<?, T> value) {
-                        return value.mapChanged(IncrementType.SETCHANGED, ChangeEvent.scope);
-                    }});
+        ImCol<PropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(value -> value.mapChanged(IncrementType.SETCHANGED, ChangeEvent.scope));
 
         PropertyMapImplement<?, T> where;
         if(onChangeWhereImplements.size() > 0) {
@@ -1721,11 +1677,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public static <I, T extends PropertyInterface> ImMap<I, Inferred<T>> mapInfer(ImMap<I, PropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, final InferType inferType) {
-        return operands.mapValues(new GetKeyValue<Inferred<T>, I, PropertyInterfaceImplement<T>>() {
-                public Inferred<T> getMapValue(I key, PropertyInterfaceImplement<T> value) {
-                    return value.mapInferInterfaceClasses(operandClasses.get(key), inferType);
-                }
-            });
+        return operands.mapValues((key, value) -> value.mapInferInterfaceClasses(operandClasses.get(key), inferType));
     }
     
     private static <I, T extends PropertyInterface> Inferred<T> op(ImSet<I>[] operandNotNulls, InferType inferType, ImMap<I, Inferred<T>> inferred) {

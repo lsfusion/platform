@@ -54,12 +54,7 @@ public abstract class ImportAction extends SystemAction {
     protected String charset;
 
     public ImportAction(int paramsCount, FormEntity formEntity, String charset) {
-        super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, new GetIndex<PropertyInterface>() {
-            @Override
-            public PropertyInterface getMapValue(int i) {
-                return new PropertyInterface();
-            }
-        }));
+        super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, i -> new PropertyInterface()));
         
         this.formEntity = formEntity;
         this.charset = charset;
@@ -129,11 +124,7 @@ public abstract class ImportAction extends SystemAction {
                 ImMap<ImMap<ObjectEntity, Object>, Object> propValues = result.get(prop);
                 for(int j=0,sizeJ=propValues.size();j<sizeJ;j++) {
                     // convert to DataObject / ObjectValue
-                    ImMap<ObjectEntity, DataObject> keys = propValues.getKey(j).mapValues(new GetKeyValue<DataObject, ObjectEntity, Object>() {
-                        public DataObject getMapValue(ObjectEntity key, Object value) {
-                            return new DataObject(value, key.baseClass instanceof ConcreteCustomClass ? context.getSession().baseClass.unknown : (DataClass) key.baseClass);
-                        }
-                    });
+                    ImMap<ObjectEntity, DataObject> keys = propValues.getKey(j).mapValues((key, value) -> new DataObject(value, key.baseClass instanceof ConcreteCustomClass ? context.getSession().baseClass.unknown : (DataClass) key.baseClass));
                     ObjectValue value = ObjectValue.getValue(propValues.getValue(j), (DataClass)prop.getType());
 
                     MMap<PropertyObjectEntity, ObjectValue> mProps = mRows.get(keys);
@@ -184,20 +175,11 @@ public abstract class ImportAction extends SystemAction {
     }
 
     private void writeClassData(final ExecutionContext context, ImMap<DataObject, ObjectValue> data) throws SQLException, SQLHandledException {
-        writeData(data, new DataWriter<DataObject, ObjectValue>() {
-            @Override
-            public void writeBatch(ImMap<DataObject, ObjectValue> data, ProgressBar progress) throws SQLException, SQLHandledException {
-                writeClassBatch(data, context, progress);
-            }
-        });
+        writeData(data, (data1, progress) -> writeClassBatch(data1, context, progress));
     }
 
     private void writeData(final ExecutionContext context, final ImSet<ObjectEntity> keySet, final ImSet<PropertyObjectEntity> properties, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>> data) throws SQLException, SQLHandledException {
-        writeData(data, new DataWriter<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>>() {
-            public void writeBatch(ImMap<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>> data, ProgressBar progress) throws SQLException, SQLHandledException {
-                ImportAction.this.writeBatch(keySet, properties, data, context, progress);
-            }
-        });
+        writeData(data, (data1, progress) -> ImportAction.this.writeBatch(keySet, properties, data1, context, progress));
     }
 
     @StackProgress
@@ -216,15 +198,7 @@ public abstract class ImportAction extends SystemAction {
     @StackProgress
     private <T extends PropertyInterface> void writeBatch(ImSet<ObjectEntity> keySet, ImSet<PropertyObjectEntity> props, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<PropertyObjectEntity, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
         SessionTableUsage<ObjectEntity, PropertyObjectEntity> importTable =
-                new SessionTableUsage<>("impformdata", keySet.toOrderSet(), props.toOrderSet(), new Type.Getter<ObjectEntity>() {
-                    public Type getType(ObjectEntity key) {
-                        return key.getType();
-                    }
-                }, new Type.Getter<PropertyObjectEntity>() {
-                    public Type getType(PropertyObjectEntity key) {
-                        return key.getType();
-                    }
-                });
+                new SessionTableUsage<>("impformdata", keySet.toOrderSet(), props.toOrderSet(), ObjectEntity::getType, PropertyObjectEntity::getType);
 
         DataSession session = context.getSession();
         importTable.writeRows(session.sql, data, session.getOwner());

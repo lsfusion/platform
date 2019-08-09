@@ -64,10 +64,7 @@ public class ModifyQuery {
                 // Oracl'вская модель Update'а (ISO'ная)
                 String fromSelect = changeCompile.from;
 
-                whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues(new GetKeyValue<String, KeyField, String>() {
-                    public String getMapValue(KeyField key, String value) {
-                        return table.getName(syntax)+"."+key.getName(syntax) +"="+ changeCompile.keySelect.get(key);
-                    }}));
+                whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues((key, value) -> table.getName(syntax)+"."+key.getName(syntax) +"="+ changeCompile.keySelect.get(key)));
 
                 Result<ImOrderSet<KeyField>> keyOrder = new Result<>();
                 Result<ImOrderSet<PropertyField>> propertyOrder = new Result<>();
@@ -90,30 +87,18 @@ public class ModifyQuery {
                 whereSelect = changeCompile.whereSelect;*/
                 final String changeAlias = "ch_upd_al";
 
-                whereSelect = changeCompile.keyNames.mapColValues(new GetKeyValue<String, KeyField, String>() {
-                    public String getMapValue(KeyField key, String value) {
-                        return table.getName(syntax)+"."+key.getName(syntax) + "=" + changeAlias + "." + changeCompile.keyNames.get(key);
-                    }});
+                whereSelect = changeCompile.keyNames.mapColValues((key, value) -> table.getName(syntax)+"."+key.getName(syntax) + "=" + changeAlias + "." + changeCompile.keyNames.get(key));
 
-                setString = changeCompile.propertyNames.toString(new GetKeyValue<String, PropertyField, String>() {
-                    public String getMapValue(PropertyField key, String value) {
-                        return key.getName(syntax) + "=" + changeAlias + "." + value;
-                    }}, ",");
+                setString = changeCompile.propertyNames.toString((key, value) -> key.getName(syntax) + "=" + changeAlias + "." + value, ",");
 
                 update = "UPDATE " + table.getName(syntax) + " SET " + setString + " FROM " + table.getName(syntax) + " JOIN (" +
                         changeCompile.sql.command + ") " + changeAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
                 break;
             case 0:
                 // по умолчанию - нормальная
-                whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues(new GetKeyValue<String, KeyField, String>() {
-                    public String getMapValue(KeyField key, String value) {
-                        return table.getName(syntax)+"."+key.getName(syntax) +"="+ changeCompile.keySelect.get(key);
-                    }}));
+                whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues((key, value) -> table.getName(syntax)+"."+key.getName(syntax) +"="+ changeCompile.keySelect.get(key)));
 
-                setString = changeCompile.propertySelect.toString(new GetKeyValue<String, PropertyField, String>() {
-                    public String getMapValue(PropertyField key, String value) {
-                        return key.getName(syntax) + "=" + value;
-                    }}, ",");
+                setString = changeCompile.propertySelect.toString((key, value) -> key.getName(syntax) + "=" + value, ",");
                 
                 update = "UPDATE " + syntax.getUpdate(table.getName(syntax)," SET "+setString,changeCompile.from,BaseUtils.clause("WHERE", whereSelect.toString(" AND ")));
                 break;
@@ -140,10 +125,7 @@ public class ModifyQuery {
             case 1:
                 deleteAlias = "ch_dl_sq";
 
-                whereSelect = table.getTableKeys().mapSetValues(new GetValue<String, KeyField>() {
-                    public String getMapValue(KeyField value) {
-                        return table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
-                    }});
+                whereSelect = table.getTableKeys().mapSetValues(value -> table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value));
 
                 delete = "DELETE FROM " + table.getName(syntax) + " FROM " + table.getName(syntax) + " JOIN (" +
                         deleteCompile.sql.command + ") " + deleteAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
@@ -151,10 +133,7 @@ public class ModifyQuery {
             case 0:
                 deleteAlias = "ch_dl_sq";
 
-                whereSelect = table.getTableKeys().mapSetValues(new GetValue<String, KeyField>() {
-                    public String getMapValue(KeyField value) {
-                        return table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
-                    }});
+                whereSelect = table.getTableKeys().mapSetValues(value -> table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value));
 
                 delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.sql.command + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
                 break;

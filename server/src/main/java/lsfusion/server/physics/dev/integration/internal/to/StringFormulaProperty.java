@@ -40,10 +40,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
     }
 
     static ImOrderSet<Interface> getInterfaces(int paramCount) {
-        return SetFact.toOrderExclSet(paramCount, new GetIndex<Interface>() {
-            public Interface getMapValue(int i) {
-                return new Interface(i);
-            }});
+        return SetFact.toOrderExclSet(paramCount, Interface::new);
     }
 
     public Interface findInterface(String string) {
@@ -63,22 +60,13 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
 
     public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
-        ImMap<String, Expr> params = interfaces.mapKeyValues(new GetValue<String, Interface>() {
-            public String getMapValue(Interface value) {
-                return value.getString();
-            }}, new GetValue<Expr, Interface>() {
-            public Expr getMapValue(Interface value) {
-                return joinImplement.get(value);
-            }});
+        ImMap<String, Expr> params = interfaces.mapKeyValues(Interface::getString, joinImplement::get);
 
         return FormulaExpr.createCustomFormula(formula, value, params, hasNotNull);
     }
 
     @Override
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
-        return FormulaImplProperty.inferValueClass(getOrderInterfaces(), FormulaExpr.createCustomFormulaImpl(formula, value, hasNotNull, getOrderInterfaces().mapOrderSetValues(new GetValue<String, Interface>() {
-            public String getMapValue(Interface value) {
-                return value.getString();
-            }})), inferred);
+        return FormulaImplProperty.inferValueClass(getOrderInterfaces(), FormulaExpr.createCustomFormulaImpl(formula, value, hasNotNull, getOrderInterfaces().mapOrderSetValues(Interface::getString)), inferred);
     }
 }

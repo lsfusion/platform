@@ -66,9 +66,7 @@ public class MIMETypeUtils {
             }
 
             for (int i = 0; i < extensions.length; i++) {
-                if (extensionToMIMETypeMap.get(extensions[i]) == null) {
-                    extensionToMIMETypeMap.put(extensions[i], type);
-                }
+                extensionToMIMETypeMap.putIfAbsent(extensions[i], type);
             }
         }
     }

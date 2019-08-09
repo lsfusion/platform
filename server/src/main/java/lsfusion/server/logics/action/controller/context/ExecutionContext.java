@@ -113,11 +113,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             ImMap<String, ObjectValue> result = MapFact.EMPTY();
 
             if(paramsToInterfaces != null) {
-                result = paramsToInterfaces.mapValues(new GetValue<ObjectValue, P>() {
-                    public ObjectValue getMapValue(P value) {
-                        return getKeyValue(value);
-                    }
-                }).addExcl(result);
+                result = paramsToInterfaces.mapValues(ExecutionContext.this::getKeyValue).addExcl(result);
             }
 
             if(newDebugStack)
@@ -153,10 +149,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
             final ImMap<P, ? extends ObjectValue> prevKeys = keys;
             keys = session.updateCurrentClasses(keys);
-            session.addRollbackInfo(new SQLRunnable() {
-                public void run() {
-                    keys = prevKeys;
-                }});
+            session.addRollbackInfo(() -> keys = prevKeys);
 
             if(updateClasses!=null) {
                 for(UpdateCurrentClasses update : updateClasses)
@@ -256,11 +249,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ImMap<String, ObjectValue> result = MapFact.EMPTY();
 
         if(paramsToInterfaces != null) {
-            result = paramsToInterfaces.mapValues(new GetValue<ObjectValue, P>() {
-                public ObjectValue getMapValue(P value) {
-                    return getKeyValue(value);
-                }
-            }).addExcl(result);
+            result = paramsToInterfaces.mapValues(this::getKeyValue).addExcl(result);
         }
 
         if(!newDebugStack && stack != null)
@@ -608,11 +597,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     
     // чтение пользователя
     public ObjectValue requestUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
-        return requestUser(ObjectType.instance, new SQLCallable<ObjectValue>() {
-            public ObjectValue call() throws SQLException, SQLHandledException {
-                return ThreadLocalContext.requestUserObject(dialog, stack);
-            }
-        });
+        return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserObject(dialog, stack));
     }
 
     // cannot use because of backward compatibility 
@@ -641,11 +626,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
         try { // временно для обратной совместимости
-            return requestUser(dataClass, new SQLCallable<ObjectValue>() {
-                public ObjectValue call() throws SQLException, SQLHandledException {
-                    return ThreadLocalContext.requestUserData(dataClass, oldValue);
-                }
-            });
+            return requestUser(dataClass, () -> ThreadLocalContext.requestUserData(dataClass, oldValue));
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -657,11 +638,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {
-        return requestUser(ObjectType.instance, new SQLCallable<ObjectValue>() {
-            public ObjectValue call() {
-                return ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete);
-            }
-        });
+        return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete));
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {

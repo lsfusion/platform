@@ -82,33 +82,31 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
         }
 
-        Comparator<A> priorityComparator = new Comparator<A>() {
-            public int compare(A o1, A o2) {
-                if(!o1.isImplicit() && o2.isImplicit())
+        Comparator<A> priorityComparator = (o1, o2) -> {
+            if(!o1.isImplicit() && o2.isImplicit())
+                return 1;
+            if(!o2.isImplicit() && o1.isImplicit())
+                return -1;
+            
+            if(o1.isImplicit()) {
+                assert o2.isImplicit();
+                if(o1.getSameNamespace() && !o2.getSameNamespace())
                     return 1;
-                if(!o2.isImplicit() && o1.isImplicit())
+                if(!o1.getSameNamespace() && o2.getSameNamespace())
                     return -1;
-                
-                if(o1.isImplicit()) {
-                    assert o2.isImplicit();
-                    if(o1.getSameNamespace() && !o2.getSameNamespace())
-                        return 1;
-                    if(!o1.getSameNamespace() && o2.getSameNamespace())
-                        return -1;
-                }
-
-                List<ResolveClassSet> signature1 = getSignature(o1);
-                List<ResolveClassSet> signature2 = getSignature(o2);
-                if(signature1 != null && signature2 != null) {
-                    boolean match21 = match(signature2, signature1);
-                    boolean match12 = match(signature1, signature2);
-                    if (match21 && !match12)
-                        return 1;
-                    if (match12 && !match21)
-                        return -1;
-                }
-                return 0;
             }
+
+            List<ResolveClassSet> signature1 = getSignature(o1);
+            List<ResolveClassSet> signature2 = getSignature(o2);
+            if(signature1 != null && signature2 != null) {
+                boolean match21 = match(signature2, signature1);
+                boolean match12 = match(signature1, signature2);
+                if (match21 && !match12)
+                    return 1;
+                if (match12 && !match21)
+                    return -1;
+            }
+            return 0;
         };
 
         ImOrderSet<A> orderSet = list.toOrderSet(); // может повторяться implementation
@@ -124,19 +122,13 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             throw new RuntimeException("Ambiguous identical implementation " + ambiguous.result);
         
         // pre-3. собираем все abstract'ы, упорядочиваем по "возрастанию" использования, делаем это до очистки, чтобы их не потерять
-        final ImMap<F, Graph<F>> abstractGraphs = graph.getNodes().mapValues(new GetValue<Graph<F>, F>() {
-            public Graph<F> getMapValue(F value) {
-                return abstractReader.getMapValue(value.implement);
-            }
-        }).removeNulls();
-        ImOrderMap<F, Graph<F>> sortedAbstracts = abstractGraphs.sort(new Comparator<F>() {
-            public int compare(F o1, F o2) {
-                if(abstractGraphs.get(o2).contains(o1))
-                    return 1;
-                if(abstractGraphs.get(o1).contains(o2))
-                    return -1;
-                return 0;
-            }
+        final ImMap<F, Graph<F>> abstractGraphs = graph.getNodes().mapValues((GetValue<Graph<F>, F>) value -> abstractReader.getMapValue(value.implement)).removeNulls();
+        ImOrderMap<F, Graph<F>> sortedAbstracts = abstractGraphs.sort((o1, o2) -> {
+            if(abstractGraphs.get(o2).contains(o1))
+                return 1;
+            if(abstractGraphs.get(o1).contains(o2))
+                return -1;
+            return 0;
         });
 
         // 1. "очистка" графа - удаление избыточных вершин, or'я классы всех вершин которые следуют если полностью следует - убираем !!!
@@ -285,11 +277,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> PropertyMapImplement<?, P> createUnionWhere(ImSet<P> interfaces, ImList<F> aCase, boolean isExclusive) {
         
         // собираем where и делаем их or
-        return PropertyFact.createUnion(interfaces, aCase.mapListValues(new GetValue<W, F>() {
-            public W getMapValue(F value) {
-                return value.where;
-            }
-        }), isExclusive);
+        return PropertyFact.createUnion(interfaces, aCase.mapListValues((GetValue<W, F>) value -> value.where), isExclusive);
     }
     
     private static <P extends PropertyInterface> ActionCase<P> createInnerActionCase(ImSet<P> interfaces, ImList<ActionCase<P>> cases, boolean isExclusive) {
@@ -301,11 +289,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
     }
     
     public static <P extends PropertyInterface> FinalizeResult<ActionCase<P>> finalizeActionCases(final ImSet<P> interfaces, NFList<AbstractActionCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
-        return finalizeCases(cases, new GetValue<ActionCase<P>, AbstractActionCase<P>>() {
-            public ActionCase<P> getMapValue(AbstractActionCase<P> value) {
-                return new ActionCase<>(value);
-            }
-        }, new AbstractWrapper<P, PropertyInterfaceImplement<P>, ActionMapImplement<?, P>, ActionCase<P>>() {
+        return finalizeCases(cases, ActionCase::new, new AbstractWrapper<P, PropertyInterfaceImplement<P>, ActionMapImplement<?, P>, ActionCase<P>>() {
             public ActionCase<P> proceedSet(ImSet<ActionCase<P>> elements) {
                 return createInnerActionCase(interfaces, elements.toList(), true);
             }
@@ -313,19 +297,11 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             public ActionCase<P> proceedList(ImList<ActionCase<P>> elements) {
                 return createInnerActionCase(interfaces, elements, false);
             }
-        }, new GetValue<Graph<ActionCase<P>>, ActionMapImplement<?, P>>() {
-            public Graph<ActionCase<P>> getMapValue(ActionMapImplement<?, P> value) {
-                return value.mapAbstractGraph();
-            }
-        }, areClassCases, explicitExclusiveness);
+        }, ActionMapImplement::mapAbstractGraph, areClassCases, explicitExclusiveness);
     }
 
     public static <P extends PropertyInterface> FinalizeResult<CalcCase<P>> finalizeCalcCases(final ImSet<P> interfaces, NFList<AbstractCalcCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
-        return finalizeCases(cases, new GetValue<CalcCase<P>, AbstractCalcCase<P>>() {
-            public CalcCase<P> getMapValue(AbstractCalcCase<P> value) {
-                return new CalcCase<>(value);
-            }
-        }, new AbstractWrapper<P, PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>, CalcCase<P>>() {
+        return finalizeCases(cases, CalcCase::new, new AbstractWrapper<P, PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>, CalcCase<P>>() {
             public CalcCase<P> proceedSet(ImSet<CalcCase<P>> elements) {
                 return createInnerCalcCase(interfaces, elements.toList(), true);
             }
@@ -333,11 +309,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             public CalcCase<P> proceedList(ImList<CalcCase<P>> elements) {
                 return createInnerCalcCase(interfaces, elements, false);
             }
-        }, new GetValue<Graph<CalcCase<P>>, PropertyInterfaceImplement<P>>() {
-            public Graph<CalcCase<P>> getMapValue(PropertyInterfaceImplement<P> value) {
-                return value.mapAbstractGraph();
-            }
-        }, areClassCases, explicitExclusiveness);
+        }, PropertyInterfaceImplement::mapAbstractGraph, areClassCases, explicitExclusiveness);
     }
 
     // оптимизация

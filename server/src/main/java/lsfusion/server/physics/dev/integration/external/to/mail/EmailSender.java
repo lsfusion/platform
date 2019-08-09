@@ -155,53 +155,50 @@ public class EmailSender {
         final LP emailSent = context.getBL().emailLM.emailSent;
 
         ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                String messageInfo = subject.trim();
-                try {
-                    Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
-                    if (addressesTo == null || addressesTo.length == 0) {
-                        logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-                        throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-                    }
-                    messageInfo += " " + localize("{mail.sender}") + " : " + fromAddress;
-                    messageInfo += " " + localize("{mail.recipients}") + " : " + BaseUtils.toString(",", addressesTo);
-                } catch (MessagingException me) {
-                    messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
+        executor.submit(() -> {
+            String messageInfo = subject.trim();
+            try {
+                Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
+                if (addressesTo == null || addressesTo.length == 0) {
+                    logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
+                    throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
                 }
+                messageInfo += " " + localize("{mail.sender}") + " : " + fromAddress;
+                messageInfo += " " + localize("{mail.recipients}") + " : " + BaseUtils.toString(",", addressesTo);
+            } catch (MessagingException me) {
+                messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
+            }
 
-                boolean send = false;
-                int count = 0;
-                try {
-                    while (!send) {
-                        send = true;
-                        count++;
-                        try {
-                            sendMessage(message, smtpHost, smtpPort, userName, password);
-                            logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
-                        } catch (MessagingException e) {
-                            send = false;
-                            if (count < 40) {
-                                logger.info(localize("{mail.unsuccessful.attempt.to.send.mail}") + " : " + e.getMessage() + " " + messageInfo);
-                                try {
-                                    Thread.sleep(30000);
-                                } catch (InterruptedException ignored) {
-                                }
-                            } else {
-                                logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
-                                throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
-                            }
-                        }
-                    }
-                } finally {
+            boolean send = false;
+            int count = 0;
+            try {
+                while (!send) {
+                    send = true;
+                    count++;
                     try {
-                        try (DataSession session = ThreadLocalContext.createSession()){
-                            emailSent.change(send ? true : null, session);
+                        sendMessage(message, smtpHost, smtpPort, userName, password);
+                        logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
+                    } catch (MessagingException e) {
+                        send = false;
+                        if (count < 40) {
+                            logger.info(localize("{mail.unsuccessful.attempt.to.send.mail}") + " : " + e.getMessage() + " " + messageInfo);
+                            try {
+                                Thread.sleep(30000);
+                            } catch (InterruptedException ignored) {
+                            }
+                        } else {
+                            logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
+                            throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
                         }
-                    } catch (Exception e) {
-                        logger.error("emailSent writing error", e);
                     }
+                }
+            } finally {
+                try {
+                    try (DataSession session = ThreadLocalContext.createSession()){
+                        emailSent.change(send ? true : null, session);
+                    }
+                } catch (Exception e) {
+                    logger.error("emailSent writing error", e);
                 }
             }
         });

@@ -79,11 +79,7 @@ public class ImportProperty <P extends PropertyInterface> {
     }
 
     private static <P> ImMap<P, Expr> getImplementExprs(final ImMap<P, ImportKeyInterface> mapping, final ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, final ImMap<ImportField, Expr> importExprs, final Modifier modifier) throws SQLException, SQLHandledException {
-        return mapping.mapValuesEx(new GetExValue<Expr, ImportKeyInterface, SQLException, SQLHandledException>() {
-            public Expr getMapValue(ImportKeyInterface value) throws SQLException, SQLHandledException {
-                return value.getExpr(importExprs, addedKeys, modifier);
-            }
-        });
+        return mapping.mapValuesEx((GetExValue<Expr, ImportKeyInterface, SQLException, SQLHandledException>) value -> value.getExpr(importExprs, addedKeys, modifier));
     }
 
     @Override

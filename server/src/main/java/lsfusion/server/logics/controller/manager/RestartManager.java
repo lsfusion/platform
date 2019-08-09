@@ -50,11 +50,7 @@ public class RestartManager implements InitializingBean {
 
         logger.info("Server Stopping initiated");
         try {
-            restartFuture = scheduler.scheduleAtFixedRate(new Runnable() {
-                public void run() {
-                    doRestart();
-                }
-            }, restartDelayMinutes, restartDelayMinutes, TimeUnit.MINUTES);
+            restartFuture = scheduler.scheduleAtFixedRate(this::doRestart, restartDelayMinutes, restartDelayMinutes, TimeUnit.MINUTES);
         } catch (RejectedExecutionException e) {
             e.printStackTrace();
             throw e;
@@ -64,11 +60,9 @@ public class RestartManager implements InitializingBean {
     private synchronized void doRestart() {
         //в отдельном потоке, чтобы вернуть управление в точку вызова,
         //чтобы удалённый клиент продолжил выполнение
-        scheduler.schedule(new Runnable() {
-            public void run() {
-                logger.info("Server stopping...");
-                BusinessLogicsBootstrap.stop();
-            }
+        scheduler.schedule(() -> {
+            logger.info("Server stopping...");
+            BusinessLogicsBootstrap.stop();
         }, 5, TimeUnit.SECONDS);
     }
 

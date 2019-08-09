@@ -55,13 +55,12 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
     }
 
     public static ImList<String> castToVarStrings(ImList<String> exprs, final ImList<? extends ClassReader> readers, final Type resultType, final SQLSyntax syntax, final TypeEnvironment typeEnv) {
-        return exprs.mapListValues(new GetIndexValue<String, String>() {
-            public String getMapValue(int i, String value) {
-                ClassReader reader = readers.get(i);
-                if(reader instanceof Type)
-                    value = castToVarString(value, ((StringClass)resultType), (Type)reader, syntax, typeEnv);
-                return value;
-            }});
+        return exprs.mapListValues((i, value) -> {
+            ClassReader reader = readers.get(i);
+            if(reader instanceof Type)
+                value = castToVarString(value, ((StringClass)resultType), (Type)reader, syntax, typeEnv);
+            return value;
+        });
     }
 
     public static class StringSumConversionSource extends AbstractConversionSource {

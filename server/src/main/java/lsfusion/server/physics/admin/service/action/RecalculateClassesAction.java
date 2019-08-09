@@ -23,14 +23,13 @@ public class RecalculateClassesAction extends InternalAction {
 
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        ServiceDBAction.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                BusinessLogics BL = context.getBL();
-                String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculating.data.classes}")));
-                context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);
-            }});
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> {
+            BusinessLogics BL = context.getBL();
+            String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
+            if(result != null)
+                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculating.data.classes}")));
+            context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);
+        });
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"), true));
     }

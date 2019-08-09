@@ -188,12 +188,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     }
 
     private void fillSystemScheduledTasks(List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-        tasks.add(new SystemSchedulerTask(new EExecutionStackRunnable() {
-            @Override
-            public void run(ExecutionStack stack) throws Exception {
-                changeCurrentDate(stack);
-            }
-        }, -1L, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
+        tasks.add(new SystemSchedulerTask(this::changeCurrentDate, -1L, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
         tasks.addAll(BL.getSystemTasks(this));
     }
 
@@ -312,16 +307,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         private final Runnable task;
 
         public SchedulerTask(final String name, final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
-            this.task = new Runnable() {
-                public void run() {
-                    schedulerLogger.info("Started running scheduler task - " + name);
-                    try {
-                        task.run(getStack());
-                        schedulerLogger.info("Finished running scheduler task - " + name);
-                    } catch (Throwable e) {
-                        schedulerLogger.error("Error while running scheduler task - " + name + " :", e);
-                        throw new RuntimeException(e);
-                    }
+            this.task = () -> {
+                schedulerLogger.info("Started running scheduler task - " + name);
+                try {
+                    task.run(getStack());
+                    schedulerLogger.info("Finished running scheduler task - " + name);
+                } catch (Throwable e) {
+                    schedulerLogger.error("Error while running scheduler task - " + name + " :", e);
+                    throw new RuntimeException(e);
                 }
             };
             this.scheduledTaskId = scheduledTaskId;
@@ -421,15 +414,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                                 if (mirrorMonitorService == null)
                                     mirrorMonitorService = ExecutorFactory.createMonitorMirrorSyncService(Scheduler.this);
 
-                                future = mirrorMonitorService.submit(new Callable<Boolean>() {
-                                    public Boolean call() throws Exception {
-                                        threadId.set(Thread.currentThread().getId());
-                                        try {
-                                            return run(detail);
-                                        } finally {
-                                            threadId.set(null);
-                                        }
-                                    }});
+                                future = mirrorMonitorService.submit(() -> {
+                                    threadId.set(Thread.currentThread().getId());
+                                    try {
+                                        return run(detail);
+                                    } finally {
+                                        threadId.set(null);
+                                    }
+                                });
                                 boolean succeeded;
                                 if (detail.timeout == null)
                                     succeeded = future.get();

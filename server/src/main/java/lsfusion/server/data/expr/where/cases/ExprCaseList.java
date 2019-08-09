@@ -35,10 +35,7 @@ public class ExprCaseList extends CaseList<Expr, Expr, ExprCase> {
     }
 
     public ExprCaseList translateOuter(final MapTranslate translate) {
-        GetValue<ExprCase, ExprCase> transCase = new GetValue<ExprCase, ExprCase>() {
-            public ExprCase getMapValue(ExprCase exprCase) {
-                return new ExprCase(exprCase.where.translateOuter(translate), exprCase.data.translateOuter(translate));
-            }};
+        GetValue<ExprCase, ExprCase> transCase = exprCase -> new ExprCase(exprCase.where.translateOuter(translate), exprCase.data.translateOuter(translate));
 
         if(exclusive)
             return new ExprCaseList(((ImSet<ExprCase>)list).mapSetValues(transCase));

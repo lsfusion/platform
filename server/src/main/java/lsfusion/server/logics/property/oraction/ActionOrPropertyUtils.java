@@ -121,17 +121,11 @@ public class ActionOrPropertyUtils {
     }
 
     private static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> mapLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
-        return linearImpl.mapListValues(new GetValue<PropertyInterfaceImplement, LI>() {
-            public PropertyInterfaceImplement getMapValue(LI value) {
-                return value.map(interfaces);
-            }});
+        return linearImpl.mapListValues((GetValue<PropertyInterfaceImplement, LI>) value -> value.map(interfaces));
     }
 
     private static <T> ImList<PropertyObjectInterfaceImplement<T>> mapObjectLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
-        return linearImpl.mapListValues(new GetValue<PropertyObjectInterfaceImplement<T>, LI>() {
-            public PropertyObjectInterfaceImplement<T> getMapValue(LI value) {
-                return value.mapObject(interfaces);
-            }});
+        return linearImpl.mapListValues((GetValue<PropertyObjectInterfaceImplement<T>, LI>) value -> value.mapObject(interfaces));
     }
 
     public static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> readImplements(ImOrderSet<T> listInterfaces, Object... params) {
@@ -254,10 +248,7 @@ public class ActionOrPropertyUtils {
         }
 
         <T extends PropertyInterface<T>> PropertyInterfaceImplement map(final ImOrderSet<T> interfaces) {
-            ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(new GetIndex<T>() {
-                public T getMapValue(int i) {
-                    return interfaces.get(mapInt[i] - 1);
-                }});
+            ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(i -> interfaces.get(mapInt[i] - 1));
 
             if(lp.getActionOrProperty() instanceof Action)
                 return new ActionMapImplement<>((Action<P>) lp.getActionOrProperty(), mapping);
@@ -266,10 +257,7 @@ public class ActionOrPropertyUtils {
         }
 
         <T> PropertyObjectInterfaceImplement<T> mapObject(final ImOrderSet<T> interfaces) {
-            ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(new GetIndex<T>() {
-                public T getMapValue(int i) {
-                    return interfaces.get(mapInt[i] - 1);
-                }});
+            ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(i -> interfaces.get(mapInt[i] - 1));
 
             return new PropertyRevImplement<>((Property<P>) lp.getActionOrProperty(), mapping);
         }

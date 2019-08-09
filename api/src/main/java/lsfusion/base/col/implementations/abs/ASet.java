@@ -179,27 +179,15 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public <V> ImMap<K, V> toMap(final V value) {
-        return mapValues(new GetStaticValue<V>() {
-            public V getMapValue() {
-                return value;
-            }
-        });
+        return mapValues(() -> value);
     }
 
     public ImMap<K, K> toMap() {
-        return mapValues(new GetValue<K, K>() {
-            public K getMapValue(K value) {
-                return value;
-            }
-        });
+        return mapValues((GetValue<K, K>) value -> value);
     }
 
     public ImRevMap<K, K> toRevMap() {
-        return mapRevValues(new GetValue<K, K>() {
-            public K getMapValue(K value) {
-                return value;
-            }
-        });
+        return mapRevValues((GetValue<K, K>) value -> value);
     }
 
     public ImOrderSet<K> toOrderSet() {
@@ -217,7 +205,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
 
     public ImOrderSet<K> sortSet(Comparator<K> comparator) {
         List<K> sortList = new ArrayList<>(toJavaSet());
-        Collections.sort(sortList, comparator);
+        sortList.sort(comparator);
         return SetFact.fromJavaOrderSet(sortList);
     }
 

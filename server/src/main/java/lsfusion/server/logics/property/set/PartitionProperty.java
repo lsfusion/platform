@@ -70,18 +70,11 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     private static <T extends PropertyInterface> ImOrderSet<Interface<T>> getInterfaces(ImSet<T> innerInterfaces) {
-        return innerInterfaces.mapColSetValues(new GetIndexValue<Interface<T>, T>() {
-            public Interface<T> getMapValue(int i, T value) {
-                return new Interface<>(i, value);
-            }}).toOrderSet();
+        return innerInterfaces.mapColSetValues(Interface::new).toOrderSet();
     }
 
     public ImRevMap<Interface<T>,T> getMapInterfaces() {
-        return interfaces.mapRevValues(new GetValue<T, Interface<T>>() {
-            public T getMapValue(Interface<T> value) {
-                return value.propertyInterface;
-            }
-        });
+        return interfaces.mapRevValues((GetValue<T, Interface<T>>) value -> value.propertyInterface);
     }
 
     // кривовать как и в GroupProperty, перетягивание на себя функций компилятора (то есть с третьего ограничивается второй), но достаточно хороший case оптимизации
@@ -108,27 +101,15 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     protected ImMap<PropertyInterfaceImplement<T>,Expr> getPartitionImplements(final ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        return partitions.mapItValues(new GetValue<Expr, PropertyInterfaceImplement<T>>() {
-            public Expr getMapValue(PropertyInterfaceImplement<T> value) {
-                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
-            }
-        });
+        return partitions.mapItValues(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
     }
 
     protected ImOrderMap<Expr, Boolean> getOrderImplements(final ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        return orders.mapMergeItOrderKeys(new GetValue<Expr, PropertyInterfaceImplement<T>>() {
-            public Expr getMapValue(PropertyInterfaceImplement<T> value) {
-                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
-            }
-        });
+        return orders.mapMergeItOrderKeys(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
     }
 
     protected ImList<Expr> getExprImplements(final ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        return props.mapItListValues(new GetValue<Expr, PropertyInterfaceImplement<T>>() {
-            public Expr getMapValue(PropertyInterfaceImplement<T> value) {
-                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
-            }
-        });
+        return props.mapItListValues(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
     }
 
     private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {

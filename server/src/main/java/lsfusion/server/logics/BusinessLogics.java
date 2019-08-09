@@ -14,8 +14,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
@@ -50,7 +48,6 @@ import lsfusion.server.language.metacode.MetaCodeFragment;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.action.session.DataSession;
@@ -298,12 +295,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(initTask, "initTask must be specified");
         
-        LRUUtil.initLRUTuner(new LRULogger() {
-            @Override
-            public void log(String log) {
-                lruLogger.info(log);
-            }
-        });
+        LRUUtil.initLRUTuner(lruLogger::info);
     }
 
     @Override
@@ -472,10 +464,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         int moduleNumber = 0;
         for (LogicsModule module : modules.all()) {
-            module.visible = recRequiredModules.get(module).mapSetValues(new GetValue<Version, LogicsModule>() {
-                public Version getMapValue(LogicsModule value) {
-                    return value.getVersion();
-                }});
+            module.visible = recRequiredModules.get(module).mapSetValues(LogicsModule::getVersion);
             module.order = (moduleNumber++);
         }
     }
@@ -861,42 +850,38 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return linksIn;
     }
 
-    public final static Comparator<ActionOrProperty> actionOrPropComparator = new Comparator<ActionOrProperty>() {
-        public int compare(ActionOrProperty o1, ActionOrProperty o2) {
-            if(o1 == o2)
-                return 0;
+    public final static Comparator<ActionOrProperty> actionOrPropComparator = (o1, o2) -> {
+        if(o1 == o2)
+            return 0;
 
-            String c1 = o1.getCanonicalName();
-            String c2 = o2.getCanonicalName();
-            if(c1 == null && c2 == null) {
-                return compareChangeExtProps(o1, o2);
-            }
-
-            if(c1 == null)
-                return 1;
-
-            if(c2 == null)
-                return -1;
-
-            assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2) && !(o1 instanceof SessionDataProperty) && !(o2 instanceof SessionDataProperty));
-            return c1.compareTo(c2);
+        String c1 = o1.getCanonicalName();
+        String c2 = o2.getCanonicalName();
+        if(c1 == null && c2 == null) {
+            return compareChangeExtProps(o1, o2);
         }
+
+        if(c1 == null)
+            return 1;
+
+        if(c2 == null)
+            return -1;
+
+        assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2) && !(o1 instanceof SessionDataProperty) && !(o2 instanceof SessionDataProperty));
+        return c1.compareTo(c2);
     };
     public static Comparator<Property> propComparator() {
         return BaseUtils.immutableCast(actionOrPropComparator);
     }
-    public final static Comparator<Link> linkComparator = new Comparator<Link>() {
-        public int compare(Link o1, Link o2) {
-            int result = actionOrPropComparator.compare(o1.from, o2.from);
-            if(result != 0)
-                return result;
+    public final static Comparator<Link> linkComparator = (o1, o2) -> {
+        int result = actionOrPropComparator.compare(o1.from, o2.from);
+        if(result != 0)
+            return result;
 
-            result = Integer.compare(o1.type.getNum(), o2.type.getNum());
-            if(result != 0)
-                return result;
+        result = Integer.compare(o1.type.getNum(), o2.type.getNum());
+        if(result != 0)
+            return result;
 
-            return actionOrPropComparator.compare(o1.to, o2.to);
-        }
+        return actionOrPropComparator.compare(o1.to, o2.to);
     };
 
 
@@ -1273,12 +1258,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         Expr expr = reflectionLM.notRecalculateSID.getExpr(query.getMapExprs().singleValue());
         query.and(expr.getWhere());
-        ImSet<String> skipProperties = query.execute(session).keys().mapSetValues(new GetValue<String, ImMap<String,Object>>() {
-            @Override
-            public String getMapValue(ImMap<String, Object> value) {
-                return (String)value.singleValue();
-            }
-        });
+        ImSet<String> skipProperties = query.execute(session).keys().mapSetValues(value -> (String)value.singleValue());
 
 
         final ImSet<String> fSkipProperties = skipProperties;
@@ -1363,11 +1343,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         for(int i=0,size=linksMap.size();i<size;i++) {
             final ActionOrProperty property = linksMap.getKey(i);
             HSet<Link> links = linksMap.getValue(i);
-            mEdgesIn.exclAdd(property, links.mapSetValues(new GetValue<ActionOrProperty, Link>() {
-                public ActionOrProperty getMapValue(Link value) {
-                    assert BaseUtils.hashEquals(value.to, property);
-                    return value.from;
-                }
+            mEdgesIn.exclAdd(property, links.mapSetValues(value -> {
+                assert BaseUtils.hashEquals(value.to, property);
+                return value.from;
             }));
         }
         return new Graph<>(mEdgesIn.immutable());
@@ -1541,10 +1519,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     fillSingleApplyDependFrom(corProp.getProperty(), event, sessionEnv, mMapDepends, true);
         }
 
-        return mMapDepends.immutable().mapValues(new GetValue<ImOrderMap<ApplySingleEvent, SessionEnvEvent>, MOrderMap<ApplySingleEvent, SessionEnvEvent>>() {
-            public ImOrderMap<ApplySingleEvent, SessionEnvEvent> getMapValue(MOrderMap<ApplySingleEvent, SessionEnvEvent> value) {
-                return value.immutableOrder();
-            }});
+        return mMapDepends.immutable().mapValues(MOrderMap::immutableOrder);
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
@@ -1608,11 +1583,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 if (action.hasResolve()) {
                     long start = System.currentTimeMillis();
                     try {
-                        DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
-                            public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                                ((DataSession) session).resolve(action, stack);
-                            }
-                        });
+                        DBManager.runData(creator, isolatedTransaction, session -> ((DataSession) session).resolve(action, stack));
                     } catch (ApplyCanceledException e) { // suppress'им так как понятная ошибка
                         serviceLogger.info(e.getMessage());
                     }
@@ -1706,11 +1677,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
     
     public List<LogicsModule> getNamespaceModules(String namespace) {
-        if (namespaceToModules.containsKey(namespace)) {
-            return namespaceToModules.get(namespace);
-        } else {
-            return Collections.emptyList();
-        }
+        return namespaceToModules.getOrDefault(namespace, Collections.emptyList());
     }
     
     private void outputPersistent() {
@@ -1877,12 +1844,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
             checkExceededAllocatedBytes(threadMap, excessAllocatedBytesSet);
 
-            Collections.sort(infos, new Comparator<AllocatedInfo>() {
-                @Override
-                public int compare(AllocatedInfo o1, AllocatedInfo o2) {
-                    long delta = o1.bytes - o2.bytes;
-                    return delta > 0 ? 1 : (delta < 0 ? -1 : 0);
-                }
+            infos.sort((o1, o2) -> {
+                long delta = o1.bytes - o2.bytes;
+                return delta > 0 ? 1 : (delta < 0 ? -1 : 0);
             });
             for (AllocatedInfo info : infos) {
                 allocatedBytesLogger.info(info);
@@ -1984,86 +1948,58 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask getOpenFormCountUpdateTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                try(DataSession session = createSystemTaskSession()) {
-                    RemoteNavigator.updateOpenFormCount(BusinessLogics.this, session, stack);
-                }
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                RemoteNavigator.updateOpenFormCount(BusinessLogics.this, session, stack);
             }
         }, false, Settings.get().getUpdateFormCountPeriod(), false, "Open Form Count");
     }
 
     private Scheduler.SchedulerTask getUserLastActivityUpdateTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                try(DataSession session = createSystemTaskSession()) {
-                    RemoteNavigator.updateUserLastActivity(BusinessLogics.this, session, stack);
-                }
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                RemoteNavigator.updateUserLastActivity(BusinessLogics.this, session, stack);
             }
         }, false, Settings.get().getUpdateUserLastActivity(), false, "User Last Activity");
     }
 
     private Scheduler.SchedulerTask getInitPingInfoUpdateTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                try(DataSession session = createSystemTaskSession()) {
-                    RemoteNavigator.updatePingInfo(BusinessLogics.this, session, stack);
-                }
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                RemoteNavigator.updatePingInfo(BusinessLogics.this, session, stack);
             }
         }, false, Settings.get().getUpdatePingInfo(), false, "Ping Info");
     }
 
     private Scheduler.SchedulerTask getCleanTempTablesTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                SQLSession.cleanTemporaryTables();
-            }
-        }, false, Settings.get().getTempTablesTimeThreshold(), false, "Drop Temp Tables");
+        return scheduler.createSystemTask(stack -> SQLSession.cleanTemporaryTables(), false, Settings.get().getTempTablesTimeThreshold(), false, "Drop Temp Tables");
     }
 
     private Scheduler.SchedulerTask getFlushPendingTransactionCleanersTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                DataSession.flushPendingTransactionCleaners();
-            }
-        }, false, Settings.get().getFlushPendingTransactionCleanersThreshold(), false, "Flush Pending Transaction Cleaners");
+        return scheduler.createSystemTask(stack -> DataSession.flushPendingTransactionCleaners(), false, Settings.get().getFlushPendingTransactionCleanersThreshold(), false, "Flush Pending Transaction Cleaners");
     }
     
     private Scheduler.SchedulerTask getRestartConnectionsTask(Scheduler scheduler) {
         final Result<Double> prevStart = new Result<>(0.0);
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                SQLSession.restartConnections(prevStart);
-            }
-        }, false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");
+        return scheduler.createSystemTask(stack -> SQLSession.restartConnections(prevStart), false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");
     }
 
     private Scheduler.SchedulerTask getUpdateSavePointsInfoTask(Scheduler scheduler) {
         final Result<Long> prevResult = new Result<>(null);
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                getDbManager().getAdapter().updateSavePointsInfo(prevResult);
-            }
-        }, false, Settings.get().getUpdateSavePointsPeriod(), false, "Update save points thresholds");
+        return scheduler.createSystemTask(stack -> getDbManager().getAdapter().updateSavePointsInfo(prevResult), false, Settings.get().getUpdateSavePointsPeriod(), false, "Update save points thresholds");
     }
 
 
     private Scheduler.SchedulerTask getProcessDumpTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                try(DataSession session = createSystemTaskSession()) {
-                    serviceLM.makeProcessDumpAction.execute(session, stack);
-                }
+        return scheduler.createSystemTask(stack -> {
+            try(DataSession session = createSystemTaskSession()) {
+                serviceLM.makeProcessDumpAction.execute(session, stack);
             }
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            public void run(ExecutionStack stack) throws Exception {
-                updateThreadAllocatedBytesMap();
-            }
-        }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
+        return scheduler.createSystemTask(stack -> updateThreadAllocatedBytesMap(), false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
 
     private List<Scheduler.SchedulerTask> resetCustomReportsCacheTasks(Scheduler scheduler) {
@@ -2075,18 +2011,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 //                logger.info("Reset reports cache: processing path : " + path);
                     if (Files.isDirectory(path)) {
 //                    logger.info("Reset reports cache: path is directory: " + path);
-                        tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {
-                            @Override
-                            public void run(ExecutionStack stack) throws Exception {
-                                logger.info("Reset reports cache: run scheduler task for " + path);
-                                ResourceUtils.watchPathForChange(path, new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
-                                        customReports = null;
-                                    }
-                                }, Pattern.compile(".*\\.jrxml"));
-                            }
+                        tasks.add(scheduler.createSystemTask(stack -> {
+                            logger.info("Reset reports cache: run scheduler task for " + path);
+                            ResourceUtils.watchPathForChange(path, () -> {
+                                logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
+                                customReports = null;
+                            }, Pattern.compile(".*\\.jrxml"));
                         }, true, null, false, "Custom Reports"));
                     }
                 }

@@ -104,12 +104,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.classCache = new ClassCache();
 
-        this.client = new ClientCallBackController(port, toString(), new ClientCallBackController.UsageTracker() {
-            @Override
-            public void used() {
-                updateLastUsedTime();
-            }
-        });
+        this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
 
         createPausablesExecutor();
 
@@ -433,12 +428,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final String script) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
-            @Override
-            public void run(ExecutionStack stack) throws Exception {
-                evaluateRun(script);
-            }
-        });
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> evaluateRun(script));
     }
 
     private void evaluateRun(String script) throws SQLException, SQLHandledException {
@@ -452,18 +442,15 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final String actionSID, final int type) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
-            @Override
-            public void run(ExecutionStack stack) throws Exception {
-                if (type == 2) {
-                    //временно, так как иначе все контроллеры идут от верхней сессии, в частности, currentUser получается чужой
-                    try(DataSession session = createSession()) {
-                        runNotification(session, stack, actionSID);
-                    }
-                } else {
-                    try (DataSession session = createSession()) {
-                        runAction(session, actionSID, type == 1, stack);
-                    }
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+            if (type == 2) {
+                //временно, так как иначе все контроллеры идут от верхней сессии, в частности, currentUser получается чужой
+                try(DataSession session = createSession()) {
+                    runNotification(session, stack, actionSID);
+                }
+            } else {
+                try (DataSession session = createSession()) {
+                    runAction(session, actionSID, type == 1, stack);
                 }
             }
         });
@@ -619,11 +606,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                         minPrevUpdatedStamp = entry.second;
 
                 // удаляем все меньше minStamp
-                for(Iterator<Map.Entry<Property,LastChanges>> it = changes.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<Property, LastChanges> entry = it.next();
-                    if(entry.getValue().timeStamp <= minPrevUpdatedStamp) // isChanged никак не будет
-                        it.remove();
-                }
+                changes.entrySet().removeIf(entry -> entry.getValue().timeStamp <= minPrevUpdatedStamp);
             }
         }
 

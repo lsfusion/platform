@@ -125,7 +125,7 @@ public class ExternalDBAction extends ExternalAction {
                 for (String param : parsed.preparedParams)
                     paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
 
-                boolean isResultSet = (boolean) Executors.newSingleThreadExecutor().submit((Callable) () -> parsed.statement.execute()).get();
+                boolean isResultSet = (boolean) Executors.newSingleThreadExecutor().submit((Callable) parsed.statement::execute).get();
 
                 List<Object> results = new ArrayList<>();
                 while(true) {

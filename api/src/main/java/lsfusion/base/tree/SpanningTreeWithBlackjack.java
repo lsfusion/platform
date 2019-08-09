@@ -307,13 +307,10 @@ public class SpanningTreeWithBlackjack<T> {
             }
         }
         
-        Collections.sort(componentEdges, new Comparator<Edge>() {
-            @Override
-            public int compare(Edge e1, Edge e2) {
-                if (e1.weight < e2.weight) return -1;
-                if (e1.weight == e2.weight) return 0;
-                return 1;
-            }
+        componentEdges.sort((e1, e2) -> {
+            if (e1.weight < e2.weight) return -1;
+            if (e1.weight == e2.weight) return 0;
+            return 1;
         });
         
         BestTreeFinder finder = new BestTreeFinder(component, componentEdges, iterations); 

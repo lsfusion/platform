@@ -110,11 +110,7 @@ public class CaseAction extends ListCaseAction {
         super(caption, isExclusive, innerInterfaces);
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
-        this.cases = cases.mapListValues(new GetValue<ActionCase<PropertyInterface>, ActionCase<I>>() {
-            public ActionCase<PropertyInterface> getMapValue(ActionCase<I> value) {
-                return value.map(mapInterfaces);
-            }
-        });
+        this.cases = cases.mapListValues((GetValue<ActionCase<PropertyInterface>, ActionCase<I>>) value -> value.map(mapInterfaces));
 
         finalizeInit();
     }
@@ -126,18 +122,12 @@ public class CaseAction extends ListCaseAction {
     }
 
     protected PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
-        ImList<CalcCase<PropertyInterface>> listWheres = getCases().mapListValues(new GetValue<CalcCase<PropertyInterface>, ActionCase<PropertyInterface>>() {
-            public CalcCase<PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
-                return new CalcCase<>(value.where, value.implement.mapCalcWhereProperty());
-            }});
+        ImList<CalcCase<PropertyInterface>> listWheres = getCases().mapListValues((GetValue<CalcCase<PropertyInterface>, ActionCase<PropertyInterface>>) value -> new CalcCase<>(value.where, value.implement.mapCalcWhereProperty()));
         return PropertyFact.createUnion(interfaces, isExclusive, listWheres);
     }
 
     protected ImList<ActionMapImplement<?, PropertyInterface>> getListActions() {
-        return getCases().mapListValues(new GetValue<ActionMapImplement<?, PropertyInterface>, ActionCase<PropertyInterface>>() {
-            public ActionMapImplement<?, PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
-                return value.implement;
-            }});
+        return getCases().mapListValues((GetValue<ActionMapImplement<?, PropertyInterface>, ActionCase<PropertyInterface>>) value -> value.implement);
     }
 
     @Override
@@ -224,11 +214,7 @@ public class CaseAction extends ListCaseAction {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         final ActionCase<PropertyInterface> singleCase = getCases().single();
-        return ForAction.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForAction.PushFor<PropertyInterface, PropertyInterface>() {
-            public ActionMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders, ordersNotNull, singleCase.implement.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
-            }
-        });
+        return ForAction.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> createForAction(context1, where, orders1, ordersNotNull1, singleCase.implement.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false));
     }
 
     @Override

@@ -45,11 +45,7 @@ public class ExClassSet extends TwinImmutableObject {
     }
 
     public static <T> ImMap<T, ExClassSet> op(ImSet<T> keys, final ImMap<T, ExClassSet> op1, final ImMap<T, ExClassSet> op2, final boolean or) {
-        return keys.mapValues(new GetValue<ExClassSet, T>() {
-            public ExClassSet getMapValue(T value) {
-                return op(op1.get(value), op2.get(value), or);
-            }
-        });
+        return keys.mapValues((GetValue<ExClassSet, T>) value -> op(op1.get(value), op2.get(value), or));
     }
 
     @Override
@@ -149,49 +145,27 @@ public class ExClassSet extends TwinImmutableObject {
     }
 
     public static <T> ImMap<T, ExClassSet> toEx(ImMap<T, ResolveClassSet> classes) {
-        return classes.mapValues(new GetValue<ExClassSet, ResolveClassSet>() {
-            public ExClassSet getMapValue(ResolveClassSet value) {
-                return toEx(value);
-            }});
+        return classes.mapValues(value -> toEx(value));
     }
 
     public static <T> ImMap<T, ExClassSet> toExValue(ImMap<T, ValueClass> classes) {
-        return classes.mapValues(new GetValue<ExClassSet, ValueClass>() {
-            public ExClassSet getMapValue(ValueClass value) {
-                return toExValue(value);
-            }});
+        return classes.mapValues(value -> toExValue(value));
     }
 
     public static <T> ImMap<T, ResolveClassSet> fromEx(ImMap<T, ExClassSet> classes) {
-        return classes.mapValues(new GetValue<ResolveClassSet, ExClassSet>() {
-            public ResolveClassSet getMapValue(ExClassSet value) {
-                return fromEx(value);
-            }
-        });
+        return classes.mapValues(value -> fromEx(value));
     }
 
     public static <T> ImMap<T, ResolveClassSet> fromExAnd(ImMap<T, ExClassSet> classes) {
-        return classes.mapValues(new GetValue<ResolveClassSet, ExClassSet>() {
-            public ResolveClassSet getMapValue(ExClassSet value) {
-                return fromExAnd(value);
-            }
-        });
+        return classes.mapValues(set -> fromExAnd(set));
     }
 
     public static <T> ImMap<T, ValueClass> fromExValue(ImMap<T, ExClassSet> classes) {
-        return classes.mapValues(new GetValue<ValueClass, ExClassSet>() {
-            public ValueClass getMapValue(ExClassSet value) {
-                return fromExValue(value);
-            }
-        });
+        return classes.mapValues(set -> fromExValue(set));
     }
 
     public static <T> ImMap<T, ValueClass> fromResolveValue(ImMap<T, ResolveClassSet> classes) {
-        return classes.mapValues(new GetValue<ValueClass, ResolveClassSet>() {
-            public ValueClass getMapValue(ResolveClassSet value) {
-                return fromResolveValue(value);
-            }
-        });
+        return classes.mapValues(set -> fromResolveValue(set));
     }
 
 //    public static List<ExClassSet> toEx(List<ResolveClassSet> classes) {

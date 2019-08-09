@@ -810,16 +810,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return new StatKeys<>(groups, Stat.ONE);
         }
 
-        return calculateCost(groups, compileInfo != null, keyStat, type, new CostResult<StatKeys<K>>() {
-            public StatKeys<K> calculate(CostStat costStat, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
-                Stat stat = costStat.getStat();
-                Cost cost = costStat.getCost();
-                if (rows != null)
-                    rows.set(stat);
-                if (compileInfo != null)
-                    compileInfo.set(costStat.compileInfo);
-                return StatKeys.create(cost, stat, new DistinctKeys<>(costStat.getDistinct(groups, exprStats)));
-            }
+        return calculateCost(groups, compileInfo != null, keyStat, type, (costStat, joinStats, exprStats) -> {
+            Stat stat = costStat.getStat();
+            Cost cost = costStat.getCost();
+            if (rows != null)
+                rows.set(stat);
+            if (compileInfo != null)
+                compileInfo.set(costStat.compileInfo);
+            return StatKeys.create(cost, stat, new DistinctKeys<>(costStat.getDistinct(groups, exprStats)));
         }, null, null, null, false, debugInfoWriter);
     }
 
@@ -832,11 +830,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final DebugInfoWriter debugInfoWriter) {
 //        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet(); // по идее не надо, так как включает queryJoin
         final Result<PushInfo> pushInfo = new Result<>();
-        return calculateCost(SetFact.<BaseExpr>EMPTY(), false, keyStat, type, new CostResult<Where>() {
-            public Where calculate(CostStat costStat, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
-                return getCostPushWhere(costStat, queryJoin, pushInfo.result, pushJoinWhere, joinStats, debugInfoWriter);
-            }
-        }, queryJoin, pushInfo, upWheres, pushLargeDepth, debugInfoWriter);
+        return calculateCost(SetFact.<BaseExpr>EMPTY(), false, keyStat, type, (costStat, joinStats, exprStats) -> getCostPushWhere(costStat, queryJoin, pushInfo.result, pushJoinWhere, joinStats, debugInfoWriter), queryJoin, pushInfo, upWheres, pushLargeDepth, debugInfoWriter);
     }
     
     private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
@@ -983,13 +977,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             }
         if(!foundKeyJoin)
             return set;
-        
-        return set.mapSetValues(new GetValue<BaseExpr, BaseExpr>() { // повториться по идее не может (так как у KeyJoin один единственный child и либо он сам будет в translate'е либо его child)
-            @Override
-            public BaseExpr getMapValue(BaseExpr value) {
-                return replaceKeyJoinExpr(value);
-            }
-        });
+
+        // повториться по идее не может (так как у KeyJoin один единственный child и либо он сам будет в translate'е либо его child)
+        return set.mapSetValues(WhereJoins::replaceKeyJoinExpr);
     }
 
     private <Z extends Expr> Where getCostPushWhere(CostStat cost, QueryJoin<Z, ?, ?, ?> queryJoin, PushInfo pushInfo, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final MAddMap<BaseJoin, Stat> joinStats, DebugInfoWriter debugInfoWriter) {
@@ -1158,10 +1148,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             if(joinStats.size() == 1)
                 return pushCost;
 
-            compute = treeBuilding.computeWithVertex(pushJoin, costCalc, new GreedyTreeBuilding.TreeCutComparator<CostStat>() {
-                public int compare(CostStat a, CostStat b) {
-                    return a.pushCompareTo(b, pushJoin, pushLargeDepth);
-                }});
+            compute = treeBuilding.computeWithVertex(pushJoin, costCalc, (a, b) -> a.pushCompareTo(b, pushJoin, pushLargeDepth));
         } else
             compute = treeBuilding.compute(costCalc);
         result = compute.node.getCost();
@@ -1565,11 +1552,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         if(prevCost.getStat().lessEquals(newStat))
             return joinStats; // не может измениться, так как и так меньше newStat
 
-        return joinStats.mapValues(new GetValue<Stat, Stat>() {
-            public Stat getMapValue(Stat value) {
-                return value.min(newStat);
-            }
-        });
+        return joinStats.mapValues(value -> value.min(newStat));
     }
 
     private <K extends BaseExpr> void buildGraphWithStats(ImSet<K> groups, Result<ImSet<Edge>> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats, MAddMap<Edge, Stat> keyStats,
@@ -1589,10 +1572,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private void buildStats(Result<ImSet<BaseJoin>> joins, Result<ImSet<BaseExpr>> exprs, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats, MAddMap<Edge, Stat> keyStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, MAddMap<BaseJoin, Cost> indexedStats, final StatType statType, final KeyStat keyStat) {
 
-        ImMap<BaseJoin, StatKeys> joinStatKeys = joins.result.mapValues(new GetValue<StatKeys, BaseJoin>() {
-            public StatKeys getMapValue(BaseJoin value) {
-                return value.getStatKeys(keyStat, statType, false);
-            }});
+        ImMap<BaseJoin, StatKeys> joinStatKeys = joins.result.mapValues((GetValue<StatKeys, BaseJoin>) value -> value.getStatKeys(keyStat, statType, false));
 
         // читаем статистику по join'ам
         for(int i=0,size=joinStatKeys.size();i<size;i++) {

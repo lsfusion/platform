@@ -177,34 +177,18 @@ public class CaseExpr extends Expr {
     // получение Where'ов
 
     public Where calculateWhere() {
-        return cases.getWhere(new GetValue<Where, Expr> (){
-            public Where getMapValue(Expr cCase) {
-                return cCase.getWhere();
-            }
-        });
+        return cases.getWhere(cCase -> cCase.getWhere());
     }
 
     public Where isClass(final ValueClassSet set, final boolean inconsistent) {
-        return cases.getWhere(new GetValue<Where, Expr>(){
-            public Where getMapValue(Expr cCase) {
-                return cCase.isClass(set, inconsistent);
-            }
-        });
+        return cases.getWhere(cCase -> cCase.isClass(set, inconsistent));
     }
 
     public Where compareBase(final BaseExpr expr, final Compare compareBack) {
-        return cases.getWhere(new GetValue<Where, Expr>() {
-            public Where getMapValue(Expr cCase) {
-                return cCase.compareBase(expr, compareBack);
-            }
-        });
+        return cases.getWhere(cCase -> cCase.compareBase(expr, compareBack));
     }
     public Where compare(final Expr expr, final Compare compare) {
-        return cases.getWhere(new GetValue<Where, Expr>(){
-            public Where getMapValue(Expr cCase) {
-                return cCase.compare(expr,compare);
-            }
-        });
+        return cases.getWhere(cCase -> cCase.compare(expr,compare));
     }
 
     // получение выражений

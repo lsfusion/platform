@@ -148,15 +148,13 @@ public class ReportDesignGenerator {
     }
 
     private ImList<ReportDrawField> getReportDrawFields(GroupObjectEntity group, StaticDataGenerator.Hierarchy hierarchy, final MAddExclMap<PropertyReaderEntity, Type> types) {
-        return formInterface.getUserOrder(group, hierarchy.getProperties(group)).mapListValues(new GetValue<ReportDrawField, PropertyDrawEntity>() {
-            public ReportDrawField getMapValue(PropertyDrawEntity prop) {
-                ReportDrawField reportField = formView.get(prop).getReportDrawField(charWidth, getPropGroupColumnsCount(prop), types != null ? types.get(prop) : prop.getType());
+        return formInterface.getUserOrder(group, hierarchy.getProperties(group)).mapListValues((GetValue<ReportDrawField, PropertyDrawEntity>) prop -> {
+            ReportDrawField reportField = formView.get(prop).getReportDrawField(charWidth, getPropGroupColumnsCount(prop), types != null ? types.get(prop) : prop.getType());
 
-                Integer widthUser = formInterface.getUserWidth(prop);
-                if (widthUser != null)
-                    reportField.setWidthUser(widthUser);
-                return reportField;
-            }
+            Integer widthUser = formInterface.getUserWidth(prop);
+            if (widthUser != null)
+                reportField.setWidthUser(widthUser);
+            return reportField;
         });
     }
 

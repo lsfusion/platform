@@ -24,11 +24,7 @@ import java.sql.SQLException;
 public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
 
     public SinglePropertyTableUsage(String debugInfo, ImOrderSet<K> keys, Type.Getter<K> keyType, final Type propertyType) {
-        super(debugInfo, keys, SetFact.singletonOrder("value"), keyType, new Type.Getter<String>() {
-            public Type getType(String key) {
-                return propertyType;
-            }
-        });
+        super(debugInfo, keys, SetFact.singletonOrder("value"), keyType, key -> propertyType);
     }
 
     public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Long, Long>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -36,11 +32,7 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
     }
 
     public void writeRows(ImMap<ImMap<K, DataObject>, ObjectValue> writeRows, SQLSession session, OperationOwner opOwner) throws SQLException, SQLHandledException {
-        writeRows(session, writeRows.mapValues(new GetValue<ImMap<String, ObjectValue>, ObjectValue>() {
-            public ImMap<String, ObjectValue> getMapValue(ObjectValue value) {
-                return MapFact.singleton("value", value);
-            }
-        }), opOwner);
+        writeRows(session, writeRows.mapValues(value -> MapFact.singleton("value", value)), opOwner);
     }
 
     public static <P extends PropertyInterface> PropertyChange<P> getChange(SinglePropertyTableUsage<P> table) {

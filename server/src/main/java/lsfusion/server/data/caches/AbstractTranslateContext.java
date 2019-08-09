@@ -137,10 +137,7 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
         throw new RuntimeException("not supported yet");
     }
 
-    private final static GetValue<Object, PackInterface<Object>> packValue = new GetValue<Object, PackInterface<Object>>() {
-        public Object getMapValue(PackInterface<Object> value) {
-            return value.pack();
-        }};
+    private final static GetValue<Object, PackInterface<Object>> packValue = PackInterface::pack;
     private static <T extends PackInterface<T>> GetValue<T, T> packValue() {
         return BaseUtils.immutableCast(packValue);
     }

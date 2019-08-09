@@ -10,11 +10,7 @@ import lsfusion.server.data.type.Type;
 public class SingleKeyTableUsage<P> extends SessionTableUsage<String, P> {
 
     public SingleKeyTableUsage(String debugInfo, final Type keyType, ImOrderSet<P> properties, Type.Getter<P> propertyType) {
-        super(debugInfo, SetFact.singletonOrder("key"), properties, new Type.Getter<String>() {
-            public Type getType(String key) {
-                return keyType;
-            }
-        }, propertyType);
+        super(debugInfo, SetFact.singletonOrder("key"), properties, key -> keyType, propertyType);
     }
 
     public Join<P> join(Expr key) {

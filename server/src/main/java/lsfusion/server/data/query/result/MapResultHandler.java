@@ -33,15 +33,7 @@ public class MapResultHandler<MK, MV, K, V> implements ResultHandler<K, V>, Prov
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> get() {
-        return handler.getPrevResults().get().mapOrderKeyValues(new GetValue<ImMap<K, Object>, ImMap<MK, Object>>() {
-            public ImMap<K, Object> getMapValue(ImMap<MK, Object> value) {
-                return mapKeys.crossJoin(value);
-            }
-        }, new GetValue<ImMap<V, Object>, ImMap<MV, Object>>() {
-            public ImMap<V, Object> getMapValue(ImMap<MV, Object> value) {
-                return mapValues.crossJoin(value);
-            }
-        });
+        return handler.getPrevResults().get().mapOrderKeyValues(mapKeys::crossJoin, mapValues::crossJoin);
     }
 
     public Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> getPrevResults() {

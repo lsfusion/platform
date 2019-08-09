@@ -60,10 +60,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
 
     protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<PropertyInterfaceImplement<I>> used, final boolean isSelect, final ExClassSet commonValue, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, InferType inferType) {
-        ImList<ExClassSet> valueClasses = ListFact.toList(used.size(), new GetIndex<ExClassSet>() {
-            public ExClassSet getMapValue(int i) {
-                return isSelect && i == 0 ? commonValue : ExClassSet.notNull(commonValue);
-            }});
+        ImList<ExClassSet> valueClasses = ListFact.toList(used.size(), i -> isSelect && i == 0 ? commonValue : ExClassSet.notNull(commonValue));
         return inferInnerInterfaceClasses(used, orders, ordersNotNull, skipNotNull, valueClasses, inferType);
     }
 
@@ -274,10 +271,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     }
 
     private ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
-        return interfaces.mapRevValues(new GetIndexValue<NullableKeyExpr, T>() {
-            public NullableKeyExpr getMapValue(int i, T value) {
-                return new NullableKeyExpr(i);
-            }});
+        return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
     }
 
     public StatKeys<T> getInterfaceClassStats() {

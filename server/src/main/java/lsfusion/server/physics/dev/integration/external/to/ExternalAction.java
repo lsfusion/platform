@@ -42,12 +42,7 @@ public abstract class ExternalAction extends SystemAction {
     }
 
     public ExternalAction(int exParams, ImList<Type> params, ImList<LP> targetPropList) {
-        super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + exParams, new GetIndex<PropertyInterface>() {
-            @Override
-            public PropertyInterface getMapValue(int i) {
-                return new PropertyInterface();
-            }
-        }));
+        super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + exParams, i -> new PropertyInterface()));
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
         this.paramInterfaces = orderInterfaces.subOrder(exParams, orderInterfaces.size());
         paramTypes = paramInterfaces.mapList(params);
@@ -101,10 +96,7 @@ public abstract class ExternalAction extends SystemAction {
     }
 
     public static ImMap<Property, Boolean> getChangeExtProps(ImList<LP> props) {
-        return props.mapListValues(new GetValue<Property, LP>() {
-            public Property getMapValue(LP value) {
-                return ((LP<?>)value).property;
-            }}).toOrderSet().getSet().toMap(false);
+        return props.mapListValues((GetValue<Property, LP>) value -> ((LP<?>)value).property).toOrderSet().getSet().toMap(false);
     }
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {

@@ -183,21 +183,20 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             return 0;
 
         final int delay = Settings.get().getCloseFormDelay();
-        BaseUtils.runLater(delay, new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
-            public void run() {
-                ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);
-                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, threadInfo);
+        // тут надо бы на ContextAwareDaemonThreadFactory переделать
+        BaseUtils.runLater(delay, () -> {
+            ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);
+            ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, threadInfo);
+            try {
                 try {
-                    try {
-                        deactivate();  // it's important to call it in runLater, otherwise it will deactivate itself (in sleep there will be Interrupted exception)
+                    deactivate();  // it's important to call it in runLater, otherwise it will deactivate itself (in sleep there will be Interrupted exception)
 
-                        ThreadUtils.sleep(delay); // даем время на deactivate (interrupt)
-                    } finally {
-                        explicitClose();
-                    }
+                    ThreadUtils.sleep(delay); // даем время на deactivate (interrupt)
                 } finally {
-                    ThreadLocalContext.aspectAfterRmi(threadInfo);
+                    explicitClose();
                 }
+            } finally {
+                ThreadLocalContext.aspectAfterRmi(threadInfo);
             }
         });
         return delay;

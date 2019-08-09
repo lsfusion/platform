@@ -22,12 +22,11 @@ public class RecalculateAction extends InternalAction {
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        ServiceDBAction.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getDbManager().recalculateAggregations(context.stack, session, isolatedTransaction);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculation.aggregations}")));
-            }});
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> {
+            String result = context.getDbManager().recalculateAggregations(context.stack, session, isolatedTransaction);
+            if(result != null)
+                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculation.aggregations}")));
+        });
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.aggregations}"))), localize("{logics.recalculation.aggregations}")));
     }

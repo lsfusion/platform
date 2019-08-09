@@ -68,15 +68,12 @@ public class ServerLoggers {
 
     static {
         Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("log4j-flusher"))
-                .scheduleWithFixedDelay(new Runnable() {
-                    @Override
-                    public void run() {
-                        Enumeration appenders = pausablesInvocationLogger.getAllAppenders();
-                        while (appenders.hasMoreElements()) {
-                            Object nextAppender = appenders.nextElement();
-                            if (nextAppender instanceof FlushableRollingFileAppender) {
-                                ((FlushableRollingFileAppender) nextAppender).flush();
-                            }
+                .scheduleWithFixedDelay(() -> {
+                    Enumeration appenders = pausablesInvocationLogger.getAllAppenders();
+                    while (appenders.hasMoreElements()) {
+                        Object nextAppender = appenders.nextElement();
+                        if (nextAppender instanceof FlushableRollingFileAppender) {
+                            ((FlushableRollingFileAppender) nextAppender).flush();
                         }
                     }
                 }, FORCE_FLUSH_DELAY, FORCE_FLUSH_DELAY, TimeUnit.SECONDS);

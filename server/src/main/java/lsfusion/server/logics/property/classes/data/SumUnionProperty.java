@@ -36,10 +36,8 @@ public class SumUnionProperty extends IncrementUnionProperty {
     }
 
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        ImCol<Pair<Expr, Integer>> operandExprs = operands.mapColValues(new GetKeyValue<Pair<Expr, Integer>, PropertyInterfaceImplement<Interface>, Integer>() { // до непосредственно вычисления, для хинтов
-            public Pair<Expr, Integer> getMapValue(PropertyInterfaceImplement<Interface> key, Integer value) {
-                return new Pair<>(key.mapExpr(joinImplement, calcType, propChanges, changedWhere), value);
-            }});
+        // до непосредственно вычисления, для хинтов
+        ImCol<Pair<Expr, Integer>> operandExprs = operands.mapColValues((key, value) -> new Pair<>(key.mapExpr(joinImplement, calcType, propChanges, changedWhere), value));
 
         Expr result = Expr.NULL;
         for(Pair<Expr, Integer> operandExpr : operandExprs)
@@ -48,11 +46,10 @@ public class SumUnionProperty extends IncrementUnionProperty {
     }
 
     protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, final WhereBuilder changedWhere) {
-        ImMap<PropertyInterfaceImplement<Interface>, Pair<Expr, Where>> operandExprs = operands.keys().mapValues(new GetValue<Pair<Expr, Where>, PropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
-            public Pair<Expr, Where> getMapValue(PropertyInterfaceImplement<Interface> key) {
-                WhereBuilder changedOperandWhere = new WhereBuilder();
-                return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
-            }
+        // до непосредственно вычисления, для хинтов
+        ImMap<PropertyInterfaceImplement<Interface>, Pair<Expr, Where>> operandExprs = operands.keys().mapValues((GetValue<Pair<Expr, Where>, PropertyInterfaceImplement<Interface>>) key -> {
+            WhereBuilder changedOperandWhere = new WhereBuilder();
+            return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
         });
 
         Expr result = prevExpr;

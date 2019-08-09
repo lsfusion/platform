@@ -35,20 +35,12 @@ public class JoinCaseList<U> extends CaseList<Join<U>, Join<U>,JoinCase<U>> {
     }
 
     public Where getWhere() {
-        return getWhere(new GetValue<Where, Join<U>>() {
-            public Where getMapValue(Join<U> cCase) {
-                return cCase.getWhere();
-           }
-        });
+        return getWhere(Join::getWhere);
     }
 
     public JoinCaseList<U> translateRemoveValues(final MapValuesTranslate translate) {
         final MapTranslate translator = translate.mapKeys();
-        GetValue<JoinCase<U>, JoinCase<U>> transCase = new GetValue<JoinCase<U>, JoinCase<U>>() {
-            public JoinCase<U> getMapValue(JoinCase<U> exprCase) {
-                return new JoinCase<>(exprCase.where.translateOuter(translator), exprCase.data.translateRemoveValues(translate));
-            }
-        };
+        GetValue<JoinCase<U>, JoinCase<U>> transCase = exprCase -> new JoinCase<>(exprCase.where.translateOuter(translator), exprCase.data.translateRemoveValues(translate));
 
         if(exclusive)
             return new JoinCaseList<>(((ImSet<JoinCase<U>>) list).mapSetValues(transCase), properties);

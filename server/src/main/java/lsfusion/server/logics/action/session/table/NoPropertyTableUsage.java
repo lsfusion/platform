@@ -17,10 +17,8 @@ import java.sql.SQLException;
 public class NoPropertyTableUsage<K> extends SessionTableUsage<K,String> {
 
     public NoPropertyTableUsage(String debugInfo, ImOrderSet<K> keys, Type.Getter<K> keyType) {
-        super(debugInfo, keys, SetFact.<String>EMPTYORDER(), keyType, new Type.Getter<String>() {
-            public Type getType(String key) {
-                throw new RuntimeException("not supported");
-            }
+        super(debugInfo, keys, SetFact.<String>EMPTYORDER(), keyType, key -> {
+            throw new RuntimeException("not supported");
         });
     }
 

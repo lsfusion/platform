@@ -51,10 +51,8 @@ public abstract class AbstractFormDataInterface implements FormDataInterface {
             public GroupObjectEntity group(ObjectEntity key) {
                 return key.groupTo;
             }
-        }).filterFn(new GetKeyValue<Boolean, GroupObjectEntity, ImSet<ObjectEntity>>() {
-            public Boolean getMapValue(GroupObjectEntity key, ImSet<ObjectEntity> value) {
-                return key.getObjects().size() == value.size(); // only groups with all objects
-            }
+        }).filterFn((key, value) -> {
+            return key.getObjects().size() == value.size(); // only groups with all objects
         }).keys();
     }
 

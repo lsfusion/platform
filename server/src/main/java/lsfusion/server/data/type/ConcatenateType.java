@@ -251,10 +251,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
         String source = syntax.getNotSafeConcatenateSource(this, exprs, typeEnv);
 
         if(exprs.size()>0)
-            source =  syntax.getAndExpr(exprs.toString(new GetValue<String, String>() {
-                public String getMapValue(String value) {
-                    return value + " IS NOT NULL";
-                }}, " AND "), source, this, typeEnv);
+            source =  syntax.getAndExpr(exprs.toString(value -> value + " IS NOT NULL", " AND "), source, this, typeEnv);
         return source;
     }
 

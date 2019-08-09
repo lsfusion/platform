@@ -134,28 +134,24 @@ public class UnionJoin extends CalculateJoin<BaseExpr> {
 
     public static boolean depends(OuterContext context, final QueryJoin dependJoin) {
         final Result<Boolean> depends = new Result<>(false);
-        context.enumerate(new ContextEnumerator() {
-            public Boolean enumerate(OuterContext join) {
-                if(join instanceof QueryExpr && BaseUtils.hashEquals(((QueryExpr) join).getInnerJoin(), dependJoin)) {
-                    depends.set(true);
-                    return null;
-                }
-                return true;
+        context.enumerate(join -> {
+            if(join instanceof QueryExpr && BaseUtils.hashEquals(((QueryExpr) join).getInnerJoin(), dependJoin)) {
+                depends.set(true);
+                return null;
             }
+            return true;
         });
         return depends.result;
     }
 
     public static boolean depends(OuterContext context, final FunctionSet<BaseJoin> dependJoins) {
         final Result<Boolean> depends = new Result<>(false);
-        context.enumerate(new ContextEnumerator() {
-            public Boolean enumerate(OuterContext join) {
-                if(join instanceof BaseExpr && dependJoins.contains(((BaseExpr) join).getBaseJoin())) {
-                    depends.set(true);
-                    return null;
-                }
-                return true;
+        context.enumerate(join -> {
+            if(join instanceof BaseExpr && dependJoins.contains(((BaseExpr) join).getBaseJoin())) {
+                depends.set(true);
+                return null;
             }
+            return true;
         });
         return depends.result;
     }

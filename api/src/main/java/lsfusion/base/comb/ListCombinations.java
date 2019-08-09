@@ -38,10 +38,7 @@ public class ListCombinations<V> implements Iterable<ImList<V>> {
 
         public ImList<V> next() {
 
-            ImList<V> next = list.mapListValues(new GetIndexValue<V, ImList<V>>() {
-                public V getMapValue(int i, ImList<V> value) {
-                    return value.get(nums[i]);
-                }});
+            ImList<V> next = list.mapListValues((i, value) -> value.get(nums[i]));
 
             // переходим к следующей паре
             int i = 0;

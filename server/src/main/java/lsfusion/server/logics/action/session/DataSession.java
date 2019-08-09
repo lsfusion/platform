@@ -657,11 +657,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         try {
             final Query<T, String> query = set.getAddQuery(baseClass); // query, который генерит номера записей (one-based)
             // сначала закидываем в таблицу set с номерами рядов (!!! нужно гарантировать однозначность)
-            table = new SinglePropertyTableUsage<>(debugInfo, query.getMapKeys().keys().toOrderSet(), new Type.Getter<T>() {
-                public Type getType(T key) {
-                    return query.getKeyType(key);
-                }
-            }, ObjectType.instance);
+            table = new SinglePropertyTableUsage<>(debugInfo, query.getMapKeys().keys().toOrderSet(), query::getKeyType, ObjectType.instance);
             table.modifyRows(sql, query, baseClass, Modify.ADD, env, SessionTable.matLocalQuery);
         } finally {
             if(matSetTable != null)
@@ -728,11 +724,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             ChangedDataClasses allChangedClasses = changedClasses.getAll();
             delegateToDebugger(allChangedClasses.add, allChangedClasses.remove);
 
-            matChange.materializeIfNeeded("cclsevtable", sql, baseClass, env, new GetValue<Boolean, ClassChange>() {
-                public Boolean getMapValue(ClassChange value) {
-                    return needSessionEventMaterialize(updateChanges);
-                }
-            });
+            matChange.materializeIfNeeded("cclsevtable", sql, baseClass, env, value -> needSessionEventMaterialize(updateChanges));
 
             updateSessionEvents(updateChanges);
 
@@ -1149,11 +1141,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public static String checkClasses(final SQLSession sql, final QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
 
         final Result<String> incorrect = new Result<>();
-        runExclusiveness(new RunExclusiveness() {
-            public void run(Query<String, String> query) throws SQLException, SQLHandledException {
-                incorrect.set(env == null ? query.readSelect(sql) : query.readSelect(sql, env));
-            }
-        }, sql, baseClass);
+        runExclusiveness(query -> incorrect.set(env == null ? query.readSelect(sql) : query.readSelect(sql, env)), sql, baseClass);
 
         if (!incorrect.result.isEmpty())
             return "---- Checking Classes Exclusiveness -----" + '\n' + incorrect.result;
@@ -1182,11 +1170,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             public Integer group(ObjectClassField key) {
                 return tables.indexOf(key) % threshold;
             }}).values()) {
-            SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>("runexls", ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
-                public Type getType(String key) {
-                    return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
-                }
-            });
+            SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>("runexls", ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), key1 -> key1.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED));
             Expr sumExpr = IsClassExpr.create(key, group, IsClassType.SUMCONSISTENT);
             Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
             table.writeRows(sql, new Query<>(MapFact.singletonRev("key", key), MapFact.toMap("sum", sumExpr, "agg", aggExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
@@ -1231,14 +1215,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 
         final Expr dataExpr = property.getInconsistentExpr(mapKeys, baseClass);
 
-        Where correctClasses = property.getClassValueWhere(AlgType.storedType).getInconsistentWhere(new GetValue<Expr, Object>() {
-            public Expr getMapValue(Object value) {
-                if(value instanceof PropertyInterface) {
-                    return mapKeys.get((P)value);
-                }
-                assert value.equals("value");
-                return dataExpr;
-            }});
+        Where correctClasses = property.getClassValueWhere(AlgType.storedType).getInconsistentWhere(value -> {
+            if(value instanceof PropertyInterface) {
+                return mapKeys.get((P)value);
+            }
+            assert value.equals("value");
+            return dataExpr;
+        });
         return dataExpr.getWhere().and(correctClasses.not());
     }
 
@@ -1496,11 +1479,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             executeRemoveClassesEventWithChanges(event, stack, BL);
     }
 
-    private final Runnable checkTransaction = new Runnable() {
-        public void run() {
-            checkTransaction();
-        }
-    };
+    private final Runnable checkTransaction = this::checkTransaction;
 
     @StackMessage("{logics.remove.objects.classes}")
     private void executeRemoveClassesEventWithChanges(@ParamMessage ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
@@ -2048,29 +2027,26 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         dropFormCaches();
 
         final WeakReference<FormInstance> wForm = new WeakReference<>(form);
-        Cleaner cleaner = new Cleaner() {
-            @Override
-            public void run() throws SQLException {
-                FormInstance form = wForm.get();
-                if(form == null) // уже все очистилось само
-                    return;
+        Cleaner cleaner = () -> {
+            FormInstance form1 = wForm.get();
+            if(form1 == null) // уже все очистилось само
+                return;
 
-                OperationOwner owner = getOwner();
-                for (GroupObjectInstance group : form.getGroups()) {
-                    if (group.keyTable != null)
-                        group.keyTable.drop(sql, owner);
-                    if (group.expandTable != null)
-                        group.expandTable.drop(sql, owner);
-                }
+            OperationOwner owner = getOwner();
+            for (GroupObjectInstance group : form1.getGroups()) {
+                if (group.keyTable != null)
+                    group.keyTable.drop(sql, owner);
+                if (group.expandTable != null)
+                    group.expandTable.drop(sql, owner);
+            }
 
-                for(SessionModifier modifier : form.modifiers.values())
-                    modifier.clean(sql, owner);
+            for(SessionModifier modifier : form1.modifiers.values())
+                modifier.clean(sql, owner);
 
-                synchronized (updateLock) {
-                    incrementChanges.remove(form);
-                    appliedChanges.remove(form);
-                    updateChanges.remove(form);
-                }
+            synchronized (updateLock) {
+                incrementChanges.remove(form1);
+                appliedChanges.remove(form1);
+                updateChanges.remove(form1);
             }
         };
 
@@ -2449,10 +2425,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             if (property.depends(remove)) { // оптимизация
                 final PropertyChangeTableUsage<ClassPropertyInterface> table = dataChange.getValue();
 
-                matChange.materializeIfNeeded("chcl:nm2", sql, baseClass, env, new GetValue<Boolean, ClassChange>() {
-                    public Boolean getMapValue(ClassChange value) { // иначе после модификации table, change испортится
-                        return value.needMaterialize(table);
-                    }
+                matChange.materializeIfNeeded("chcl:nm2", sql, baseClass, env, value -> { // иначе после модификации table, change испортится
+                    return value.needMaterialize(table);
                 });
 
                 Where removeWhere = Where.FALSE;
@@ -2690,11 +2664,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 });
     }
 
-    private final static Comparator<Property> propCompare = new Comparator<Property>() {
-        public int compare(Property o1, Property o2) {
-            return ((Integer)o1.getID()).compareTo(o2.getID());
-        }
-    };
+    private final static Comparator<Property> propCompare = (o1, o2) -> ((Integer)o1.getID()).compareTo(o2.getID());
     public <P extends PropertyInterface> SessionTableUsage<KeyField, Property> splitReadSave(String debugInfo, ImplementTable table, ImSet<Property> properties) throws SQLException, SQLHandledException {
         IncrementChangeProps increment = new IncrementChangeProps();
         MAddSet<SessionTableUsage<KeyField, Property>> splitTables = SetFact.mAddSet();
@@ -2740,11 +2710,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // подготовили - теперь надо сохранить в курсор и записать классы
         SessionTableUsage<KeyField, Property> changeTable =
                 new SessionTableUsage<>(debugInfo, table.keys, properties.toOrderSet(), Field.<KeyField>typeGetter(),
-                        new Type.Getter<Property>() {
-                            public Type getType(Property key) {
-                                return key.getType();
-                            }
-                        });
+                        Property::getType);
         changeTable.writeRows(sql, table.getReadSaveQuery(properties, modifier), baseClass, env, SessionTable.nonead);
         return changeTable;
     }

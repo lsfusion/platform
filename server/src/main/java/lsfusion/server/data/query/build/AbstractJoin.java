@@ -27,10 +27,7 @@ public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U>
     }
 
     public static <U> ImMap<U, Expr> getExprs(final Join<U> join) {
-        return join.getProperties().mapValues(new GetValue<Expr, U>() {
-            public Expr getMapValue(U value) {
-                return join.getExpr(value);
-            }});
+        return join.getProperties().mapValues(join::getExpr);
     }
 
     @IdentityLazy

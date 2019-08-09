@@ -66,12 +66,10 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         }
 
         public Query and(final Where where, ImSet<Expr> newPartitions) { // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. AggrType.getWhere
-            return new Query(exprs.mapListValues(new GetIndexValue<Expr, Expr>() {
-                public Expr getMapValue(int i, Expr value) {
-                    if(i==0)
-                        value = value.and(where);
-                    return value;
-                }
+            return new Query(exprs.mapListValues((i, value) -> {
+                if(i==0)
+                    value = value.and(where);
+                return value;
             }), orders, ordersNotNull, newPartitions, type, noInnerFollows);
         }
 
@@ -194,11 +192,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<>();
         final Query fQuery = query;
-        ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
-            public Boolean getMapValue(KeyExpr key, BaseExpr value) {
-                return value.isValue() && fQuery.partitions.contains(key);
-            }
-        }, restGroup);
+        ImMap<KeyExpr, BaseExpr> translate = group.splitKeys((key, value) -> value.isValue() && fQuery.partitions.contains(key), restGroup);
 
         ImSet<Expr> restPartitions = query.partitions.remove(translate.keys());
 

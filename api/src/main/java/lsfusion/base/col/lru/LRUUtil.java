@@ -140,28 +140,26 @@ public class LRUUtil {
                 }
             }}, null, null);
 
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            public void run() {
+        scheduler.scheduleAtFixedRate(() -> {
 
-                long used;
-                if(concurrent)
-                    used = tenuredGenPool.getUsage().getUsed();
-                else
-                    used = tenuredGenPool.getCollectionUsage().getUsed();
-                
-                if(used!=lastCollected) { // прошла сборка мусора
-                    logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected + ", UPAVERAGE : " + upAverageMem + ", DOWNAVERAGE : " + downAverageMem);
-                    if (used > lastCollected && used > upAverageMem && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
-                        multiplier /= adjustLRU;
-                        logger.log("DEC MULTI " + multiplier);
-                    }
-                    if (used < lastCollected && used < downAverageMem && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
-                        multiplier *= adjustLRU;
-                        logger.log("INC MULTI " + multiplier);
-                    }
-
-                    lastCollected = used;
+            long used;
+            if(concurrent)
+                used = tenuredGenPool.getUsage().getUsed();
+            else
+                used = tenuredGenPool.getCollectionUsage().getUsed();
+            
+            if(used!=lastCollected) { // прошла сборка мусора
+                logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected + ", UPAVERAGE : " + upAverageMem + ", DOWNAVERAGE : " + downAverageMem);
+                if (used > lastCollected && used > upAverageMem && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
+                    multiplier /= adjustLRU;
+                    logger.log("DEC MULTI " + multiplier);
                 }
+                if (used < lastCollected && used < downAverageMem && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
+                    multiplier *= adjustLRU;
+                    logger.log("INC MULTI " + multiplier);
+                }
+
+                lastCollected = used;
             }
         }, 0, (long) (100 * (adjustLRU - 1.0) / memGCIn100Millis), TimeUnit.MILLISECONDS);
     }

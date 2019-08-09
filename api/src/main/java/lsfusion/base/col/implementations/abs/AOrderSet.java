@@ -16,10 +16,7 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     }
 
     public <V> ImOrderMap<K, V> toOrderMap(final V value) {
-        return mapOrderValues(new GetStaticValue<V>() {
-            public V getMapValue() {
-                return value;
-            }});
+        return mapOrderValues(() -> value);
     }
 
     public ImOrderSet<K> addOrderExcl(ImOrderSet<? extends K> map) {
@@ -49,17 +46,11 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     }
 
     public <V> ImRevMap<K, V> mapSet(final ImOrderSet<? extends V> set) {
-        return mapOrderRevValues(new GetIndex<V>() {
-            public V getMapValue(int i) {
-                return set.get(i);
-            }});
+        return mapOrderRevValues(set::get);
     }
 
     public <V> ImMap<K, V> mapList(final ImList<? extends V> list) {
-        return mapOrderValues(new GetIndex<V>() {
-            public V getMapValue(int i) {
-                return list.get(i);
-            }});
+        return mapOrderValues(list::get);
     }
 
     public ImOrderSet<K> filterOrder(FunctionSet<K> filter) {
@@ -77,11 +68,7 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
 
     @Override
     public ImRevMap<Integer, K> toIndexedMap() {
-        return mapOrderRevKeys(new GetIndex<Integer>() {
-            public Integer getMapValue(int i) {
-                return i;
-            }
-        });
+        return mapOrderRevKeys(i -> i);
     }
 
     public ImOrderSet<K> removeOrder(ImSet<? extends K> ks) {

@@ -64,11 +64,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
         requestLock.acquireRequestLock(invocationSID, requestIndex);
         try {
-            return callAndCacheResult(requestIndex, lastReceivedRequestIndex, new Callable<T>() {
-                public T call() throws Exception {
-                    return request.call(getStack());
-                }
-            });
+            return callAndCacheResult(requestIndex, lastReceivedRequestIndex, () -> request.call(getStack()));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
@@ -194,21 +190,11 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     }
 
     public ServerResponse continueServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws RemoteException {
-        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, new Callable<ServerResponse>() {
-            @Override
-            public ServerResponse call() throws Exception {
-                return currentInvocation.resumeAfterUserInteraction(actionResults);
-            }
-        });
+        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, () -> currentInvocation.resumeAfterUserInteraction(actionResults));
     }
 
     public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Throwable clientThrowable) throws RemoteException {
-        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, new Callable<ServerResponse>() {
-            @Override
-            public ServerResponse call() throws Exception {
-                return currentInvocation.resumeWithThrowable(clientThrowable);
-            }
-        });
+        return continueInvocation(requestIndex, lastReceivedRequestIndex, continueIndex, () -> currentInvocation.resumeWithThrowable(clientThrowable));
     }
 
     public boolean isInServerInvocation(long requestIndex) throws RemoteException {

@@ -215,14 +215,9 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys, Stat adjustStat, Result<RecursiveTable> rRecTable) {
 
         // генерируем поля таблицы
-        ImRevMap<KeyField, KeyExpr> recKeys = keyNames.mapRevKeys(new GetKeyValue<KeyField, KeyExpr, String>() {
-            public KeyField getMapValue(KeyExpr keyExpr, String name) {
-                return new KeyField(name, classWhere.getKeyType(keyExpr));
-            }});
-        ImRevMap<String, PropertyField> recProps = props.mapRevValues(new GetKeyValue<PropertyField, String, Type>() { // assert что пустое если logical рекурсия
-            public PropertyField getMapValue(String key, Type value) {
-                return new PropertyField(key, value);
-            }});
+        ImRevMap<KeyField, KeyExpr> recKeys = keyNames.mapRevKeys((keyExpr, name1) -> new KeyField(name1, classWhere.getKeyType(keyExpr)));
+        // assert что пустое если logical рекурсия
+        ImRevMap<String, PropertyField> recProps = props.mapRevValues((GetKeyValue<PropertyField, String, Type>) PropertyField::new);
 
         TableStatKeys tableStatKeys = TableStatKeys.createForTable(statKeys.mapBack(recKeys));
         if(adjustStat != null)
@@ -241,11 +236,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     private ImRevMap<KeyExpr, KeyExpr> getFullMapIterate() {
         final ImRevMap<KeyExpr, KeyExpr> mapIterate = getMapIterate();
-        return group.keys().mapRevValues(new GetValue<KeyExpr, KeyExpr>() {
-            public KeyExpr getMapValue(KeyExpr recKey) {
-                return BaseUtils.nvl(mapIterate.get(recKey), recKey);
-            }
-        });
+        return group.keys().mapRevValues((GetValue<KeyExpr, KeyExpr>) recKey -> BaseUtils.nvl(mapIterate.get(recKey), recKey));
     }
     public Where getIsClassWhere() {
         return getClassWhere().mapClasses(group.keys().toRevMap()).getWhere(getFullMapIterate());

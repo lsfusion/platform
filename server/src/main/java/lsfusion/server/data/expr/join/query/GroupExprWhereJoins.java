@@ -86,19 +86,11 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
     }
 
     public StatKeys<KeyExpr> getPartitionStatKeys(final KeyStat keyStat, final StatType type, final StatKeys<KeyExpr> statKeys, final boolean useWhere, final ImSet<KeyExpr> allKeys) {
-        return StatKeys.or(nodes, new GetValue<StatKeys<KeyExpr>, Node<K>>() {
-            public StatKeys<KeyExpr> getMapValue(Node<K> value) {
-                return value.getPartitionStatKeys(keyStat, type, statKeys, allKeys, useWhere);
-            }
-        }, allKeys);
+        return StatKeys.or(nodes, value -> value.getPartitionStatKeys(keyStat, type, statKeys, allKeys, useWhere), allKeys);
     }
 
     public StatKeys<K> getStatKeys(final KeyStat keyStat, final StatType type, final StatKeys<K> statKeys, ImSet<K> allKeys) {
-        return StatKeys.or(nodes, new GetValue<StatKeys<K>, Node<K>>() {
-            public StatKeys<K> getMapValue(Node<K> value) {
-                return value.getStatKeys(keyStat, type, statKeys);
-            }
-        }, allKeys);
+        return StatKeys.or(nodes, value -> value.getStatKeys(keyStat, type, statKeys), allKeys);
     }
 
     // GroupJoinsWhere может и всегда приходит без Where

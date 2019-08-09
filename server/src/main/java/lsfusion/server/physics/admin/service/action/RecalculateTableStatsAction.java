@@ -32,14 +32,12 @@ public class RecalculateTableStatsAction extends InternalAction {
         DataObject tableObject = context.getDataKeyValue(tableInterface);
         final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
 
-        ServiceDBAction.run(context, new RunService() {
-                    public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                        try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
-                            context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM, newContext.getSession());
-                            newContext.apply();
-                        }
-                    }
-                }
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> {
+            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+                context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM, newContext.getSession());
+                newContext.apply();
+            }
+        }
         );
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}")));
     }

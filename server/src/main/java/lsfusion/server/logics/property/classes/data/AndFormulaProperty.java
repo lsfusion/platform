@@ -43,10 +43,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     }
 
     static ImOrderSet<Interface> getInterfaces(int size) {
-        return SetFact.toOrderExclSet(size + 1, new GetIndex<Interface>() {
-            public Interface getMapValue(int i) {
-                return i == 0 ? new ObjectInterface(0) : new AndInterface(i);
-            }});
+        return SetFact.toOrderExclSet(size + 1, i -> i == 0 ? new ObjectInterface(0) : new AndInterface(i));
     }
 
     public AndFormulaProperty(int size) {

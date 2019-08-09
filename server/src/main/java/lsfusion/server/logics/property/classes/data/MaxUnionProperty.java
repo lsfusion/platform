@@ -37,10 +37,8 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     @Override
     public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
 
-        ImCol<Expr> operandExprs = operands.mapColValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
-            public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
-                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
-            }});
+        // до непосредственно вычисления, для хинтов
+        ImCol<Expr> operandExprs = operands.mapColValues(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
 
         Expr result = null;
         for(Expr operandExpr : operandExprs) {

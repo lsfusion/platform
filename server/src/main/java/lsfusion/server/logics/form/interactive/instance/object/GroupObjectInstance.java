@@ -377,10 +377,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(isNull())
             return MapFact.EMPTY();
 
-        return GroupObjectInstance.getObjects(getUpTreeGroups()).mapValues(new GetValue<DataObject, ObjectInstance>() {
-            public DataObject getMapValue(ObjectInstance value) {
-                return value.getDataObject();
-            }});
+        return GroupObjectInstance.getObjects(getUpTreeGroups()).mapValues(ObjectInstance::getDataObject);
     }
 
     public ImMap<ObjectInstance,DataObject> findGroupObjectValue(ImMap<ObjectInstance, Object> map) throws SQLException, SQLHandledException {
@@ -438,10 +435,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             public boolean contains(ObjectInstance element) {
                 return !element.noClasses;
             }
-        }).mapValues(new GetValue<ValueClass, ObjectInstance>() {
-            public ValueClass getMapValue(ObjectInstance value) {
-                return value.getGridClass();
-            }});
+        }).mapValues(ObjectInstance::getGridClass);
     }
     public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier, mUsedProps);
@@ -570,12 +564,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(expandTable != null) {
             final SessionData sessionData = expandTable.saveData();
             expandTable.updateCurrentClasses(session);
-            session.addRollbackInfo(new SQLRunnable() {
-                public void run() throws SQLException, SQLHandledException {
-                    OperationOwner owner = session.env.getOpOwner();
-                    expandTable.drop(session.sql, owner);
-                    expandTable.rollData(session.sql, sessionData, owner);
-                }
+            session.addRollbackInfo(() -> {
+                OperationOwner owner = session.env.getOpOwner();
+                expandTable.drop(session.sql, owner);
+                expandTable.rollData(session.sql, sessionData, owner);
             });
         }
     }
@@ -606,11 +598,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             expandWhere = Where.TRUE;
 
         if (parent != null) {
-            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx(new GetExValue<Expr, PropertyObjectInstance, SQLException, SQLHandledException>() {
-                public Expr getMapValue(PropertyObjectInstance value) throws SQLException, SQLHandledException {
-                    return value.getExpr(mapKeys, modifier);
-                }
-            });
+            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx((GetExValue<Expr, PropertyObjectInstance, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
             Where nullWhere = Where.FALSE;
             for (Expr parentExpr : parentExprs.valueIt()) {
@@ -630,11 +618,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
         }
 
-        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
-            public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
-                return value.getExpr(mapKeys, modifier);
-            }
-        });
+        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
         return castExecuteObjects(new Query<>(mapKeys, mPropertyExprs.immutable(), getWhere(mapKeys, modifier, reallyChanged).and(expandWhere)).
                     executeClasses(session, env, baseClass, orderExprs));
@@ -646,11 +630,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         Where subGroupWhere = Where.TRUE;
 
         if (parent != null) {
-            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx(new GetExValue<Expr, PropertyObjectInstance, SQLException, SQLHandledException>() {
-                public Expr getMapValue(PropertyObjectInstance value) throws SQLException, SQLHandledException {
-                    return value.getExpr(mapKeys, modifier);
-                }
-            });
+            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx((GetExValue<Expr, PropertyObjectInstance, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
             Where nullWhere = Where.FALSE;
             for (Expr parentExpr : parentExprs.valueIt()) {
@@ -718,11 +698,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                         change = mappedProp.property.getNoChange();
                     else {
                         final MSet<Property> fmUsedProps = mUsedProps;
-                        ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeysEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
-                            public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
-                                return value.getExpr(mapKeys, modifier, reallyChanged, fmUsedProps);
-                            }
-                        });
+                        ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeysEx((GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier, reallyChanged, fmUsedProps));
                         OrderClass orderClass = OrderClass.get(orders.keyOrderSet().mapListValues(new GetValue<Type, OrderInstance>() {
                             public Type getMapValue(OrderInstance value) {
                                 return value.getType();
@@ -973,23 +949,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> treeElements = executeTree(sql, env, modifier, baseClass, reallyChanged);
 
                     ImList<ImMap<ObjectInstance, DataObject>> expandParents = treeElements.mapListValues(
-                            new GetValue<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>>() {
-                                @Override
-                                public ImMap<ObjectInstance, DataObject> getMapValue(ImMap<Object, ObjectValue> value) {
-                                    return immutableCast(
-                                            value.filterFn(
-                                                    new GetKeyValue<Boolean, Object, ObjectValue>() {
-                                                        @Override
-                                                        public Boolean getMapValue(Object key, ObjectValue value) {
-                                                            return key instanceof ObjectInstance && value instanceof DataObject;
-                                                        }
-                                                    }));
-                                }
-                            });
-                    keys = treeElements.mapOrderValues(new GetStaticValue<ImMap<OrderInstance, ObjectValue>>() {
-                        public ImMap<OrderInstance, ObjectValue> getMapValue() {
-                            return MapFact.EMPTY();
-                        }});
+                            value -> immutableCast(
+                                    value.filterFn(
+                                            (key, value1) -> key instanceof ObjectInstance && value1 instanceof DataObject)));
+                    keys = treeElements.mapOrderValues(MapFact::EMPTY);
 
                     ImOrderMap<ImMap<ObjectInstance, DataObject>, Boolean> groupExpandables =
                             treeElements
@@ -1001,13 +964,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                                                 }
                                             })
                                     .mapOrderValues(
-                                            new GetValue<Boolean, ImMap<Object, ObjectValue>>() {
-                                                @Override
-                                                public Boolean getMapValue(ImMap<Object, ObjectValue> value) {
-                                                    ObjectValue expandable1 = value.get("expandable");
-                                                    ObjectValue expandable2 = value.get("expandable2");
-                                                    return expandable1 instanceof DataObject || expandable2 instanceof DataObject;
-                                                }
+                                            (GetValue<Boolean, ImMap<Object, ObjectValue>>) value -> {
+                                                ObjectValue expandable1 = value.get("expandable");
+                                                ObjectValue expandable2 = value.get("expandable2");
+                                                return expandable1 instanceof DataObject || expandable2 instanceof DataObject;
                                             });
 
                     result.expandables.exclAdd(this, groupExpandables.getMap());
@@ -1189,11 +1149,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             assert orders.keys().containsAll(values.keys());
 
-            ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
-                public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
-                    return value.getExpr(mapKeys, modifier);
-                }
-            });
+            ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx((GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
             String filterKey = "filter";
             ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> orderFilterValues = 
@@ -1225,11 +1181,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             assert orders.starts(values.keys());
 
-            ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
-                public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
-                    return value.getExpr(mapKeys, modifier);
-                }
-            });
+            ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx((GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
             Where orderWhere = end?Where.FALSE:Where.TRUE; // строим условия на упорядочивание
             ImOrderMap<OrderInstance, Boolean> reverseOrder = orders.reverseOrder();
@@ -1291,11 +1243,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return new NoPropertyTableUsage<>(debugInfo, GroupObjectInstance.getOrderObjects(getOrderUpTreeGroups()), typeGetter);                
     }
 
-    private final static Type.Getter<ObjectInstance> typeGetter = new Type.Getter<ObjectInstance>() {
-        public Type getType(ObjectInstance key) {
-            return key.getType();
-        }
-    };
+    private final static Type.Getter<ObjectInstance> typeGetter = ObjectInstance::getType;
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {
         public PropertyObjectInstance getPropertyObjectInstance() {

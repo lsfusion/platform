@@ -37,10 +37,6 @@ public enum ModifyResult implements UpdateResult {
     }
     
     public <T> GetValue<ModifyResult, T> fnGetValue() {
-        return new GetValue<ModifyResult, T>() {
-            public ModifyResult getMapValue(T value) {
-                return ModifyResult.this;
-            }
-        };
+        return value -> ModifyResult.this;
     }  
 }

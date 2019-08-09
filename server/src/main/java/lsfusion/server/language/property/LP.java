@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.version.Version;
@@ -74,18 +73,10 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         return readAll(context.getEnv());
     }
     public ImMap<ImList<Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return property.readAll(env).mapKeys(new GetValue<ImList<Object>, ImMap<T, Object>>() {
-            public ImList<Object> getMapValue(ImMap<T, Object> value) {
-                return listInterfaces.mapList(value);
-            }
-        });
+        return property.readAll(env).mapKeys(value -> listInterfaces.mapList(value));
     }
     public ImMap<ImList<DataObject>, DataObject> readAllClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        return property.readAllClasses(env).mapKeys(new GetValue<ImList<DataObject>, ImMap<T, DataObject>>() {
-            public ImList<DataObject> getMapValue(ImMap<T, DataObject> value) {
-                return listInterfaces.mapList(value);
-            }
-        });
+        return property.readAllClasses(env).mapKeys(value -> listInterfaces.mapList(value));
     }
 
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {

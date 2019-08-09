@@ -28,12 +28,7 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
     private boolean action;
 
     public EvalAction(ImList<Type> params, boolean action) {
-        super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + 1, new GetIndex<PropertyInterface>() {
-            @Override
-            public PropertyInterface getMapValue(int i) {
-                return new PropertyInterface();
-            }
-        }));
+        super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + 1, i -> new PropertyInterface()));
         
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
         sourceInterface = orderInterfaces.get(0);

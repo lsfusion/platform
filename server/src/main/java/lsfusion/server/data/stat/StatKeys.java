@@ -130,10 +130,7 @@ public class StatKeys<K> extends TwinImmutableObject {
     }
 
     public static <K extends Expr> ImMap<StatType, StatKeys<K>> translateOuter(ImMap<StatType, StatKeys<K>> statKeys, final MapTranslate translator) {
-        return statKeys.mapValues(new GetValue<StatKeys<K>, StatKeys<K>>() {
-            public StatKeys<K> getMapValue(StatKeys<K> value) {
-                return translateOuter(value, translator);
-            }});
+        return statKeys.mapValues(value -> translateOuter(value, translator));
     }
 
     public static <K extends Expr> int hashOuter(StatKeys<K> statKeys, HashContext hashContext) {

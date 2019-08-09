@@ -275,12 +275,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     public static CustomFormulaImpl createCustomFormulaImpl(CustomFormulaSyntax formula, FormulaClass valueClass, boolean hasNotNull, ImOrderSet<String> keys) {
-        ImMap<String, Integer> mapParams = keys.mapOrderValues(new GetIndex<Integer>() {
-            @Override
-            public Integer getMapValue(int i) {
-                return i;
-            }
-        });
+        ImMap<String, Integer> mapParams = keys.mapOrderValues((GetIndex<Integer>) i -> i);
         return new CustomFormulaImpl(formula, mapParams, valueClass, hasNotNull);
     }
 

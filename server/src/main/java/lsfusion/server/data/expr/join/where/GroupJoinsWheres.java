@@ -476,10 +476,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
     
     public <K extends BaseExpr> StatKeys<K> getStatKeys(final ImSet<K> keepStat, final KeyStat keyStat, final StatType type) {
-        return StatKeys.or(keyIt(), new GetValue<StatKeys<K>, WhereJoins>() {
-            public StatKeys<K> getMapValue(WhereJoins whereJoins) {
-                return whereJoins.getStatKeys(keepStat, keyStat, type);
-            }}, keepStat);
+        return StatKeys.or(keyIt(), whereJoins -> whereJoins.getStatKeys(keepStat, keyStat, type), keepStat);
     }
 
     private final boolean noWhere;

@@ -64,10 +64,7 @@ public class SetFact {
     }
 
     public static <K> ImOrderSet<K> toOrderExclSet(final K... array) {
-        return toOrderExclSet(array.length, new GetIndex<K>() {
-            public K getMapValue(int i) {
-                return array[i];
-            }});
+        return toOrderExclSet(array.length, i -> array[i]);
     }
 
     public static <K> ImOrderSet<K> toOrderExclSet(int size, GetIndex<K> getter) {

@@ -234,12 +234,7 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     public Inferred<T> orAny() { // или null или any
-        return new Inferred<>(params == null ? MapFact.<T, ExClassSet>EMPTY() : params.mapValues(new GetValue<ExClassSet, ExClassSet>() {
-            @Override
-            public ExClassSet getMapValue(ExClassSet value) {
-                return ExClassSet.orAny(value);
-            }
-        }), NotNull.<T>EMPTY(), SetFact.<Compared<T>>EMPTY());        
+        return new Inferred<>(params == null ? MapFact.<T, ExClassSet>EMPTY() : params.mapValues(value -> ExClassSet.orAny(value)), NotNull.<T>EMPTY(), SetFact.<Compared<T>>EMPTY());        
     }
     
     public boolean isEmpty(InferType inferType) {
@@ -270,11 +265,7 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     private static <T extends PropertyInterface> ImMap<T, ExClassSet> getBase(ImMap<T, ExClassSet> map) {
-        return map == null ? null : map.mapValues(new GetValue<ExClassSet, ExClassSet>() {
-            public ExClassSet getMapValue(ExClassSet value) {
-                return ExClassSet.getBase(value);
-            }
-        });
+        return map == null ? null : map.mapValues(ExClassSet::getBase);
     }
     public Inferred<T> getBase(InferType inferType) {
         return new Inferred<>(getBase(getParams(inferType)), notNull, SetFact.<Compared<T>>EMPTY(), getBase(getNotParams(inferType)), notNotNull, SetFact.<Compared<T>>EMPTY());

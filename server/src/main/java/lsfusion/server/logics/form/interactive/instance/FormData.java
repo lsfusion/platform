@@ -17,10 +17,7 @@ public class FormData {
     public final ImOrderSet<FormRow> rows;
 
     public FormData(ImOrderMap<ImMap<ObjectInstance,Object>, ImMap<PropertyDrawInstance,Object>> rows) {
-        this.rows = rows.mapOrderSetValues(new GetKeyValue<FormRow, ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>>() {
-            public FormRow getMapValue(ImMap<ObjectInstance, Object> key, ImMap<PropertyDrawInstance, Object> value) {
-                return new FormRow(key,value);
-            }});
+        this.rows = rows.mapOrderSetValues(FormRow::new);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

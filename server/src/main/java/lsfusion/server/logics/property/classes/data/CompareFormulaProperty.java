@@ -43,10 +43,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
     }
 
     static ImOrderSet<Interface> getInterfaces(int paramCount) {
-        return SetFact.toOrderExclSet(paramCount, new GetIndex<Interface>() {
-            public Interface getMapValue(int i) {
-                return new Interface(i);
-            }});
+        return SetFact.toOrderExclSet(paramCount, Interface::new);
     }
 
     protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {

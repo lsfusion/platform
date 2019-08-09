@@ -37,45 +37,37 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     }
 
     public Iterable<K> keyIt() {
-        return new Iterable<K>() {
-            public Iterator<K> iterator() {
-                return new Iterator<K>() {
-                    int i=0;
+        return () -> new Iterator<K>() {
+            int i=0;
 
-                    public boolean hasNext() {
-                        return i<size();
-                    }
+            public boolean hasNext() {
+                return i<size();
+            }
 
-                    public K next() {
-                        return getKey(i++);
-                    }
+            public K next() {
+                return getKey(i++);
+            }
 
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
+            public void remove() {
+                throw new UnsupportedOperationException();
             }
         };
     }
 
     public Iterable<V> valueIt() {
-        return new Iterable<V>() {
-            public Iterator<V> iterator() {
-                return new Iterator<V>() {
-                    int i=0;
+        return () -> new Iterator<V>() {
+            int i=0;
 
-                    public boolean hasNext() {
-                        return i<size();
-                    }
+            public boolean hasNext() {
+                return i<size();
+            }
 
-                    public V next() {
-                        return getValue(i++);
-                    }
+            public V next() {
+                return getValue(i++);
+            }
 
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
+            public void remove() {
+                throw new UnsupportedOperationException();
             }
         };
     }
@@ -267,19 +259,14 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     }
 
     public ImOrderMap<K, V> replaceValues(final V[] values) {
-        return mapOrderValues(new GetIndex<V>() {
-            public V getMapValue(int i) {
-                return values[i];
-            }});
+        return mapOrderValues((GetIndex<V>) i -> values[i]);
     }
 
     public ImOrderMap<K, V> replaceValue(final K replaceKey, final V replaceValue) {
-        return mapOrderValues(new GetKeyValue<V, K, V>() {
-            public V getMapValue(K key, V value) {
-                if(BaseUtils.hashEquals(key, replaceKey))
-                    return replaceValue;
-                return value;
-            }
+        return mapOrderValues((key, value) -> {
+            if(BaseUtils.hashEquals(key, replaceKey))
+                return replaceValue;
+            return value;
         });
     }
 

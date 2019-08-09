@@ -58,10 +58,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     }
 
     public static <K> ImMap<K,Expr> getMapExprs(ImMap<K,? extends ObjectValue> map) {
-        return ((ImMap<K, ObjectValue>)map).mapValues(new GetValue<Expr, ObjectValue>() {
-            public Expr getMapValue(ObjectValue value) {
-                return value.getExpr();
-            }});
+        return ((ImMap<K, ObjectValue>)map).mapValues(ObjectValue::getExpr);
     }
 
     public static <K> ImMap<K,ConcreteClass> getMapClasses(ImMap<K,ObjectValue> map) {
@@ -69,10 +66,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     }
 
     public static <K> ImMap<K,Object> getMapValues(ImMap<K,ObjectValue> map) {
-        return map.mapValues(new GetValue<Object, ObjectValue>() {
-            public Object getMapValue(ObjectValue value) {
-                return value.getValue();
-            }});
+        return map.mapValues((GetValue<Object, ObjectValue>) ObjectValue::getValue);
     }
 
     public static <K> boolean containsNull(Collection<ObjectValue> col) {

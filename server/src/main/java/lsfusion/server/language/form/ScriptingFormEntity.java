@@ -426,11 +426,7 @@ public class ScriptingFormEntity {
     }
 
     private <P extends PropertyInterface> void checkPropertyParameters(LAP<P, ?> property, ImOrderSet<ObjectEntity> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        ImMap<P, AndClassSet> map = property.listInterfaces.mapList(mapping).mapValues(new GetValue<AndClassSet, ObjectEntity>() {
-            public AndClassSet getMapValue(ObjectEntity value) {
-                return value.getAndClassSet();
-            }
-        });
+        ImMap<P, AndClassSet> map = property.listInterfaces.mapList(mapping).mapValues(ObjectEntity::getAndClassSet);
 
         if (!property.getActionOrProperty().isInInterface(map, true)) {
             LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), property.getActionOrProperty().getName());

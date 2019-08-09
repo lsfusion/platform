@@ -45,10 +45,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     public PropertyObjectInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectInstance newObject, final InstanceFactory instanceFactory) {
-        ImMap<P, PropertyObjectInterfaceInstance> nmapping = mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, ObjectEntity>() {
-            public PropertyObjectInterfaceInstance getMapValue(ObjectEntity value) {
-                return value.getRemappedInstance(oldObject, newObject, instanceFactory);
-            }});
+        ImMap<P, PropertyObjectInterfaceInstance> nmapping = mapping.mapValues(value -> value.getRemappedInstance(oldObject, newObject, instanceFactory));
         return new PropertyObjectInstance<>(property, nmapping);
     }
 
@@ -69,11 +66,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     public Object read(ExecutionEnvironment env, final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        ImMap<P, ObjectValue> joinImplement = mapping.mapValuesEx(new GetExValue<ObjectValue, ObjectEntity, SQLException, SQLHandledException>() {
-            public ObjectValue getMapValue(ObjectEntity value) throws SQLException, SQLHandledException {
-                return value.getObjectValue(mapObjects);
-            }
-        });
+        ImMap<P, ObjectValue> joinImplement = mapping.mapValuesEx((GetExValue<ObjectValue, ObjectEntity, SQLException, SQLHandledException>) value -> value.getObjectValue(mapObjects));
         return property.read(env, joinImplement);
     }
 }

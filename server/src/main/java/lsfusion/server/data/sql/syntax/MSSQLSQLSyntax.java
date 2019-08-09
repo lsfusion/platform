@@ -230,10 +230,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         });
         ImOrderSet<String> sourceOrders = filterOrders.keyOrderSet();
         ImList<CompileOrder> compileOrders = filterOrders.valuesList();
-        ImList<Type> orderTypes = BaseUtils.immutableCast(compileOrders.mapListValues(new GetValue<Reader, CompileOrder>() {
-            public Reader getMapValue(CompileOrder value) {
-                return value.reader;
-            }}));
+        ImList<Type> orderTypes = BaseUtils.immutableCast(compileOrders.mapListValues((GetValue<Reader, CompileOrder>) value -> value.reader));
         boolean[] desc = new boolean[compileOrders.size()];
         for(int i=0,size=compileOrders.size();i<size;i++)
             desc[i] = compileOrders.get(i).desc;
@@ -259,13 +256,11 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
             fixedTypes = ListFact.<Type>toList(textClass, textClass);
             exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
         } else {
-            fixedTypes = readers.mapListValues(new GetValue<Type, ClassReader>() {
-                public Type getMapValue(ClassReader value) {
-                    if(value instanceof Type)
-                        return (Type) value;
-                    assert value instanceof NullReader;
-                    return NullReader.typeInstance;
-                }
+            fixedTypes = readers.mapListValues((GetValue<Type, ClassReader>) value -> {
+                if(value instanceof Type)
+                    return (Type) value;
+                assert value instanceof NullReader;
+                return NullReader.typeInstance;
             });
         }
         fixedTypes = fixedTypes.addList(orderType);

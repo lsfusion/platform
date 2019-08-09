@@ -135,12 +135,7 @@ public class ExternalHttpServer extends MonitorServer {
         private String getHostName(final InetSocketAddress remoteAddress) throws ExecutionException, InterruptedException {
             String hostName = hostMap.get(remoteAddress);
             if (hostName == null) {
-                final Future future = Executors.newSingleThreadExecutor().submit(new Callable() {
-                    @Override
-                    public String call() {
-                        return remoteAddress.getHostName();
-                    }
-                });
+                final Future future = Executors.newSingleThreadExecutor().submit((Callable) remoteAddress::getHostName);
                 try {
                     hostName = (String) future.get(100, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException e) {

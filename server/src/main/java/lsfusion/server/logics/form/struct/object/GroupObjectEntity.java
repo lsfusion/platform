@@ -207,10 +207,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public ImMap<ObjectEntity, PropertyObjectEntity<?>> isParent = null;
 
     public void setIsParents(final PropertyObjectEntity... properties) {
-        isParent = getOrderObjects().mapOrderValues(new GetIndex<PropertyObjectEntity<?>>() {
-            public PropertyObjectEntity<?> getMapValue(int i) {
-                return properties[i];
-            }});
+        isParent = getOrderObjects().mapOrderValues((GetIndex<PropertyObjectEntity<?>>) i -> properties[i]);
     }
 
     public void setInitClassView(ClassViewType type) {
@@ -332,10 +329,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             public boolean contains(ObjectEntity element) {
                 return !element.noClasses();
             }
-        }).mapValues(new GetValue<ValueClass, ObjectEntity>() {
-            public ValueClass getMapValue(ObjectEntity value) {
-                return value.baseClass;
-            }});
+        }).mapValues((GetValue<ValueClass, ObjectEntity>) value -> value.baseClass);
     }
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);

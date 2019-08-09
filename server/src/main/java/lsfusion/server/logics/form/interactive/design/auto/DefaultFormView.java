@@ -82,11 +82,7 @@ public class DefaultFormView extends FormView {
     public ContainerView groupContainer;
     public ContainerView toolbarContainer;
 
-    private ContainerFactory<ContainerView> containerFactory = new ContainerFactory<ContainerView>() {
-        public ContainerView createContainer() {
-            return new ContainerView(idGenerator.idShift());
-        }
-    };
+    private ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
 
     public DefaultFormView() {
     }

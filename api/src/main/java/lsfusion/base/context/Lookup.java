@@ -5,7 +5,6 @@ import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class Lookup {
@@ -29,12 +28,7 @@ public class Lookup {
     }
 
     private void expungeStaleEntries() {
-        for (Iterator<Map.Entry<String, WeakReference<Object>>> it = properties.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry<String, WeakReference<Object>> entry = it.next();
-            if (entry.getValue().get() == null) {
-                it.remove();
-            }
-        }
+        properties.entrySet().removeIf(entry -> entry.getValue().get() == null);
     }
 
     private Object nullRefGet(String name) {

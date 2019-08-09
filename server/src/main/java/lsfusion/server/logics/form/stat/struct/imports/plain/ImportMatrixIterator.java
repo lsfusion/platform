@@ -35,11 +35,7 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
                 return SetFact.EMPTYORDER();
 
             ImOrderSet<String> fields = readHeader();
-            fieldIndexMap = fields.mapOrderValues(new GetIndex<Integer>() {
-                public Integer getMapValue(int i) {
-                    return i;
-                }
-            });
+            fieldIndexMap = fields.mapOrderValues((GetIndex<Integer>) i -> i);
             return fields;
         } else {
             ImOrderMap<String, Integer> sourceMap = nameToIndexColumnsMapping;
@@ -88,11 +84,7 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
 
     protected abstract boolean isLastValue(Integer fieldIndex);
 
-    public final static ImOrderMap<String, Integer> nameToIndexColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(new GetValue<String, Integer>() {
-        public String getMapValue(Integer value) {
-            return nameToIndex(value);
-        }
-    });
+    public final static ImOrderMap<String, Integer> nameToIndexColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(ImportMatrixIterator::nameToIndex);
 
     private static String nameToIndex(int index) {
         String columnName = "";

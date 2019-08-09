@@ -170,7 +170,7 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
 
     public ImList<K> sort(Comparator<K> comparator) {
         List<K> sortList = new ArrayList<>(toList().toJavaList());
-        Collections.sort(sortList, comparator);
+        sortList.sort(comparator);
         return ListFact.fromJavaList(sortList);
     }
 

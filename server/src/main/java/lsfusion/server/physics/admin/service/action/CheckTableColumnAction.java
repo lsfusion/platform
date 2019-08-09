@@ -36,11 +36,7 @@ public class CheckTableColumnAction extends InternalAction {
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
 
         final Result<String> message = new Result<>();
-        ServiceDBAction.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim()));
-            }
-        });
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim())));
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.aggregations}"))) + '\n' + '\n' + message.result, localize("{logics.checking.aggregations}"), true));
     }

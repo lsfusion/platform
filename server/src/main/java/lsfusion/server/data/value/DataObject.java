@@ -179,12 +179,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public static <K, O extends ObjectValue> ImMap<K, DataObject> splitDataObjects(ImMap<K, O> map, Result<ImSet<K>> rNulls) {
         Result<ImMap<K, O>> rNullsMap = new Result<>();
-        ImMap<K, O> result = map.splitKeys(new GetKeyValue<Boolean, K, O>() {
-            @Override
-            public Boolean getMapValue(K key, O value) {
-                return value instanceof DataObject;
-            }
-        }, rNullsMap);
+        ImMap<K, O> result = map.splitKeys((key, value) -> value instanceof DataObject, rNullsMap);
         rNulls.set(rNullsMap.result.keys());
         return BaseUtils.immutableCast(result);
     }
@@ -202,17 +197,11 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public static <K> ImMap<K,Object> getMapDataValues(ImMap<K, DataObject> map) {
-        return map.mapValues(new GetValue<Object, DataObject>() {
-            public Object getMapValue(DataObject value) {
-                return value.object;
-            }});
+        return map.mapValues(value -> value.object);
     }
 
     public static <K> ImMap<K,ConcreteClass> getMapDataClasses(ImMap<K, DataObject> map) {
-        return map.mapValues(new GetValue<ConcreteClass, DataObject>() {
-            public ConcreteClass getMapValue(DataObject value) {
-                return value.objectClass;
-            }});
+        return map.mapValues(value -> value.objectClass);
     }
 
     public Where order(Expr expr, boolean desc, Where orderWhere) {

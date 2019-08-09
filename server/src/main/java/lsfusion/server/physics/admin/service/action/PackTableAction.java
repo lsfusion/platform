@@ -36,17 +36,10 @@ public class PackTableAction extends InternalAction {
         DataObject tableObject = context.getDataKeyValue(tableInterface);
         final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
 
-        ServiceDBAction.run(context, new RunService() {
-            public void run(final SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                DBManager.run(session, isolatedTransaction, new DBManager.RunService() {
-                    @Override
-                    public void run(SQLSession sql) throws SQLException {
-                        ImplementTable table = context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName);
-                        session.packTable(table, OperationOwner.unknown, TableOwner.global);
-                    }});
-
-            }
-        });
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> DBManager.run(session, isolatedTransaction, sql -> {
+            ImplementTable table = context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName);
+            session.packTable(table, OperationOwner.unknown, TableOwner.global);
+        }));
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.table.packing.completed}", localize("{logics.table.packing}"))), localize("{logics.table.packing}")));
     }
 }

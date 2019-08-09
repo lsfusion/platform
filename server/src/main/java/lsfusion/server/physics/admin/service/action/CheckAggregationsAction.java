@@ -23,12 +23,7 @@ public class CheckAggregationsAction extends InternalAction {
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         final Result<String> message = new Result<>();
-        ServiceDBAction.run(context, new RunService() {
-            @Override
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                message.set(context.getDbManager().checkAggregations(session));
-            }
-        });
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkAggregations(session)));
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.aggregations}"))) + '\n' + '\n' + message.result, localize("{logics.checking.aggregations}"), true));
     }

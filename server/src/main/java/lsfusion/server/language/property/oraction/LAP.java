@@ -41,38 +41,23 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     }
 
     public <U> ImMap<T, U> getMap(final U... mapping) {
-        return listInterfaces.mapOrderValues(new GetIndex<U>() {
-            public U getMapValue(int i) {
-                return mapping[i];
-            }});
+        return listInterfaces.mapOrderValues((GetIndex<U>) i -> mapping[i]);
     }
 
     public <U> ImMap<T, U> getMap(final ImList<U> mapping) {
-        return listInterfaces.mapOrderValues(new GetIndex<U>() {
-            public U getMapValue(int i) {
-                return mapping.get(i);
-            }});
+        return listInterfaces.mapOrderValues(mapping::get);
     }
 
     public <U> ImRevMap<T, U> getRevMap(final U... mapping) {
-        return listInterfaces.mapOrderRevValues(new GetIndex<U>() {
-            public U getMapValue(int i) {
-                return mapping[i];
-            }});
+        return listInterfaces.mapOrderRevValues(i -> mapping[i]);
     }
 
     public <U> ImRevMap<T, U> getRevMap(final ImOrderSet<U> mapping) {
-        return listInterfaces.mapOrderRevValues(new GetIndex<U>() {
-            public U getMapValue(int i) {
-                return mapping.get(i);
-            }});
+        return listInterfaces.mapOrderRevValues(mapping::get);
     }
 
     public <U> ImRevMap<T, U> getRevMap(final ImOrderSet<U> list, final Integer... mapping) {
-        return listInterfaces.mapOrderRevValues(new GetIndex<U>() {
-            public U getMapValue(int i) {
-                return list.get(mapping[i] - 1);
-            }});
+        return listInterfaces.mapOrderRevValues(i -> list.get(mapping[i] - 1));
     }
 
     /*

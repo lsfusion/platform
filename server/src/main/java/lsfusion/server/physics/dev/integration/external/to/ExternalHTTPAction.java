@@ -252,11 +252,7 @@ public class ExternalHTTPAction extends ExternalAction {
     }
 
     public static ImMap<String, String> readPropertyValues(ExecutionEnvironment env, LP<?> property) throws SQLException, SQLHandledException {
-        return BaseUtils.immutableCast(property.readAll(env).mapKeys(new GetValue<String, ImList<Object>>() {
-            public String getMapValue(ImList<Object> value) {
-                return (String) value.single();
-            }
-        }));
+        return BaseUtils.immutableCast(property.readAll(env).mapKeys(value -> (String) value.single()));
     }
 
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {

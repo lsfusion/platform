@@ -113,11 +113,7 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         if(action instanceof CaseAction) {
             Graph<ActionCase<PropertyInterface>> absGraph = ((CaseAction) action).getAbstractGraph();
             if(absGraph != null)
-                return absGraph.map(new GetValue<ActionCase<T>, ActionCase<PropertyInterface>>() {
-                    public ActionCase<T> getMapValue(ActionCase<PropertyInterface> value) {
-                        return value.map((ImRevMap<PropertyInterface, T>) mapping);
-                    }
-                });
+                return absGraph.map(value -> value.map((ImRevMap<PropertyInterface, T>) mapping));
         }
         return null;        
     }

@@ -259,10 +259,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
     
     public static <F extends Field> GetValue<String, F> getDeclare(final SQLSyntax syntax, final TypeEnvironment typeEnv) {
-        return new GetValue<String, F>() {
-            public String getMapValue(F value) {
-                return value.getDeclare(syntax, typeEnv);
-            }};
+        return value -> value.getDeclare(syntax, typeEnv);
     }
 
     private final ConnectionPool connectionPool;
@@ -601,41 +598,33 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Result<Throwable> firstException = new Result<>();
 
         assert isInTransaction();
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                if(inTransaction == 1) {
-                    if(useDeadLockPriority) {
-                        if(deadLockPriority != null)
-                            setDeadLockPriority(privateConnection, owner, null);
-                        useDeadLockPriority = false;
-                    }
-                    applyStartTime = 0;
-
-                    setACID(privateConnection.sql, false, syntax);
-                    if(prevIsolation != null) {
-                        privateConnection.sql.setTransactionIsolation(prevIsolation);
-                        prevIsolation = null;
-                    }
+        runSuppressed(() -> {
+            if(inTransaction == 1) {
+                if(useDeadLockPriority) {
+                    if(deadLockPriority != null)
+                        setDeadLockPriority(privateConnection, owner, null);
+                    useDeadLockPriority = false;
                 }
+                applyStartTime = 0;
 
-                transactionCounter = null;
-                transactionTables.clear();
-                endTransactionSessionTablesCount();
+                setACID(privateConnection.sql, false, syntax);
+                if(prevIsolation != null) {
+                    privateConnection.sql.setTransactionIsolation(prevIsolation);
+                    prevIsolation = null;
+                }
+            }
 
-                if(Settings.get().isApplyVolatileStats())
-                    popVolatileStats(owner);
-            }}, firstException);
+            transactionCounter = null;
+            transactionTables.clear();
+            endTransactionSessionTablesCount();
 
-        runSuppressed(new SQLRunnable() {
-                          public void run() throws SQLException {
-                              inTransaction--;
-                          }
-                      }, firstException);
+            if(Settings.get().isApplyVolatileStats())
+                popVolatileStats(owner);
+        }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                tryCommon(owner, true);
-            }}, firstException);
+        runSuppressed(() -> inTransaction--, firstException);
+
+        runSuppressed(() -> tryCommon(owner, true), firstException);
 
         startTransaction = null;
         attemptCountMap = new HashMap<>();
@@ -651,53 +640,46 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Result<Throwable> firstException = new Result<>();
 
         if(inTransaction == 1) { // транзакция заканчивается
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    if(transactionCounter!=null) {
-                        // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-                        int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
-                        if(transactionTables.size() != transTablesCount) {
-                            ServerLoggers.assertLog(false, "CONSEQUENT TRANSACTION TABLES : COUNT " + transTablesCount + " " + transactionCounter + " " + transactionTables);
-                        }
-                        for(String transactionTable : transactionTables) {
-                            //                dropTemporaryTableFromDB(transactionTable);
+            runSuppressed(() -> {
+                if(transactionCounter!=null) {
+                    // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+                    int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
+                    if(transactionTables.size() != transTablesCount) {
+                        ServerLoggers.assertLog(false, "CONSEQUENT TRANSACTION TABLES : COUNT " + transTablesCount + " " + transactionCounter + " " + transactionTables);
+                    }
+                    for(String transactionTable : transactionTables) {
+                        //                dropTemporaryTableFromDB(transactionTable);
 
 //                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
-                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
+                        ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
-                            WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
-                            if(isExplainTemporaryTablesEnabled())
-                                fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExecutionStackAspect.getExStackTrace());
+                        WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
+                        if(isExplainTemporaryTablesEnabled())
+                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExecutionStackAspect.getExStackTrace());
 //                            
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
 //
-                            lastReturnedStamp.remove(transactionTable);
-                            privateConnection.temporary.removeTable(transactionTable);
-                        }
-                        privateConnection.temporary.setCounter(transactionCounter);
-                    } else
-                        ServerLoggers.assertLog(transactionTables.size() == 0, "CONSEQUENT TRANSACTION TABLES");
+                        lastReturnedStamp.remove(transactionTable);
+                        privateConnection.temporary.removeTable(transactionTable);
+                    }
+                    privateConnection.temporary.setCounter(transactionCounter);
+                } else
+                    ServerLoggers.assertLog(transactionTables.size() == 0, "CONSEQUENT TRANSACTION TABLES");
 
-                    rollbackTransactionSessionTablesCount();
-                }}, firstException);
+                rollbackTransactionSessionTablesCount();
+            }, firstException);
 
             if(!(problemInTransaction == Problem.CLOSED))
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException {
-                        privateConnection.sql.rollback();
-                    }}, firstException);
+                runSuppressed(() -> privateConnection.sql.rollback(), firstException);
             problemInTransaction = null;
         }
 
         if(isExplainTemporaryTablesEnabled())
             fifo.add("RBACK"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                endTransaction(owner, true);
-            }}, firstException);
+        runSuppressed(() -> endTransaction(owner, true), firstException);
 
         finishExceptions(firstException);
     }
@@ -775,11 +757,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static ImSet<ImOrderSet<Field>> getKeyIndexes(final ImOrderSet<KeyField> keys) {
-        return SetFact.toOrderExclSet(keys.size(), new GetIndex<ImOrderSet<Field>>() {
-            public ImOrderSet<Field> getMapValue(int i) {
-                return BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size());
-            }
-        }).getSet();
+        return SetFact.toOrderExclSet(keys.size(), i -> BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size())).getSet();
     }
 
     public void createTable(NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
@@ -823,11 +801,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private ImOrderMap<Field, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, boolean order, ImOrderSet<Field> fields) {
-        ImOrderMap<Field, Boolean> result = fields.mapOrderValues(new GetValue<Boolean, Field>() {
-            public Boolean getMapValue(Field value) {
-                return value instanceof KeyField;
-            }
-        });
+        ImOrderMap<Field, Boolean> result = fields.mapOrderValues((GetValue<Boolean, Field>) value -> value instanceof KeyField);
         if(order)
             result = result.addOrderExcl(keyFields.toOrderMap(true));
         return result;
@@ -876,11 +850,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
-        String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
-            public String getMapValue(Field key, Boolean value) {
-                assert value || !(key instanceof KeyField);
-                return key.getName(syntax) + " " + syntax.getOrderDirection(false, value);
-            }}, ",");
+        String columns = fields.toString((key, value) -> {
+            assert value || !(key instanceof KeyField);
+            return key.getName(syntax) + " " + syntax.getOrderDirection(false, value);
+        }, ",");
 
         long start = System.currentTimeMillis();
         String nameIndex = getIndexName(table, syntax, fields);
@@ -981,10 +954,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void packTable(NamedTable table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
-        String dropWhere = table.properties.toString(new GetValue<String, PropertyField>() {
-            public String getMapValue(PropertyField value) {
-                return value.getName(syntax) + " IS NULL";
-            }}, " AND ");
+        String dropWhere = table.properties.toString(value -> value.getName(syntax) + " IS NULL", " AND ");
         executeDML("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere), owner, tableOwner, register(table, tableOwner, TableChange.DELETE));
     }
 
@@ -1181,35 +1151,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 fifo.add("RETURN " + getCurrentTimeStamp() + " " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException {
-                        truncateSession(table, opOwner, owner);
-                    }
-                }, firstException);
+                runSuppressed(() -> truncateSession(table, opOwner, owner), firstException);
                 if(firstException.result != null) {
-                    runSuppressed(new SQLRunnable() {
-                        public void run() throws SQLException {
-                            lastReturnedStamp.remove(table);
-                            privateConnection.temporary.removeTable(table);
-                        }}, firstException);
-                    runSuppressed(new SQLRunnable() {
-                        public void run() throws SQLException {
-                            dropTemporaryTableFromDB(table);
-                        }}, firstException);
+                    runSuppressed(() -> {
+                        lastReturnedStamp.remove(table);
+                        privateConnection.temporary.removeTable(table);
+                    }, firstException);
+                    runSuppressed(() -> dropTemporaryTableFromDB(table), firstException);
                 }
             }
     
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    assert sessionTablesMap.containsKey(table);
-                    WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
-                    ServerLoggers.assertLog(removed.get()==owner, "REMOVE OWNER SHOULD BE EQUAL TO GET OWNER");
-                }}, firstException);
+            runSuppressed(() -> {
+                assert sessionTablesMap.containsKey(table);
+                WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
+                ServerLoggers.assertLog(removed.get()==owner, "REMOVE OWNER SHOULD BE EQUAL TO GET OWNER");
+            }, firstException);
     
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    tryCommon(opOwner, true);
-                }}, firstException);
+            runSuppressed(() -> tryCommon(opOwner, true), firstException);
 
             finishExceptions(firstException);
         } finally { 
@@ -1783,37 +1741,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void afterStatementExecute(Result<Throwable> firstException, final String command, final StaticExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner, final RegisterChange registerChange, final int rowsChange) throws SQLException {
         if(connection != null) {
             if (statement != null)
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException {
-                        statement.close();
-                    }
-                }, firstException);
+                runSuppressed(statement::close, firstException);
 
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    unlockConnection(owner);
-                }
-            }, firstException);
+            runSuppressed(() -> unlockConnection(owner), firstException);
 
             if(env != null)
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException {
-                        env.after(SQLSession.this, connection, command, owner);
-                    }
-                }, firstException);
+                runSuppressed(() -> env.after(SQLSession.this, connection, command, owner), firstException);
 
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    returnConnection(connection, owner);
-                }
-            }, firstException);
+            runSuppressed(() -> returnConnection(connection, owner), firstException);
         }
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                if(registerChange != null)
-                    registerChange.register(SQLSession.this, rowsChange);
-            }
+        runSuppressed(() -> {
+            if(registerChange != null)
+                registerChange.register(SQLSession.this, rowsChange);
         }, firstException);
 
         unlockRead();
@@ -1875,11 +1815,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static RegisterChange register(final String table, final TableOwner tableOwner, final TableChange tableChange) {
-        return new RegisterChange() {
-            public void register(SQLSession sql, int result) {
-                sql.registerChange(table, tableOwner, result, tableChange);
-            }
-        };
+        return (sql, result) -> sql.registerChange(table, tableOwner, result, tableChange);
     }
 
     @StackMessage("{message.sql.execute}")
@@ -2059,17 +1995,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void saveToDbForDebug(DynamicExecEnvSnapshot<?, ?> snapEnv, ImMap<String, ParseInterface> paramObjects) throws ClassNotFoundException, SQLException, SQLHandledException, InstantiationException, IllegalAccessException {
-        ImSet<SessionTable> materializedTables = snapEnv.getMaterializedQueries().values().mapColSetValues(new GetValue<SessionTable, MaterializedQuery>() {
-            public SessionTable getMapValue(MaterializedQuery value) {
-                return new SessionTable(value.tableName, value.keyFields, value.propFields);
-            }});
+        ImSet<SessionTable> materializedTables = snapEnv.getMaterializedQueries().values().mapColSetValues(value -> new SessionTable(value.tableName, value.keyFields, value.propFields));
         ImSet<SessionTable> paramTables = paramObjects.values().filterCol(new SFunctionSet<ParseInterface>() {
             public boolean contains(ParseInterface element) {
                 return element.getSessionTable() != null;
-            }}).mapMergeSetValues(new GetValue<SessionTable, ParseInterface>() {
-            public SessionTable getMapValue(ParseInterface value) {
-                return value.getSessionTable();
-            }});
+            }}).mapMergeSetValues(ParseInterface::getSessionTable);
 
         SessionTable.saveToDBForDebug(SetFact.addExclSet(materializedTables, paramTables), this);
     }
@@ -2146,11 +2076,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if(savepoint != null && t instanceof SQLHandledException && ((SQLHandledException)t).repeatCommand()) {
                 assert problemInTransaction == Problem.EXCEPTION;
                 final ExConnection fConnection = connection; final Savepoint fSavepoint = savepoint;
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException, SQLHandledException {
-                        fConnection.sql.rollback(fSavepoint);
-                        problemInTransaction = null;
-                    }
+                runSuppressed(() -> {
+                    fConnection.sql.rollback(fSavepoint);
+                    problemInTransaction = null;
                 }, firstException);
                 unregisterUseSavePoint();
                 savepoint = null;
@@ -2160,11 +2088,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 if(problemInTransaction == null) { // if there was an exception in transaction, releaseSavepoint will fail anyway
                     final ExConnection fConnection = connection;
                     final Savepoint fSavepoint = savepoint;
-                    runSuppressed(new SQLRunnable() {
-                        public void run() throws SQLException, SQLHandledException {
-                            fConnection.sql.releaseSavepoint(fSavepoint);
-                        }
-                    }, firstException);
+                    runSuppressed(() -> fConnection.sql.releaseSavepoint(fSavepoint), firstException);
                 }
                 unregisterUseSavePoint();
             }
@@ -2175,51 +2099,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private <H> void afterExStatementExecute(final OperationOwner owner, final StaticExecuteEnvironment env, final DynamicExecEnvSnapshot execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement, final String string, final SQLCommand<H> command, final H handler, Result<Throwable> firstException) throws SQLException, SQLHandledException {
         if(connection != null) {
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    execInfo.afterStatement(SQLSession.this, connection, string, owner);
-                }
-            }, firstException);
+            runSuppressed(() -> execInfo.afterStatement(SQLSession.this, connection, string, owner), firstException);
 
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    env.after(SQLSession.this, connection, string, owner);
-                }
-            }, firstException);
+            runSuppressed(() -> env.after(SQLSession.this, connection, string, owner), firstException);
 
             if (statement != null)
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException {
-                        returnStatement.result.proceed(statement, runTime);
-                    }
-                }, firstException);
+                runSuppressed(() -> returnStatement.result.proceed(statement, runTime), firstException);
 
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    unlockConnection(execInfo.needConnectionLock(), owner);
-                }
-            }, firstException);
+            runSuppressed(() -> unlockConnection(execInfo.needConnectionLock(), owner), firstException);
 
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    returnConnection(connection, owner);
-                }
-            }, firstException);
+            runSuppressed(() -> returnConnection(connection, owner), firstException);
         }
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                execInfo.afterConnection(SQLSession.this, owner);
-            }
-        }, firstException);
+        runSuppressed(() -> execInfo.afterConnection(SQLSession.this, owner), firstException);
 
-        runSuppressed(new SQLRunnable() {
-              @Override
-              public void run() throws SQLException, SQLHandledException {
-                  command.afterExecute(handler);
-              }
-           }
-        , firstException);
+        runSuppressed(() -> command.afterExecute(handler)
+                , firstException);
 
         unlockRead();
 
@@ -2317,10 +2212,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         final MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv();
         String insertString = fields.toString(Field.nameGetter(syntax), ",");
-        String valueString = fields.toString(new GetValue<String, Field>() {
-            public String getMapValue(Field value) {
-                return value.type.writeDeconc(syntax, mEnv);
-            }}, ",");
+        String valueString = fields.toString(value -> value.type.writeDeconc(syntax, mEnv), ",");
 
         if(insertString.length()==0) {
             assert valueString.length()==0;
@@ -2525,10 +2417,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public <X> int deleteKeyRecords(NamedTable table, ImMap<KeyField, X> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
-        String deleteWhere = keys.toString(new GetKeyValue<String, KeyField, X>() {
-            public String getMapValue(KeyField key, X value) {
-                return key.getName(syntax) + "=" + value;
-            }}, " AND ");
+        String deleteWhere = keys.toString((key, value) -> key.getName(syntax) + "=" + value, " AND ");
 
         return executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere), owner, tableOwner, register(table, tableOwner, TableChange.DELETE));
     }
@@ -2697,13 +2586,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             firstException.set(t);
 
             if(!isInTransaction() && t instanceof SQLUniqueViolationException)
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException, SQLHandledException {
-                        try {
-                            out.run();
-                        } catch (Exception e) {
-                            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
-                        }
+                runSuppressed(() -> {
+                    try {
+                        out.run();
+                    } catch (Exception e) {
+                        throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
                     }
                 }, firstException);
 
@@ -2719,10 +2606,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner, int selectTop) throws SQLException, SQLHandledException {
         checkTableOwner(name, owner);
-        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, contextProvider, null, register(name, owner, TableChange.INSERT), selectTop), new ERunnable() {
-            public void run() throws Exception {
-                query.outSelect(SQLSession.this, env);
-            }});
+        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, contextProvider, null, register(name, owner, TableChange.INSERT), selectTop), () -> query.outSelect(SQLSession.this, env));
     }
 
     public int insertLeftSelect(ModifyQuery modify, boolean updateProps, boolean insertOnlyNotNull) throws SQLException, SQLHandledException {
@@ -2814,14 +2698,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         void proceed(PreparedStatement statement, long runTime) throws SQLException;
     }
 
-    private final static ReturnStatement keepStatement = new ReturnStatement() {
-        public void proceed(PreparedStatement statement, long runTime) throws SQLException {
-        }};
+    private final static ReturnStatement keepStatement = (statement, runTime) -> {
+    };
 
-    private final static ReturnStatement closeStatement = new ReturnStatement() {
-        public void proceed(PreparedStatement statement, long runTime) throws SQLException {
-            statement.close();
-        }};
+    private final static ReturnStatement closeStatement = (statement, runTime) -> statement.close();
 
     public static class ParamNum {
         private int paramNum = 1;
@@ -2875,13 +2755,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         ImMap<String, String> reparse;
         if(BusinessLogics.useReparse && (reparse = BusinessLogics.reparse.get()) != null) { // временный хак
-            paramObjects = paramObjects.addExcl(reparse.mapValues(new GetValue<ParseInterface, String>() {
-                public ParseInterface getMapValue(final String value) {
-                    return new StringParseInterface() {
-                        public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
-                            return value;
-                        }
-                    };
+            paramObjects = paramObjects.addExcl(reparse.mapValues((GetValue<ParseInterface, String>) value -> new StringParseInterface() {
+                public String getString(SQLSyntax syntax1, StringBuilder envString, boolean usedRecursion) {
+                    return value;
                 }
             }));
         }
@@ -2895,13 +2771,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             parsed = parse.parseStatement(connection.sql, syntax);
             if(poolPrepared) {
                 final ParsedStatement fParsed = parsed;
-                returnStatement.set(new ReturnStatement() {
-                    public void proceed(PreparedStatement statement, long runTime) throws SQLException {
-                        if(runTime > Settings.get().getQueryPrepareRunTime())
-                            statementPool.put(connection.sql, parse, fParsed);
-                        else
-                            statement.close();
-                    }
+                returnStatement.set((statement, runTime) -> {
+                    if(runTime > Settings.get().getQueryPrepareRunTime())
+                        statementPool.put(connection.sql, parse, fParsed);
+                    else
+                        statement.close();
                 });
             } else
                 returnStatement.set(closeStatement);
@@ -2921,10 +2795,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return parsed.statement;
     }
 
-    private final static GetKeyValue<String, String, String> addFieldAliases = new GetKeyValue<String, String, String>() {
-        public String getMapValue(String key, String value) {
-            return value + " AS " + key;
-        }};
+    private final static GetKeyValue<String, String, String> addFieldAliases = (key, value) -> value + " AS " + key;
     // вспомогательные методы
 
     public static String stringExpr(ImMap<String, String> keySelect, ImMap<String, String> propertySelect) {
@@ -3083,28 +2954,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 
     private void readNotUsedTables(final List<TableUsage> notUsedTables, final Result<Integer> recentlyUsedTables, final long beforeTime) throws SQLException, SQLHandledException {
-        runLockReadOperation(new SQLRunnable() {
-            public void run() throws SQLException, SQLHandledException {
-                for(String table : privateConnection.temporary.getTables()) {
-                    long timeStamp;
-                    if (!sessionTablesMap.containsKey(table) && (timeStamp = getTimeStamp(table)) < beforeTime)
-                        notUsedTables.add(new TableUsage(SQLSession.this, table, timeStamp));
-                    else
-                        recentlyUsedTables.set(recentlyUsedTables.result + 1);
-                }
+        runLockReadOperation(() -> {
+            for(String table : privateConnection.temporary.getTables()) {
+                long timeStamp;
+                if (!sessionTablesMap.containsKey(table) && (timeStamp = getTimeStamp(table)) < beforeTime)
+                    notUsedTables.add(new TableUsage(SQLSession.this, table, timeStamp));
+                else
+                    recentlyUsedTables.set(recentlyUsedTables.result + 1);
             }
         });
     }
 
     private void cleanNotUsedTable(final String table, final long timeStamp) throws SQLException, SQLHandledException {
-        runLockReadOperation(new SQLRunnable() {
-            public void run() throws SQLException, SQLHandledException {
-                if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
-                    if(privateConnection.temporary.getTables().contains(table)) { // тут теоретически raceCondition'ов может быть очень много
-                        lastReturnedStamp.remove(table);
-                        privateConnection.temporary.removeTable(table);
-                        dropTemporaryTableFromDB(table);
-                    }
+        runLockReadOperation(() -> {
+            if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
+                if(privateConnection.temporary.getTables().contains(table)) { // тут теоретически raceCondition'ов может быть очень много
+                    lastReturnedStamp.remove(table);
+                    privateConnection.temporary.removeTable(table);
+                    dropTemporaryTableFromDB(table);
                 }
             }
         });
@@ -3188,11 +3055,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private void readRestartConnection(final List<ConnectionUsage> usedConnections, final boolean readDescription) throws SQLException, SQLHandledException {
-        runLockReadOperation(new SQLRunnable() { // assertLock
-            public void run() throws SQLException, SQLHandledException {
-                Result<String> description = new Result<>(null);
-                usedConnections.add(new ConnectionUsage(SQLSession.this, getScore(readDescription ? description : null, false), description.result));
-            }
+        // assertLock
+        runLockReadOperation(() -> {
+            Result<String> description = new Result<>(null);
+            usedConnections.add(new ConnectionUsage(SQLSession.this, getScore(readDescription ? description : null, false), description.result));
         });
     }
 
@@ -3381,18 +3247,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private static void afterStatementExecute(final Connection connection, final TypePool typePool, final OperationOwner opOwner, final Pair<String, StaticExecuteEnvironment> dml, final Statement statement, Result<Throwable> firstException, final Object prevEnvState) throws SQLException {
         if (statement != null) {
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    statement.close();
-                }
-            }, firstException);
+            runSuppressed(statement::close, firstException);
         }
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                dml.second.after(connection, typePool, dml.first, opOwner, prevEnvState);
-            }
-        }, firstException);
+        runSuppressed(() -> dml.second.after(connection, typePool, dml.first, opOwner, prevEnvState), firstException);
 
         finishExceptions(firstException);
     }
@@ -3442,22 +3300,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     };
     public static void uploadTableToConnection(final String table, SQLSyntax syntax, final JDBCTable tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         final KeyField keyCount = new KeyField("row", ValueExpr.COUNTCLASS);
-        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues(new GetValue<PropertyField, String>() {
-            public PropertyField getMapValue(String value) {
-                return new PropertyField(value, tableData.fieldTypes.get(value));
-            }});
+        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((GetValue<PropertyField, String>) value -> new PropertyField(value, tableData.fieldTypes.get(value)));
         
         TypePool typePool = NOTYPES; 
         
         createTemporaryTable(sqlTo, typePool, syntax,  table, SetFact.singletonOrder(keyCount), properties.valuesSet(), owner);
 
-        insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(new GetValue<ImMap<KeyField, Object>, Integer>() {
-            public ImMap<KeyField, Object> getMapValue(Integer value) {
-                return MapFact.singleton(keyCount, (Object) value);
-            }}, new GetValue<ImMap<PropertyField, Object>, ImMap<String, Object>>() {
-            public ImMap<PropertyField, Object> getMapValue(ImMap<String, Object> value) {                    
-                return properties.crossJoin(value);
-            }}), owner);
+        insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(value -> MapFact.singleton(keyCount, (Object) value), properties::crossJoin), owner);
 
         vacuumAnalyzeSessionTable(table, sqlTo, typePool, syntax, owner);
     }

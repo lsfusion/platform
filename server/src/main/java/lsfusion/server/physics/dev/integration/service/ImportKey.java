@@ -51,11 +51,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     }
 
     public ImMap<P, DataObject> mapObjects(final ImportTable.Row row) {
-        return getMapping().mapValues(new GetValue<DataObject, ImportFieldInterface>() {
-            public DataObject getMapValue(ImportFieldInterface value) {
-                return value.getDataObject(row);
-            }
-        });
+        return getMapping().mapValues(value -> value.getDataObject(row));
     }
 
     public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, Modifier modifier) throws SQLException, SQLHandledException {
@@ -77,10 +73,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     }
 
     ImMap<P, Expr> getImplementExprs(final ImMap<ImportField, ? extends Expr> importKeys) {
-        return implement.mapping.mapValues(new GetValue<Expr, ImportFieldInterface>() {
-            public Expr getMapValue(ImportFieldInterface value) {
-                return value.getExpr(importKeys);
-            }});
+        return implement.mapping.mapValues(value -> value.getExpr(importKeys));
     }
 
 

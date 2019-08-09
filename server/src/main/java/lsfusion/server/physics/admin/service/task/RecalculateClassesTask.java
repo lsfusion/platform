@@ -45,24 +45,11 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         if (element instanceof Integer) {
             getDbManager().recalculateExclusiveness(sql, true);
         } else if (element instanceof ImplementTable) {
-            DBManager.run(sql, true, new DBManager.RunService() {
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    DataSession.recalculateTableClasses((ImplementTable) element, sql, getBL().LM.baseClass);
-                }
-            });
+            DBManager.run(sql, true, sql13 -> DataSession.recalculateTableClasses((ImplementTable) element, sql13, getBL().LM.baseClass));
 
-            run(sql, new DBManager.RunService() {
-                @Override
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    sql.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global);
-                }
-            });
+            run(sql, sql12 -> sql12.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global));
         } else if (element instanceof Property) {
-            DBManager.run(sql, true, new DBManager.RunService() {
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    ((Property) element).recalculateClasses(sql, getBL().LM.baseClass);
-                }
-            });
+            DBManager.run(sql, true, sql1 -> ((Property) element).recalculateClasses(sql1, getBL().LM.baseClass));
         }
     }
 
@@ -93,7 +80,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
                 propertiesMap.put(property.mapTable.table, entry);
             }
             for (Map.Entry<ImplementTable, List<Property>> entry : propertiesMap.entrySet()) {
-                java.util.Collections.sort(entry.getValue(), COMPARATOR);
+                entry.getValue().sort(COMPARATOR);
             }
         }
         elements.addAll(storedDataPropertiesList);
@@ -133,11 +120,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
     }
 
-    private static Comparator<Property> COMPARATOR = new Comparator<Property>() {
-        public int compare(Property c1, Property c2) {
-            return getNotNullWeight(c1) - getNotNullWeight(c2);
-        }
-    };
+    private static Comparator<Property> COMPARATOR = Comparator.comparingInt(RecalculateClassesTask::getNotNullWeight);
 
     private static int getNotNullWeight(Property c) {
         Stat stat;

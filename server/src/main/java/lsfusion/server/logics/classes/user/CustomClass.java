@@ -366,11 +366,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         private boolean isUsed = false;
 
         public ClassFormEntity getForm(final BaseLogicsModule LM) {
-            return form.getDefault(new NFDefault<ClassFormEntity>() {
-                public ClassFormEntity create() {
-                    return addDefaultForm(LM);
-                }
-            });
+            return form.getDefault(() -> addDefaultForm(LM));
         }
 
         public ClassFormEntity getPolyForm(final BaseLogicsModule LM, ConcreteCustomClass concreteClass) {
@@ -567,10 +563,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         getProperty().fillChangedProps(mSet, type);
     }
     public ImSet<ClassDataProperty> getUpDataProps() {
-        return getUpObjectClassFields().keys().mapSetValues(new GetValue<ClassDataProperty, ObjectClassField>() {
-            public ClassDataProperty getMapValue(ObjectClassField value) {
-                return value.getProperty();
-            }});
+        return getUpObjectClassFields().keys().mapSetValues(ObjectClassField::getProperty);
     }
 
     public ImSet<Property> getUpAllChangedProps() {

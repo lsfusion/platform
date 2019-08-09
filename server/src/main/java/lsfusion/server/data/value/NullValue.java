@@ -81,10 +81,7 @@ public class NullValue extends ObjectValue<NullValue> {
     }
 
     public static <K> ImMap<K,ObjectValue> getMap(ImSet<K> keys) {
-        return keys.mapValues(new GetStaticValue<ObjectValue>() {
-            public ObjectValue getMapValue() {
-                return NullValue.instance;
-            }});
+        return keys.mapValues(() -> NullValue.instance);
     }
 
     public <K> ClassWhere<K> getClassWhere(K key) {

@@ -3,7 +3,6 @@ package lsfusion.server.logics.classes.user.set;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -89,19 +88,11 @@ public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements
 
     // могут быть null
     public static <T> ImMap<T, AndClassSet> toAnd(ImMap<T, ResolveClassSet> set) {
-        return set.mapValues(new GetValue<AndClassSet, ResolveClassSet>() {
-            public AndClassSet getMapValue(ResolveClassSet value) {
-                return toAnd(value);
-            }
-        });
+        return set.mapValues(set1 -> toAnd(set1));
     }
 
     public static <T> ImMap<T, ResolveClassSet> toResolve(ImMap<T, AndClassSet> set) {
-        return set.mapValues(new GetValue<ResolveClassSet, AndClassSet>() {
-            public ResolveClassSet getMapValue(AndClassSet value) {
-                return toResolve(value);
-            }
-        });
+        return set.mapValues(set1 -> toResolve(set1));
     }
 
     public UpClassSet toAnd() {

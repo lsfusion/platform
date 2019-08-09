@@ -33,30 +33,15 @@ public class ServiceDBMultiThreadAction extends InternalAction {
 
         final ObjectValue threadCountObject = context.getKeyValue(threadCountInterface);
 
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                serviceLM.recalculateMultiThreadAction.execute(context, threadCountObject);
-            }});
+        run(context, (session, isolatedTransaction) -> serviceLM.recalculateMultiThreadAction.execute(context, threadCountObject));
 
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                serviceLM.recalculateClassesMultiThreadAction.execute(context, threadCountObject);
-            }
-        });
+        run(context, (session, isolatedTransaction) -> serviceLM.recalculateClassesMultiThreadAction.execute(context, threadCountObject));
 
         context.getDbManager().analyzeDB(context.getSession().sql);
 
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                serviceLM.recalculateFollowsMultiThreadAction.execute(context, threadCountObject);
-            }
-        });
+        run(context, (session, isolatedTransaction) -> serviceLM.recalculateFollowsMultiThreadAction.execute(context, threadCountObject));
 
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                serviceLM.recalculateStatsMultiThreadAction.execute(context, threadCountObject);
-            }
-        });
+        run(context, (session, isolatedTransaction) -> serviceLM.recalculateStatsMultiThreadAction.execute(context, threadCountObject));
 
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));
     }
@@ -65,10 +50,7 @@ public class ServiceDBMultiThreadAction extends InternalAction {
         // транзакция в Service Action'ах не особо нужна, так как действия атомарные
         final boolean singleTransaction = singleTransaction(context); 
         SQLSession sql = context.getSession().sql;
-        DBManager.run(sql, singleTransaction, new DBManager.RunService() {
-            public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                run.run(sql, !singleTransaction);
-            }});
+        DBManager.run(sql, singleTransaction, sql1 -> run.run(sql1, !singleTransaction));
     }
 
     public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {

@@ -37,10 +37,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     // такая же помошь компилятору как и при getExpr в GroupProperty
     private Where getGroupKeys(PropertyChange<Interface<I>> propertyChange, Result<ImRevMap<I, KeyExpr>> mapKeys, Result<ImMap<I, Expr>> mapValueKeys) {
-        ImMap<PropertyInterfaceImplement<I>, Expr> changeValues = propertyChange.getMapExprs().mapKeys(new GetValue<PropertyInterfaceImplement<I>, Interface<I>>() {
-            public PropertyInterfaceImplement<I> getMapValue(Interface<I> value) {
-                return value.implement;
-            }});
+        ImMap<PropertyInterfaceImplement<I>, Expr> changeValues = propertyChange.getMapExprs().mapKeys(value -> value.implement);
 
         ImRevMap<I, KeyExpr> innerKeys = KeyExpr.getMapKeys(innerInterfaces);
 

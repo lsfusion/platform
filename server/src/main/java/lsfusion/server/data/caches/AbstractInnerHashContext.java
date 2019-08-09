@@ -34,10 +34,7 @@ public abstract class AbstractInnerHashContext extends AbstractHashContext<HashV
         return hash.filterValues(getInnerValues());
     }
 
-    private final static GetValue<GlobalInteger, ParamExpr> getKeyClasses = new GetValue<GlobalInteger, ParamExpr>() {
-        public GlobalInteger getMapValue(ParamExpr value) {
-            return value.getKeyClass();
-        }};
+    private final static GetValue<GlobalInteger, ParamExpr> getKeyClasses = ParamExpr::getKeyClass;
     public BaseUtils.HashComponents<ParamExpr> getComponents(final HashValues hashValues) {
         return BaseUtils.getComponents(new BaseUtils.HashInterface<ParamExpr, GlobalInteger>() {
 

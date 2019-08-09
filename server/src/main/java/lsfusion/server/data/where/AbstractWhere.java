@@ -84,32 +84,19 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public <K> ImMap<K, Expr> followTrue(ImMap<K, ? extends Expr> map, final boolean pack) {
-        return ((ImMap<K, Expr>)map).mapValues(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) {
-                return value.followFalse(not(), pack);
-            }
-        });
+        return ((ImMap<K, Expr>)map).mapValues(value -> value.followFalse(not(), pack));
     }
 
     public ImList<Expr> followFalse(ImList<Expr> list, final boolean pack) {
-        return list.mapListValues(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) {
-                return value.followFalse(AbstractWhere.this, pack);
-            }});
+        return list.mapListValues((GetValue<Expr, Expr>) value -> value.followFalse(AbstractWhere.this, pack));
     }
 
     public ImSet<Expr> followFalse(ImSet<Expr> set, final boolean pack) {
-        return set.mapSetValues(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) {
-                return value.followFalse(AbstractWhere.this, pack);
-            }});
+        return set.mapSetValues(value -> value.followFalse(AbstractWhere.this, pack));
     }
 
     public <K> ImOrderMap<Expr, K> followFalse(ImOrderMap<Expr, K> map, final boolean pack) {
-        return map.mapMergeOrderKeys(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) {
-                return value.followFalse(AbstractWhere.this, pack);
-            }});
+        return map.mapMergeOrderKeys(value -> value.followFalse(AbstractWhere.this, pack));
     }
 
     public boolean means(CheckWhere where) {
@@ -379,10 +366,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public <K extends BaseExpr, PK extends BaseExpr> StatKeys<K> getPushedStatKeys(final ImSet<K> groups, final StatType type, final StatKeys<PK> pushStatKeys) { // assertion что ключи groups входят в это where
-        return StatKeys.or(getPushedWhereJoins(groups, type), new GetValue<StatKeys<K>, GroupJoinsWhere>() {
-            public StatKeys<K> getMapValue(GroupJoinsWhere value) {
-                return value.getStatKeys(groups, type, pushStatKeys);
-            }}, groups);
+        return StatKeys.or(getPushedWhereJoins(groups, type), value -> value.getStatKeys(groups, type, pushStatKeys), groups);
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(final ImSet<K> groups, final StatType type) { // assertion что ключи groups входят в это where

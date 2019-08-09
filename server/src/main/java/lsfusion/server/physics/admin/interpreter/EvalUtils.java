@@ -53,26 +53,14 @@ public class EvalUtils {
         if(prevEventScope)
             module.setPrevScope(Event.SESSION);
         try { // we need separated runInit, to fail after recovered syntax errors
-            module.runInit(new ScriptingLogicsModule.InitRunnable() {
-                   public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
-                       module.initModuleDependencies();
-                   }
-               });
-            module.runInit(new ScriptingLogicsModule.InitRunnable() {
-                   public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
-                       module.initMetaAndClasses();
-                   }
-               });
+            module.runInit(ScriptingLogicsModule::initModuleDependencies);
+            module.runInit(ScriptingLogicsModule::initMetaAndClasses);
             if(locals != null) {
                 for(Pair<LP, List<ResolveClassSet>> local : locals) {
                     module.addWatchLocalDataProperty(local.first, local.second);
                 }
             }
-            module.runInit(new ScriptingLogicsModule.InitRunnable() {
-                public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
-                    module.initMainLogic();
-                }
-            });
+            module.runInit(ScriptingLogicsModule::initMainLogic);
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);

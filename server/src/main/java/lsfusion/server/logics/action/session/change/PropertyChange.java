@@ -70,11 +70,9 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getMapExprs(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues, Where where) {
         final ImMap<BaseExpr, BaseExpr> exprValues = where.getExprValues();
-        return DataObject.getMapExprs(mapValues).addExcl(mapKeys.mapValues(new GetValue<BaseExpr, KeyExpr>() {
-            public BaseExpr getMapValue(KeyExpr value) {
-                BaseExpr exprValue = exprValues.get(value);
-                return exprValue != null ? exprValue : value;
-            }
+        return DataObject.getMapExprs(mapValues).addExcl(mapKeys.mapValues(value -> {
+            BaseExpr exprValue = exprValues.get(value);
+            return exprValue != null ? exprValue : value;
         }));
     }
 
@@ -323,11 +321,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 
         if(Settings.get().isDisableCorrelations()) {
             final ImRevMap<K, KeyExpr> fMapKeys = mapKeys;
-            NoPropertyTableUsage<K> result = new NoPropertyTableUsage<>(debugInfo, mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
-                public Type getType(K key) {
-                    return where.getKeyType(fMapKeys.get(key));
-                }
-            });
+            NoPropertyTableUsage<K> result = new NoPropertyTableUsage<>(debugInfo, mapKeys.keys().toOrderSet(), key -> where.getKeyType(fMapKeys.get(key)));
             usedTable.set(result);
             
             result.writeRows(session.sql, new Query<>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);

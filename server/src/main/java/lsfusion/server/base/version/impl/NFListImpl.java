@@ -29,11 +29,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
             return result;
             
         final MList<T> mList = ListFact.mList();
-        proceedChanges(new ChangeProcessor<T, NFListChange<T>>() {
-            public void proceed(NFListChange<T> change) {
-                change.proceedList(mList);
-            }
-        }, version);
+        proceedChanges(change -> change.proceedList(mList), version);
         return mList.immutableList();
     }
 

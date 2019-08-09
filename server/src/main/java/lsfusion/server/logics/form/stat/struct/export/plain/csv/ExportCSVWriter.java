@@ -43,14 +43,12 @@ public class ExportCSVWriter extends ExportMatrixWriter {
     
     @Override
     public void writeLine(final ImMap<String, ?> values, final ImMap<String, Type> types) {
-        writer.println(fullIndexList.mapListValues(new GetValue<Object, Integer>() {
-            public Object getMapValue(Integer i) {
-                String field = fieldIndexMap.get(i);
-                if(field == null)
-                    return "";
-                Type type = types.get(field);
-                return csvEscaper.translate(type.formatCSV(values.get(field)));
-            }
+        writer.println(fullIndexList.mapListValues((GetValue<Object, Integer>) i -> {
+            String field = fieldIndexMap.get(i);
+            if(field == null)
+                return "";
+            Type type = types.get(field);
+            return csvEscaper.translate(type.formatCSV(values.get(field)));
         }).toString(separator));
     }
 

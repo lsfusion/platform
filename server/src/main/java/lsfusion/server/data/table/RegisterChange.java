@@ -4,10 +4,8 @@ import lsfusion.server.data.sql.SQLSession;
 
 public interface RegisterChange {
 
-    RegisterChange VOID = new RegisterChange() {
-        public void register(SQLSession sql, int result) {
+    RegisterChange VOID = (sql, result) -> {
 
-        }
     };
 
     void register(SQLSession sql, int result);

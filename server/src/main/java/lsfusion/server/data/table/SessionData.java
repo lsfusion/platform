@@ -120,20 +120,17 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     }
     
     public static <F, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values, final Type.Getter<F> typeGetter) {
-        return values.mapValues(new GetKeyValue<D, F, D>() {
-            @Override
-            public D getMapValue(F key, D value) {
-                Type type = typeGetter.getType(key);
-                if(!(type instanceof DataClass && value instanceof DataObject))
-                    return value;
-                
-                DataClass dataClass = (DataClass) type;
-                DataObject dataObject = (DataObject)value;
-                if(BaseUtils.hashEquals(dataClass, dataObject.objectClass))
-                    return value;
+        return values.mapValues((key, value) -> {
+            Type type = typeGetter.getType(key);
+            if(!(type instanceof DataClass && value instanceof DataObject))
+                return value;
+            
+            DataClass dataClass = (DataClass) type;
+            DataObject dataObject = (DataObject)value;
+            if(BaseUtils.hashEquals(dataClass, dataObject.objectClass))
+                return value;
 
-                return (D) new DataObject(dataClass.readCast(dataObject.object, dataObject.objectClass), dataClass);
-            }
+            return (D) new DataObject(dataClass.readCast(dataObject.object, dataObject.objectClass), dataClass);
         });
     }
     public static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {
@@ -149,11 +146,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         if(firstRow.equals(castFirstRow)) // not hash equals because usually they are equal
             return map;
         
-        return map.mapOrderKeys(new GetValue<ImMap<K, DataObject>, ImMap<K, DataObject>>() {
-            public ImMap<K, DataObject> getMapValue(ImMap<K, DataObject> value) {
-                return castTypes(value, typeGetter);
-            }
-        });
+        return map.mapOrderKeys(value -> castTypes(value, typeGetter));
     }
 
     private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses, final int selectTop) throws SQLException, SQLHandledException {
@@ -197,10 +190,9 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 session.readSingleValues(table, actualKeyValues, actualPropValues, statKeys, statProps, opOwner);
                 keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys()), opOwner).addExcl(keyValues.result));
                 final ImMap<PropertyField,ClassWhere<Field>> fPropertyClasses = table.propertyClasses;
-                propValues.set(baseClass.getObjectValues(session, actualPropValues.result, actualPropValues.result.mapKeyValues(new GetValue<AndClassSet, PropertyField>() {
-                    public AndClassSet getMapValue(PropertyField value) { // тут может быть что type - numeric, а commonClass скажем integer и нарушится assertion в DataObject + оптимизация (сверху по идее ту же проверку, но пока не сталкивались)
-                        return value.type instanceof DataClass ? (DataClass)value.type : fPropertyClasses.get(value).getCommonClass(value);
-                    }}), opOwner).addExcl(propValues.result));
+                propValues.set(baseClass.getObjectValues(session, actualPropValues.result, actualPropValues.result.mapKeyValues(value -> { // тут может быть что type - numeric, а commonClass скажем integer и нарушится assertion в DataObject + оптимизация (сверху по идее ту же проверку, но пока не сталкивались)
+                    return value.type instanceof DataClass ? (DataClass)value.type : fPropertyClasses.get(value).getCommonClass(value);
+                }), opOwner).addExcl(propValues.result));
                 table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner, opOwner).updateKeyPropStats(statKeys.result, statProps.result);
             }
             table = table.checkClasses(session, baseClass, updateClasses, opOwner);
@@ -220,10 +212,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getQueryClasses(final IQuery<KeyField, PropertyField> pullQuery) {
         // читаем классы не считывая данные
-        ImMap<PropertyField,ClassWhere<Field>> propertyClasses = pullQuery.getProperties().mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
-            public ClassWhere<Field> getMapValue(PropertyField value) {
-                return pullQuery.<Field>getClassWhere(SetFact.singleton(value));
-            }});
+        ImMap<PropertyField,ClassWhere<Field>> propertyClasses = pullQuery.getProperties().mapValues((GetValue<ClassWhere<Field>, PropertyField>) value -> pullQuery.<Field>getClassWhere(SetFact.singleton(value)));
         ClassWhere<KeyField> classes = pullQuery.<KeyField>getClassWhere(SetFact.<PropertyField>EMPTY());
         return new Pair<>(classes, propertyClasses);
     }

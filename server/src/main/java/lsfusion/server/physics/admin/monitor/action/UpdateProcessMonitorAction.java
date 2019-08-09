@@ -124,19 +124,11 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
     }
 
     private GetValue<ObjectValue, LP> getJavaMapValueGetter(final JavaProcess javaProcessValue, final String idThread) {
-        return new GetValue<ObjectValue, LP>() {
-            public ObjectValue getMapValue(LP prop) {
-                return getJavaMapValue(prop, javaProcessValue, idThread);
-            }
-        };
+        return prop -> getJavaMapValue(prop, javaProcessValue, idThread);
     }
 
     private GetValue<ObjectValue, LP> getSQLMapValueGetter(final SQLProcess sqlProcessValue, final String idThread) {
-        return new GetValue<ObjectValue, LP>() {
-            public ObjectValue getMapValue(LP prop) {
-                return getSQLMapValue(prop, sqlProcessValue, idThread);
-            }
-        };
+        return prop -> getSQLMapValue(prop, sqlProcessValue, idThread);
     }
 
     private ObjectValue getJavaMapValue(LP<?> prop, JavaProcess javaProcess, String idThread) {
@@ -227,22 +219,9 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
 
         ImMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> rows;
 
-        rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
-            public ImMap<String, DataObject> getMapValue(String value) {
-                return MapFact.singleton("key", new DataObject(value, StringClass.get(10)));
-            }
-        }, new GetKeyValue<ImMap<LP, ObjectValue>, String, JavaProcess>() {
-            public ImMap<LP, ObjectValue> getMapValue(String key, JavaProcess value) {
-                return props.getSet().mapValues(getJavaMapValueGetter(value, key));
-            }
-        });
+        rows = processes.mapKeyValues(value -> MapFact.singleton("key", new DataObject(value, StringClass.get(10))), (key, value) -> props.getSet().mapValues(getJavaMapValueGetter(value, key)));
 
-        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LP>() {
-            @Override
-            public Type getType(LP key) {
-                return ((LP<?>)key).property.getType();
-            }
-        });
+        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, key -> ((LP<?>)key).property.getType());
         OperationOwner owner = context.getSession().getOwner();
         SQLSession sql = context.getSession().sql;
         importTable.writeRows(sql, rows, owner);
@@ -265,22 +244,9 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
 
         ImMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> rows;
 
-        rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
-            public ImMap<String, DataObject> getMapValue(String value) {
-                return MapFact.singleton("key", new DataObject(value, StringClass.get(10)));
-            }
-        }, new GetKeyValue<ImMap<LP, ObjectValue>, String, SQLProcess>() {
-            public ImMap<LP, ObjectValue> getMapValue(String key, SQLProcess value) {
-                return props.getSet().mapValues(getSQLMapValueGetter(value, key));
-            }
-        });
+        rows = processes.mapKeyValues(value -> MapFact.singleton("key", new DataObject(value, StringClass.get(10))), (key, value) -> props.getSet().mapValues(getSQLMapValueGetter(value, key)));
 
-        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LP>() {
-            @Override
-            public Type getType(LP key) {
-                return ((LP<?>)key).property.getType();
-            }
-        });
+        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, key -> ((LP<?>)key).property.getType());
         OperationOwner owner = context.getSession().getOwner();
         SQLSession sql = context.getSession().sql;
         importTable.writeRows(sql, rows, owner);

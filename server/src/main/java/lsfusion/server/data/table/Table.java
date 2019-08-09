@@ -105,11 +105,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     public ImSet<PropertyField> properties;
 
     public ImMap<PropertyField, Type> getPropTypes() {
-        return properties.mapValues(new GetValue<Type, PropertyField>() {
-            public Type getMapValue(PropertyField value) {
-                return value.type;
-            }
-        });
+        return properties.mapValues((GetValue<Type, PropertyField>) value -> value.type);
     }
 
     public Stat getStatRows() {
@@ -171,19 +167,13 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     protected static TableStatKeys getStatKeys(final Table table, final int count) { // для мн-го наследования
-        ImMap<KeyField, Integer> statMap = table.getTableKeys().mapValues(new GetValue<Integer, KeyField>() {
-            public Integer getMapValue(KeyField value) {
-                return BaseUtils.min(count, getKeyFieldStat(value, table));
-            }});
+        ImMap<KeyField, Integer> statMap = table.getTableKeys().mapValues((GetValue<Integer, KeyField>) value -> BaseUtils.min(count, getKeyFieldStat(value, table)));
         return TableStatKeys.createForTable(count, statMap);
     }
 
     protected static ImMap<PropertyField, PropStat> getStatProps(final Table table) { // для мн-го наследования
         final Stat rows = table.getTableStatKeys().getRows();
-        return table.properties.mapValues(new GetValue<PropStat, PropertyField>() {
-            public PropStat getMapValue(PropertyField prop) {
-                return new PropStat(InnerExpr.getAdjustStatValue(rows, getPropFieldStat(prop, table))); 
-            }});
+        return table.properties.mapValues((GetValue<PropStat, PropertyField>) prop -> new PropStat(InnerExpr.getAdjustStatValue(rows, getPropFieldStat(prop, table))));
     }
 
     public boolean isSingle() {
@@ -220,11 +210,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     private <K extends Field> ImMap<K, DataClass> getDataFields(ImSet<K> fields) {
-        return BaseUtils.immutableCast(fields.mapValues(new GetValue<Type, K>() {
-            public Type getMapValue(K value) {
-                return value.type;
-            }
-        }).filterFnValues(new SFunctionSet<Type>() {
+        return BaseUtils.immutableCast(fields.mapValues((GetValue<Type, K>) value -> value.type).filterFnValues(new SFunctionSet<Type>() {
             public boolean contains(Type element) {
                 return element instanceof DataClass;
             }
@@ -267,16 +253,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     protected void initBaseClasses(final BaseClass baseClass) {
-        final ImMap<KeyField, AndClassSet> baseClasses = getTableKeys().mapValues(new GetValue<AndClassSet, KeyField>() {
-            public AndClassSet getMapValue(KeyField value) {
-                return value.type.getBaseClassSet(baseClass);
-            }});
+        final ImMap<KeyField, AndClassSet> baseClasses = getTableKeys().mapValues((GetValue<AndClassSet, KeyField>) value -> value.type.getBaseClassSet(baseClass));
         classes = new ClassWhere<>(baseClasses);
 
-        propertyClasses = properties.mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
-            public ClassWhere<Field> getMapValue(PropertyField value) {
-                return new ClassWhere<>(MapFact.addExcl(baseClasses, value, value.type.getBaseClassSet(baseClass)));
-            }});
+        propertyClasses = properties.mapValues((GetValue<ClassWhere<Field>, PropertyField>) value -> new ClassWhere<>(MapFact.addExcl(baseClasses, value, value.type.getBaseClassSet(baseClass))));
     }
 
     public Table(DataInputStream inStream, final BaseClass baseClass) throws IOException {
@@ -368,10 +348,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 inconsistentRereadChanges.set(SetFact.<Field>EMPTY());
             return null;
         }
-        final ImMap<PropertyField, ObjectValueClassSet> objectPropClasses = splitRead(properties, new GetValue<AndClassSet, PropertyField>() {
-            public AndClassSet getMapValue(PropertyField value) {
-                return propertyClasses.get(value).getCommonClass(value);
-            }}, inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
+        final ImMap<PropertyField, ObjectValueClassSet> objectPropClasses = splitRead(properties, value -> propertyClasses.get(value).getCommonClass(value), inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
         if(objectPropClasses == null) {
             if(inconsistent)
                 inconsistentRereadChanges.set(SetFact.<Field>EMPTY());
@@ -402,33 +379,16 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         final ValueExpr unknownExpr = new ValueExpr(-1L, baseClass.unknown);
         final ImMap<Field, ObjectValueClassSet> fieldClasses = MapFact.addExcl(objectKeyClasses, objectPropClasses);
         final IsClassType classType = inconsistent ? IsClassType.INCONSISTENT : IsClassType.CONSISTENT;
-        GetKeyValue<Expr, Field, Expr> classExpr = new GetKeyValue<Expr, Field, Expr>() {
-            public Expr getMapValue(Field key, Expr value) {
-                return value.classExpr(fieldClasses.get(key), classType).nvl(unknownExpr).ifElse(value.getWhere(), nullExpr);
-            }};
+        GetKeyValue<Expr, Field, Expr> classExpr = (key, value) -> value.classExpr(fieldClasses.get(key), classType).nvl(unknownExpr).ifElse(value.getWhere(), nullExpr);
         ImMap<Field, Expr> group = fieldExprs.mapValues(classExpr);
 
-        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
-            public ImMap<Field, ConcreteClass> getMapValue(ImMap<Field, Object> value) {
-                return value.filterFnValues(new SFunctionSet<Object>() {
-                    public boolean contains(Object element) {
-                        return ((Long) element) != -2;
-                    }
-                }).mapValues(new GetKeyValue<ConcreteClass, Field, Object>() {
-                    public ConcreteClass getMapValue(Field key, Object id) {
-                        return baseClass.findConcreteClassID((Long)id, -1);
-                    }
-                });
+        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(value -> value.filterFnValues(new SFunctionSet<Object>() {
+            public boolean contains(Object element) {
+                return ((Long) element) != -2;
             }
-        });
+        }).mapValues((key, id) -> baseClass.findConcreteClassID((Long) id, -1)));
 
-        return readClasses.mapKeyValues(new GetValue<ImMap<KeyField, ConcreteClass>, ImMap<Field, ConcreteClass>>() {
-            public ImMap<KeyField, ConcreteClass> getMapValue(ImMap<Field, ConcreteClass> value) {
-                return value.filter(objectKeys);
-            }}, new GetValue<ImMap<PropertyField, ConcreteClass>, ImMap<Field, ConcreteClass>>() {
-            public ImMap<PropertyField, ConcreteClass> getMapValue(ImMap<Field, ConcreteClass> value) {
-                return value.filter(objectProps);
-            }});
+        return readClasses.mapKeyValues(value -> value.filter(objectKeys), value -> value.filter(objectProps));
     }
 
     /*         final Result<ImMap<KeyField, DataClass>> dataKeys = new Result<ImMap<KeyField, DataClass>>();
@@ -621,12 +581,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
         @IdentityLazy
         public PushResult getPushedCost(Stat pushStat, ImMap<KeyField, Stat> pushKeys, ImMap<KeyField, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps) {
-            ImRevMap<PropertyField, BaseExpr> mapProps = pushProps.keys().mapRevKeys(new GetValue<PropertyField, BaseExpr>() {
-                public PropertyField getMapValue(BaseExpr value) {
-                    if(value instanceof IsClassExpr)
-                        value = ((IsClassExpr)value).getInnerJoinExpr();
-                    return ((Expr) value).property;
-                }
+            ImRevMap<PropertyField, BaseExpr> mapProps = pushProps.keys().mapRevKeys((GetValue<PropertyField, BaseExpr>) value -> {
+                if(value instanceof IsClassExpr)
+                    value = ((IsClassExpr)value).getInnerJoinExpr();
+                return ((Expr) value).property;
             });
             ImMap<PropertyField, Stat> pushPropFields = mapProps.join(pushProps);
             ImMap<Field, Stat> pushFieldStats = MapFact.addExcl(pushPropFields, pushKeys);
@@ -636,17 +594,9 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             TableStatKeys tableStatKeys = getTableStatKeys();
             Stat thisStat = tableStatKeys.getRows();
             ImMap<PropertyField, PropStat> tableStatProps = getStatProps();
-            ImMap<Field, Stat> thisFieldStats = MapFact.addExcl(tableStatProps.mapValues(new GetValue<Stat, PropStat>() {
-                public Stat getMapValue(PropStat value) {
-                    return value.distinct;
-                }
-            }), tableStatKeys.getDistinct());
+            ImMap<Field, Stat> thisFieldStats = MapFact.addExcl(tableStatProps.mapValues(value -> value.distinct), tableStatKeys.getDistinct());
 
-            ImMap<Field, Stat> thisFieldNotNulls = MapFact.addExcl(tableStatProps.mapValues(new GetValue<Stat, PropStat>() {
-                public Stat getMapValue(PropStat value) {
-                    return value.notNull;
-                }
-            }), tableStatKeys.getDistinct().keys().toMap(thisStat));
+            ImMap<Field, Stat> thisFieldNotNulls = MapFact.addExcl(tableStatProps.mapValues(value -> value.notNull), tableStatKeys.getDistinct().keys().toMap(thisStat));
 
             Stat bestStat = thisStat; // интересуют результаты меньшие всего пробега по таблице
             ImOrderSet<Field> bestIndex = null;
