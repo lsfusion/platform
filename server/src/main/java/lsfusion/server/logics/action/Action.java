@@ -11,6 +11,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -286,7 +287,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getWhereProperty().mapGetInterfaceClasses(type);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public PropertyMapImplement<?, P> getWhereProperty() {
         return getWhereProperty(false);
     }

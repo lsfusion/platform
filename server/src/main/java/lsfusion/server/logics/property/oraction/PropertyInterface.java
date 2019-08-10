@@ -91,6 +91,13 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public void mapFillDepends(MSet<Property> depends) {
     }
 
+    public int mapHashCode() {
+        return hashCode();
+    }
+    public boolean mapEquals(PropertyInterfaceImplement<P> implement) {
+        return equals(implement);
+    }
+
     public ImSet<OldProperty> mapOldDepends() {
         return SetFact.EMPTY();
     }

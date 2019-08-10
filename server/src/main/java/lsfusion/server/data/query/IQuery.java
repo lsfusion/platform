@@ -34,6 +34,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> implements MapKeysInterface<K> {
 
@@ -147,6 +148,15 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
             return new PullValues<>(query.map(mapKeys.removeValuesRev(pullKeys.keys()), mapProps.removeValuesRev(pullProps.keys()), mapValues.filter(query.getInnerValues())),
                     mapKeys.rightJoin(mapValues.mapKeys().translate(pullKeys)),
                     mapProps.rightJoin(mapValues.mapKeys().translate(pullProps)));
+        }
+
+        // only for check caches
+        public boolean equals(Object o) {
+            return this == o || o instanceof PullValues && query.equals(((PullValues<?, ?>) o).query) && pullKeys.equals(((PullValues<?, ?>) o).pullKeys) && pullProps.equals(((PullValues<?, ?>) o).pullProps);
+        }
+
+        public int hashCode() {
+            return Objects.hash(query, pullKeys, pullProps);
         }
     }
     public abstract PullValues<K, V> pullValues();

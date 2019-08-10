@@ -44,6 +44,9 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
 
     void mapFillDepends(MSet<Property> depends);
     ImSet<OldProperty> mapOldDepends();
+    
+    int mapHashCode();
+    boolean mapEquals(PropertyInterfaceImplement<P> implement);
 
     Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;

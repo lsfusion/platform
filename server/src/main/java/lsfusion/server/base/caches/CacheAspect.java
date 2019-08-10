@@ -296,32 +296,37 @@ public class CacheAspect {
     }
     @Around("execution(@lsfusion.server.base.caches.IdentityStartLazy * *.*(..)) && target(object)")
     public Object callStartMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, Type.START, CacheStats.CacheType.OTHER);
+        return callMethod(object, thisJoinPoint, Type.START, CacheStats.CacheType.IDENTITY_LAZY);
     }
     @Around("execution(@lsfusion.server.base.caches.IdentityInstanceLazy * *.*(..)) && target(object)")
     public Object callInstanceMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, Type.SIMPLE, CacheStats.CacheType.OTHER); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
+        return callMethod(object, thisJoinPoint, Type.SIMPLE, CacheStats.CacheType.INSTANCE_LAZY); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
     }
     @Around("execution(@lsfusion.server.base.caches.IdentityStrongLazy * *.*(..)) && target(object)")
     public Object callStrongMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, Type.STRONG, CacheStats.CacheType.OTHER);
+        return callMethod(object, thisJoinPoint, Type.STRONG, CacheStats.CacheType.INSTANCE_LAZY);
     }
     @Around("execution(@lsfusion.server.base.caches.IdentityQuickLazy * *.*(..)) && target(object)")
     public Object callQuickMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint, Type.QUICK, CacheStats.CacheType.QUICK_LAZY);
     }
 
-    public static Object callParamMethod(Object object, ProceedingJoinPoint thisJoinPoint, Type type) throws Throwable {
+    public static Object callParamMethod(Object object, ProceedingJoinPoint thisJoinPoint, Type type, CacheStats.CacheType cacheType) throws Throwable {
         Object[] args = thisJoinPoint.getArgs();
         Object[] switchArgs = new Object[args.length];
         switchArgs[0] = object;
         System.arraycopy(args, 1, switchArgs, 1, args.length - 1);
 
-        return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs, false, type, CacheStats.CacheType.PARAM_LAZY);
+        return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs, false, type, cacheType);
     }
     @Around("execution(@lsfusion.server.base.caches.ParamLazy * *.*(..)) && target(object)")
     public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callParamMethod(object, thisJoinPoint, Type.SIMPLE);
+        return callParamMethod(object, thisJoinPoint, Type.SIMPLE, CacheStats.CacheType.PARAM_LAZY);
+    }
+
+    @Around("execution(@lsfusion.server.base.caches.ParamInstanceLazy * *.*(..)) && target(object)")
+    public Object callParamInstanceMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        return callParamMethod(object, thisJoinPoint, Type.SIMPLE, CacheStats.CacheType.PARAM_INSTANCE_LAZY);
     }
 
     //@net.jcip.annotations.Immutable

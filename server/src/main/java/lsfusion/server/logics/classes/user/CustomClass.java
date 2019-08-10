@@ -620,11 +620,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return BaseUtils.immutableCast(getUpClassFields(true));
     }
 
-    public ImMap<IsClassField,ObjectValueClassSet> getUpIsClassFields() {
-        return getUpClassFields(false);
-    }
-
-        // в отличии от getMapTables, для того чтобы ходить "вверх" было удобно
+    // в отличии от getMapTables, для того чтобы ходить "вверх" было удобно
     private IsClassField isClassField;
 
     public void setIsClassField(IsClassField isClassField) {
