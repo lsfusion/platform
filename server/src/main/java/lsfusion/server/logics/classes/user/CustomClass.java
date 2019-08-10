@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.user;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -16,10 +17,7 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.interop.classes.DataType;
-import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.caches.IdentityStartLazy;
-import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -65,6 +63,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
@@ -624,6 +623,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     private IsClassField isClassField;
 
     public void setIsClassField(IsClassField isClassField) {
+        assert CacheAspect.checkNoCachesBoolean(this, CacheAspect.Type.SIMPLE, CustomClass.class, "getUpClassFields");
         this.isClassField = isClassField;
     }
 

@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.caches.CacheAspect;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.base.version.NFFact;
@@ -191,6 +192,7 @@ public class ImplementTable extends DBTable { // последний интерф
 
     @NFLazy
     public void addIndex(ImOrderSet<Field> index) { // кривовато конечно, но пока другого варианта нет
+        assert CacheAspect.checkNoCaches(this, CacheAspect.Type.SIMPLE, Table.class, "getIndexes");
         indexes = indexes.addExcl(index);
 
         Field field = index.get(0);

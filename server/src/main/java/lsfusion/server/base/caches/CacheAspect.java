@@ -1,5 +1,6 @@
 package lsfusion.server.base.caches;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.SoftHashMap;
@@ -9,6 +10,7 @@ import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -70,16 +72,55 @@ public class CacheAspect {
     private static Object lazyExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args, LRUWSASVSMap<Object, Method, Object, Object> lruCache, boolean changedArgs, CacheStats.CacheType type) throws Throwable {
         Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
         Object result = lruCache.get(object, method, args);
+
+        Object checkResult = null;
+        if(checkCaches && type != CacheStats.CacheType.INSTANCE_LAZY && type != CacheStats.CacheType.PARAM_INSTANCE_LAZY) {
+            checkResult = result;
+            result = null;
+        }
+                    
         if (result == null) {
             CacheStats.incrementMissed(type);
             result = execute(object, thisJoinPoint, args, changedArgs);
             lruCache.put(object, method, args, result == null ? LRUUtil.Value.NULL : result);                        
+        } else {
+            if (result == LRUUtil.Value.NULL) {
+                result = null;
+            }
         }
         CacheStats.incrementHit(type);
-        if (result == LRUUtil.Value.NULL) { 
-            result = null;
+        
+        if(checkCaches && checkResult != null) {
+            lruCache.put(object, method, args, checkResult);
+            if (checkResult == LRUUtil.Value.NULL) {
+                checkResult = null;
+            }
+            if(!BaseUtils.nullHashEquals(result, checkResult))
+                System.out.println("WRONG CACHE : object - " + object + ", method - " + method + ", args - " + Arrays.toString(args) + "\n\tACTUAL RESULT :" + result + "\n\tCACHED RESULT :" + checkResult);
         }
+        
         return result;
+    }
+    
+    public static boolean checkNoCachesBoolean(Object object, Type type, Class clazz, String methodName) {
+        try {
+            Method method = clazz.getMethod(methodName, boolean.class);
+            return CacheAspect.checkNoCaches(object, CacheAspect.Type.SIMPLE, method, new Object[]{true})
+                    && CacheAspect.checkNoCaches(object, CacheAspect.Type.SIMPLE, method, new Object[]{false});
+        } catch (NoSuchMethodException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    public static boolean checkNoCaches(Object object, Type type, Class clazz, String methodName) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName);
+            return CacheAspect.checkNoCaches(object, type, method, new Object[]{});
+        } catch (NoSuchMethodException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    public static boolean checkNoCaches(Object object, Type type, Method method, Object[] args) {
+        return getLRUCache(type).get(object, method, args) == null;
     }
 
     static class IdentityInvocation {
@@ -224,6 +265,7 @@ public class CacheAspect {
     private static class Waiting {}
 
     private static boolean disableCaches = false;
+    private static boolean checkCaches = false;
 
     public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs, Type type, CacheStats.CacheType cacheType) throws Throwable {
         if(type == Type.STRONG) {
@@ -269,6 +311,10 @@ public class CacheAspect {
         if(disableCaches)
             return execute(target, thisJoinPoint, args, changedArgs);
 
+        return lazyExecute(target, thisJoinPoint, args, getLRUCache(type), changedArgs, cacheType);     
+    }
+
+    public static LRUWSASVSMap<Object, Method, Object, Object> getLRUCache(Type type) {
         LRUWSASVSMap<Object, Method, Object, Object> lruCache = null;
         if(type == Type.QUICK) {
             lruCache = quickLruCache;
@@ -283,8 +329,7 @@ public class CacheAspect {
             if (lruCache == null)
                 lruCache = commonLruCache;
         }
-
-        return lazyExecute(target, thisJoinPoint, args, lruCache, changedArgs, cacheType);     
+        return lruCache;
     }
 
     public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint, Type type, CacheStats.CacheType cacheType) throws Throwable {
