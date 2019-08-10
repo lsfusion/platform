@@ -11,12 +11,14 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.event.ChangeEvent;
@@ -25,6 +27,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.SimpleIncrementProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
@@ -112,6 +115,12 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
 
     public ImSet<ClassDataProperty> getClassDataProps() {
         return BaseUtils.immutableCast(baseClass.getUpObjectClassFields().keys());
+    }
+
+    // we don't want real tables to be used for classes (because it will lead to too early cache reading)
+    @Override
+    protected boolean isClassVirtualized(CalcClassType calcType) {
+        return true;
     }
 
     @Override

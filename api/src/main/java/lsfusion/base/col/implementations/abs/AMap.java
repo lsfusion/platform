@@ -639,8 +639,25 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
 
     protected boolean twins(ImMap<K, V> map) { // assert что size одинаковый
         for (int i = 0; i < size(); i++) {
-            V mapValue = map.get(getKey(i));
-            if (mapValue == null || !BaseUtils.nullEquals(mapValue, getValue(i))) return false;
+            K key = getKey(i);
+            V value = getValue(i);
+
+            V mapValue = map.get(key);
+            
+            // proceeding null values
+            if (mapValue == null) {
+                if(value != null)
+                    return false;
+                
+                if(map.containsKey(key)) // really null value
+                    continue;
+                else
+                    return false;
+            } else
+                if(value == null)
+                    return false;            
+            
+            if (!mapValue.equals(value)) return false;
         }
         return true;
     }

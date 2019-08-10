@@ -15,6 +15,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class PropertyRevImplement<P extends PropertyInterface, T> implements PropertyObjectInterfaceImplement<T> {
     

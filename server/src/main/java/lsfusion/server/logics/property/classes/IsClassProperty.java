@@ -20,6 +20,7 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
@@ -204,13 +205,14 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     // we don't want real tables to be used for classes (because it will lead to too early cache reading)
     @Override
     protected boolean isClassVirtualized(CalcClassType calcType) {
-        return true;//calcType == CalcClassType.PREVSAME || getInterfaceClass() instanceof BaseClass;
+        return true;
     }
-
-//    @Override
-//    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
-//        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
-//    }
+    
+    // hack - need this override, because otherwise : initFullTablesTask uses Join + IsClass => calcClassValueWhere => isClass => getUpClassFields => too early caches reading
+    @Override
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
+        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
+    }
 
 //    public static boolean checkSession(OuterContext context) {
 //        final Result<Boolean> found = new Result<>(false);

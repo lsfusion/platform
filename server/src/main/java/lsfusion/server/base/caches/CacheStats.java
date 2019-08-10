@@ -52,7 +52,7 @@ public class CacheStats {
 
     public enum CacheType {
         JOIN, DATA_CHANGES, EXPR, JOIN_EXPR, INCREMENT_CHANGE, READ_SAVE, AUTOHINT, QUERY, TEMP_TABLE,
-        TWIN_LAZY, USED_CHANGES, PARAM_LAZY, IDENTITY_LAZY, QUICK_LAZY, OTHER;
+        TWIN_LAZY, USED_CHANGES, PARAM_LAZY, PARAM_INSTANCE_LAZY, IDENTITY_LAZY, QUICK_LAZY, INSTANCE_LAZY;
 
         @Override
         public String toString() {
@@ -81,12 +81,14 @@ public class CacheStats {
                     return "UC";
                 case PARAM_LAZY:
                     return "PL";
+                case PARAM_INSTANCE_LAZY:
+                    return "PN";
                 case IDENTITY_LAZY:
                     return "IL";
                 case QUICK_LAZY:
                     return "QL";
-                case OTHER:
-                    return "O";
+                case INSTANCE_LAZY:
+                    return "NL";
                 default:
                     return super.toString();
             }

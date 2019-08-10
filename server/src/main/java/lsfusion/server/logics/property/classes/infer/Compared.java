@@ -26,14 +26,14 @@ public abstract class Compared<T extends PropertyInterface> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Compared compared = (Compared) o;
+        Compared<T> compared = (Compared<T>) o;
 
-        return (first.equals(compared.first) && second.equals(compared.second)) || (first.equals(compared.second) && second.equals(compared.first));
+        return (first.mapEquals(compared.first) && second.mapEquals(compared.second)) || (first.mapEquals(compared.second) && second.mapEquals(compared.first));
     }
 
     @Override
     public int hashCode() {
-        return first.hashCode() + second.hashCode();
+        return first.mapHashCode() + second.mapHashCode();
     }
     
     protected abstract <P extends PropertyInterface> Compared<P> create(PropertyInterfaceImplement<P> first, PropertyInterfaceImplement<P> second);

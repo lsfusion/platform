@@ -12,6 +12,7 @@ import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.ParamInstanceLazy;
 import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.base.caches.TwinLazy;
 import lsfusion.server.data.AbstractSourceJoin;
@@ -90,6 +91,7 @@ import lsfusion.server.physics.exec.db.table.SerializedTable;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {
     
@@ -587,6 +589,15 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             this.pushedKeys = pushedKeys;
             this.pushedProps = pushedProps;
         }
+
+        // only for check caches
+        public boolean equals(Object o) {
+            return this == o || o instanceof PushResult && cost.equals(((PushResult) o).cost) && Objects.equals(pushedKeys, ((PushResult) o).pushedKeys) && Objects.equals(pushedProps, ((PushResult) o).pushedProps);
+        }
+
+        public int hashCode() {
+            return Objects.hash(cost, pushedKeys, pushedProps);
+        }
     }
 
     public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, lsfusion.server.data.query.build.Join<PropertyField> {
@@ -793,7 +804,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return (Join) aspectTranslate(translator);
         }
 
-        @ParamLazy
+        @ParamInstanceLazy
         public lsfusion.server.data.query.build.Join<PropertyField> translateExpr(ExprTranslator translator) {
             return join(translator.translate(joins));
         }

@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.base.lambda.Processor;
 import lsfusion.server.base.caches.ContextTwin;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -355,7 +356,7 @@ public class Query<K,V> extends IQuery<K,V> {
                 transProps.remove(pullProps.keys()), transWhere), pullKeys, pullProps);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy // otherwise we'll need a lot of extra equals for check caches, however later it should be done
     @Pack
     @StackMessage("{message.core.query.compile}")
     public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions<V> options) {
@@ -572,7 +573,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     // создаем запрос с IsClassExpr'ами
-    @IdentityLazy
+    @IdentityInstanceLazy
     @Pack
     public Pair<IQuery<K, Object>, ImRevMap<Expr, Object>> getClassQuery(final BaseClass baseClass) {
         MSet<Expr> mReadExprs = SetFact.mSet();

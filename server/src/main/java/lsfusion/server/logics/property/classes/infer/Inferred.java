@@ -14,6 +14,8 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
+import java.util.Objects;
+
 public class Inferred<T extends PropertyInterface> {
 
     private final ImMap<T, ExClassSet> params;
@@ -276,5 +278,14 @@ public class Inferred<T extends PropertyInterface> {
     }
     public Inferred<T> getBase(InferType inferType) {
         return new Inferred<>(getBase(getParams(inferType)), notNull, SetFact.<Compared<T>>EMPTY(), getBase(getNotParams(inferType)), notNotNull, SetFact.<Compared<T>>EMPTY());
+    }
+
+    // only for check caches
+    public boolean equals(Object o) {
+        return this == o || o instanceof Inferred && Objects.equals(params, ((Inferred<?>) o).params) && Objects.equals(notNull, ((Inferred<?>) o).notNull) && Objects.equals(compared, ((Inferred<?>) o).compared) && Objects.equals(notParams, ((Inferred<?>) o).notParams) && Objects.equals(notNotNull, ((Inferred<?>) o).notNotNull) && Objects.equals(notCompared, ((Inferred<?>) o).notCompared);
+    }
+
+    public int hashCode() {
+        return Objects.hash(params, notNull, compared, notParams, notNotNull, notCompared);
     }
 }
