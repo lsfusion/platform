@@ -22,14 +22,15 @@ public class ClearFusionTempFilesAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             Integer countDays = (Integer) findProperty("countDaysClearFusionTempFiles").read(context);
-            if (countDays != null) {
-                Calendar cal = Calendar.getInstance();
-                cal.add(Calendar.DATE, -countDays);
-                long minDate = cal.getTimeInMillis();
-                String tempDir = System.getProperty("java.io.tmpdir");
-                if (tempDir != null) {
-                    deleteFiles(new File(tempDir), minDate, false);
-                }
+            if(countDays == null) {
+                countDays = 0;
+            }
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DATE, -countDays);
+            long minDate = cal.getTimeInMillis();
+            String tempDir = System.getProperty("java.io.tmpdir");
+            if (tempDir != null) {
+                deleteFiles(new File(tempDir), minDate, false);
             }
         } catch (Exception e) {
             ServerLoggers.systemLogger.error("Failed to clear lsfusion temp files", e);
