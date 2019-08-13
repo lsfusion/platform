@@ -12,6 +12,6 @@ public class DoubleGridCellRenderer extends NumberGridCellRenderer {
     @Override
     protected String renderToString(Number value) {
         assert value != null;
-        return format.format(new BigDecimal(value.toString()));
+        return format.format(new Double(value.toString()));
     }
 }
