@@ -2775,6 +2775,7 @@ recursiveExtendContextActionDB[List<TypedParameter> context, boolean dynamic] re
 	|	dialogADB=dialogActionDefinitionBody[context] { $action = $dialogADB.action; } // mixed, input
 	|	inputADB=inputActionDefinitionBody[context] { $action = $inputADB.action; } // mixed, input
 	|	newADB=newActionDefinitionBody[context] { $action = $newADB.action; }
+	|	recalculateADB=recalculateActionDefinitionBody[context] { $action = $recalculateADB.action; }
 	;
 
 recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -3548,6 +3549,23 @@ changeOrExecActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		expr=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left side
 		('WHERE'
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?)?
+	;
+
+recalculateActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
+@init {
+	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
+	LPWithParams condition = null;
+}
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedRecalculatePropertyAProp(context, $propUsage.propUsage, $params.props, condition, newContext);
+	}
+}
+	:	'RECALCULATE'
+		propUsage=propertyUsage
+		'(' params=singleParameterList[newContext, true] ')'
+		('WHERE'
+		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
 	;
 
 tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

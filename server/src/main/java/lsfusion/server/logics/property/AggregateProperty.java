@@ -193,6 +193,10 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     }
 
     private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence) {
+        return getRecalculateQuery(outDB, baseClass, checkInconsistence, null);
+    }
+
+    private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence, Where where) {
         assert isStored();
         
         QueryBuilder<T, String> query = new QueryBuilder<>(this);
@@ -203,6 +207,9 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             query.addProperty("dbvalue", dbExpr);
         query.addProperty("calcvalue", calculateExpr);
         query.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
+        if(where != null) {
+            query.and(where);
+        }
         if(outDB || !DBManager.RECALC_REUPDATE)
             query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not().and(dbExpr.getWhere().or(calculateExpr.getWhere())));
         return query.getQuery();
@@ -216,7 +223,11 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public static AggregateProperty recalculate = null;
 
     public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateAggregation(sql, null, baseClass);
+        recalculateAggregation(BL, session, sql, baseClass, null);
+    }
+
+    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, Where where) throws SQLException, SQLHandledException {
+        recalculateAggregation(sql, null, baseClass, where);
 
         ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
         if (propertyObject instanceof DataObject)
@@ -225,17 +236,17 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     @StackMessage("{logics.info.recalculation.of.aggregated.property}")
     @ThisMessage
-    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
-        boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr();
+    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, Where where) throws SQLException, SQLHandledException {
+        boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr() || where != null;
         if(useRecalculate)
             recalculateClasses(session, env, baseClass);
 
         session.pushVolatileStats(OperationOwner.unknown);
         try {
             session.modifyRecords(env == null ?
-                    new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate).map(
+                    new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate, where).map(
                             mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global) :
-                    new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate).map(
+                    new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate, where).map(
                             mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), env, TableOwner.global));
         } finally {
             session.popVolatileStats(OperationOwner.unknown);

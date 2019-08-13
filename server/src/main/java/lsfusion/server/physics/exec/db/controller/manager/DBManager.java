@@ -1788,11 +1788,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void recalculateAggregationTableColumn(DataSession dataSession, SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         AggregateProperty property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
         if (property != null)
-            runAggregationRecalculation(dataSession, session, property, isolatedTransaction);
+            runAggregationRecalculation(dataSession, session, property, null, isolatedTransaction);
     }
 
-    private void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty aggregateProperty, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        run(session, isolatedTransaction, sql -> aggregateProperty.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass));
+    public void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty aggregateProperty, Where where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        run(session, isolatedTransaction, sql -> aggregateProperty.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass, where));
     }
 
     public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
@@ -1812,7 +1812,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         
         if (property instanceof AggregateProperty && property.isStored()) {
-            runAggregationRecalculation(dataSession, session, (AggregateProperty) property, isolatedTransaction);
+            runAggregationRecalculation(dataSession, session, (AggregateProperty) property, null, isolatedTransaction);
             calculated.add(property);
         }
 

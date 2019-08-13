@@ -8,10 +8,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -2236,6 +2233,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
         return addScriptedChangeAProp(context, fromProperty, whereProperty, toProperty);
+    }
+
+    public LAWithParams addScriptedRecalculatePropertyAProp(List<TypedParameter> context, NamedPropertyUsage propertyUsage, List<LPWithParams> propertyMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        Property aggregateProperty = findLPByPropertyUsage(propertyUsage, propertyMapping, newContext).property;
+        if (aggregateProperty instanceof AggregateProperty) {
+            LPWithParams property = addScriptedJProp(findLPByPropertyUsage(propertyUsage, propertyMapping, newContext), propertyMapping);
+            List<Integer> resultInterfaces = getResultInterfaces(context.size(), property, whereProperty);
+            List<LAPWithParams> paramsList = new ArrayList<>();
+            for (int resI : resultInterfaces) {
+                paramsList.add(new LPWithParams(resI));
+            }
+            paramsList.add(property);
+            if(whereProperty != null) {
+                paramsList.add(whereProperty);
+            }
+
+            LA result = addRecalculatePropertyAProp(resultInterfaces.size(), (AggregateProperty) aggregateProperty, whereProperty != null, getParamsPlainList(paramsList).toArray());
+            return new LAWithParams(result, resultInterfaces);
+        } else {
+            throw new UnsupportedOperationException("RECALCULATE is supported only for AggregateProperty");
+        }
     }
 
     private LPWithParams addVirtualParam(int exParams, LPWithParams toParam, Result<LPWithParams> rWhereProperty, int oldContextSize, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
