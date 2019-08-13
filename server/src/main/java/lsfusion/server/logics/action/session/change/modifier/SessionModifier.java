@@ -154,10 +154,7 @@ public abstract class SessionModifier implements Modifier {
             assert !changed.isEmpty();
             mChanged = null;
             
-            ImMap<Property, ModifyChange> replace = changed.keys().mapValues(new GetValue<ModifyChange, Property>() {
-                public ModifyChange getMapValue(Property value) {
-                    return getModifyChange(value);
-                }});
+            ImMap<Property, ModifyChange> replace = changed.keys().mapValues((GetValue<ModifyChange, Property>) this::getModifyChange);
 
             if(enableCheckChanges && !forceUpdate && !calculatePropertyChanges().equals(propertyChanges.replace(replace))) // может нарушаться если в calculatePropertyChanges кто-то empty возвращает (а в replace есть filter not empty)
                 assert false;

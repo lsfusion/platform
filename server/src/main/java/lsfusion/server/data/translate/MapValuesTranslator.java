@@ -17,10 +17,7 @@ public abstract class MapValuesTranslator extends AbstractMapTranslator implemen
     private GetValue<TranslateValues, TranslateValues> trans;
     private <V extends TranslateValues> GetValue<V, V> TRANS() {
         if(trans==null) {
-            trans = new GetValue<TranslateValues, TranslateValues>() {
-                public TranslateValues getMapValue(TranslateValues value) {
-                    return value.translateValues(MapValuesTranslator.this);
-                }};
+            trans = value -> value.translateValues(MapValuesTranslator.this);
         }
         return (GetValue<V, V>)trans;
     }
@@ -28,10 +25,7 @@ public abstract class MapValuesTranslator extends AbstractMapTranslator implemen
 //    private GetValue<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>> transMap;
     public <K, V extends ValuesContext> GetValue<ImMap<K, V>, ImMap<K, V>> TRANSMAP() {
 //        if(transMap==null) {
-            GetValue<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>> transMap = new GetValue<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>>() {
-                public ImMap<Object, ValuesContext> getMapValue(ImMap<Object, ValuesContext> value) {
-                    return translateValues(value);
-                }};
+            GetValue<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>> transMap = this::translateValues;
 //      }
         return BaseUtils.immutableCast(transMap);
     }
@@ -39,10 +33,7 @@ public abstract class MapValuesTranslator extends AbstractMapTranslator implemen
     private GetValue<Value, Value> transValue;
     private <V extends Value> GetValue<V, V> TRANSVALUE() {
 //        if(transValue==null) {
-            GetValue<Value, Value> transValue = new GetValue<Value, Value>() {
-                public Value getMapValue(Value value) {
-                    return translate(value);
-                }};
+            GetValue<Value, Value> transValue = this::translate;
 //        }
         return BaseUtils.immutableCast(transValue);
     }

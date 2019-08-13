@@ -102,11 +102,7 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
     }
 
     public ImMap<Integer, K> toIndexedMap() {
-        return mapListMapValues(new GetIndex<Integer>() {
-            public Integer getMapValue(int i) {
-                return i;
-            }
-        });
+        return mapListMapValues(i -> i);
     }
 
     public ImList<K> addList(ImList<? extends K> list) {

@@ -15,10 +15,7 @@ public class Pairs<T,V> extends Permutations<ImRevMap<T,V>> {
     }
 
     ImRevMap<T, V> getPermute(final PermuteIterator permute) {
-        return from.mapOrderRevValues(new GetIndex<V>() {
-            public V getMapValue(int i) {
-                return to.get(permute.nums[i]);
-            }});
+        return from.mapOrderRevValues(i -> to.get(permute.nums[i]));
     }
 
     boolean isEmpty() {

@@ -43,11 +43,7 @@ public abstract class Compared<T extends PropertyInterface> {
     }
     
     public static <T extends PropertyInterface, P extends PropertyInterface> ImSet<Compared<P>> map(ImSet<Compared<T>> compareds, final ImRevMap<T, P> mapping) {
-        return compareds.mapSetValues(new GetValue<Compared<P>, Compared<T>>() {
-            public Compared<P> getMapValue(Compared<T> value) {
-                return value.remap(mapping);
-            }
-        });
+        return compareds.mapSetValues(value -> value.remap(mapping));
     }
     
     public boolean intersect(ImSet<T> interfaces) {

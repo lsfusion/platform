@@ -4,9 +4,7 @@ public class PureTime implements PureTimeInterface {
 
     private long totalRuntime;
 
-    public final static PureTimeInterface VOID = new PureTimeInterface() {
-        public void add(long runTime) {
-        }
+    public final static PureTimeInterface VOID = runTime -> {
     };
 
     public void add(long runTime) {

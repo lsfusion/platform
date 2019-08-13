@@ -16,11 +16,7 @@ public class SetComp<T> implements NodeSetComp<T> {
     }
 
     private <IV, V> ImSet<IV> proceedComps(final CompProcessor<T, IV, V> processor) {
-        return comps.mapSetValues(new GetValue<IV, NodeListComp<T>>() {
-            public IV getMapValue(NodeListComp<T> value) {
-                return value.proceedInner(processor);
-            }
-        });
+        return comps.mapSetValues(value -> value.proceedInner(processor));
     }
     @Override
     public <IV, V> V proceed(CompProcessor<T, IV, V> processor) {

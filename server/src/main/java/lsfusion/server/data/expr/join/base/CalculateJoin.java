@@ -21,10 +21,7 @@ public abstract class CalculateJoin<K> extends TwinImmutableObject implements In
     private StatKeys<K> getCalcStatKeys(final KeyStat keyStat) {
         Stat totalStat = Stat.ONE;
         ImMap<K, BaseExpr> joins = WhereJoins.getJoinsForStat(this);
-        ImMap<K, Stat> distinct = joins.mapValues(new GetValue<Stat, BaseExpr>() {
-            public Stat getMapValue(BaseExpr value) {
-                return value.getTypeStat(keyStat, true);
-            }});
+        ImMap<K, Stat> distinct = joins.mapValues(value -> value.getTypeStat(keyStat, true));
         for(Stat stat : distinct.valueIt())
             totalStat = totalStat.mult(stat);
         return new StatKeys<>(totalStat, new DistinctKeys<>(distinct)); // , Cost.CALC

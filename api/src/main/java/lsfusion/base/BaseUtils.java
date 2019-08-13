@@ -1276,11 +1276,7 @@ public class BaseUtils {
         if (keep.isEmpty())
             map.clear();
         else {
-            for (Iterator<K> it = map.keySet().iterator(); it.hasNext(); ) {
-                K element = it.next();
-                if (!aClass.isInstance(element) || !((FunctionSet<K>) keep).contains(element))
-                    it.remove();
-            }
+            map.keySet().removeIf(element -> !aClass.isInstance(element) || !((FunctionSet<K>) keep).contains(element));
         }
     }
 
@@ -1569,17 +1565,9 @@ public class BaseUtils {
         return result;
     }
 
-    public final static ArrayInstancer<Object> objectInstancer = new ArrayInstancer<Object>() {
-        public Object[] newArray(int size) {
-            return new Object[size];
-        }
-    };
+    public final static ArrayInstancer<Object> objectInstancer = Object[]::new;
 
-    public final static ArrayInstancer<String> stringInstancer = new ArrayInstancer<String>() {
-        public String[] newArray(int size) {
-            return new String[size];
-        }
-    };
+    public final static ArrayInstancer<String> stringInstancer = String[]::new;
 
     public static <T> T[] add(T[] array1, T[] array2, ArrayInstancer<T> instancer) {
         T[] result = instancer.newArray(array1.length + array2.length);
@@ -2034,11 +2022,7 @@ public class BaseUtils {
     }
 
     public static <T> ImRevMap<T, Object> generateObjects(ImSet<T> col) {
-        return col.mapRevValues(new GetValue<Object, T>() {
-            public Object getMapValue(T value) {
-                return new Object();
-            }
-        });
+        return col.mapRevValues((GetValue<Object, T>) value -> new Object());
     }
 
     public static void openFile(RawFileData data, String name, String extension) throws IOException {
@@ -2347,7 +2331,7 @@ public class BaseUtils {
 
     public static <K> List<K> sort(Collection<K> col, Comparator<K> comparator) {
         List<K> list = new ArrayList<>(col);
-        Collections.sort(list, comparator);
+        list.sort(comparator);
         return list;
     }
 
@@ -2602,7 +2586,7 @@ public class BaseUtils {
         for (T element : it) {
             list.add(element);
         }
-        Collections.sort(list, comparator);
+        list.sort(comparator);
         return list;
     }
 

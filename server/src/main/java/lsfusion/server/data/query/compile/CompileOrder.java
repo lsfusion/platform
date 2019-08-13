@@ -16,17 +16,11 @@ public class CompileOrder {
     }
 
     public static <K> ImOrderMap<K, CompileOrder> setNotNull(ImOrderMap<K, CompileOrder> map) {
-        return map.mapOrderValues(new GetValue<CompileOrder, CompileOrder>() {
-            public CompileOrder getMapValue(CompileOrder value) {
-                return new CompileOrder(value.desc, value.reader, true);
-            }});
+        return map.mapOrderValues((GetValue<CompileOrder, CompileOrder>) value -> new CompileOrder(value.desc, value.reader, true));
     }
 
     public static <K> ImOrderMap<K, CompileOrder> reverseOrder(ImOrderMap<K, CompileOrder> map) {
-        return map.mapOrderValues(new GetValue<CompileOrder, CompileOrder>() {
-            public CompileOrder getMapValue(CompileOrder value) {
-                return new CompileOrder(!value.desc, value.reader, value.notNull);
-            }});
+        return map.mapOrderValues((GetValue<CompileOrder, CompileOrder>) value -> new CompileOrder(!value.desc, value.reader, value.notNull));
     }
 
 }

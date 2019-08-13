@@ -336,30 +336,24 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
             final int target = (int) Math.round(((double)topNode.getChildrenDegree()) / split);
 
-            GetValue<Integer, Node> priorityCalc = new GetValue<Integer, Node>() {
-                public Integer getMapValue(Node o) {
-                    int pdeg = o.getParentDegree();
-                    int cdeg = o.getChildrenDegree();
-                    if(o == topNode) {
-                        assert pdeg == 1;
-                        if(cdeg > target) // если больше target по сути запретим выбирать
-                            return Integer.MAX_VALUE / 2;
-                    } else {
-                        if (pdeg == 0 || (o.size >= max && o.size > topNode.size) || o.hasTooLongKeys || o.hasNotMaterializables) // если удаленная вершина или больше порога не выбираем вообще
-                            return Integer.MAX_VALUE;
-                    }
+            GetValue<Integer, Node> priorityCalc = o -> {
+                int pdeg = o.getParentDegree();
+                int cdeg = o.getChildrenDegree();
+                if(o == topNode) {
+                    assert pdeg == 1;
+                    if(cdeg > target) // если больше target по сути запретим выбирать
+                        return Integer.MAX_VALUE / 2;
+                } else {
+                    if (pdeg == 0 || (o.size >= max && o.size > topNode.size) || o.hasTooLongKeys || o.hasNotMaterializables) // если удаленная вершина или больше порога не выбираем вообще
+                        return Integer.MAX_VALUE;
+                }
 
-                    int result = BaseUtils.max(o.size, threshold) * rowCountCoeff + Math.abs(pdeg * cdeg - target) - pdeg * parentCoeff;
-                    if(o.hasPessQuery)
-                        result = result * pessQueryCoeff;
-                    return result;
-                }
+                int result = BaseUtils.max(o.size, threshold) * rowCountCoeff + Math.abs(pdeg * cdeg - target) - pdeg * parentCoeff;
+                if(o.hasPessQuery)
+                    result = result * pessQueryCoeff;
+                return result;
             };
-            Comparator<Node> comparator = new Comparator<Node>() {
-                public int compare(Node o1, Node o2) {
-                    return Integer.compare(o1.priority, o2.priority);
-                }
-            };
+            Comparator<Node> comparator = Comparator.comparingInt(o -> o.priority);
 
             PriorityQueue<Node> priority = new PriorityQueue<>(nodes.size(), comparator);
             addNodes(nodes.values(), priorityCalc, priority);
@@ -429,11 +423,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
     }
 
     private static int getDefaultTimeout(SQLCommand command, ImMap<SQLQuery, MaterializedQuery> queries) {
-        Cost baseCost = command.getCost(queries.mapValues(new GetValue<Stat, MaterializedQuery>() {
-            public Stat getMapValue(MaterializedQuery value) {
-                return new Stat(value.count);
-            }
-        }));
+        Cost baseCost = command.getCost(queries.mapValues(value -> new Stat(value.count)));
         return baseCost.getDefaultTimeout();
     }
 

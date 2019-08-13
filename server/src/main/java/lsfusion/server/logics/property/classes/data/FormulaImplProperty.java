@@ -28,11 +28,7 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
     }
 
     static ImOrderSet<Interface> getInterfaces(int intNum) {
-        return SetFact.toOrderExclSet(intNum, new GetIndex<Interface>() {
-            public Interface getMapValue(int i) {
-                return new Interface(i);
-            }
-        });
+        return SetFact.toOrderExclSet(intNum, Interface::new);
     }
 
     private final FormulaJoinImpl formula;

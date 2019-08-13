@@ -118,11 +118,7 @@ public class WeakIdentityHashMap<K, V> {
     }
     
     public Iterable<K> keysIt() {
-        return new Iterable<K>() {
-            public Iterator<K> iterator() {
-                return keysIterator();
-            }
-        };
+        return this::keysIterator;
     }
 
     public Iterator<Pair<K, V>> entryIterator() {
@@ -159,10 +155,6 @@ public class WeakIdentityHashMap<K, V> {
     }
     
     public Iterable<Pair<K, V>> entryIt() {
-        return new Iterable<Pair<K, V>>() {
-            public Iterator<Pair<K, V>> iterator() {
-                return entryIterator();
-            }
-        }; 
+        return this::entryIterator; 
     }
 }

@@ -118,15 +118,13 @@ public class MapCacheAspect {
         return (MAddCol)cacheCol;            
     }
     public static void cleanClassCaches() {
-        mapCaches.proceedSafeLockLRUEKeyValues(new DProcessor<Type, MAddCol<CacheResult>>() {
-            public void proceed(Type type, MAddCol<CacheResult> caches) {
-                if (type == Type.QUERY || type == Type.JOINEXPR) {
-                    synchronized (caches) {
-                        for (int i = caches.size() - 1; i >= 0; i--) {
-                            CacheResult<CalcTypeImplement, ?> cache = caches.get(i);
-                            if (cache.implement.getCalcType() instanceof CalcClassType)
-                                caches.remove(i);
-                        }
+        mapCaches.proceedSafeLockLRUEKeyValues((type, caches) -> {
+            if (type == Type.QUERY || type == Type.JOINEXPR) {
+                synchronized (caches) {
+                    for (int i = caches.size() - 1; i >= 0; i--) {
+                        CacheResult<CalcTypeImplement, ?> cache = caches.get(i);
+                        if (cache.implement.getCalcType() instanceof CalcClassType)
+                            caches.remove(i);
                     }
                 }
             }

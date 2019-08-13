@@ -87,28 +87,19 @@ public class PropertyOrderSet<T extends PropertyInterface> {
 
         final ImRevMap<Object, Expr> objects = BaseUtils.generateObjects(orders.keys()).reverse();
 
-        SessionTableUsage<T, Object> tableUsage = new SessionTableUsage<>(debugInfo+"-mt", mapKeys.keys().toOrderSet(), objects.keys().toOrderSet(), new Type.Getter<T>() {
-            public Type getType(T key) {
-                return mapKeys.get(key).getType(fullWhere);
+        SessionTableUsage<T, Object> tableUsage = new SessionTableUsage<>(debugInfo+"-mt", mapKeys.keys().toOrderSet(), objects.keys().toOrderSet(), key -> mapKeys.get(key).getType(fullWhere), key -> {
+            Expr expr = objects.get(key);
+            Type type = expr.getType(fullWhere);
+            if(type == null) {
+                assert expr.isNull();
+                return NullReader.typeInstance;
             }
-        }, new Type.Getter<Object>() {
-            public Type getType(Object key) {
-                Expr expr = objects.get(key);
-                Type type = expr.getType(fullWhere);
-                if(type == null) {
-                    assert expr.isNull();
-                    return NullReader.typeInstance;
-                }
-                return type;
-            }
+            return type;
         });
         tableUsage.writeRows(session.sql, new Query<>(mapKeys, objects, where), session.baseClass, session.env, SessionTable.matLocalQuery);
 
         final Join<Object> join = tableUsage.join(mapKeys);
-        return new Pair<>(new PropertyOrderSet<>(mapKeys, join.getWhere(), orders.map(objects.reverse()).mapOrderKeys(new GetValue<Expr, Object>() {
-            public Expr getMapValue(Object value) {
-                return join.getExpr(value);
-            }}), ordersNotNull), (SessionTableUsage)tableUsage);
+        return new Pair<>(new PropertyOrderSet<>(mapKeys, join.getWhere(), orders.map(objects.reverse()).mapOrderKeys(join::getExpr), ordersNotNull), (SessionTableUsage)tableUsage);
     }
 
     public ImOrderSet<ImMap<T, DataObject>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {

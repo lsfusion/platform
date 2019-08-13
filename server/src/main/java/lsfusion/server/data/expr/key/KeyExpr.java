@@ -13,16 +13,8 @@ import lsfusion.server.physics.admin.SystemProperties;
 
 public class KeyExpr extends ParamExpr {
 
-    private static final GetValue<KeyExpr, Object> genStringKeys = new GetValue<KeyExpr, Object>() {
-        public KeyExpr getMapValue(Object value) {
-            return new KeyExpr(value.toString());
-        }
-    };
-    private static final GetIndex<KeyExpr> genIndexKeys = new GetIndex<KeyExpr>() {
-        public KeyExpr getMapValue(int i) {
-            return new KeyExpr(i);
-        }
-    };
+    private static final GetValue<KeyExpr, Object> genStringKeys = value -> new KeyExpr(value.toString());
+    private static final GetIndex<KeyExpr> genIndexKeys = KeyExpr::new;
     public static <T> ImRevMap<T, KeyExpr> getMapKeys(ImSet<T> objects) {
         if (SystemProperties.inDevMode)
             return objects.mapRevValues((GetValue<KeyExpr, T>) genStringKeys);

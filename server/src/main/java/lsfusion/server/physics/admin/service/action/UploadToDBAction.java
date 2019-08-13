@@ -46,14 +46,13 @@ public class UploadToDBAction extends InternalAction {
                 throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
             }
     
-            ServiceDBAction.run(context, new RunService() {
-                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                    try {
-                        context.getDbManager().uploadToDB(session, isolatedTransaction, adapter);
-                    } catch (Exception e) {
-                        throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
-                    }
-                }});
+            ServiceDBAction.run(context, (session, isolatedTransaction) -> {
+                try {
+                    context.getDbManager().uploadToDB(session, isolatedTransaction, adapter);
+                } catch (Exception e) {
+                    throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
+                }
+            });
     
             context.delayUserInterfaction(new MessageClientAction(localize("{logics.upload.was.completed}"), localize("{logics.upload.db}")));
         } catch (ScriptingErrorLog.SemanticErrorException e) {

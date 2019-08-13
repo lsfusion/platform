@@ -42,24 +42,21 @@ public class SerialPortHandler {
     public static void addSerialPort(ClientActionDispatcher dispatcher, String comPort, Integer baudRate, final SerialPortEventListener serialPortEventListener, int mask) throws SerialPortException {
 
         if(serialPortMap.isEmpty()) {
-            dispatcher.addCleanListener(new ICleanListener() {
-                @Override
-                public void clean() {
+            dispatcher.addCleanListener(() -> {
 
-                    Throwable t = null;
-                    for(SerialPort serialPort : serialPortMap.values()) {
-                        try {
-                            serialPort.removeEventListener();
-                            serialPort.closePort();
-                        } catch (SerialPortException e) {
-                            logger.error("Error releasing scanner: ", e);
-                            t = e;
-                        }
+                Throwable t = null;
+                for(SerialPort serialPort : serialPortMap.values()) {
+                    try {
+                        serialPort.removeEventListener();
+                        serialPort.closePort();
+                    } catch (SerialPortException e) {
+                        logger.error("Error releasing scanner: ", e);
+                        t = e;
                     }
-                    serialPortMap.clear();
-                    if (t != null)
-                        throw Throwables.propagate(t);
                 }
+                serialPortMap.clear();
+                if (t != null)
+                    throw Throwables.propagate(t);
             });
         }
 
@@ -67,12 +64,7 @@ public class SerialPortHandler {
 
         serialPort.setParams(baudRate, 8, 1, 0);
         serialPort.setEventsMask(serialPort.getEventsMask() | mask);//Set mask
-        serialPort.addEventListener(new jssc.SerialPortEventListener() {
-            @Override
-            public void serialEvent(SerialPortEvent serialPortEvent) {
-                serialPortEventListener.serialEvent(serialPortEvent, serialPort);
-            }
-        }, mask);
+        serialPort.addEventListener(serialPortEvent -> serialPortEventListener.serialEvent(serialPortEvent, serialPort), mask);
 
 
         serialPortMap.put(comPort, serialPort);

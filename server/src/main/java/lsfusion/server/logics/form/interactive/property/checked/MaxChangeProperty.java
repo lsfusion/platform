@@ -76,11 +76,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public static <P extends PropertyInterface> ImOrderSet<Interface<P>> getInterfaces(Property<P> property) {
-        return property.getFriendlyOrderInterfaces().mapOrderSetValues(new GetValue<Interface<P>, P>() {
-            public Interface<P> getMapValue(P value) {
-                return new KeyInterface<>(value);
-            }
-        }).addOrderExcl(new ValueInterface<>(property));
+        return property.getFriendlyOrderInterfaces().mapOrderSetValues((GetValue<Interface<P>, P>) KeyInterface::new).addOrderExcl(new ValueInterface<>(property));
     }
 
     public MaxChangeProperty(Property<T> onChange, Property<P> toChange) {
@@ -93,10 +89,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         if(!calcType.isExpr()) // пока так
             calcType = CalcType.EXPR;
 
-        ImMap<Interface<P>, Expr> mapExprs = interfaces.mapValues(new GetValue<Expr, Interface<P>>() {
-            public Expr getMapValue(Interface<P> value) {
-                return value.getExpr();
-            }});
+        ImMap<Interface<P>, Expr> mapExprs = interfaces.mapValues((GetValue<Expr, Interface<P>>) Interface::getExpr);
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChange.getMapKeys(),
@@ -106,15 +99,10 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public ContextFilter getContextFilter(final ImMap<P, DataObject> mapValues, final ObjectEntity valueObject) {
-        return new ContextFilter() {
-            public FilterInstance getFilter(final InstanceFactory factory) {
-                ImMap<Interface<P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceInstance, Interface<P>>() {
-                    public PropertyObjectInterfaceInstance getMapValue(Interface<P> value) {
-                        return value.getInterface(mapValues, valueObject.getInstance(factory));
-                    }});
-                return new NotFilterInstance(new NotNullFilterInstance<>(
-                        new PropertyObjectInstance<>(MaxChangeProperty.this, interfaceImplement)));
-            }
+        return factory -> {
+            ImMap<Interface<P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues((GetValue<PropertyObjectInterfaceInstance, Interface<P>>) value -> value.getInterface(mapValues, valueObject.getInstance(factory)));
+            return new NotFilterInstance(new NotNullFilterInstance<>(
+                    new PropertyObjectInstance<>(MaxChangeProperty.this, interfaceImplement)));
         };
     }
 }

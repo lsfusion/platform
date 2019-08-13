@@ -34,11 +34,7 @@ public class RecalculateTableClassesAction extends InternalAction {
         if (!disableClasses) {
             final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
 
-            ServiceDBAction.run(context, new RunService() {
-                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                    context.getDbManager().recalculateTableClasses(session, tableName.trim(), isolatedTransaction);
-                }
-            });
+            ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateTableClasses(session, tableName.trim(), isolatedTransaction));
 
             context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}")));
         }

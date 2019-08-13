@@ -73,10 +73,7 @@ public abstract class ParseNode {
 
     private static ParseNode getPropertyGroupIntegrationHierarchy(Group currentPropertyGroup, final Map<Group, MOrderExclSet<PGNode>> childGroupNodes, final GroupObjectEntity currentGroup, final StaticDataGenerator.Hierarchy hierarchy) {
         MOrderExclSet<PGNode> childGroups = childGroupNodes.get(currentPropertyGroup);
-        ImOrderSet<ParseNode> childNodes = childGroups.immutableOrder().mapOrderSetValues(new GetValue<ParseNode, PGNode>() {
-            public ParseNode getMapValue(PGNode value) {
-                return value.createNode(childGroupNodes, hierarchy, currentGroup == null || currentGroup.isIndex());
-            }});
+        ImOrderSet<ParseNode> childNodes = childGroups.immutableOrder().mapOrderSetValues(value -> value.createNode(childGroupNodes, hierarchy, currentGroup == null || currentGroup.isIndex()));
         if(currentPropertyGroup == null) {
             if(currentGroup == null)
                 return new FormParseNode(childNodes);

@@ -68,18 +68,16 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
 
         final EnsureTypeEnvironment ensureTypes = env.getEnsureTypes();
 
-        ImMap<String, ParsedString> parsedSubQueries = subQueries.mapValues(new GetValue<ParsedString, SQLQuery>() {
-            public ParsedString getMapValue(SQLQuery value) {
-                MaterializedQuery matQuery = materializedQueries.get(value);
-                if(matQuery != null)
-                    return new ParsedString(matQuery.getParsedString(syntax, envString, usedRecursion, ensureTypes));
+        ImMap<String, ParsedString> parsedSubQueries = subQueries.mapValues(value -> {
+            MaterializedQuery matQuery = materializedQueries.get(value);
+            if(matQuery != null)
+                return new ParsedString(matQuery.getParsedString(syntax, envString, usedRecursion, ensureTypes));
 
-                ParsedParamString result = value.preparseStatement(parseParams, paramObjects, syntax, isVolatileStats, materializedQueries, usedRecursion).getString(syntax);
-                if (recursionFunction)
-                    result = result.wrapSubQueryRecursion(syntax);
-                return result;
+            ParsedParamString result = value.preparseStatement(parseParams, paramObjects, syntax, isVolatileStats, materializedQueries, usedRecursion).getString(syntax);
+            if (recursionFunction)
+                result = result.wrapSubQueryRecursion(syntax);
+            return result;
 
-            }
         });
 
         return preparseStatement(command, parseParams, paramObjects, syntax, isVolatileStats, usedRecursion, envString, recursionFunction, parsedSubQueries, ensureTypes);
@@ -143,11 +141,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
     }
 
     public String getFullText() {
-        return CompiledQuery.translateParam(command, subQueries.mapValues(new GetValue<String, SQLQuery>() {
-            public String getMapValue(SQLQuery value) {
-                return value.getFullText();
-            }
-        }));
+        return CompiledQuery.translateParam(command, subQueries.mapValues(SQLCommand::getFullText));
     }
 
     public abstract boolean isDML();

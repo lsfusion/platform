@@ -82,11 +82,7 @@ public class DefaultChangeAggAction<P extends PropertyInterface> extends AroundA
             }
 
             ObjectValue convertWYSValue = Expr.readObjectValue(context.getSession().sql, context.getSession().baseClass, groupExpr, context.getQueryEnv());
-            return context.pushRequestedValue(convertWYSValue, aggClass.getType(), new SQLCallable<FlowResult>() {
-                public FlowResult call() throws SQLException, SQLHandledException {
-                    return proceed(context);
-                }
-            });
+            return context.pushRequestedValue(convertWYSValue, aggClass.getType(), () -> proceed(context));
         }
         return FlowResult.FINISH;
     }

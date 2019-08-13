@@ -38,11 +38,7 @@ public class RecalculateTableColumnAction extends InternalAction {
         if(!disableAggregations) {
             try(ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
                 final DataSession dataSession = newContext.getSession();
-                ServiceDBAction.run(context, new RunService() {
-                    public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                        context.getDbManager().recalculateAggregationTableColumn(dataSession, session, propertyCanonicalName.trim(), isolatedTransaction);
-                    }
-                });
+                ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateAggregationTableColumn(dataSession, session, propertyCanonicalName.trim(), isolatedTransaction));
                 newContext.apply();
             }
 

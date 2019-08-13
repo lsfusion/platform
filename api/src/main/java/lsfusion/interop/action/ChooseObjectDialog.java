@@ -25,21 +25,10 @@ public class ChooseObjectDialog extends JDialog {
         JScrollPane tablePane = new JScrollPane(table);
 
         JButton OKButton = new JButton(ApiResourceBundle.getString("dialog.ok"));
-        OKButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onOk();
-
-            }
-        });
+        OKButton.addActionListener(e -> onOk());
 
         JButton cancelButton = new JButton(ApiResourceBundle.getString("dialog.cancel"));
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        cancelButton.addActionListener(e -> onCancel());
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());

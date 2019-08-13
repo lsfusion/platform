@@ -116,12 +116,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         public Query and(final Where where) { // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. AggrType.getWhere
-            return new Query(exprs.mapListValues(new GetIndexValue<Expr, Expr>() {
-                public Expr getMapValue(int i, Expr value) {
-                    if(i==0)
-                        value = value.and(where);
-                    return value;
-                }
+            return new Query(exprs.mapListValues((i, value) -> {
+                if(i==0)
+                    value = value.and(where);
+                return value;
             }), orders, ordersNotNull, type, noInnerFollows);
         }
 
@@ -205,11 +203,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
 
         protected ImMap<KeyExpr, Type> getInnerKeyTypes() { // не делаем IdentityLazy так как только при конструировании InnerJoin используется
             final KeyType contextType = getFullWhere();
-            return getQueryKeys().mapValues(new GetValue<Type, KeyExpr>() {
-                public Type getMapValue(KeyExpr value) {
-                    return contextType.getKeyType(value);
-                }
-            }).removeNulls(); // могут быть nulls когда контекст сверху приходит
+            return getQueryKeys().mapValues(contextType::getKeyType).removeNulls(); // могут быть nulls когда контекст сверху приходит
         }
     }
 
@@ -257,10 +251,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<>(source.syntax, subcontext, debugInfoWriter != null));
         String fromSelect = compiled.fillSelect(new Result<>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null, DebugInfoWriter.pushPrefix(debugInfoWriter, "GROUP EXPR"));
         
-        ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues(new GetKeyValue<String, Expr, BaseExpr>() {
-            public String getMapValue(Expr key, BaseExpr value) {
-                return fromPropertySelect.result.get(key)+"="+value.getSource(source);
-            }}));
+        ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues((key, value) -> fromPropertySelect.result.get(key)+"="+value.getSource(source)));
 
         return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), subQuery, source.syntax, source.env, getType()),
                 whereSelect.toString(" AND "), "", "", "", "") + ")";
@@ -350,10 +341,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         Where keepWhere = getKeepWhere(fullWhere).followFalse(groupWhere.not(), pack);
 
         final Query packQuery = query.followFalse(packWhere.not(), pack).and(keepWhere); // сначала pack'аем expr
-        ImMap<BaseExpr, Expr> packOuterInner = outerInner.mapValues(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) { // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
-                return value.followFalse(andExprCheck(packQuery.getWhere(), orExprCheck(packWhere, value.getWhere().not())).not(), pack);
-            }
+        ImMap<BaseExpr, Expr> packOuterInner = outerInner.mapValues(value -> { // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
+            return value.followFalse(andExprCheck(packQuery.getWhere(), orExprCheck(packWhere, value.getWhere().not())).not(), pack);
         });
 
         if(BaseUtils.hashEquals(packQuery,query) && BaseUtils.hashEquals(outerInner,packOuterInner)) { // если изменилось погнали по кругу, или же один раз
@@ -402,11 +391,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         ImMap<Object, ParamExpr> pullKeys = BaseUtils.<ImSet<ParamExpr>>immutableCast(getOuterColKeys(inner.values()).merge(query.getOuterKeys())).filterFn(new SFunctionSet<ParamExpr>() {
             public boolean contains(ParamExpr key) {
                 return key instanceof PullExpr && !((ImMap<K,Expr>)inner).containsValue(key) && !key.equals(noPull);
-            }}).mapRevKeys(new GetStaticValue<Object>() {
-            public Object getMapValue() {
-                return new Object();
-            }
-        });
+            }}).mapRevKeys(Object::new);
         return createTypeAdjust(MapFact.addExcl(inner, pullKeys), query, MapFact.addExcl(outer, pullKeys));
     }
 
@@ -508,47 +493,39 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
 
     private static <K, T extends Expr> Where groupMapValues(final ImMap<K, T> inner, final ImMap<K, BaseExpr> outer, Result<ImMap<BaseExpr, T>> outerInner) {
-        return getEqualsWhere(groupMap(new Iterable<Pair<BaseExpr, T>>() {
-                    public Iterator<Pair<BaseExpr, T>> iterator() {
-                        return new Iterator<Pair<BaseExpr, T>>() {
-                            int i=0;
+        return getEqualsWhere(groupMap(() -> new Iterator<Pair<BaseExpr, T>>() {
+            int i=0;
 
-                            public boolean hasNext() {
-                                return i < inner.size();
-                            }
+            public boolean hasNext() {
+                return i < inner.size();
+            }
 
-                            public Pair<BaseExpr, T> next() {
-                                return new Pair<>(outer.get(inner.getKey(i)), inner.getValue(i++));
-                            }
+            public Pair<BaseExpr, T> next() {
+                return new Pair<>(outer.get(inner.getKey(i)), inner.getValue(i++));
+            }
 
-                            public void remove() {
-                                throw new RuntimeException("not supported");
-                            }
-                        };
-                    }
-                }, MapFact.<BaseExpr, BaseExpr>EMPTY(), outerInner));
+            public void remove() {
+                throw new RuntimeException("not supported");
+            }
+        }, MapFact.<BaseExpr, BaseExpr>EMPTY(), outerInner));
     }
 
     // exprValues в "контексте" B - правой части map'а
     public static <A extends Expr, B extends Expr> ImList<Pair<Expr, A>> groupMap(final ImMap<A, B> map, ImMap<BaseExpr, BaseExpr> exprValues, Result<ImRevMap<B, A>> reversed) {
-        Iterable<Pair<B, A>> iterable = new Iterable<Pair<B, A>>() {
-            public Iterator<Pair<B, A>> iterator() {
-                return new Iterator<Pair<B, A>>() {
+        Iterable<Pair<B, A>> iterable = () -> new Iterator<Pair<B, A>>() {
 
-                    int index = 0;
+            int index = 0;
 
-                    public boolean hasNext() {
-                        return index < map.size();
-                    }
+            public boolean hasNext() {
+                return index < map.size();
+            }
 
-                    public Pair<B, A> next() {
-                        return new Pair<>(map.getValue(index), map.getKey(index++));
-                    }
+            public Pair<B, A> next() {
+                return new Pair<>(map.getValue(index), map.getKey(index++));
+            }
 
-                    public void remove() {
-                        throw new RuntimeException("not supported");
-                    }
-                };
+            public void remove() {
+                throw new RuntimeException("not supported");
             }
         };
         Result<ImMap<B, A>> castReserved = new Result<>();
@@ -628,18 +605,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         if(splitType.equals(GroupStatType.ALL)) { // оптимизация
             KeyEquals keyEquals = where.getKeyEquals();
             if(!exclusive || keyEquals.size() <= 1)
-                return keyEquals.mapColValues(new GetKeyValue<Pair<KeyEqual, Where>, KeyEqual, Where>() {
-                    public Pair<KeyEqual, Where> getMapValue(KeyEqual key, Where value) {
-                        return new Pair<>(key, value);
-                    }
-                });
+                return keyEquals.mapColValues(Pair::new);
         }
         return where.getSplitJoins(exclusive, outerInner.values().toSet(),
-                StatType.GROUP_SPLIT, splitType).mapColSetValues(new GetValue<Pair<KeyEqual, Where>, GroupSplitWhere<Expr>>() {
-            public Pair<KeyEqual, Where> getMapValue(GroupSplitWhere<Expr> value) {
-                return new Pair<>(value.keyEqual, value.where);
-            }
-        });
+                StatType.GROUP_SPLIT, splitType).mapColSetValues(value -> new Pair<>(value.keyEqual, value.where));
     }
 
     private static Expr createInnerSplit(ImMap<BaseExpr, Expr> outerInner, Query query, boolean pack) {

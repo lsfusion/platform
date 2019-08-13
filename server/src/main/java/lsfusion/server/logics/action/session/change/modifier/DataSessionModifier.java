@@ -35,12 +35,7 @@ public abstract class DataSessionModifier extends SessionModifier {
 
     @Override
     public String out() {
-        return super.out() + "\nchanged : " + getChangedProps().mapValues(new GetValue<PropertyChange, Property>() {
-            @Override
-            public PropertyChange getMapValue(Property value) {
-                return getPropertyChange(value);
-            }
-        });
+        return super.out() + "\nchanged : " + getChangedProps().mapValues((GetValue<PropertyChange, Property>) this::getPropertyChange);
     }
 
     public ImSet<Property> calculateProperties() {

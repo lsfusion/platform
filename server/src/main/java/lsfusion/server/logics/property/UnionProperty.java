@@ -22,10 +22,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         }
     }
 
-    public static GetIndex<Interface> genInterface = new GetIndex<Interface>() {
-        public Interface getMapValue(int i) {
-            return new Interface(i);
-        }};
+    public static GetIndex<Interface> genInterface = Interface::new;
     public static ImOrderSet<Interface> getInterfaces(int intNum) {
         return SetFact.toOrderExclSet(intNum, genInterface);
     }

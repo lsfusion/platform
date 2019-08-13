@@ -305,15 +305,12 @@ public class ExecutorFactory {
     }
 
     private static <T> Callable<T> wrapTask(final Callable<T> callable, final TaskAspect aspect) {
-        return new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                aspect.aspectBeforeRun();
-                try {
-                    return callable.call();
-                } finally {
-                    aspect.aspectAfterRun();
-                }
+        return () -> {
+            aspect.aspectBeforeRun();
+            try {
+                return callable.call();
+            } finally {
+                aspect.aspectAfterRun();
             }
         };
     }
@@ -429,15 +426,12 @@ public class ExecutorFactory {
     private static <T> Callable<T> wrapInnerTask(final Callable<T> callable, final TaskInnerAspect aspect, SyncType type) {
         final Object submit = aspect.aspectSubmit();
 
-        return new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                aspect.aspectBeforeRun(submit);
-                try {
-                    return callable.call();
-                } finally {
-                    aspect.aspectAfterRun();
-                }
+        return () -> {
+            aspect.aspectBeforeRun(submit);
+            try {
+                return callable.call();
+            } finally {
+                aspect.aspectAfterRun();
             }
         };
     }

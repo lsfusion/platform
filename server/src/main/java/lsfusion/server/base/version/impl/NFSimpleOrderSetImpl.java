@@ -23,23 +23,19 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
     }
 
     boolean iterated;
-    private final Iterable<T> it = new Iterable<T>() {
-        public Iterator<T> iterator() {
-            return new Iterator<T>() {
-                private int i;
+    private final Iterable<T> it = () -> new Iterator<T>() {
+        private int i;
 
-                public boolean hasNext() {
-                    return i<list.size();
-                }
+        public boolean hasNext() {
+            return i<list.size();
+        }
 
-                public T next() {
-                    return list.get(i++);
-                }
+        public T next() {
+            return list.get(i++);
+        }
 
-                public void remove() {
-                    throw new UnsupportedOperationException();
-                }
-            };
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
     }; 
     public Iterable<T> getIt() {

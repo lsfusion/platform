@@ -120,10 +120,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                 ImMap<ParamExpr, Expr> mergeKeys = mergeSame.addExcl(cleanEq1.addExcl(cleanEq2));
 
                 Result<ImMap<ParamExpr, Expr>> notBaseExprs = new Result<>();
-                ImMap<ParamExpr, BaseExpr> andEq = BaseUtils.immutableCast(mergeKeys.splitKeys(new GetKeyValue<Boolean, ParamExpr, Expr>() {
-                    public Boolean getMapValue(ParamExpr key, Expr value) {
-                        return value instanceof BaseExpr;
-                    }}, notBaseExprs));
+                ImMap<ParamExpr, BaseExpr> andEq = BaseUtils.immutableCast(mergeKeys.splitKeys((key, value) -> value instanceof BaseExpr, notBaseExprs));
                 for(int i=0,size=notBaseExprs.result.size();i<size;i++)
                     extraWhere = extraWhere.and(notBaseExprs.result.getKey(i).compare(notBaseExprs.result.getValue(i), Compare.EQUALS));
 
@@ -220,11 +217,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     }
 
     public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(final ImSet<K> keepStat, final StatType type, boolean forcePackReduce) {
-        return getWhereJoins(keepStat, type, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_WITH_WHERE, forcePackReduce).mapColValues(new GetValue<GroupSplitWhere<K>, GroupJoinsWhere>() {
-            public GroupSplitWhere<K> getMapValue(GroupJoinsWhere whereJoin) {
-                return new GroupSplitWhere<>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat, type), whereJoin.where);
-            }
-        });
+        return getWhereJoins(keepStat, type, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_WITH_WHERE, forcePackReduce).mapColValues(whereJoin -> new GroupSplitWhere<>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat, type), whereJoin.where));
     }
 
     // no Where (и no UpWheres но пока все равно считается)

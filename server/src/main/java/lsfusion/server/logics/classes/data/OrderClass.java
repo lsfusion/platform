@@ -84,11 +84,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         ConcatenateType resultType = ConcatenateType.get(types.toArray(new Type[types.size()]));
         String resultSource = source.getSyntax().getNotSafeConcatenateSource(resultType, mResultSources.immutableList(), source.getMEnv());
 
-        return source.getSyntax().getAndExpr(mExprs.immutableList().toString(new GetValue<String, String>() {
-            public String getMapValue(String value) {
-                return value + " IS NOT NULL";
-            }
-        }, " OR "), resultSource, resultType, source.getMEnv());
+        return source.getSyntax().getAndExpr(mExprs.immutableList().toString(value -> value + " IS NOT NULL", " OR "), resultSource, resultType, source.getMEnv());
     }
 
     public ImOrderMap<String, CompileOrder> getCompileOrders(String source, final CompileOrder order) {

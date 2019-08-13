@@ -126,11 +126,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
         public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
             final ImOrderSet<ImMap<I, DataObject>> prevRows = rows;
-            session.addRollbackInfo(new SQLRunnable() {
-                public void run() {
-                    rows = prevRows;
-                }
-            });
+            session.addRollbackInfo(() -> rows = prevRows);
             MOrderExclSet<ImMap<I, DataObject>> mRows = SetFact.mOrderExclSet(rows.size() - i);
             for(int j=i;j<rows.size();j++)
                 mRows.exclAdd(session.updateCurrentClasses(rows.get(j)));
@@ -229,11 +225,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         Where where = ifProp.mapExpr(innerExprs, context.getModifier()).getWhere();
 
         final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, where);
-        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx(new GetExValue<Expr, PropertyInterfaceImplement<I>, SQLException, SQLHandledException>() {
-            public Expr getMapValue(PropertyInterfaceImplement<I> value) throws SQLException, SQLHandledException {
-                return value.mapExpr(fInnerExprs, context.getModifier());
-            }
-        });
+        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((GetExValue<Expr, PropertyInterfaceImplement<I>, SQLException, SQLHandledException>) value -> value.mapExpr(fInnerExprs, context.getModifier()));
 
         return new PropertyOrderSet<>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
     }
@@ -457,11 +449,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, PropertyMapImplement<PW, T> push, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
-        return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, new PushFor<I, PropertyInterface>() {
-            public ActionMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, PropertyMapImplement<?, PropertyInterface> where, ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders.mergeOrder(mapImplements(ForAction.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, autoSet, false, noInline.mapRev(mapInnerInterfaces), forceInline);
-            }
-        });
+        return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, (PushFor<I, PropertyInterface>) (context1, where, orders1, ordersNotNull1, mapInnerInterfaces) -> createForAction(context1, where, orders1.mergeOrder(mapImplements(ForAction.this.orders, mapInnerInterfaces)), ordersNotNull1, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, autoSet, false, noInline.mapRev(mapInnerInterfaces), forceInline));
     }
 
 //        (e, x)

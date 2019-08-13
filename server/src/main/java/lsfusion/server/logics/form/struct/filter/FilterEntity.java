@@ -51,11 +51,7 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
         return property;
     }
     public ContextFilter getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {
-        return new ContextFilter() {
-            public FilterInstance getFilter(InstanceFactory instanceNewFactory) {
-                return new NotNullFilterInstance<>(property.getRemappedInstance(oldObject, newObject.getInstance(instanceNewFactory), instanceOldFactory), checkChange, resolveAdd);
-            }
-        };
+        return instanceNewFactory -> new NotNullFilterInstance<>(property.getRemappedInstance(oldObject, newObject.getInstance(instanceNewFactory), instanceOldFactory), checkChange, resolveAdd);
     }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {

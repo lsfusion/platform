@@ -16,10 +16,7 @@ import lsfusion.server.logics.property.Property;
 
 public class StructChanges extends TwinImmutableObject {
 
-    public final static GetValue<ChangeType, ModifyChange> getType = new GetValue<ChangeType, ModifyChange>() {
-        public ChangeType getMapValue(ModifyChange modify) {
-            return modify.getChangeType();
-        }};
+    public final static GetValue<ChangeType, ModifyChange> getType = ModifyChange::getChangeType;
 
     // не используется
     private final static AddValue<Property, ChangeType> addValue = new SimpleAddValue<Property, ChangeType>() {

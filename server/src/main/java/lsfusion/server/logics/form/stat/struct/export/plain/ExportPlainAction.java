@@ -70,11 +70,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
             fieldTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
             parentObjects = GroupObjectEntity.getObjects(parentGroups);
 
-            parentIndexes = parentRows.mapOrderValues(new GetIndex<Integer>() {
-                public Integer getMapValue(int i) {
-                    return i;
-                }
-            });
+            parentIndexes = parentRows.mapOrderValues((GetIndex<Integer>) i -> i);
         }
 
         // index or key object access
@@ -89,11 +85,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
             }
         }
 
-        ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys(new GetValue<String, PropertyDrawEntity>() {
-            public String getMapValue(PropertyDrawEntity property) {
-                return property.getIntegrationSID();
-            }
-        });
+        ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys((GetValue<String, PropertyDrawEntity>) PropertyDrawEntity::getIntegrationSID);
         fieldTypes = fieldTypes.addOrderExcl(propertyNames.mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
             public Type getMapValue(PropertyDrawEntity property) {
                 return data.getType(property);
@@ -109,11 +101,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
             for (int i = 0, size = allRows.size(); i < size; i++) {
                 final ImMap<ObjectEntity, Object> currentRow = allRows.get(i);
 
-                ImMap<String, Object> fieldValues = propertyNames.mapValues(new GetValue<Object, PropertyDrawEntity>() {
-                    public Object getMapValue(PropertyDrawEntity value) {
-                        return data.getProperty(value, currentRow);
-                    }
-                });
+                ImMap<String, Object> fieldValues = propertyNames.mapValues(value -> data.getProperty(value, currentRow));
 
                 if (!parentGroups.isEmpty()) fieldValues = fieldValues.addExcl(PlainConstants.parentFieldName, parentIndexes.get(currentRow.filterIncl(parentObjects)));
 
@@ -136,10 +124,6 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
 
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
-        return getChangeProps(exportFiles.values().mapColValues(new GetValue<Property, LP>() {
-            public Property getMapValue(LP value) {
-                return ((LP<?>)value).property;
-            }
-        }));
+        return getChangeProps(exportFiles.values().mapColValues(value -> ((LP<?>)value).property));
     }    
 }

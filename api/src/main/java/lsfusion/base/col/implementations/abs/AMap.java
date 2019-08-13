@@ -46,45 +46,37 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public Iterable<K> keyIt() {
-        return new Iterable<K>() {
-            public Iterator<K> iterator() {
-                return new Iterator<K>() {
-                    int i=0;
+        return () -> new Iterator<K>() {
+            int i=0;
 
-                    public boolean hasNext() {
-                        return i<size();
-                    }
+            public boolean hasNext() {
+                return i<size();
+            }
 
-                    public K next() {
-                        return getKey(i++);
-                    }
+            public K next() {
+                return getKey(i++);
+            }
 
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
+            public void remove() {
+                throw new UnsupportedOperationException();
             }
         };
     }
 
     public Iterable<V> valueIt() {
-        return new Iterable<V>() {
-            public Iterator<V> iterator() {
-                return new Iterator<V>() {
-                    int i=0;
+        return () -> new Iterator<V>() {
+            int i=0;
 
-                    public boolean hasNext() {
-                        return i<size();
-                    }
+            public boolean hasNext() {
+                return i<size();
+            }
 
-                    public V next() {
-                        return getValue(i++);
-                    }
+            public V next() {
+                return getValue(i++);
+            }
 
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
+            public void remove() {
+                throw new UnsupportedOperationException();
             }
         };
     }
@@ -246,11 +238,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     public ImMap<K, V> addEquals(ImMap<? extends K, ? extends V> imMap) {
         assert keys().containsAll(imMap.keys());
 
-        return ((ImMap<K, V>)imMap).filterFn(new GetKeyValue<Boolean, K, V>() {
-            public Boolean getMapValue(K key, V value) {
-                return BaseUtils.hashEquals(get(key), value);
-            }
-        });
+        return ((ImMap<K, V>)imMap).filterFn((key, value) -> BaseUtils.hashEquals(get(key), value));
     }
 
     public <M> ImMap<K, M> join(ImMap<? super V, M> joinMap) {
@@ -409,25 +397,18 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public ImMap<K, V> mergeEqualsIncl(final ImMap<K, V> full) {
-        return filterFn(new GetKeyValue<Boolean, K, V>() {
-            public Boolean getMapValue(K key, V value) {
-                return BaseUtils.hashEquals(full.get(key), value);
-            }});
+        return filterFn((key, value) -> BaseUtils.hashEquals(full.get(key), value));
     }
 
     public ImMap<K, V> mergeEquals(final ImMap<K, V> map) {
-        return filterFn(new GetKeyValue<Boolean, K, V>() {
-            public Boolean getMapValue(K key, V value) {
-                V mapValue = map.get(key);
-                return mapValue != null && BaseUtils.hashEquals(mapValue, value);
-            }});
+        return filterFn((key, value) -> {
+            V mapValue = map.get(key);
+            return mapValue != null && BaseUtils.hashEquals(mapValue, value);
+        });
     }
 
     public ImMap<K, V> replaceValues(final V value) {
-        return mapValues(new GetStaticValue<V>() {
-            public V getMapValue() {
-                return value;
-            }});
+        return mapValues(() -> value);
     }
 
     public ImMap<K, V> override(K key, V value) {
@@ -438,19 +419,13 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public ImMap<K, V> replaceValue(final K replaceKey, final V replaceValue) {
-        return mapValues(new GetKeyValue<V, K, V>() {
-            public V getMapValue(K key, V value) {
-                return BaseUtils.hashEquals(key, replaceKey) ? replaceValue : value;
-            }
-        });
+        return mapValues((key, value) -> BaseUtils.hashEquals(key, replaceKey) ? replaceValue : value);
     }
 
     public ImMap<K, V> replaceValues(final ImMap<? extends V, ? extends V> map) {
-        return mapValues(new GetValue<V, V>() {
-            public V getMapValue(V value) {
-                V mapValue = ((ImMap<V, V>) map).get(value);
-                return mapValue != null ? mapValue : value;
-            }
+        return mapValues(value -> {
+            V mapValue = ((ImMap<V, V>) map).get(value);
+            return mapValue != null ? mapValue : value;
         });
     }
 
@@ -459,11 +434,9 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
     
     public ImMap<K, V> overrideIncl(final ImMap<? extends K, ? extends V> map) {
-        return mapValues(new GetKeyValue<V, K, V>() {
-            public V getMapValue(K key, V value) {
-                V mapValue = ((ImMap<K, V>) map).get(key);
-                return mapValue != null ? mapValue : value;
-            }
+        return mapValues((key, value) -> {
+            V mapValue = ((ImMap<K, V>) map).get(key);
+            return mapValue != null ? mapValue : value;
         });
     }
 
@@ -598,10 +571,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public ImMap<K, V> mapAddValues(final ImMap<K, V> map, final AddValue<K, V> addValue) {
-        return mapValues(new GetKeyValue<V, K, V>() {
-            public V getMapValue(K key, V value) {
-                return addValue.addValue(key, value, map.get(key));
-            }});
+        return mapValues((key, value) -> addValue.addValue(key, value, map.get(key)));
     }
 
     public ImOrderMap<K, V> sort(Comparator<K> comparator) { // можно indexes с перегруженным comparator'ом делать
@@ -620,10 +590,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public GetValue<V, K> fnGetValue() {
-        return new GetValue<V, K>() {
-            public V getMapValue(K value) {
-                return get(value);
-            }};
+        return this::get;
     }
 
     @Override

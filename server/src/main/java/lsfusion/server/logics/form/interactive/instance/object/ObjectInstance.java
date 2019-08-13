@@ -65,10 +65,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public static <K> ImMap<ObjectInstance, Expr> getObjectValueExprs(ImSet<ObjectInstance> objects) {
-        return objects.mapValues(new GetValue<Expr, ObjectInstance>() {
-            public Expr getMapValue(ObjectInstance value) {
-                return value.getExpr();
-            }});
+        return objects.mapValues((GetValue<Expr, ObjectInstance>) ObjectInstance::getExpr);
     }
 
 

@@ -41,11 +41,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         super(new AndObjectWhere[0], false);
     }
 
-    public final static ArrayInstancer<AndObjectWhere> instancer = new ArrayInstancer<AndObjectWhere>() {
-        public AndObjectWhere[] newArray(int size) {
-            return new AndObjectWhere[size];
-        }
-    };
+    public final static ArrayInstancer<AndObjectWhere> instancer = AndObjectWhere[]::new;
 
     public static Where or(Where where1,Where where2,boolean pack) {
 

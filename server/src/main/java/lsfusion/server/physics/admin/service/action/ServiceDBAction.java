@@ -23,34 +23,28 @@ public class ServiceDBAction extends InternalAction {
 
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
-            }});
+        run(context, (session, isolatedTransaction) -> {
+            String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
+            if(result != null)
+                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+        });
 
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getDbManager().recalculateAggregations(context.stack, session, isolatedTransaction);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
-            }});
+        run(context, (session, isolatedTransaction) -> {
+            String result = context.getDbManager().recalculateAggregations(context.stack, session, isolatedTransaction);
+            if(result != null)
+                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+        });
 
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction);
-            }});
+        run(context, (session, isolatedTransaction) -> context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction));
 
         SQLSession sqlSession = context.getSession().sql;
         context.getDbManager().analyzeDB(sqlSession);
 
-        runData(context, new RunServiceData() {
-            public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
-            }});
+        runData(context, (session, isolatedTransaction) -> {
+            String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
+            if(result != null)
+                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+        });
 
         context.getDbManager().recalculateStats(context.getSession());
         context.apply();
@@ -64,20 +58,13 @@ public class ServiceDBAction extends InternalAction {
 
     public static void runData(ExecutionContext<?> context, final RunServiceData run) throws SQLException, SQLHandledException {
         final boolean singleTransaction = singleTransaction(context);
-        DBManager.runData(context, singleTransaction, new DBManager.RunServiceData() {
-            public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                run.run(session, !singleTransaction);
-            }
-        });
+        DBManager.runData(context, singleTransaction, session -> run.run(session, !singleTransaction));
     }
 
     public static void run(ExecutionContext<?> context, final RunService run) throws SQLException, SQLHandledException {
         // транзакция в Service Action'ах не особо нужна, так как действия атомарные
         final boolean singleTransaction = singleTransaction(context); 
         SQLSession sql = context.getSession().sql;
-        DBManager.run(sql, singleTransaction, new DBManager.RunService() {
-            public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                run.run(sql, !singleTransaction);
-            }});
+        DBManager.run(sql, singleTransaction, sql1 -> run.run(sql1, !singleTransaction));
     }
 }

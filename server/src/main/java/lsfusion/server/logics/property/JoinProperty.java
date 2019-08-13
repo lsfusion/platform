@@ -4,7 +4,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.Compare;
@@ -51,10 +50,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
     }
 
-    public static GetIndex<Interface> genInterface = new GetIndex<Interface>() {
-        public Interface getMapValue(int i) {
-            return new Interface(i);
-        }};
+    public static GetIndex<Interface> genInterface = Interface::new;
     public static ImOrderSet<Interface> getInterfaces(int intNum) {
         return SetFact.toOrderExclSet(intNum, genInterface);
     }
@@ -87,10 +83,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     private ImMap<T, Expr> getJoinImplements(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        return implement.mapping.mapItValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() {
-            public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
-                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
-            }});
+        return implement.mapping.mapItValues(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
     }
     
     public static <P extends PropertyInterface> boolean checkPrereadNull(ImMap<P, ? extends Expr> joinImplement, boolean notNull, ImCol<PropertyInterfaceImplement<P>> col, final CalcType calcType, final PropertyChanges propChanges) {
@@ -104,10 +97,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         });
         if(!complexMapping.isEmpty()) {
             // сортируем по сложности
-            for(PropertyInterfaceImplement<P> mapImpl : complexMapping.sort(new Comparator<PropertyInterfaceImplement<P>>() {
-                public int compare(PropertyInterfaceImplement<P> o1, PropertyInterfaceImplement<P> o2) {
-                    return Long.compare(o1.mapComplexity(), o2.mapComplexity());
-                }})) {
+            for(PropertyInterfaceImplement<P> mapImpl : complexMapping.sort(Comparator.comparingLong(PropertyInterfaceImplement::mapComplexity))) {
                 WhereBuilder changedWhere = new WhereBuilder();
                 if (mapImpl.mapExpr(joinImplement, calcType, propChanges, changedWhere).isNull() && changedWhere.toWhere().isFalse())
                     return true;
@@ -203,10 +193,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
         if(property instanceof JoinProperty) {
             PropertyImplement<PropertyInterface, PropertyInterfaceImplement<Interface>> joinImplement = ((JoinProperty<PropertyInterface>) property).implement;
-            ImMap<PropertyInterface, Expr> mapJoinExprs = joinImplement.mapping.mapValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() {
-                public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
-                    return value.mapExpr((ImMap<Interface, ? extends Expr>) mapExprs, propChanges);
-                }});
+            ImMap<PropertyInterface, Expr> mapJoinExprs = joinImplement.mapping.mapValues(value -> value.mapExpr((ImMap<Interface, ? extends Expr>) mapExprs, propChanges));
             return getAndWhere(joinImplement.property, mapJoinExprs, propChanges);
         }
         throw new RuntimeException("should not be");
@@ -386,11 +373,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public ValueClass objectPropertyClass; // временный хак
     @Override
     public ExClassSet calcInferValueClass(final ImMap<Interface, ExClassSet> inferred, final InferType inferType) {
-        ExClassSet result = implement.property.inferJoinValueClass(implement.mapping.mapValues(new GetValue<ExClassSet, PropertyInterfaceImplement<Interface>>() {
-            public ExClassSet getMapValue(PropertyInterfaceImplement<Interface> value) {
-                return value.mapInferValueClass(inferred, inferType);
-            }
-        }), !user, inferType);
+        ExClassSet result = implement.property.inferJoinValueClass(implement.mapping.mapValues(value -> value.mapInferValueClass(inferred, inferType)), !user, inferType);
         if(objectPropertyClass != null)
             result = ExClassSet.op(result, ExClassSet.toExValue(objectPropertyClass), false);
         return result;

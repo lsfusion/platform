@@ -150,11 +150,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         public And<K> getBase() {
-            return new And<>(map.mapValues(new GetValue<AndClassSet, AndClassSet>() {
-                public AndClassSet getMapValue(AndClassSet value) {
-                    return value.getOr().getCommonClass().getBaseClass().getUpSet();
-                }
-            }));
+            return new And<>(map.mapValues((GetValue<AndClassSet, AndClassSet>) value -> value.getOr().getCommonClass().getBaseClass().getUpSet()));
         }
 
         public <T extends K> And<T> filterKeys(ImSet<T> keys) {
@@ -434,11 +430,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     protected static class KNF<K> extends ExtraMapSetWhere<K,OrClassSet,Or<K>,KNF<K>> {
 
-        private final static ArrayInstancer<Or> instancer = new ArrayInstancer<Or>() {
-            public Or[] newArray(int size) {
-                return new Or[size];
-            }
-        };
+        private final static ArrayInstancer<Or> instancer = Or[]::new;
         public static <K> ArrayInstancer<Or<K>> instancer() {
             return BaseUtils.immutableCast(instancer);
         }
@@ -521,11 +513,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
     }
 
-    private final static ArrayInstancer<Or> arrayInstancer = new ArrayInstancer<Or>() {
-        public Or[] newArray(int size) {
-            return new Or[size];
-        }
-    };
+    private final static ArrayInstancer<Or> arrayInstancer = Or[]::new;
     private static <K> ArrayInstancer<Or<K>> arrayInstancer() {
         return BaseUtils.immutableCast(arrayInstancer);
     }
@@ -575,27 +563,21 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     public <T extends K> ImMap<T, ValueClass> getCommonParent(ImSet<T> keys) {
-        return getCommonClasses(keys).mapValues(new GetValue<ValueClass, AndClassSet>() {
-            public ValueClass getMapValue(AndClassSet value) {
-                return value.getOr().getCommonClass();
-            }
-        });
+        return getCommonClasses(keys).mapValues(value -> value.getOr().getCommonClass());
     }
 
     public <T extends K> ImMap<T, ExClassSet> getCommonExClasses(ImSet<T> keys) {
         // assert что full - все ключи будут
-        return keys.mapValues(new GetValue<ExClassSet, T>() {
-            public ExClassSet getMapValue(T key) {
-                ExClassSet result = ExClassSet.FALSE;
-                for (int i = 0; i < wheres.length; i++) {
-                    ExClassSet where = ExClassSet.toEx(ResolveUpClassSet.toResolve(wheres[i].get(key)));
-                    if(i==0)
-                        result = where;
-                    else
-                        result = ExClassSet.op(result, where, true);
-                }
-                return result;
+        return keys.mapValues((GetValue<ExClassSet, T>) key -> {
+            ExClassSet result = ExClassSet.FALSE;
+            for (int i = 0; i < wheres.length; i++) {
+                ExClassSet where = ExClassSet.toEx(ResolveUpClassSet.toResolve(wheres[i].get(key)));
+                if(i==0)
+                    result = where;
+                else
+                    result = ExClassSet.op(result, where, true);
             }
+            return result;
         });
     }
 
@@ -621,10 +603,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     private static <K> ImMap<K,AndClassSet> initUpClassSets(ImMap<K, ValueClass> map) {
-        return map.mapValues(new GetValue<AndClassSet, ValueClass>() {
-            public AndClassSet getMapValue(ValueClass value) {
-                return value.getUpSet();
-            }});
+        return map.mapValues(ValueClass::getUpSet);
     }
     public AbstractClassWhere(ImMap<K, ValueClass> mapClasses,boolean up) {
         this(initUpClassSets(mapClasses));

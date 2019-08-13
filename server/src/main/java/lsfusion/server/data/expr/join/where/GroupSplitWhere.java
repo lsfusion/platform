@@ -32,10 +32,7 @@ public class GroupSplitWhere<K> extends GroupWhere {
     }
 
     public static <K, V> ImCol<GroupSplitWhere<V>> mapBack(ImCol<GroupSplitWhere<K>> col, final ImMap<V,K> map) {
-        return col.mapColValues(new GetValue<GroupSplitWhere<V>, GroupSplitWhere<K>>() {
-            public GroupSplitWhere<V> getMapValue(GroupSplitWhere<K> group) {
-                return new GroupSplitWhere<>(group.keyEqual, group.stats.mapBack(map), group.where, group.exclusiveSimpleCount);
-            }});
+        return col.mapColValues(group -> new GroupSplitWhere<>(group.keyEqual, group.stats.mapBack(map), group.where, group.exclusiveSimpleCount));
     }
 
     @Override

@@ -29,19 +29,11 @@ public class DistinctKeys<K> extends WrapMap<K, Stat> {
     }
 
     public <T> DistinctKeys<T> mapBack(ImMap<T, K> map) {
-        return new DistinctKeys<>(map.mapValues(new GetValue<Stat, K>() {
-            public Stat getMapValue(K value) {
-                return get(value);
-            }
-        }));
+        return new DistinctKeys<>(map.mapValues(this::get));
     }
 
     public DistinctKeys<K> or(final DistinctKeys<K> stat) {
-        return new DistinctKeys<>(mapValues(new GetKeyValue<Stat, K, Stat>() {
-            public Stat getMapValue(K key, Stat value) {
-                return value.or(stat.get(key));
-            }
-        }));
+        return new DistinctKeys<>(mapValues((key, value) -> value.or(stat.get(key))));
     }
 
     public static <K extends Expr> int hashOuter(DistinctKeys<K> distinct, HashContext hashContext) {
@@ -56,18 +48,10 @@ public class DistinctKeys<K> extends WrapMap<K, Stat> {
     }
 
     public DistinctKeys<K> min(final DistinctKeys<K> distinctKeys) {
-        return new DistinctKeys<>(mapValues(new GetKeyValue<Stat, K, Stat>() {
-            public Stat getMapValue(K key, Stat value) {
-                return value.min(distinctKeys.get(key));
-            }
-        }));
+        return new DistinctKeys<>(mapValues((key, value) -> value.min(distinctKeys.get(key))));
     }
 
     public DistinctKeys<K> min(final Stat stat) {
-        return new DistinctKeys<>(mapValues(new GetKeyValue<Stat, K, Stat>() {
-            public Stat getMapValue(K key, Stat value) {
-                return value.min(stat);
-            }
-        }));
+        return new DistinctKeys<>(mapValues((key, value) -> value.min(stat)));
     }
 }

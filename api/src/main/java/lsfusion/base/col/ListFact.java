@@ -28,10 +28,7 @@ public class ListFact {
     }
 
     public static ImOrderSet<Integer> consecutiveList(int size, final int is) {
-        return SetFact.toOrderExclSet(size, new GetIndex<Integer>() {
-            public Integer getMapValue(int i) {
-                return i+is;
-            }});
+        return SetFact.toOrderExclSet(size, i -> i+is);
     }
 
     public static ImOrderSet<Integer> consecutiveList(int size) {
@@ -45,11 +42,7 @@ public class ListFact {
         return mResult.immutableList();        
     }
     public static <T> ImList<T> toList(final T... array) {
-        return toList(array.length, new GetIndex<T>() {
-            public T getMapValue(int i) {
-                return array[i];
-            }
-        });
+        return toList(array.length, i -> array[i]);
     }
 
     public static <T> ImList<T> toList(int size, GetIndex<T> getter) {
@@ -60,10 +53,7 @@ public class ListFact {
     }
 
     public static <T> ImList<T> toList(final T value, int size) {
-        return toList(size, new GetIndex<T>() {
-            public T getMapValue(int i) {
-                return value;
-            }});
+        return toList(size, i -> value);
     }
 
     public static <T> ImList<T> add(T element, ImList<? extends T> list) {
@@ -96,17 +86,11 @@ public class ListFact {
     }
 
     public static <T> ImList<T> fromIndexedMap(final ImMap<Integer, T> map) {
-        return toList(map.size(), new GetIndex<T>() {
-            public T getMapValue(int i) {
-                return map.get(i);
-            }});
+        return toList(map.size(), map::get);
     }
 
     public static <T> ImOrderSet<T> fromIndexedMap(final ImRevMap<Integer, T> map) {
-        return SetFact.toOrderExclSet(map.size(), new GetIndex<T>() {
-            public T getMapValue(int i) {
-                return map.get(i);
-            }});
+        return SetFact.toOrderExclSet(map.size(), map::get);
     }
     
     public static <K, V> List<Map<K, V>> toJavaMapList(ImOrderSet<ImMap<K, V>> listMap) {
@@ -210,11 +194,7 @@ public class ListFact {
             mList.add(list.get(i));
     }
 
-    private final static GetIndex<MSet<Object>> mSet = new GetIndex<MSet<Object>>() {
-        public MSet<Object> getMapValue(int i) {
-            return SetFact.mSet();
-        }
-    };
+    private final static GetIndex<MSet<Object>> mSet = i -> SetFact.mSet();
 
     public static <V> GetIndex<MSet<V>> mSet() {
         return BaseUtils.immutableCast(mSet);

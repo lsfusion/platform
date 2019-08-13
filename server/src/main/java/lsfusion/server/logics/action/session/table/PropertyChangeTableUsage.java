@@ -52,11 +52,7 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
         private final SessionTableUsage<K, String> table;
 
         public Correlations(SessionTableUsage<K, String> table, ImOrderSet<Correlation<K>> correlations) {
-            this.correlations = Settings.get().isDisableCorrelations() ? MapFact.<PropertyField, Correlation<K>>EMPTYREV() : genProps(table.mapProps.size(), correlations, new Type.Getter<Correlation<K>>() {
-                public Type getType(Correlation<K> key) {
-                    return key.getType();
-                }
-            });
+            this.correlations = Settings.get().isDisableCorrelations() ? MapFact.<PropertyField, Correlation<K>>EMPTYREV() : genProps(table.mapProps.size(), correlations, Correlation::getType);
             this.table = table;
         }
 
@@ -80,11 +76,7 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
                 }
             }));
             final ImRevMap<K, KeyExpr> mapKeyExprs = table.mapKeys.crossJoin(mapFieldKeys);
-            exFieldQuery.addProperties(correlations.mapValues(new GetValue<Expr, Correlation<K>>() {
-                public Expr getMapValue(Correlation<K> value) {
-                    return value.getExpr(mapKeyExprs);
-                }
-            }));
+            exFieldQuery.addProperties(correlations.mapValues(value -> value.getExpr(mapKeyExprs)));
             exFieldQuery.and(fieldQuery.getWhere());
             return exFieldQuery.getQuery();
         }
@@ -100,11 +92,7 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
                 }
             }));
             final ImRevMap<K, KeyExpr> mapKeyExprs = table.mapKeys.crossJoin(mapFieldKeys);
-            exFieldQuery.addProperties(correlations.mapValuesEx(new GetExValue<Expr, Correlation<K>, SQLException, SQLHandledException>() {
-                public Expr getMapValue(Correlation<K> value) throws SQLException, SQLHandledException {
-                    return value.getExpr(mapKeyExprs, modifier);
-                }
-            }));
+            exFieldQuery.addProperties(correlations.mapValuesEx((GetExValue<Expr, Correlation<K>, SQLException, SQLHandledException>) value -> value.getExpr(mapKeyExprs, modifier)));
             exFieldQuery.and(fieldQuery.getWhere());
             return exFieldQuery.getQuery();
         }
@@ -113,16 +101,8 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
             if(!hasCorrelations()) // оптимизация + проверка
                 return result;
 
-            ImMap<PropertyField, Expr> correlationOut = correlations.mapValues(new GetValue<Expr, Correlation<K>>() {
-                public Expr getMapValue(Correlation<K> value) {
-                    return value.getExpr(joinImplement);
-                }
-            });
-            ImMap<PropertyField, Expr> correlationIn = correlations.keys().mapValues(new GetValue<Expr, PropertyField>() {
-                public Expr getMapValue(PropertyField value) {
-                    return join.getExpr(value);
-                }
-            });
+            ImMap<PropertyField, Expr> correlationOut = correlations.mapValues(value -> value.getExpr(joinImplement));
+            ImMap<PropertyField, Expr> correlationIn = correlations.keys().mapValues(join::getExpr);
             return result.and(CompareWhere.equalsNull(correlationOut, correlationIn));
         }
 
@@ -130,11 +110,7 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
             if(!hasCorrelations()) // оптимизация + проверка
                 return MapFact.EMPTY();
                 
-            return correlations.mapValues(new GetValue<CustomClass, Correlation<K>>() {
-                public CustomClass getMapValue(Correlation<K> value) {
-                    return value.getCustomClass();
-                }
-            });
+            return correlations.mapValues(Correlation::getCustomClass);
         }
 
         protected boolean fullHasClassChanges(boolean hasClassChanges, UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {

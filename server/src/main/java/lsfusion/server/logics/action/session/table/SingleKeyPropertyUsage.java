@@ -29,11 +29,7 @@ import java.sql.SQLException;
 public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
 
     public SingleKeyPropertyUsage(String debugInfo, final Type keyType, Type propertyType) {
-        super(debugInfo, SetFact.singletonOrder("key"), new Type.Getter<String>() {
-            public Type getType(String key) {
-                return keyType; 
-            }
-        }, propertyType);
+        super(debugInfo, SetFact.singletonOrder("key"), key -> keyType, propertyType);
     }
 
     public ModifyResult modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -65,15 +61,7 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
     }
 
     public void writeRows(SQLSession session, OperationOwner opOwner, ImMap<DataObject,ObjectValue> writeRows) throws SQLException, SQLHandledException {
-        writeRows(session, writeRows.mapKeyValues(new GetValue<ImMap<String, DataObject>, DataObject>() {
-            public ImMap<String, DataObject> getMapValue(DataObject value) {
-                return MapFact.singleton("key", value);
-            }
-        }, new GetValue<ImMap<String, ObjectValue>, ObjectValue>() {
-            public ImMap<String, ObjectValue> getMapValue(ObjectValue value) {
-                return MapFact.singleton("value", value);
-            }
-        }), opOwner);
+        writeRows(session, writeRows.mapKeyValues(value -> MapFact.singleton("key", value), value -> MapFact.singleton("value", value)), opOwner);
     }
 
     public ImCol<ImMap<String, Object>> read(SQLSession session, QueryEnvironment env, DataObject object) throws SQLException, SQLHandledException {

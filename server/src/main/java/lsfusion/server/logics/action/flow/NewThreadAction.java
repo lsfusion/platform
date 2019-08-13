@@ -54,25 +54,22 @@ public class NewThreadAction extends AroundAspectAction {
         DataSession session = context.getSession();
         session.registerThreadStack();
 
-        final EnvStackRunnable run = new EnvStackRunnable() {
-            @Override
-            public void run(ExecutionEnvironment env, ExecutionStack stack) {
-                try {
-                    DataSession session = context.getSession();
-                    if(env != null) {
-                        session.unregisterThreadStack(); // уже не нужна сессия
-                        proceed(context.override(env, stack));
-                    } else {
-                        try {
-                            proceed(context.override(stack));
-                        } finally {
-                            session.unregisterThreadStack();
-                        }
+        final EnvStackRunnable run = (env, stack) -> {
+            try {
+                DataSession session1 = context.getSession();
+                if(env != null) {
+                    session1.unregisterThreadStack(); // уже не нужна сессия
+                    proceed(context.override(env, stack));
+                } else {
+                    try {
+                        proceed(context.override(stack));
+                    } finally {
+                        session1.unregisterThreadStack();
                     }
-                } catch (Throwable t) {
-                    ServerLoggers.schedulerLogger.error("New thread error : ", t);
-                    throw Throwables.propagate(t);
                 }
+            } catch (Throwable t) {
+                ServerLoggers.schedulerLogger.error("New thread error : ", t);
+                throw Throwables.propagate(t);
             }
         };
 
@@ -89,11 +86,7 @@ public class NewThreadAction extends AroundAspectAction {
                 period = ((Number) periodProp.read(context, context.getKeys())).longValue();
             }
             
-            Runnable runContext = new Runnable() {
-                public void run() {
-                    run.run(null, ThreadLocalContext.getStack());
-                }
-            };
+            Runnable runContext = () -> run.run(null, ThreadLocalContext.getStack());
             boolean externalExecutor = context.getExecutorService() != null;
             ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
             if (period != null)

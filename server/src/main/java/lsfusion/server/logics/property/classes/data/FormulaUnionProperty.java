@@ -24,12 +24,7 @@ public abstract class FormulaUnionProperty extends UnionProperty {
 
     @Override
     protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        ImCol<Expr> exprs = getOperands().mapColValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() {
-            @Override
-            public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
-                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
-            }
-        });
+        ImCol<Expr> exprs = getOperands().mapColValues(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
         return FormulaUnionExpr.create(getFormula(), exprs.toList());
     }
 

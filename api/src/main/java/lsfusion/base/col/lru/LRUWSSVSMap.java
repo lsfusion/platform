@@ -96,11 +96,7 @@ public class LRUWSSVSMap<W, K, E, V> extends ALRUKWMap<W, LRUWSSVSMap.AEntry<W, 
     }
 
     public void proceedSafeLockLRUEKeyValues(final DProcessor<E, V> processor) {
-        proceedSafeLockLRUEEntries(new Processor<AEntry<W, K, E, V>>() {
-            public void proceed(AEntry<W, K, E, V> element) {
-                processor.proceed(element.eKey, element.value);
-            }
-        });
+        proceedSafeLockLRUEEntries(element -> processor.proceed(element.eKey, element.value));
     }
 
     static class AEntry<W, K, E, V> extends ALRUKWMap.AEntry<W, AEntry<W, K, E, V>> {

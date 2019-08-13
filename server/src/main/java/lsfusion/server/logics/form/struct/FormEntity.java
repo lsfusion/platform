@@ -504,14 +504,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> getGroupOrdersList(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues(new GetValue<OrderEntity<?>, PropertyDrawEntity<?>>() {
-            public OrderEntity<?> getMapValue(PropertyDrawEntity<?> value) {
-                return value.getOrder();
-            }
-        }, new GetValue<Boolean, Boolean>() {
-            public Boolean getMapValue(Boolean value) {
-                return !value;
-            }}).mergeOrder(getFixedOrdersList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
+        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((GetValue<OrderEntity<?>, PropertyDrawEntity<?>>) PropertyDrawEntity::getOrder, value -> !value).mergeOrder(getFixedOrdersList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
             @Override
             public GroupObjectEntity group(OrderEntity<?> key) {
                 GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
@@ -708,20 +701,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             newPropertyDraw.setIntegrationSID(inheritedProperty.getName());
         }
 
-        propertyDraws.add(newPropertyDraw, new FindIndex<PropertyDrawEntity>() {
-            public int getIndex(List<PropertyDrawEntity> list) {
-                int ind = list.size() - 1;
-                if (!newPropertyDraw.shouldBeLast) {
-                    while (ind >= 0) {
-                        PropertyDrawEntity property = list.get(ind);
-                        if (!property.shouldBeLast) {
-                            break;
-                        }
-                        --ind;
+        propertyDraws.add(newPropertyDraw, list -> {
+            int ind = list.size() - 1;
+            if (!newPropertyDraw.shouldBeLast) {
+                while (ind >= 0) {
+                    PropertyDrawEntity property = list.get(ind);
+                    if (!property.shouldBeLast) {
+                        break;
                     }
+                    --ind;
                 }
-                return ind + 1;
             }
+            return ind + 1;
         }, version);
         newPropertyDraw.setFormPath(formPath);
         return newPropertyDraw;

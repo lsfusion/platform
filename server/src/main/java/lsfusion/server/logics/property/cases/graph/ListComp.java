@@ -15,10 +15,7 @@ public class ListComp<T> implements NodeListComp<T> {
     }
 
     private <IV, V> ImList<IV> proceedComps(final CompProcessor<T, IV, V> processor) {
-        return comps.mapListValues(new GetValue<IV, NodeSetComp<T>>() {
-            public IV getMapValue(NodeSetComp<T> value) {
-                return value.proceedInner(processor);
-            }});
+        return comps.mapListValues((GetValue<IV, NodeSetComp<T>>) value -> value.proceedInner(processor));
     }
     @Override
     public <IV, V> V proceed(CompProcessor<T, IV, V> processor) {

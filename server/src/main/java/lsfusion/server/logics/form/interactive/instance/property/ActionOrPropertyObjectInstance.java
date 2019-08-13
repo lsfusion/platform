@@ -63,27 +63,18 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
 
     public boolean isInInterface(final ImSet<GroupObjectInstance> classGroups, boolean any) {
         // assert что classGroups все в GRID представлении
-        ImMap<P, AndClassSet> classImplement = mapping.mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceInstance>() {
-            public AndClassSet getMapValue(PropertyObjectInterfaceInstance value) {
-                return value.getClassSet(classGroups);
-            }});
+        ImMap<P, AndClassSet> classImplement = mapping.mapValues(value -> value.getClassSet(classGroups));
         return property.isInInterface(classImplement, any);
     }
 
     public abstract PropertyObjectInstance<?> getDrawProperty();
 
     public ImMap<P, DataObject> getInterfaceDataObjects() {
-        return mapping.mapValues(new GetValue<DataObject, PropertyObjectInterfaceInstance>() {
-            public DataObject getMapValue(PropertyObjectInterfaceInstance value) {
-                return value.getDataObject();
-            }});
+        return mapping.mapValues(PropertyObjectInterfaceInstance::getDataObject);
     }
 
     public ImMap<P, ObjectValue> getInterfaceObjectValues() {
-        return mapping.mapValues(new GetValue<ObjectValue, PropertyObjectInterfaceInstance>() {
-            public ObjectValue getMapValue(PropertyObjectInterfaceInstance value) {
-                return value.getObjectValue();
-            }});
+        return mapping.mapValues(PropertyObjectInterfaceInstance::getObjectValue);
     }
 
     protected ImMap<P, PropertyObjectInterfaceInstance> remap(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
@@ -95,21 +86,19 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
     }
 
     private ImMap<P, PropertyObjectInterfaceInstance> replaceEqualObjectInstances(final ImMap<PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, PropertyObjectInterfaceInstance>() {
-            public PropertyObjectInterfaceInstance getMapValue(PropertyObjectInterfaceInstance value) {
-                DataObject mapValue = mapKeyValues.get(value);
-                if (mapValue != null) {
-                    if (value instanceof ObjectInstance) {
-                        Object currentValue = ((ObjectInstance) value).getObjectValue().getValue();
-                        if (!BaseUtils.nullEquals(currentValue, mapValue.getValue())) {
-                            value = mapValue;
-                        }
-                    } else {
+        return mapping.mapValues(value -> {
+            DataObject mapValue = mapKeyValues.get(value);
+            if (mapValue != null) {
+                if (value instanceof ObjectInstance) {
+                    Object currentValue = ((ObjectInstance) value).getObjectValue().getValue();
+                    if (!BaseUtils.nullEquals(currentValue, mapValue.getValue())) {
                         value = mapValue;
                     }
+                } else {
+                    value = mapValue;
                 }
-                return value;
             }
+            return value;
         });
     }
     

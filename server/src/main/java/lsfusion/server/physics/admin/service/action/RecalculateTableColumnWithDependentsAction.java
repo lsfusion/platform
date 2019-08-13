@@ -34,11 +34,7 @@ public class RecalculateTableColumnWithDependentsAction extends InternalAction {
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
         boolean disableAggregations = context.getBL().reflectionLM.disableAggregationsTableColumn.read(context, tableColumnObject) != null;
         if (!disableAggregations) {
-            ServiceDBAction.run(context, new RunService() {
-                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                    context.getDbManager().recalculateAggregationWithDependenciesTableColumn(session, context.stack, propertyCanonicalName.trim(), isolatedTransaction, true);
-                }
-            });
+            ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateAggregationWithDependenciesTableColumn(session, context.stack, propertyCanonicalName.trim(), isolatedTransaction, true));
 
             context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.aggregations}"))), localize("{logics.recalculation.aggregations}")));
         }

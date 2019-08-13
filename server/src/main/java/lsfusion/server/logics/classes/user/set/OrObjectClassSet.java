@@ -167,11 +167,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
             if(used.contains(childClass)) {
                 ImMap<CustomClass, Integer> recChildPathes = recCommonClass(childClass, used, commonSet, mPathes, mFirstFulls);
                 hasFullChild = hasFullChild || recChildPathes.keys().containsAll(commonSet);
-                mChildPathes.addAll(recChildPathes.mapValues(new GetValue<Integer, Integer>() {
-                    public Integer getMapValue(Integer value) {
-                        return value + 1;
-                    }
-                }));
+                mChildPathes.addAll(recChildPathes.mapValues(value -> value + 1));
             } else
                 mChildPathes.add(childClass, 1);
 
@@ -227,35 +223,31 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         final ImSet<CustomClass> firstFulls = mFirstFulls.immutable();
         ImMap<CustomClass, ImMap<CustomClass, Integer>> pathes = mPathes.immutable();
 
-        final ImMap<CustomClass, Integer> pathCounts = pathes.mapValues(new GetKeyValue<Integer, CustomClass, ImMap<CustomClass, Integer>>() {
-            public Integer getMapValue(CustomClass key, ImMap<CustomClass, Integer> value) {
-                assert !firstFulls.contains(key) || value.keys().containsAll(commonSet);
-                int countCommon = 0;
-                int countOthers = 0;
-                for (int i = 0, size = value.size(); i < size; i++) {
-                    CustomClass customClass = value.getKey(i);
-                    if (commonSet.contains(customClass))
-                        countCommon += value.getValue(i);
-                    else
-                        countOthers += value.getValue(i);
-                }
-                return countOthers * 1000 + countCommon;
+        final ImMap<CustomClass, Integer> pathCounts = pathes.mapValues((key, value) -> {
+            assert !firstFulls.contains(key) || value.keys().containsAll(commonSet);
+            int countCommon = 0;
+            int countOthers = 0;
+            for (int i = 0, size = value.size(); i < size; i++) {
+                CustomClass customClass = value.getKey(i);
+                if (commonSet.contains(customClass))
+                    countCommon += value.getValue(i);
+                else
+                    countOthers += value.getValue(i);
             }
+            return countOthers * 1000 + countCommon;
         });
 
         final MAddExclMap<CustomClass, Integer> camelCaches = MapFact.mAddExclMap();
-        return firstFulls.sort(new Comparator<CustomClass>() {
-            public int compare(CustomClass o1, CustomClass o2) {
-                int result = Integer.compare(pathCounts.get(o1), pathCounts.get(o2));
-                if(result != 0)
-                    return result;
+        return firstFulls.sort((o1, o2) -> {
+            int result = Integer.compare(pathCounts.get(o1), pathCounts.get(o2));
+            if(result != 0)
+                return result;
 
-                result = Integer.compare(getCamelCaseCommonWords(o2, camelCaches, commonSet), getCamelCaseCommonWords(o1, camelCaches, commonSet));
-                if(result != 0)
-                    return result;
+            result = Integer.compare(getCamelCaseCommonWords(o2, camelCaches, commonSet), getCamelCaseCommonWords(o1, camelCaches, commonSet));
+            if(result != 0)
+                return result;
 
-                return o1.getCanonicalName().compareTo(o2.getCanonicalName());
-            }
+            return o1.getCanonicalName().compareTo(o2.getCanonicalName());
         }).get(0);
     }
 
@@ -351,12 +343,10 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         ImSet<ConcreteCustomClass> children = set.getSetConcreteChildren();
         if(children.size()==0) return Where.FALSE_STRING;
         if(children.size()==1) return source + "=" + children.single().ID;
-        return source + " IN (" + children.toString(new GetValue<String, ConcreteCustomClass>() {
-            public String getMapValue(ConcreteCustomClass value) {
-                if(value.ID == null)
-                    return "filling ids";
-                return value.ID.toString();
-            }
+        return source + " IN (" + children.toString(value -> {
+            if(value.ID == null)
+                return "filling ids";
+            return value.ID.toString();
         }, ",") + ")";
     }
 

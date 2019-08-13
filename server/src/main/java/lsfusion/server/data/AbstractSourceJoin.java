@@ -26,11 +26,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
 
     protected static class ToString extends CompileSource {
         public ToString(ImSet<Value> values) {
-            super(new KeyType() {
-                public Type getKeyType(ParamExpr expr) {
-                    return ObjectType.instance;
-                }
-            }, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new GetValue<String, ParseValue>() {
+            super(expr -> ObjectType.instance, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new GetValue<String, ParseValue>() {
                 public String getMapValue(ParseValue value) {
                     return value.toString();
                 }}), DataAdapter.debugSyntax, StaticExecuteEnvironmentImpl.MVOID);
@@ -57,11 +53,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
         }
     }
 
-    public final static ArrayInstancer<SourceJoin> instancer = new ArrayInstancer<SourceJoin>() {
-        public SourceJoin[] newArray(int size) {
-            return new SourceJoin[size];
-        }
-    };
+    public final static ArrayInstancer<SourceJoin> instancer = SourceJoin[]::new;
 
     // упрощаем зная where == false
     public abstract T followFalse(Where falseWhere, boolean pack);

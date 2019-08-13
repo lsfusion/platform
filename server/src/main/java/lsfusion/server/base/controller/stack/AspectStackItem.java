@@ -60,12 +60,7 @@ public class AspectStackItem extends ExecutionStackItem {
             if (mpi.profileArgs[i]) {
                 Object arg = args[i];
                 if (arg instanceof ImOrderSet) {
-                    objects[index++] = ((ImOrderSet) arg).mapListValues(new GetValue() {
-                        @Override
-                        public Object getMapValue(Object value) {
-                            return getProfiledObject(value);
-                        }
-                    });
+                    objects[index++] = ((ImOrderSet) arg).mapListValues((GetValue) AspectStackItem::getProfiledObject);
                 } else {
                     objects[index++] = getProfiledObject(arg);
                 }

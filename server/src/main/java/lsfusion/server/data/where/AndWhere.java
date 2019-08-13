@@ -52,11 +52,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return result;
     }
     
-    public final static ArrayInstancer<OrObjectWhere> instancer = new ArrayInstancer<OrObjectWhere>() {
-        public OrObjectWhere[] newArray(int size) {
-            return new OrObjectWhere[size];
-        }
-    };
+    public final static ArrayInstancer<OrObjectWhere> instancer = OrObjectWhere[]::new;
 
     public boolean isTrue() {
         return wheres.length==0;

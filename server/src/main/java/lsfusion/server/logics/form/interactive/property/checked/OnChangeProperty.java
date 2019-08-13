@@ -99,15 +99,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public static <T extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Interface<T, P>> getInterfaces(Property<T> onChange, Property<P> toChange) {
-        return onChange.getFriendlyOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, T>() {
-            public Interface<T, P> getMapValue(T value) {
-                return new KeyOnInterface<>(value);
-            }
-        }).addOrderExcl(toChange.getFriendlyOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, P>() {
-            public Interface<T, P> getMapValue(P value) {
-                return new KeyToInterface<>(value);
-            }
-        })).addOrderExcl(new ValueInterface<>(toChange));
+        return onChange.getFriendlyOrderInterfaces().mapOrderSetValues((GetValue<Interface<T, P>, T>) KeyOnInterface::new).addOrderExcl(toChange.getFriendlyOrderInterfaces().mapOrderSetValues((GetValue<Interface<T, P>, P>) KeyToInterface::new)).addOrderExcl(new ValueInterface<>(toChange));
     }
 
     public OnChangeProperty(Property<T> onChange, Property<P> toChange) {
@@ -139,15 +131,10 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public ContextFilter getContextFilter(final ImMap<T, DataObject> mapOnValues, final ImMap<P, DataObject> mapToValues, final ObjectEntity valueObject) {
-        return new ContextFilter() {
-            public FilterInstance getFilter(final InstanceFactory factory) {
-                ImMap<Interface<T, P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceInstance, Interface<T, P>>() {
-                    public PropertyObjectInterfaceInstance getMapValue(Interface<T, P> value) {
-                        return value.getInterface(mapOnValues, mapToValues, valueObject.getInstance(factory));
-                    }});
-                return new NotNullFilterInstance<>(
-                        new PropertyObjectInstance<>(OnChangeProperty.this, interfaceImplement));
-            }
+        return factory -> {
+            ImMap<Interface<T, P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues((GetValue<PropertyObjectInterfaceInstance, Interface<T, P>>) value -> value.getInterface(mapOnValues, mapToValues, valueObject.getInstance(factory)));
+            return new NotNullFilterInstance<>(
+                    new PropertyObjectInstance<>(OnChangeProperty.this, interfaceImplement));
         };
 
     }

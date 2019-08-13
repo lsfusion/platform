@@ -41,31 +41,28 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
      * Должно вызываться в основном потоке
      */
     public final T execute() throws E {
-        invocationFuture = invocationsExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    blockInvocation();
-                } catch (InterruptedException e) {
-                    throw Throwables.propagate(e);
-                }
-                
-                ServerLoggers.pausableLog("Run invocation: " + sid);
+        invocationFuture = invocationsExecutor.submit(() -> {
+            try {
+                blockInvocation();
+            } catch (InterruptedException e) {
+                throw Throwables.propagate(e);
+            }
+            
+            ServerLoggers.pausableLog("Run invocation: " + sid);
 
-                try {
-                    runInvocation();
-                    invocationResult = InvocationResult.FINISHED;
-                    ServerLoggers.pausableLog("Invocation " + sid + " finished");
-                } catch (Throwable t) {
-                    invocationResult = new InvocationResult(t);
-                    ServerLoggers.pausableLog("Invocation " + sid + " thrown an exception: ", t);
-                }
+            try {
+                runInvocation();
+                invocationResult = InvocationResult.FINISHED;
+                ServerLoggers.pausableLog("Invocation " + sid + " finished");
+            } catch (Throwable t) {
+                invocationResult = new InvocationResult(t);
+                ServerLoggers.pausableLog("Invocation " + sid + " thrown an exception: ", t);
+            }
 
-                try {
-                    releaseMain();
-                } catch (InterruptedException e) {
-                    throw Throwables.propagate(e);
-                }
+            try {
+                releaseMain();
+            } catch (InterruptedException e) {
+                throw Throwables.propagate(e);
             }
         });
 

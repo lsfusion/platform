@@ -72,22 +72,15 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public static <K> ImRevMap<KeyField, K> genKeys(ImOrderSet<K> keys, final Type.Getter<K> keyType) {
-        return keys.mapOrderRevKeys(new GetIndexValue<KeyField, K>() {
-            public KeyField getMapValue(int i, K value) {
-                return new KeyField("k" + i, keyType.getType(value));
-            }
-        });
+        return keys.mapOrderRevKeys((i, value) -> new KeyField("k" + i, keyType.getType(value)));
     }
 
     public static <V> ImRevMap<PropertyField, V> genProps(ImOrderSet<V> properties, final Type.Getter<V> propertyType) {
         return genProps(0, properties, propertyType);
     }    
     public static <V> ImRevMap<PropertyField, V> genProps(final int offset, ImOrderSet<V> properties, final Type.Getter<V> propertyType) {
-        return properties.mapOrderRevKeys(new GetIndexValue<PropertyField, V>() { // нужен детерминированный порядок, хотя бы для StructChanges
-            public PropertyField getMapValue(int i, V value) {
-                return new PropertyField("p" + i + offset, propertyType.getType(value));
-            }
-        });
+        // нужен детерминированный порядок, хотя бы для StructChanges
+        return properties.mapOrderRevKeys((i, value) -> new PropertyField("p" + i + offset, propertyType.getType(value)));
     }
 
     //    public String stack;
@@ -125,15 +118,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     public SessionTableUsage(String debugInfo, SQLSession sql, final Query<K, V> query, BaseClass baseClass, QueryEnvironment env,
                              final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes, int selectTop) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
-        this(debugInfo, query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), new Type.Getter<K>() {
-            public Type getType(K key) {
-                return keyTypes.get(key);
-            }
-        }, new Type.Getter<V>() {
-            public Type getType(V key) {
-                return propertyTypes.get(key);
-            }
-        });
+        this(debugInfo, query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), keyTypes::get, propertyTypes::get);
         writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery, selectTop);
     }
 
@@ -209,22 +194,10 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public void writeRows(SQLSession session,ImMap<ImMap<K,DataObject>,ImMap<V,ObjectValue>> writeRows, OperationOwner opOwner) throws SQLException, SQLHandledException {
         assert aspectNoCorrelations();
         
-        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<K, DataObject>>() {
-            public ImMap<KeyField, DataObject> getMapValue(ImMap<K, DataObject> value) {
-                return mapKeys.join(value);
-            }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<V, ObjectValue>>() {
-            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<V, ObjectValue> value) {
-                return mapProps.join(value);
-            }});
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(value -> mapKeys.join(value), value -> mapProps.join(value));
         // concerning castTypes some branches are safe (where field field type is guaranteed to be the same as in ObjectValue), however most branches are not
         // we need this casts not only for SessionRows, but also for SessionDataTable, because insertBatch with writeParam is used, and inside writeParam there are assertions that types are correct
-        mapWriteRows = mapWriteRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<KeyField, DataObject>>() {
-            public ImMap<KeyField, DataObject> getMapValue(ImMap<KeyField, DataObject> value) {
-                return castTypes(value);
-        }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
-            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
-                return castTypes(value);
-        }});
+        mapWriteRows = mapWriteRows.mapKeyValues(SessionData::castTypes, (GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>) SessionData::castTypes);
         
         try {
             table = table.rewrite(session, mapWriteRows, this, opOwner);
@@ -314,10 +287,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         ImRevMap<K, KeyExpr> mapKeys = getMapKeys();
         KeyExpr key = new KeyExpr("key");
         Expr groupExpr = GroupExpr.create(MapFact.singleton("key", join(mapKeys).getExpr(prop)), ValueExpr.TRUE, GroupType.LOGICAL(), MapFact.<String, Expr>singleton("key", key));
-        return new Query<>(MapFact.singletonRev("key", key), groupExpr.getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<Object, ImMap<String, Object>>() {
-            public Object getMapValue(ImMap<String, Object> value) {
-                return value.singleValue();
-            }});
+        return new Query<>(MapFact.singletonRev("key", key), groupExpr.getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(ImMap::singleValue);
     }
 
     public <B> ClassWhere<B> getClassWhere(V property, ImRevMap<K, ? extends B> remapKeys, B mapProp) {
@@ -347,10 +317,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
     
     public static <T> ImMap<T, SessionData> saveData(Map<T, ? extends SessionTableUsage> map) {
-        return MapFact.<T, SessionTableUsage>fromJavaMap(map).mapValues(new GetValue<SessionData, SessionTableUsage>() {
-            public SessionData getMapValue(SessionTableUsage value) {
-                return value.saveData();
-            }});
+        return MapFact.<T, SessionTableUsage>fromJavaMap(map).mapValues(value -> value.saveData());
     }
 
     public long getCount() {

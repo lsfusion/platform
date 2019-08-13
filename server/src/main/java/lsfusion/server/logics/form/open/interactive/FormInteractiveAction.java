@@ -103,13 +103,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.noCancel = noCancel;
 
         this.contextObjects = contextObjects;
-        this.contextPropertyImplements = contextProperties.mapListValues(new GetValue<PropertyMapImplement<PropertyInterface, ClassPropertyInterface>, Property>() {
-            public PropertyMapImplement<PropertyInterface, ClassPropertyInterface> getMapValue(Property value) {
-                return value.getImplement(
-                        getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
-                );
-            }
-        });
+        this.contextPropertyImplements = contextProperties.mapListValues((GetValue<PropertyMapImplement<PropertyInterface, ClassPropertyInterface>, Property>) value -> value.getImplement(
+                getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
+        ));
         
         this.readOnly = readOnly;
         this.checkOnOk = checkOnOk;

@@ -182,13 +182,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
         final ImSet<KeyField> removeKeys = keyValues.keys(); final ImSet<PropertyField> removeProperties = propertyValues.keys();
         // пробежим по всем вырежем equals и создадим classes
-        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> tableRows = rows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<KeyField, DataObject>>() {
-            public ImMap<KeyField, DataObject> getMapValue(ImMap<KeyField, DataObject> value) {
-                return value.remove(removeKeys);
-            }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
-            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
-                return value.remove(removeProperties);
-            }});
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> tableRows = rows.mapKeyValues(value -> value.remove(removeKeys), value -> value.remove(removeProperties));
         this.keyValues = keyValues;
         this.propertyValues = propertyValues;
         table = SessionTable.create(session, keys.removeOrder(removeKeys), properties.remove(removeProperties), tableRows, owner, opOwner);

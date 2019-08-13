@@ -45,10 +45,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
 
     @Override
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        ImList<Expr> operandExprs = operands.mapListValues(new GetValue<Expr, PropertyInterfaceImplement<Interface>>() {
-            public Expr getMapValue(PropertyInterfaceImplement<Interface> value) {
-                return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
-            }});
+        ImList<Expr> operandExprs = operands.mapListValues((GetValue<Expr, PropertyInterfaceImplement<Interface>>) value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
 
         Where xorWhere = Where.FALSE;
         for(Expr operandExpr : operandExprs)
@@ -58,11 +55,10 @@ public class XorUnionProperty extends IncrementUnionProperty {
 
     @Override
     protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
-        ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues(new GetValue<Pair<Expr, Where>, PropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
-            public Pair<Expr, Where> getMapValue(PropertyInterfaceImplement<Interface> key) {
-                WhereBuilder changedOperandWhere = new WhereBuilder();
-                return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
-            }
+        // до непосредственно вычисления, для хинтов
+        ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues((GetValue<Pair<Expr, Where>, PropertyInterfaceImplement<Interface>>) key -> {
+            WhereBuilder changedOperandWhere = new WhereBuilder();
+            return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
         });
 
         Where resultWhere = prevExpr.getWhere();

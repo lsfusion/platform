@@ -117,11 +117,7 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
     }
 
     private ImSet<ImSet<VariableClassExpr>> translateComps(final MapTranslate translator, ImSet<ImSet<VariableClassExpr>> comps) {
-        return comps.mapSetValues(new GetValue<ImSet<VariableClassExpr>, ImSet<VariableClassExpr>>() {
-                public ImSet<VariableClassExpr> getMapValue(ImSet<VariableClassExpr> value) {
-                    return translator.translateVariable(value);
-                }
-            });
+        return comps.mapSetValues(translator::translateVariable);
     }
 
     public int hash(HashContext hash) {

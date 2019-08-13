@@ -16,17 +16,11 @@ import lsfusion.server.data.where.Where;
 // класс нисколько не immutable
 public abstract class CompileSource {
 
-    private final GetValue<String, Expr> getExprSource = new GetValue<String, Expr>() {
-        public String getMapValue(Expr value) {
-            return value.getSource(CompileSource.this);
-        }};
+    private final GetValue<String, Expr> getExprSource = value -> value.getSource(CompileSource.this);
     public GetValue<String, Expr> GETEXPRSOURCE() {
         return getExprSource;
     }
-    private final GetValue<String, Where> getWhereSource = new GetValue<String, Where>() {
-        public String getMapValue(Where value) {
-            return value.getSource(CompileSource.this);
-        }};
+    private final GetValue<String, Where> getWhereSource = value -> value.getSource(CompileSource.this);
     public GetValue<String, Where> GETWHERESOURCE() {
         return getWhereSource;
     }

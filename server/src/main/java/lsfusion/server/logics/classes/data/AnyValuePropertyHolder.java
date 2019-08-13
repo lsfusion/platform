@@ -261,11 +261,7 @@ public class AnyValuePropertyHolder {
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
                 logicalProperty, colorProperty, objectProperty 
-        ).mapOrderSetValues(new GetValue<SessionDataProperty, LP>() {
-            public SessionDataProperty getMapValue(LP value) {
-                return (SessionDataProperty) value.property;
-            }
-        });
+        ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
         
     public void write(Type valueType, ObjectValue value, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {

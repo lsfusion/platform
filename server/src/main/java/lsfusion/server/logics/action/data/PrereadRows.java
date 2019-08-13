@@ -41,24 +41,8 @@ public class PrereadRows<P extends PropertyInterface> extends AbstractValuesCont
 
     protected PrereadRows<P> translate(final MapValuesTranslate translator) {
         final MapTranslate mapTranslate = translator.mapKeys();
-        return new PrereadRows<>(readParams.mapKeyValues(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) {
-                return value.translateOuter(mapTranslate);
-            }
-        }, new GetValue<ObjectValue, ObjectValue>() {
-            public ObjectValue getMapValue(ObjectValue value) {
-                return ((ObjectValue<?>) value).translateValues(translator);
-            }
-        }),
-                readValues.mapKeyValues(new GetValue<ImMap<P, Expr>, ImMap<P, Expr>>() {
-                    public ImMap<P, Expr> getMapValue(ImMap<P, Expr> value) {
-                        return mapTranslate.translate(value);
-                    }
-                }, new GetValue<Pair<ObjectValue, Boolean>, Pair<ObjectValue, Boolean>>() {
-                    public Pair<ObjectValue, Boolean> getMapValue(Pair<ObjectValue, Boolean> value) {
-                        return new Pair<>((ObjectValue) value.first.translateValues(translator), value.second);
-                    }
-                }));
+        return new PrereadRows<>(readParams.mapKeyValues(value -> value.translateOuter(mapTranslate), value -> ((ObjectValue<?>) value).translateValues(translator)),
+                readValues.mapKeyValues(mapTranslate::translate, value -> new Pair<>((ObjectValue) value.first.translateValues(translator), value.second)));
     }
 
     public ImSet<Value> getValues() {

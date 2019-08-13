@@ -153,20 +153,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, final String action, final ExternalRequest request) throws RemoteException {
-        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
-            public ExternalResponse call(RemoteSession session) {
-                return session.exec(action, request);
-            }
-        });
+        return runInNewSession(token, sessionInfo, session -> session.exec(action, request));
     }
 
     @Override
     public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final Object paramScript, final ExternalRequest request) throws RemoteException {
-        return runInNewSession(token, sessionInfo, new CallableWithParam<RemoteSession, ExternalResponse>() {
-            public ExternalResponse call(RemoteSession session) {
-                return session.eval(action, paramScript, request);
-            }
-        });
+        return runInNewSession(token, sessionInfo, session -> session.eval(action, paramScript, request));
     }
 
     public void ping() throws RemoteException {

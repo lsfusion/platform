@@ -76,16 +76,9 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
                 .subOrder(0, objectsToSet.size());
 
         this.form = form;
-        mapObjects = objectInterfaces.mapOrderRevKeys(new GetIndex<O>() { // такой же дебилизм и в SessionDataProperty
-                    public O getMapValue(int i) {
-                        return objectsToSet.get(i);
-                    }
-                });
-        ImSet<ClassPropertyInterface> notNullInterfaces = objectInterfaces.mapOrderValues(new GetIndex<Boolean>() {
-            public Boolean getMapValue(int i) {
-                return nulls.get(i);
-            }
-        }).filterFnValues(new SFunctionSet<Boolean>() {
+        // такой же дебилизм и в SessionDataProperty
+        mapObjects = objectInterfaces.mapOrderRevKeys(objectsToSet::get);
+        ImSet<ClassPropertyInterface> notNullInterfaces = objectInterfaces.mapOrderValues(nulls::get).filterFnValues(new SFunctionSet<Boolean>() {
             public boolean contains(Boolean element) {
                 return !element;
             }

@@ -154,15 +154,8 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
             for(int j=0,sizeJ=propList.size();j<sizeJ;j++)
                 distinctPropValues.get(j).add(propValues.get(propList.get(j)));
         }
-        ImMap<KeyField, Integer> distinctKeys = keys.mapOrderValues(new GetIndex<Integer>() {
-            public Integer getMapValue(int i) {
-                return distinctKeyValues.get(i).size();
-            }
-        });
-        ImMap<PropertyField, PropStat> distinctProps = propList.mapOrderValues(new GetIndex<PropStat>() {
-            public PropStat getMapValue(int i) {
-                return new PropStat(new Stat(distinctPropValues.get(i).size()));
-            }});
+        ImMap<KeyField, Integer> distinctKeys = keys.mapOrderValues((GetIndex<Integer>) i -> distinctKeyValues.get(i).size());
+        ImMap<PropertyField, PropStat> distinctProps = propList.mapOrderValues((GetIndex<PropStat>) i -> new PropStat(new Stat(distinctPropValues.get(i).size())));
         return new Pair<>(distinctKeys, distinctProps);
     }
 
@@ -361,14 +354,13 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(final ImMap<KeyField, ConcreteClass> keyFields, final ImMap<PropertyField, ConcreteClass> propFields, ClassWhere<KeyField> classes, final ImMap<PropertyField, ClassWhere<Field>> propertyClasses) {
 
         assert propertyClasses.keys().containsAll(propFields.keys());
-        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
-            public ClassWhere<Field> getMapValue(PropertyField propField, ClassWhere<Field> existedPropertyClasses) {
-                ConcreteClass propClass = propFields.get(propField);
-                if (propClass != null)
-                    existedPropertyClasses = existedPropertyClasses.or(new ClassWhere<>(
-                            MapFact.addExcl(keyFields, propField, propClass)));
-                return existedPropertyClasses;
-            }});
+        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.mapValues((propField, existedPropertyClasses) -> {
+            ConcreteClass propClass = propFields.get(propField);
+            if (propClass != null)
+                existedPropertyClasses = existedPropertyClasses.or(new ClassWhere<>(
+                        MapFact.addExcl(keyFields, propField, propClass)));
+            return existedPropertyClasses;
+        });
         return new Pair<>(
                 classes.or(new ClassWhere<>(keyFields)), orPropertyClasses);
     }
@@ -379,16 +371,10 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
 
         final ClassWhere<KeyField> andKeyClasses = classes.and(addKeyClasses);
 
-        ImMap<PropertyField, ClassWhere<Field>> andPropertyClasses = propertyClasses.mapValues(new GetValue<ClassWhere<Field>, ClassWhere<Field>>() {
-            public ClassWhere<Field> getMapValue(ClassWhere<Field> value) {
-                return value.and(BaseUtils.<ClassWhere<Field>>immutableCast(addKeyClasses));
-            }}).addExcl(
-                propFields.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ObjectValue>() {
-                    public ClassWhere<Field> getMapValue(PropertyField key, ObjectValue value) {
-                        return !(value instanceof DataObject)?ClassWhere.<Field>FALSE():
-                                new ClassWhere<>(MapFact.<Field, ConcreteClass>singleton(key, ((DataObject) value).objectClass)).
-                                        and(BaseUtils.<ClassWhere<Field>>immutableCast(andKeyClasses));
-                    }}));
+        ImMap<PropertyField, ClassWhere<Field>> andPropertyClasses = propertyClasses.mapValues(value -> value.and(BaseUtils.<ClassWhere<Field>>immutableCast(addKeyClasses))).addExcl(
+                propFields.mapValues((key, value) -> !(value instanceof DataObject)?ClassWhere.<Field>FALSE():
+                        new ClassWhere<>(MapFact.<Field, ConcreteClass>singleton(key, ((DataObject) value).objectClass)).
+                                and(BaseUtils.<ClassWhere<Field>>immutableCast(andKeyClasses))));
         return new Pair<>(andKeyClasses, andPropertyClasses);
     }
 
@@ -396,10 +382,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         if(keyFields.isEmpty())
             return new Pair<>(classes, propertyClasses.remove(propFields));
         else {
-            ImMap<PropertyField, ClassWhere<Field>> removePropClasses = propertyClasses.remove(propFields).mapValues(new GetValue<ClassWhere<Field>, ClassWhere<Field>>() {
-                public ClassWhere<Field> getMapValue(ClassWhere<Field> value) {
-                    return value.remove(keyFields);
-                }});
+            ImMap<PropertyField, ClassWhere<Field>> removePropClasses = propertyClasses.remove(propFields).mapValues(value -> value.remove(keyFields));
             return new Pair<>(classes.remove(keyFields), removePropClasses);
         }
     }
@@ -412,11 +395,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
 
             keysClassWhere = keysClassWhere.or(new ClassWhere(rowKeyClasses));
 
-            ImMap<PropertyField, ClassWhere<Field>> rowClasses = data.getValue(i).mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ObjectValue>() {
-                public ClassWhere<Field> getMapValue(PropertyField key, ObjectValue value) {
-                    return new ClassWhere<>(MapFact.addExcl(rowKeyClasses, key, ((DataObject) value).objectClass));
-                }
-            });
+            ImMap<PropertyField, ClassWhere<Field>> rowClasses = data.getValue(i).mapValues((key, value) -> new ClassWhere<>(MapFact.addExcl(rowKeyClasses, key, ((DataObject) value).objectClass)));
 
             if(propertiesClassWheres==null)
                 propertiesClassWheres = rowClasses;
@@ -581,10 +560,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
             final ImMap<Field, ConcreteClass> result = MapFact.addExcl(diffClasses, mapData);
             updatedClasses = updatedClasses.or(new ClassWhere<>(result.filterIncl(getTableKeys())));
             
-            updatedPropertyClasses = updatedPropertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
-                public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
-                    return value.or(new ClassWhere<>(result.filterIncl(SetFact.addExcl(getTableKeys(), key))));
-                }});
+            updatedPropertyClasses = updatedPropertyClasses.mapValues((key, value) -> value.or(new ClassWhere<>(result.filterIncl(SetFact.addExcl(getTableKeys(), key)))));
         }
         return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, statKeys, statProps).checkClasses(sql, null, nonead, env.getOpOwner());
     }
@@ -788,27 +764,25 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         final Result<Boolean> updatedProps = new Result<>(false); // оптимизация
         final ClassWhere<KeyField> fNewClasses = newClasses;
         final boolean fUpdatedClasses = updatedClasses;
-        newPropertyClasses = propertyClasses.mapItValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
-            public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
-                ClassWhere<Field> readWhere = readClasses.second.get(key);
-                assert (readWhere != null) == objectProps.result.contains(key);
-                if (readWhere != null) {
-                    if (inconsistent) {
-                        if (!readWhere.means(value, true)) { // если даже уточняет классы не будем трогать, чтобы не пересоздавать ссылки
-                            updatedProps.set(true);
-                            value = value.remove(SetFact.addExcl(objectKeys.result, key)).and(readWhere);
-                        }
-                    } else {
-                        if (!value.means(readWhere, true)) {
-                            updatedProps.set(true);
-                            value = value.and(readWhere);
-                        }
+        newPropertyClasses = propertyClasses.mapItValues((key, value) -> {
+            ClassWhere<Field> readWhere = readClasses.second.get(key);
+            assert (readWhere != null) == objectProps.result.contains(key);
+            if (readWhere != null) {
+                if (inconsistent) {
+                    if (!readWhere.means(value, true)) { // если даже уточняет классы не будем трогать, чтобы не пересоздавать ссылки
+                        updatedProps.set(true);
+                        value = value.remove(SetFact.addExcl(objectKeys.result, key)).and(readWhere);
+                    }
+                } else {
+                    if (!value.means(readWhere, true)) {
+                        updatedProps.set(true);
+                        value = value.and(readWhere);
                     }
                 }
-                if(fUpdatedClasses)
-                    value = value.and(BaseUtils.<ClassWhere<Field>>immutableCast(fNewClasses));
-                return value;
             }
+            if(fUpdatedClasses)
+                value = value.and(BaseUtils.<ClassWhere<Field>>immutableCast(fNewClasses));
+            return value;
         });
 
         if(updatedClasses || updatedProps.result)

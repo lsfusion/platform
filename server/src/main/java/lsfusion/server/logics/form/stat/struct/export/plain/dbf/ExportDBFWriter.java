@@ -46,13 +46,11 @@ public class ExportDBFWriter extends ExportFilePlainWriter {
     }
 
     private OverJDBField[] getFields() {
-        ImOrderSet<OverJDBField> fields = fieldTypes.mapOrderSetValues(new GetKeyValue<OverJDBField, String, Type>() {
-            public OverJDBField getMapValue(String key, Type value) {
-                try {
-                    return value.formatDBF(key);
-                } catch (JDBFException e) {
-                    throw new RuntimeException(e);
-                }
+        ImOrderSet<OverJDBField> fields = fieldTypes.mapOrderSetValues((key, value) -> {
+            try {
+                return value.formatDBF(key);
+            } catch (JDBFException e) {
+                throw new RuntimeException(e);
             }
         });
         return fields.toArray(new OverJDBField[fields.size()]);

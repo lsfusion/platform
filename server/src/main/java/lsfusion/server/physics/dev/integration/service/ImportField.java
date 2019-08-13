@@ -13,10 +13,7 @@ import lsfusion.server.logics.property.Property;
 public class ImportField implements ImportFieldInterface, ImportKeyInterface {
     private DataClass fieldClass;
 
-    public static final Type.Getter<ImportField> typeGetter = new Type.Getter<ImportField>() {
-        public Type getType(ImportField key) {
-            return key.getFieldClass();
-        }};
+    public static final Type.Getter<ImportField> typeGetter = ImportField::getFieldClass;
 
     public ImportField(DataClass fieldClass) {
         this.fieldClass = fieldClass;

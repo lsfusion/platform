@@ -14,9 +14,6 @@ public class ListPermutations<T> extends Permutations<ImOrderSet<T>> {
     }
 
     ImOrderSet<T> getPermute(final PermuteIterator permute) {
-        return SetFact.toOrderExclSet(size, new GetIndex<T>() {
-            public T getMapValue(int i) {
-                return to.get(permute.nums[i]);
-            }});
+        return SetFact.toOrderExclSet(size, i -> to.get(permute.nums[i]));
     }
 }

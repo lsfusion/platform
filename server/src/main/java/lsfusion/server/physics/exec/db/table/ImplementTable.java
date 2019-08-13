@@ -141,15 +141,9 @@ public class ImplementTable extends DBTable { // последний интерф
         super(name);
 
         ImOrderSet<KeyField> keys;
-        keys = SetFact.toOrderExclSet(implementClasses.length, new GetIndex<KeyField>() {
-            public KeyField getMapValue(int i) {
-                return new KeyField("key"+i,implementClasses[i].getType());
-            }});
+        keys = SetFact.toOrderExclSet(implementClasses.length, i -> new KeyField("key"+i,implementClasses[i].getType()));
         ImMap<KeyField, ValueClass> mapFields;
-        mapFields = keys.mapOrderValues(new GetIndex<ValueClass>() {
-            public ValueClass getMapValue(int i) {
-                return implementClasses[i];
-            }});
+        mapFields = keys.mapOrderValues((GetIndex<ValueClass>) i -> implementClasses[i]);
 
         parents = NFFact.orderSet();
         classes = classes.or(new ClassWhere<>(mapFields, true));

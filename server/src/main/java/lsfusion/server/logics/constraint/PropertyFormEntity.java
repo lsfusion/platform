@@ -31,11 +31,10 @@ public class PropertyFormEntity extends FormEntity {
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
         boolean prev = property.usePrevHeur();
         
-        ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
-            public ObjectEntity getMapValue(ValueClass value) {
-                // need to specify baseClass anyway, because we need it when adding recognizeGroup
-                return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
-            }});
+        ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues((GetValue<ObjectEntity, ValueClass>) value -> {
+            // need to specify baseClass anyway, because we need it when adding recognizeGroup
+            return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
+        });
         
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet()); 
         addGroupObject(groupObject, version);

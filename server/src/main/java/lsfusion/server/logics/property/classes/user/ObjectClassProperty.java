@@ -105,10 +105,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
     public ImSet<Property> getSingleApplyDroppedIsClassProps() {
         ValueClass interfaceClass = getInterfaceClass();
         if(interfaceClass instanceof CustomClass) {
-            return baseClass.getAllChildren().mapSetValues(new GetValue<Property, CustomClass>() {
-                public Property getMapValue(CustomClass value) {
-                    return value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope);
-                }});
+            return baseClass.getAllChildren().mapSetValues(value -> value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
         }
         return SetFact.EMPTY();
     }

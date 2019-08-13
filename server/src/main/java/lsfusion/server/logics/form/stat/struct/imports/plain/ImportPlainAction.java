@@ -75,10 +75,7 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
                 }
             }
 
-            ImRevMap<PropertyDrawEntity, String> propertyNames = childProperties.getSet().mapRevValues(new GetValue<String, PropertyDrawEntity>() {
-                public String getMapValue(PropertyDrawEntity property) {
-                    return property.getIntegrationSID();
-                }});
+            ImRevMap<PropertyDrawEntity, String> propertyNames = childProperties.getSet().mapRevValues((GetValue<String, PropertyDrawEntity>) PropertyDrawEntity::getIntegrationSID);
 
             fieldTypes = fieldTypes.addOrderExcl(propertyNames.reverse().mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
                 public Type getMapValue(PropertyDrawEntity object) {
@@ -127,18 +124,10 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
     }
 
     public static ImRevMap<ObjectEntity, String> getFields(GroupObjectEntity currentGroup) {
-        return currentGroup.getObjects().mapRevValues(new GetValue<String, ObjectEntity>() {
-            public String getMapValue(ObjectEntity value) {
-                return value.getIntegrationSID();
-            }
-        });
+        return currentGroup.getObjects().mapRevValues(ObjectEntity::getIntegrationSID);
     }
     public static ImOrderMap<String, Type> getFieldTypes(GroupObjectEntity currentGroup, final ImRevMap<ObjectEntity, String> fields) {
-        return currentGroup.getOrderObjects().mapOrderValues(new GetValue<Type, ObjectEntity>() {
-            public Type getMapValue(ObjectEntity value) {
-                return value.getType();
-            }
-        }).map(fields);
+        return currentGroup.getOrderObjects().mapOrderValues(ObjectEntity::getType).map(fields);
     }
 
     private Map<GroupObjectEntity, RawFileData> getFiles(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {

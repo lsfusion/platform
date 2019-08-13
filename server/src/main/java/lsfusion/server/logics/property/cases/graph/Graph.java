@@ -65,13 +65,11 @@ public class Graph<T> {
 
     private static <T> ImMap<T, ImSet<T>> filter(final ImMap<T, ImSet<T>> edges, FunctionSet<T> filter) {
         final ImSet<T> filteredEdges = edges.keys().filterFn(filter);
-        return filteredEdges.mapValues(new GetValue<ImSet<T>, T>() {
-            public ImSet<T> getMapValue(T element) {
-                MAddSet<T> proceeded = SetFact.mAddSet();
-                MSet<T> mResult = SetFact.mSet();
-                recFindEdges(element, false, edges, filteredEdges, mResult, proceeded);
-                return mResult.immutable();
-            }
+        return filteredEdges.mapValues((GetValue<ImSet<T>, T>) element -> {
+            MAddSet<T> proceeded = SetFact.mAddSet();
+            MSet<T> mResult = SetFact.mSet();
+            recFindEdges(element, false, edges, filteredEdges, mResult, proceeded);
+            return mResult.immutable();
         });
     }
 
@@ -101,13 +99,12 @@ public class Graph<T> {
                 
         final ImSet<T> graphNodes = graph.getNodes();
 
-        GetValue<ImSet<T>, ImSet<T>> substitute = new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                ImSet<T> removed = value.remove(graphNodes);
-                if (removed.size() < value.size())
-                    removed = removed.addExcl(element);
-                return removed;
-            }};
+        GetValue<ImSet<T>, ImSet<T>> substitute = value -> {
+            ImSet<T> removed = value.remove(graphNodes);
+            if (removed.size() < value.size())
+                removed = removed.addExcl(element);
+            return removed;
+        };
         ImMap<T, ImSet<T>> removedEdgesOut = edgesOut.remove(graphNodes).mapValues(substitute);
         if(edgesOut.size() - removedEdgesOut.size() != graphNodes.size()) { // есть дополнительные вершины
             return this;            
@@ -175,15 +172,7 @@ public class Graph<T> {
     }
 
     private Graph<T> removeNodes(final ImSet<T> set) {
-        return new Graph<>(edgesOut.remove(set).mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                return value.remove(set);
-            }
-        }), edgesIn.remove(set).mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                return value.remove(set);
-            }
-        }));
+        return new Graph<>(edgesOut.remove(set).mapValues(value -> value.remove(set)), edgesIn.remove(set).mapValues(value -> value.remove(set)));
     }
 
     // находим вершины с нулевой степенью вырезаем, разбиваем на компоненты связности, (list'ы сливаем) для детерминированности бежим в исходном порядке ??? 
@@ -195,11 +184,7 @@ public class Graph<T> {
             ImSet<T> zeroNodes = graphComp.getZeroOutNodes();
             Comp<T> recGraphComp = graphComp.removeNodes(zeroNodes).buildComps();
 
-            ImList<NodeSetComp<T>> graphResult = ListFact.add(recGraphComp.getList(), zeroNodes.mapSetValues(new GetValue<NodeComp<T>, T>() {
-                public NodeComp<T> getMapValue(T value) {
-                    return new NodeComp<>(value);
-                }
-            }).toList());
+            ImList<NodeSetComp<T>> graphResult = ListFact.add(recGraphComp.getList(), zeroNodes.mapSetValues(NodeComp::new).toList());
             mResult.exclAddAll(ListComp.create(graphResult).getSet());
         }
         
@@ -214,34 +199,21 @@ public class Graph<T> {
         final ImSet<T> elementOut = edgesOut.get(element).removeIncl(element); // itself
         final ImSet<T> elementIn = edgesIn.get(element).removeIncl(element); // itself
 
-        GetValue<ImSet<T>, ImSet<T>> substitute = new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                ImSet<T> removed = value.remove(SetFact.singleton(element));
-                if(removed.size() < value.size())
-                    removed = removed.addExcl(graphNodes);
-                return removed;
-            }
+        GetValue<ImSet<T>, ImSet<T>> substitute = value -> {
+            ImSet<T> removed = value.remove(SetFact.singleton(element));
+            if(removed.size() < value.size())
+                removed = removed.addExcl(graphNodes);
+            return removed;
         };
-        return new Graph<>(edgesOut.removeIncl(element).mapValues(substitute).addExcl(graph.edgesOut.mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                return value.addExcl(elementOut);
-            }
-        })), edgesIn.removeIncl(element).mapValues(substitute).addExcl(graph.edgesIn.mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                return value.addExcl(elementIn);
-            }
-        })));
+        return new Graph<>(edgesOut.removeIncl(element).mapValues(substitute).addExcl(graph.edgesOut.mapValues(value -> value.addExcl(elementOut))), edgesIn.removeIncl(element).mapValues(substitute).addExcl(graph.edgesIn.mapValues(value -> value.addExcl(elementIn))));
     }
     
     public Graph<T> cleanNodes(final FunctionSet<Pair<T, T>> set) {
-        GetKeyValue<ImSet<T>, T, ImSet<T>> adjustSet = new GetKeyValue<ImSet<T>, T, ImSet<T>>() {
-            public ImSet<T> getMapValue(final T key, ImSet<T> value) {
-                return value.filterFn(new SFunctionSet<T>() {
-                    public boolean contains(T element) {
-                        return !set.contains(new Pair<>(key, element));
-                    }
-                });
-            }};
+        GetKeyValue<ImSet<T>, T, ImSet<T>> adjustSet = (key, value) -> value.filterFn(new SFunctionSet<T>() {
+            public boolean contains(T element) {
+                return !set.contains(new Pair<>(key, element));
+            }
+        });
         return new Graph<>(edgesOut.mapValues(adjustSet), edgesIn.mapValues(adjustSet));
     }
 
@@ -330,10 +302,7 @@ public class Graph<T> {
     }
 
     public <M> Graph<M> map(final GetValue<M, T> map) { // rev map
-        GetValue<ImSet<M>, ImSet<T>> mapSets = new GetValue<ImSet<M>, ImSet<T>>() {
-            public ImSet<M> getMapValue(ImSet<T> value) {
-                return value.mapSetValues(map);
-            }};
+        GetValue<ImSet<M>, ImSet<T>> mapSets = value -> value.mapSetValues(map);
         return new Graph<>(edgesOut.mapKeyValues(map, mapSets), edgesIn.mapKeyValues(map, mapSets));
     }
 }

@@ -8,15 +8,9 @@ import java.util.Map;
 
 public abstract class CachableLayout<C> implements LayoutManager2, Serializable {
 
-    public static final ComponentSizeGetter minSizeGetter = new ComponentSizeGetter() {
-        @Override
-        public Dimension get(Component child) { return child.getMinimumSize(); }
-    };
+    public static final ComponentSizeGetter minSizeGetter = Component::getMinimumSize;
 
-    public static final ComponentSizeGetter prefSizeGetter = new ComponentSizeGetter() {
-        @Override
-        public Dimension get(Component child) { return child.getPreferredSize(); }
-    };
+    public static final ComponentSizeGetter prefSizeGetter = Component::getPreferredSize;
 
     protected final Container target;
     protected final boolean hasConstraints;

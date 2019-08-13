@@ -9,20 +9,16 @@ import java.util.Iterator;
 public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> extends TwinImmutableObject {
 
     public Iterable<T> it() {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return new Iterator<T>() {
-                    int i=0;
-                    public boolean hasNext() {
-                        return i<wheres.length;
-                    }
-                    public T next() {
-                        return wheres[i++];
-                    }
-                    public void remove() {
-                        throw new RuntimeException("not supported");
-                    }
-                };
+        return () -> new Iterator<T>() {
+            int i=0;
+            public boolean hasNext() {
+                return i<wheres.length;
+            }
+            public T next() {
+                return wheres[i++];
+            }
+            public void remove() {
+                throw new RuntimeException("not supported");
             }
         };
     }

@@ -38,10 +38,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     public static ImOrderSet<Interface> getInterfaces(int intNum) {
-        return SetFact.toOrderExclSet(intNum, new GetIndex<Interface>() {
-            public Interface getMapValue(int i) {
-                return new Interface(i);
-            }});
+        return SetFact.toOrderExclSet(intNum, Interface::new);
     }
 
     private ImSet<T> getInnerInterfaces() {
@@ -86,10 +83,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         ImSet<T> innerInterfaces = getInnerInterfaces();
 
         // в initial докинем недостающие ключи
-        ImCol<PropertyInterfaceImplement<T>> and = mapIterate.mapColValues(new GetKeyValue<PropertyInterfaceImplement<T>, T, T>() {
-            public PropertyInterfaceImplement<T> getMapValue(T key, T value) {
-                return PropertyFact.createCompare(Compare.EQUALS, key, value);
-            }});
+        ImCol<PropertyInterfaceImplement<T>> and = mapIterate.mapColValues((key, value) -> PropertyFact.createCompare(Compare.EQUALS, key, value));
         initial = PropertyFact.createAnd(innerInterfaces, initial, and);
 
         this.initial = initial;

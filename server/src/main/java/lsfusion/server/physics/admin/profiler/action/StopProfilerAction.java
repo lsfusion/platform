@@ -103,20 +103,15 @@ public class StopProfilerAction extends InternalAction {
                 totalUserInteractionTime, callCount, minTime, maxTime, squaresSum)));
 
         MMap<ImMap<KeyField, DataObject>, ProfileValue> mPremap = newPremap();
-        GetValue<ImMap<LP, ObjectValue>, ProfileValue> mapProfileValue = new GetValue<ImMap<LP, ObjectValue>, ProfileValue>() {
-            @Override
-            public ImMap<LP, ObjectValue> getMapValue(ProfileValue profileValue) {
-                return MapFact.toMap(
-                        totalTime, (ObjectValue) new DataObject(profileValue.totalTime, LongClass.instance),
-                        totalSQLTime, new DataObject(profileValue.totalSQLTime, LongClass.instance),
-                        totalUserInteractionTime, new DataObject(profileValue.totalUserInteractionTime, LongClass.instance),
-                        callCount, new DataObject(profileValue.callCount, LongClass.instance),
-                        minTime, new DataObject(profileValue.minTime, LongClass.instance),
-                        maxTime, new DataObject(profileValue.maxTime, LongClass.instance),
-                        squaresSum, new DataObject(profileValue.squaresSum, DoubleClass.instance)
-                );
-            }
-        };
+        GetValue<ImMap<LP, ObjectValue>, ProfileValue> mapProfileValue = profileValue -> MapFact.toMap(
+                totalTime, (ObjectValue) new DataObject(profileValue.totalTime, LongClass.instance),
+                totalSQLTime, new DataObject(profileValue.totalSQLTime, LongClass.instance),
+                totalUserInteractionTime, new DataObject(profileValue.totalUserInteractionTime, LongClass.instance),
+                callCount, new DataObject(profileValue.callCount, LongClass.instance),
+                minTime, new DataObject(profileValue.minTime, LongClass.instance),
+                maxTime, new DataObject(profileValue.maxTime, LongClass.instance),
+                squaresSum, new DataObject(profileValue.squaresSum, DoubleClass.instance)
+        );
 
         int batchCounter = 0;
         int batchSize = Settings.get().getProfilerBatchSize();
@@ -158,17 +153,7 @@ public class StopProfilerAction extends InternalAction {
 
     @StackProgress
     private void writeBatch(final ImOrderSet<KeyField> keys, ImOrderSet<LP> props, ImMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
-        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage<>("stopprof", keys, props, new Type.Getter<KeyField>() {
-            @Override
-            public Type getType(KeyField key) {
-                return key.type;
-            }
-        }, new Type.Getter<LP>() {
-            @Override
-            public Type getType(LP key) {
-                return ((LP<?>)key).property.getType();
-            }
-        });
+        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage<>("stopprof", keys, props, key -> key.type, key -> ((LP<?>)key).property.getType());
 
         DataSession session = context.getSession();
         OperationOwner owner = session.getOwner();

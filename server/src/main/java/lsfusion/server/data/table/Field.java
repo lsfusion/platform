@@ -29,36 +29,22 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
         return name;
     }
 
-    private final static Type.Getter<Field> typeGetter = new Type.Getter<Field>() {
-        public Type getType(Field key) {
-            return key.type;
-        }
-    };
+    private final static Type.Getter<Field> typeGetter = key -> key.type;
     public static <F extends Field> Type.Getter<F> typeGetter() {
         return (Type.Getter<F>) typeGetter;
     }
 
-    private final static GetValue<Type, Field> fnTypeGetter = new GetValue<Type, Field>() {
-        public Type getMapValue(Field value) {
-            return value.type;
-        }
-    };
+    private final static GetValue<Type, Field> fnTypeGetter = value -> value.type;
     public static <F extends Field> GetValue<Type, F> fnTypeGetter() {
         return (GetValue<Type, F>) fnTypeGetter;
     }
 
     public static <F extends Field> GetValue<String, F> nameGetter(final SQLSyntax syntax) {
-        return (GetValue<String, F>) new GetValue<String, Field>() {
-            public String getMapValue(Field value) {
-                return value.getName(syntax);
-            }};
+        return (GetValue<String, F>) value -> value.getName(syntax);
     }
 
     public static <F extends Field> GetValue<String, F> nameGetter() {
-        return (GetValue<String, F>) new GetValue<String, Field>() {
-            public String getMapValue(Field value) {
-                return value.getName();
-            }};
+        return (GetValue<String, F>) Field::getName;
     }
 
     public final static SFunctionSet<Field> onlyKeys = new SFunctionSet<Field>() {
@@ -80,10 +66,7 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
     }
 
     public static String getDeclare(ImOrderMap<String, Type> map, final SQLSyntax syntax, final TypeEnvironment typeEnv) {
-        return map.mapOrderValues(new GetValue<String, Type>() {
-            public String getMapValue(Type value) {
-                return value.getDB(syntax, typeEnv);
-            }}).toString(" ", ",");
+        return map.mapOrderValues((GetValue<String, Type>) value -> value.getDB(syntax, typeEnv)).toString(" ", ",");
     }
     
     public String getDeclare(SQLSyntax syntax, TypeEnvironment typeEnv) {

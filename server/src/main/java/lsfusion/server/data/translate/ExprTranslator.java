@@ -14,10 +14,7 @@ public abstract class ExprTranslator extends TwinImmutableObject {
     private GetValue<SourceJoin, SourceJoin> trans;
     private <V extends SourceJoin> GetValue<V, V> TRANS() {
         if(trans==null) {
-            trans = new GetValue<SourceJoin, SourceJoin>() {
-                public SourceJoin getMapValue(SourceJoin value) {
-                    return value.translateExpr(ExprTranslator.this);
-                }};
+            trans = value -> value.translateExpr(ExprTranslator.this);
         }
         return (GetValue<V, V>)trans;
     }

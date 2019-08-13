@@ -29,11 +29,7 @@ public class SQLAnalyze extends SQLCommand<SQLDML.Handler> {
     }
 
     public void execute(PreparedStatement statement, SQLDML.Handler handler, SQLSession session) throws SQLException {
-        handler.proceed(session.executeExplain(statement, noAnalyze, dml, new Provider<String>() {
-            public String get() {
-                return getFullText();
-            }
-        }));
+        handler.proceed(session.executeExplain(statement, noAnalyze, dml, this::getFullText));
     }
 
     public void afterExecute(SQLDML.Handler handler) {

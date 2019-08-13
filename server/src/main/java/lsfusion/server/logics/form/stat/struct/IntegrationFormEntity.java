@@ -41,11 +41,10 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
         } else
             interfaceClasses = innerInterfaces.mapList(innerClasses);
 
-        mapObjects = innerInterfaces.mapOrderRevValues(new GetIndexValue<ObjectEntity, P>() {
-            public ObjectEntity getMapValue(int i, P value) {
-                ValueClass interfaceClass = interfaceClasses.get(value);
-                return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME, interfaceClass == null);
-            }});
+        mapObjects = innerInterfaces.mapOrderRevValues((i, value) -> {
+            ValueClass interfaceClass = interfaceClasses.get(value);
+            return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME, interfaceClass == null);
+        });
 
         if(!valueInterfaces.isEmpty()) {
             GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes

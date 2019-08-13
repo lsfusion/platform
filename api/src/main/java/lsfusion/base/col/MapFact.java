@@ -147,24 +147,20 @@ public class MapFact {
     }
 
     public static <B, K extends B, V> ImRevMap<K, V> replaceValues(ImRevMap<K, ? extends V> map1, final ImRevMap<B, ? extends V> map2) {
-        return ((ImMap<K, V>)map1).mapRevValues(new GetKeyValue<V, K, V>() {
-            public V getMapValue(K key, V value) {
-                V value2 = map2.get(key);
-                if (value2 != null)
-                    return value2;
-                return value;
-            }
+        return ((ImMap<K, V>)map1).mapRevValues((key, value) -> {
+            V value2 = map2.get(key);
+            if (value2 != null)
+                return value2;
+            return value;
         });
     }
 
     public static <B, K extends B, V> ImMap<K, V> replaceValues(ImMap<K, ? extends V> map1, final ImMap<B, ? extends V> map2) {
-        return ((ImMap<K, V>)map1).mapValues(new GetKeyValue<V, K, V>() {
-            public V getMapValue(K key, V value) {
-                V value2 = map2.get(key);
-                if(value2 != null)
-                    return value2;
-                return value;
-            }
+        return ((ImMap<K, V>)map1).mapValues((key, value) -> {
+            V value2 = map2.get(key);
+            if(value2 != null)
+                return value2;
+            return value;
         });
     }
     public static <K, V> ImRevMap<K, V> filterRev(ImRevMap<? extends K, V> map, ImSet<K> set) {
@@ -299,73 +295,43 @@ public class MapFact {
     // MUTABLE
 
     public static <K, V> ImOrderMap<K, ImSet<V>> immutable(MOrderExclMap<K, MSet<V>> mMap) {
-        return mMap.immutableOrder().mapOrderValues(new GetValue<ImSet<V>, MSet<V>>() {
-            public ImSet<V> getMapValue(MSet<V> value) {
-                return value.immutable();
-            }});
+        return mMap.immutableOrder().mapOrderValues((GetValue<ImSet<V>, MSet<V>>) MSet::immutable);
     }
 
     public static <K, V> ImOrderMap<K, ImOrderSet<V>> immutableOrder(MOrderExclMap<K, MOrderExclSet<V>> mMap) {
-        return mMap.immutableOrder().mapOrderValues(new GetValue<ImOrderSet<V>, MOrderExclSet<V>>() {
-            public ImOrderSet<V> getMapValue(MOrderExclSet<V> value) {
-                return value.immutableOrder();
-            }});
+        return mMap.immutableOrder().mapOrderValues((GetValue<ImOrderSet<V>, MOrderExclSet<V>>) MOrderExclSet::immutableOrder);
     }
 
     public static <K, V> ImMap<K, ImOrderSet<V>> immutableMapOrder(MExclMap<K, MOrderExclSet<V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImOrderSet<V>, MOrderExclSet<V>>() {
-            public ImOrderSet<V> getMapValue(MOrderExclSet<V> value) {
-                return value.immutableOrder();
-            }});
+        return mMap.immutable().mapValues(MOrderExclSet::immutableOrder);
     }
 
     public static <K, V> ImMap<K, ImList<V>> immutableList(MExclMap<K, MList<V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImList<V>, MList<V>>() {
-            public ImList<V> getMapValue(MList<V> value) {
-                return value.immutableList();
-            }});
+        return mMap.immutable().mapValues(MList::immutableList);
     }
 
     public static <K, V> ImMap<K, ImSet<V>> immutable(MExclMap<K, MExclSet<V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImSet<V>, MExclSet<V>>() {
-            public ImSet<V> getMapValue(MExclSet<V> value) {
-                return value.immutable();
-            }});
+        return mMap.immutable().mapValues(MExclSet::immutable);
     }
 
     public static <K, V, T> ImMap<K, ImMap<V, T>> immutableMapMap(MExclMap<K, MMap<V, T>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImMap<V, T>, MMap<V, T>>() {
-            public ImMap<V, T> getMapValue(MMap<V, T> value) {
-                return value.immutable();
-            }});
+        return mMap.immutable().mapValues(MMap::immutable);
     }
 
     public static <K, V> ImMap<K, ImSet<V>> immutableMap(MExclMap<K, MSet<V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImSet<V>, MSet<V>>() {
-            public ImSet<V> getMapValue(MSet<V> value) {
-                return value.immutable();
-            }});
+        return mMap.immutable().mapValues(MSet::immutable);
     }
 
     public static <K, V> ImMap<K, ImSet<V>> immutableMapExcl(MExclMap<K, MExclSet<V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImSet<V>, MExclSet<V>>() {
-            public ImSet<V> getMapValue(MExclSet<V> value) {
-                return value.immutable();
-            }});
+        return mMap.immutable().mapValues(MExclSet::immutable);
     }
 
     public static <K, V, M> ImMap<K, ImMap<V, M>> immutableMapExclMap(MExclMap<K, MExclMap<V, M>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImMap<V, M>, MExclMap<V, M>>() {
-            public ImMap<V, M> getMapValue(MExclMap<V, M> value) {
-                return value.immutable();
-            }});
+        return mMap.immutable().mapValues(MExclMap::immutable);
     }
 
     public static <G, K, V> ImMap<G, ImOrderMap<K, V>> immutableOrder(MExclMap<G, MOrderExclMap<K, V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImOrderMap<K, V>, MOrderExclMap<K, V>>() {
-            public ImOrderMap<K, V> getMapValue(MOrderExclMap<K, V> value) {
-                return value.immutableOrder();
-            }});
+        return mMap.immutable().mapValues(MOrderExclMap::immutableOrder);
     }
 
     // map
@@ -810,21 +776,13 @@ public class MapFact {
         return mResult.immutableOrder();
     }
 
-    private final static GetValue<ImSet<Object>, Object> toSingleton = new GetValue<ImSet<Object>, Object>() {
-            public ImSet<Object> getMapValue(Object value) {
-                return SetFact.singleton(value);
-            }
-        };
+    private final static GetValue<ImSet<Object>, Object> toSingleton = SetFact::singleton;
 
     public static <V> GetValue<ImSet<V>, V> toSingleton() {
         return BaseUtils.immutableCast(toSingleton);
     }
 
-    private final static GetValue<MSet<Object>, Object> mSet = new GetValue<MSet<Object>, Object>() {
-        public MSet<Object> getMapValue(Object value) {
-            return SetFact.mSet();
-        }
-    };
+    private final static GetValue<MSet<Object>, Object> mSet = value -> SetFact.mSet();
 
     public static <K, V> GetValue<MSet<V>, K> mSet() {
         return BaseUtils.immutableCast(mSet);

@@ -15,13 +15,10 @@ public class GreedyTreeBuildingTest {
         }
     }
 
-    TreeCutComparator<Integer> cutComparator = new TreeCutComparator<Integer>() {
-        @Override
-        public int compare(Integer a, Integer b) {
-            if (a < b) return -1;
-            if (a > b) return 1;
-            return 0;
-        }
+    TreeCutComparator<Integer> cutComparator = (a, b) -> {
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
     };
     
     @Test

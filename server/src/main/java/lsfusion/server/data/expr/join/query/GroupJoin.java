@@ -94,13 +94,11 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
 
     @IdentityLazy
     public StatKeys<Expr> getPushedStatKeys(StatType type, StatKeys<Expr> pushStatKeys) {
-        return query.joins.getStatKeys(new KeyStat() {
-            public Stat getKeyStat(ParamExpr key, boolean forJoin) {
-                Type keyType = query.keyTypes.get((KeyExpr) key);
-                if(keyType == null) // при висячих ключах бывает
-                    return Stat.ALOT;
-                return keyType.getTypeStat(forJoin);
-            }
+        return query.joins.getStatKeys((key, forJoin) -> {
+            Type keyType = query.keyTypes.get((KeyExpr) key);
+            if(keyType == null) // при висячих ключах бывает
+                return Stat.ALOT;
+            return keyType.getTypeStat(forJoin);
         }, type, pushStatKeys, group.keys());
     }
 }

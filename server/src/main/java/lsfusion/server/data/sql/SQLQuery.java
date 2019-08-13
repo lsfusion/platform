@@ -67,11 +67,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     public SQLQuery pessQuery; // не будем пока в конструктор добавлять, так как очень ограниченное использование
 
     public static ImMap<String, SQLQuery> translate(ImMap<String, SQLQuery> subQueries, final GetValue<String, String> translator) {
-        return subQueries.mapValues(new GetValue<SQLQuery, SQLQuery>() {
-            public SQLQuery getMapValue(SQLQuery value) {
-                return value.translate(translator);
-            }
-        });
+        return subQueries.mapValues(value -> value.translate(translator));
     }
 
     public SQLQuery translate(GetValue<String, String> translator) {
@@ -357,11 +353,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         if (!orderPreserved || nullUnionTrouble) {
             final String alias = "ioalias";
             boolean casted = false;
-            String exprs = keyOrder.toString(new GetValue<String, String>() {
-                public String getMapValue(String value) {
-                    return alias + "." + value;
-                }
-            }, ",");
+            String exprs = keyOrder.toString(value -> alias + "." + value, ",");
             for (int i = 0, size = propertyOrder.size(); i < size; i++) { // последействие
                 String propertyField = propertyOrder.get(i);
                 String propertyExpr = alias + "." + propertyField;
@@ -401,11 +393,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
             public Integer fill(String name) throws SQLException, SQLHandledException {
                 SQLDML dml = getInsertDML(name, keyOrder, propOrder, false, keys, properties, session.syntax);
                 SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.register(name, tableOwner, TableChange.INSERT));
-                return session.insertSessionSelect(execute, new ERunnable() {
-                    public void run() throws Exception {
-                        outSelect(keyReaders.keys().toMap(), propertyReaders.keys().toMap(), session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, true, owner);
-                    }
-                });
+                return session.insertSessionSelect(execute, () -> outSelect(keyReaders.keys().toMap(), propertyReaders.keys().toMap(), session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, true, owner));
             }
         }, null, actual, tableOwner, owner);
 

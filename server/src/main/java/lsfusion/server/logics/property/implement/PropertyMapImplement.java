@@ -270,11 +270,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         if(property instanceof CaseUnionProperty) {
             Graph<CalcCase<UnionProperty.Interface>> absGraph = ((CaseUnionProperty) property).abstractGraph;
             if(absGraph != null)
-                return absGraph.map(new GetValue<CalcCase<T>, CalcCase<UnionProperty.Interface>>() {
-                    public CalcCase<T> getMapValue(CalcCase<UnionProperty.Interface> value) {
-                        return value.map((ImRevMap<UnionProperty.Interface, T>) mapping);
-                    }
-                });
+                return absGraph.map(value -> value.map((ImRevMap<UnionProperty.Interface, T>) mapping));
         }
         return null;
     }

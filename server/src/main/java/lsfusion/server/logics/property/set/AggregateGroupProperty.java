@@ -101,12 +101,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     public boolean isFullAggr;
     public ImSet<StoredDataProperty> getFullAggrProps() {
         if(isFullAggr)
-            return interfaces.mapSetValues(new GetValue<StoredDataProperty, Interface<T>>() {
-                @Override
-                public StoredDataProperty getMapValue(Interface<T> value) {
-                    return (StoredDataProperty) ((PropertyMapImplement<?, T>)value.implement).property;
-                }
-            });
+            return interfaces.mapSetValues(value -> (StoredDataProperty) ((PropertyMapImplement<?, T>)value.implement).property);
         return null;
     } 
 }

@@ -57,11 +57,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
     private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) throws SQLException, SQLHandledException {
 
-        ImMap<P, Expr> joinImplement = mapping.mapValuesEx(new GetExValue<Expr, PropertyObjectInterfaceInstance, SQLException, SQLHandledException>() {
-            public Expr getMapValue(PropertyObjectInterfaceInstance value) throws SQLException, SQLHandledException {
-                return value.getExpr(classSource, modifier);
-            }
-        });
+        ImMap<P, Expr> joinImplement = mapping.mapValuesEx((GetExValue<Expr, PropertyObjectInterfaceInstance, SQLException, SQLHandledException>) value -> value.getExpr(classSource, modifier));
         return property.getExpr(joinImplement, modifier, whereBuilder);
     }
 

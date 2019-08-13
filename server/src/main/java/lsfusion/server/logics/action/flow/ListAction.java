@@ -66,10 +66,7 @@ public class ListAction extends ListCaseAction {
 
     public PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
 
-        ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>() {
-            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
-                return value.mapCalcWhereProperty();
-            }});
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues((GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>) ActionMapImplement::mapCalcWhereProperty);
         return PropertyFact.createUnion(interfaces, listWheres);
     }
 

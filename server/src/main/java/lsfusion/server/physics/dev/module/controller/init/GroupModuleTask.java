@@ -18,11 +18,7 @@ public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
     protected abstract boolean isGraph();
 
     protected void runTask(LogicsModule module) {
-        ((ScriptingLogicsModule)module).runInit(new ScriptingLogicsModule.InitRunnable() {
-            public void run(ScriptingLogicsModule module) throws RecognitionException, FileNotFoundException {
-                runInnerTask(module);
-            }
-        });
+        ((ScriptingLogicsModule)module).runInit(this::runInnerTask);
     }
     
     protected abstract void runInnerTask(LogicsModule module) throws RecognitionException, FileNotFoundException;
@@ -52,11 +48,7 @@ public abstract class GroupModuleTask extends BLGroupSingleTask<LogicsModule> {
 
         ImSet<LogicsModule> result;
         if(isGraph()) {
-            result = SetFact.fromJavaSet(key.getRequiredNames()).mapSetValues(new GetValue<LogicsModule, String>() {
-                public LogicsModule getMapValue(String value) {
-                    return getBL().getSysModule(value);
-                }
-            });
+            result = SetFact.fromJavaSet(key.getRequiredNames()).mapSetValues(value -> getBL().getSysModule(value));
         } else
             result = SetFact.EMPTY();
 

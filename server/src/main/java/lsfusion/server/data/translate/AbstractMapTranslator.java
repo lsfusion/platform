@@ -19,10 +19,7 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
     @ManualLazy
     private <V extends TranslateContext> GetValue<V, V> TRANS() {
         if(trans==null)
-            trans = new GetValue<TranslateContext, TranslateContext>() {
-            public TranslateContext getMapValue(TranslateContext value) {
-                return value.translateOuter(AbstractMapTranslator.this);
-            }};
+            trans = value -> value.translateOuter(AbstractMapTranslator.this);
         return (GetValue<V, V>)trans;
     }
 
@@ -116,10 +113,7 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
     }
 
     public <K> ImMap<K, DataObject> translateDataObjects(ImMap<K, DataObject> map) {
-        return map.mapValues(new GetValue<DataObject, DataObject>() {
-            public DataObject getMapValue(DataObject value) {
-                return translate(value.getExpr()).getDataObject();
-            }});
+        return map.mapValues(value -> translate(value.getExpr()).getDataObject());
     }
 
     public <K extends Expr> ClassWhere<K> translate(ClassWhere<K> classes) {

@@ -51,16 +51,14 @@ public class GroupChangeAction extends AroundAspectAction {
         if(context.isRequestCanceled()) // canceled оптимизация
             return FlowResult.FINISH;
             
-        return context.pushRequest(new SQLCallable<FlowResult>() {
-            public FlowResult call() throws SQLException, SQLHandledException {
-                for (ImMap<ObjectInstance, DataObject> row : groupKeys) { // бежим по всем
-                    ImMap<PropertyInterface, ObjectValue> override = MapFact.override(context.getKeys(), context.getObjectInstances().innerJoin(row));
-                    if (!BaseUtils.hashEquals(override, context.getKeys())) { // кроме текущего
-                        proceed(context.override(override));
-                    }
+        return context.pushRequest(() -> {
+            for (ImMap<ObjectInstance, DataObject> row : groupKeys) { // бежим по всем
+                ImMap<PropertyInterface, ObjectValue> override = MapFact.override(context.getKeys(), context.getObjectInstances().innerJoin(row));
+                if (!BaseUtils.hashEquals(override, context.getKeys())) { // кроме текущего
+                    proceed(context.override(override));
                 }
-                return FlowResult.FINISH;
             }
+            return FlowResult.FINISH;
         });
     }
 }

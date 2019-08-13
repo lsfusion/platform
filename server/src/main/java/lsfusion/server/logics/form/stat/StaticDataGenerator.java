@@ -223,16 +223,8 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             final Query<ObjectEntity, CompareEntity> query = queryBuilder.getQuery();
 
             // reading types
-            ImMap<ObjectEntity, Type> keyTypes = query.getKeyTypes(new Type.Getter<ObjectEntity>(){
-                   public Type getType(ObjectEntity key) {
-                       return key.getType();
-                   }
-               });
-            ImMap<CompareEntity, Type> orderTypes = query.getPropertyTypes(new Type.Getter<CompareEntity>() {
-                public Type getType(CompareEntity key) {
-                    return key.getType();
-                }
-            });
+            ImMap<ObjectEntity, Type> keyTypes = query.getKeyTypes(ObjectEntity::getType);
+            ImMap<CompareEntity, Type> orderTypes = query.getPropertyTypes(CompareEntity::getType);
 
             // saving to table
             DataSession session = formInterface.getSession();
@@ -263,11 +255,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     parentColumnObjects = GroupObjectEntity.getObjects(parentColumnGroupObjects);
                     final ImSet<ObjectEntity> allColumnObjects = parentColumnObjects.addExcl(thisColumnObjects);
 
-                    columnData = keyData.mapMergeOrderSetValues(new GetValue<ImMap<ObjectEntity, Object>, ImMap<ObjectEntity, Object>>() {
-                        public ImMap<ObjectEntity, Object> getMapValue(ImMap<ObjectEntity, Object> value) {
-                            return value.filterIncl(allColumnObjects);
-                        }
-                    }).groupOrder(new BaseUtils.Group<ImMap<ObjectEntity, Object>, ImMap<ObjectEntity, Object>>() {
+                    columnData = keyData.mapMergeOrderSetValues(value -> value.filterIncl(allColumnObjects)).groupOrder(new BaseUtils.Group<ImMap<ObjectEntity, Object>, ImMap<ObjectEntity, Object>>() {
                         public ImMap<ObjectEntity, Object> group(ImMap<ObjectEntity, Object> key) {
                             return key.filterIncl(parentColumnObjects);
                         }
@@ -299,20 +287,12 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     Query<ObjectEntity, SDP> propQuery = propQueryBuilder.getQuery();
                     final ImOrderMap<ImMap<ObjectEntity, Object>, ImMap<SDP, Object>> propData = propQuery.execute(sql, formInterface.getQueryEnv());
 
-                    ImMap<SDP, Type> propTypes = propQuery.getPropertyTypes(new Type.Getter<SDP>() {
-                        public Type getType(SDP key) {
-                            return key.getType();
-                        }
-                    });
+                    ImMap<SDP, Type> propTypes = propQuery.getPropertyTypes(PropertyReaderEntity::getType);
 
                     // converting from row-based to column-based (it's important to keep keys, to reduce footprint)
                     propSources.add(objects, props.mapValues(new GetValue<ImMap<ImMap<ObjectEntity, Object>, Object>, SDP>() {
                         public ImMap<ImMap<ObjectEntity, Object>, Object> getMapValue(final SDP prop) {
-                            return propData.getMap().mapValues(new GetValue<Object, ImMap<SDP, Object>>() {
-                                public Object getMapValue(ImMap<SDP, Object> map) {
-                                    return map.get(prop);
-                                }
-                            });
+                            return propData.getMap().mapValues(map -> map.get(prop));
                         }
                     }), propTypes, parentColumnObjects, thisColumnObjects, columnData);
                 }

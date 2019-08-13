@@ -187,11 +187,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, SubQueryExpr.Query, SubQuer
 
     public static Expr createBase(Query query, ImMap<KeyExpr, BaseExpr> group) {
         Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<>();
-        ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
-            public Boolean getMapValue(KeyExpr key, BaseExpr value) {
-                return value.isValue();
-            }
-        }, restGroup);
+        ImMap<KeyExpr, BaseExpr> translate = group.splitKeys((key, value) -> value.isValue(), restGroup);
 
         if(translate.size()>0) {
             ExprTranslator translator = new PartialKeyExprTranslator(translate, true);

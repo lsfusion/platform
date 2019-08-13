@@ -89,13 +89,11 @@ public abstract class ImportPlainIterator {
         try {
             if(!nextRow())
                 return null;
-            return mapping.mapValues(new GetKeyValue<Object, String, String>() {
-                public Object getMapValue(String key, String value) {
-                    try {
-                        return getPropValue(value, fieldTypes.get(key));
-                    } catch (lsfusion.server.logics.classes.data.ParseException | java.text.ParseException | IOException e) {
-                        throw Throwables.propagate(e);
-                    }
+            return mapping.mapValues((key, value) -> {
+                try {
+                    return getPropValue(value, fieldTypes.get(key));
+                } catch (lsfusion.server.logics.classes.data.ParseException | ParseException | IOException e) {
+                    throw Throwables.propagate(e);
                 }
             });
         } catch (IOException e) {

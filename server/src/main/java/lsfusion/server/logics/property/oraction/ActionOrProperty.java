@@ -60,10 +60,7 @@ import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.BusinessLogics.linkComparator;
 
 public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractPropertyNode {
-    public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
-        public PropertyInterface getMapValue(int i) {
-            return new PropertyInterface(i);
-        }};
+    public static final GetIndex<PropertyInterface> genInterface = PropertyInterface::new;
 
     private int ID = 0;
     protected String canonicalName;
@@ -367,11 +364,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 for (CacheEntry cachedEntry : col.it()) {
                     final ImRevMap<ValueClassWrapper, ValueClassWrapper> map = cachedEntry.map(entry);
                     if (map != null) {
-                        return cachedEntry.result.mapListValues(new GetValue<ActionOrPropertyClassImplement, ActionOrPropertyClassImplement>() {
-                            public ActionOrPropertyClassImplement getMapValue(ActionOrPropertyClassImplement value) {
-                                return value.map(map);
-                            }
-                        });
+                        return cachedEntry.result.mapListValues((GetValue<ActionOrPropertyClassImplement, ActionOrPropertyClassImplement>) value -> value.map(map));
                     }
                 }
             }
@@ -393,10 +386,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if (interfaces.size() == classes.size()) {
                 final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
                 for (ImOrderSet<T> mapping : new ListPermutations<>(getOrderInterfaces())) {
-                    ImMap<T, AndClassSet> propertyInterface = mapping.mapOrderValues(new GetIndexValue<AndClassSet, T>() {
-                        public AndClassSet getMapValue(int i, T value) {
-                            return orderClasses.get(i).valueClass.getUpSet();
-                        }});
+                    ImMap<T, AndClassSet> propertyInterface = mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet());
                     if (isInInterface(propertyInterface, true)) {
                         mResultList.add(createClassImplement(orderClasses, mapping));
                     }
@@ -447,10 +437,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     @ManualLazy
     public ImOrderSet<Link> getSortedLinks(boolean events) { // чисто для лексикографики
         if(links==null) {
-            links = calculateLinks(events).mapMergeSetValues(new GetValue<Link, Pair<ActionOrProperty<?>, LinkType>>() {
-                public Link getMapValue(Pair<ActionOrProperty<?>, LinkType> value) {
-                    return new Link(ActionOrProperty.this, value.first, value.second);
-                }}).sortSet(linkComparator); // sorting for determenism, no need to cache because it's called once for each property
+            links = calculateLinks(events).mapMergeSetValues(value -> new Link(ActionOrProperty.this, value.first, value.second)).sortSet(linkComparator); // sorting for determenism, no need to cache because it's called once for each property
         }
         return links;
     }
@@ -464,19 +451,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public ImSet<OldProperty> getOldDepends() {
         // без событий, так как либо используется в глобальных событиях когда вычисляемые события \ удаления отдельно отрабатываются
         // в локальных же событиях вычисляемые и должны браться на начало сессии
-        return getSessionCalcDepends(false).mapMergeSetValues(new GetValue<OldProperty, SessionProperty>() {
-            public OldProperty getMapValue(SessionProperty value) {
-                return value.getOldProperty();
-            }});
+        return getSessionCalcDepends(false).mapMergeSetValues(SessionProperty::getOldProperty);
     }
 
     // не сильно структурно поэтому вынесено в метод
     public <V> ImRevMap<T, V> getMapInterfaces(final ImOrderSet<V> list) {
-        return getOrderInterfaces().mapOrderRevValues(new GetIndexValue<V, T>() {
-            public V getMapValue(int i, T value) {
-                return list.get(i);
-            }
-        });
+        return getOrderInterfaces().mapOrderRevValues((i, value) -> list.get(i));
     }
 
     public boolean drillDownInNewSession() {

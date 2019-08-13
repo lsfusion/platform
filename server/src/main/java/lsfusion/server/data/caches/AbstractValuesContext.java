@@ -77,11 +77,7 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
         return hashValues(HashCodeValues.instance);
     }
 
-    private final static GetValue<GlobalObject, Value> paramClasses = new GetValue<GlobalObject, Value>() {
-        public GlobalObject getMapValue(Value value) {
-            return value.getValueClass();
-        }
-    };
+    private final static GetValue<GlobalObject, Value> paramClasses = Value::getValueClass;
     public static ImMap<Value, GlobalObject> getParamClasses(ImSet<Value> values) {
         return values.mapValues(paramClasses);
     }

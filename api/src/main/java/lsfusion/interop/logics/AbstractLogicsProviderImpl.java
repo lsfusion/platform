@@ -27,12 +27,7 @@ public abstract class AbstractLogicsProviderImpl {
         RemoteLogicsInterface logics;
         try {
 
-            final Future<RemoteLogicsLoaderInterface> future = Executors.newSingleThreadExecutor().submit(new Callable() {
-                @Override
-                public RemoteLogicsLoaderInterface call() throws RemoteException, NotBoundException, MalformedURLException {
-                    return lookupLoader(connection);
-                }
-            });
+            final Future<RemoteLogicsLoaderInterface> future = Executors.newSingleThreadExecutor().submit((Callable) () -> lookupLoader(connection));
 
             RemoteLogicsLoaderInterface loader;
             try {
@@ -84,11 +79,7 @@ public abstract class AbstractLogicsProviderImpl {
 
     public ServerSettings getServerSettings(LogicsConnection connection, final SessionInfo sessionInfo, final String contextPath, final boolean noCache) {
         try {
-            return runRequest(connection, new LogicsRunnable<ServerSettings>() {
-                public ServerSettings run(LogicsSessionObject sessionObject) throws RemoteException {
-                    return sessionObject.getServerSettings(sessionInfo, contextPath, noCache);
-                }
-            });
+            return runRequest(connection, sessionObject -> sessionObject.getServerSettings(sessionInfo, contextPath, noCache));
         } catch (Throwable t) {
             return null;
         }

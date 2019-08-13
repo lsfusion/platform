@@ -23,11 +23,7 @@ import static lsfusion.server.base.task.TaskRunner.ThrowableConsumer;
 
 public abstract class Task {
 
-    public static Comparator<PriorityRunnable> leastEstimated = new Comparator<PriorityRunnable>() {
-        public int compare(PriorityRunnable o1, PriorityRunnable o2) {
-            return Task.compareTo(o2.getBaseComplexity(), o1.getBaseComplexity(), o2, o1);
-        }
-    };
+    public static Comparator<PriorityRunnable> leastEstimated = (o1, o2) -> Task.compareTo(o2.getBaseComplexity(), o1.getBaseComplexity(), o2, o1);
     public Map<Task, Object> dependsFrom = new HashMap<>();
     protected Integer dependsToProceed;
     protected long dependComplexity;
@@ -148,15 +144,14 @@ public abstract class Task {
         } else {
             ExecutorService service = ExecutorFactory.createTaskMirrorSyncService(BaseUtils.<ExecutionContext<PropertyInterface>>immutableCast(context));
             final Result<Long> threadId = new Result<>();
-            Future future = service.submit(new Runnable() {
-                public void run() {
-                    threadId.set(Thread.currentThread().getId());
-                    try {
-                        Task.this.run(logger);
-                    } finally {
-                        threadId.set(null);
-                    }
-                }});
+            Future future = service.submit(() -> {
+                threadId.set(Thread.currentThread().getId());
+                try {
+                    Task.this.run(logger);
+                } finally {
+                    threadId.set(null);
+                }
+            });
             service.shutdown();
 
             try {

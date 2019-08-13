@@ -32,11 +32,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
             return result;
 
         final List<T> mSet = SetFact.mAddRemoveOrderSet();
-        proceedChanges(new ChangeProcessor<T, NFOrderSetChange<T>>() {
-            public void proceed(NFOrderSetChange<T> change) {
-                change.proceedOrderSet(mSet);
-            }
-        }, version);
+        proceedChanges(change -> change.proceedOrderSet(mSet), version);
         return SetFact.fromJavaOrderSet(mSet);
     }
 
@@ -84,11 +80,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
         move(element, finder, version);
     }
     
-    private static final FindIndex moveFirst = new FindIndex() {
-        public int getIndex(List list) {
-            return 0;
-        }
-    };
+    private static final FindIndex moveFirst = list -> 0;
 
     public void addFirst(T element, Version version) {
         add(element, moveFirst, version);

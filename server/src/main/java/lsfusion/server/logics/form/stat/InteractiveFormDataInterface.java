@@ -89,21 +89,13 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
 
     @Override
     public GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getUserVisible() {
-        return new GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>>() {
-            public ImOrderSet<PropertyDrawEntity> getMapValue(GroupObjectEntity key, ImOrderSet<PropertyDrawEntity> value) {
-                return form.getVisibleProperties(getInstance(key, form), value, preferences);
-            }
-        };
+        return (key, value) -> form.getVisibleProperties(getInstance(key, form), value, preferences);
     }
 
     @Override
     public Where getWhere(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) throws SQLException, SQLHandledException {
         GroupObjectInstance groupInstance = getInstance(groupObject, form);
-        ImMap<ObjectInstance, Expr> mapInstanceExprs = mapExprs.mapKeys(new GetValue<ObjectInstance, ObjectEntity>() {
-            public ObjectInstance getMapValue(ObjectEntity value) {
-                return getInstance(value, form);
-            }
-        });
+        ImMap<ObjectInstance, Expr> mapInstanceExprs = mapExprs.mapKeys(value -> getInstance(value, form));
         return groupInstance.getWhere(mapInstanceExprs, form.getModifier());
     }
 

@@ -54,10 +54,7 @@ public class RequestAction extends KeepContextAction {
 
         ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres =
                 ((ImList<ActionMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        new GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>() {
-                            public PropertyInterfaceImplement<PropertyInterface> getMapValue(ActionMapImplement<?, PropertyInterface> value) {
-                                return value.mapCalcWhereProperty();
-                            }});
+                        (GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>) ActionMapImplement::mapCalcWhereProperty);
         return PropertyFact.createUnion(interfaces, listWheres);
     }
 
@@ -82,11 +79,7 @@ public class RequestAction extends KeepContextAction {
         boolean isRequestCanceled = context.isRequestCanceled();
         if (!isRequestCanceled) {
             if (isRequestPushed) { // оптимизация
-                result = context.popRequest(new SQLCallable<FlowResult>() {
-                    public FlowResult call() throws SQLException, SQLHandledException {
-                        return doAction.execute(context);
-                    }
-                });
+                result = context.popRequest(() -> doAction.execute(context));
             } else
                 result = doAction.execute(context);
         } else if(elseAction != null)

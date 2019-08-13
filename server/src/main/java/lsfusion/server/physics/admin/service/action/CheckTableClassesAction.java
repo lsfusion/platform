@@ -35,11 +35,7 @@ public class CheckTableClassesAction extends InternalAction {
         if (!disableClasses) {
             final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
             final Result<String> message = new Result<>();
-            ServiceDBAction.run(context, new RunService() {
-                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                    message.set(context.getDbManager().checkTableClasses(session, tableName.trim(), isolatedTransaction));
-                }
-            });
+            ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkTableClasses(session, tableName.trim(), isolatedTransaction)));
 
             context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.data.classes}"))) + '\n' + '\n' + message.result, localize("{logics.checking.data.classes}"), true));
         }

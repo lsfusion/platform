@@ -415,11 +415,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 property = usageProperty;
             else {
                 final ImOrderSet<String> fMapping = mapping;
-                ImList<Integer> indexMapping = uMapping.mapListValues(new GetValue<Integer, String>() {
-                    public Integer getMapValue(String value) {
-                        return fMapping.indexOf(value) + 1;
-                    }
-                });
+                ImList<Integer> indexMapping = uMapping.mapListValues((GetValue<Integer, String>) value -> fMapping.indexOf(value) + 1);
                 if(usageProperty instanceof LP)
                     property = addJProp((LP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
                 else
@@ -3167,10 +3163,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LAWithParams extendImportDoAction(boolean noParams, int paramOld, List<TypedParameter> oldContext, List<TypedParameter> newContext, LAWithParams doAction, LAWithParams elseAction, LP<?> whereLCP, ImList<LP> importParamProps, ImList<Boolean> nulls) throws ScriptingErrorLog.SemanticErrorException {
-        ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = ListFact.toList(importParamProps.size(), new GetIndex<Pair<LPWithParams, DebugInfo.DebugPoint>>() {
-            public Pair<LPWithParams, DebugInfo.DebugPoint> getMapValue(int i) {
-                return null;
-            }});
+        ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> changeProps = ListFact.toList(importParamProps.size(), i -> null);
         doAction = extendDoParams(doAction, newContext, paramOld, !noParams, importParamProps, nulls, changeProps); // row parameter consider to be external (it will be proceeded separately)
         if(!noParams) { // adding row parameter
             modifyContextFlowActionDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext, false);
@@ -4038,10 +4031,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkMarkStoredProperties(lps);
         checks.checkDistinctParametersList(lps);
         checks.checkIndexNumberOfParameters(params.size(), lps);
-        ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(new GetValue<String, TypedParameter>() {
-            public String getMapValue(TypedParameter value) {
-                return value.paramName;
-            }});
+        ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(value -> value.paramName);
         tempIndicies.add(new TemporaryIndexInfo(keyNames, getParamsPlainList(lps).toArray()));
     }
 

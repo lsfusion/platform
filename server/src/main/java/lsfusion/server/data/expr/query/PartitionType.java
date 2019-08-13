@@ -115,10 +115,7 @@ public abstract class PartitionType implements AggrType {
     // вообще первый параметр PartitionParam, но не хочется с generics'ами играться
     public PartitionCalc createAggr(MExclMap<PartitionToken, String> mTokens, ImList<String> sourceExprs, ImOrderMap<String, CompileOrder> sourceOrders, ImSet<String> sourcePartitions, SQLSyntax syntax, Type type, TypeEnvironment typeEnv) {
         ImSet<String> paramNames = getSet(sourceExprs, sourceOrders, sourcePartitions);
-        ImRevMap<String, PartitionParam> params = paramNames.mapRevValues(new GetStaticValue<PartitionParam>() {
-            public PartitionParam getMapValue() {
-                return new PartitionParam();
-            }});
+        ImRevMap<String, PartitionParam> params = paramNames.mapRevValues(PartitionParam::new);
         mTokens.exclAddAll(params.reverse());
         MExclSet<PartitionCalc> mCalcTokens = SetFact.mExclSet();
 

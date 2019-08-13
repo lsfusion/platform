@@ -31,10 +31,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     static ImOrderSet<Interface> getInterfaces(int intNum) {
-        return SetFact.toOrderExclSet(intNum, new GetIndex<Interface>() {
-            public Interface getMapValue(int i) {
-                return new Interface(i);
-            }});
+        return SetFact.toOrderExclSet(intNum, Interface::new);
     }
 
     public ConcatenateProperty(int intNum) {
@@ -51,10 +48,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        ImList<Expr> exprs = getOrderInterfaces().mapListValues(new GetValue<Expr, Interface>() {
-            public Expr getMapValue(Interface value) {
-                return joinImplement.get(value);
-            }});
+        ImList<Expr> exprs = getOrderInterfaces().mapListValues(joinImplement::get);
         return ConcatenateExpr.create(exprs);
     }
 

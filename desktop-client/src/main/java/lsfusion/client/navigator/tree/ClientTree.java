@@ -200,13 +200,7 @@ public class ClientTree extends JTree {
             }
 
 
-            for (Iterator<ClientTreeAction> it = result.iterator(); it.hasNext();) {
-                ClientTreeAction act = it.next();
-
-                if (!act.isApplicable(node)) {
-                    it.remove();
-                }
-            }
+            result.removeIf(act -> !act.isApplicable(node));
         }
 
         return result;

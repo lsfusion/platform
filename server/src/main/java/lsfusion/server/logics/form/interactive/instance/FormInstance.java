@@ -148,12 +148,7 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
     private final static GetKey<PropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
-            new GetKey<PropertyObjectInstance<?>, PropertyReaderInstance>() {
-                @Override
-                public PropertyObjectInstance<?> getMapValue(PropertyReaderInstance key) {
-                    return key.getPropertyObjectInstance();
-                }
-            };
+            PropertyReaderInstance::getPropertyObjectInstance;
 
     private final GetKey<PropertyObjectInstance<?>, ContainerView> GET_CONTAINER_SHOWIF =
             new GetKey<PropertyObjectInstance<?>, ContainerView>() {
@@ -250,11 +245,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
 
-        groups = entity.getGroupsList().mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() {
-            public GroupObjectInstance getMapValue(GroupObjectEntity value) {
-                return instanceFactory.getInstance(value);
-            }
-        });
+        groups = entity.getGroupsList().mapOrderSetValues(instanceFactory::getInstance);
         ImOrderSet<GroupObjectInstance> groupObjects = getOrderGroups();
         for (int i = 0, size = groupObjects.size(); i < size; i++) {
             GroupObjectInstance groupObject = groupObjects.get(i);
@@ -281,17 +272,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fillContainerShowIfs(mContainerShowIfs, entity.getRichDesign().mainContainer);
         containerShowIfs = mContainerShowIfs.immutable();
 
-        ImSet<FilterInstance> allFixedFilters = entity.getFixedFilters().mapSetValues(new GetValue<FilterInstance, FilterEntity>() {
-            public FilterInstance getMapValue(FilterEntity value) {
-                return value.getInstance(instanceFactory);
-            }
-        });
+        ImSet<FilterInstance> allFixedFilters = entity.getFixedFilters().mapSetValues(value -> value.getInstance(instanceFactory));
         if (contextFilters != null)
-            allFixedFilters = allFixedFilters.addExcl(contextFilters.mapSetValues(new GetValue<FilterInstance, ContextFilter>() {
-                public FilterInstance getMapValue(ContextFilter value) {
-                    return value.getFilter(instanceFactory);
-                }
-            }));
+            allFixedFilters = allFixedFilters.addExcl(contextFilters.mapSetValues(value -> value.getFilter(instanceFactory)));
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.group(new BaseUtils.Group<GroupObjectInstance, FilterInstance>() {
             public GroupObjectInstance group(FilterInstance key) {
                 return key.getApplyObject();
@@ -305,11 +288,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
-        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys(new GetValue<OrderInstance, OrderEntity<?>>() {
-            public OrderInstance getMapValue(OrderEntity<?> value) {
-                return value.getInstance(instanceFactory);
-            }
-        }).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
+        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((GetValue<OrderInstance, OrderEntity<?>>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
             public GroupObjectInstance group(OrderInstance key) {
                 return key.getApplyObject();
             }
@@ -1027,11 +1006,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @LogTime
     @ThisMessage
     public void executeEditAction(final PropertyDrawInstance<?> property, String editActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
-        SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? new SQLCallable<Boolean>() {
-            public Boolean call() throws SQLException, SQLHandledException {
-                return property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null;
-            }
-        } : null;
+        SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
         ImSet<SecurityPolicy> securityPolicies = SetFact.singleton(securityPolicy);
         if(showReadOnly)
             securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);        
@@ -1052,11 +1027,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
         final ActionObjectInstance remappedEditAction = editAction.getRemappedPropertyObject(keys);
-        BL.LM.pushRequestedValue(pushChange, pushChangeType, this, new SQLCallable<FlowResult>() {
-            public FlowResult call() throws SQLException, SQLHandledException {
-                return remappedEditAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this);
-            }
-        });
+        BL.LM.pushRequestedValue(pushChange, pushChangeType, this, () -> remappedEditAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this));
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
@@ -1125,11 +1096,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private ImMap<ObjectInstance, Expr> overrideColumnKeys(ImRevMap<ObjectInstance, KeyExpr> mapKeys, ImMap<ObjectInstance, DataObject> columnKeys) {
-        return MapFact.override(mapKeys, columnKeys.mapValues(new GetValue<Expr, DataObject>() { // замещение с добавлением
-            public Expr getMapValue(DataObject value) {
-                return value.getExpr();
-            }
-        }));
+        // замещение с добавлением
+        return MapFact.override(mapKeys, columnKeys.mapValues((GetValue<Expr, DataObject>) DataObject::getExpr));
     }
 
     public Object calculateSum(PropertyDrawInstance propertyDraw, ImMap<ObjectInstance, DataObject> columnKeys) throws SQLException, SQLHandledException {
@@ -1654,12 +1622,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 Boolean isShownValue = isShown.get(property);
                 return isShownValue != null && isShownValue && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
             }
-        }).toOrderExclSet().mapOrderSetValues(new GetValue<PropertyDrawEntity, PropertyDrawInstance>() {
-            @Override
-            public PropertyDrawEntity getMapValue(PropertyDrawInstance value) {
-                return ((PropertyDrawInstance<?>)value).entity;
-            }
-        });
+        }).toOrderExclSet().mapOrderSetValues(value -> ((PropertyDrawInstance<?>)value).entity);
     }
 
     public ImOrderSet<PropertyDrawEntity> getVisibleProperties(final GroupObjectInstance groupObject, ImOrderSet<PropertyDrawEntity> properties, FormUserPreferences preferences) {
@@ -1691,26 +1654,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return properties;
 
         List<PropertyDrawEntity> list = new ArrayList<>(properties.toJavaList());
-        Collections.sort(list, getUserOrderComparator(properties, groupPreferences));
+        list.sort(getUserOrderComparator(properties, groupPreferences));
         return SetFact.fromJavaOrderSet(list);
     }
 
     private Comparator<PropertyDrawEntity> getUserOrderComparator(ImOrderSet<PropertyDrawEntity> baseOrder, final GroupObjectUserPreferences groupPreferences) {
-        final ImMap<PropertyDrawEntity, Integer> userOrders = baseOrder.getSet().mapValues(new GetValue<Integer, PropertyDrawEntity>() {
-            @Override
-            public Integer getMapValue(PropertyDrawEntity value) {
-                return getUserOrder(instanceFactory.getInstance(value), groupPreferences);
-            }
-        });
-        return new Comparator<PropertyDrawEntity>() {
-            public int compare(PropertyDrawEntity c1, PropertyDrawEntity c2) {
-                Integer order1 = userOrders.get(c1);
-                Integer order2 = userOrders.get(c2);
-                if (order1 == null)
-                    return order2 == null ? 0 : 1;
-                else
-                    return order2 == null ? -1 : (order1 - order2);
-            }
+        final ImMap<PropertyDrawEntity, Integer> userOrders = baseOrder.getSet().mapValues((GetValue<Integer, PropertyDrawEntity>) value -> getUserOrder(instanceFactory.getInstance(value), groupPreferences));
+        return (c1, c2) -> {
+            Integer order1 = userOrders.get(c1);
+            Integer order2 = userOrders.get(c2);
+            if (order1 == null)
+                return order2 == null ? 0 : 1;
+            else
+                return order2 == null ? -1 : (order1 - order2);
         };
     }
 
@@ -1846,11 +1802,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ImMap<ImMap<ObjectInstance, DataObject>, ImMap<T, ObjectValue>> queryResult = selectProps.executeClasses(this, BL.LM.baseClass).getMap();
         for (final T key : keysSet) {
             valuesMap.exclAdd(key,
-                    queryResult.mapValues(new GetValue<ObjectValue, ImMap<T, ObjectValue>>() {
-                        public ObjectValue getMapValue(ImMap<T, ObjectValue> value) {
-                            return value.get(key);
-                        }
-                    }));
+                    queryResult.mapValues(value -> value.get(key)));
         }
     }
 

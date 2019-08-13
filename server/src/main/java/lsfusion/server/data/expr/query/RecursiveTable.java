@@ -31,10 +31,7 @@ public class RecursiveTable extends NamedTable implements NotMaterializable {
     }
 
     private static ImMap<PropertyField, ClassWhere<Field>> getPropClasses(ImSet<PropertyField> props, final ClassWhere<KeyField> keyClasses) {
-        return props.mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
-            public ClassWhere<Field> getMapValue(PropertyField prop) {
-                return new ClassWhere<Field>(prop, (DataClass)prop.type).and(BaseUtils.<ClassWhere<Field>>immutableCast(keyClasses));
-            }});
+        return props.mapValues((GetValue<ClassWhere<Field>, PropertyField>) prop -> new ClassWhere<Field>(prop, (DataClass)prop.type).and(BaseUtils.<ClassWhere<Field>>immutableCast(keyClasses)));
     }
 
     @Override

@@ -341,11 +341,7 @@ public class ActionDebugger implements DebuggerService {
 
         final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
         final ImSet<String> externalParamNames = paramsWithClasses.keys();
-        watchContext.setWatcher(new Processor<ImMap<String, ObjectValue>>() {
-            public void proceed(ImMap<String, ObjectValue> value) {
-                mResult.exclAdd(value.remove(externalParamNames));
-            }
-        });
+        watchContext.setWatcher(value -> mResult.exclAdd(value.remove(externalParamNames)));
 
         ObjectValue[] orderedValues = paramsWithClasses.keyOrderSet().mapOrderMap(paramsWithValues).valuesList().toArray(new ObjectValue[paramsWithClasses.size()]);
         evalAction.execute(watchContext, orderedValues);
@@ -362,11 +358,7 @@ public class ActionDebugger implements DebuggerService {
             if(value.size() == 1)
                 return value.singleValue();
         }
-        return result.mapOrderSetValues(new GetValue<ActionWatchEntry, ImMap<String,ObjectValue>>() {
-            public ActionWatchEntry getMapValue(ImMap<String, ObjectValue> value) {
-                return getWatchEntry(value, valueName);
-            }
-        }).toJavaList();
+        return result.mapOrderSetValues(value -> getWatchEntry(value, valueName)).toJavaList();
     }
 
     @IdentityLazy
@@ -410,11 +402,7 @@ public class ActionDebugger implements DebuggerService {
 //            }
             row = row.remove(valueName);
         }
-        return new ActionWatchEntry(row.toOrderMap().mapOrderSetValues(new GetKeyValue<ActionWatchEntry.Param, String, ObjectValue>() {
-            public ActionWatchEntry.Param getMapValue(String key, ObjectValue value) {
-                return new ActionWatchEntry.Param(key, value);
-            }
-        }).toJavaList(), value);
+        return new ActionWatchEntry(row.toOrderMap().mapOrderSetValues(ActionWatchEntry.Param::new).toJavaList(), value);
     }
     
     private Map<Pair<String, Integer>, Object> breakpoints = MapFact.getGlobalConcurrentHashMap();

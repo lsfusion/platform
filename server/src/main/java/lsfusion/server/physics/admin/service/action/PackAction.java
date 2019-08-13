@@ -21,11 +21,7 @@ public class PackAction extends InternalAction {
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         
-        ServiceDBAction.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction);
-            }
-        });
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction));
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.tables.packing.completed}"), localize("{logics.tables.packing}")));
     }
 }

@@ -122,11 +122,7 @@ public class ClassChanges {
         Where result;
         ImSet<ConcreteCustomClass> concreteChildren = classSet.getSetConcreteChildren();
         if(concreteChildren.size() > Settings.get().getSessionRowsToTable()) {
-            SessionRows rows = new SessionRows(SetFact.singletonOrder(classField), SetFact.<PropertyField>EMPTY(), concreteChildren.mapSetValues(new GetValue<ImMap<KeyField, DataObject>, ConcreteCustomClass>() {
-                public ImMap<KeyField, DataObject> getMapValue(ConcreteCustomClass value) {
-                    return MapFact.singleton(classField, value.getClassObject());
-                }
-            }).toMap(MapFact.<PropertyField, ObjectValue>EMPTY()));
+            SessionRows rows = new SessionRows(SetFact.singletonOrder(classField), SetFact.<PropertyField>EMPTY(), concreteChildren.mapSetValues(value -> MapFact.singleton(classField, value.getClassObject())).toMap(MapFact.<PropertyField, ObjectValue>EMPTY()));
             return new ValuesTable(rows).join(MapFact.singleton(classField, expr)).getWhere();
         } else {
             result = Where.FALSE;
@@ -142,24 +138,9 @@ public class ClassChanges {
         final ValueExpr unknownExpr = new ValueExpr(-1L, baseClass.unknown);
 
         ImRevMap<K,KeyExpr> keys = KeyExpr.getMapKeys(classExprs.keys().addExcl(objectExprs.keys()));
-        ImMap<K, Expr> group = ((ImMap<K, Expr>)classExprs).mapValues(new GetValue<Expr, Expr>() {
-                    public Expr getMapValue(Expr value) {
-                        return value.nvl(unknownExpr);
-            }}).addExcl(((ImMap<K, Expr>)objectExprs).mapValuesEx(new GetExValue<Expr, Expr, SQLException, SQLHandledException>() {
-            public Expr getMapValue(Expr value) throws SQLException, SQLHandledException {
-                return baseClass.getObjectClassProperty().getExpr(value, modifier).nvl(unknownExpr);
-            }
-        }));
+        ImMap<K, Expr> group = ((ImMap<K, Expr>)classExprs).mapValues(value -> value.nvl(unknownExpr)).addExcl(((ImMap<K, Expr>)objectExprs).mapValuesEx((GetExValue<Expr, Expr, SQLException, SQLHandledException>) value -> baseClass.getObjectClassProperty().getExpr(value, modifier).nvl(unknownExpr)));
 
-        return new Query<K, String>(keys, GroupExpr.create(group, where, keys).getWhere()).execute(sql, env).keyOrderSet().mapMergeOrderSetValues(new GetValue<ImMap<K, ConcreteObjectClass>, ImMap<K, Object>>() {
-            public ImMap<K, ConcreteObjectClass> getMapValue(ImMap<K, Object> readClasses) {
-                return readClasses.mapValues(new GetValue<ConcreteObjectClass, Object>() {
-                    public ConcreteObjectClass getMapValue(Object id) {
-                        return baseClass.findConcreteClassID((Long) id, -1);
-                    }
-                });
-            }
-        });
+        return new Query<K, String>(keys, GroupExpr.create(group, where, keys).getWhere()).execute(sql, env).keyOrderSet().mapMergeOrderSetValues(readClasses -> readClasses.mapValues(id -> baseClass.findConcreteClassID((Long) id, -1)));
     }
 
     public String logSession(Result<Integer> rAddedCount, Result<Integer> rRemovedCount) {
@@ -209,11 +190,7 @@ public class ClassChanges {
             addChanged(mChangedClasses, baseClass.findConcreteClassID((Long) matChange.change.propValue.getValue()),
                                         (ConcreteObjectClass) getCurrentClass(sql, env, baseClass, matChange.change.keyValue));
         } else {
-            matChange.materializeIfNeeded("ccltable", sql, baseClass, env, new GetValue<Boolean, ClassChange>() {
-                public Boolean getMapValue(ClassChange value) {
-                    return value.needMaterialize();
-                }
-            });
+            matChange.materializeIfNeeded("ccltable", sql, baseClass, env, ClassChange::needMaterialize);
 
             if(matChange.change.isEmpty()) // оптимизация, важна так как во многих event'ах может участвовать
                 return null;
@@ -294,10 +271,8 @@ public class ClassChanges {
             }
 
             final SingleKeyPropertyUsage fDataNews = dataNews; // материализуем так как change несколько раз будет использоваться и по сути изменится при изменении dataNews (а не из-за того что нельзя modify'ить таблицу используя ее)
-            matChange.materializeIfNeeded("chcl:nmn", sql, baseClass, env, new GetValue<Boolean, ClassChange>() {
-                public Boolean getMapValue(ClassChange value) {
-                    return value.needMaterialize(fDataNews); // return true всегда materializ'овать чтобы не переписывала таблицу в rewrite при чтении isOldChangeClasses ????
-                }
+            matChange.materializeIfNeeded("chcl:nmn", sql, baseClass, env, value -> {
+                return value.needMaterialize(fDataNews); // return true всегда materializ'овать чтобы не переписывала таблицу в rewrite при чтении isOldChangeClasses ????
             });
             
             Pair<ClassChange, ClassChange> update = getUpdateNews(matChange.change, dataProperty, dataNews, oldChangedClasses.newc, dataChangedClasses, baseClass, dataProperties.size() == 1, sql, env);
@@ -511,11 +486,7 @@ public class ClassChanges {
     }
     private static ImSet<IsClassProperty> fillChangedIsClassProperties(ChangedDataClasses dataChangedClasses) {
         ImSet<CustomClass> merged = dataChangedClasses.add.merge(dataChangedClasses.remove);
-        return merged.mapSetValues(new GetValue<IsClassProperty, CustomClass>() {
-            @Override
-            public IsClassProperty getMapValue(CustomClass value) {
-                return value.getProperty();                
-            }});
+        return merged.mapSetValues(ValueClass::getProperty);
     }
 
     public PropertyChange<ClassPropertyInterface> getIsClassChange(IsClassProperty property, BaseClass baseClass) { // важно чтобы совпадало с инкрементальным алгритмом в changeClass

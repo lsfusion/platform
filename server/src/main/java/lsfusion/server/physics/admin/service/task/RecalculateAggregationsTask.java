@@ -25,11 +25,7 @@ public class RecalculateAggregationsTask extends GroupGraphTask<AggregatePropert
     protected void runInnerTask(final AggregateProperty element, ExecutionStack stack) throws SQLException, SQLHandledException {
         try (final DataSession session = createSession()) {
             serviceLogger.info(String.format("Recalculate Aggregation started: %s", element.getSID()));
-            DBManager.run(session.sql, true, new DBManager.RunService() {
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    element.recalculateAggregation(getBL(), session, sql, getBL().LM.baseClass);
-                }
-            });
+            DBManager.run(session.sql, true, sql -> element.recalculateAggregation(getBL(), session, sql, getBL().LM.baseClass));
             session.applyException(getBL(), stack);
         }
     }

@@ -36,12 +36,7 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
 
     @Override
     public String getSource(final ExprSource source) {
-        ImMap<String, String> exprSource = mapParams.mapValues(new GetValue<String, Integer>() {
-            @Override
-            public String getMapValue(Integer exprInd) {
-                return source.getSource(exprInd);
-            }
-        });
+        ImMap<String, String> exprSource = mapParams.mapValues(source::getSource);
 
         SQLSyntax syntax = source.getSyntax();
         Matcher m = paramsPattern.matcher(formula.getFormula(syntax.getSyntaxType()));

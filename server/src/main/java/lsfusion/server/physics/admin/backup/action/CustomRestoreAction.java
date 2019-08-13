@@ -249,16 +249,7 @@ public class CustomRestoreAction extends InternalAction {
         for(int i = 0; i < keys.size(); i++) {
             keySet = keySet.addOrderExcl(new KeyField("key" + i, getKeyType(keys.get(i))));
         }
-        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
-            public Type getType(KeyField key) {
-                return key.type;
-            }
-        }, new Type.Getter<LP>() {
-            @Override
-            public Type getType(LP key) {
-                return ((LP<?>)key).property.getType();
-            }
-        });
+        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, (Type.Getter<KeyField>) key -> key.type, (Type.Getter<LP>) key -> ((LP<?>)key).property.getType());
         DataSession session = context.getSession();
         OperationOwner owner = session.getOwner();
         SQLSession sql = session.sql;
