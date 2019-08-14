@@ -13,4 +13,7 @@ getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.ser
 writeToSocketAction  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.WriteToServerSocketAction' (TEXT, STRING[10], STRING[30], INTEGER);
 
 printPath '{printer.print.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (STRING, STRING);
+printPath '{printer.print.file}' (STRING path) { printPath(path, NULL); }
+
 printFile '{printer.print.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (PDFFILE, STRING);
+printFile '{printer.print.file}' (PDFFILE file) { printFile(file, NULL); }
