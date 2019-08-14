@@ -195,10 +195,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         LM = businessLogics.LM;
         reflectionLM = businessLogics.reflectionLM;
         systemEventsLM = businessLogics.systemEventsLM;
-        
+
         try {
             SQLSession sql = getThreadLocalSql();
-             
+
             if (!isFirstStart(sql)) {
                 updateReflectionStats(sql);
 
@@ -1806,7 +1806,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, Property<?> property, boolean isolatedTransaction, Set<Property> calculated, boolean dependents) throws SQLException, SQLHandledException {
         if (!dependents) {
-            for (Property prop : property.getDepends()) {
+            for (Property prop : property.getDepends(false)) {
                 if (prop != property && !calculated.contains(prop)) {
                     recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, false);
                 }
@@ -1820,7 +1820,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         if (dependents) {
             for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
-                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property)) {
+                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property, false)) {
                     boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);

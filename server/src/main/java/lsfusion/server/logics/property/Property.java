@@ -185,6 +185,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return property.getRecDepends().contains(check);
     }
 
+    public static boolean depends(Property<?> property, Property check, boolean events) {
+        return property.calculateRecDepends(events).contains(check);
+    }
+
     public static boolean depends(Property<?> property, FunctionSet<Property> check) {
         return property.getRecDepends().intersectFn(check);
     }
@@ -791,6 +795,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         MSet<Property> mResult = SetFact.mSet();
         for(Property<?> depend : getDepends())
             mResult.addAll(depend.getRecDepends());
+        mResult.add(this);
+        return mResult.immutable();
+    }
+
+    public ImSet<Property> calculateRecDepends(boolean events) {
+        MSet<Property> mResult = SetFact.mSet();
+        for(Property<?> depend : getDepends(events))
+            mResult.addAll(depend.calculateRecDepends(events));
         mResult.add(this);
         return mResult.immutable();
     }
