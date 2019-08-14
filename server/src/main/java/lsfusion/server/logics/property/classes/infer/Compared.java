@@ -3,8 +3,6 @@ package lsfusion.server.logics.property.classes.infer;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -55,26 +53,14 @@ public abstract class Compared<T extends PropertyInterface> {
     }
 
     public static <T extends PropertyInterface> ImSet<Compared<T>> remove(ImSet<Compared<T>> compareds, final ImSet<T> remove) {
-        return compareds.filterFn(new SFunctionSet<Compared<T>>() {
-            public boolean contains(Compared<T> element) {
-                return !element.intersect(remove);
-            }
-        });
+        return compareds.filterFn(element -> !element.intersect(remove));
     }
 
     public static <T extends PropertyInterface> ImSet<Compared<T>> keep(ImSet<Compared<T>> compareds, final ImSet<T> keep) {
-        return compareds.filterFn(new SFunctionSet<Compared<T>>() {
-            public boolean contains(Compared<T> element) {
-                return element.keep(keep);
-            }
-        });
+        return compareds.filterFn(element -> element.keep(keep));
     }
 
     public static <T extends PropertyInterface> ImSet<Compared<T>> mixed(ImSet<Compared<T>> compareds, final ImSet<T> mixed) {
-        return compareds.filterFn(new SFunctionSet<Compared<T>>() {
-            public boolean contains(Compared<T> element) {
-                return element.intersect(mixed) && !element.keep(mixed);
-            }
-        });
+        return compareds.filterFn(element -> element.intersect(mixed) && !element.keep(mixed));
     }
 }

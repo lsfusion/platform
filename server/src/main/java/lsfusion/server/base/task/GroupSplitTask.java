@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import org.apache.log4j.Logger;
 
 // разбивает на группы и выполняет группами
@@ -24,7 +23,7 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
     protected Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> initTasks() {
         final int splitCount = getSplitCount();
         MCol<SingleProgramTask> mTasks = ListFact.mCol();
-        ImMap<Integer, ImSet<T>> groupProps = getObjects().mapValues((GetIndex<Integer>) i -> i / splitCount).groupValues();
+        ImMap<Integer, ImSet<T>> groupProps = getObjects().mapValues((int i) -> i / splitCount).groupValues();
         for (int i = 0, size = groupProps.size(); i < size; i++) {
             final int group = groupProps.getKey(i);
             final ImSet<T> objSet = groupProps.getValue(i);

@@ -11,9 +11,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.CacheAspect;
@@ -73,6 +70,7 @@ import org.apache.log4j.Logger;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.function.IntFunction;
 
 import static lsfusion.base.BaseUtils.hashEquals;
 
@@ -154,8 +152,8 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
             for(int j=0,sizeJ=propList.size();j<sizeJ;j++)
                 distinctPropValues.get(j).add(propValues.get(propList.get(j)));
         }
-        ImMap<KeyField, Integer> distinctKeys = keys.mapOrderValues((GetIndex<Integer>) i -> distinctKeyValues.get(i).size());
-        ImMap<PropertyField, PropStat> distinctProps = propList.mapOrderValues((GetIndex<PropStat>) i -> new PropStat(new Stat(distinctPropValues.get(i).size())));
+        ImMap<KeyField, Integer> distinctKeys = keys.mapOrderValues((int i) -> distinctKeyValues.get(i).size());
+        ImMap<PropertyField, PropStat> distinctProps = propList.mapOrderValues((IntFunction<PropStat>) i -> new PropStat(new Stat(distinctPropValues.get(i).size())));
         return new Pair<>(distinctKeys, distinctProps);
     }
 
@@ -691,7 +689,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
 ///*        if(!classes.means(readClasses.first, true))
 //            classes = readClasses.first;
 //        propertyClasses = propertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
-//            public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
+//            public ClassWhere<Field> apply(PropertyField key, ClassWhere<Field> value) {
 //                ClassWhere<Field> readWhere = readClasses.second.get(key);
 //                if(!value.means(readWhere, true))
 //                    return readWhere;

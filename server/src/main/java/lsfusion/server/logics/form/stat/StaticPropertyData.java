@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -32,11 +31,7 @@ public class StaticPropertyData<Prop extends PropertyReaderEntity> {
         this.types.exclAddAll(propTypes);
 
         // filtering only main properties (without extra info)
-        ImSet<PropertyDrawEntity> propertyDraws = BaseUtils.immutableCast(data.keys().filterFn(new SFunctionSet<Prop>() {
-                               public boolean contains(Prop element) {
-                                   return element instanceof PropertyDrawEntity;
-                               }
-                           }));
+        ImSet<PropertyDrawEntity> propertyDraws = BaseUtils.immutableCast(data.keys().filterFn(element -> element instanceof PropertyDrawEntity));
         this.columnObjects.exclAddAll(propertyDraws.toMap(new Pair<>(parentColumnObjects, thisColumnObjects)));
         this.columnData.exclAddAll(propertyDraws.toMap(columnData));
     }

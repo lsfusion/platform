@@ -2,11 +2,11 @@ package lsfusion.server.data.expr.where.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.where.Case;
 import lsfusion.server.data.where.Where;
 
 import java.util.Iterator;
+import java.util.function.Function;
 
 public abstract class CaseList<A, D extends A,C extends Case<D>> implements Iterable<C> {
 
@@ -66,12 +66,12 @@ public abstract class CaseList<A, D extends A,C extends Case<D>> implements Iter
         return list.hashCode() + (exclusive ? 1 : 0);
     }
 
-    public Where getWhere(GetValue<Where, D> caseInterface) {
+    public Where getWhere(Function<D, Where> caseInterface) {
 
         Where result = Where.FALSE;
         Where up = Where.FALSE;
         for(C cCase : this) {
-            Where caseWhere = cCase.where.and(caseInterface.getMapValue(cCase.data));
+            Where caseWhere = cCase.where.and(caseInterface.apply(cCase.data));
             if(!exclusive) {
                 caseWhere = caseWhere.and(up.not());
                 up = up.or(cCase.where);

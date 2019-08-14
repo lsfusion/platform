@@ -9,11 +9,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
@@ -23,6 +20,7 @@ import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.classes.IsClassType;
@@ -119,6 +117,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
@@ -216,11 +215,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public static <T extends Property> ImSet<T> used(ImSet<T> used, final ImSet<Property> usedIn) {
-        return used.filterFn(new SFunctionSet<T>() {
-            public boolean contains(T property) {
-                return depends(usedIn, property);
-            }
-        });
+        return used.filterFn(property -> depends(usedIn, property));
     }
 
     public static <T extends PropertyInterface> boolean dependsImplement(ImCol<PropertyInterfaceImplement<T>> properties, ImSet<Property> check) {
@@ -559,7 +554,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         public VirtualTable(final Property<P> property, AlgType algType) {
             super(property.getSID());
             
-            ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues((GetValue<KeyField, P>) value -> new KeyField(value.getSID(), property.getInterfaceType(value)));
+            ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues((P value) -> new KeyField(value.getSID(), property.getInterfaceType(value)));
             mapFields = revMapFields.reverse();
             keys = property.getOrderInterfaces().mapOrder(revMapFields);
             
@@ -979,18 +974,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getJoinValues(ImMap<T, ? extends Expr> joinImplement) {
-        return ((ImMap<T, Expr>)joinImplement).filterFnValues(new SFunctionSet<Expr>() {
-            public boolean contains(Expr joinExpr) {
-                return joinExpr.isValue();
-            }});
+        return ((ImMap<T, Expr>)joinImplement).filterFnValues(AbstractOuterContext::isValue);
     }
 
     public static <T extends PropertyInterface> ImMap<T, Expr> onlyComplex(ImMap<T, ? extends Expr> joinImplement) { //assert все Expr.isValue
-        return ((ImMap<T, Expr>)joinImplement).filterFnValues(new SFunctionSet<Expr>() {
-            public boolean contains(Expr joinExpr) {
-                return !(joinExpr instanceof ValueExpr) && !joinExpr.isNull();
-            }
-        });
+        return ((ImMap<T, Expr>)joinImplement).filterFnValues(joinExpr -> !(joinExpr instanceof ValueExpr) && !joinExpr.isNull());
     }
 
     public Expr aspectGetExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1096,7 +1084,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index) {
         assert isStored();
 
-        ImList<Field> indexFields = index.mapListValues((GetValue<Field, PropertyObjectInterfaceImplement<String>>) indexField -> {
+        ImList<Field> indexFields = index.mapListValues((PropertyObjectInterfaceImplement<String> indexField) -> {
             if (indexField instanceof PropertyObjectImplement) {
                 String key = ((PropertyObjectImplement<String>) indexField).object;
                 return mapTable.mapKeys.get(mapping.reverse().get(key));
@@ -1450,7 +1438,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ImMap<T, Expr> getChangeExprs() {
-        return interfaces.mapValues((GetValue<Expr, T>) PropertyInterface::getChangeExpr);
+        return interfaces.mapValues((Function<T, Expr>) PropertyInterface::getChangeExpr);
     }
 
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
@@ -1714,8 +1702,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
 
         // докидываем те которые не учавствуют ни в одном notNull
-        return result.and(op(inferred.remove(SetFact.mergeSets(operandNotNulls)).values().toList().mapListValues(new GetValue<Inferred<T>, Inferred<T>>() {
-            public Inferred<T> getMapValue(Inferred<T> value) {
+        return result.and(op(inferred.remove(SetFact.mergeSets(operandNotNulls)).values().toList().mapListValues(new Function<Inferred<T>, Inferred<T>>() {
+            public Inferred<T> apply(Inferred<T> value) {
                 return value.orAny();
             }
         }), false, inferType), inferType);

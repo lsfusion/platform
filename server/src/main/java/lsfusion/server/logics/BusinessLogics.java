@@ -16,7 +16,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.base.log.StringDebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
@@ -630,11 +629,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImOrderSet<Property> getOrderProperties() {
-        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
-            public boolean contains(ActionOrProperty element) {
-                return element instanceof Property;
-            }
-        }));
+        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(element -> element instanceof Property));
     }
 
     public ImSet<Property> getProperties() {
@@ -642,11 +637,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImOrderSet<Action> getOrderActions() {
-        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(new SFunctionSet<ActionOrProperty>() {
-            public boolean contains(ActionOrProperty element) {
-                return element instanceof Action;
-            }
-        }));
+        return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(element -> element instanceof Action));
     }
 
     public ImSet<Action> getActions() {
@@ -747,12 +738,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 //            public boolean contains(ImSet<CustomClass> element) {
 //                return element.size() > 1;
 //            }
-//        }).mapValues(new GetValue<ImOrderSet<String>, ImSet<CustomClass>>() {
+//        }).mapValues(new Function<ImOrderSet<String>, ImSet<CustomClass>>() {
 //            @Override
-//            public ImOrderSet<String> getMapValue(ImSet<CustomClass> value) {
-//                return value.mapSetValues(new GetValue<String, CustomClass>() {
+//            public ImOrderSet<String> apply(ImSet<CustomClass> value) {
+//                return value.mapSetValues(new Function<String, CustomClass>() {
 //                    @Override
-//                    public String getMapValue(CustomClass value) {
+//                    public String apply(CustomClass value) {
 //                        String name = value.getCanonicalName();
 //                        return name.substring(0, name.indexOf("."));
 //                    }
@@ -772,12 +763,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 //            public boolean contains(ImSet<FormEntity> element) {
 //                return element.size() > 1;
 //            }
-//        }).mapValues(new GetValue<ImOrderSet<String>, ImSet<FormEntity>>() {
+//        }).mapValues(new Function<ImOrderSet<String>, ImSet<FormEntity>>() {
 //            @Override
-//            public ImOrderSet<String> getMapValue(ImSet<FormEntity> value) {
-//                return value.mapSetValues(new GetValue<String, FormEntity>() {
+//            public ImOrderSet<String> apply(ImSet<FormEntity> value) {
+//                return value.mapSetValues(new Function<String, FormEntity>() {
 //                    @Override
-//                    public String getMapValue(FormEntity value) {
+//                    public String apply(FormEntity value) {
 //                        String name = value.getCanonicalName();
 //                        return name.substring(0, name.indexOf("."));
 //                    }
@@ -1237,20 +1228,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public Graph<Action> getRecalculateFollowsGraph() {
-        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<ActionOrProperty>() {
-            public boolean contains(ActionOrProperty element) {
-                return element instanceof Action && ((Action) element).hasResolve();
-            }
-        }));
+        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(element -> element instanceof Action && ((Action) element).hasResolve()));
     }
 
     @IdentityLazy
     public Graph<AggregateProperty> getAggregateStoredGraph() {
-        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<ActionOrProperty>() {
-            public boolean contains(ActionOrProperty element) {
-                return element instanceof AggregateProperty && ((AggregateProperty) element).isStored();
-            }
-        }));
+        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(element -> element instanceof AggregateProperty && ((AggregateProperty) element).isStored()));
     }
 
     public Graph<AggregateProperty> getRecalculateAggregateStoredGraph(DataSession session) throws SQLException, SQLHandledException {
@@ -1262,11 +1245,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
 
         final ImSet<String> fSkipProperties = skipProperties;
-        return getAggregateStoredGraph().filterGraph(new SFunctionSet<AggregateProperty>() {
-            public boolean contains(AggregateProperty element) {
-                return !fSkipProperties.contains(element.getDBName());
-            }
-        });
+        return getAggregateStoredGraph().filterGraph(element -> !fSkipProperties.contains(element.getDBName()));
     }
 
     public Graph<ActionOrProperty> getPropertyGraph() {
@@ -1371,26 +1350,20 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImOrderSet<Property> getStoredDataProperties(final DataSession dataSession) {
-        return BaseUtils.immutableCast(getStoredProperties().filterOrder(new SFunctionSet<Property>() {
-            public boolean contains(Property property) {
-                boolean recalculate;
-                try {
-                    recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
-                } catch (SQLException | SQLHandledException e) {
-                    throw Throwables.propagate(e);
-                }
-                return recalculate && (property instanceof StoredDataProperty || property instanceof ClassDataProperty);
+        return BaseUtils.immutableCast(getStoredProperties().filterOrder(property -> {
+            boolean recalculate;
+            try {
+                recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+            } catch (SQLException | SQLHandledException e) {
+                throw Throwables.propagate(e);
             }
+            return recalculate && (property instanceof StoredDataProperty || property instanceof ClassDataProperty);
         }));
     }
 
     @IdentityLazy
     public ImOrderSet<Property> getStoredProperties() {
-        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<ActionOrProperty>() {
-            public boolean contains(ActionOrProperty property) {
-                return property instanceof Property && ((Property) property).isStored();
-            }
-        }));
+        return BaseUtils.immutableCast(getPropertyList().filterOrder(property -> property instanceof Property && ((Property) property).isStored()));
     }
 
     public ImSet<CustomClass> getCustomClasses() {
@@ -1398,11 +1371,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImSet<ConcreteCustomClass> getConcreteCustomClasses() {
-        return BaseUtils.immutableCast(getCustomClasses().filterFn(new SFunctionSet<CustomClass>() {
-            public boolean contains(CustomClass property) {
-                return property instanceof ConcreteCustomClass;
-            }
-        }));
+        return BaseUtils.immutableCast(getCustomClasses().filterFn(property -> property instanceof ConcreteCustomClass));
     }
 
     @IdentityLazy

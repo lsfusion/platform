@@ -4,19 +4,20 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.SourceJoin;
 import lsfusion.server.data.expr.Expr;
 
+import java.util.function.Function;
+
 public abstract class ExprTranslator extends TwinImmutableObject {
 
-    private GetValue<SourceJoin, SourceJoin> trans;
-    private <V extends SourceJoin> GetValue<V, V> TRANS() {
+    private Function<SourceJoin, SourceJoin> trans;
+    private <V extends SourceJoin> Function<V, V> TRANS() {
         if(trans==null) {
             trans = value -> value.translateExpr(ExprTranslator.this);
         }
-        return (GetValue<V, V>)trans;
+        return (Function<V, V>)trans;
     }
 
     public <T extends SourceJoin<T>> T translate(T expr) {

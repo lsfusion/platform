@@ -6,8 +6,6 @@ import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.Processor;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
@@ -36,10 +34,10 @@ import lsfusion.server.logics.action.session.classes.changed.RegisterClassRemove
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.BaseClass;
-import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public abstract class SessionData<T extends SessionData<T>> extends AbstractValuesContext<T> {
 
@@ -212,7 +210,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getQueryClasses(final IQuery<KeyField, PropertyField> pullQuery) {
         // читаем классы не считывая данные
-        ImMap<PropertyField,ClassWhere<Field>> propertyClasses = pullQuery.getProperties().mapValues((GetValue<ClassWhere<Field>, PropertyField>) value -> pullQuery.<Field>getClassWhere(SetFact.singleton(value)));
+        ImMap<PropertyField,ClassWhere<Field>> propertyClasses = pullQuery.getProperties().mapValues((Function<PropertyField, ClassWhere<Field>>) value -> pullQuery.<Field>getClassWhere(SetFact.singleton(value)));
         ClassWhere<KeyField> classes = pullQuery.<KeyField>getClassWhere(SetFact.<PropertyField>EMPTY());
         return new Pair<>(classes, propertyClasses);
     }
@@ -256,8 +254,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         final Where prevWhere = prevJoin.getWhere();
         final Where newWhere = query.getWhere();
         modifyQuery.and(type == Modify.DELETE ? prevWhere.and(newWhere.not()) : (type == Modify.UPDATE ? prevWhere : prevWhere.or(newWhere)));
-        modifyQuery.addProperties(getProperties().mapValues(new GetValue<Expr, PropertyField>() {
-            public Expr getMapValue(PropertyField value) {
+        modifyQuery.addProperties(getProperties().mapValues(new Function<PropertyField, Expr>() {
+            public Expr apply(PropertyField value) {
                 Expr prevExpr = prevJoin.getExpr(value);
                 if (type == Modify.DELETE || !query.getProperties().contains(value))
                     return prevExpr;

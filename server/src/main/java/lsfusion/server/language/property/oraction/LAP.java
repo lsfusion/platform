@@ -4,7 +4,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -41,7 +40,7 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     }
 
     public <U> ImMap<T, U> getMap(final U... mapping) {
-        return listInterfaces.mapOrderValues((GetIndex<U>) i -> mapping[i]);
+        return listInterfaces.mapOrderValues((int i) -> mapping[i]);
     }
 
     public <U> ImMap<T, U> getMap(final ImList<U> mapping) {

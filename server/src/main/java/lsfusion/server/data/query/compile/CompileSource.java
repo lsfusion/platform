@@ -1,7 +1,6 @@
 package lsfusion.server.data.query.compile;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.inner.InnerExpr;
@@ -13,15 +12,17 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.table.Table;
 import lsfusion.server.data.where.Where;
 
+import java.util.function.Function;
+
 // класс нисколько не immutable
 public abstract class CompileSource {
 
-    private final GetValue<String, Expr> getExprSource = value -> value.getSource(CompileSource.this);
-    public GetValue<String, Expr> GETEXPRSOURCE() {
+    private final Function<Expr, String> getExprSource = value -> value.getSource(CompileSource.this);
+    public Function<Expr, String> GETEXPRSOURCE() {
         return getExprSource;
     }
-    private final GetValue<String, Where> getWhereSource = value -> value.getSource(CompileSource.this);
-    public GetValue<String, Where> GETWHERESOURCE() {
+    private final Function<Where, String> getWhereSource = value -> value.getSource(CompileSource.this);
+    public Function<Where, String> GETWHERESOURCE() {
         return getWhereSource;
     }
 

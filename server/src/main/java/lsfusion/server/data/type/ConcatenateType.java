@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.ListCombinations;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
@@ -20,7 +19,6 @@ import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ConcreteClass;
-import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.struct.ConcatenateClassSet;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
@@ -34,6 +32,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
 
 public class ConcatenateType extends AbstractType<Object[]> {
 
@@ -160,8 +159,8 @@ public class ConcatenateType extends AbstractType<Object[]> {
     @Override
     public String writeDeconc(final SQLSyntax syntax, final TypeEnvironment env) { // дублирование getConcatenateSource, но по идее так тоже можно
         if(syntax.hasDriverCompositeProblem())
-            return syntax.getNotSafeConcatenateSource(this, ListFact.toList(types).mapListValues(new GetValue<String, Type>() {
-                public String getMapValue(Type value) {
+            return syntax.getNotSafeConcatenateSource(this, ListFact.toList(types).mapListValues(new Function<Type, String>() {
+                public String apply(Type value) {
                     return value.writeDeconc(syntax, env);
                 }
             }), env);

@@ -3,8 +3,6 @@ package lsfusion.server.logics.form.stat.struct.export.plain;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -31,6 +29,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class ExportPlainAction<O extends ObjectSelector> extends ExportAction<O> {
     protected final ImMap<GroupObjectEntity, LP> exportFiles;
@@ -70,7 +69,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
             fieldTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
             parentObjects = GroupObjectEntity.getObjects(parentGroups);
 
-            parentIndexes = parentRows.mapOrderValues((GetIndex<Integer>) i -> i);
+            parentIndexes = parentRows.mapOrderValues((int i) -> i);
         }
 
         // index or key object access
@@ -85,9 +84,9 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
             }
         }
 
-        ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys((GetValue<String, PropertyDrawEntity>) PropertyDrawEntity::getIntegrationSID);
-        fieldTypes = fieldTypes.addOrderExcl(propertyNames.mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
-            public Type getMapValue(PropertyDrawEntity property) {
+        ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys((Function<PropertyDrawEntity, String>) PropertyDrawEntity::getIntegrationSID);
+        fieldTypes = fieldTypes.addOrderExcl(propertyNames.mapOrder(childProperties).mapOrderValues(new Function<PropertyDrawEntity, Type>() {
+            public Type apply(PropertyDrawEntity property) {
                 return data.getType(property);
             }
         }));

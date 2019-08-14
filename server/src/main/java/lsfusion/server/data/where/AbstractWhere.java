@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityQuickLazy;
 import lsfusion.server.base.caches.ManualLazy;
@@ -88,7 +87,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public ImList<Expr> followFalse(ImList<Expr> list, final boolean pack) {
-        return list.mapListValues((GetValue<Expr, Expr>) value -> value.followFalse(AbstractWhere.this, pack));
+        return list.mapListValues((Expr value) -> value.followFalse(AbstractWhere.this, pack));
     }
 
     public ImSet<Expr> followFalse(ImSet<Expr> set, final boolean pack) {

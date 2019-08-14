@@ -5,9 +5,15 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.NotFunctionSet;
+
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
 
@@ -140,97 +146,97 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return MapFact.immutableMapOrder(mResult);
     }
 
-    public <M> ImOrderSet<M> mapOrderSetValues(GetValue<M, K> getter) {
+    public <M> ImOrderSet<M> mapOrderSetValues(Function<K, M> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(get(i)));
+            mResult.exclAdd(getter.apply(get(i)));
         return mResult.immutableOrder();
     }
 
-    public <M> ImOrderSet<M> mapMergeOrderSetValues(GetValue<M, K> getter) {
+    public <M> ImOrderSet<M> mapMergeOrderSetValues(Function<K, M> getter) {
         MOrderSet<M> mResult = SetFact.mOrderSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(get(i)));
+            mResult.add(getter.apply(get(i)));
         return mResult.immutableOrder();
     }
 
-    public <M> ImOrderSet<M> mapOrderSetValues(GetIndexValue<M, K> getter) {
+    public <M> ImOrderSet<M> mapOrderSetValues(IntObjectFunction<K, M> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(i, get(i)));
+            mResult.exclAdd(getter.apply(i, get(i)));
         return mResult.immutableOrder();
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetValue<M, K> getter) {
+    public <M> ImOrderMap<K, M> mapOrderValues(Function<K, M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(get(i)));
+            mvResult.mapValue(i, getter.apply(get(i)));
         return mvResult.immutableValueOrder();
     }
 
-    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
         MOrderExclMap<MK, MV> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getterKey.getMapValue(get(i)), getterValue.getMapValue(get(i)));
+            mResult.exclAdd(getterKey.apply(get(i)), getterValue.apply(get(i)));
         return mResult.immutableOrder();
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetStaticValue<M> getter) {
+    public <M> ImOrderMap<K, M> mapOrderValues(Supplier<M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue());
+            mvResult.mapValue(i, getter.get());
         return mvResult.immutableValueOrder();
     }
 
-    public <M> ImOrderMap<M, K> mapOrderKeys(GetValue<M, K> getter) {
+    public <M> ImOrderMap<M, K> mapOrderKeys(Function<K, M> getter) {
         MOrderExclMap<M, K> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++) {
             K key = get(i);
-            mResult.exclAdd(getter.getMapValue(key), key);
+            mResult.exclAdd(getter.apply(key), key);
         }
         return mResult.immutableOrder();
     }
 
-    public <M> ImMap<K, M> mapOrderValues(GetIndexValue<M, K> getter) {
+    public <M> ImMap<K, M> mapOrderValues(IntObjectFunction<K, M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(i, get(i)));
+            mvResult.mapValue(i, getter.apply(i, get(i)));
         return mvResult.immutableValueOrder().getMap();
     }
 
-    public <M> ImMap<K, M> mapOrderValues(GetIndex<M> getter) {
+    public <M> ImMap<K, M> mapOrderValues(IntFunction<M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(i));
+            mvResult.mapValue(i, getter.apply(i));
         return mvResult.immutableValueOrder().getMap();
     }
 
-    public <M> ImRevMap<K, M> mapOrderRevValues(GetIndex<M> getter) {
+    public <M> ImRevMap<K, M> mapOrderRevValues(IntFunction<M> getter) {
         ImRevValueMap<K, M> mvResult = mapItOrderRevValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(i));
+            mvResult.mapValue(i, getter.apply(i));
         return mvResult.immutableValueRev();
     }
 
-    public <M> ImRevMap<K, M> mapOrderRevValues(GetIndexValue<M, K> getter) {
+    public <M> ImRevMap<K, M> mapOrderRevValues(IntObjectFunction<K, M> getter) {
         ImRevValueMap<K, M> mvResult = mapItOrderRevValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(i, get(i)));
+            mvResult.mapValue(i, getter.apply(i, get(i)));
         return mvResult.immutableValueRev();
     }
 
-    public <M> ImRevMap<M, K> mapOrderRevKeys(GetIndex<M> getter) {
+    public <M> ImRevMap<M, K> mapOrderRevKeys(IntFunction<M> getter) {
         MRevMap<M,K> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.revAdd(getter.getMapValue(i), get(i));
+            mResult.revAdd(getter.apply(i), get(i));
         return mResult.immutableRev();
     }
 
-    public <M> ImRevMap<M, K> mapOrderRevKeys(GetIndexValue<M, K> getter) {
+    public <M> ImRevMap<M, K> mapOrderRevKeys(IntObjectFunction<K, M> getter) {
         MRevMap<M,K> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++) {
             K element = get(i);
-            mResult.revAdd(getter.getMapValue(i, element), element);
+            mResult.revAdd(getter.apply(i, element), element);
         }
         return mResult.immutableRev();
     }

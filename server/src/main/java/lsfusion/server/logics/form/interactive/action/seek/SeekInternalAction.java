@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.action.seek;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
@@ -44,10 +43,7 @@ public class SeekInternalAction extends InternalAction {
         if (context.getSingleObjectInstance() == null) {
             DataObject dataValue = context.getSingleDataKeyValue();
             final ConcreteClass keyClass = context.getSession().getCurrentClass(dataValue);
-            objects = form.getObjects().filterFn(new SFunctionSet<ObjectInstance>() {
-                public boolean contains(ObjectInstance object) {
-                    return keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass);
-                }});
+            objects = form.getObjects().filterFn(object -> keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass));
             value = dataValue;
         } else {
             ServerLoggers.assertLog(false, "SCRIPTING SEEK IS ALWAYS WITHOUT OBJECT");

@@ -3,7 +3,6 @@ package lsfusion.server.logics.property.classes.data;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
@@ -13,7 +12,6 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class FormulaUnionProperty extends UnionProperty {

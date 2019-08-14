@@ -4,8 +4,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -19,6 +17,8 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.SumUnionDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.util.function.Function;
 
 public class SumUnionProperty extends IncrementUnionProperty {
 
@@ -47,7 +47,7 @@ public class SumUnionProperty extends IncrementUnionProperty {
 
     protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, final WhereBuilder changedWhere) {
         // до непосредственно вычисления, для хинтов
-        ImMap<PropertyInterfaceImplement<Interface>, Pair<Expr, Where>> operandExprs = operands.keys().mapValues((GetValue<Pair<Expr, Where>, PropertyInterfaceImplement<Interface>>) key -> {
+        ImMap<PropertyInterfaceImplement<Interface>, Pair<Expr, Where>> operandExprs = operands.keys().mapValues((Function<PropertyInterfaceImplement<Interface>, Pair<Expr, Where>>) key -> {
             WhereBuilder changedOperandWhere = new WhereBuilder();
             return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
         });

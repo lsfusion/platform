@@ -1,11 +1,13 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.Result;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public interface ImRevMap<K,V> extends ImMap<K, V> {
     
@@ -27,10 +29,20 @@ public interface ImRevMap<K,V> extends ImMap<K, V> {
     <M> ImMap<V, M> crossJoin(ImMap<K, M> map);
 
     ImRevMap<K, V> splitRevKeys(FunctionSet<K> keys, Result<ImRevMap<K, V>> rest);
-
+    default ImRevMap<K, V> splitRevKeys(SFunctionSet<K> keys, Result<ImRevMap<K, V>> rest) {
+        return splitRevKeys((FunctionSet<K>) keys, rest);
+    }
+    
     ImRevMap<K, V> filterFnRev(FunctionSet<K> filter);
+    default ImRevMap<K, V> filterFnRev(SFunctionSet<K> filter) {
+        return filterFnRev((FunctionSet<K>) filter);
+    }
+    
     ImRevMap<K, V> filterFnValuesRev(FunctionSet<V> filter);
-
+    default ImRevMap<K, V> filterFnValuesRev(SFunctionSet<V> filter) {
+        return filterFnValuesRev((FunctionSet<V>) filter);
+    }
+    
     <EK extends K> ImRevMap<EK, V> filterRev(ImSet<? extends EK> keys);
     <EK extends K> ImRevMap<EK, V> filterInclRev(ImSet<? extends EK> keys);
     <EV extends V> ImRevMap<K,EV> filterValuesRev(ImSet<EV> values);
@@ -45,8 +57,8 @@ public interface ImRevMap<K,V> extends ImMap<K, V> {
 
     <M> ImRevValueMap<K, M> mapItRevValues();
 
-    <M> ImRevMap<M, V> mapRevKeys(GetIndex<M> getter); // reverse.mapValues.reverse
-    <M> ImRevMap<M, V> mapRevKeys(GetValue<M, K> getter); // reverse.mapValues.reverse
-    <M> ImRevMap<M, V> mapRevKeys(GetKeyValue<M, V, K> getter); // reverse.mapValues.reverse
-    <MK, MV> ImRevMap<MK,MV> mapRevKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
+    <M> ImRevMap<M, V> mapRevKeys(IntFunction<M> getter); // reverse.mapValues.reverse
+    <M> ImRevMap<M, V> mapRevKeys(Function<K, M> getter); // reverse.mapValues.reverse
+    <M> ImRevMap<M, V> mapRevKeys(BiFunction<V, K, M> getter); // reverse.mapValues.reverse
+    <MK, MV> ImRevMap<MK,MV> mapRevKeyValues(Function<K, MK> getterKey, Function<V, MV> getterValue);
 }

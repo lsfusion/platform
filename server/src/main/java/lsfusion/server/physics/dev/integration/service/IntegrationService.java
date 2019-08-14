@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.data.OperationOwner;
@@ -35,6 +34,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.function.Function;
 
 @Deprecated
 public class IntegrationService {
@@ -81,8 +81,8 @@ public class IntegrationService {
         MExclMap<ImMap<String, DataObject>, ImMap<ImportField, ObjectValue>> mRows = MapFact.mExclMap();
         int counter = 0;
         for (final PlainDataTable.Row row : table)
-            mRows.exclAdd(MapFact.singleton("key", new DataObject(counter++)), table.getFields().getSet().mapValues(new GetValue<ObjectValue, ImportField>() {
-                public ObjectValue getMapValue(ImportField value) {
+            mRows.exclAdd(MapFact.singleton("key", new DataObject(counter++)), table.getFields().getSet().mapValues(new Function<ImportField, ObjectValue>() {
+                public ObjectValue apply(ImportField value) {
                     return ObjectValue.getValue(row.getValue(value), value.getFieldClass());
                 }}));
         OperationOwner owner = session.getOwner();

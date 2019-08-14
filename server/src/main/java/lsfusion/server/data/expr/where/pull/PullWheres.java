@@ -1,13 +1,14 @@
 package lsfusion.server.data.expr.where.pull;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.*;
 import lsfusion.server.data.expr.where.ifs.IfExpr;
 import lsfusion.server.data.expr.where.ifs.NullExpr;
 import lsfusion.server.data.where.Where;
+
+import java.util.function.Function;
 
 public abstract class PullWheres<R, K> {
 
@@ -27,7 +28,7 @@ public abstract class PullWheres<R, K> {
                     return initEmpty();
                 if(expr instanceof CaseExpr) {
                     ExprCaseList cases = expr.getCases();
-                    GetValue<MapCase<K>, ExprCase> mapCases = value -> new MapCase<>(value.where, ((ImMap<K, Expr>) map).replaceValue(key, value.data));
+                    Function<ExprCase, MapCase<K>> mapCases = value -> new MapCase<>(value.where, ((ImMap<K, Expr>) map).replaceValue(key, value.data));
                     return proceedCases(cases.mapValues(mapCases));
                 }
                 IfExpr ifExpr = (IfExpr)expr;

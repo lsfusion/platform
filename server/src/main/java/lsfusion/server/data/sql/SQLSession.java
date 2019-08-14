@@ -14,15 +14,11 @@ import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.Provider;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.MutableClosedObject;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.stack.ParamMessage;
@@ -36,7 +32,6 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.exec.*;
-import lsfusion.server.data.query.exec.materialize.MaterializedQuery;
 import lsfusion.server.data.query.exec.materialize.PureTime;
 import lsfusion.server.data.query.exec.materialize.PureTimeInterface;
 import lsfusion.server.data.query.modify.ModifyQuery;
@@ -107,6 +102,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -254,11 +251,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public SQLSessionContextProvider contextProvider;
 
-    public <F extends Field> GetValue<String, F> getDeclare(final TypeEnvironment typeEnv) {
+    public <F extends Field> Function<F, String> getDeclare(final TypeEnvironment typeEnv) {
         return getDeclare(syntax, typeEnv);
     }
     
-    public static <F extends Field> GetValue<String, F> getDeclare(final SQLSyntax syntax, final TypeEnvironment typeEnv) {
+    public static <F extends Field> Function<F, String> getDeclare(final SQLSyntax syntax, final TypeEnvironment typeEnv) {
         return value -> value.getDeclare(syntax, typeEnv);
     }
 
@@ -801,7 +798,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private ImOrderMap<Field, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, boolean order, ImOrderSet<Field> fields) {
-        ImOrderMap<Field, Boolean> result = fields.mapOrderValues((GetValue<Boolean, Field>) value -> value instanceof KeyField);
+        ImOrderMap<Field, Boolean> result = fields.mapOrderValues((Field value) -> value instanceof KeyField);
         if(order)
             result = result.addOrderExcl(keyFields.toOrderMap(true));
         return result;
@@ -1996,10 +1993,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public void saveToDbForDebug(DynamicExecEnvSnapshot<?, ?> snapEnv, ImMap<String, ParseInterface> paramObjects) throws ClassNotFoundException, SQLException, SQLHandledException, InstantiationException, IllegalAccessException {
         ImSet<SessionTable> materializedTables = snapEnv.getMaterializedQueries().values().mapColSetValues(value -> new SessionTable(value.tableName, value.keyFields, value.propFields));
-        ImSet<SessionTable> paramTables = paramObjects.values().filterCol(new SFunctionSet<ParseInterface>() {
-            public boolean contains(ParseInterface element) {
-                return element.getSessionTable() != null;
-            }}).mapMergeSetValues(ParseInterface::getSessionTable);
+        ImSet<SessionTable> paramTables = paramObjects.values().filterCol(element -> element.getSessionTable() != null).mapMergeSetValues(ParseInterface::getSessionTable);
 
         SessionTable.saveToDBForDebug(SetFact.addExclSet(materializedTables, paramTables), this);
     }
@@ -2755,7 +2749,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         ImMap<String, String> reparse;
         if(BusinessLogics.useReparse && (reparse = BusinessLogics.reparse.get()) != null) { // временный хак
-            paramObjects = paramObjects.addExcl(reparse.mapValues((GetValue<ParseInterface, String>) value -> new StringParseInterface() {
+            paramObjects = paramObjects.addExcl(reparse.mapValues((String value) -> new StringParseInterface() {
                 public String getString(SQLSyntax syntax1, StringBuilder envString, boolean usedRecursion) {
                     return value;
                 }
@@ -2795,7 +2789,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return parsed.statement;
     }
 
-    private final static GetKeyValue<String, String, String> addFieldAliases = (key, value) -> value + " AS " + key;
+    private final static BiFunction<String, String, String> addFieldAliases = (key, value) -> value + " AS " + key;
     // вспомогательные методы
 
     public static String stringExpr(ImMap<String, String> keySelect, ImMap<String, String> propertySelect) {
@@ -3300,7 +3294,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     };
     public static void uploadTableToConnection(final String table, SQLSyntax syntax, final JDBCTable tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException {
         final KeyField keyCount = new KeyField("row", ValueExpr.COUNTCLASS);
-        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((GetValue<PropertyField, String>) value -> new PropertyField(value, tableData.fieldTypes.get(value)));
+        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((String value) -> new PropertyField(value, tableData.fieldTypes.get(value)));
         
         TypePool typePool = NOTYPES; 
         

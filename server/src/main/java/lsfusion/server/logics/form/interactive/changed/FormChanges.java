@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -228,11 +227,7 @@ public class FormChanges {
     } 
 
     private ImSet<PropertyDrawInstance> filterPropertiesExternal(ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {
-        return serializeProps.filterFn(new SFunctionSet<PropertyDrawInstance>() {
-            public boolean contains(PropertyDrawInstance property) {
-                return panelProperties.contains(property) == panel && property.isProperty();
-            }
-        });                
+        return serializeProps.filterFn(property -> panelProperties.contains(property) == panel && property.isProperty());                
     } 
 
     public JSONObject serializeExternal() {

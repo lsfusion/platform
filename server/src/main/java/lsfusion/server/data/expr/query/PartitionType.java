@@ -6,7 +6,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.order.PartitionCalc;
 import lsfusion.server.data.expr.query.order.PartitionParam;

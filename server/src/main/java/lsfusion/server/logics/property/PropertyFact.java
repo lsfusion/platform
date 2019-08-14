@@ -8,7 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
@@ -59,6 +58,9 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public class PropertyFact {
     private static StaticClass formulaClass = DoubleClass.instance;
@@ -74,11 +76,11 @@ public class PropertyFact {
         return new PropertyImplement<>(compareProperty, mapImplement);
     }
 
-    private static <P extends PropertyInterface, K extends PropertyInterface> GetValue<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<K>> mapGetCalcValue(final ImRevMap<K, P> map) {
+    private static <P extends PropertyInterface, K extends PropertyInterface> Function<PropertyInterfaceImplement<K>, PropertyInterfaceImplement<P>> mapGetCalcValue(final ImRevMap<K, P> map) {
         return value -> value.map(map);
     }
 
-    private static <P extends PropertyInterface, K extends PropertyInterface> GetValue<ActionMapImplement<?, P>, ActionMapImplement<?, K>> mapGetActionValue(final ImRevMap<K, P> map) {
+    private static <P extends PropertyInterface, K extends PropertyInterface> Function<ActionMapImplement<?, K>, ActionMapImplement<?, P>> mapGetActionValue(final ImRevMap<K, P> map) {
         return value -> value.map(map);
     }
 
@@ -221,8 +223,8 @@ public class PropertyFact {
         AndFormulaProperty implement = new AndFormulaProperty(ands.size());
         ImMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement =
                         MapFact.<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>addExcl(
-                            implement.andInterfaces.mapValues(new GetIndex<PropertyInterfaceImplement<JoinProperty.Interface>>() {
-                            public PropertyInterfaceImplement<JoinProperty.Interface> getMapValue(int i) {
+                            implement.andInterfaces.mapValues(new IntFunction<PropertyInterfaceImplement<JoinProperty.Interface>>() {
+                            public PropertyInterfaceImplement<JoinProperty.Interface> apply(int i) {
                                 return ands.get(i).map(joinMap);
                             }}), implement.objectInterface,object.map(joinMap));
 
@@ -253,8 +255,8 @@ public class PropertyFact {
 
     public static <P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> void createCommon(ImSet<T> object, ImSet<P> and, final ImRevMap<T,P> map, Result<ImRevMap<T, C>> mapObject, final Result<ImRevMap<P, C>> mapAnd) {
         mapAnd.set(and.mapRevValues(() -> (C)new PropertyInterface()));
-        mapObject.set(object.mapRevValues(new GetValue<C, T>() {
-            public C getMapValue(T value) {
+        mapObject.set(object.mapRevValues(new Function<T, C>() {
+            public C apply(T value) {
                 P mp = map.get(value);
                 if (mp != null)
                     return mapAnd.result.get(mp);
@@ -300,7 +302,7 @@ public class PropertyFact {
         final ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
         ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
 
-        ImList<CalcCase<UnionProperty.Interface>> cases = props.mapListValues((GetValue<CalcCase<UnionProperty.Interface>, CalcCase<T>>) value -> value.map(mapInterfaces));
+        ImList<CalcCase<UnionProperty.Interface>> cases = props.mapListValues((Function<CalcCase<T>, CalcCase<UnionProperty.Interface>>) value -> value.map(mapInterfaces));
         CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.NONAME, revMapInterfaces.keys().toOrderSet(), isExclusive, cases);
         return new PropertyMapImplement<>(unionProperty, revMapInterfaces);
     }
@@ -393,7 +395,7 @@ public class PropertyFact {
 
         final StringFormulaProperty implement = new StringFormulaProperty(valueClass,new CustomFormulaSyntax(formula),params.size(), false);
         ImMap<StringFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = 
-                ((ImList<PropertyInterfaceImplement<T>>)params).mapListKeyValues((GetIndex<StringFormulaProperty.Interface>) i -> implement.findInterface("prm"+(i+1)), mapGetCalcValue(joinMap));
+                ((ImList<PropertyInterfaceImplement<T>>)params).mapListKeyValues((int i) -> implement.findInterface("prm"+(i+1)), mapGetCalcValue(joinMap));
 
         JoinProperty<StringFormulaProperty.Interface> joinProperty = new JoinProperty<>(caption,
                 revJoinMap.keys().toOrderSet(), new PropertyImplement<>(implement, joinImplement));
@@ -475,8 +477,8 @@ public class PropertyFact {
         AndFormulaProperty andPrevious = new AndFormulaProperty(partProperties.size() + 1);
         ImMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement =
                 MapFact.<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>addExcl(
-                        andPrevious.andInterfaces.mapValues(new GetIndex<PropertyInterfaceImplement<JoinProperty.Interface>>() {
-                            public PropertyInterfaceImplement<JoinProperty.Interface> getMapValue(int i) {
+                        andPrevious.andInterfaces.mapValues(new IntFunction<PropertyInterfaceImplement<JoinProperty.Interface>>() {
+                            public PropertyInterfaceImplement<JoinProperty.Interface> apply(int i) {
                                 return i == 0 ? createCompareMap(expr, map1.result, map2.result, mapCommon.result, compare) : createCompareProp(partProperties.get(i-1), map1.result, map2.result, mapCommon.result, Compare.EQUALS);
                             }
                         }), andPrevious.objectInterface, property.map(map2.result.addRevExcl(mapCommon.result)));
@@ -532,8 +534,8 @@ public class PropertyFact {
         if(params.size()==0)
             return new PropertyRevImplement<>(valueProperty, MapFact.<V, T>EMPTYREV());
 
-        ImRevMap<PropertyInterface, T> mapInterfaces = params.keys().mapRevKeys((GetValue<PropertyInterface, T>) value -> new PropertyInterface());
-        ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = mapInterfaces.join(params).mapColValues((GetKeyValue<PropertyInterfaceImplement<PropertyInterface>, PropertyInterface, ValueClass>) (key, value) -> IsClassProperty.getProperty(value, "value").mapPropertyImplement(MapFact.singletonRev("value", key))).toList();
+        ImRevMap<PropertyInterface, T> mapInterfaces = params.keys().mapRevKeys((T value) -> new PropertyInterface());
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = mapInterfaces.join(params).mapColValues((BiFunction<PropertyInterface, ValueClass, PropertyInterfaceImplement<PropertyInterface>>) (key, value) -> IsClassProperty.getProperty(value, "value").mapPropertyImplement(MapFact.singletonRev("value", key))).toList();
 
         PropertyMapImplement<?, PropertyInterface> and;
         if(valueProperty==null)
@@ -886,7 +888,7 @@ public class PropertyFact {
     }
 
     private static <P extends PropertyInterface> PropertyMapImplement<?, P> getFullWhereProperty(ImSet<P> innerInterfaces, PropertyInterfaceImplement<P> where, ImCol<PropertyInterfaceImplement<P>> exprs) {
-        PropertyMapImplement<?, P> result = createUnion(innerInterfaces, exprs.mapColValues((GetValue<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>>) PropertyFact::createNotNull).toList());
+        PropertyMapImplement<?, P> result = createUnion(innerInterfaces, exprs.mapColValues((Function<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>>) PropertyFact::createNotNull).toList());
         if (where != null)
             result = PropertyFact.createAnd(innerInterfaces, where, result);
         return result;

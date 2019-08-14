@@ -5,8 +5,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -28,6 +26,8 @@ import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.util.function.Function;
 
 public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrementProperty<PartitionProperty.Interface<T>> {
 
@@ -74,7 +74,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     public ImRevMap<Interface<T>,T> getMapInterfaces() {
-        return interfaces.mapRevValues((GetValue<T, Interface<T>>) value -> value.propertyInterface);
+        return interfaces.mapRevValues((Interface<T> value) -> value.propertyInterface);
     }
 
     // кривовать как и в GroupProperty, перетягивание на себя функций компилятора (то есть с третьего ограничивается второй), но достаточно хороший case оптимизации

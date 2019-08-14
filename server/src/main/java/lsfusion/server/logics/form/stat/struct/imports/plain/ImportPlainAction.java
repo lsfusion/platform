@@ -5,7 +5,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class ImportPlainAction<I extends ImportPlainIterator> extends ImportAction {
 
@@ -75,10 +75,10 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
                 }
             }
 
-            ImRevMap<PropertyDrawEntity, String> propertyNames = childProperties.getSet().mapRevValues((GetValue<String, PropertyDrawEntity>) PropertyDrawEntity::getIntegrationSID);
+            ImRevMap<PropertyDrawEntity, String> propertyNames = childProperties.getSet().mapRevValues((Function<PropertyDrawEntity, String>) PropertyDrawEntity::getIntegrationSID);
 
-            fieldTypes = fieldTypes.addOrderExcl(propertyNames.reverse().mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
-                public Type getMapValue(PropertyDrawEntity object) {
+            fieldTypes = fieldTypes.addOrderExcl(propertyNames.reverse().mapOrder(childProperties).mapOrderValues(new Function<PropertyDrawEntity, Type>() {
+                public Type apply(PropertyDrawEntity object) {
                     return object.getType();
                 }}));
 

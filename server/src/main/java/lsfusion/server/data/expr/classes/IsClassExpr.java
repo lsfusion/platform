@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.ParamLazy;
@@ -205,10 +204,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         if(!type.isInconsistent() && tables.size() > 1) {
             final ValueClassSet exprClasses = IsClassWhere.getPackSet(trueWhere, expr);
             if(exprClasses != null)
-                tables = tables.filterFn(new SFunctionSet<ObjectClassField>() {
-                public boolean contains(ObjectClassField element) {
-                    return !element.getObjectSet().and(exprClasses).isEmpty();
-                }});
+                tables = tables.filterFn(element -> !element.getObjectSet().and(exprClasses).isEmpty());
         }
         return tables;
     }

@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
@@ -19,7 +19,6 @@ import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -225,7 +224,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         Where where = ifProp.mapExpr(innerExprs, context.getModifier()).getWhere();
 
         final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, where);
-        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((GetExValue<Expr, PropertyInterfaceImplement<I>, SQLException, SQLHandledException>) value -> value.mapExpr(fInnerExprs, context.getModifier()));
+        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((ThrowingFunction<PropertyInterfaceImplement<I>, Expr, SQLException, SQLHandledException>) value -> value.mapExpr(fInnerExprs, context.getModifier()));
 
         return new PropertyOrderSet<>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
     }

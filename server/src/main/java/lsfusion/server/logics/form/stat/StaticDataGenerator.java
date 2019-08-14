@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -40,6 +39,7 @@ import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
     
@@ -130,8 +130,8 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         return formInterface.getWhere(group, valueGroups, mapExprs).and(formInterface.getValueWhere(group, valueGroups, mapExprs));
     }
     protected ImOrderMap<CompareEntity, Boolean> getOrders(GroupObjectEntity group, ImSet<GroupObjectEntity> valueGroups) {
-        return formInterface.getOrders(group, valueGroups).mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(new GetValue<CompareEntity, CompareEntity>() {
-            public CompareEntity getMapValue(final CompareEntity value) {
+        return formInterface.getOrders(group, valueGroups).mergeOrder(group.getOrderObjects().toOrderMap(false)).mapOrderKeys(new Function<CompareEntity, CompareEntity>() {
+            public CompareEntity apply(final CompareEntity value) {
                 if(value instanceof ObjectEntity) // hack, need this because in Query keys and values should not intersect (because of ClassWhere), but CompareEntity and ObjectEntity have common class ObjectEntity
                     return new CompareEntity() {
                         public Type getType() {
@@ -290,8 +290,8 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     ImMap<SDP, Type> propTypes = propQuery.getPropertyTypes(PropertyReaderEntity::getType);
 
                     // converting from row-based to column-based (it's important to keep keys, to reduce footprint)
-                    propSources.add(objects, props.mapValues(new GetValue<ImMap<ImMap<ObjectEntity, Object>, Object>, SDP>() {
-                        public ImMap<ImMap<ObjectEntity, Object>, Object> getMapValue(final SDP prop) {
+                    propSources.add(objects, props.mapValues(new Function<SDP, ImMap<ImMap<ObjectEntity, Object>, Object>>() {
+                        public ImMap<ImMap<ObjectEntity, Object>, Object> apply(final SDP prop) {
                             return propData.getMap().mapValues(map -> map.get(prop));
                         }
                     }), propTypes, parentColumnObjects, thisColumnObjects, columnData);

@@ -3,21 +3,22 @@ package lsfusion.server.data.expr.key;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.physics.admin.SystemProperties;
 
+import java.util.function.Function;
+import java.util.function.IntFunction;
+
 public class KeyExpr extends ParamExpr {
 
-    private static final GetValue<KeyExpr, Object> genStringKeys = value -> new KeyExpr(value.toString());
-    private static final GetIndex<KeyExpr> genIndexKeys = KeyExpr::new;
+    private static final Function<Object, KeyExpr> genStringKeys = value -> new KeyExpr(value.toString());
+    private static final IntFunction<KeyExpr> genIndexKeys = KeyExpr::new;
     public static <T> ImRevMap<T, KeyExpr> getMapKeys(ImSet<T> objects) {
         if (SystemProperties.inDevMode)
-            return objects.mapRevValues((GetValue<KeyExpr, T>) genStringKeys);
+            return objects.mapRevValues((Function<T, KeyExpr>) genStringKeys);
 
         return objects.mapRevValues(genIndexKeys);
     }

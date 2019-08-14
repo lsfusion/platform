@@ -9,7 +9,9 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.base.lambda.Processor;
 import lsfusion.server.base.caches.ContextTwin;
@@ -62,6 +64,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 // запрос JoinSelect
 public class Query<K,V> extends IQuery<K,V> {
@@ -127,7 +130,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
     
     public ImMap<K, Type> getKeyTypes(final Type.Getter<K> typeGetter) {
-        return mapKeys.keys().mapValues((GetValue<Type, K>) value -> {
+        return mapKeys.keys().mapValues((K value) -> {
             Type propertyType = getKeyType(value);
             if(propertyType != null)
                 return propertyType;
@@ -139,7 +142,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImMap<V, Type> getPropertyTypes(final Type.Getter<V> typeGetter) {
-        return getProperties().mapValues((GetValue<Type, V>) value -> {
+        return getProperties().mapValues((V value) -> {
             Type propertyType = getPropertyType(value);
             if(propertyType != null)
                 return propertyType;
@@ -446,8 +449,8 @@ public class Query<K,V> extends IQuery<K,V> {
         return MapFact.singletonOrder(mvKeyValues.immutableValue(), mvPropValues.immutableValue());
     }
 
-    private final static GetValue<ImMap<Object, Object>, ImMap<Object, ObjectValue>> getMapDataObjectValues = ObjectValue::getMapValues;
-    private static <K, D extends ObjectValue> GetValue<ImMap<K, Object>, ImMap<K, D>> getMapDataObjectValues() {
+    private final static Function<ImMap<Object, ObjectValue>, ImMap<Object, Object>> getMapDataObjectValues = ObjectValue::getMapValues;
+    private static <K, D extends ObjectValue> Function<ImMap<K, D>, ImMap<K, Object>> getMapDataObjectValues() {
         return BaseUtils.immutableCast(getMapDataObjectValues);
     }
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -487,7 +490,7 @@ public class Query<K,V> extends IQuery<K,V> {
         Query<K, Object> orderQuery = new Query<>(mapKeys, MapFact.addExcl(properties, orderObjects), where);
         ImOrderMap<Object, Boolean> orderProperties = ((ImOrderMap<Expr, Boolean>)orders).map(orderObjects.reverse());
 
-        return orderQuery.executeClasses(session, orderProperties, 0, baseClass, env).mapOrderValues((GetValue<ImMap<V, ObjectValue>, ImMap<Object, ObjectValue>>) value -> value.filterIncl(properties.keys()));
+        return orderQuery.executeClasses(session, orderProperties, 0, baseClass, env).mapOrderValues((ImMap<Object, ObjectValue> value) -> value.filterIncl(properties.keys()));
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionContext context) throws SQLException, SQLHandledException {
         return executeClasses(context, MapFact.<V, Boolean>EMPTYORDER());
@@ -528,7 +531,7 @@ public class Query<K,V> extends IQuery<K,V> {
         
         // оптимизация
         final ImMap<K, ClassReader> keyReaders = mapKeys.mapValues(value -> value.getReader(keyType));
-        final ImMap<V, Pair<Expr, ClassReader>> propExprReaders = props.mapValues((GetValue<Pair<Expr, ClassReader>, V>) prop -> {
+        final ImMap<V, Pair<Expr, ClassReader>> propExprReaders = props.mapValues((V prop) -> {
             Expr expr = classQuery.first.getExpr(prop);
             return new Pair<>(expr, expr.getReader(keyType));
         });
@@ -538,7 +541,7 @@ public class Query<K,V> extends IQuery<K,V> {
             return mapKeys.mapValues((key, keyExpr) -> new DataObject(rowKey.get(key), keyReaders.get(key).readClass(keyExpr, exprValues, baseClass, keyType)));
         }, value -> {
             final ImMap<Expr, Object> exprValues = classQuery.second.join(value);
-            return props.mapValues((GetValue<ObjectValue, V>) prop -> {
+            return props.mapValues((V prop) -> {
                 Pair<Expr, ClassReader> exprReader = propExprReaders.get(prop);
                 return ObjectValue.getValue(value.get(prop), exprReader.second.readClass(exprReader.first, exprValues, baseClass, keyType));
             });});

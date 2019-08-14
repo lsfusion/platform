@@ -3,7 +3,6 @@ package lsfusion.server.data.table;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.query.compile.CompileSource;
@@ -11,6 +10,8 @@ import lsfusion.server.data.stat.DistinctKeys;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.TableStatKeys;
+
+import java.util.function.Function;
 
 public class ValuesTable extends Table {
 
@@ -26,9 +27,9 @@ public class ValuesTable extends Table {
     @Override
     public TableStatKeys getTableStatKeys() {
         final Stat stat = new Stat(rows.getCount());
-        return new TableStatKeys(stat, new DistinctKeys<>(keys.getSet().mapValues(new GetValue<Stat, KeyField>() {
+        return new TableStatKeys(stat, new DistinctKeys<>(keys.getSet().mapValues(new Function<KeyField, Stat>() {
             @Override
-            public Stat getMapValue(KeyField value) {
+            public Stat apply(KeyField value) {
                 return stat;
             }
         })));

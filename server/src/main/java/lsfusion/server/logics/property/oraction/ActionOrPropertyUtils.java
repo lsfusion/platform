@@ -7,8 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
@@ -22,6 +20,7 @@ import lsfusion.server.logics.property.implement.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ActionOrPropertyUtils {
     public static ValueClass[] getValueClasses(LA<?>[] dataProperties, int[][] mapInterfaces) {
@@ -121,11 +120,11 @@ public class ActionOrPropertyUtils {
     }
 
     private static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> mapLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
-        return linearImpl.mapListValues((GetValue<PropertyInterfaceImplement, LI>) value -> value.map(interfaces));
+        return linearImpl.mapListValues((LI value) -> value.map(interfaces));
     }
 
     private static <T> ImList<PropertyObjectInterfaceImplement<T>> mapObjectLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
-        return linearImpl.mapListValues((GetValue<PropertyObjectInterfaceImplement<T>, LI>) value -> value.mapObject(interfaces));
+        return linearImpl.mapListValues((Function<LI, PropertyObjectInterfaceImplement<T>>) value -> value.mapObject(interfaces));
     }
 
     public static <T extends PropertyInterface> ImList<PropertyInterfaceImplement> readImplements(ImOrderSet<T> listInterfaces, Object... params) {

@@ -3,7 +3,6 @@ package lsfusion.server.logics.form.interactive.instance.property;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -66,11 +65,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return columnGroupObjects;
     }
     public ImSet<GroupObjectInstance> getColumnGroupObjectsInGridView() {
-        return getColumnGroupObjects().filterFn(new SFunctionSet<GroupObjectInstance>() {
-            public boolean contains(GroupObjectInstance element) {
-                return element.curClassView.isGrid();
-            }
-        });
+        return getColumnGroupObjects().filterFn(element -> element.curClassView.isGrid());
     }
 
     public Type getType() {

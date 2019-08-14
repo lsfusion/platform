@@ -8,12 +8,12 @@ import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 
 public class ListFact {
 
@@ -45,10 +45,10 @@ public class ListFact {
         return toList(array.length, i -> array[i]);
     }
 
-    public static <T> ImList<T> toList(int size, GetIndex<T> getter) {
+    public static <T> ImList<T> toList(int size, IntFunction<T> getter) {
         MList<T> mList = ListFact.mList(size);
         for(int i=0;i<size;i++)
-            mList.add(getter.getMapValue(i));
+            mList.add(getter.apply(i));
         return mList.immutableList();
     }
 
@@ -194,9 +194,9 @@ public class ListFact {
             mList.add(list.get(i));
     }
 
-    private final static GetIndex<MSet<Object>> mSet = i -> SetFact.mSet();
+    private final static IntFunction<MSet<Object>> mSet = i -> SetFact.mSet();
 
-    public static <V> GetIndex<MSet<V>> mSet() {
+    public static <V> IntFunction<MSet<V>> mSet() {
         return BaseUtils.immutableCast(mSet);
     }
 

@@ -1,8 +1,15 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
+
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public interface ImOrderSet<K> extends ImList<K> {
     
@@ -35,6 +42,9 @@ public interface ImOrderSet<K> extends ImList<K> {
     // фильтрация
 
     ImOrderSet<K> filterOrder(FunctionSet<K> filter);
+    default ImOrderSet<K> filterOrder(SFunctionSet<K> filter) {
+        return filterOrder((FunctionSet<K>) filter);    
+    }
 
     ImOrderSet<K> filterOrderIncl(ImSet<? extends K> set);
 
@@ -43,22 +53,22 @@ public interface ImOrderSet<K> extends ImList<K> {
     <M> ImOrderValueMap<K, M> mapItOrderValues();
     <M> ImRevValueMap<K, M> mapItOrderRevValues(); // предполагается заполнение в том же порядке
 
-    <M> ImOrderSet<M> mapOrderSetValues(GetValue<M, K> getter);
-    <M> ImOrderSet<M> mapOrderSetValues(GetIndexValue<M, K> getter);
-    <M> ImOrderSet<M> mapMergeOrderSetValues(GetValue<M, K> getter);
+    <M> ImOrderSet<M> mapOrderSetValues(Function<K, M> getter);
+    <M> ImOrderSet<M> mapOrderSetValues(IntObjectFunction<K, M> getter);
+    <M> ImOrderSet<M> mapMergeOrderSetValues(Function<K, M> getter);
 
-    <M> ImOrderMap<M, K> mapOrderKeys(GetValue<M, K> getter);
+    <M> ImOrderMap<M, K> mapOrderKeys(Function<K, M> getter);
     
-    <M> ImOrderMap<K, M> mapOrderValues(GetStaticValue<M> getter);
-    <M> ImOrderMap<K, M> mapOrderValues(GetValue<M, K> getter);
-    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue);
+    <M> ImOrderMap<K, M> mapOrderValues(Supplier<M> getter);
+    <M> ImOrderMap<K, M> mapOrderValues(Function<K, M> getter);
+    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue);
 
-    <M> ImMap<K, M> mapOrderValues(GetIndexValue<M, K> getter); // в порядке order вызывать getter
-    <M> ImMap<K, M> mapOrderValues(GetIndex<M> getter); // в порядке order вызывать getter
-    <M> ImRevMap<K, M> mapOrderRevValues(GetIndex<M> getter); // в порядке order вызывать getter
-    <M> ImRevMap<K, M> mapOrderRevValues(GetIndexValue<M, K> getter); // в порядке order вызывать getter
-    <M> ImRevMap<M, K> mapOrderRevKeys(GetIndex<M> getter); // в порядке order вызывать getter
-    <M> ImRevMap<M, K> mapOrderRevKeys(GetIndexValue<M, K> getter); // в порядке order вызывать getter
+    <M> ImMap<K, M> mapOrderValues(IntObjectFunction<K, M> getter); // в порядке order вызывать getter
+    <M> ImMap<K, M> mapOrderValues(IntFunction<M> getter); // в порядке order вызывать getter
+    <M> ImRevMap<K, M> mapOrderRevValues(IntFunction<M> getter); // в порядке order вызывать getter
+    <M> ImRevMap<K, M> mapOrderRevValues(IntObjectFunction<K, M> getter); // в порядке order вызывать getter
+    <M> ImRevMap<M, K> mapOrderRevKeys(IntFunction<M> getter); // в порядке order вызывать getter
+    <M> ImRevMap<M, K> mapOrderRevKeys(IntObjectFunction<K, M> getter); // в порядке order вызывать getter
 
     <V> ImOrderMap<K, V> toOrderMap(V value);
 

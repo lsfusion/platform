@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -38,6 +37,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<O> {
 
@@ -103,7 +103,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         this.noCancel = noCancel;
 
         this.contextObjects = contextObjects;
-        this.contextPropertyImplements = contextProperties.mapListValues((GetValue<PropertyMapImplement<PropertyInterface, ClassPropertyInterface>, Property>) value -> value.getImplement(
+        this.contextPropertyImplements = contextProperties.mapListValues((Function<Property, PropertyMapImplement<PropertyInterface, ClassPropertyInterface>>) value -> value.getImplement(
                 getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
         ));
         

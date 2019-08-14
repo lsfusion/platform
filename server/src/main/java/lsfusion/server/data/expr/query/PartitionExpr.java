@@ -5,10 +5,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderFilterMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -209,11 +206,9 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         final KeyEqual keyEqual = query.getWhere().getKeyEquals().getSingle();
         if(!keyEqual.isEmpty()) {
             Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<>();
-            ImMap<KeyExpr, BaseExpr> groupValues = group.splitKeys(new SFunctionSet<KeyExpr>() {
-                public boolean contains(KeyExpr element) {
-                    BaseExpr baseExpr = keyEqual.keyExprs.get(element);
-                    return baseExpr != null && baseExpr.isValue(); // тут можно было бы и не isValue брать, translate'ить их и получать такой Where, но это сложнее + как-то сдедать так, чтобы не делать это для ключей созданных в transformPartitionExprsToKeys (можно просто выше проверку сделать)
-                }
+            ImMap<KeyExpr, BaseExpr> groupValues = group.splitKeys(element -> {
+                BaseExpr baseExpr = keyEqual.keyExprs.get(element);
+                return baseExpr != null && baseExpr.isValue(); // тут можно было бы и не isValue брать, translate'ить их и получать такой Where, но это сложнее + как-то сдедать так, чтобы не делать это для ключей созданных в transformPartitionExprsToKeys (можно просто выше проверку сделать)
             }, restGroup);
             if(!groupValues.isEmpty()) {
                 ImMap<KeyExpr, BaseExpr> keyExprValues = keyEqual.keyExprs.filterIncl(groupValues.keys());
@@ -251,10 +246,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, final ImSet<? extends Expr> partitions, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull, boolean noInnerFollows) {
-        ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterColKeys(exprs.getCol()).merge(getOuterSetKeys(orders.keys())).merge(getOuterSetKeys(partitions))).filterFn(new SFunctionSet<KeyExpr>() {
-            public boolean contains(KeyExpr key) {
-                return key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull);
-            }}).toMap();
+        ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterColKeys(exprs.getCol()).merge(getOuterSetKeys(orders.keys())).merge(getOuterSetKeys(partitions))).filterFn(key -> key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull)).toMap();
         return create(partitionType, exprs, orders, ordersNotNull, partitions, MapFact.addExcl(group, pullKeys), noInnerFollows);
     }
 
@@ -268,11 +260,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     public static Expr create(Query query, ImMap<KeyExpr, ? extends Expr> group) {
         if(Settings.get().isTransformPartitionExprsToKeys()) {
             Result<ImSet<Expr>> rKeyPartitions = new Result<>();
-            ImSet<Expr> exprs = query.partitions.split(new SFunctionSet<Expr>() {
-                public boolean contains(Expr element) {
-                    return !(element instanceof KeyExpr);
-                }
-            }, rKeyPartitions);
+            ImSet<Expr> exprs = query.partitions.split(element -> !(element instanceof KeyExpr), rKeyPartitions);
             if (!exprs.isEmpty()) {
                 KeyExprTranslator keyExprTranslator = new KeyExprTranslator(group);
 

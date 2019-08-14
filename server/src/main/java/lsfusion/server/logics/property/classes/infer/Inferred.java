@@ -7,7 +7,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -57,11 +56,7 @@ public class Inferred<T extends PropertyInterface> {
     }
     
     private static <T> ImMap<T, ExClassSet> overrideClasses(ImMap<T, ExClassSet> oldClasses, ImMap<T, ExClassSet> newClasses) {
-        return oldClasses.filterFnValues(new NotFunctionSet<>(new SFunctionSet<ExClassSet>() {
-            public boolean contains(ExClassSet element) {
-                return ExClassSet.fromEx(element) instanceof DataClass;
-            }
-        })).override(newClasses.removeNulls());
+        return oldClasses.filterFnValues(new NotFunctionSet<>((SFunctionSet<ExClassSet>) element -> ExClassSet.fromEx(element) instanceof DataClass)).override(newClasses.removeNulls());
     }
     public ImMap<T, ExClassSet> finishEx(InferType inferType) {
         ImMap<T, ExClassSet> result = getParams(inferType);

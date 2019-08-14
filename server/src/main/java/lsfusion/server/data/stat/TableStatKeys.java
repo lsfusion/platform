@@ -2,13 +2,10 @@ package lsfusion.server.data.stat;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.table.KeyField;
 
-import java.util.Comparator;
+import java.util.function.Function;
 
 public class TableStatKeys extends TwinImmutableObject {
 
@@ -39,7 +36,7 @@ public class TableStatKeys extends TwinImmutableObject {
     public static TableStatKeys createForTable(Integer rows, final ImMap<KeyField, Integer> distinct) {
 
         Stat rowStat = new Stat(rows);
-        DistinctKeys<KeyField> distStat = new DistinctKeys<>(distinct.mapValues((GetValue<Stat, Integer>) Stat::new));
+        DistinctKeys<KeyField> distStat = new DistinctKeys<>(distinct.mapValues((Function<Integer, Stat>) Stat::new));
 
         Stat distStatMax = distStat.getMax();
         if(distStatMax.less(rowStat)) { // если сумма меньше дотягиваем разновидности до ceiling'ов пока не получим >=

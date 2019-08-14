@@ -3,7 +3,6 @@ package lsfusion.server.data.expr.query;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.query.exec.materialize.NotMaterializable;
@@ -34,7 +33,7 @@ public class RecursiveTable extends NamedTable implements NotMaterializable {
     }
 
     private static ImMap<PropertyField, ClassWhere<Field>> getPropClasses(ImSet<PropertyField> props, final ClassWhere<KeyField> keyClasses) {
-        return props.mapValues((GetValue<ClassWhere<Field>, PropertyField>) prop -> new ClassWhere<Field>(prop, (DataClass)prop.type).and(BaseUtils.<ClassWhere<Field>>immutableCast(keyClasses)));
+        return props.mapValues((PropertyField prop) -> new ClassWhere<Field>(prop, (DataClass)prop.type).and(BaseUtils.<ClassWhere<Field>>immutableCast(keyClasses)));
     }
 
     @Override

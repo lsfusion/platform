@@ -8,8 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -46,6 +44,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 public class CaseUnionProperty extends IncrementUnionProperty {
 
@@ -71,14 +70,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return mResult.immutable();
     }
 
-    private static class OperandCase implements GetValue<CalcCase<Interface>, PropertyInterfaceImplement<Interface>> {
+    private static class OperandCase implements Function<PropertyInterfaceImplement<Interface>, CalcCase<Interface>> {
         private final boolean caseClasses;
 
         private OperandCase(boolean caseClasses) {
             this.caseClasses = caseClasses;
         }
 
-        public CalcCase getMapValue(PropertyInterfaceImplement<Interface> value) {
+        public CalcCase apply(PropertyInterfaceImplement<Interface> value) {
             return new CalcCase(caseClasses ? ((PropertyMapImplement<?, Interface>)value).mapClassProperty() : value, value);
         }
     }
@@ -187,7 +186,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         ImList<CalcCase<Interface>> cases = getCases();
 
         // до непосредственно вычисления, для хинтов
-        ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues((GetValue<Pair<Expr, Expr>, CalcCase<Interface>>) value -> {
+        ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues((Function<CalcCase<Interface>, Pair<Expr, Expr>>) value -> {
             if(checkPrereadNull(value, joinImplement, calcType, propChanges))
                 return new Pair<>(Expr.NULL, Expr.NULL);
                 
@@ -209,7 +208,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         ImList<CalcCase<Interface>> cases = getCases();
 
         // до непосредственно вычисления, для хинтов
-        ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = cases.mapListValues((GetValue<Pair<Pair<Expr, Where>, Pair<Expr, Where>>, CalcCase<Interface>>) propCase -> {
+        ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = cases.mapListValues((Function<CalcCase<Interface>, Pair<Pair<Expr, Where>, Pair<Expr, Where>>>) propCase -> {
             if(checkPrereadNull(propCase, joinImplement, CalcType.EXPR, propChanges))
                 return new Pair<>(new Pair<>(Expr.NULL, Where.FALSE), new Pair<>(Expr.NULL, Where.FALSE));
 
@@ -394,10 +393,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return (ImList<CalcCase<Interface>>)cases;
     }
     public ImList<ExplicitCalcCase<Interface>> getNFCases(Version version) {
-        return BaseUtils.immutableCast(((NFList<AbstractCalcCase<Interface>>)cases).getNFList(version).filterList(new SFunctionSet<AbstractCalcCase<Interface>>() {
-            public boolean contains(AbstractCalcCase<Interface> element) {
-                return element instanceof ExplicitCalcCase; // only explicit cases, for backward compatibility
-            }
+        return BaseUtils.immutableCast(((NFList<AbstractCalcCase<Interface>>)cases).getNFList(version).filterList(element -> {
+            return element instanceof ExplicitCalcCase; // only explicit cases, for backward compatibility
         }));
     }
 
@@ -431,7 +428,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         if(isAbstract())
             return new Inferred<>(classValueWhere.getCommonExClasses(interfaces)); // чтобы рекурсии не было
         
-        return op(getCases().mapListValues((GetValue<Inferred<Interface>, CalcCase<Interface>>) aCase -> aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.implement.mapInferInterfaceClasses(commonValue, inferType), inferType)), true, inferType);
+        return op(getCases().mapListValues((Function<CalcCase<Interface>, Inferred<Interface>>) aCase -> aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.implement.mapInferInterfaceClasses(commonValue, inferType), inferType)), true, inferType);
     }
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
         if(isAbstract())
@@ -464,14 +461,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             }
 
             if (abs.checkAllImplementations) {
-                ImList<PropertyMapImplement<?, Interface>> cases = getCases().mapListValues((GetValue<PropertyMapImplement<?, Interface>, CalcCase<Interface>>) value -> (PropertyMapImplement<?, Interface>) value.where);
+                ImList<PropertyMapImplement<?, Interface>> cases = getCases().mapListValues((Function<CalcCase<Interface>, PropertyMapImplement<?, Interface>>) value -> (PropertyMapImplement<?, Interface>) value.where);
 
-                checkAllImplementations(cases.mapListValues(new GetValue<Property<PropertyInterface>, PropertyMapImplement<?, Interface>>() {
-                    public Property<PropertyInterface> getMapValue(PropertyMapImplement<?, Interface> value) {
+                checkAllImplementations(cases.mapListValues(new Function<PropertyMapImplement<?, Interface>, Property<PropertyInterface>>() {
+                    public Property<PropertyInterface> apply(PropertyMapImplement<?, Interface> value) {
                         return (Property<PropertyInterface>) value.property;
                     }
-                }), cases.mapListValues(new GetValue<ImRevMap<PropertyInterface, Interface>, PropertyMapImplement<?, Interface>>() {
-                    public ImRevMap<PropertyInterface, Interface> getMapValue(PropertyMapImplement<?, Interface> value) {
+                }), cases.mapListValues(new Function<PropertyMapImplement<?, Interface>, ImRevMap<PropertyInterface, Interface>>() {
+                    public ImRevMap<PropertyInterface, Interface> apply(PropertyMapImplement<?, Interface> value) {
                         return (ImRevMap<PropertyInterface, Interface>) value.mapping;
                     }
                 }));
@@ -504,11 +501,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     private ImList<CalcCase<Interface>> getSimpleCases() {
-        return getCases().filterList(new SFunctionSet<CalcCase<Interface>>() {
-                public boolean contains(CalcCase<Interface> element) {
-                    return element.isSimple() || element.isClassSimple();
-                }
-            });
+        return getCases().filterList(element -> element.isSimple() || element.isClassSimple());
     }
 }
 

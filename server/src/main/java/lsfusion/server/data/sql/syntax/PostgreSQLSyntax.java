@@ -2,7 +2,6 @@ package lsfusion.server.data.sql.syntax;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.type.ConcatenateType;
@@ -363,10 +362,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String stepSmallSelect, int smallLimit, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
-        assert types.size() == types.filterList(new SFunctionSet<FunctionType>() {
-            public boolean contains(FunctionType element) {
-                return element instanceof Type;
-            }}).size();
+        assert types.size() == types.filterList(element -> element instanceof Type).size();
 
         typeEnv.addNeedRecursion(types);
         String recursionName = genRecursionName(BaseUtils.<ImList<Type>>immutableCast(types));

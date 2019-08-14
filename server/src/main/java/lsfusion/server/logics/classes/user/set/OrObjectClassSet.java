@@ -8,9 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
@@ -20,8 +17,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.user.*;
 import lsfusion.server.physics.admin.Settings;
-
-import java.util.Comparator;
 
 // IMMUTABLE
 public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet, ObjectValueClassSet {
@@ -76,11 +71,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
 
     private static ImSet<ConcreteCustomClass> remove(ImSet<ConcreteCustomClass> to, final UpClassSet up) {
-        return to.filterFn(new SFunctionSet<ConcreteCustomClass>() {
-            public boolean contains(ConcreteCustomClass nodeSet) {
-                return !up.has((CustomClass) nodeSet);
-            }
-        });
+        return to.filterFn(nodeSet -> !up.has((CustomClass) nodeSet));
     }
 
     public OrObjectClassSet or(OrClassSet node) {

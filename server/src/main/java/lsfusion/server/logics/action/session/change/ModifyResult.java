@@ -1,7 +1,8 @@
 package lsfusion.server.logics.action.session.change;
 
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
+
+import java.util.function.Function;
 
 public enum ModifyResult implements UpdateResult {
     NO, // нет изменений
@@ -36,7 +37,7 @@ public enum ModifyResult implements UpdateResult {
         return DATA;
     }
     
-    public <T> GetValue<ModifyResult, T> fnGetValue() {
+    public <T> Function<T, ModifyResult> fnGetValue() {
         return value -> ModifyResult.this;
     }  
 }

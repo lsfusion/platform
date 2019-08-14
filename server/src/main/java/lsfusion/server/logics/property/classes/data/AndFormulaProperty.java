@@ -5,8 +5,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -17,6 +15,8 @@ import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.util.function.Function;
 
 // выбирает объект по битам
 public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Interface> {
@@ -64,9 +64,9 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
 
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
-        return new Inferred<>(interfaces.mapValues(new GetValue<ExClassSet, Interface>() {
+        return new Inferred<>(interfaces.mapValues(new Function<Interface, ExClassSet>() {
             @Override
-            public ExClassSet getMapValue(Interface value) {
+            public ExClassSet apply(Interface value) {
                 return value == objectInterface ? commonValue : null;
             }
         }));

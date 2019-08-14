@@ -6,14 +6,14 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.LongMutable;
+import lsfusion.base.col.interfaces.mutable.MCol;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
@@ -21,7 +21,6 @@ import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
@@ -47,8 +46,8 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
+import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
@@ -74,6 +73,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class FormEntity implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
@@ -426,11 +427,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
-        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(new SFunctionSet<PropertyDrawEntity>() {
-            public boolean contains(PropertyDrawEntity element) {
-                return element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw;
-            }
-        });
+        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
     }
 
     public static class PropMetaExternal {
@@ -486,14 +483,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public MetaExternal getMetaExternal(final SecurityPolicy policy) {
         final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.<GroupObjectEntity>EMPTY(), false);
 
-        return new MetaExternal(getGroups().mapValues(new GetValue<GroupMetaExternal, GroupObjectEntity>() {
-            public GroupMetaExternal getMapValue(GroupObjectEntity value) {
+        return new MetaExternal(getGroups().mapValues(new Function<GroupObjectEntity, GroupMetaExternal>() {
+            public GroupMetaExternal apply(GroupObjectEntity value) {
                 ImOrderSet<PropertyDrawEntity> properties = groupProperties.get(value);
                 if(properties == null)
                     properties = SetFact.EMPTYORDER();
 
-                return new GroupMetaExternal(properties.getSet().mapValues(new GetValue<PropMetaExternal, PropertyDrawEntity>() {
-                    public PropMetaExternal getMapValue(PropertyDrawEntity value) {
+                return new GroupMetaExternal(properties.getSet().mapValues(new Function<PropertyDrawEntity, PropMetaExternal>() {
+                    public PropMetaExternal apply(PropertyDrawEntity value) {
                         Pair<ObjectEntity, Boolean> newDelete = ((PropertyDrawEntity<?>) value).getAddRemove(FormEntity.this, policy);
                         return new PropMetaExternal(ThreadLocalContext.localize(value.getCaption()), value.isProperty() ? value.getType().getJSONType() : "action", newDelete != null ? newDelete.second : null);
                     }
@@ -504,7 +501,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> getGroupOrdersList(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((GetValue<OrderEntity<?>, PropertyDrawEntity<?>>) PropertyDrawEntity::getOrder, value -> !value).mergeOrder(getFixedOrdersList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
+        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues((Function<PropertyDrawEntity<?>, OrderEntity<?>>) PropertyDrawEntity::getOrder, value -> !value).mergeOrder(getFixedOrdersList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
             @Override
             public GroupObjectEntity group(OrderEntity<?> key) {
                 GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
@@ -897,7 +894,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         richDesign.set(view, version);
     }
 
-    private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filter) {
+    private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> filter) {
         ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
         if(filter != null)
             groupProperties = groupProperties.mapValues(filter);
@@ -917,7 +914,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getHierarchy(isReport, valueGroups, null);
     }
     
-    public StaticDataGenerator.Hierarchy getStaticHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filter) {
+    public StaticDataGenerator.Hierarchy getStaticHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> filter) {
         if(filter == null) // optimization
             return getCachedStaticHierarchy(supportGroupColumns, valueGroups);
         return getHierarchy(supportGroupColumns, valueGroups, filter);

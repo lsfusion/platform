@@ -2,7 +2,6 @@ package lsfusion.base.comb;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 
 public class ListPermutations<T> extends Permutations<ImOrderSet<T>> {
 

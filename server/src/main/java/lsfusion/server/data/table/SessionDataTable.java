@@ -7,9 +7,8 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.dnf.ExtraSetWhere;
 import lsfusion.base.lambda.Processor;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
@@ -146,11 +145,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             return new SessionRows(keys, getProperties());
 
         // finding all isFalse - which means that all values are nulls
-        ImSet<PropertyField> remove = table.propertyClasses.filterFnValues(new SFunctionSet<ClassWhere<Field>>() {
-            public boolean contains(ClassWhere<Field> element) {
-                return element.isFalse();
-            }
-        }).keys();
+        ImSet<PropertyField> remove = table.propertyClasses.filterFnValues(ExtraSetWhere::isFalse).keys();
         if(remove.isEmpty())
             return new SessionDataTable(table, keys, keyValues, propertyValues);
         

@@ -11,9 +11,6 @@ import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.comb.ListPermutations;
@@ -55,12 +52,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.IntFunction;
 
 import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.BusinessLogics.linkComparator;
 
 public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractPropertyNode {
-    public static final GetIndex<PropertyInterface> genInterface = PropertyInterface::new;
+    public static final IntFunction<PropertyInterface> genInterface = PropertyInterface::new;
 
     private int ID = 0;
     protected String canonicalName;
@@ -364,7 +362,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 for (CacheEntry cachedEntry : col.it()) {
                     final ImRevMap<ValueClassWrapper, ValueClassWrapper> map = cachedEntry.map(entry);
                     if (map != null) {
-                        return cachedEntry.result.mapListValues((GetValue<ActionOrPropertyClassImplement, ActionOrPropertyClassImplement>) value -> value.map(map));
+                        return cachedEntry.result.mapListValues((ActionOrPropertyClassImplement value) -> value.map(map));
                     }
                 }
             }

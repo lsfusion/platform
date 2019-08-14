@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.base.col.lru.LRUWVSMap;
@@ -58,6 +57,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.physics.admin.Settings;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
 
@@ -687,8 +687,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         private <K extends BaseExpr> ImMap<K, Stat> getDistinct(ImSet<K> exprs, final MAddMap<BaseExpr, PropStat> exprStats) {
-            return new DistinctKeys<>(exprs.mapValues(new GetValue<Stat, K>() {
-                public Stat getMapValue(K value) {
+            return new DistinctKeys<>(exprs.mapValues(new Function<K, Stat>() {
+                public Stat apply(K value) {
                     return getPropStat(value, exprStats).distinct;
                 }
             }));
@@ -991,12 +991,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
         assert !pushedKeys.isEmpty();
         final ImSet<BaseJoin> keepJoins = addKeyJoinExprs(cost.getJoins().removeIncl(queryJoin), joinStats);
-        FunctionSet<BaseJoin> notKeepJoins = new SFunctionSet<BaseJoin>() {
-            @Override
-            public boolean contains(BaseJoin element) {
-                return !keepJoins.contains(element) && joinStats.containsKey(element);
-            }
-        };
+        SFunctionSet<BaseJoin> notKeepJoins = element -> !keepJoins.contains(element) && joinStats.containsKey(element);
 
         ImList<WhereJoin> adjWheres = pushInfo.upJoins;
         UpWheres<WhereJoin> upWheres = pushInfo.upWheres;
@@ -1026,11 +1021,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         ImSet<BaseExpr> fullExprs = replaceKeyJoinExprs(mFullExprs.immutable());
         ImRevMap<BaseExpr, KeyExpr> translateKeys = KeyExpr.getMapKeys(translate);
         JoinExprTranslator translator = new JoinExprTranslator(translateKeys, fullExprs);
-        ImMap<BaseJoin, MiddleTopKeep> middleTopKeeps = BaseUtils.immutableCast(mMiddleTreeKeeps.immutable().filterFnValues(new SFunctionSet<MiddleTreeKeep>() {
-            public boolean contains(MiddleTreeKeep element) {
-                return element instanceof MiddleTopKeep;
-            }
-        }));
+        ImMap<BaseJoin, MiddleTopKeep> middleTopKeeps = BaseUtils.immutableCast(mMiddleTreeKeeps.immutable().filterFnValues(element -> element instanceof MiddleTopKeep));
         ImMap<BaseJoin, TopKeep> keeps = MapFact.addExcl(mTopKeys.immutable().toMap(TopTreeKeep.instance), middleTopKeeps);
         
         boolean assertCheck = false;
@@ -1278,15 +1269,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                         CostStat leafCostStat = costs.get(i);
                         if (leafCostStat.compareTo(result) > 0) { // по идее обратного быть не должно, так как скорее всего это соединение должно было быть выбрано а не декартово произведение
                             Iterable<Edge<K>> filteredEdges = BaseUtils.mergeIterables(
-                                BaseUtils.filterIterable(edgesOut.get(i), new SFunctionSet<Edge<K>>() {
-                                public boolean contains(Edge<K> element) {
-                                    return resultJoins.contains(element.getTo());
-                                }
-                            }), BaseUtils.filterIterable(edgesIn.get(i), new SFunctionSet<Edge<K>>() {
-                                public boolean contains(Edge<K> element) {
-                                    return resultJoins.contains(element.getFrom());
-                                }
-                            }));
+                                BaseUtils.filterIterable(edgesOut.get(i), (SFunctionSet<Edge<K>>) element -> resultJoins.contains(element.getTo())), BaseUtils.filterIterable(edgesIn.get(i), (SFunctionSet<Edge<K>>) element -> resultJoins.contains(element.getFrom())));
                             Cost pushedCost = calculateCost(result, leafCostStat, filteredEdges).getCost();
                             
                             if(result.getCost().rows.less(pushedCost.rows)) {
@@ -1572,7 +1555,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private void buildStats(Result<ImSet<BaseJoin>> joins, Result<ImSet<BaseExpr>> exprs, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats, MAddMap<Edge, Stat> keyStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, MAddMap<BaseJoin, Cost> indexedStats, final StatType statType, final KeyStat keyStat) {
 
-        ImMap<BaseJoin, StatKeys> joinStatKeys = joins.result.mapValues((GetValue<StatKeys, BaseJoin>) value -> value.getStatKeys(keyStat, statType, false));
+        ImMap<BaseJoin, StatKeys> joinStatKeys = joins.result.mapValues((BaseJoin value) -> value.getStatKeys(keyStat, statType, false));
 
         // читаем статистику по join'ам
         for(int i=0,size=joinStatKeys.size();i<size;i++) {

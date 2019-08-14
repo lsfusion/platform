@@ -7,8 +7,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -42,6 +40,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Function;
 
 import static lsfusion.server.logics.property.PropertyFact.createForAction;
 
@@ -97,9 +96,9 @@ public class CaseAction extends ListCaseAction {
     }
 
     public <I extends PropertyInterface> CaseAction(LocalizedString caption, boolean isExclusive, ImList<ActionMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new GetValue<ActionCase<I>, ActionMapImplement>() {
+        this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new Function<ActionMapImplement, ActionCase<I>>() {
             @Override
-            public ActionCase<I> getMapValue(ActionMapImplement value) {
+            public ActionCase<I> apply(ActionMapImplement value) {
                 return new ActionCase<>((PropertyMapImplement) value.mapWhereProperty().mapClassProperty(), value);
             }
         }));
@@ -110,7 +109,7 @@ public class CaseAction extends ListCaseAction {
         super(caption, isExclusive, innerInterfaces);
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
-        this.cases = cases.mapListValues((GetValue<ActionCase<PropertyInterface>, ActionCase<I>>) value -> value.map(mapInterfaces));
+        this.cases = cases.mapListValues((Function<ActionCase<I>, ActionCase<PropertyInterface>>) value -> value.map(mapInterfaces));
 
         finalizeInit();
     }
@@ -122,12 +121,12 @@ public class CaseAction extends ListCaseAction {
     }
 
     protected PropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
-        ImList<CalcCase<PropertyInterface>> listWheres = getCases().mapListValues((GetValue<CalcCase<PropertyInterface>, ActionCase<PropertyInterface>>) value -> new CalcCase<>(value.where, value.implement.mapCalcWhereProperty()));
+        ImList<CalcCase<PropertyInterface>> listWheres = getCases().mapListValues((Function<ActionCase<PropertyInterface>, CalcCase<PropertyInterface>>) value -> new CalcCase<>(value.where, value.implement.mapCalcWhereProperty()));
         return PropertyFact.createUnion(interfaces, isExclusive, listWheres);
     }
 
     protected ImList<ActionMapImplement<?, PropertyInterface>> getListActions() {
-        return getCases().mapListValues((GetValue<ActionMapImplement<?, PropertyInterface>, ActionCase<PropertyInterface>>) value -> value.implement);
+        return getCases().mapListValues((Function<ActionCase<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>) value -> value.implement);
     }
 
     @Override
@@ -142,22 +141,19 @@ public class CaseAction extends ListCaseAction {
 
     @IdentityLazy
     public ImList<ActionCase<PropertyInterface>> getOptimizedCases(final ImMap<PropertyInterface, ? extends AndClassSet> currentClasses, final ImSet<PropertyInterface> nulls) {
-        return getCases().filterList(new SFunctionSet<ActionCase<PropertyInterface>>() {
-            @Override
-            public boolean contains(ActionCase<PropertyInterface> element) {
-                PropertyInterfaceImplement<PropertyInterface> where = element.where;
-                if(where instanceof PropertyMapImplement) {
-                    PropertyMapImplement<?, PropertyInterface> mapWhere = (PropertyMapImplement<?, PropertyInterface>) where;
-                    if (!currentClasses.isEmpty() && mapWhere.mapIsFull(currentClasses.keys())) { // тут надо найти по-хорошему найти full подмножество, но пока и такой оптимизации достаточно
-                        // isFull => isNotNull
-                        if (mapWhere.mapClassWhere(ClassType.casePolicy).and(new ClassWhere<>(currentClasses)).isFalse()) // и классы не пересекаются
-                            return false;
-                    }
-                    if(!nulls.isEmpty() && mapWhere.mapIsNotNull(nulls)) // тут надо по-хорошему по одному интерфейсу проверить, но пока и такой оптимизации достаточно   
+        return getCases().filterList(element -> {
+            PropertyInterfaceImplement<PropertyInterface> where = element.where;
+            if(where instanceof PropertyMapImplement) {
+                PropertyMapImplement<?, PropertyInterface> mapWhere = (PropertyMapImplement<?, PropertyInterface>) where;
+                if (!currentClasses.isEmpty() && mapWhere.mapIsFull(currentClasses.keys())) { // тут надо найти по-хорошему найти full подмножество, но пока и такой оптимизации достаточно
+                    // isFull => isNotNull
+                    if (mapWhere.mapClassWhere(ClassType.casePolicy).and(new ClassWhere<>(currentClasses)).isFalse()) // и классы не пересекаются
                         return false;
                 }
-                return true;
+                if(!nulls.isEmpty() && mapWhere.mapIsNotNull(nulls)) // тут надо по-хорошему по одному интерфейсу проверить, но пока и такой оптимизации достаточно   
+                    return false;
             }
+            return true;
         });
     }
     

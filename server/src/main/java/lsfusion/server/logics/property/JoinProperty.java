@@ -3,8 +3,6 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStartLazy;
@@ -40,6 +38,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
     public final PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement;
@@ -50,7 +49,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
     }
 
-    public static GetIndex<Interface> genInterface = Interface::new;
+    public static IntFunction<Interface> genInterface = Interface::new;
     public static ImOrderSet<Interface> getInterfaces(int intNum) {
         return SetFact.toOrderExclSet(intNum, genInterface);
     }
@@ -90,11 +89,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(!notNull || !calcType.isExpr())
             return false;
 
-        ImCol<PropertyInterfaceImplement<P>> complexMapping = col.filterCol(new SFunctionSet<PropertyInterfaceImplement<P>>() {
-            public boolean contains(PropertyInterfaceImplement<P> element) {
-                return element.mapIsOrDependsPreread(); // for prereads
-            }
-        });
+        // for prereads
+        ImCol<PropertyInterfaceImplement<P>> complexMapping = col.filterCol(PropertyInterfaceImplement::mapIsOrDependsPreread);
         if(!complexMapping.isEmpty()) {
             // сортируем по сложности
             for(PropertyInterfaceImplement<P> mapImpl : complexMapping.sort(Comparator.comparingLong(PropertyInterfaceImplement::mapComplexity))) {
@@ -274,11 +270,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if (aggProp instanceof AndFormulaProperty) {
             final AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
-            ImCol<PropertyInterfaceImplement<Interface>> ands = implement.mapping.filterFn(new SFunctionSet<T>() {
-                public boolean contains(T element) {
-                    return element != andProperty.objectInterface;
-                }
-            }).values();
+            ImCol<PropertyInterfaceImplement<Interface>> ands = implement.mapping.filterFn(element -> element != andProperty.objectInterface).values();
             ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEditAction(editActionSID, filterProperty);
             if (implementEdit != null) {
                 return PropertyFact.createIfAction(

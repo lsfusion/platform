@@ -1,7 +1,6 @@
 package lsfusion.base.comb;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 
 import java.util.Iterator;
 

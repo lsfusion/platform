@@ -7,8 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -243,10 +241,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
     
     public static <T extends PropertyInterface> ImCol<PropertyMapImplement<?, T>> filter(ImCol<PropertyInterfaceImplement<T>> col) {
-        return BaseUtils.immutableCast(col.filterCol(new SFunctionSet<PropertyInterfaceImplement<T>>() {
-            public boolean contains(PropertyInterfaceImplement<T> element) {
-                return element instanceof PropertyMapImplement;
-            }}));
+        return BaseUtils.immutableCast(col.filterCol(element -> element instanceof PropertyMapImplement));
     }
 
     public <L> PropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {

@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.OperationOwner;
@@ -54,6 +53,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.trimToNull;
 
@@ -198,8 +198,8 @@ public class CustomRestoreAction extends InternalAction {
                             keysMap = keysMap.addExcl(new KeyField("key" + k, valueClass instanceof CustomClass ? ObjectType.instance : (Type) valueClass), keyObject);
                         }
 
-                        mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
-                            public ObjectValue getMapValue(LP prop) {
+                        mRows.exclAdd(keysMap, props.getSet().mapValues(new Function<LP, ObjectValue>() {
+                            public ObjectValue apply(LP prop) {
                                 try {
                                     Object object = columnsEntry.get(props.indexOf(prop));
                                     if (object == null) return NullValue.instance;

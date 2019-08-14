@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.ArrayCombinations;
 import lsfusion.base.dnf.ExtraMapSetWhere;
 import lsfusion.base.lambda.ArrayInstancer;
@@ -28,6 +27,8 @@ import lsfusion.server.logics.classes.user.set.OrClassSet;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
+
+import java.util.function.Function;
 
 
 // !!! equals'ы и hashCode должны только в meanWheres вызываться
@@ -136,7 +137,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         public <T> And<T> remap(ImRevMap<K, ? extends T> remap) {
             return new And<>((ImMap<T, AndClassSet>) remap.rightCrossJoin(map));
         }
-        public <T> And<T> remap(GetValue<T, K> remap) {
+        public <T> And<T> remap(Function<K, T> remap) {
             return new And<>((ImMap<T, AndClassSet>) map.mapKeys(remap));
         }
         public <T> And<T> innerRemap(ImRevMap<K, ? extends T> remap) {
@@ -151,7 +152,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         public And<K> getBase() {
-            return new And<>(map.mapValues((GetValue<AndClassSet, AndClassSet>) value -> value.getOr().getCommonClass().getBaseClass().getUpSet()));
+            return new And<>(map.mapValues((AndClassSet value) -> value.getOr().getCommonClass().getBaseClass().getUpSet()));
         }
 
         public <T extends K> And<T> filterKeys(ImSet<T> keys) {
@@ -166,14 +167,14 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return who.containsAll(what, false); // важно что не implicitCast, для детерменированности, чтобы выбирало именно
         }
 
-        public Where getWhere(GetValue<Expr, K> mapExprs, boolean onlyObject, IsClassType type) {
+        public Where getWhere(Function<K, Expr> mapExprs, boolean onlyObject, IsClassType type) {
             assert !type.isInconsistent() || onlyObject;
             
             Where result = Where.TRUE;
             for(int i=0,size=size();i<size;i++) {
                 AndClassSet value = getValue(i);
                 if(((value instanceof ObjectValueClassSet) || !onlyObject) && BaseUtils.hashEquals(value, value.getValueClassSet())) // если ValueClassSet, тут формально можно добавлять and Not BaseClass
-                    result = result.and(mapExprs.getMapValue(getKey(i)).isClass((ValueClassSet)value, type));
+                    result = result.and(mapExprs.apply(getKey(i)).isClass((ValueClassSet)value, type));
             }
             return result;
         }
@@ -569,7 +570,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     public <T extends K> ImMap<T, ExClassSet> getCommonExClasses(ImSet<T> keys) {
         // assert что full - все ключи будут
-        return keys.mapValues((GetValue<ExClassSet, T>) key -> {
+        return keys.mapValues((T key) -> {
             ExClassSet result = ExClassSet.FALSE;
             for (int i = 0; i < wheres.length; i++) {
                 ExClassSet where = ExClassSet.toEx(ResolveUpClassSet.toResolve(wheres[i].get(key)));

@@ -8,13 +8,13 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
 import lsfusion.base.lambda.set.FunctionSet;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public abstract class ACol<K> extends AColObject implements ImCol<K> {
 
@@ -84,45 +84,45 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
         return mResult.immutable();
     }
 
-    public <M> ImCol<M> mapColValues(GetIndexValue<M, K> getter) {
+    public <M> ImCol<M> mapColValues(IntObjectFunction<K, M> getter) {
         MCol<M> mResult = ListFact.mCol(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(i, get(i)));
+            mResult.add(getter.apply(i, get(i)));
         return mResult.immutableCol();
     }
 
-    public <M> ImCol<M> mapColValues(GetValue<M, K> getter) {
+    public <M> ImCol<M> mapColValues(Function<K, M> getter) {
         MCol<M> mResult = ListFact.mCol(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(get(i)));
+            mResult.add(getter.apply(get(i)));
         return mResult.immutableCol();
     }
 
-    public <M> ImMap<M, K> mapColKeys(GetIndex<M> getter) {
+    public <M> ImMap<M, K> mapColKeys(IntFunction<M> getter) {
         MExclMap<M,K> mResult = MapFact.mExclMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(i), get(i));
+            mResult.exclAdd(getter.apply(i), get(i));
         return mResult.immutable();
     }
 
-    public <M> ImSet<M> mapColSetValues(GetValue<M, K> getter) {
+    public <M> ImSet<M> mapColSetValues(Function<K, M> getter) {
         MExclSet<M> mResult = SetFact.mExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(get(i)));
+            mResult.exclAdd(getter.apply(get(i)));
         return mResult.immutable();
     }
 
-    public <M> ImSet<M> mapColSetValues(GetIndexValue<M, K> getter) {
+    public <M> ImSet<M> mapColSetValues(IntObjectFunction<K, M> getter) {
         MExclSet<M> mResult = SetFact.mExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(i, get(i)));
+            mResult.exclAdd(getter.apply(i, get(i)));
         return mResult.immutable();
     }
 
-    public <M> ImSet<M> mapMergeSetValues(GetValue<M, K> getter) {
+    public <M> ImSet<M> mapMergeSetValues(Function<K, M> getter) {
         MSet<M> mResult = SetFact.mSetMax(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(get(i)));
+            mResult.add(getter.apply(get(i)));
         return mResult.immutable();
     }
 
@@ -148,22 +148,22 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
         return builder.toString();
     }
 
-    public String toString(GetValue<String, K> getter, String delimiter) {
+    public String toString(Function<K, String> getter, String delimiter) {
         StringBuilder builder = new StringBuilder();
         for(int i=0,size=size();i<size;i++) {
             if(i!=0)
                 builder.append(delimiter);
-            builder.append(getter.getMapValue(get(i)));
+            builder.append(getter.apply(get(i)));
         }
         return builder.toString();
     }
 
-    public String toString(GetStaticValue<String> getter, String delimiter) {
+    public String toString(Supplier<String> getter, String delimiter) {
         StringBuilder builder = new StringBuilder();
         for(int i=0,size=size();i<size;i++) {
             if(i!=0)
                 builder.append(delimiter);
-            builder.append(getter.getMapValue());
+            builder.append(getter.get());
         }
         return builder.toString();
     }

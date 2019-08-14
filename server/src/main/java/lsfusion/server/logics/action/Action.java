@@ -8,7 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -63,7 +62,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public abstract class Action<P extends PropertyInterface> extends ActionOrProperty<P> {
     //просто для быстрого доступа
@@ -535,11 +533,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public ImSet<OldProperty> getSessionEventOldDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         assert getSessionEnv(SystemEvent.SESSION) != null;
-        return getOldDepends().filterFn(new SFunctionSet<OldProperty>() {
-            public boolean contains(OldProperty element) {
-                return element.scope == PrevScope.EVENT;
-            }
-        });
+        return getOldDepends().filterFn(element -> element.scope == PrevScope.EVENT);
     }
 
     @IdentityLazy

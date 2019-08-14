@@ -4,7 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -157,7 +157,7 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
                     return;
     
                 final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, exprWhere);
-                ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((GetExValue<Expr, PropertyInterfaceImplement<I>, SQLException, SQLHandledException>) value -> value.mapExpr(fInnerExprs, modifier));
+                ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((ThrowingFunction<PropertyInterfaceImplement<I>, Expr, SQLException, SQLHandledException>) value -> value.mapExpr(fInnerExprs, modifier));
     
                 addedTable = context.addObjects("addobjap", readClass, new PropertyOrderSet<>(innerKeys, exprWhere, orderExprs, ordersNotNull));
                 resultChange = SinglePropertyTableUsage.getChange(addedTable);

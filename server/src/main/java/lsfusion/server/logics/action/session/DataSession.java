@@ -18,7 +18,6 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.lambda.ExceptionRunnable;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -61,7 +60,6 @@ import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.type.parse.LogicalParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
@@ -137,6 +135,7 @@ import java.lang.ref.WeakReference;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
@@ -542,28 +541,22 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // по хорошему надо было в класс оформить чтоб избежать ошибок, но абстракция получится слишком дырявой
-    public static FunctionSet<SessionDataProperty> adjustKeep(final boolean manageSession, final FunctionSet<SessionDataProperty> operationKeep) {
-        return new SFunctionSet<SessionDataProperty>() {
-            public boolean contains(SessionDataProperty element) {
-                if (element.nestedType != null) {
-                    if (element.nestedType == LocalNestedType.ALL) 
-                        return true;
-                    // MANAGESESSION, NOMANAGESESSION
-                    if ((element.nestedType == LocalNestedType.MANAGESESSION) == manageSession) 
-                        return true;
-                    if(operationKeep == DataSession.keepAllSessionProperties) // нужно чтобы sessionOwners не nest'ся, хак, потом надо будет как-то хитрее сделать 
-                        return false;
-                }
-                return operationKeep.contains(element);
+    public static SFunctionSet<SessionDataProperty> adjustKeep(final boolean manageSession, final FunctionSet<SessionDataProperty> operationKeep) {
+        return element -> {
+            if (element.nestedType != null) {
+                if (element.nestedType == LocalNestedType.ALL) 
+                    return true;
+                // MANAGESESSION, NOMANAGESESSION
+                if ((element.nestedType == LocalNestedType.MANAGESESSION) == manageSession) 
+                    return true;
+                if(operationKeep == DataSession.keepAllSessionProperties) // нужно чтобы sessionOwners не nest'ся, хак, потом надо будет как-то хитрее сделать 
+                    return false;
             }
+            return operationKeep.contains(element);
         };
     }
 
-    private final static FunctionSet<SessionDataProperty> NONESTING = new SFunctionSet<SessionDataProperty>() {
-        public boolean contains(SessionDataProperty element) {
-            return element.noNestingInNestedSession;
-        }
-    };
+    private final static SFunctionSet<SessionDataProperty> NONESTING = element -> element.noNestingInNestedSession;
 
     public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
 
@@ -889,11 +882,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public <P extends Property> boolean updateProperties(ImMap<P, ? extends UpdateResult> changes, ImSet<P> updateSessionEventChanges) throws SQLException, SQLHandledException {
         return updateProperties(changes.keys(), changes.<P>fnGetValue(), updateSessionEventChanges);        
     }
-    public <P extends Property> boolean updateProperties(ImSet<P> changes, final GetValue<? extends UpdateResult, P> sourceChanges, ImSet<P> updateSessionEventChanges) throws SQLException, SQLHandledException {
-        assert updateSessionEventChanges == null || updateSessionEventChanges.containsAll(changes.filterFn(new SFunctionSet<P>() {
-            public boolean contains(P element) {
-                return sourceChanges.getMapValue(element) instanceof ModifyResult; // source изменения на updateSessionEventChanges не влияют
-            }
+    public <P extends Property> boolean updateProperties(ImSet<P> changes, final Function<P, ? extends UpdateResult> sourceChanges, ImSet<P> updateSessionEventChanges) throws SQLException, SQLHandledException {
+        assert updateSessionEventChanges == null || updateSessionEventChanges.containsAll(changes.filterFn(element -> {
+            return sourceChanges.apply(element) instanceof ModifyResult; // source изменения на updateSessionEventChanges не влияют
         }));
         
         if(dataModifier.eventChanges(changes, sourceChanges)) {
@@ -2106,10 +2097,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return result;
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
-        return elements.filterOrderValues(new SFunctionSet<SessionEnvEvent>() {
-            public boolean contains(SessionEnvEvent elements) {
-                return elements.contains(DataSession.this);
-            }});
+        return elements.filterOrderValues(elements1 -> elements1.contains(DataSession.this));
     }
 
     private boolean noCancelInTransaction;
@@ -2726,11 +2714,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             sql.popVolatileStats(getOwner());
     }
 
-    public final static FunctionSet<SessionDataProperty> keepAllSessionProperties = new SFunctionSet<SessionDataProperty>() {
-        public boolean contains(SessionDataProperty element) {
-            return element != isDataChanged;
-        }
-    };
+    public final static SFunctionSet<SessionDataProperty> keepAllSessionProperties = element -> element != isDataChanged;
 
     @Override
     public String toString() {

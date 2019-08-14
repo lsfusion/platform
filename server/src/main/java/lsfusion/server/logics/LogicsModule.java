@@ -10,8 +10,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -23,7 +21,7 @@ import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.data.expr.formula.*;
+import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.expr.value.Time;
@@ -111,7 +109,10 @@ import lsfusion.server.logics.property.classes.data.*;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
-import lsfusion.server.logics.property.implement.*;
+import lsfusion.server.logics.property.implement.PropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
@@ -136,10 +137,11 @@ import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import static lsfusion.base.BaseUtils.add;
 import static lsfusion.server.logics.property.PropertyFact.createAnd;
@@ -508,8 +510,8 @@ public abstract class LogicsModule {
         AndFormulaProperty andProperty = new AndFormulaProperty(list.size());
         ImMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement =
                 MapFact.<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>addExcl(
-                        andProperty.andInterfaces.mapValues(new GetIndex<PropertyInterfaceImplement<JoinProperty.Interface>>() {
-                            public PropertyInterfaceImplement<JoinProperty.Interface> getMapValue(int i) {
+                        andProperty.andInterfaces.mapValues(new IntFunction<PropertyInterfaceImplement<JoinProperty.Interface>>() {
+                            public PropertyInterfaceImplement<JoinProperty.Interface> apply(int i) {
                                 return list.get(i);
                             }
                         }), andProperty.objectInterface, mapCalcListImplement(derivedProp, listInterfaces));
@@ -1127,7 +1129,7 @@ public abstract class LogicsModule {
         final ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(innerCount);
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplement = readCalcImplements(innerInterfaces, params);
 
-        GetValue<PropertyInterface, Integer> getInnerInterface = innerInterfaces::get;
+        Function<Integer, PropertyInterface> getInnerInterface = innerInterfaces::get;
 
         final ImOrderSet<RecursiveProperty.Interface> interfaces = RecursiveProperty.getInterfaces(resInterfaces.size());
         ImRevMap<RecursiveProperty.Interface, PropertyInterface> mapInterfaces = resInterfaces.mapListRevKeyValues(interfaces::get, getInnerInterface);

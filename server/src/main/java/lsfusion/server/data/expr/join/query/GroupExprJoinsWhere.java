@@ -38,8 +38,8 @@ public class GroupExprJoinsWhere<K extends Expr> {
         }
         return mResult.immutableCol();
 //
-//        return joinsWheres.mapColValues(new GetValue<GroupExprJoinsWhere<K>, GroupJoinsWhere>() {
-//            public GroupExprJoinsWhere<K> getMapValue(GroupJoinsWhere value) {
+//        return joinsWheres.mapColValues(new Function<GroupExprJoinsWhere<K>, GroupJoinsWhere>() {
+//            public GroupExprJoinsWhere<K> apply(GroupJoinsWhere value) {
 //                return new GroupExprJoinsWhere<>(mapExprs, value);
 //            }
 //        });

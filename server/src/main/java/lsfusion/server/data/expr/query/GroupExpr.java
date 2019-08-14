@@ -8,13 +8,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.*;
@@ -24,7 +19,6 @@ import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.join.query.GroupJoin;
-import lsfusion.server.data.expr.join.where.GroupSplitWhere;
 import lsfusion.server.data.expr.join.where.GroupStatType;
 import lsfusion.server.data.expr.join.where.KeyEqual;
 import lsfusion.server.data.expr.join.where.KeyEquals;
@@ -154,11 +148,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
                 }
             });
             pushedKeys.addAll(groupExpr.getOuterKeys().remove(keepKeys));*/
-        ImSet<KeyExpr> pushedKeys = BaseUtils.immutableCast(group.keys().filterFn(new SFunctionSet<Expr>() {
-            public boolean contains(Expr element) {
-                return element instanceof KeyExpr;
-            }
-        }));
+        ImSet<KeyExpr> pushedKeys = BaseUtils.immutableCast(group.keys().filterFn(element -> element instanceof KeyExpr));
         return where.getStatKeys(getInner().getQueryKeys().remove(pushedKeys), StatType.DEFAULT);
     }
     private boolean checkNoKeys() {
@@ -388,10 +378,9 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
     }
 
     private static <K> Expr create(final ImMap<K, ? extends Expr> inner, Query query, ImMap<K, ? extends Expr> outer, final PullExpr noPull) {
-        ImMap<Object, ParamExpr> pullKeys = BaseUtils.<ImSet<ParamExpr>>immutableCast(getOuterColKeys(inner.values()).merge(query.getOuterKeys())).filterFn(new SFunctionSet<ParamExpr>() {
-            public boolean contains(ParamExpr key) {
-                return key instanceof PullExpr && !((ImMap<K,Expr>)inner).containsValue(key) && !key.equals(noPull);
-            }}).mapRevKeys(Object::new);
+        ImMap<Object, ParamExpr> pullKeys = BaseUtils.<ImSet<ParamExpr>>immutableCast(getOuterColKeys(inner.values()).merge(query.getOuterKeys()))
+                .filterFn(key -> key instanceof PullExpr && !((ImMap<K,Expr>)inner).containsValue(key) && !key.equals(noPull))
+                .mapRevKeys(Object::new);
         return createTypeAdjust(MapFact.addExcl(inner, pullKeys), query, MapFact.addExcl(outer, pullKeys));
     }
 

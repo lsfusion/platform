@@ -4,7 +4,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFList;
@@ -29,6 +28,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
 
 import java.util.*;
+import java.util.function.Function;
 
 public abstract class AbstractCase<P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement> {
     
@@ -76,7 +76,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
     }
     
     public static <P extends PropertyInterface, W extends PropertyInterfaceImplement<P>, 
-            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, GetValue<F, A> translator, final AbstractWrapper<P, W, M, F> wrapper, final GetValue<Graph<F>, M> abstractReader, boolean areClassCases, boolean explicitExclusive) {
+            M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, Function<A, F> translator, final AbstractWrapper<P, W, M, F> wrapper, final Function<M, Graph<F>> abstractReader, boolean areClassCases, boolean explicitExclusive) {
         ImList<A> list = cases.getList();
         if(!areClassCases || explicitExclusive) { // если не делать explicitExclusive вместо ошибки, начинает работать как если бы exclusive'а не было и платформа сама бы выбирала (впрочем обратная ветка уже работает стабильно)
             return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
@@ -122,7 +122,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             throw new RuntimeException("Ambiguous identical implementation " + ambiguous.result);
         
         // pre-3. собираем все abstract'ы, упорядочиваем по "возрастанию" использования, делаем это до очистки, чтобы их не потерять
-        final ImMap<F, Graph<F>> abstractGraphs = graph.getNodes().mapValues((GetValue<Graph<F>, F>) value -> abstractReader.getMapValue(value.implement)).removeNulls();
+        final ImMap<F, Graph<F>> abstractGraphs = graph.getNodes().mapValues((Function<F, Graph<F>>) value -> abstractReader.apply(value.implement)).removeNulls();
         ImOrderMap<F, Graph<F>> sortedAbstracts = abstractGraphs.sort((o1, o2) -> {
             if(abstractGraphs.get(o2).contains(o1))
                 return 1;
@@ -194,10 +194,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
         }
 
         // "очистка" ребер (важно после inline так как могут появится избыточные ребра)
-        graph = graph.cleanNodes(new SFunctionSet<Pair<F, F>>() {
-            public boolean contains(Pair<F, F> element) {
-                return getClasses(element.first).andCompatible(getClasses(element.second)).isFalse();
-            }});
+        graph = graph.cleanNodes((SFunctionSet<Pair<F, F>>) element1 -> getClasses(element1.first).andCompatible(getClasses(element1.second)).isFalse());
         
         // 2. "проверка ambigious" - берем 2 реализации B и C, compare(B, C) == 0, берем все x такие что compare(X, B) > 0, и compare(X, C) > 0 объединяем их классы и смотрим что он включает B AND C
         List<F> nodes = new ArrayList<>(graph.getNodes().toJavaSet());
@@ -277,7 +274,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
             M extends lsfusion.server.logics.property.oraction.PropertyInterfaceImplement, F extends Case<P, W, M>> PropertyMapImplement<?, P> createUnionWhere(ImSet<P> interfaces, ImList<F> aCase, boolean isExclusive) {
         
         // собираем where и делаем их or
-        return PropertyFact.createUnion(interfaces, aCase.mapListValues((GetValue<W, F>) value -> value.where), isExclusive);
+        return PropertyFact.createUnion(interfaces, aCase.mapListValues((F value) -> value.where), isExclusive);
     }
     
     private static <P extends PropertyInterface> ActionCase<P> createInnerActionCase(ImSet<P> interfaces, ImList<ActionCase<P>> cases, boolean isExclusive) {

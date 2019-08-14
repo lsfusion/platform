@@ -11,6 +11,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     
@@ -127,40 +130,40 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return MapFact.<K, Integer>singletonRev(key, 1);
     }
 
-    public <M> ImCol<M> mapColValues(GetIndexValue<M, K> getter) {
-        return SetFact.singleton(getter.getMapValue(0, key));
+    public <M> ImCol<M> mapColValues(IntObjectFunction<K, M> getter) {
+        return SetFact.singleton(getter.apply(0, key));
     }
 
-    public <M> ImCol<M> mapColValues(GetValue<M, K> getter) {
-        return SetFact.singleton(getter.getMapValue(key));
+    public <M> ImCol<M> mapColValues(Function<K, M> getter) {
+        return SetFact.singleton(getter.apply(key));
     }
 
-    public <M> ImSet<M> mapColSetValues(GetIndexValue<M, K> getter) {
-        return SetFact.singleton(getter.getMapValue(0, key));
+    public <M> ImSet<M> mapColSetValues(IntObjectFunction<K, M> getter) {
+        return SetFact.singleton(getter.apply(0, key));
     }
 
-    public <M> ImSet<M> mapColSetValues(GetValue<M, K> getter) {
-        return SetFact.singleton(getter.getMapValue(key));
+    public <M> ImSet<M> mapColSetValues(Function<K, M> getter) {
+        return SetFact.singleton(getter.apply(key));
     }
 
-    public <M> ImSet<M> mapMergeSetValues(GetValue<M, K> getter) {
-        return SetFact.singleton(getter.getMapValue(key));
+    public <M> ImSet<M> mapMergeSetValues(Function<K, M> getter) {
+        return SetFact.singleton(getter.apply(key));
     }
 
-    public <M> ImMap<M, K> mapColKeys(GetIndex<M> getter) {
-        return MapFact.<M, K>singleton(getter.getMapValue(0), key);
+    public <M> ImMap<M, K> mapColKeys(IntFunction<M> getter) {
+        return MapFact.<M, K>singleton(getter.apply(0), key);
     }
 
     public String toString(String separator) {
         return key.toString();
     }
 
-    public String toString(GetValue<String, K> getter, String delimiter) {
-        return getter.getMapValue(key);
+    public String toString(Function<K, String> getter, String delimiter) {
+        return getter.apply(key);
     }
 
-    public String toString(GetStaticValue<String> getter, String delimiter) {
-        return getter.getMapValue();
+    public String toString(Supplier<String> getter, String delimiter) {
+        return getter.get();
     }
 
     public ImList<K> sort(Comparator<K> comparator) {
@@ -265,57 +268,57 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return new SingletonRevMap<>(key);
     }
 
-    public <M> ImOrderSet<M> mapOrderSetValues(GetValue<M, K> getter) {
-        return SetFact.singletonOrder(getter.getMapValue(key));
+    public <M> ImOrderSet<M> mapOrderSetValues(Function<K, M> getter) {
+        return SetFact.singletonOrder(getter.apply(key));
     }
 
-    public <M> ImOrderSet<M> mapOrderSetValues(GetIndexValue<M, K> getter) {
-        return SetFact.singletonOrder(getter.getMapValue(0, key));
+    public <M> ImOrderSet<M> mapOrderSetValues(IntObjectFunction<K, M> getter) {
+        return SetFact.singletonOrder(getter.apply(0, key));
     }
 
-    public <M> ImOrderSet<M> mapMergeOrderSetValues(GetValue<M, K> getter) {
-        return SetFact.singletonOrder(getter.getMapValue(key));
+    public <M> ImOrderSet<M> mapMergeOrderSetValues(Function<K, M> getter) {
+        return SetFact.singletonOrder(getter.apply(key));
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetStaticValue<M> getter) {
-        return MapFact.<K, M>singletonOrder(key, getter.getMapValue());
+    public <M> ImOrderMap<K, M> mapOrderValues(Supplier<M> getter) {
+        return MapFact.<K, M>singletonOrder(key, getter.get());
     }
 
     @Override
-    public <M> ImOrderMap<M, K> mapOrderKeys(GetValue<M, K> getter) {
-        return MapFact.<M, K>singletonOrder(getter.getMapValue(key), key);
+    public <M> ImOrderMap<M, K> mapOrderKeys(Function<K, M> getter) {
+        return MapFact.<M, K>singletonOrder(getter.apply(key), key);
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetValue<M, K> getter) {
-        return MapFact.<K, M>singletonOrder(key, getter.getMapValue(key));
+    public <M> ImOrderMap<K, M> mapOrderValues(Function<K, M> getter) {
+        return MapFact.<K, M>singletonOrder(key, getter.apply(key));
     }
 
-    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
-        return MapFact.singletonOrder(getterKey.getMapValue(key), getterValue.getMapValue(key));
+    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
+        return MapFact.singletonOrder(getterKey.apply(key), getterValue.apply(key));
     }
 
-    public <M> ImMap<K, M> mapOrderValues(GetIndexValue<M, K> getter) {
-        return MapFact.<K, M>singleton(key, getter.getMapValue(0, key));
+    public <M> ImMap<K, M> mapOrderValues(IntObjectFunction<K, M> getter) {
+        return MapFact.<K, M>singleton(key, getter.apply(0, key));
     }
 
-    public <M> ImMap<K, M> mapOrderValues(GetIndex<M> getter) {
-        return MapFact.<K, M>singleton(key, getter.getMapValue(0));
+    public <M> ImMap<K, M> mapOrderValues(IntFunction<M> getter) {
+        return MapFact.<K, M>singleton(key, getter.apply(0));
     }
 
-    public <M> ImRevMap<K, M> mapOrderRevValues(GetIndex<M> getter) {
-        return MapFact.<K, M>singletonRev(key, getter.getMapValue(0));
+    public <M> ImRevMap<K, M> mapOrderRevValues(IntFunction<M> getter) {
+        return MapFact.<K, M>singletonRev(key, getter.apply(0));
     }
 
-    public <M> ImRevMap<K, M> mapOrderRevValues(GetIndexValue<M, K> getter) {
-        return MapFact.<K, M>singletonRev(key, getter.getMapValue(0, key));
+    public <M> ImRevMap<K, M> mapOrderRevValues(IntObjectFunction<K, M> getter) {
+        return MapFact.<K, M>singletonRev(key, getter.apply(0, key));
     }
 
-    public <M> ImRevMap<M, K> mapOrderRevKeys(GetIndex<M> getter) {
-        return MapFact.<M, K>singletonRev(getter.getMapValue(0), key);
+    public <M> ImRevMap<M, K> mapOrderRevKeys(IntFunction<M> getter) {
+        return MapFact.<M, K>singletonRev(getter.apply(0), key);
     }
 
-    public <M> ImRevMap<M, K> mapOrderRevKeys(GetIndexValue<M, K> getter) {
-        return MapFact.<M, K>singletonRev(getter.getMapValue(0, key), key);
+    public <M> ImRevMap<M, K> mapOrderRevKeys(IntObjectFunction<K, M> getter) {
+        return MapFact.<M, K>singletonRev(getter.apply(0, key), key);
     }
 
     public <V> ImOrderMap<K, V> toOrderMap(V value) {
@@ -382,36 +385,36 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return ListFact.EMPTY();
     }
 
-    public <M> ImList<M> mapItListValues(GetValue<M, K> getter) {
-        return ListFact.singleton(getter.getMapValue(key));
+    public <M> ImList<M> mapItListValues(Function<K, M> getter) {
+        return ListFact.singleton(getter.apply(key));
     }
 
-    public <M> ImList<M> mapListValues(GetIndex<M> getter) {
-        return ListFact.singleton(getter.getMapValue(0));
+    public <M> ImList<M> mapListValues(IntFunction<M> getter) {
+        return ListFact.singleton(getter.apply(0));
     }
 
-    public <M> ImList<M> mapListValues(GetIndexValue<M, K> getter) {
-        return ListFact.singleton(getter.getMapValue(0, key));
+    public <M> ImList<M> mapListValues(IntObjectFunction<K, M> getter) {
+        return ListFact.singleton(getter.apply(0, key));
     }
 
-    public <M> ImList<M> mapListValues(GetValue<M, K> getter) {
-        return ListFact.singleton(getter.getMapValue(key));
+    public <M> ImList<M> mapListValues(Function<K, M> getter) {
+        return ListFact.singleton(getter.apply(key));
     }
 
-    public <M> ImMap<M, K> mapListMapValues(GetIndex<M> getterKey) {
-        return MapFact.<M, K>singleton(getterKey.getMapValue(0), key);
+    public <M> ImMap<M, K> mapListMapValues(IntFunction<M> getterKey) {
+        return MapFact.<M, K>singleton(getterKey.apply(0), key);
     }
 
-    public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {
-        return MapFact.singleton(getterKey.getMapValue(0), getterValue.getMapValue(key));
+    public <MK, MV> ImMap<MK, MV> mapListKeyValues(IntFunction<MK> getterKey, Function<K, MV> getterValue) {
+        return MapFact.singleton(getterKey.apply(0), getterValue.apply(key));
     }
 
-    public <MK, MV> ImRevMap<MK, MV> mapListRevKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {
-        return MapFact.singletonRev(getterKey.getMapValue(0), getterValue.getMapValue(key));
+    public <MK, MV> ImRevMap<MK, MV> mapListRevKeyValues(IntFunction<MK> getterKey, Function<K, MV> getterValue) {
+        return MapFact.singletonRev(getterKey.apply(0), getterValue.apply(key));
     }
 
-    public String toString(GetIndexValue<String, K> getter, String delimiter) {
-        return getter.getMapValue(0, key);
+    public String toString(IntObjectFunction<K, String> getter, String delimiter) {
+        return getter.apply(0, key);
     }
 
     public List<K> toJavaList() {
@@ -564,8 +567,8 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     @Override
-    public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
-        return MapFact.singleton(getterKey.getMapValue(key), getterValue.getMapValue(key));
+    public <MK, MV> ImMap<MK, MV> mapListKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
+        return MapFact.singleton(getterKey.apply(key), getterValue.apply(key));
     }
 
     public <V> ImMap<K, V> toMap(V value) {
@@ -592,64 +595,64 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return this;
     }
 
-    public <M> ImMap<K, M> mapItValues(GetValue<M, K> getter) {
-        return MapFact.<K, M>singleton(key, getter.getMapValue(key));
+    public <M> ImMap<K, M> mapItValues(Function<K, M> getter) {
+        return MapFact.<K, M>singleton(key, getter.apply(key));
     }
 
-    public <M> ImSet<M> mapItSetValues(GetValue<M, K> getter) {
-        return SetFact.singleton(getter.getMapValue(key));
+    public <M> ImSet<M> mapItSetValues(Function<K, M> getter) {
+        return SetFact.singleton(getter.apply(key));
     }
 
-    public <M> ImSet<M> mapSetValues(GetValue<M, K> getter) {
-        return SetFact.singleton(getter.getMapValue(key));
+    public <M> ImSet<M> mapSetValues(Function<K, M> getter) {
+        return SetFact.singleton(getter.apply(key));
     }
 
-    public <M> ImMap<K, M> mapValues(GetStaticValue<M> getter) {
-        return MapFact.<K, M>singleton(key, getter.getMapValue());
+    public <M> ImMap<K, M> mapValues(Supplier<M> getter) {
+        return MapFact.<K, M>singleton(key, getter.get());
     }
 
-    public <M> ImMap<K, M> mapValues(GetIndex<M> getter) {
-        return MapFact.<K, M>singleton(key, getter.getMapValue(0));
+    public <M> ImMap<K, M> mapValues(IntFunction<M> getter) {
+        return MapFact.<K, M>singleton(key, getter.apply(0));
     }
 
-    public <M> ImMap<K, M> mapValues(GetValue<M, K> getter) {
-        return MapFact.<K, M>singleton(key, getter.getMapValue(key));
+    public <M> ImMap<K, M> mapValues(Function<K, M> getter) {
+        return MapFact.<K, M>singleton(key, getter.apply(key));
     }
 
-    public <MK, MV> ImMap<MK, MV> mapKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
-        return MapFact.singleton(getterKey.getMapValue(key), getterValue.getMapValue(key));
+    public <MK, MV> ImMap<MK, MV> mapKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
+        return MapFact.singleton(getterKey.apply(key), getterValue.apply(key));
     }
 
-    public <MK, MV> ImRevMap<MK, MV> mapRevKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
-        return MapFact.singletonRev(getterKey.getMapValue(key), getterValue.getMapValue(key));
+    public <MK, MV> ImRevMap<MK, MV> mapRevKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
+        return MapFact.singletonRev(getterKey.apply(key), getterValue.apply(key));
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetIndex<M> getter) {
-        return MapFact.<K, M>singletonRev(key, getter.getMapValue(0));
+    public <M> ImRevMap<K, M> mapRevValues(IntFunction<M> getter) {
+        return MapFact.<K, M>singletonRev(key, getter.apply(0));
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetIndexValue<M, K> getter) {
-        return MapFact.<K, M>singletonRev(key, getter.getMapValue(0, key));
+    public <M> ImRevMap<K, M> mapRevValues(IntObjectFunction<K, M> getter) {
+        return MapFact.<K, M>singletonRev(key, getter.apply(0, key));
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetStaticValue<M> getter) {
-        return MapFact.<K, M>singletonRev(key, getter.getMapValue());
+    public <M> ImRevMap<K, M> mapRevValues(Supplier<M> getter) {
+        return MapFact.<K, M>singletonRev(key, getter.get());
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetValue<M, K> getter) {
-        return MapFact.<K, M>singletonRev(key, getter.getMapValue(key));
+    public <M> ImRevMap<K, M> mapRevValues(Function<K, M> getter) {
+        return MapFact.<K, M>singletonRev(key, getter.apply(key));
     }
 
-    public <M> ImRevMap<M, K> mapRevKeys(GetStaticValue<M> getter) {
-        return MapFact.<M, K>singletonRev(getter.getMapValue(), key);
+    public <M> ImRevMap<M, K> mapRevKeys(Supplier<M> getter) {
+        return MapFact.<M, K>singletonRev(getter.get(), key);
     }
 
-    public <M> ImRevMap<M, K> mapRevKeys(GetValue<M, K> getter) {
-        return MapFact.<M, K>singletonRev(getter.getMapValue(key), key);
+    public <M> ImRevMap<M, K> mapRevKeys(Function<K, M> getter) {
+        return MapFact.<M, K>singletonRev(getter.apply(key), key);
     }
 
-    public <M> ImRevMap<M, K> mapRevKeys(GetIndex<M> getter) {
-        return MapFact.<M, K>singletonRev(getter.getMapValue(0), key);
+    public <M> ImRevMap<M, K> mapRevKeys(IntFunction<M> getter) {
+        return MapFact.<M, K>singletonRev(getter.apply(0), key);
     }
 
     public Set<K> toJavaSet() {

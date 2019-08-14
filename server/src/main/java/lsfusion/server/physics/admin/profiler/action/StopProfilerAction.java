@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.data.OperationOwner;
@@ -20,7 +19,6 @@ import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -49,6 +47,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Function;
 
 import static lsfusion.server.physics.admin.profiler.Profiler.profileData;
 
@@ -103,7 +102,7 @@ public class StopProfilerAction extends InternalAction {
                 totalUserInteractionTime, callCount, minTime, maxTime, squaresSum)));
 
         MMap<ImMap<KeyField, DataObject>, ProfileValue> mPremap = newPremap();
-        GetValue<ImMap<LP, ObjectValue>, ProfileValue> mapProfileValue = profileValue -> MapFact.toMap(
+        Function<ProfileValue, ImMap<LP, ObjectValue>> mapProfileValue = profileValue -> MapFact.toMap(
                 totalTime, (ObjectValue) new DataObject(profileValue.totalTime, LongClass.instance),
                 totalSQLTime, new DataObject(profileValue.totalSQLTime, LongClass.instance),
                 totalUserInteractionTime, new DataObject(profileValue.totalUserInteractionTime, LongClass.instance),

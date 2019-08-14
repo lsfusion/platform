@@ -10,13 +10,14 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.translate.MapTranslate;
+
+import java.util.function.Function;
 
 public class StatKeys<K> extends TwinImmutableObject {
 
@@ -74,10 +75,10 @@ public class StatKeys<K> extends TwinImmutableObject {
     private StatKeys(ImSet<K> allKeys) { // конструктор для or, по сути нужно min'ы передавать
         this(allKeys, Stat.MIN); //, Cost.MIN
     }
-    public static <K, V> StatKeys<K> or(Iterable<V> col, GetValue<StatKeys<K>, V> getter, ImSet<K> allKeys) {
+    public static <K, V> StatKeys<K> or(Iterable<V> col, Function<V, StatKeys<K>> getter, ImSet<K> allKeys) {
         StatKeys<K> result = new StatKeys<>(allKeys);
         for(V value : col)
-            result = result.or(getter.getMapValue(value));
+            result = result.or(getter.apply(value));
         return result;
     }
 

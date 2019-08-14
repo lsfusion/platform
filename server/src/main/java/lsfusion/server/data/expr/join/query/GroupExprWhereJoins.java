@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
@@ -112,8 +111,8 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
         }
         return new GroupExprWhereJoins<>(mResult.immutable());
 
-//        return new GroupExprWhereJoins<>(whereJoins.mapMergeSetValues(new GetValue<Node<K>, GroupJoinsWhere>() {
-//            public Node<K> getMapValue(GroupJoinsWhere value) {
+//        return new GroupExprWhereJoins<>(whereJoins.mapMergeSetValues(new Function<Node<K>, GroupJoinsWhere>() {
+//            public Node<K> apply(GroupJoinsWhere value) {
 //                return new Node<>(mapExprs, value.keyEqual, value.joins);
 //            }
 //        }));

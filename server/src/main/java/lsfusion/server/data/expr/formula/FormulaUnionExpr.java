@@ -2,7 +2,6 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
@@ -18,6 +17,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.data.DataClass;
 
+import java.util.function.Function;
+
 public class FormulaUnionExpr extends UnionExpr {
 
     private final ImList<Expr> exprs;
@@ -28,10 +29,7 @@ public class FormulaUnionExpr extends UnionExpr {
         this.exprs = exprs;
     }
 
-    private final static SFunctionSet<Expr> notIsNull = new SFunctionSet<Expr>() {
-        public boolean contains(Expr element) {
-            return !element.isNull();
-        }};
+    private final static SFunctionSet<Expr> notIsNull = element -> !element.isNull();
     public static Expr create(final FormulaUnionImpl formula, ImList<Expr> exprs) {
         Expr resolve = resolveObjectType(formula, exprs, null);
         if(resolve != null)
@@ -97,8 +95,8 @@ public class FormulaUnionExpr extends UnionExpr {
         if(expr!=null)
             return expr.followFalse(where, true);
 
-        return create(formula, exprs.mapListValues(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) {
+        return create(formula, exprs.mapListValues(new Function<Expr, Expr>() {
+            public Expr apply(Expr value) {
                 return value.followFalse(where, true);
             }}));
     }

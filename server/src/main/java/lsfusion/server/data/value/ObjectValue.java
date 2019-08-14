@@ -3,7 +3,6 @@ package lsfusion.server.data.value;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.caches.AbstractValuesContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -26,6 +25,7 @@ import lsfusion.server.logics.property.Property;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.function.Function;
 
 public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValuesContext<T> implements CompareInstance {
 
@@ -66,7 +66,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     }
 
     public static <K> ImMap<K,Object> getMapValues(ImMap<K,ObjectValue> map) {
-        return map.mapValues((GetValue<Object, ObjectValue>) ObjectValue::getValue);
+        return map.mapValues((Function<ObjectValue, Object>) ObjectValue::getValue);
     }
 
     public static <K> boolean containsNull(Collection<ObjectValue> col) {

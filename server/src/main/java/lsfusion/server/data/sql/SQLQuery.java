@@ -9,9 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.Provider;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.ExtInt;
@@ -47,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
@@ -61,12 +60,12 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     final public boolean optAdjustLimit;
     public SQLQuery pessQuery; // не будем пока в конструктор добавлять, так как очень ограниченное использование
 
-    public static ImMap<String, SQLQuery> translate(ImMap<String, SQLQuery> subQueries, final GetValue<String, String> translator) {
+    public static ImMap<String, SQLQuery> translate(ImMap<String, SQLQuery> subQueries, final Function<String, String> translator) {
         return subQueries.mapValues(value -> value.translate(translator));
     }
 
-    public SQLQuery translate(GetValue<String, String> translator) {
-        SQLQuery result = new SQLQuery(translator.getMapValue(command), baseCost, optAdjustLimit, translate(subQueries, translator), env, keyReaders, propertyReaders, union, recursionFunction);
+    public SQLQuery translate(Function<String, String> translator) {
+        SQLQuery result = new SQLQuery(translator.apply(command), baseCost, optAdjustLimit, translate(subQueries, translator), env, keyReaders, propertyReaders, union, recursionFunction);
         if(pessQuery != null)
             result.pessQuery = pessQuery.translate(translator);
         return result;

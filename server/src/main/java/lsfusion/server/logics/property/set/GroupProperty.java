@@ -7,9 +7,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -32,7 +29,7 @@ import lsfusion.server.physics.admin.drilldown.form.GroupDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 abstract public class GroupProperty<I extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<I>> {
 
@@ -61,7 +58,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
     
     public ImMap<Interface<I>, PropertyInterfaceImplement<I>> getMapInterfaces() {
-        return interfaces.mapValues((GetValue<PropertyInterfaceImplement<I>, Interface<I>>) value -> value.implement);
+        return interfaces.mapValues((Function<Interface<I>, PropertyInterfaceImplement<I>>) value -> value.implement);
     }
 
     public abstract GroupType getGroupType();

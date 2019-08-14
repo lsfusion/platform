@@ -8,15 +8,16 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.property.Property;
 
+import java.util.function.Function;
+
 public class StructChanges extends TwinImmutableObject {
 
-    public final static GetValue<ChangeType, ModifyChange> getType = ModifyChange::getChangeType;
+    public final static Function<ModifyChange, ChangeType> getType = ModifyChange::getChangeType;
 
     // не используется
     private final static AddValue<Property, ChangeType> addValue = new SimpleAddValue<Property, ChangeType>() {

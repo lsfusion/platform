@@ -7,17 +7,15 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
-import java.sql.SQLException;
+import java.util.function.BiFunction;
 
 public abstract class AbstractFormDataInterface implements FormDataInterface {
 
@@ -56,7 +54,7 @@ public abstract class AbstractFormDataInterface implements FormDataInterface {
         }).keys();
     }
 
-    protected GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getUserVisible() { // with user visible
+    protected BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> getUserVisible() { // with user visible
         return null;
     }
 

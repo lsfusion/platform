@@ -6,12 +6,16 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.NotFunctionSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Iterator;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K, V> {
 
@@ -26,12 +30,12 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return builder.toString();
     }
 
-    public String toString(GetKeyValue<String, K, V> getter, String delimiter) {
+    public String toString(BiFunction<K, V, String> getter, String delimiter) {
         StringBuilder builder = new StringBuilder();
         for(int i=0,size=size();i<size;i++) {
             if(i!=0)
                 builder.append(delimiter);
-            builder.append(getter.getMapValue(getKey(i), getValue(i)));
+            builder.append(getter.apply(getKey(i), getValue(i)));
         }
         return builder.toString();
     }
@@ -110,100 +114,100 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return equals(moveStart(col));
     }
 
-    public <M> ImOrderMap<M, V> mapMergeItOrderKeys(GetValue<M, K> getter) {
+    public <M> ImOrderMap<M, V> mapMergeItOrderKeys(Function<K, M> getter) {
         MOrderMap<M, V> mResult = MapFact.mOrderMapMax(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(getKey(i)), getValue(i));
+            mResult.add(getter.apply(getKey(i)), getValue(i));
         return mResult.immutableOrder();
     }
 
-    public <M> ImOrderMap<M, V> mapMergeOrderKeys(GetValue<M, K> getter) {
+    public <M> ImOrderMap<M, V> mapMergeOrderKeys(Function<K, M> getter) {
         return mapMergeItOrderKeys(getter);
     }
 
-    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeItOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E2, E1 {
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeItOrderKeysEx(ThrowingFunction<K, M, E1, E2> getter) throws E2, E1 {
         MOrderMap<M, V> mResult = MapFact.mOrderMapMax(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(getKey(i)), getValue(i));
+            mResult.add(getter.apply(getKey(i)), getValue(i));
         return mResult.immutableOrder();
     }
 
     @Override
-    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2 {
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2 {
         return mapMergeItOrderKeysEx(getter);
     }
 
-    public <M> ImOrderSet<M> mapOrderSetValues(GetKeyValue<M, K, V> getter) {
+    public <M> ImOrderSet<M> mapOrderSetValues(BiFunction<K, V, M> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(getKey(i), getValue(i)));
+            mResult.exclAdd(getter.apply(getKey(i), getValue(i)));
         return mResult.immutableOrder();
     }
 
-    public <M> ImList<M> mapListValues(GetValue<M, V> getter) {
+    public <M> ImList<M> mapListValues(Function<V, M> getter) {
         MList<M> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(getValue(i)));
+            mResult.add(getter.apply(getValue(i)));
         return mResult.immutableList();
     }
 
-    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(GetKeyValue<MK, K, V> getterKey, GetValue<MV, V> getterValue) {
+    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(BiFunction<K, V, MK> getterKey, Function<V, MV> getterValue) {
         MOrderExclMap<MK, MV> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++) {
             V value = getValue(i);
-            mResult.exclAdd(getterKey.getMapValue(getKey(i), value), getterValue.getMapValue(value));
+            mResult.exclAdd(getterKey.apply(getKey(i), value), getterValue.apply(value));
         }
         return mResult.immutableOrder();
     }
 
-    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue) {
+    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(Function<K, MK> getterKey, Function<V, MV> getterValue) {
         MOrderExclMap<MK, MV> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++) {
             V value = getValue(i);
-            mResult.exclAdd(getterKey.getMapValue(getKey(i)), getterValue.getMapValue(value));
+            mResult.exclAdd(getterKey.apply(getKey(i)), getterValue.apply(value));
         }
         return mResult.immutableOrder();
     }
 
-    public <M> ImOrderMap<M, V> mapOrderKeys(GetValue<M, K> getter) {
+    public <M> ImOrderMap<M, V> mapOrderKeys(Function<K, M> getter) {
         MOrderExclMap<M, V> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(getKey(i)), getValue(i));
+            mResult.exclAdd(getter.apply(getKey(i)), getValue(i));
         return mResult.immutableOrder();
     }
 
-    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2 {
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2 {
         MOrderExclMap<M, V> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(getKey(i)), getValue(i));
+            mResult.exclAdd(getter.apply(getKey(i)), getValue(i));
         return mResult.immutableOrder();
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetStaticValue<M> getter) {
+    public <M> ImOrderMap<K, M> mapOrderValues(Supplier<M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue());
+            mvResult.mapValue(i, getter.get());
         return mvResult.immutableValueOrder();
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetKeyValue<M, K, V> getter) {
+    public <M> ImOrderMap<K, M> mapOrderValues(BiFunction<K, V, M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(getKey(i), getValue(i)));
+            mvResult.mapValue(i, getter.apply(getKey(i), getValue(i)));
         return mvResult.immutableValueOrder();
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetValue<M, V> getter) {
+    public <M> ImOrderMap<K, M> mapOrderValues(Function<V, M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(getValue(i)));
+            mvResult.mapValue(i, getter.apply(getValue(i)));
         return mvResult.immutableValueOrder();
     }
 
-    public <M> ImOrderMap<K, M> mapOrderValues(GetIndex<M> getter) {
+    public <M> ImOrderMap<K, M> mapOrderValues(IntFunction<M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(i));
+            mvResult.mapValue(i, getter.apply(i));
         return mvResult.immutableValueOrder();
     }
 
@@ -259,7 +263,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     }
 
     public ImOrderMap<K, V> replaceValues(final V[] values) {
-        return mapOrderValues((GetIndex<V>) i -> values[i]);
+        return mapOrderValues((int i) -> values[i]);
     }
 
     public ImOrderMap<K, V> replaceValue(final K replaceKey, final V replaceValue) {
@@ -383,10 +387,6 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     }
 
     public ImOrderMap<K, V> removeOrderNulls() {
-        return filterOrderValuesMap(new SFunctionSet<V>() {
-            public boolean contains(V element) {
-                return element != null;
-            }
-        });
+        return filterOrderValuesMap(element -> element != null);
     }
 }

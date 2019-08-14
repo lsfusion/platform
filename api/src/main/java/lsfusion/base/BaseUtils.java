@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
@@ -2022,7 +2021,7 @@ public class BaseUtils {
     }
 
     public static <T> ImRevMap<T, Object> generateObjects(ImSet<T> col) {
-        return col.mapRevValues((GetValue<Object, T>) value -> new Object());
+        return col.mapRevValues((T value) -> new Object());
     }
 
     public static void openFile(RawFileData data, String name, String extension) throws IOException {
