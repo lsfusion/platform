@@ -118,7 +118,7 @@ public class WriteUtils {
         }
     }
 
-    public static void storeFileToSFTP(String path, RawFileData file, String extension) throws JSchException, SftpException, FileNotFoundException {
+    public static void storeFileToSFTP(String path, RawFileData file, String extension) throws JSchException, SftpException {
         FTPPath properties = FTPPath.parseSFTPPath(path);
         String remoteFilePath = appendExtension(properties.remoteFile, extension);
         File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);

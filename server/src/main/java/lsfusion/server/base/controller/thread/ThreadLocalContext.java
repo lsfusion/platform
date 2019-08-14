@@ -16,7 +16,6 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.manager.RmiServer;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -114,7 +113,7 @@ public class ThreadLocalContext {
         settings.set(overrideSettings);
     }
 
-    public static void popSettings(String nameProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public static void popSettings(String nameProperty) {
         //на данный момент не важно, какое свойство передано в pop, выбирается верхнее по стеку и нет никакой проверки
         settings.set(prevSettings.get().pop());
     }
@@ -181,7 +180,7 @@ public class ThreadLocalContext {
         return settings.get();
     }
 
-    public static Settings getRoleSettings(Long role, boolean clone) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    public static Settings getRoleSettings(Long role, boolean clone) throws CloneNotSupportedException {
         if (role == null) //системный процесс или пользователь без роли
             return getLogicsInstance().getSettings();
         else {

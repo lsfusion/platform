@@ -117,7 +117,7 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
             return new Snapshot(volatileStats, timeout, transactTimeout, true);
         }
 
-        public void beforeOuter(SQLCommand command, SQLSession session, ImMap<String, ParseInterface> paramObjects, OperationOwner owner, PureTimeInterface runTime) throws SQLException {
+        public void beforeOuter(SQLCommand command, SQLSession session, ImMap<String, ParseInterface> paramObjects, OperationOwner owner, PureTimeInterface runTime) {
         }
 
         public Object getOuter() {
@@ -128,7 +128,7 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
             throw new UnsupportedOperationException();
         }
 
-        public void afterOuter(SQLSession session, OperationOwner owner) throws SQLException {
+        public void afterOuter(SQLSession session, OperationOwner owner) {
         }
 
         // assert что session.locked

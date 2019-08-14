@@ -26,7 +26,7 @@ public class CopyAction extends InternalAction {
         isClientInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             String sourcePath = (String) context.getKeyValue(sourceInterface).getValue();
             String destinationPath = (String) context.getKeyValue(destinationInterface).getValue();

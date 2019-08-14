@@ -15,7 +15,7 @@ public class ChooseObjectClientAction implements ClientAction {
         this.data = data;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         ChooseObjectDialog dialog = new ChooseObjectDialog(title, columnNames, data);
         return dialog.execute();
     }

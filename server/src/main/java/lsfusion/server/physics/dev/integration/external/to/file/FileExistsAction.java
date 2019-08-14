@@ -25,7 +25,7 @@ public class FileExistsAction extends InternalAction {
         isClientInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         String path = (String) context.getKeyValue(pathInterface).getValue();
         boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;

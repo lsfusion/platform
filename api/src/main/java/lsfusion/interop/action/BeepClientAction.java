@@ -14,7 +14,7 @@ public class BeepClientAction extends ExecuteClientAction {
         this.async = async;
     }
 
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) {
         dispatcher.execute(this);
     }
 }

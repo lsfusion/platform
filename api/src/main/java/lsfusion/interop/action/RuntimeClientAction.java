@@ -20,7 +20,7 @@ public class RuntimeClientAction implements ClientAction {
     }
 
     @Override
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         return dispatcher.execute(this);
     }
 }

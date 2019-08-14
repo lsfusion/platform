@@ -53,7 +53,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
         return getExpr();
     }
 
-    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) {
         return getExpr();
     }
 

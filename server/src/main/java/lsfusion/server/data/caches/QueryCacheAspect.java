@@ -102,7 +102,7 @@ public class QueryCacheAspect {
         }
     }
 
-    private <K,V> IQuery<K,V> cacheNoBigTwin(Query<K, V> query, Result<Query> cacheTwin) throws Throwable {
+    private <K,V> IQuery<K,V> cacheNoBigTwin(Query<K, V> query, Result<Query> cacheTwin) {
         ImSet<Value> contextValues = query.getContextValues();
         ImRevMap<Value, Value> bigValues = AbstractValuesContext.getBigValues(contextValues);
         if(BaseUtils.onlyObjects(query.mapKeys.keyIt()) && BaseUtils.onlyObjects(query.properties.keyIt()) && bigValues == null) {

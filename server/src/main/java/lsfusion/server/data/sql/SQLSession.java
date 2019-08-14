@@ -202,7 +202,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return executingStatement == null ? null : executingStatement.toString();
     }
 
-    public static void cancelExecutingStatement(DBManager dbManager, long processId, boolean interrupt) throws SQLException, SQLHandledException {
+    public static void cancelExecutingStatement(DBManager dbManager, long processId, boolean interrupt) throws SQLException {
         SQLSession sqlSession = dbManager.getStopSql();
         if(sqlSession != null) {
             Integer sqlProcessId = SQLSession.getSQLProcessId(processId);
@@ -343,7 +343,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public final ThreadDebugInfo threadDebugInfo;
 
-    public SQLSession(DataAdapter adapter, SQLSessionContextProvider contextProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public SQLSession(DataAdapter adapter, SQLSessionContextProvider contextProvider) {
         syntax = adapter.syntax;
         connectionPool = adapter;
         typePool = adapter;
@@ -540,7 +540,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return (int) ((System.currentTimeMillis() - transStartTime)/1000);
     }
 
-    public void startFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
+    public void startFakeTransaction(OperationOwner owner) throws SQLException {
         lockWrite(owner);
 
         explicitNeedPrivate++;
@@ -550,7 +550,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         privateConnection.sql.setReadOnly(false);
     }
 
-    public void endFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
+    public void endFakeTransaction(OperationOwner owner) throws SQLException {
         try {
             privateConnection.sql.setReadOnly(false);
 
@@ -839,7 +839,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return exists;
     }
 
-    public void addConstraint(NamedTable table) throws SQLException {
+    public void addConstraint(NamedTable table) {
         try {
             if (!table.keys.isEmpty())
                 executeDDL("DO $$ BEGIN ALTER TABLE " + table.getName() + " ADD " + getConstraintDeclare(table.getName(), table.keys, syntax) +
@@ -1355,12 +1355,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return volatileStats.get() != null;
     }
 
-    public void pushVolatileStats(OperationOwner owner) throws SQLException {
+    public void pushVolatileStats(OperationOwner owner) {
         Integer prevValue = volatileStats.get();
         volatileStats.set(prevValue == null ? 1 : prevValue + 1);
     }
 
-    public void popVolatileStats(OperationOwner opOwner) throws SQLException {
+    public void popVolatileStats(OperationOwner opOwner) {
         Integer prevValue = volatileStats.get();
         volatileStats.set(prevValue.equals(1) ? null : prevValue - 1);
     }
@@ -1486,7 +1486,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         explainTemporaryTablesEnabled.put(user, enabled != null && enabled);
     }
     
-    public static void setVolatileStats(Long user, Boolean enabled, OperationOwner owner) throws SQLException {
+    public static void setVolatileStats(Long user, Boolean enabled, OperationOwner owner) {
         userVolatileStats.put(user, enabled != null && enabled);
     }
 
@@ -2993,7 +2993,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public static void restartConnections(Result<Double> prevStart) throws SQLException, SQLHandledException {
+    public static void restartConnections(Result<Double> prevStart) {
         try {
             Double leftFromPrevStart = prevStart.result;
 
@@ -3096,7 +3096,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     public boolean isRestarting;
 
-    private boolean restartConnection(double score, Map<ConnectionPool, Connection> notUsedConnections) throws SQLException, SQLHandledException {
+    private boolean restartConnection(double score, Map<ConnectionPool, Connection> notUsedConnections) throws SQLException {
         if(isClosed())
             return false;
 
@@ -3279,26 +3279,26 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private static TypePool NOTYPES = new TypePool() {
-        public void ensureRecursion(Object types) throws SQLException {
+        public void ensureRecursion(Object types) {
             throw new UnsupportedOperationException();
         }
-        public void ensureConcType(ConcatenateType concType) throws SQLException {
+        public void ensureConcType(ConcatenateType concType) {
             throw new UnsupportedOperationException();
         }
-        public void ensureSafeCast(Type type) throws SQLException {
+        public void ensureSafeCast(Type type) {
             throw new UnsupportedOperationException();
         }
-        public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException {
+        public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) {
             throw new UnsupportedOperationException();
         }
-        public void ensureTypeFunc(Pair<TypeFunc, Type> tf) throws SQLException {
+        public void ensureTypeFunc(Pair<TypeFunc, Type> tf) {
             throw new UnsupportedOperationException();
         }
-        public void ensureArrayClass(ArrayClass arrayClass) throws SQLException {
+        public void ensureArrayClass(ArrayClass arrayClass) {
             throw new UnsupportedOperationException();
         }
     };
-    public static void uploadTableToConnection(final String table, SQLSyntax syntax, final JDBCTable tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
+    public static void uploadTableToConnection(final String table, SQLSyntax syntax, final JDBCTable tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException {
         final KeyField keyCount = new KeyField("row", ValueExpr.COUNTCLASS);
         final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((GetValue<PropertyField, String>) value -> new PropertyField(value, tableData.fieldTypes.get(value)));
         

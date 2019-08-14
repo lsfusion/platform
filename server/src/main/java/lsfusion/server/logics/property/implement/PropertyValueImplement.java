@@ -22,7 +22,7 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         super(property, mapping);
     }
 
-    public PropertyChange<P> getPropertyChange(Expr expr) throws SQLException {
+    public PropertyChange<P> getPropertyChange(Expr expr) {
         return new PropertyChange<>(expr, mapping);
     }
 

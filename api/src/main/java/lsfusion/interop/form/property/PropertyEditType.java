@@ -7,7 +7,7 @@ import java.util.List;
 public enum PropertyEditType {
     EDITABLE, READONLY;
     
-    public static PropertyEditType deserialize(byte data) throws IOException {
+    public static PropertyEditType deserialize(byte data) {
         switch(data) {
             case 0:
                 return EDITABLE;
@@ -17,7 +17,7 @@ public enum PropertyEditType {
         throw new RuntimeException("Deserialize PropertyEditType");
     }
 
-    public byte serialize() throws IOException {
+    public byte serialize() {
         switch(this) {
             case EDITABLE:
                 return 0;

@@ -17,9 +17,9 @@ public interface TypePool {
     
     void ensureSafeCast(Type type) throws SQLException;
 
-    void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException;
+    void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder);
 
-    void ensureTypeFunc(Pair<TypeFunc, Type> tf) throws SQLException;
+    void ensureTypeFunc(Pair<TypeFunc, Type> tf);
     
-    void ensureArrayClass(ArrayClass arrayClass) throws SQLException;
+    void ensureArrayClass(ArrayClass arrayClass);
 }

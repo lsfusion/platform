@@ -108,7 +108,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
     }
@@ -293,7 +293,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .compact());
     }
     
-    public AuthenticationToken authenticateUser(String userName, String password, ExecutionStack stack) throws RemoteException {
+    public AuthenticationToken authenticateUser(String userName, String password, ExecutionStack stack) {
         try(DataSession session = createSession()) {
             DataObject userObject = readUser(userName, session);
             authenticateUser(session, userObject, userName, password, stack);
@@ -303,7 +303,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public SecurityPolicy readSecurityPolicy(DataSession session, DataObject userObject) throws SQLException, SQLHandledException {
+    public SecurityPolicy readSecurityPolicy(DataSession session, DataObject userObject) {
         // политика по умолчанию из кода
         List<SecurityPolicy> securityPolicies = new ArrayList<>();
         

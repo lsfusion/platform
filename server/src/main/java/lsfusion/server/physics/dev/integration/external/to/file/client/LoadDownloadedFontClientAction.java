@@ -15,7 +15,7 @@ public class LoadDownloadedFontClientAction implements ClientAction {
         this.path = path;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         File font = SystemUtils.getUserFile(path);
         if(font.exists()) {
             try {

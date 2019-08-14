@@ -26,7 +26,7 @@ public class WriteToPrinterClientAction implements ClientAction {
         this.printerName = printerName;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
 
         if (text != null) {
             try {

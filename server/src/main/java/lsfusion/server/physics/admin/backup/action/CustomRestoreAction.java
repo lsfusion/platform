@@ -67,7 +67,7 @@ public class CustomRestoreAction extends InternalAction {
         backupInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         DataObject backupObject = context.getDataKeyValue(backupInterface);
         String dbName = null;
         try {
@@ -243,7 +243,7 @@ public class CustomRestoreAction extends InternalAction {
 
     private void writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
                            List<Object> keys, Set<String> replaceOnlyNullSet)
-            throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+            throws SQLException, SQLHandledException {
 
         ImOrderSet<KeyField> keySet = SetFact.EMPTYORDER();
         for(int i = 0; i < keys.size(); i++) {

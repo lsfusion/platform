@@ -29,7 +29,7 @@ public class LogOutAction extends InternalAction {
     }
 
     @Override
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         boolean restart = context.getKeyValue(restartInterface).getValue() != null;
         boolean reconnect = context.getKeyValue(reconnectInterface).getValue() != null;
         context.delayUserInteraction(new LogOutClientAction(restart, reconnect));

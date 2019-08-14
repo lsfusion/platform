@@ -27,7 +27,7 @@ public class OpenRawLinkAction extends InternalAction {
         sourceInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             ObjectValue sourceObject = context.getDataKeyValue(sourceInterface);
             for (URI file : ((LinkClass) ((DataObject) sourceObject).getType()).getFiles(sourceObject.getValue())) {

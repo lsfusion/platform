@@ -313,7 +313,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return result;
     }
 
-    public static boolean needMaterializeWhere(Where where) throws SQLException {
+    public static boolean needMaterializeWhere(Where where) {
         return where.needMaterialize();
     }
 

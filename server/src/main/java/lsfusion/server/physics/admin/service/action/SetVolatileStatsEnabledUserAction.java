@@ -20,7 +20,7 @@ public class SetVolatileStatsEnabledUserAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         DataSession session = context.getSession();
         List<Object> params = new ArrayList<>();
         for (ClassPropertyInterface classPropertyInterface : context.getKeys().keys()) {

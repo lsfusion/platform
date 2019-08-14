@@ -23,7 +23,7 @@ public class JSONReader {
         return rootNode;
     }
 
-    public static void writeRootObject(Object object, PrintWriter printWriter) throws IOException, JSONException {
+    public static void writeRootObject(Object object, PrintWriter printWriter) throws JSONException {
         writeObject(object, printWriter);
     }
 

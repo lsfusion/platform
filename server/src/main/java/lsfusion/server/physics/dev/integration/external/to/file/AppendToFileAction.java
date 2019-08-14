@@ -30,7 +30,7 @@ public class AppendToFileAction extends InternalAction {
         charsetInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         String filePath = (String) context.getDataKeyValue(pathInterface).getValue();
         String text = (String) context.getDataKeyValue(textInterface).getValue();

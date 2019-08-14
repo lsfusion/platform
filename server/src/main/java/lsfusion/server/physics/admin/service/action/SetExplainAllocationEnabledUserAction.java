@@ -19,7 +19,7 @@ public class SetExplainAllocationEnabledUserAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         List<Object> params = new ArrayList<>();
         for (ClassPropertyInterface classPropertyInterface : context.getKeys().keys()) {
             params.add(context.getKeyObject(classPropertyInterface));

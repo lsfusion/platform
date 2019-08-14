@@ -14,7 +14,7 @@ import javax.swing.*;
  */
 public class KeyStrokeConverter extends AbstractConverter {
     @Override
-    protected Object convertToType(Class type, Object value) throws Throwable {
+    protected Object convertToType(Class type, Object value) {
         KeyStroke keyStroke = KeyStroke.getKeyStroke(value.toString());
         if (keyStroke == null) {
             throw new ConversionException("Can't create KeyStroke");

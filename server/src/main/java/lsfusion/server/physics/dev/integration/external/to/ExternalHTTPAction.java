@@ -70,7 +70,7 @@ public class ExternalHTTPAction extends ExternalAction {
     }
 
     @Override
-    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         try {
 
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
@@ -147,7 +147,7 @@ public class ExternalHTTPAction extends ExternalAction {
         return responseCookies;
     }
 
-    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) throws IOException, java.text.ParseException {
+    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, ImMap<String, String> headers, ImMap<String, String> cookies, CookieStore cookieStore) throws IOException {
         Object[] paramList = new Object[bodyParams.size()];
         for (int i=0,size=bodyParams.size();i<size;i++)
             paramList[i] = format(context, bodyParams.get(i), null); // пока в body ничего не кодируем (так как content-type'ы другие)

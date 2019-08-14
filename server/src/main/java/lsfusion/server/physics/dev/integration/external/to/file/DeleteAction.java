@@ -27,7 +27,7 @@ public class DeleteAction extends InternalAction {
         isClientInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             String sourcePath = (String) context.getKeyValue(sourceInterface).getValue();
             boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;

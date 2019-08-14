@@ -45,5 +45,5 @@ public abstract class ExportMatrixWriter extends ExportByteArrayPlainWriter {
         writeLine(row, fieldTypes.getMap());
     }
 
-    protected abstract void writeLine(ImMap<String, ?> values, ImMap<String, Type> types) throws IOException;
+    protected abstract void writeLine(ImMap<String, ?> values, ImMap<String, Type> types);
 }

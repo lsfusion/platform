@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
-    public abstract Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
+    public abstract Connection startConnection() throws SQLException;
     public abstract SQLSyntax getSyntax();
 
     private ExConnection common;
@@ -183,19 +183,15 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     private AtomicInteger connectionsCount = new AtomicInteger();
 
     public Connection newConnection() throws SQLException {
-        try {
-            long l = System.currentTimeMillis();
+        long l = System.currentTimeMillis();
 
-            Connection newConnection = startConnection();
-            prepareConnection(newConnection);
-            SQLSession.setACID(newConnection, false, getSyntax());
+        Connection newConnection = startConnection();
+        prepareConnection(newConnection);
+        SQLSession.setACID(newConnection, false, getSyntax());
 
-            logConnection("NEW", l, connectionsCount.incrementAndGet(), ((PGConnection)newConnection).getBackendPID());
+        logConnection("NEW", l, connectionsCount.incrementAndGet(), ((PGConnection)newConnection).getBackendPID());
 
-            return newConnection;
-        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            throw new RuntimeException(e);
-        }
+        return newConnection;
     }
 
     public void closeConnection(Connection connection) throws SQLException {
@@ -233,7 +229,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         checkUsed();
 
         return new SyncNewExConnectionReRun() {
-            public ExConnection execute(ExConnection rerun) throws SQLException {
+            public ExConnection execute(ExConnection rerun) {
                 ExConnection freeConnection;
                     if(rerun != null && freeConnections.size() < Settings.get().getFreeConnections()) {
                         freeConnection = rerun;

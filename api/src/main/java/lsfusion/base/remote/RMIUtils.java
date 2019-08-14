@@ -13,7 +13,7 @@ import java.rmi.server.*;
 public class RMIUtils {
     private static final Logger logger = Logger.getLogger(RMIUtils.class);
 
-    public static <T extends Remote> T rmiLookup(String host, int port, String name, String subName) throws RemoteException, NotBoundException, MalformedURLException {
+    public static <T extends Remote> T rmiLookup(String host, int port, String name, String subName) throws RemoteException, NotBoundException {
         ZipClientSocketFactory.threadRealHostName.set(host);
         try {
             Registry registry = LocateRegistry.getRegistry(host, port, new ZipClientSocketFactory(host));

@@ -25,7 +25,7 @@ public class OpenFileAction extends InternalAction {
         nameInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             FileData source = (FileData) context.getKeyValue(sourceInterface).getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();

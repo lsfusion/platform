@@ -38,12 +38,12 @@ public class RestartManager implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(navigatorsManager, "navigatorsManager must be specified");
     }
 
-    public synchronized void scheduleRestart() throws SQLException, SQLHandledException {
+    public synchronized void scheduleRestart() {
         if (restartFuture != null) {
             return;
         }
@@ -74,7 +74,7 @@ public class RestartManager implements InitializingBean {
         this.pendingRestart = pendingRestart;
     }
 
-    public synchronized void cancelRestart() throws SQLException, SQLHandledException {
+    public synchronized void cancelRestart() {
         if (restartFuture == null) {
             return;
         }

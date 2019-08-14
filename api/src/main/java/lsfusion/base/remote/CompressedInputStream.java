@@ -11,7 +11,7 @@ public class CompressedInputStream extends InflaterInputStream {
 
     public volatile boolean hangs = false;
 
-    public CompressedInputStream(InputStream is, int size, CompressedStreamObserver observer) throws IOException {
+    public CompressedInputStream(InputStream is, int size, CompressedStreamObserver observer) {
         super(is, new Inflater(false), size);
         this.observer = observer;
     }

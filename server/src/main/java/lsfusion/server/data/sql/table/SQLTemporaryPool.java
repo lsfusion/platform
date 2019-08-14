@@ -43,7 +43,7 @@ public class SQLTemporaryPool {
         return tables.isEmpty();
     }
     
-    public void checkAliveTables(SQLSession session, Map<String, WeakReference<TableOwner>> used) throws SQLException {
+    public void checkAliveTables(SQLSession session, Map<String, WeakReference<TableOwner>> used) {
         try {
             System.out.println("START " + SQLSession.getCurrentTimeStamp() + " " + session);
             for(Map.Entry<FieldStruct, Set<String>> table : tables.entrySet())

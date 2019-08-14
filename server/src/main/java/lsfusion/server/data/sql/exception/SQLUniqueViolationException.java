@@ -21,7 +21,7 @@ public class SQLUniqueViolationException extends SQLHandledException {
     }
 
     @Override
-    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) {
         if(attempts > Settings.get().getTooMuchAttempts())
             return false;
 

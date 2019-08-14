@@ -80,7 +80,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.state(0 < port && port <= 65535, "port must be between 0 and 65535");
     }
 
@@ -189,7 +189,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
         bind(getExportPath(name), remote);
     }
 
-    public void unbindAndUnexport(String name, Remote remote) throws RemoteException, AlreadyBoundException, NotBoundException {
+    public void unbindAndUnexport(String name, Remote remote) throws RemoteException, NotBoundException {
         unbind(getExportPath(name));
         unexport(remote);
     }

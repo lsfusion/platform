@@ -113,7 +113,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
 //        return syntax.getCompositeSQL();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) {
         assert !syntax.hasDriverCompositeProblem();
 
         throw new RuntimeException("not supported yet");
@@ -306,7 +306,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return length;
     }
 
-    public Object[] parseString(String s) throws ParseException {
+    public Object[] parseString(String s) {
         throw new RuntimeException("Parsing values from string is not supported");
     }
 

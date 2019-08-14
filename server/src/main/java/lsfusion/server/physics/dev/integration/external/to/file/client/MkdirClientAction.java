@@ -14,7 +14,7 @@ public class MkdirClientAction implements ClientAction {
     }
 
     @Override
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         String result = null;
         try {
             FileUtils.mkdir(source);

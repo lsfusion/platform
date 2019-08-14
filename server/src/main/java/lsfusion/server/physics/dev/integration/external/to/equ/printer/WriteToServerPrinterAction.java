@@ -62,7 +62,7 @@ public class WriteToServerPrinterAction extends InternalAction {
 
     }
 
-    public String print(String text, String charset, String printerName) throws IOException {
+    public String print(String text, String charset, String printerName) {
 
         if (text != null) {
             try {

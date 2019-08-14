@@ -18,7 +18,7 @@ public class MessageClientAction extends ExecuteClientAction {
         this.extended = extended;
     }
 
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) {
         dispatcher.execute(this);
     }
 

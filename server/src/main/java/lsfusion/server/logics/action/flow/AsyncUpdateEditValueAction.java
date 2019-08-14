@@ -22,7 +22,7 @@ public class AsyncUpdateEditValueAction extends SystemAction {
     }
 
     @Override
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         Object updatedValue = context.getSingleKeyObject();
         try {
             context.delayUserInteraction(new UpdateEditValueClientAction(serializeObject(updatedValue)));

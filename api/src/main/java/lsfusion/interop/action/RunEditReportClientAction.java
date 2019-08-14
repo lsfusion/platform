@@ -11,7 +11,7 @@ public class RunEditReportClientAction extends ExecuteClientAction {
         this.customReportPathList = customReportPathList;
     }
 
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) {
         dispatcher.execute(this);
     }
 }

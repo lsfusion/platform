@@ -11,7 +11,7 @@ public class BaseUtilsTest {
     private final static char UNBREAKABLE_SPACE = '\u00a0';
 
     @Test
-    public void testBigDecimalToString() throws Exception {
+    public void testBigDecimalToString() {
         assertEquals(spaced("0,123"), BaseUtils.bigDecimalToString(new BigDecimal(".123123")));
         assertEquals(spaced("2 123 123,123"), BaseUtils.bigDecimalToString(new BigDecimal("2123123.1230000")));
         assertEquals(spaced("2 123 123"), BaseUtils.bigDecimalToString(new BigDecimal("2123123.0000")));
@@ -26,7 +26,7 @@ public class BaseUtilsTest {
     }
 
     @Test
-    public void testDateToString() throws Exception {
+    public void testDateToString() {
         assertEquals("01/01/1901", BaseUtils.dateToString(new Date(1, 0, 1)));
         assertEquals("03/12/2001", BaseUtils.dateToString(new Date(101, 11, 3)));
         assertEquals("14/10/2012", BaseUtils.dateToString(new Date(112, 9, 14)));

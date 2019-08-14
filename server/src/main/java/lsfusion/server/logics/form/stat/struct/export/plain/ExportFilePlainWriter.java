@@ -28,5 +28,5 @@ public abstract class ExportFilePlainWriter extends ExportPlainWriter {
         return result;
     }
 
-    protected abstract void closeWriter() throws IOException;
+    protected abstract void closeWriter();
 }

@@ -107,7 +107,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     @Override
-    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) {
         return getExpr(classSource, modifier);
     }
 

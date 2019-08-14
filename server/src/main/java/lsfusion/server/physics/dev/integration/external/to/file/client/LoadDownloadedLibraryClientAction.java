@@ -15,7 +15,7 @@ public class LoadDownloadedLibraryClientAction implements ClientAction {
         this.path = path;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         File library = SystemUtils.getUserFile(path);
         if(library.exists()) {
             setLibraryPath(library.getParentFile().getAbsolutePath(), "jna.library.path");

@@ -15,7 +15,7 @@ public class PingClientAction implements ClientAction {
         this.host = host;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         try {
             return InetAddress.getByName(host).isReachable(5000) ? null : "Host is not reachable";
         } catch (Exception e) {

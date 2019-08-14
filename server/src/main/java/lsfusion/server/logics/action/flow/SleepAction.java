@@ -17,7 +17,7 @@ public class SleepAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         long updatedValue = ((Number) context.getSingleKeyObject()).longValue();
         ThreadUtils.sleep(updatedValue);
     }

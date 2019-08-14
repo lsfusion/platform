@@ -27,7 +27,7 @@ public class RunJDBCStatementAction extends InternalAction {
     }
 
     @Override
-    public void executeInternal(ExecutionContext context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext context) throws SQLException {
 
         String connectionString = (String) context.getKeyValue(connectionStringInterface).getValue();
         String jdbcStatement = (String) context.getKeyValue(jdbcStatementInterface).getValue();

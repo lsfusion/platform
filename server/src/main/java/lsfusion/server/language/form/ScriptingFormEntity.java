@@ -270,7 +270,7 @@ public class ScriptingFormEntity {
         return groupObject;
     }
     
-    public void setReportPath(GroupObjectEntity groupObject, PropertyObjectEntity property) throws ScriptingErrorLog.SemanticErrorException {
+    public void setReportPath(GroupObjectEntity groupObject, PropertyObjectEntity property) {
         if (groupObject != null)
             setSubReport(groupObject, property);
         else
@@ -671,7 +671,7 @@ public class ScriptingFormEntity {
         return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
 
-    public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, Version version) {
         for (int i = 0; i < properties.size(); ++i) {
             form.addDefaultOrder(properties.get(i), orders.get(i), version);
             form.addDefaultOrderView(properties.get(i), orders.get(i), version);

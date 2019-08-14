@@ -25,7 +25,7 @@ public class FileToStringAction extends InternalAction {
         charsetInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         FileData fileData = (FileData) context.getKeyValue(fileInterface).getValue();
         String charset = (String) context.getKeyValue(charsetInterface).getValue();
         try {

@@ -202,7 +202,7 @@ public class CustodianDailyRollingFileAppender extends FileAppender {
     /**
      * Rollover the current file to a new file.
      */
-    void rollOver() throws IOException {
+    void rollOver() {
 
         /* Compute filename, but only if datePattern is specified */
         if (datePattern == null) {

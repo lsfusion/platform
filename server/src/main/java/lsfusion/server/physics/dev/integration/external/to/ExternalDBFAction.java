@@ -53,7 +53,7 @@ public class ExternalDBFAction extends ExternalAction {
         return FlowResult.FINISH;
     }
 
-    private void writeDBF(ExecutionContext<PropertyInterface> context, String connectionString) throws SQLException, SQLHandledException {
+    private void writeDBF(ExecutionContext<PropertyInterface> context, String connectionString) {
         try {
             Object fileData = context.getKeyObject(paramInterfaces.single());
             if (fileData instanceof FileData) {

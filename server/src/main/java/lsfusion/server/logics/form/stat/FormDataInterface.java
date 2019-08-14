@@ -30,6 +30,6 @@ public interface FormDataInterface {
     StaticDataGenerator.Hierarchy getHierarchy(boolean isReport);
     ImMap<ObjectEntity, ? extends ObjectValue> getObjectValues(ImSet<GroupObjectEntity> valueGroups);
     Where getWhere(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) throws SQLException, SQLHandledException;
-    Where getValueWhere(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs) throws SQLException, SQLHandledException;
+    Where getValueWhere(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups, ImMap<ObjectEntity, Expr> mapExprs);
     ImOrderMap<CompareEntity, Boolean> getOrders(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups);
 }

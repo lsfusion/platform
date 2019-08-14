@@ -119,7 +119,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
-    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) {
         return readDBF(dbfRecord.getNumber(fieldName));
     }
 

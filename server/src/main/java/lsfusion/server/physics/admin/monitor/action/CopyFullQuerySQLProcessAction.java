@@ -23,7 +23,7 @@ public class CopyFullQuerySQLProcessAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             String fullQuery = (String) findProperty("fullQuerySQLProcess[STRING[10]]").read(context, currentObject);

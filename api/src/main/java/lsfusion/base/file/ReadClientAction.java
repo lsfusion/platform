@@ -4,8 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
 
-import java.io.IOException;
-
 public class ReadClientAction implements ClientAction {
     String sourcePath;
     boolean isDynamicFormatFileClass;
@@ -20,7 +18,7 @@ public class ReadClientAction implements ClientAction {
 
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         try {
             return ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, isDialog, null);
         } catch (Exception e) {

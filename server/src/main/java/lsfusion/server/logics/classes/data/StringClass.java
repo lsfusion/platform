@@ -69,7 +69,7 @@ public class StringClass extends DataClass<String> {
         statement.setString(num, (String) value);
     }
 
-    public String parseString(String s) throws ParseException {
+    public String parseString(String s) {
         return s;
     }
 

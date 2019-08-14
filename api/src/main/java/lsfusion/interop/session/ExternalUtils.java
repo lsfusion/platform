@@ -163,7 +163,7 @@ public class ExternalUtils {
         return mValues.immutableList();
     }
 
-    private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) throws IOException {
+    private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) {
         assert object instanceof byte[] || (object instanceof String && convertedToString);
         String mimeType = contentType.getMimeType();
         String extension = getExtensionFromContentType(contentType);

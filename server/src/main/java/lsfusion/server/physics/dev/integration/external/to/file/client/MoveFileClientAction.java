@@ -16,7 +16,7 @@ public class MoveFileClientAction implements ClientAction {
     }
 
     @Override
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         String result = null;
         try {
             FileUtils.moveFile(source, destination);

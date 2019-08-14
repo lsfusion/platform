@@ -83,7 +83,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
         throw new RuntimeException("not supported"); 
     }
 
-    public T[] parseString(String s) throws ParseException {
+    public T[] parseString(String s) {
         throw new RuntimeException("not supported");
     }
 

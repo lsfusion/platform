@@ -555,7 +555,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, Integer idNotification) throws RemoteException {
+    public void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, Integer idNotification) {
         try {
             runNotification(env, stack, String.valueOf(idNotification));
         } catch (Exception e) {

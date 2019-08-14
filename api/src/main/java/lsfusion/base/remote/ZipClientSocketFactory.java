@@ -53,8 +53,7 @@ public class ZipClientSocketFactory extends ZipSocketFactory implements RMIClien
             throw new RuntimeException("Real host name should be provided in ZipClientSocketFactory.threadRealHostName");
         this.realHostName = hostName;
     }
-    private void readObjectNoData()
-            throws ObjectStreamException {
+    private void readObjectNoData() {
         throw new UnsupportedOperationException();
     }
 

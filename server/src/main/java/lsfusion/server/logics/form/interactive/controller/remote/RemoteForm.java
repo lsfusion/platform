@@ -938,7 +938,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return null;
     }
 
-    private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack, MExclMap<ObjectInstance, DataObject> mCurrentObjects) throws IOException, ParseException, SQLException, SQLHandledException {
+    private void changeGroupObjectExternal(String groupSID, Object values, ExecutionStack stack, MExclMap<ObjectInstance, DataObject> mCurrentObjects) throws ParseException, SQLException, SQLHandledException {
         GroupObjectInstance groupObject = form.getGroupObjectInstanceIntegration(groupSID);
         DataSession session = form.session;
 
@@ -954,7 +954,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             groupObject.change(session, objectValues, form, stack);
     }
 
-    private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws IOException, SQLException, SQLHandledException, ParseException {
+    private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, DataObject> currentObjects, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
         String editAction;

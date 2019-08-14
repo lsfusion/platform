@@ -10,8 +10,7 @@ public class CompressedOutputStream extends DeflaterOutputStream {
 
     private final CompressedStreamObserver observer;
 
-    public CompressedOutputStream(OutputStream os, int size, CompressedStreamObserver observer)
-            throws IOException {
+    public CompressedOutputStream(OutputStream os, int size, CompressedStreamObserver observer) {
         super(os, new Deflater(Deflater.DEFAULT_COMPRESSION, false), size, true);
         this.observer = observer;
     }

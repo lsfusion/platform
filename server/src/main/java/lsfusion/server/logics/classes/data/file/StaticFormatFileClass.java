@@ -99,7 +99,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
         return value.getLength();
     }
 
-    public RawFileData parseString(String s) throws ParseException {
+    public RawFileData parseString(String s) {
         return new RawFileData(Base64.decodeBase64(s));
     }
 

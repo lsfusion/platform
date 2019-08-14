@@ -150,15 +150,15 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public void drop(SQLSession session, TableOwner owner, OperationOwner opOwner) {
     }
-    public void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) throws SQLException {
+    public void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) {
     }
 
     @Override
-    public void out(SQLSession session) throws SQLException {
+    public void out(SQLSession session) {
         System.out.println("Rows :" + rows);
     }
 
-    public void outClasses(SQLSession session, BaseClass baseClass, Processor<String> processor) throws SQLException, SQLHandledException {
+    public void outClasses(SQLSession session, BaseClass baseClass, Processor<String> processor) {
         processor.proceed("Rows :" + rows);
     }
 
@@ -261,7 +261,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return rows.toString();
     }
 
-    public static <O extends ObjectValue> boolean checkClasses(O value, SQLSession session, BaseClass baseClass, OperationOwner owner, ValueClass inconsistentTableClass, Result<Boolean> rereadChange, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+    public static <O extends ObjectValue> boolean checkClasses(O value, SQLSession session, BaseClass baseClass, OperationOwner owner, ValueClass inconsistentTableClass, Result<Boolean> rereadChange, RegisterClassRemove classRemove, long timestamp) {
         boolean result = false;
         rereadChange.set(false);
         if(value instanceof DataObject) {

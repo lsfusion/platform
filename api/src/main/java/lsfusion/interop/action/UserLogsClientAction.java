@@ -11,7 +11,7 @@ public class UserLogsClientAction implements ClientAction {
     }
 
     @Override
-    public Map<String, RawFileData> dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Map<String, RawFileData> dispatch(ClientActionDispatcher dispatcher) {
         return dispatcher.execute(this);
     }
 }

@@ -711,7 +711,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return adapter.syntax;
     }
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(adapter, "adapter must be specified");
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(restartManager, "restartManager must be specified");

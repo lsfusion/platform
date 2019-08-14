@@ -127,7 +127,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         throw new UnsupportedOperationException();
     }
 
-    protected void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+    protected void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) {
         throw new UnsupportedOperationException();
     }
 
@@ -164,7 +164,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         throw new UnsupportedOperationException();
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Object parseString(String s) {
         throw new UnsupportedOperationException();
     }
 

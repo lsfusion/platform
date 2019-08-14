@@ -22,7 +22,7 @@ public class WriteClientAction extends ExecuteClientAction {
     }
 
     @Override
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) {
         try {
             String filePath = path;
             String fileExtension = extension;

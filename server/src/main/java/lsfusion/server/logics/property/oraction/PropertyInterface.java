@@ -80,11 +80,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return joinImplement.get((P) this);
     }
 
-    public Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException {
+    public Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) {
         return interfaceValues.get((P) this).getValue();
     }
 
-    public ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException {
+    public ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) {
         return interfaceValues.get((P) this);
     }
 

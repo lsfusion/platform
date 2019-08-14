@@ -85,7 +85,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(BL, "businessLogics must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
         Assert.notNull(logicsInstance, "logicsInstance must be specified");
@@ -152,7 +152,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
     }
 
-    public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, SQLHandledException {
         if (daemonTasksExecutor != null) {
             Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
             List<ScheduledFuture> futures = futuresMap.get(scheduledTaskId);
@@ -187,7 +187,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
     }
 
-    private void fillSystemScheduledTasks(List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private void fillSystemScheduledTasks(List<SchedulerTask> tasks) {
         tasks.add(new SystemSchedulerTask(this::changeCurrentDate, -1L, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
         tasks.addAll(BL.getSystemTasks(this));
     }
@@ -545,11 +545,11 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             }
         }
 
-        private void logStartTask(String taskCaption, ExecutionStack stack) throws SQLException, SQLHandledException {
+        private void logStartTask(String taskCaption, ExecutionStack stack) {
             logTask(taskCaption, "Запущено", "start", stack, null);
         }
 
-        private Long logFinishTask(String taskCaption, ExecutionStack stack, String applyResult) throws SQLException, SQLHandledException {
+        private Long logFinishTask(String taskCaption, ExecutionStack stack, String applyResult) {
             return logTask(taskCaption, applyResult == null ? "Выполнено успешно" : BaseUtils.truncate(applyResult, 200), "exception", stack, null);
         }
 

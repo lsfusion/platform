@@ -140,7 +140,7 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 

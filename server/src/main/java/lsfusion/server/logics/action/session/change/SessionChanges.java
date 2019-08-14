@@ -29,5 +29,5 @@ public interface SessionChanges {
     DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException, SQLHandledException;
 
     // узнает список изменений произошедших без него
-    ChangedData update(FormInstance toUpdate) throws SQLException;
+    ChangedData update(FormInstance toUpdate);
 }

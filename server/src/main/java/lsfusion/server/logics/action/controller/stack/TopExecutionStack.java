@@ -49,7 +49,7 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
-    public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+    public void updateCurrentClasses(UpdateCurrentClassesSession session) {
     }
 
     @Override

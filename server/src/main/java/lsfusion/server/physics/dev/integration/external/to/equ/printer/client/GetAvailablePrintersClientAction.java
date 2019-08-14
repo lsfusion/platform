@@ -16,7 +16,7 @@ public class GetAvailablePrintersClientAction implements ClientAction {
     public GetAvailablePrintersClientAction() {
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;
         PrintRequestAttributeSet attributeSet = new HashPrintRequestAttributeSet();
         PrintService[] printServices = PrintServiceLookup.lookupPrintServices(flavor, attributeSet);
