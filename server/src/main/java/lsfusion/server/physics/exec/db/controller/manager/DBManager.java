@@ -551,7 +551,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            if(dataTable.overCalculateStat(reflectionLM, session, propertiesSet, getDisableStatsTableColumnSet(), 
+            if(dataTable.overCalculateStat(reflectionLM, session, propertiesSet, getDisableStatsTableColumnSet(),
                     new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())))) {
                 long time = System.currentTimeMillis() - start;
                 BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
@@ -1804,7 +1804,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, Property<?> property, boolean isolatedTransaction, Set<Property> calculated, boolean dependents) throws SQLException, SQLHandledException {
         if (!dependents) {
-            for (Property prop : property.getDepends()) {
+            for (Property prop : property.getDepends(false)) {
                 if (prop != property && !calculated.contains(prop)) {
                     recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, false);
                 }
@@ -1818,7 +1818,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         if (dependents) {
             for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
-                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property)) {
+                if (prop != property && !calculated.contains(prop) && Property.depends(prop, property, false)) {
                     boolean recalculate = reflectionLM.disableAggregationsTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);
