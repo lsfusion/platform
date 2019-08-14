@@ -1885,11 +1885,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 excessAllocatedBytesMap.put(id, count);
                 allocatedBytesLogger.info(String.format("Process %s allocated too much bytes, %s cycles", id, count));
                 if(count >= accessInterruptCount) {
-                    logger.info(String.format("Process %s allocated too much bytes for %s cycles, will be interrupted", id, count));
+                    allocatedBytesLogger.info(String.format("Process %s allocated too much bytes for %s cycles, will be interrupted", id, count));
                     try {
                         ThreadUtils.interruptThread(getDbManager(), threadMap.get(id));
                     } catch (SQLException | SQLHandledException e) {
-                        logger.info(String.format("Failed to interrupt process %s", id));
+                        allocatedBytesLogger.info(String.format("Failed to interrupt process %s", id));
                     }
                 }
             } else
