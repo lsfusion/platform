@@ -88,7 +88,7 @@ public class SystemClass extends DataClass<Long> {
         return idClass.getCharLength();
     }
 
-    public Long parseString(String s) throws ParseException {
+    public Long parseString(String s) {
         throw new RuntimeException("not supported");
     }
 

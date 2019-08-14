@@ -95,16 +95,12 @@ public class FileUtils {
         for (int i = 0; i < filesObj.filePaths.size(); i++) {
             files[i] = new File(APP_TEMP_FOLDER_URL, filesObj.filePaths.get(i));
         }
-        try {
-            Object bytes = BaseUtils.filesToBytes(filesObj.multiple, filesObj.storeName, filesObj.custom, files);
-            for (File file : files) {
-                file.delete();
-            }
-            return bytes;
-
-        } catch (IOException e) {
-            return null;
+        
+        Object bytes = BaseUtils.filesToBytes(filesObj.multiple, filesObj.storeName, filesObj.custom, files);
+        for (File file : files) {
+            file.delete();
         }
+        return bytes;
     }
 
     public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images

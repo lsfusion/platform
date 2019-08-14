@@ -57,7 +57,7 @@ public abstract class AroundAspectAction extends KeepContextAction {
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
     }
 
-    protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
+    protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
     }
 
     public PropertyMapImplement<?, PropertyInterface> calcWhereProperty() {

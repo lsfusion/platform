@@ -21,7 +21,7 @@ public class SQLRetryException extends SQLHandledException {
     }
 
     @Override
-    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) {
         if(attempts > Settings.get().getTooMuchRetryAttempts())
             return false;
 

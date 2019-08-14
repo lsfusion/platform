@@ -25,7 +25,7 @@ import java.awt.*;
  */
 public class FontInfoConverter extends AbstractConverter {
     @Override
-    protected Object convertToType(Class type, Object value) throws Throwable {
+    protected Object convertToType(Class type, Object value) {
         if (value instanceof Font) {
             return value;
         }

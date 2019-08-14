@@ -43,7 +43,7 @@ public enum Compare {
         throw new RuntimeException("Deserialize Compare");
     }
 
-    public byte serialize() throws IOException {
+    public byte serialize() {
         switch(this) {
             case EQUALS:
                 return 0;

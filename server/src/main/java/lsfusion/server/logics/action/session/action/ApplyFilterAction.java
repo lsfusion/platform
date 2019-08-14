@@ -19,7 +19,7 @@ public class ApplyFilterAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         context.getSession().setApplyFilter(type);
     }
 }

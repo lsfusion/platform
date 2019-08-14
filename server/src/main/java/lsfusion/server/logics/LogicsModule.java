@@ -158,7 +158,7 @@ public abstract class LogicsModule {
 
     public abstract void initTables(DBNamingPolicy namingPolicy) throws RecognitionException;
 
-    public abstract void initMainLogic() throws FileNotFoundException, RecognitionException;
+    public abstract void initMainLogic() throws RecognitionException;
 
     public abstract void initIndexes(DBManager dbManager) throws RecognitionException;
 

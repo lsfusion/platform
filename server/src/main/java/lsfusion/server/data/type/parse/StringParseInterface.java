@@ -16,7 +16,7 @@ public abstract class StringParseInterface extends AbstractParseInterface {
         return true;
     }
 
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) {
         throw new RuntimeException("not supported");
     }
 

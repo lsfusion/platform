@@ -84,7 +84,7 @@ public class JDBCTable {
         public String getDotNetWrite(String writer, String value) {
             throw new UnsupportedOperationException();
         }
-        public Object parseString(String s) throws ParseException {
+        public Object parseString(String s) {
             throw new UnsupportedOperationException();
         }
         public String formatString(Object value) {

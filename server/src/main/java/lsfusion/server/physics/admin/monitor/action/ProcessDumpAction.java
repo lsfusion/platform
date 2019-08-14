@@ -333,7 +333,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         return MapFact.fromJavaMap(resultMap);
     }
 
-    private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException {
         SQLSession sql = context.getSession().sql;
 
         String originalQuery = "SELECT blocked_locks.pid     AS blocked_pid,\n" +

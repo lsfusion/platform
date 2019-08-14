@@ -54,7 +54,7 @@ public class ImportEMLAction extends EmailAction {
         emlInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         try {
 

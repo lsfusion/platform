@@ -13,7 +13,7 @@ public class PartialBackupAction extends BackupAction {
         super(LM);
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         makeBackup(context, true);
     }
 }

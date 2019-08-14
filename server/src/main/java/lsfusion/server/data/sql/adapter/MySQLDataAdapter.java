@@ -12,7 +12,7 @@ public class MySQLDataAdapter extends DataAdapter {
         super(MySQLSQLSyntax.instance, iDataBase, iServer, null, iUserID, iPassword, null, false);
     }
 
-    public void ensureDB(boolean cleanDB) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB(boolean cleanDB) throws SQLException {
 
         Connection connect = DriverManager.getConnection("jdbc:mysql://" + server + ":3306/" + dataBase);
         connect.createStatement().execute("DROP DATABASE " + dataBase);
@@ -20,7 +20,7 @@ public class MySQLDataAdapter extends DataAdapter {
         connect.close();
     }
 
-    public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public Connection startConnection() throws SQLException {
         Connection connect = DriverManager.getConnection("jdbc:mysql://" + server + ":3306/" + dataBase);
         connect.createStatement().execute("USE " + dataBase);
 

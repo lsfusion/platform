@@ -91,7 +91,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(navigatorsManager, "navigatorsManager must be specified");
         Assert.notNull(restartManager, "restartManager must be specified");

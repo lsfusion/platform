@@ -12,7 +12,7 @@ public class ChooseClassClientAction implements ClientAction {
         this.concrete = concrete;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         return dispatcher.execute(this);
     }
 }

@@ -25,7 +25,7 @@ public class SQLClosedException extends SQLHandledException {
         this.isInTransaction = isInTransaction;
     }
 
-    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) {
         if(attempts > Settings.get().getTooMuchAttempts())
             return false;
                     

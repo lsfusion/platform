@@ -79,11 +79,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     public void ensureLogLevel() {
     }
 
-    public String getBackupFilePath(String dumpFileName) throws IOException, InterruptedException {
+    public String getBackupFilePath(String dumpFileName) {
         return null;
     }
 
-    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
         return null;
     }
 
@@ -115,11 +115,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         }
 
         public void addNeedTableType(SessionTable.TypeStruct tableType) {
-            try {
-                ensureTableType(tableType);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            ensureTableType(tableType);
         }
 
         public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
@@ -139,13 +135,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         }
     };
 
-    protected void ensureTableType(SessionTable.TypeStruct tableType) throws SQLException {
+    protected void ensureTableType(SessionTable.TypeStruct tableType) {
         throw new UnsupportedOperationException();
     }
 
     protected Connection ensureConnection;
 
-    protected void executeEnsure(String command) throws SQLException {
+    protected void executeEnsure(String command) {
         //        statement.setQueryTimeout(1);
         try (Statement statement = ensureConnection.createStatement()) {
             statement.execute(command);
@@ -192,7 +188,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         throw new UnsupportedOperationException();
     }
 
-    public void ensureArrayClass(ArrayClass arrayClass) throws SQLException {
+    public void ensureArrayClass(ArrayClass arrayClass) {
         throw new UnsupportedOperationException();
     }
 
@@ -217,10 +213,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         ensuredSafeCasts.put(type, true);
     }
 
-    public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException {
+    public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) {
     }
 
-    public void ensureTypeFunc(Pair<TypeFunc, Type> tf) throws SQLException {
+    public void ensureTypeFunc(Pair<TypeFunc, Type> tf) {
     }
 
     protected String getPath() {

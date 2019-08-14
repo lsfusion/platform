@@ -118,7 +118,7 @@ public class NewSessionAction extends AroundAspectAction {
         migrateFrom.copyDataTo(migrateTo, migrateSessionProperties);
     }
 
-    protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
+    protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
         ((ExecutionContext.NewSession<PropertyInterface>)innerContext).close(); // по сути и есть аналог try with resources ()
     }
 

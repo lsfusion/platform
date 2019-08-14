@@ -120,7 +120,7 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     // only for development / debug, если нет отчета и его нужно создать
-    public ReportPath getDefaultCustomReportPath(String fileName) throws IOException {
+    public ReportPath getDefaultCustomReportPath(String fileName) {
         return getDirectoriesFromSource(SystemProperties.userDir, fileName);
     }
 
@@ -331,7 +331,7 @@ public abstract class FormReportManager extends FormDataManager {
         }
     }
 
-    private byte[] getReportSourcesByteArray(GroupObjectHierarchy.ReportHierarchy groupReportHierarchy, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<PropertyReaderEntity> propertySources) throws SQLException, SQLHandledException {
+    private byte[] getReportSourcesByteArray(GroupObjectHierarchy.ReportHierarchy groupReportHierarchy, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<PropertyReaderEntity> propertySources) {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);

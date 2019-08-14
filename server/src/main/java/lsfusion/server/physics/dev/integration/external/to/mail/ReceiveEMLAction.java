@@ -40,7 +40,7 @@ public class ReceiveEMLAction extends EmailAction {
         accountInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         if(context.getDbManager().isServer()) {
 

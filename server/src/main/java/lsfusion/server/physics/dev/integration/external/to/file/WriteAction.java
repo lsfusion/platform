@@ -38,7 +38,7 @@ public class WriteAction extends SystemExplicitAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         DataObject sourceObject = context.getDataKeys().getValue(0);
         assert sourceObject.getType() instanceof FileClass;
 

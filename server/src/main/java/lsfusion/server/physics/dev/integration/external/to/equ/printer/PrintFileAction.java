@@ -25,7 +25,7 @@ public class PrintFileAction extends InternalAction {
         printerNameInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             Object file = context.getKeyValue(fileInterface).getValue();
             if(file != null) {

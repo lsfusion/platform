@@ -93,7 +93,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(logicsInstance, "logicsInstance must be specified");
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(restartManager, "restartManager must be specified");

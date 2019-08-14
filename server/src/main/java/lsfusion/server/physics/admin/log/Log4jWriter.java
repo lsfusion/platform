@@ -13,15 +13,15 @@ public class Log4jWriter extends Writer {
         this.logger = logger;
     }
 
-    public void write(char[] cbuf, int off, int len) throws IOException {
+    public void write(char[] cbuf, int off, int len) {
         logger.info(new String(cbuf, off, len));
     }
 
-    public void flush() throws IOException {
+    public void flush() {
 
     }
 
-    public void close() throws IOException {
+    public void close() {
 
     }
 }

@@ -60,7 +60,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(remoteLogics, "remoteLogics must be specified");
         Assert.notNull(rmiManager, "rmiManager must be specified");
     }

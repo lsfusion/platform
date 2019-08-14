@@ -15,7 +15,7 @@ public class RunCommandClientAction implements ClientAction {
         this.text = text;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         return text != null ? exec(text) : null;
     }
 

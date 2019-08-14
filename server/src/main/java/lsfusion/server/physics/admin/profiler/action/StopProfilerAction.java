@@ -95,7 +95,7 @@ public class StopProfilerAction extends InternalAction {
         Profiler.clearData();
     }
 
-    private void updateProfileData(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private void updateProfileData(ExecutionContext context) throws SQLException, SQLHandledException {
         final ImOrderSet<KeyField> keys = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(new KeyField("po1", StringClass.text),
                 new KeyField("po2", StringClass.text), new KeyField("user", LongClass.instance), new KeyField("form", StringClass.getv(100)))));
 

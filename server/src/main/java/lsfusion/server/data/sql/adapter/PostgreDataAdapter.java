@@ -129,12 +129,12 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getBackupFilePath(String dumpFileName) throws IOException, InterruptedException {
+    public String getBackupFilePath(String dumpFileName) {
         return isRedundantString(dumpDir) ? null : new File(dumpDir, dumpFileName + ".backup").getPath();
     }
 
     @Override
-    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException, InterruptedException {
+    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
         if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
             context.delayUserInterfaction(new MessageClientAction(ThreadLocalContext.localize("{logics.backup.path.not.specified}"), ThreadLocalContext.localize("{logics.backup.error}")));
             return null;

@@ -45,7 +45,7 @@ public abstract class FilterInstance implements Updated {
         return objects.immutable();
     }
 
-    public FilterInstance(DataInputStream inStream, FormInstance form) throws IOException {
+    public FilterInstance(DataInputStream inStream, FormInstance form) {
     }
 
     public static FilterInstance deserialize(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {

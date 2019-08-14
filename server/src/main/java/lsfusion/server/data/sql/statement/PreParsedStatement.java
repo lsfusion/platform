@@ -38,7 +38,7 @@ public class PreParsedStatement extends TwinImmutableObject { // вообще St
         return true;
     }
 
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) {
         throw new RuntimeException("not supported");
     }
 

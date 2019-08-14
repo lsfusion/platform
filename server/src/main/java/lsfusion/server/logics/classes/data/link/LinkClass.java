@@ -95,7 +95,7 @@ public abstract class LinkClass extends DataClass<String> {
         return value.length(); //длина ссылки, а не размер файла
     }
 
-    public String parseString(String s) throws ParseException {
+    public String parseString(String s) {
         return s;
     }
 

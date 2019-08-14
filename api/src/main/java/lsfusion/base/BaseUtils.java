@@ -2212,7 +2212,7 @@ public class BaseUtils {
         return (index == -1) ? "" : filename.substring(index + 1);
     }
 
-    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) throws IOException {
+    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
 
         byte result[];

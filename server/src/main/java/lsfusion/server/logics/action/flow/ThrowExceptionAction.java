@@ -16,7 +16,7 @@ public class ThrowExceptionAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         String message = ((String) context.getSingleKeyObject());
         throw new LSFException(message);
     }

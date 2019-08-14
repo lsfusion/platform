@@ -31,7 +31,7 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
         outStream.writeBoolean(entity.showKey);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) {
         entity = pool.context.entity.getRegularFilter(ID);
     }
 }

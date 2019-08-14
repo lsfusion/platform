@@ -81,7 +81,7 @@ public class SendEmailAction extends SystemExplicitAction {
         inlineFiles.add(file);
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);

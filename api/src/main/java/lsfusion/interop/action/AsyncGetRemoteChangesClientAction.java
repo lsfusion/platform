@@ -7,7 +7,7 @@ public class AsyncGetRemoteChangesClientAction extends ExecuteClientAction {
     }
 
     @Override
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) {
         dispatcher.execute(this);
     }
 }

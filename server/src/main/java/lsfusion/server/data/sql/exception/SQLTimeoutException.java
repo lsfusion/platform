@@ -35,7 +35,7 @@ public class SQLTimeoutException extends SQLHandledException {
     }
 
     @Override
-    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) {
         return type == Type.TRANSACTTIMEOUT || type == Type.TIMEOUT;
     }
 

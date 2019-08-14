@@ -26,7 +26,7 @@ public class BeepAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         //do not use large files
         final FileData inputFile = (FileData) context.getKeyValue(fileInterface).getValue();
         boolean async = context.getKeyValue(asyncInterface).getValue() != null;

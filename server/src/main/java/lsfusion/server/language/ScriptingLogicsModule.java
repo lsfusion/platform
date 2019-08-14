@@ -10,7 +10,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -313,18 +312,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (id == null ? "" : id);
     }
 
-    private CharStream createStream() throws IOException {
+    private CharStream createStream() {
         return new ANTLRStringStream(code);
     }
 
     @Override
     @IdentityLazy
     public int getModuleComplexity() {
-        try {
-            return createStream().size();
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        return createStream().size();
     }
 
     public ScriptingErrorLog getErrLog() {
@@ -1828,7 +1823,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                              List<Message.RecipientType> recipTypes,
                                              List<LPWithParams> recipProps,
                                              List<LPWithParams> attachFileNames,
-                                             List<LPWithParams> attachFiles) throws ScriptingErrorLog.SemanticErrorException {
+                                             List<LPWithParams> attachFiles) {
 
         List<LAPWithParams> allProps = new ArrayList<>();
 
@@ -2338,7 +2333,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return addScriptedChangeClassAProp(oldContextSize, param, cls, whereProperty);
     }
-    private LAWithParams addScriptedChangeClassAProp(int oldContextSize, LPWithParams param, ConcreteObjectClass cls, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+    private LAWithParams addScriptedChangeClassAProp(int oldContextSize, LPWithParams param, ConcreteObjectClass cls, LPWithParams whereProperty) {
         
         List<LAPWithParams> paramList = new ArrayList<>();
         paramList.add(param);
@@ -3656,7 +3651,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mProps.immutableList();
     }
 
-    private ImList<LP> genLPsForImport(List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<ValueClass> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
+    private ImList<LP> genLPsForImport(List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<ValueClass> paramClasses) {
         int size=newContext.size() - oldContext.size() - paramClasses.size();
 
         MList<LP> mResult = ListFact.mList(size);
@@ -4542,11 +4537,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void parseStep(ScriptParser.State state) throws RecognitionException {
-        try {
-            parser.initParseStep(this, createStream(), state);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        parser.initParseStep(this, createStream(), state);
     }
 
     private void initNamespacesToModules(LogicsModule module, Set<LogicsModule> visitedModules) {

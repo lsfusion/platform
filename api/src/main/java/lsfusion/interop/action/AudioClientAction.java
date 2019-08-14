@@ -17,7 +17,7 @@ public class AudioClientAction extends ExecuteClientAction {
         this.audio = audio;
     }
 
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) {
         dispatcher.execute(this);
     }
 }

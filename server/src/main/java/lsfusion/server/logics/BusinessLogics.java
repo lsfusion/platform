@@ -292,7 +292,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(initTask, "initTask must be specified");
         
         LRUUtil.initLRUTuner(lruLogger::info);

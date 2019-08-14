@@ -19,7 +19,7 @@ public class SpringListsMergerFactory extends AbstractFactoryBean<List> {
     }
 
     @Override
-    protected List createInstance() throws Exception {
+    protected List createInstance() {
         if (listsToMerge == null || listsToMerge.size() == 0) {
             return null;
         }

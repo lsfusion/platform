@@ -439,7 +439,7 @@ public class ActionDebugger implements DebuggerService {
     public static class InMemoryJavaFileObject extends SimpleJavaFileObject {
         private String contents = null;
 
-        public InMemoryJavaFileObject(String className, String contents) throws Exception {
+        public InMemoryJavaFileObject(String className, String contents) {
             super(URI.create("string:///" + className.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
             this.contents = contents;
         }

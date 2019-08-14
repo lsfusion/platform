@@ -91,7 +91,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         super(REFLECTION_ORDER);
     }
 
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(initTask, "initTask must be specified");
     }
 

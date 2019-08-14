@@ -16,7 +16,7 @@ public class WatchAction extends SystemExplicitAction {
 
     public static final WatchAction instance = new WatchAction();
     
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         ExecutionStack stack = context.stack;
         stack.getWatcher().proceed(stack.getAllParamsWithValuesInStack());
     }

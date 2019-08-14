@@ -28,7 +28,7 @@ public class ImportTableIterator extends ImportPlainIterator {
     private int currentRow = 0;
     private ImMap<String, Object> row;
     @Override
-    protected boolean nextRow() throws IOException {
+    protected boolean nextRow() {
         if(currentRow >= rs.set.size())
             return false;
         
@@ -37,7 +37,7 @@ public class ImportTableIterator extends ImportPlainIterator {
     }
 
     @Override
-    protected Object getPropValue(String name, Type type) throws lsfusion.server.logics.classes.data.ParseException, ParseException {
+    protected Object getPropValue(String name, Type type) {
         return type.read(row.get(name));
     }
 

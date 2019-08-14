@@ -855,7 +855,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     // ----------------------------------- Навигация ----------------------------------------- //
 
-    public void changeGroupObject(GroupObjectInstance group, Scroll changeType) throws SQLException {
+    public void changeGroupObject(GroupObjectInstance group, Scroll changeType) {
         switch (changeType) {
             case HOME:
                 group.seek(UpdateType.FIRST);
@@ -1053,7 +1053,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> cellsValues, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
+    public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> cellsValues, ExecutionStack stack) throws SQLException, SQLHandledException {
         for (Entry<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> e : cellsValues.entrySet()) { // бежим по ячейкам
             PropertyDrawInstance property = e.getKey();
             executePasteAction(property, null, e.getValue(), stack);
@@ -1494,7 +1494,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private ImList<PropertyDrawInstance> userActivateProps = ListFact.EMPTY(); 
     // программный activate property
-    public void activateProperty(PropertyDrawEntity view) throws SQLException, SQLHandledException {
+    public void activateProperty(PropertyDrawEntity view) {
         userActivateProps = userActivateProps.addList(instanceFactory.getInstance(view));
     }
 
@@ -2281,7 +2281,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return property.read(this);
     }
 
-    public DialogRequest createObjectDialogRequest(final CustomClass objectClass, final ExecutionStack stack) throws SQLException {
+    public DialogRequest createObjectDialogRequest(final CustomClass objectClass, final ExecutionStack stack) {
         return new DialogRequestAdapter() {
             @Override
             public FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2292,7 +2292,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         };
     }
 
-    public DialogRequest createObjectEditorDialogRequest(final PropertyValueImplement propertyValues, final ExecutionStack stack) throws SQLException {
+    public DialogRequest createObjectEditorDialogRequest(final PropertyValueImplement propertyValues, final ExecutionStack stack) {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2318,7 +2318,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public DialogRequest createChangeEditorDialogRequest(final PropertyValueImplement propertyValues,
                                                          final GroupObjectInstance groupObject,
                                                          final Property filterProperty,
-                                                         final ExecutionStack stack) throws SQLException {
+                                                         final ExecutionStack stack) {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2333,7 +2333,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         };
     }
 
-    public DialogRequest createChangeObjectDialogRequest(final CustomClass dialogClass, final ObjectValue dialogValue, final GroupObjectInstance groupObject, final ExecutionStack stack) throws SQLException {
+    public DialogRequest createChangeObjectDialogRequest(final CustomClass dialogClass, final ObjectValue dialogValue, final GroupObjectInstance groupObject, final ExecutionStack stack) {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2393,10 +2393,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.CANCEL, stack);
     }
 
-    public ImOrderSet<ActionValueImplement> getEventsOnOk() throws SQLException, SQLHandledException {
+    public ImOrderSet<ActionValueImplement> getEventsOnOk() {
         return getEvents(FormEventType.OK);
     }
-    public ImOrderSet<ActionValueImplement> getEventsOnApply() throws SQLException, SQLHandledException {
+    public ImOrderSet<ActionValueImplement> getEventsOnApply() {
         return getEvents(FormEventType.APPLY);
     }
 
@@ -2532,7 +2532,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         formHide(context);
     }
 
-    private void formHide(ExecutionContext context) throws SQLException {
+    private void formHide(ExecutionContext context) {
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
         context.delayUserInteraction(new HideFormClientAction(Settings.get().getCloseFormDelay()));
         // здесь не делаем close, так как нет RemoteForm + надо делать closeLater, так как могут остаться еще запросы к форме которые возможно надо обработать, так что это делается prepareRemoteChangesResponse

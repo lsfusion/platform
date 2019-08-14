@@ -131,7 +131,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public Boolean parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+    public Boolean parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) {
         return readDBF(dbfRecord.getBoolean(fieldName));
     }
     @Override

@@ -22,7 +22,7 @@ public class ViewProxyUtil {
     /**
      * not thread-safe
      */
-    public static void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
+    public static void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) {
         if (propertyReceiver == null) {
             throw new RuntimeException("object is undefined");
         }

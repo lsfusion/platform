@@ -33,7 +33,7 @@ public class DropLRUAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         final ObjectValue keyValue = context.getKeyValue(percentInterface);
         if(keyValue instanceof DataObject) {
             final double percent = ((Double) ((DataObject) keyValue).object) / 100.0;

@@ -117,7 +117,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public Timestamp parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+    public Timestamp parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
         return readDBF(dbfRecord.getDate(fieldName));
     }
     @Override

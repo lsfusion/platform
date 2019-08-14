@@ -60,7 +60,7 @@ public abstract class AbstractParseInterface implements ParseInterface {
             return SQLSyntax.NULL;
         }
 
-        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) {
             throw new UnsupportedOperationException();
         }
 

@@ -380,7 +380,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return GroupObjectInstance.getObjects(getUpTreeGroups()).mapValues(ObjectInstance::getDataObject);
     }
 
-    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(ImMap<ObjectInstance, Object> map) throws SQLException, SQLHandledException {
+    public ImMap<ObjectInstance,DataObject> findGroupObjectValue(ImMap<ObjectInstance, Object> map) {
         for(ImMap<ObjectInstance, DataObject> keyRow : keys.keyIt()) {
             boolean equal = true;
             for(int i=0,size=keyRow.size();i<size;i++) {
@@ -580,7 +580,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
     
     // the problem that here it is not guaranteed that DataObject types will be the same as in ObjectInstance (and this will lead to incorrect equals, for example in updateDrawProps where is equal to keysTable, which types are object base classes)
-    private <V> ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> castExecuteObjects(ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> rows) throws SQLException, SQLHandledException {
+    private <V> ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> castExecuteObjects(ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<V, ObjectValue>> rows) {
         return SessionData.castTypes(rows, typeGetter);        
     }
 
@@ -1101,7 +1101,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         @Override
-        public ImMap<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        public ImMap<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) {
             return MapFact.EMPTY();
         }
     }

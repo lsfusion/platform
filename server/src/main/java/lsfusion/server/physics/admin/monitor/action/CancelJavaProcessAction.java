@@ -23,7 +23,7 @@ public class CancelJavaProcessAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             Integer id = Integer.parseInt((String) findProperty("idThreadProcess[STRING[10]]").read(context, currentObject));

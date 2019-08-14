@@ -45,7 +45,7 @@ public class ConcatenateValueClass implements ValueClass {
         return new ResolveConcatenateClassSet(upClasses);
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
+    public void serialize(DataOutputStream outStream) {
         throw new RuntimeException("not supported");
     }
 

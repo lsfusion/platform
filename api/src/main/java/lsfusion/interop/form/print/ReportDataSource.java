@@ -40,7 +40,7 @@ public class ReportDataSource implements JRRewindableDataSource {
             childSource.upCurrentKeyRow = null;
     }
 
-    public Object getFieldValue(JRField jrField) throws JRException {
+    public Object getFieldValue(JRField jrField) {
 
         String fieldName = jrField.getName();
         if(fieldName == null) // just in case
@@ -87,7 +87,7 @@ public class ReportDataSource implements JRRewindableDataSource {
         return true;
     }
 
-    public boolean next() throws JRException {
+    public boolean next() {
         if (repeatCount == 0) {
             if (!iterator.hasNext())
                 return false;

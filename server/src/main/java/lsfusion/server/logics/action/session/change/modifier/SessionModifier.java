@@ -78,7 +78,7 @@ public abstract class SessionModifier implements Modifier {
         eventChanges(properties, ModifyResult.DATA_SOURCE.<P>fnGetValue());
     }
 
-    protected void eventChange(Property property, boolean data, boolean source) throws SQLException, SQLHandledException {
+    protected void eventChange(Property property, boolean data, boolean source) throws SQLHandledException {
         if(source)
             addChange(property, data);
 /*        else {

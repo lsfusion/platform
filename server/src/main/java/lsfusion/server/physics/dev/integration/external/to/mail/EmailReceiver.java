@@ -403,7 +403,7 @@ public class EmailReceiver {
         return new MultipartBody(msg.getBody(), attachments);
     }
 
-    private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String fileName, boolean unpack) throws IOException, MessagingException {
+    private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String fileName, boolean unpack) throws IOException {
         RawFileData byteArray = new RawFileData(base64InputStream);
         Map<String, FileData> attachments = new HashMap<>();
         attachments.putAll(unpack(byteArray, fileName, unpack));

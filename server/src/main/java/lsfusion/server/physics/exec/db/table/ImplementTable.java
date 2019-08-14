@@ -610,7 +610,7 @@ public class ImplementTable extends DBTable { // последний интерф
         return new CalcStat(rows, keyStat, propStats);
     }
 
-    private Where getCountWhere(SQLSession session, Expr quantityTopExpr, Expr quantityNotTopExpr, KeyExpr keyExpr, Integer total, boolean top) throws SQLException, SQLHandledException {
+    private Where getCountWhere(SQLSession session, Expr quantityTopExpr, Expr quantityNotTopExpr, KeyExpr keyExpr, Integer total, boolean top) {
         if (top) {
             ImList<Expr> exprs = ListFact.singleton(quantityTopExpr);
             ImOrderMap<Expr, Boolean> orders = MapFact.toOrderMap(quantityTopExpr, true, keyExpr, false);
@@ -699,7 +699,7 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     // последний параметр нужен только, чтобы не закэшировалась совсем неправильная статистика для Reflection таблиц (где все классы, а значит и колонки имеют статистику 0) - она конечно и так закэшируется неправильная, но хотя бы пессимистичная
-    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, ImSet<PropertyField> props, boolean noClassStatsYet) throws SQLException {
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, ImSet<PropertyField> props, boolean noClassStatsYet) {
 
         Integer rowCount;
         if (!tableStats.containsKey(getName()))

@@ -9,5 +9,5 @@ import java.rmi.RemoteException;
 public interface RemoteFormListener {
     void formCreated(RemoteForm form);
     void formClosed(RemoteForm form);
-    void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, Integer idNotification) throws RemoteException;
+    void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, Integer idNotification);
 }

@@ -101,7 +101,7 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
         return value.getLength();
     }
 
-    public FileData parseString(String s) throws ParseException {
+    public FileData parseString(String s) {
         return new FileData(Base64.decodeBase64(s));
     }
 

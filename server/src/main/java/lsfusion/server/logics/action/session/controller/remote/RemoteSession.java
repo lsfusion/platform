@@ -172,7 +172,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, Action<?> property) throws SQLException, SQLHandledException, IOException {
+    private ExternalResponse readResult(String[] returnNames, Action<?> property) throws SQLException, SQLHandledException {
         List<Object> returns = new ArrayList<>();
 
         LP[] returnProps;

@@ -30,19 +30,19 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
 
     private static class DisableNestLoopSnapshot implements DynamicExecEnvSnapshot<Object, DisableNestLoopSnapshot> {
         @Override
-        public void beforeOuter(SQLCommand command, SQLSession session, ImMap<String, ParseInterface> paramObjects, OperationOwner owner, PureTimeInterface runTime) throws SQLException, SQLHandledException {
+        public void beforeOuter(SQLCommand command, SQLSession session, ImMap<String, ParseInterface> paramObjects, OperationOwner owner, PureTimeInterface runTime) {
         }
 
         @Override
-        public void afterOuter(SQLSession session, OperationOwner owner) throws SQLException {
+        public void afterOuter(SQLSession session, OperationOwner owner) {
         }
 
         @Override
-        public void beforeConnection(SQLSession session, OperationOwner owner) throws SQLException {
+        public void beforeConnection(SQLSession session, OperationOwner owner) {
         }
 
         @Override
-        public void afterConnection(SQLSession session, OperationOwner owner) throws SQLException {
+        public void afterConnection(SQLSession session, OperationOwner owner) {
         }
 
         @Override
@@ -61,7 +61,7 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
         }
 
         @Override
-        public void beforeExec(Statement statement, SQLSession session) throws SQLException {
+        public void beforeExec(Statement statement, SQLSession session) {
         }
 
         @Override

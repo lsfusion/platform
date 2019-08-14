@@ -141,12 +141,12 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     @Override
-    public Long parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException {
+    public Long parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
         return idClass.parseDBF(dbfRecord, fieldName, charset);
     }
 
     @Override
-    public Long parseJSON(Object value) throws ParseException, JSONException {
+    public Long parseJSON(Object value) throws JSONException {
         return idClass.parseJSON(value);
     }
 

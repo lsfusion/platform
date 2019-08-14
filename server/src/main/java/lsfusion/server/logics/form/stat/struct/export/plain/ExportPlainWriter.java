@@ -11,7 +11,7 @@ public abstract class ExportPlainWriter {
 
     protected final ImOrderMap<String, Type> fieldTypes;
     
-    public ExportPlainWriter(ImOrderMap<String, Type> fieldTypes) throws IOException {
+    public ExportPlainWriter(ImOrderMap<String, Type> fieldTypes) {
         this.fieldTypes = fieldTypes;
     }
 

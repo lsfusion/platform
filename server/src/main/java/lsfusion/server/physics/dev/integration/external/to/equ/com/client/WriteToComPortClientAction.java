@@ -20,7 +20,7 @@ public class WriteToComPortClientAction implements ClientAction {
     }
 
     @Override
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         return SerialPortHandler.writeBytes("COM" + comPort, baudRate, file.getBytes());
     }
 }

@@ -467,7 +467,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return sessionEventOldDepends;
     }
 
-    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession, ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession, ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner) {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -1122,7 +1122,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
 
             @Override
-            protected void updateSource(Property property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException {
+            protected void updateSource(Property property, boolean dataChanged, boolean forceUpdate) {
                 assert false;
             }
         };
@@ -1348,13 +1348,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // узнает список изменений произошедших без него у других сессий
-    public ChangedData updateExternal(FormInstance form) throws SQLException {
+    public ChangedData updateExternal(FormInstance form) {
         assert this == form.session;
         return new ChangedData(changes.update(this, form));
     }
 
     // узнает список изменений произошедших без него
-    public ChangedData update(FormInstance form) throws SQLException {
+    public ChangedData update(FormInstance form) {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
         assert activeForms.containsKey(form);
 
@@ -1603,7 +1603,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(OldProperty oldProp : oldProps)
             updateApplyStartCurrentClasses(session, oldProp);
     }
-    private void fillDependApplyStartCurrentClasses(ApplyCalcEvent event, MAddSet<OldProperty> oldProps, BusinessLogics BL) throws SQLException, SQLHandledException {
+    private void fillDependApplyStartCurrentClasses(ApplyCalcEvent event, MAddSet<OldProperty> oldProps, BusinessLogics BL) {
         ImOrderSet<ApplySingleEvent> dependProps = BL.getSingleApplyDependFrom(event, this, !Settings.get().isDisableCorrelations());
 
         // здесь нужно было бы добавить, что если есть oldProperty с DB и EVENT scope'ами считать их один раз (для этого сделать applyTables и applyChanges), но с учетом setPrevScope'ов, ситуация когда таки oldProperty будут встречаться достаточно редкая
@@ -1619,7 +1619,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     boolean flush = false;
 
     private FunctionSet<Property> neededProps = null;
-    private void startPendingSingles(Action action) throws SQLException {
+    private void startPendingSingles(Action action) {
         assert isInTransaction();
 
         if(!action.singleApply)
@@ -2092,7 +2092,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         dropActiveSessionEventsCaches();
     }
 
-    private void dropFormCaches() throws SQLException {
+    private void dropFormCaches() {
         dropActiveSessionEventsCaches();
         sessionEventOldDepends = null;
     }
@@ -2291,7 +2291,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         @Override
-        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) {
             throw new RuntimeException("no client context is supported here (for example - currentUser, currentComputer, etc.)");
         }
     };

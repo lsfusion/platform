@@ -26,7 +26,7 @@ public class SaveBackupAction extends InternalAction {
         backupInterface = i.next();
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
 
             DataObject backupObject = context.getDataKeyValue(backupInterface);

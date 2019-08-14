@@ -123,7 +123,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public Date parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+    public Date parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
         return readDBF(dbfRecord.getDate(fieldName));
     }
     @Override

@@ -22,7 +22,7 @@ public class KillSQLProcessAction extends InternalAction {
     }
 
     @Override
-    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             Integer processId = (Integer) findProperty("idSQLProcess[STRING[10]]").read(context, currentObject);

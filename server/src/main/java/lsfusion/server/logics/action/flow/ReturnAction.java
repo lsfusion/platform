@@ -23,7 +23,7 @@ public class ReturnAction extends ChangeFlowAction {
         return super.hasFlow(type);
     }
 
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         return FlowResult.RETURN;
     }
 

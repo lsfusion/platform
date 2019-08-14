@@ -15,7 +15,7 @@ public class DownloadFileClientAction implements ClientAction {
         this.bytes = bytes;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) {
         try {
             SystemUtils.writeUserFile(path, bytes);
         } catch (Exception e) {

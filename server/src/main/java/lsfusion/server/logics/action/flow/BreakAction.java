@@ -22,7 +22,7 @@ public class BreakAction extends ChangeFlowAction {
         return super.hasFlow(type);
     }
 
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         return FlowResult.BREAK;
     }
 

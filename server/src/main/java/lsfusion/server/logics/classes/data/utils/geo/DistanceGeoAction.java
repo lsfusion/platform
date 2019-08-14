@@ -34,7 +34,7 @@ public class DistanceGeoAction extends GeoAction {
         super(LM, classes);
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLHandledException {
     }
 
     protected int[] readDistances(int size, String origins, String destinations, boolean useTor, int attempt) throws JSONException, IOException, InterruptedException {
@@ -64,7 +64,7 @@ public class DistanceGeoAction extends GeoAction {
         return distances;
     }
 
-    private NetLayer getNetLayer() throws IOException {
+    private NetLayer getNetLayer() {
         NetLayer lowerNetLayer = NetFactory.getInstance().getNetLayerById(NetLayerIDs.TOR);
         // wait until TOR is ready (optional):
         lowerNetLayer.waitUntilReady();

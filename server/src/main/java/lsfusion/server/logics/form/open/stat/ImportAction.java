@@ -10,8 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
@@ -24,7 +22,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -65,7 +62,7 @@ public abstract class ImportAction extends SystemAction {
             return readFile(((DataObject) value).objectClass.getType(), ((DataObject) value).object);
         return null;
     }
-    private static RawFileData readFile(Type type, Object singleFile) throws SQLException, SQLHandledException {
+    private static RawFileData readFile(Type type, Object singleFile) {
         if (type instanceof StaticFormatFileClass) {
             return (RawFileData) singleFile;
         } else {
@@ -75,7 +72,7 @@ public abstract class ImportAction extends SystemAction {
         }
     }
 
-    protected abstract FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException;
+    protected abstract FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException;
 
     @Override
     protected FlowResult aspectExecute(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
@@ -85,7 +82,7 @@ public abstract class ImportAction extends SystemAction {
             FormImportData data = getData(context);
             result = data.result();
             addedObjects = data.resultAddedObjects();
-        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
 

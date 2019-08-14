@@ -79,7 +79,7 @@ public class TaskRunner {
             executor.shutdownNow();
     }
 
-    public void interruptThreadPoolProcesses(ExecutionContext context) throws SQLException, SQLHandledException {
+    public void interruptThreadPoolProcesses(ExecutionContext context) {
         try {
             Field workerField = ThreadPoolExecutor.class.getDeclaredField("workers");
             workerField.setAccessible(true);
