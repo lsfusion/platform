@@ -21,9 +21,12 @@ public class RecursiveTable extends NamedTable implements NotMaterializable {
     private final TableStatKeys statKeys;
     // assert'им что properties IntegralClass'ы
     
-    public RecursiveTable(String name, ImSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, TableStatKeys statKeys) {
+    public final boolean noInnerFollows;
+    
+    public RecursiveTable(String name, ImSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, TableStatKeys statKeys, boolean noInnerFollows) {
         super(name, keys.sort(), properties, classes, getPropClasses(properties, classes));
         this.statKeys = statKeys;
+        this.noInnerFollows = noInnerFollows;
     }
 
     public TableStatKeys getTableStatKeys() {
@@ -36,12 +39,12 @@ public class RecursiveTable extends NamedTable implements NotMaterializable {
 
     @Override
     public boolean calcTwins(TwinImmutableObject o) {
-        return super.calcTwins(o) && statKeys.equals(((RecursiveTable)o).statKeys);
+        return super.calcTwins(o) && statKeys.equals(((RecursiveTable)o).statKeys) && noInnerFollows == ((RecursiveTable) o).noInnerFollows;
     }
 
     @Override
     public int immutableHashCode() {
-        return 31 * super.immutableHashCode() + statKeys.hashCode();
+        return 31 * (31 * super.immutableHashCode() + statKeys.hashCode()) + (noInnerFollows ? 1 : 0);
     }
 
     @IdentityLazy

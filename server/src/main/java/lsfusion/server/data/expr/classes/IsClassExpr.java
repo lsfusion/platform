@@ -232,7 +232,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     public Where calculateNotNullWhere() {
-        return expr.isClass(getObjectSet(), type.isInconsistent());
+        return expr.isClass(getObjectSet(), type);
     }
 
     public int hash(HashContext hashContext) {
@@ -273,8 +273,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     @Override
-    public Where isClass(ValueClassSet set, boolean inconsistent) {
-        return StaticClassExpr.isClass(this, set, inconsistent);
+    public Where isClass(ValueClassSet set, IsClassType type) {
+        return StaticClassExpr.isClass(this, set, type);
     }
 
     @Override

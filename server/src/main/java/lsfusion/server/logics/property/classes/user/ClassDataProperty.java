@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.classes.SingleClassExpr;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -105,8 +106,8 @@ public class ClassDataProperty extends AbstractDataProperty implements ObjectCla
         throw new RuntimeException("should not be");
     }
 
-    public Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, boolean inconsistent) {
-        return new IsClassWhere(expr, set, inconsistent);
+    public Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, IsClassType type) {
+        return new IsClassWhere(expr, set, type);
     }
 
     @Override

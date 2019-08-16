@@ -338,7 +338,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         // for keepWhere
         Where groupWhere = thisExpr != null ? thisExpr.getInner().getGroupWhere() : getGroupWhere(innerOuter);
         Where fullWhere = thisExpr != null ? thisExpr.getInner().getFullWhere() : getFullWhere(groupWhere, query);
-        Where keepWhere = getKeepWhere(fullWhere).followFalse(groupWhere.not(), pack);
+        Where keepWhere = getKeepWhere(fullWhere, query.noInnerFollows).followFalse(groupWhere.not(), pack);
 
         final Query packQuery = query.followFalse(packWhere.not(), pack).and(keepWhere); // сначала pack'аем expr
         ImMap<BaseExpr, Expr> packOuterInner = outerInner.mapValues(value -> { // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
@@ -672,11 +672,11 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         return followFalse(Where.TRUE, notWhere, query, innerOuter, null, pack, splitQuery);
     }
 
-    private static Where getKeepWhere(Where fullWhere) {
+    private static Where getKeepWhere(Where fullWhere, boolean noInnerFollows) {
 
         Where keepWhere = Where.TRUE;
         for(ParamExpr key : fullWhere.getOuterKeys())
-            keepWhere = keepWhere.and(fullWhere.getKeepWhere((KeyExpr)key));
+            keepWhere = keepWhere.and(fullWhere.getKeepWhere((KeyExpr)key, noInnerFollows));
         return keepWhere;
     }
 

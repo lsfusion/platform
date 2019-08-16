@@ -16,6 +16,7 @@ import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.classes.VariableClassExpr;
 import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -76,7 +77,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             return classSet.getType().getTypeStat(forJoin);
     }
 
-    public Where getKeepWhere(KeyExpr keyExpr) {
+    public Where getKeepWhere(KeyExpr keyExpr, boolean noInnerFollows) {
         ValueClassSet keepClass = null;
         for(And<VariableSingleClassExpr> where : wheres) {
             AndClassSet keyClass = where.getPartial(keyExpr);
@@ -89,8 +90,8 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             else
                 keepClass = (ValueClassSet)keepClass.or(keyKeepClass);
         }
-
-        return keyExpr.isClass(keepClass);
+        
+        return keyExpr.isClass(keepClass, noInnerFollows ? IsClassType.VIRTUAL : IsClassType.CONSISTENT);
     }
     
     public boolean checkType(ParamExpr keyExpr,Type type) {

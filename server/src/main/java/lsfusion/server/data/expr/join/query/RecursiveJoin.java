@@ -17,6 +17,7 @@ import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.RecursiveTable;
@@ -34,6 +35,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
 
 public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, RecursiveJoin, RecursiveJoin.QueryOuterContext> {
@@ -223,7 +225,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         if(adjustStat != null)
             tableStatKeys = tableStatKeys.decrease(adjustStat);
         RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
-                classWhere.mapClasses(recKeys), tableStatKeys);
+                classWhere.mapClasses(recKeys), tableStatKeys, query.noInnerFollows);
         if(rRecTable != null)
             rRecTable.set(recTable);
 
@@ -239,7 +241,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         return group.keys().mapRevValues((GetValue<KeyExpr, KeyExpr>) recKey -> BaseUtils.nvl(mapIterate.get(recKey), recKey));
     }
     public Where getIsClassWhere() {
-        return getClassWhere().mapClasses(group.keys().toRevMap()).getWhere(getFullMapIterate());
+        return getClassWhere().mapClasses(group.keys().toRevMap()).getWhere(getFullMapIterate(), false, query.noInnerFollows ? IsClassType.VIRTUAL : IsClassType.CONSISTENT);
     }
 
     @Override

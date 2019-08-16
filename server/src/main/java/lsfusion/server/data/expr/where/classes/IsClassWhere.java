@@ -49,40 +49,45 @@ public class IsClassWhere extends DataWhere {
     // для того чтобы один и тот же JoinSelect все использовали
     private final IsClassExpr classExpr;
 
-    public final boolean inconsistent; // для проверки / перерасчета классов и определения DataClass для неизвестного объекта
-
-    public IsClassWhere(SingleClassExpr expr, ValueClassSet classes, boolean inconsistent) {
+    public final IsClassType type;
+    
+    public IsClassWhere(SingleClassExpr expr, ValueClassSet classes, IsClassType type) {
         this.expr = expr;
         this.classes = classes;
-        this.inconsistent = inconsistent;
+        this.type = type;
 
         assert !classes.isEmpty();
-        if(classes instanceof ObjectValueClassSet)
-            classExpr = new IsClassExpr(expr, (((ObjectValueClassSet) classes).getObjectClassFields().keys()), inconsistent ? IsClassType.INCONSISTENT : IsClassType.CONSISTENT); // не через classExpr чтобы getWhere
+        if(isNotVirtualObject(classes, type))
+            classExpr = new IsClassExpr(expr, (((ObjectValueClassSet) classes).getObjectClassFields().keys()), type); // не через classExpr чтобы getWhere
         else
             classExpr = null;
     }
 
-    public static Where create(SingleClassExpr expr, ValueClassSet classes, boolean inconsistent) {
-        if(classes instanceof ObjectValueClassSet) {
-            ObjectValueClassSet objectClasses = (ObjectValueClassSet) packClassSet(Where.TRUE, expr, classes, inconsistent);
+    public static boolean isNotVirtualObject(ValueClassSet classes, IsClassType type) {
+        return type != IsClassType.VIRTUAL && classes instanceof ObjectValueClassSet;
+    }
+
+    public static Where create(SingleClassExpr expr, ValueClassSet classes, IsClassType type) {
+        if(isNotVirtualObject(classes, type)) {
+            boolean inconsistent = type.isInconsistent();
+            ObjectValueClassSet objectClasses = (ObjectValueClassSet) packClassSet(Where.TRUE, expr, (ObjectValueClassSet)classes, inconsistent);
             ImRevMap<IsClassField, ObjectValueClassSet> tables;
             if(inconsistent)
                 tables = BaseUtils.immutableCast(objectClasses.getObjectClassFields());
             else
                 tables = objectClasses.getIsClassFields();
             if(tables.size()> IsClassExpr.inlineThreshold)
-                return new IsClassWhere(expr, classes, inconsistent);
+                return new IsClassWhere(expr, classes, type);
             else
-                return getTableWhere(expr, tables, inconsistent);
+                return getTableWhere(expr, tables, type);
         }
-        return new IsClassWhere(expr, classes, inconsistent);
+        return new IsClassWhere(expr, classes, type);
     }
 
-    private static Where getTableWhere(SingleClassExpr expr, ImMap<IsClassField, ObjectValueClassSet> tables, boolean notConsistent) {
+    private static Where getTableWhere(SingleClassExpr expr, ImMap<IsClassField, ObjectValueClassSet> tables, IsClassType type) {
         Where result = Where.FALSE;
         for(int i=0,size=tables.size();i<size;i++)
-            result = result.or(tables.getKey(i).getIsClassWhere(expr, tables.getValue(i), notConsistent));
+            result = result.or(tables.getKey(i).getIsClassWhere(expr, tables.getValue(i), type));
         return result;
     }
 
@@ -119,7 +124,7 @@ public class IsClassWhere extends DataWhere {
     private IsClassWhere(IsClassWhere isClass, MapTranslate translate) {
         this.expr = isClass.expr.translateOuter(translate);
         this.classes = isClass.classes;
-        this.inconsistent = isClass.inconsistent;
+        this.type = isClass.type;
         if(isClass.classExpr!=null)
             classExpr = (IsClassExpr) isClass.classExpr.translateOuter(translate);
         else
@@ -132,13 +137,13 @@ public class IsClassWhere extends DataWhere {
     @ParamLazy
     public Where translate(ExprTranslator translator) {
         // getAdjustJoin в groupJoinsWheres нарушает инвариант создавая WhereJoin у которого появляется новый Expr (IsClassExpr) не в "пути" этого IsClassWhere и при проталкивании получаются проблемы
-        if(classes instanceof ObjectValueClassSet && translator instanceof JoinExprTranslator) {
+        if(classExpr != null && translator instanceof JoinExprTranslator) {
             Expr translatedClassExpr = classExpr.translateExpr(translator);
             if(translatedClassExpr instanceof KeyExpr) // если подставился ключ при проталкивании
                 return ClassChanges.isStaticValueClass(translatedClassExpr, (ObjectValueClassSet)classes); // подставляем compare на конкретные классы N (IN ARRAY ???)
         }
         
-        return expr.translateExpr(translator).isClass(classes, inconsistent);
+        return expr.translateExpr(translator).isClass(classes, type);
     }
 
     public static ValueClassSet getPackSet(Where outWhere, SingleClassExpr expr) {
@@ -148,15 +153,19 @@ public class IsClassWhere extends DataWhere {
         return exprClasses.getValueClassSet();
     }
 
-    private static ValueClassSet packClassSet(Where trueWhere, SingleClassExpr expr, ValueClassSet classes, boolean inconsistent) {
+    private static ValueClassSet packClassSet(Where trueWhere, SingleClassExpr expr, ObjectValueClassSet classes, boolean inconsistent) {
+        ValueClassSet resultClasses = classes;
         ValueClassSet packClasses;
-        if(!inconsistent && classes instanceof ObjectValueClassSet && ((ObjectValueClassSet) classes).getIsClassFields().size()>1 && ((packClasses = getPackSet(trueWhere, expr)) != null)) // проверка на ObjectValueClassSet - оптимизация
-            classes = (ValueClassSet) packClasses.and(classes);
-        return classes;
+        if(!inconsistent && classes.getIsClassFields().size()>1 && ((packClasses = getPackSet(trueWhere, expr)) != null)) // проверка на ObjectValueClassSet - оптимизация
+            resultClasses = (ValueClassSet) packClasses.and(resultClasses);
+        return resultClasses;
     }
     @Override
     public Where packFollowFalse(Where falseWhere) {
-        return expr.packFollowFalse(falseWhere).isClass(packClassSet(falseWhere.not(), expr, classes, inconsistent), inconsistent); // два раза будет паковаться, но может и правильно потому как expr меняется
+        ValueClassSet packedClasses = classes;
+        if(isNotVirtualObject(packedClasses, type))
+            packedClasses = packClassSet(falseWhere.not(), expr, (ObjectValueClassSet)packedClasses, type.isInconsistent());
+        return expr.packFollowFalse(falseWhere).isClass(packedClasses, type); // will be packed twice, but it's probably ok, since expr can be changed
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
@@ -164,7 +173,7 @@ public class IsClassWhere extends DataWhere {
     }
 
     protected void fillDataJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
-        if(classes instanceof ObjectValueClassSet)
+        if(classExpr != null)
             classExpr.fillJoinWheres(joins,andWhere);
         else
             expr.fillJoinWheres(joins,andWhere);        
@@ -183,7 +192,7 @@ public class IsClassWhere extends DataWhere {
     }
 
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        if(classes instanceof ObjectValueClassSet) { // "модифицируем" статистику classExpr'а чтобы "уточнить статистику" по объектам
+        if(classExpr != null) { // "модифицируем" статистику classExpr'а чтобы "уточнить статистику" по объектам
             // тут правда есть нюанс, что статистика по классам считается одним механизмом, а по join'ами другим
             ExprStatJoin adjustJoin = classExpr.getAdjustStatJoin(new Stat(((ObjectValueClassSet) classes).getCount()), keyStat, statType, false);
             return groupDataJoinsWheres(adjustJoin, type);
@@ -191,19 +200,19 @@ public class IsClassWhere extends DataWhere {
         return expr.getNotNullWhere().groupJoinsWheres(keepStat, statType, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type));
     }
     public ClassExprWhere calculateClassWhere() {
-        return expr.getClassWhere(inconsistent ? getBaseClass().getUpSet() : classes).and(expr.getNotNullClassWhere());
+        return expr.getClassWhere(type.isInconsistent() ? getBaseClass().getUpSet() : classes).and(expr.getNotNullClassWhere());
     }
 
     public int hash(HashContext hashContext) {
-        return (expr.hashOuter(hashContext) ^ classes.hashCode()*31) + (inconsistent ? 1 : 0);
+        return (expr.hashOuter(hashContext) ^ classes.hashCode()*31) + type.hashCode();
     }
 
     public boolean calcTwins(TwinImmutableObject obj) {
-        return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes) && inconsistent == (((IsClassWhere)obj).inconsistent);
+        return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes) && type.equals(((IsClassWhere)obj).type);
     }
 
     @Override
     public boolean isClassWhere() {
-        return !inconsistent;
+        return !type.isInconsistent();
     }
 }

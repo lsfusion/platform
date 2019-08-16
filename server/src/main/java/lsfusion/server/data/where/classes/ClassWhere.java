@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.where.Where;
@@ -122,30 +123,14 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         return result;
     }
 
-    public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
-        return getWhere(mapExprs, false, false);
+    public Where getWhere(ImMap<K, ? extends Expr> mapExprs, boolean onlyObject, IsClassType type) {
+        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), onlyObject, type);
     }
 
-    public Where getObjectWhere(ImMap<K, ? extends Expr> mapExprs) {
-        return getWhere(mapExprs, true, false);
-    }
-
-    public Where getInconsistentWhere(ImMap<K, ? extends Expr> mapExprs) {
-        return getWhere(mapExprs, true, true);
-    }
-    
-    public Where getInconsistentWhere(GetValue<Expr, K> mapExprs) {
-        return getWhere(mapExprs, true, true);
-    }
-
-    private Where getWhere(ImMap<K, ? extends Expr> mapExprs, boolean onlyObject, boolean inconsistent) {
-        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), onlyObject, inconsistent);
-    }
-
-    private Where getWhere(GetValue<Expr, K> mapExprs, boolean onlyObject, boolean inconsistent) {
+    public Where getWhere(GetValue<Expr, K> mapExprs, boolean onlyObject, IsClassType type) {
         Where result = Where.FALSE;
         for(And<K> andWhere : wheres)
-            result = result.or(andWhere.getWhere(mapExprs, onlyObject, inconsistent));
+            result = result.or(andWhere.getWhere(mapExprs, onlyObject, type));
         return result;
     }
 

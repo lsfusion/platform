@@ -41,15 +41,15 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
 
     private final static DataClass defaultUnknownFormulaStaticClass = IntegerClass.instance;
     
-    public static Where isClass(StaticClassExprInterface expr, AndClassSet set, boolean notConsistent) {
+    public static Where isClass(StaticClassExprInterface expr, AndClassSet set, IsClassType type) {
         ConcreteClass staticClass = expr.getStaticClass();
         // тут конечно из-за отсутствия keyType могут быть чудеса вроде f(a) <- b (+) 5 WHERE g(a) или просто (b (+) NULL) AS  NUMERIC
         if(staticClass == null && (expr instanceof LinearExpr || expr instanceof FormulaExprInterface)) // поэтому пока вставим подстраховку от таких случаев, чтобы не падала
             staticClass = defaultUnknownFormulaStaticClass;
         return staticClass.inSet(set)?Where.TRUE:Where.FALSE;
     }
-    public Where isClass(ValueClassSet set, boolean inconsistent) {
-        return isClass(this, set, inconsistent);
+    public Where isClass(ValueClassSet set, IsClassType type) {
+        return isClass(this, set, type);
     }
 
     public static AndClassSet getAndClassSet(StaticClassExprInterface expr, ImMap<VariableSingleClassExpr, AndClassSet> and) {

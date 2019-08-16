@@ -669,7 +669,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
         @TwinLazy
         public InnerFollows<KeyField> getInnerFollows() {
-            if(Settings.get().isDisableInnerFollows() || Table.this instanceof Property.VirtualTable)
+            if(Settings.get().isDisableInnerFollows() || Table.this instanceof Property.VirtualTable || (Table.this instanceof RecursiveTable && ((RecursiveTable) Table.this).noInnerFollows))
                 return InnerFollows.EMPTY();
 
             return new InnerFollows<>(getClassWhere(), keys.getSet(), Table.this);
