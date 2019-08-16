@@ -63,8 +63,8 @@ public abstract class StaticClassNullableExpr extends NullableExpr implements St
     }
 
     @Override
-    public Where isClass(ValueClassSet set, boolean inconsistent) {
-        return StaticClassExpr.isClass(this, set, inconsistent);
+    public Where isClass(ValueClassSet set, IsClassType type) {
+        return StaticClassExpr.isClass(this, set, type);
     }
 
     @Override

@@ -117,7 +117,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     Where mapWhere(ImMap<KeyExpr, ? extends Expr> map);
 
-    Where getKeepWhere(KeyExpr expr);
+    Where getKeepWhere(KeyExpr expr, boolean noInnerFollows);
 
     Where ifElse(Where trueWhere, Where falseWhere);
 

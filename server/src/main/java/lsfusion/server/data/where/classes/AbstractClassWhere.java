@@ -18,6 +18,7 @@ import lsfusion.base.dnf.ExtraMapSetWhere;
 import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.ValueClassSet;
@@ -165,14 +166,14 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return who.containsAll(what, false); // важно что не implicitCast, для детерменированности, чтобы выбирало именно
         }
 
-        public Where getWhere(GetValue<Expr, K> mapExprs, boolean onlyObject, boolean inconsistent) {
-            assert !inconsistent || onlyObject;
+        public Where getWhere(GetValue<Expr, K> mapExprs, boolean onlyObject, IsClassType type) {
+            assert !type.isInconsistent() || onlyObject;
             
             Where result = Where.TRUE;
             for(int i=0,size=size();i<size;i++) {
                 AndClassSet value = getValue(i);
                 if(((value instanceof ObjectValueClassSet) || !onlyObject) && BaseUtils.hashEquals(value, value.getValueClassSet())) // если ValueClassSet, тут формально можно добавлять and Not BaseClass
-                    result = result.and(mapExprs.getMapValue(getKey(i)).isClass((ValueClassSet)value, inconsistent));
+                    result = result.and(mapExprs.getMapValue(getKey(i)).isClass((ValueClassSet)value, type));
             }
             return result;
         }

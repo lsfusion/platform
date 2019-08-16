@@ -180,8 +180,8 @@ public class CaseExpr extends Expr {
         return cases.getWhere(cCase -> cCase.getWhere());
     }
 
-    public Where isClass(final ValueClassSet set, final boolean inconsistent) {
-        return cases.getWhere(cCase -> cCase.isClass(set, inconsistent));
+    public Where isClass(final ValueClassSet set, final IsClassType type) {
+        return cases.getWhere(cCase -> cCase.isClass(set, type));
     }
 
     public Where compareBase(final BaseExpr expr, final Compare compareBack) {

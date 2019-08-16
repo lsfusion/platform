@@ -61,7 +61,7 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
         return interfaces.single().interfaceClass;
     }
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        Expr prevExpr = joinImplement.singleValue().classExpr(baseClass);
+        Expr prevExpr = joinImplement.singleValue().classExpr(baseClass, IsClassProperty.getIsClassType(calcType));
 //        if(!hasChanges(propChanges))
             return prevExpr;
 
@@ -114,11 +114,12 @@ public class ObjectClassProperty extends SimpleIncrementProperty<ClassPropertyIn
         return BaseUtils.immutableCast(baseClass.getUpObjectClassFields().keys());
     }
 
-    // we don't want real tables to be used for classes (because it will lead to too early cache reading)
-    @Override
-    protected boolean isClassVirtualized(CalcClassType calcType) {
-        return true;
-    }
+    // now it's not relevant since we've supported IsClassType.VIRTUAL
+//    // we don't want real tables to be used for classes (because it will lead to too early cache reading)
+//    @Override
+//    protected boolean isClassVirtualized(CalcClassType calcType) {
+//        return true;
+//    }
 
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности

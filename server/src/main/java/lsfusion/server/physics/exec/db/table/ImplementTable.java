@@ -24,6 +24,7 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.classes.SingleClassExpr;
 import lsfusion.server.data.expr.join.classes.IsClassField;
 import lsfusion.server.data.expr.join.classes.ObjectClassField;
@@ -120,9 +121,9 @@ public class ImplementTable extends DBTable { // последний интерф
             public BaseExpr getFollowExpr(BaseExpr joinExpr) {
                 return (BaseExpr) joinAnd(MapFact.singleton(keys.single(), joinExpr)).getExpr(field);
             }
-            public Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, boolean inconsistent) {
+            public Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, IsClassType type) {
                 assert isFull();
-                assert !inconsistent;
+                assert type == IsClassType.CONSISTENT;
                 assert getClasses().getCommonClass(keys.single()).containsAll(set, false) && set.containsAll(getClasses().getCommonClass(keys.single()), false);
                 return joinAnd(MapFact.singleton(keys.single(), expr)).getWhere();
             }

@@ -16,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFStaticLazy;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
@@ -190,17 +191,16 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
             mSet.exclAdd(getChanged(type, scope));
     }
 
-    // we don't want real tables to be used for classes (because it will lead to too early cache reading)
     @Override
     protected boolean isClassVirtualized(CalcClassType calcType) {
-        return true;
+        return calcType == CalcClassType.PREVSAME;
     }
-    
-    // hack - need this override, because otherwise : initFullTablesTask uses Join + IsClass => calcClassValueWhere => isClass => getUpClassFields => too early caches reading
-    @Override
-    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
-        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
-    }
+//    
+//    // hack - need this override, because otherwise : initFullTablesTask uses Join + IsClass => calcClassValueWhere => isClass => getUpClassFields => too early caches reading
+//    @Override
+//    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
+//        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
+//    }
 
 //    public static boolean checkSession(OuterContext context) {
 //        final Result<Boolean> found = new Result<>(false);
@@ -221,7 +221,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return interfaces.single().interfaceClass;
     }
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        Where hadClass = joinImplement.singleValue().isUpClass(getInterfaceClass(), calcType.isRecalc());
+        Where hadClass = joinImplement.singleValue().isUpClass(getInterfaceClass(), getIsClassType(calcType));
 //        if(!hasChanges(propChanges))
         return ValueExpr.get(hadClass);
 
@@ -253,6 +253,10 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
 //        if(changedWhere != null)
 //            changedWhere.add(hasClass.and(hadClass.not()).or(dataChangedWhere.and(hadClass).and(hasClass.not())));        
 //        return ValueExpr.get(hasClass.or(hadClass.and(dataChangedWhere.not())));
+    }
+
+    public static IsClassType getIsClassType(CalcType calcType) {
+        return calcType.isRecalc() ? IsClassType.INCONSISTENT : (calcType instanceof CalcClassType ? IsClassType.VIRTUAL : IsClassType.CONSISTENT);
     }
 
     @Override

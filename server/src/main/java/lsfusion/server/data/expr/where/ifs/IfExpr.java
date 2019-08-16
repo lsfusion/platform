@@ -183,8 +183,8 @@ public class IfExpr extends Expr {
         return trueExpr.classExpr(classes, type).ifElse(ifWhere, falseExpr.classExpr(classes, type));
     }
 
-    public Where isClass(ValueClassSet set, boolean inconsistent) {
-        return ifWhere.ifElse(trueExpr.isClass(set, inconsistent), falseExpr.isClass(set, inconsistent));
+    public Where isClass(ValueClassSet set, IsClassType type) {
+        return ifWhere.ifElse(trueExpr.isClass(set, type), falseExpr.isClass(set, type));
     }
 
     public Where compareBase(BaseExpr expr, Compare compareBack) {

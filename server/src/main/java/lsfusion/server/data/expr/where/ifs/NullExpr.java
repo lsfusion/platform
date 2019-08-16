@@ -67,7 +67,7 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public Where isClass(ValueClassSet set, boolean inconsistent) {
+    public Where isClass(ValueClassSet set, IsClassType type) {
         return Where.FALSE;
     }
 

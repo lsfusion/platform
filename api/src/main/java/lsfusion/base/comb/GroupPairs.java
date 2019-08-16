@@ -54,16 +54,16 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
         public boolean hasNext() {
             if(first)
                 return true;
-
+            
             if(maxIterations > 0 && groupNext >= maxIterations) {
-                try {
-                    String stackTrace = "";
-                    for(StackTraceElement stackLine : Thread.currentThread().getStackTrace())
-                        stackTrace += stackLine.toString() + '\n';
-                    if (logger.isDebugEnabled())
-                        logger.debug("MAP INNER HASH : " + map1 + '\n' + map2 + '\n' + stackTrace);
-                } catch(Exception e) {
-                }
+//                try {
+//                    String stackTrace = "";
+//                    for(StackTraceElement stackLine : Thread.currentThread().getStackTrace())
+//                        stackTrace += stackLine.toString() + '\n';
+//                    if (logger.isDebugEnabled())
+//                        logger.debug("MAP INNER HASH : " + map1 + '\n' + map2 + '\n' + stackTrace);
+//                } catch(Exception e) {
+//                }
                 return false;
             }
 

@@ -131,15 +131,15 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
 
     public Where isClass(ValueClassSet set) {
-        return isClass(set, false);
+        return isClass(set, IsClassType.CONSISTENT);
     }
-    public abstract Where isClass(ValueClassSet set, boolean inconsistent); // по 2-му параметру см. описание IsClassWhere
+    public abstract Where isClass(ValueClassSet set, IsClassType type);
     public Where isUpClass(ValueClass set) {
-        return isUpClass(set, false);
+        return isUpClass(set, IsClassType.CONSISTENT);
     }
 
-    public Where isUpClass(ValueClass set, boolean inconsistent) {
-        return isClass(set.getUpSet(), inconsistent);
+    public Where isUpClass(ValueClass set, IsClassType type) {
+        return isClass(set.getUpSet(), type);
     }
 
     public boolean isNull() {

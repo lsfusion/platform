@@ -65,8 +65,8 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         }
     }
 
-    public Where isClass(ValueClassSet set, boolean inconsistent) {
-        if(!inconsistent) {
+    public Where isClass(ValueClassSet set, IsClassType type) {
+        if(!type.isInconsistent()) {
             // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
             if(!intersect(set)) // если не пересекается то false
                 return Where.FALSE;
@@ -74,6 +74,6 @@ public abstract class SingleClassExpr extends VariableClassExpr {
                 if(set.getOr().containsAll(getOrSet(), true)) // если set содержит все элементы, то достаточно просто что не null (implicit cast'ы подходят)
                     return getWhere();
         }
-        return IsClassWhere.create(this, set, inconsistent);
+        return IsClassWhere.create(this, set, type);
     }
 }

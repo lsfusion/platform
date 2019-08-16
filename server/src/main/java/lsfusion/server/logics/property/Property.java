@@ -25,6 +25,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -435,8 +436,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         // тут есть вот какая проблема в OrWhere implicitCast=false, и поэтому более узкий тип DataClass в and not не уйдет и упадет exception на getSource, вообще частично проблема решается fitClasses, но если есть и более узкий класс и верхние оптимизации не срабатывают бывает баг
         // соответственно проверяем только объектные классы
         ImMap<KeyField, Expr> mapKeys = mapTable.mapKeys.crossJoin(change.getMapExprs());
-        Where classWhere = fieldClassWhere.getObjectWhere(MapFact.addExcl(mapKeys, field, change.expr))
-                .or(mapTable.table.getClasses().getObjectWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
+        Where classWhere = fieldClassWhere.getWhere(MapFact.addExcl(mapKeys, field, change.expr), true, IsClassType.CONSISTENT)
+                .or(mapTable.table.getClasses().getWhere(mapKeys, true, IsClassType.CONSISTENT).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
         
         if(classWhere.isFalse()) // оптимизация
             return new Pair<>(createChangeTable(debugInfo+"-ssas:false"), changeTable);

@@ -133,7 +133,7 @@ public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {
     }
 
     @Override
-    public Where isClass(ValueClassSet set, boolean inconsistent) {
+    public Where isClass(ValueClassSet set, IsClassType type) {
         throw new UnsupportedOperationException();
     }
 

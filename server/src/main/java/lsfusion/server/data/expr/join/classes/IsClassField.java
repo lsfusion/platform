@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr.join.classes;
 
 import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.classes.SingleClassExpr;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.where.Where;
@@ -12,5 +13,5 @@ public interface IsClassField {
 
     BaseExpr getFollowExpr(BaseExpr joinExpr);
 
-    Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, boolean inconsistent);
+    Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, IsClassType type);
 }

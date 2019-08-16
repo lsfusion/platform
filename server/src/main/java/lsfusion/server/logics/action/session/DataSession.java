@@ -1215,19 +1215,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 
         final Expr dataExpr = property.getInconsistentExpr(mapKeys, baseClass);
 
-        Where correctClasses = property.getClassValueWhere(AlgType.storedType).getInconsistentWhere(value -> {
+        Where correctClasses = property.getClassValueWhere(AlgType.storedType).getWhere(value -> {
             if(value instanceof PropertyInterface) {
                 return mapKeys.get((P)value);
             }
             assert value.equals("value");
             return dataExpr;
-        });
+        }, true, IsClassType.INCONSISTENT);
         return dataExpr.getWhere().and(correctClasses.not());
     }
 
     public static <P extends PropertyInterface> Where getIncorrectWhere(ImplementTable table, BaseClass baseClass, final ImRevMap<KeyField, KeyExpr> mapKeys) {
         final Where inTable = baseClass.getInconsistentTable(table).join(mapKeys).getWhere();
-        Where correctClasses = table.getClasses().getInconsistentWhere(mapKeys);
+        Where correctClasses = table.getClasses().getWhere(mapKeys, true, IsClassType.INCONSISTENT);
         return inTable.and(correctClasses.not());
     }
 
@@ -1235,7 +1235,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         Expr fieldExpr = baseClass.getInconsistentTable(table).join(mapKeys).getExpr(field);
         resultExpr.set(fieldExpr);
         final Where inTable = fieldExpr.getWhere();
-        Where correctClasses = table.getClassWhere(field).getInconsistentWhere(MapFact.addExcl(mapKeys, field, fieldExpr));
+        Where correctClasses = table.getClassWhere(field).getWhere(MapFact.addExcl(mapKeys, field, fieldExpr), true, IsClassType.INCONSISTENT);
         return inTable.and(correctClasses.not());
     }
 

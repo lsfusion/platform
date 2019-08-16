@@ -390,8 +390,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public Stat getKeyStat(ParamExpr key, boolean forJoin) {
         return getClassWhere().getKeyStat(key, forJoin);
     }
-    public Where getKeepWhere(KeyExpr expr) {
-        return getClassWhere().getKeepWhere(expr);
+    public Where getKeepWhere(KeyExpr expr, boolean noInnerFollows) {
+        return getClassWhere().getKeepWhere(expr, noInnerFollows);
     }
 
     protected abstract Where translate(MapTranslate translator);
