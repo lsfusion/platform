@@ -22,6 +22,13 @@ public class CloseAction extends FormFlowAction {
         form.formClose(context);
     }
 
+    //because it executes from anywhere
+    //potential problems with events on close
+    @Override
+    protected boolean isSameSession() {
+        return false;
+    }
+
     @Override
     protected LP getShowIf() {
         return showIf;
