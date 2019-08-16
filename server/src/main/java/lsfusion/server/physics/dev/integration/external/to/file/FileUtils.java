@@ -352,9 +352,16 @@ public class FileUtils {
                 ftpClient.enterLocalPassiveMode();
             }
 
-            InputStream inputStream = ftpClient.retrieveFileStream(ftpPath.remoteFile);
-            int returnCode = ftpClient.getReplyCode();
-            return inputStream != null && returnCode != 550;
+            boolean exists;
+            //check file existence
+            try (InputStream inputStream = ftpClient.retrieveFileStream(ftpPath.remoteFile)) {
+                exists = inputStream != null && ftpClient.getReplyCode() != 550;
+            }
+            if(!exists) {
+                //check directory existence
+                exists = ftpClient.changeWorkingDirectory(ftpPath.remoteFile);
+            }
+            return exists;
         } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {
