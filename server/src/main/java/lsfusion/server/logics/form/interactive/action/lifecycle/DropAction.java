@@ -22,6 +22,13 @@ public class DropAction extends FormFlowAction {
         form.formDrop(context);
     }
 
+    //because it executes from anywhere
+    //potential problems with events on drop
+    @Override
+    protected boolean isSameSession() {
+        return false;
+    }
+
     @Override
     protected LP getShowIf() {
         return showIf;
