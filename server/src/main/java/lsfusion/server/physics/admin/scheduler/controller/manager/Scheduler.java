@@ -91,23 +91,6 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         Assert.notNull(logicsInstance, "logicsInstance must be specified");
     }
 
-    private void changeCurrentDate(ExecutionStack stack) {
-        try (DataSession session = createSession()) {
-            session.setNoCancelInTransaction(true);
-
-            java.sql.Date currentDate = (java.sql.Date) BL.timeLM.currentDate.read(session);
-            java.sql.Date newDate = DateConverter.getCurrentDate();
-            if (currentDate == null || currentDate.getDate() != newDate.getDate() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
-                logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
-                BL.timeLM.currentDate.change(newDate, session);
-                session.applyException(BL, stack);
-                logger.info("ChangeCurrentDate finished");
-            }
-        } catch (Exception e) {
-            logger.error(String.format("ChangeCurrentDate error: %s", e));
-        }
-    }
-
     @Override
     public String getEventName() {
         return "scheduler-daemon";
@@ -174,8 +157,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
         daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService(threadCount != null ? threadCount : 5, this);
 
-        List<SchedulerTask> tasks = new ArrayList<>();
-        fillSystemScheduledTasks(tasks);
+        List<SchedulerTask> tasks = new ArrayList<>(BL.getSystemTasks(this));
         fillUserScheduledTasks(session, tasks);
 
         for (SchedulerTask task : tasks) {
@@ -185,11 +167,6 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             futures.addAll(task.schedule(daemonTasksExecutor));
             futuresMap.put(task.scheduledTaskId, futures);
         }
-    }
-
-    private void fillSystemScheduledTasks(List<SchedulerTask> tasks) {
-        tasks.add(new SystemSchedulerTask(this::changeCurrentDate, -1L, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
-        tasks.addAll(BL.getSystemTasks(this));
     }
 
     private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {

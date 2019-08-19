@@ -170,7 +170,9 @@ public class Settings implements Cloneable {
 
     private int updatePingInfo = 3600;
 
-    private int checkCurrentDate = 30;
+    private int checkCurrentDate = 30; //period in seconds
+
+    private int checkCurrentDataDateTime = 1800; //period in seconds
 
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
 
@@ -839,6 +841,14 @@ public class Settings implements Cloneable {
 
     public void setCheckCurrentDate(int checkCurrentDate) {
         this.checkCurrentDate = checkCurrentDate;
+    }
+
+    public int getCheckCurrentDataDateTime() {
+        return checkCurrentDataDateTime;
+    }
+
+    public void setCheckCurrentDataDateTime(int checkCurrentDataDateTime) {
+        this.checkCurrentDataDateTime = checkCurrentDataDateTime;
     }
 
     public int getUpdatePingInfo() {

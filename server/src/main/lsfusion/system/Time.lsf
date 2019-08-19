@@ -2,7 +2,7 @@ MODULE Time;
 
 REQUIRE System;
 
-currentDateTime = FORMULA DATETIME PG 'DATE_TRUNC(\'second\', CURRENT_TIMESTAMP)', MS 'DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)';
+currentDateTime '{logics.date.current.datetime}' = FORMULA DATETIME PG 'DATE_TRUNC(\'second\', CURRENT_TIMESTAMP)', MS 'DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)';
 currentDateTimeMillis = FORMULA DATETIME PG 'DATE_TRUNC(\'milliseconds\', CURRENT_TIMESTAMP)', MS 'DATEADD(millisecond, DATEDIFF(millisecond, 0, GETDATE()), 0)';
 
 toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
@@ -19,6 +19,7 @@ currentHour = extractHour(currentTime());
 currentMinute = extractMinute(currentTime());
 currentSecond = extractSecond(currentTime());
 
+currentDateTimeSnapshot '{logics.date.current.datetime.snapshot}' = DATA DATETIME ();
 currentDate '{time.current.date}' = DATA DATE ();
 
 extractYear = FORMULA INTEGER PG '(extract(year from ($1)))', MS 'datepart(yy, $1)';

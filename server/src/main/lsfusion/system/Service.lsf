@@ -342,7 +342,7 @@ focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User)
 overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
 
 FORM settings '{service.form.settings}'
-    PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
+    PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
                  dataLogicsName, displayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon,
@@ -379,6 +379,8 @@ DESIGN settings {
                 NEW current {
                     caption = '{service.form.settings.caption.current}';
                     MOVE PROPERTY(currentDate());
+                    MOVE PROPERTY(currentDateTime());
+                    MOVE PROPERTY(currentDateTimeSnapshot());
                     MOVE PROPERTY(hostnameServerComputer());
                 }
                 NEW report {

@@ -2,10 +2,7 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
-import lsfusion.base.Result;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -128,6 +125,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1895,26 +1893,62 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler) {
-        if(SystemProperties.inDevMode) // чтобы не мешать при включенных breakPoint'ах
-            return new ArrayList<>();
-
         List<Scheduler.SchedulerTask> result = new ArrayList<>();
-        result.add(getOpenFormCountUpdateTask(scheduler));
-        result.add(getUserLastActivityUpdateTask(scheduler));
-        result.add(getInitPingInfoUpdateTask(scheduler));
-        result.add(getAllocatedBytesUpdateTask(scheduler));
-        result.add(getCleanTempTablesTask(scheduler));
-        result.add(getFlushPendingTransactionCleanersTask(scheduler));
-        result.add(getRestartConnectionsTask(scheduler));
-        result.add(getUpdateSavePointsInfoTask(scheduler));
-        result.addAll(resetCustomReportsCacheTasks(scheduler));
-        result.add(getProcessDumpTask(scheduler));
+        result.add(getChangeCurrentDateTask(scheduler));
+        result.add(getChangeDataCurrentDateTimeTask(scheduler));
+
+        if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
+            result.add(getOpenFormCountUpdateTask(scheduler));
+            result.add(getUserLastActivityUpdateTask(scheduler));
+            result.add(getInitPingInfoUpdateTask(scheduler));
+            result.add(getAllocatedBytesUpdateTask(scheduler));
+            result.add(getCleanTempTablesTask(scheduler));
+            result.add(getFlushPendingTransactionCleanersTask(scheduler));
+            result.add(getRestartConnectionsTask(scheduler));
+            result.add(getUpdateSavePointsInfoTask(scheduler));
+            result.addAll(resetCustomReportsCacheTasks(scheduler));
+            result.add(getProcessDumpTask(scheduler));
+        }
         return result;
     }
     
     private DataSession createSystemTaskSession() throws SQLException {
         return ThreadLocalContext.createSession();
     }
+
+    private Scheduler.SchedulerTask getChangeCurrentDateTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            try (DataSession session = createSystemTaskSession()) {
+                session.setNoCancelInTransaction(true);
+
+                Date currentDate = (Date) timeLM.currentDate.read(session);
+                Date newDate = DateConverter.getCurrentDate();
+                if (currentDate == null || currentDate.getDate() != newDate.getDate() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
+                    logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
+                    timeLM.currentDate.change(newDate, session);
+                    session.applyException(this, stack);
+                    logger.info("ChangeCurrentDate finished");
+                }
+            } catch (Exception e) {
+                logger.error(String.format("ChangeCurrentDate error: %s", e));
+            }
+        }, true, Settings.get().getCheckCurrentDate(), true, "Changing current date");
+    }
+
+    private Scheduler.SchedulerTask getChangeDataCurrentDateTimeTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> {
+            try (DataSession session = createSystemTaskSession()) {
+                session.setNoCancelInTransaction(true);
+                Timestamp newDataDateTime = new Timestamp(System.currentTimeMillis());
+                logger.info("Change currentDateTimeSnapshot to " + newDataDateTime);
+                timeLM.currentDateTimeSnapshot.change(newDataDateTime, session);
+                session.applyException(this, stack);
+            } catch (Exception e) {
+                logger.error(String.format("ChangeCurrentDate error: %s", e));
+            }
+        }, true, Settings.get().getCheckCurrentDataDateTime(), true, "Changing current date");
+    }
+
 
     private Scheduler.SchedulerTask getOpenFormCountUpdateTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {

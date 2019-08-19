@@ -12,6 +12,7 @@ import java.io.IOException;
 public class TimeLogicsModule extends ScriptingLogicsModule{
 
     public LP currentDateTime;
+    public LP currentDateTimeSnapshot;
     public LP currentDate;
 
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -23,6 +24,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         super.initMainLogic();
 
         currentDateTime = findProperty("currentDateTime[]");
+        currentDateTimeSnapshot = findProperty("currentDateTimeSnapshot[]");
         currentDate = findProperty("currentDate[]");
     }
 }
