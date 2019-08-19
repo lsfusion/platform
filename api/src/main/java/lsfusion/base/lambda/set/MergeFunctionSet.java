@@ -1,6 +1,6 @@
 package lsfusion.base.lambda.set;
 
-public class MergeFunctionSet<T> implements FunctionSet<T> {
+public class MergeFunctionSet<T> implements SFunctionSet<T> {
 
     private final FunctionSet<T> set1;
     private final FunctionSet<T> set2;
@@ -14,15 +14,5 @@ public class MergeFunctionSet<T> implements FunctionSet<T> {
 
     public boolean contains(T element) {
         return set1.contains(element) || set2.contains(element);
-    }
-
-    public boolean isEmpty() {
-        return false;
-//        return set1.isEmpty() && set2.isEmpty();
-    }
-
-    public boolean isFull() {
-        return false;
-//        return set1.isFull() || set2.isFull();
     }
 }

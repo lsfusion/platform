@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.integration.service;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
@@ -79,7 +79,7 @@ public class ImportProperty <P extends PropertyInterface> {
     }
 
     private static <P> ImMap<P, Expr> getImplementExprs(final ImMap<P, ImportKeyInterface> mapping, final ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, final ImMap<ImportField, Expr> importExprs, final Modifier modifier) throws SQLException, SQLHandledException {
-        return mapping.mapValuesEx((GetExValue<Expr, ImportKeyInterface, SQLException, SQLHandledException>) value -> value.getExpr(importExprs, addedKeys, modifier));
+        return mapping.mapValuesEx((ThrowingFunction<ImportKeyInterface, Expr, SQLException, SQLHandledException>) value -> value.getExpr(importExprs, addedKeys, modifier));
     }
 
     @Override

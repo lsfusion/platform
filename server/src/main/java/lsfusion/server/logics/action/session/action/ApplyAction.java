@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -31,6 +30,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class ApplyAction extends KeepContextAction {
     private final ActionMapImplement<?, PropertyInterface> action;
@@ -72,7 +72,7 @@ public class ApplyAction extends KeepContextAction {
 
         ImList<PropertyInterfaceImplement<PropertyInterface>> listWheres =
                 ((ImList<ActionMapImplement<?, PropertyInterface>>)actions).mapListValues(
-                        (GetValue<PropertyInterfaceImplement<PropertyInterface>, ActionMapImplement<?, PropertyInterface>>) ActionMapImplement::mapCalcWhereProperty);
+                        (Function<ActionMapImplement<?, PropertyInterface>, PropertyInterfaceImplement<PropertyInterface>>) ActionMapImplement::mapCalcWhereProperty);
         return PropertyFact.createUnion(interfaces, listWheres);
         
     }

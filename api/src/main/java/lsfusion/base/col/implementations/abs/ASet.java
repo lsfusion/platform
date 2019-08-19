@@ -11,9 +11,11 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.NotFunctionSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
 
@@ -89,11 +91,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     public ImSet<K> removeIncl(final K remove) { // assert что содержит
         assert contains(remove);
 
-        return filterFn(new SFunctionSet<K>() {
-            public boolean contains(K element) {
-                return !BaseUtils.hashEquals(element, remove);
-            }
-        });
+        return filterFn(element -> !BaseUtils.hashEquals(element, remove));
     }
 
 
@@ -183,11 +181,11 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public ImMap<K, K> toMap() {
-        return mapValues((GetValue<K, K>) value -> value);
+        return mapValues((K value) -> value);
     }
 
     public ImRevMap<K, K> toRevMap() {
-        return mapRevValues((GetValue<K, K>) value -> value);
+        return mapRevValues((K value) -> value);
     }
 
     public ImOrderSet<K> toOrderSet() {
@@ -209,114 +207,114 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return SetFact.fromJavaOrderSet(sortList);
     }
 
-    public <M> ImSet<M> mapSetValues(GetValue<M, K> getter) {
+    public <M> ImSet<M> mapSetValues(Function<K, M> getter) {
         MExclSet<M> mResult = SetFact.mExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(get(i)));
+            mResult.exclAdd(getter.apply(get(i)));
         return mResult.immutable();
     }
 
-    public <M> ImMap<K, M> mapItValues(GetValue<M, K> getter) {
+    public <M> ImMap<K, M> mapItValues(Function<K, M> getter) {
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(get(i)));
+            mvResult.mapValue(i, getter.apply(get(i)));
         return mvResult.immutableValue();
     }
 
-    public <M> ImSet<M> mapItSetValues(GetValue<M, K> getter) {
+    public <M> ImSet<M> mapItSetValues(Function<K, M> getter) {
         MExclSet<M> mResult = SetFact.mExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getter.getMapValue(get(i)));
+            mResult.exclAdd(getter.apply(get(i)));
         return mResult.immutable();
     }
 
-    public <M> ImMap<K, M> mapValues(GetStaticValue<M> getter) {
+    public <M> ImMap<K, M> mapValues(Supplier<M> getter) {
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue());
+            mvResult.mapValue(i, getter.get());
         return mvResult.immutableValue();
     }
 
-    public <M> ImMap<K, M> mapValues(GetIndex<M> getter) {
+    public <M> ImMap<K, M> mapValues(IntFunction<M> getter) {
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(i));
+            mvResult.mapValue(i, getter.apply(i));
         return mvResult.immutableValue();
     }
 
-    public <M> ImMap<K, M> mapValues(GetValue<M, K> getter) {
+    public <M> ImMap<K, M> mapValues(Function<K, M> getter) {
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(get(i)));
+            mvResult.mapValue(i, getter.apply(get(i)));
         return mvResult.immutableValue();
     }
 
-    public <MK, MV> ImMap<MK, MV> mapKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+    public <MK, MV> ImMap<MK, MV> mapKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
         MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
         for(int i=0,size=size();i<size;i++) {
             K element = get(i);
-            mResult.exclAdd(getterKey.getMapValue(element), getterValue.getMapValue(element));
+            mResult.exclAdd(getterKey.apply(element), getterValue.apply(element));
         }
         return mResult.immutable();
     }
 
-    public <MK, MV> ImRevMap<MK, MV> mapRevKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+    public <MK, MV> ImRevMap<MK, MV> mapRevKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
         MRevMap<MK, MV> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++) {
             K element = get(i);
-            mResult.revAdd(getterKey.getMapValue(element), getterValue.getMapValue(element));
+            mResult.revAdd(getterKey.apply(element), getterValue.apply(element));
         }
         return mResult.immutableRev();
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetIndex<M> getter) {
+    public <M> ImRevMap<K, M> mapRevValues(IntFunction<M> getter) {
         ImRevValueMap<K, M> mResult = mapItRevValues();
         for(int i=0,size=size();i<size;i++)
-            mResult.mapValue(i, getter.getMapValue(i));
+            mResult.mapValue(i, getter.apply(i));
         return mResult.immutableValueRev();
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetIndexValue<M, K> getter) {
+    public <M> ImRevMap<K, M> mapRevValues(IntObjectFunction<K, M> getter) {
         ImRevValueMap<K, M> mResult = mapItRevValues();
         for(int i=0,size=size();i<size;i++)
-            mResult.mapValue(i, getter.getMapValue(i, get(i)));
+            mResult.mapValue(i, getter.apply(i, get(i)));
         return mResult.immutableValueRev();
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetStaticValue<M> getter) {
+    public <M> ImRevMap<K, M> mapRevValues(Supplier<M> getter) {
         ImRevValueMap<K, M> mResult = mapItRevValues();
         for(int i=0,size=size();i<size;i++)
-            mResult.mapValue(i, getter.getMapValue());
+            mResult.mapValue(i, getter.get());
         return mResult.immutableValueRev();
     }
 
-    public <M> ImRevMap<K, M> mapRevValues(GetValue<M, K> getter) {
+    public <M> ImRevMap<K, M> mapRevValues(Function<K, M> getter) {
         ImRevValueMap<K, M> mResult = mapItRevValues();
         for(int i=0,size=size();i<size;i++)
-            mResult.mapValue(i, getter.getMapValue(get(i)));
+            mResult.mapValue(i, getter.apply(get(i)));
         return mResult.immutableValueRev();
     }
 
-    public <M> ImRevMap<M, K> mapRevKeys(GetStaticValue<M> getter) {
+    public <M> ImRevMap<M, K> mapRevKeys(Supplier<M> getter) {
         MRevMap<M, K> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.revAdd(getter.getMapValue(), get(i));
+            mResult.revAdd(getter.get(), get(i));
         return mResult.immutableRev();
     }
 
-    public <M> ImRevMap<M, K> mapRevKeys(GetValue<M, K> getter) {
+    public <M> ImRevMap<M, K> mapRevKeys(Function<K, M> getter) {
         MRevMap<M, K> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++) {
             K element = get(i);
-            mResult.revAdd(getter.getMapValue(element), element);
+            mResult.revAdd(getter.apply(element), element);
         }
         return mResult.immutableRev();
     }
 
-    public <M> ImRevMap<M, K> mapRevKeys(GetIndex<M> getter) {
+    public <M> ImRevMap<M, K> mapRevKeys(IntFunction<M> getter) {
         MRevMap<M, K> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.revAdd(getter.getMapValue(i), get(i));
+            mResult.revAdd(getter.apply(i), get(i));
         return mResult.immutableRev();
     }
 

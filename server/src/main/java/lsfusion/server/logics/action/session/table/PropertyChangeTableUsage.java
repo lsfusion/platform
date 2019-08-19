@@ -7,8 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
@@ -43,6 +42,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class PropertyChangeTableUsage<K extends PropertyInterface> extends SinglePropertyTableUsage<K> {
 
@@ -70,8 +70,8 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
             ImRevMap<KeyField, KeyExpr> mapFieldKeys = fieldQuery.getMapKeys();
             QueryBuilder<KeyField, PropertyField> exFieldQuery = new QueryBuilder<>(mapFieldKeys);
             
-            exFieldQuery.addProperties(fieldQuery.getProperties().mapValues(new GetValue<Expr, PropertyField>() {
-                public Expr getMapValue(PropertyField value) {
+            exFieldQuery.addProperties(fieldQuery.getProperties().mapValues(new Function<PropertyField, Expr>() {
+                public Expr apply(PropertyField value) {
                     return fieldQuery.getExpr(value);
                 }
             }));
@@ -86,13 +86,13 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
             ImRevMap<KeyField, KeyExpr> mapFieldKeys = fieldQuery.getMapKeys();
             QueryBuilder<KeyField, PropertyField> exFieldQuery = new QueryBuilder<>(mapFieldKeys);
 
-            exFieldQuery.addProperties(fieldQuery.getProperties().mapValues(new GetValue<Expr, PropertyField>() {
-                public Expr getMapValue(PropertyField value) {
+            exFieldQuery.addProperties(fieldQuery.getProperties().mapValues(new Function<PropertyField, Expr>() {
+                public Expr apply(PropertyField value) {
                     return fieldQuery.getExpr(value);
                 }
             }));
             final ImRevMap<K, KeyExpr> mapKeyExprs = table.mapKeys.crossJoin(mapFieldKeys);
-            exFieldQuery.addProperties(correlations.mapValuesEx((GetExValue<Expr, Correlation<K>, SQLException, SQLHandledException>) value -> value.getExpr(mapKeyExprs, modifier)));
+            exFieldQuery.addProperties(correlations.mapValuesEx((ThrowingFunction<Correlation<K>, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeyExprs, modifier)));
             exFieldQuery.and(fieldQuery.getWhere());
             return exFieldQuery.getQuery();
         }

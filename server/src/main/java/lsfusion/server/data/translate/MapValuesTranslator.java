@@ -4,36 +4,36 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.caches.ValuesContext;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.value.Value;
 
 import java.util.Map;
+import java.util.function.Function;
 
 // отличается тем что не только маппит ValueExpr к ValueExpr, а с assertion'ом, что только одинаковых классов
 public abstract class MapValuesTranslator extends AbstractMapTranslator implements MapValuesTranslate {
 
-    private GetValue<TranslateValues, TranslateValues> trans;
-    private <V extends TranslateValues> GetValue<V, V> TRANS() {
+    private Function<TranslateValues, TranslateValues> trans;
+    private <V extends TranslateValues> Function<V, V> TRANS() {
         if(trans==null) {
             trans = value -> value.translateValues(MapValuesTranslator.this);
         }
-        return (GetValue<V, V>)trans;
+        return (Function<V, V>)trans;
     }
 
-//    private GetValue<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>> transMap;
-    public <K, V extends ValuesContext> GetValue<ImMap<K, V>, ImMap<K, V>> TRANSMAP() {
+//    private Function<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>> transMap;
+    public <K, V extends ValuesContext> Function<ImMap<K, V>, ImMap<K, V>> TRANSMAP() {
 //        if(transMap==null) {
-            GetValue<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>> transMap = this::translateValues;
+            Function<ImMap<Object, ValuesContext>, ImMap<Object, ValuesContext>> transMap = this::translateValues;
 //      }
         return BaseUtils.immutableCast(transMap);
     }
 
-    private GetValue<Value, Value> transValue;
-    private <V extends Value> GetValue<V, V> TRANSVALUE() {
+    private Function<Value, Value> transValue;
+    private <V extends Value> Function<V, V> TRANSVALUE() {
 //        if(transValue==null) {
-            GetValue<Value, Value> transValue = this::translate;
+            Function<Value, Value> transValue = this::translate;
 //        }
         return BaseUtils.immutableCast(transValue);
     }

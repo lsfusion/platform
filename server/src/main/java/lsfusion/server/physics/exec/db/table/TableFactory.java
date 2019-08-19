@@ -9,8 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
@@ -37,6 +35,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 
 public class TableFactory implements FullTablesInterface {
     private static final Logger startLogger = ServerLoggers.startLogger;
@@ -81,7 +80,7 @@ public class TableFactory implements FullTablesInterface {
     }
 
     public ImRevMap<String, ImplementTable> getImplementTablesMap() {
-        return getImplementTables().mapRevKeys((GetValue<String, ImplementTable>) NamedTable::getName);
+        return getImplementTables().mapRevKeys((Function<ImplementTable, String>) NamedTable::getName);
     }
 
     public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {
@@ -191,11 +190,7 @@ public class TableFactory implements FullTablesInterface {
 
     @IdentityLazy
     public ImSet<ImplementTable> getImplementTables(final ImSet<CustomClass> cls) {
-        return getImplementTables().filterFn(new SFunctionSet<ImplementTable>() {
-            public boolean contains(ImplementTable element) {
-                return !element.getMapFields().values().toSet().disjoint(cls);
-            }
-        });
+        return getImplementTables().filterFn(element -> !element.getMapFields().values().toSet().disjoint(cls));
     }
 
 }

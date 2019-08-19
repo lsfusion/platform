@@ -3,8 +3,7 @@ package lsfusion.server.logics.form.struct.property;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -66,7 +65,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     public Object read(ExecutionEnvironment env, final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        ImMap<P, ObjectValue> joinImplement = mapping.mapValuesEx((GetExValue<ObjectValue, ObjectEntity, SQLException, SQLHandledException>) value -> value.getObjectValue(mapObjects));
+        ImMap<P, ObjectValue> joinImplement = mapping.mapValuesEx((ThrowingFunction<ObjectEntity, ObjectValue, SQLException, SQLHandledException>) value -> value.getObjectValue(mapObjects));
         return property.read(env, joinImplement);
     }
 }

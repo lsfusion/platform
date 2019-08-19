@@ -3,7 +3,6 @@ package lsfusion.server.logics.property.cases.graph;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 
 /**
 * Created by User on 18.09.2014.

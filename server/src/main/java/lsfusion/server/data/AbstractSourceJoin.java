@@ -2,13 +2,10 @@ package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.expr.classes.IsClassExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.expr.key.KeyType;
-import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.ParseValue;
@@ -17,17 +14,18 @@ import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.table.Table;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.physics.admin.Settings;
+
+import java.util.function.Function;
 
 abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends AbstractOuterContext<T> implements SourceJoin<T> {
 
     protected static class ToString extends CompileSource {
         public ToString(ImSet<Value> values) {
-            super(expr -> ObjectType.instance, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new GetValue<String, ParseValue>() {
-                public String getMapValue(ParseValue value) {
+            super(expr -> ObjectType.instance, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new Function<ParseValue, String>() {
+                public String apply(ParseValue value) {
                     return value.toString();
                 }}), DataAdapter.debugSyntax, StaticExecuteEnvironmentImpl.MVOID);
         }

@@ -1,13 +1,14 @@
 package lsfusion.base.col.interfaces.immutable;
 
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public interface ImCol<T> extends Iterable<T> {
 
@@ -23,20 +24,23 @@ public interface ImCol<T> extends Iterable<T> {
     ImCol<T> addCol(T element);
 
     ImCol<T> filterCol(FunctionSet<T> filter);
+    default ImCol<T> filterCol(SFunctionSet<T> filter) {
+        return filterCol((FunctionSet<T>) filter);
+    }
     
     ImMap<T, Integer> multiSet();
 
-    <M> ImCol<M> mapColValues(GetIndexValue<M, T> getter);
-    <M> ImCol<M> mapColValues(GetValue<M, T> getter);
-    <M> ImSet<M> mapColSetValues(GetIndexValue<M, T> getter);
-    <M> ImSet<M> mapColSetValues(GetValue<M, T> getter);
-    <M> ImSet<M> mapMergeSetValues(GetValue<M, T> getter);
+    <M> ImCol<M> mapColValues(IntObjectFunction<T, M> getter);
+    <M> ImCol<M> mapColValues(Function<T, M> getter);
+    <M> ImSet<M> mapColSetValues(IntObjectFunction<T, M> getter);
+    <M> ImSet<M> mapColSetValues(Function<T, M> getter);
+    <M> ImSet<M> mapMergeSetValues(Function<T, M> getter);
 
-    <M> ImMap<M, T> mapColKeys(GetIndex<M> getter);
+    <M> ImMap<M, T> mapColKeys(IntFunction<M> getter);
 
     String toString(String separator);
-    String toString(GetValue<String, T> getter, String delimiter);
-    String toString(GetStaticValue<String> getter, String delimiter);
+    String toString(Function<T, String> getter, String delimiter);
+    String toString(Supplier<String> getter, String delimiter);
 
     ImList<T> sort(Comparator<T> comparator);
     

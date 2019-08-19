@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportConstants;
@@ -36,6 +35,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static lsfusion.interop.form.print.ReportConstants.*;
 import static lsfusion.server.logics.form.stat.GroupObjectHierarchy.ReportNode;
@@ -148,7 +148,7 @@ public class ReportDesignGenerator {
     }
 
     private ImList<ReportDrawField> getReportDrawFields(GroupObjectEntity group, StaticDataGenerator.Hierarchy hierarchy, final MAddExclMap<PropertyReaderEntity, Type> types) {
-        return formInterface.getUserOrder(group, hierarchy.getProperties(group)).mapListValues((GetValue<ReportDrawField, PropertyDrawEntity>) prop -> {
+        return formInterface.getUserOrder(group, hierarchy.getProperties(group)).mapListValues((PropertyDrawEntity prop) -> {
             ReportDrawField reportField = formView.get(prop).getReportDrawField(charWidth, getPropGroupColumnsCount(prop), types != null ? types.get(prop) : prop.getType());
 
             Integer widthUser = formInterface.getUserWidth(prop);

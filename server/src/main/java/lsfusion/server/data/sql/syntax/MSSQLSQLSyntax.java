@@ -6,8 +6,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.remote.serialization.BinarySerializable;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -27,7 +25,6 @@ import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.reader.NullReader;
-import lsfusion.server.data.type.reader.Reader;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.physics.admin.Settings;
@@ -40,6 +37,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.function.Function;
 
 public class MSSQLSQLSyntax extends DefaultSQLSyntax {
 
@@ -223,14 +221,10 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, final ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
-        ImOrderMap<String, CompileOrder> filterOrders = orders.filterOrderValuesMap(new SFunctionSet<CompileOrder>() {
-            public boolean contains(CompileOrder element) {
-                return element.reader instanceof Type;
-            }
-        });
+        ImOrderMap<String, CompileOrder> filterOrders = orders.filterOrderValuesMap(element -> element.reader instanceof Type);
         ImOrderSet<String> sourceOrders = filterOrders.keyOrderSet();
         ImList<CompileOrder> compileOrders = filterOrders.valuesList();
-        ImList<Type> orderTypes = BaseUtils.immutableCast(compileOrders.mapListValues((GetValue<Reader, CompileOrder>) value -> value.reader));
+        ImList<Type> orderTypes = BaseUtils.immutableCast(compileOrders.mapListValues((CompileOrder value) -> value.reader));
         boolean[] desc = new boolean[compileOrders.size()];
         for(int i=0,size=compileOrders.size();i<size;i++)
             desc[i] = compileOrders.get(i).desc;
@@ -256,7 +250,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
             fixedTypes = ListFact.<Type>toList(textClass, textClass);
             exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
         } else {
-            fixedTypes = readers.mapListValues((GetValue<Type, ClassReader>) value -> {
+            fixedTypes = readers.mapListValues((ClassReader value) -> {
                 if(value instanceof Type)
                     return (Type) value;
                 assert value instanceof NullReader;

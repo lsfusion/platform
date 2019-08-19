@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.LogicsModule;
@@ -43,12 +42,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
         Version version = LM.getVersion();
 
         ImMap<I, GroupProperty.Interface<I>> byInnerInterfaces = BaseUtils.immutableCast(
-                property.getMapInterfaces().toRevMap(property.getReflectionOrderInterfaces()).filterFnValuesRev(new SFunctionSet<PropertyInterfaceImplement<I>>() {
-                    @Override
-                    public boolean contains(PropertyInterfaceImplement<I> element) {
-                        return element instanceof PropertyInterface;
-                    }
-                }).reverse()
+                property.getMapInterfaces().toRevMap(property.getReflectionOrderInterfaces()).filterFnValuesRev(element -> element instanceof PropertyInterface).reverse()
         );
 
         detailsGroup = new GroupObjectEntity(genID(), "");

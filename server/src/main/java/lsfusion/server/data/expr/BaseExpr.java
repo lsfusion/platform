@@ -199,8 +199,8 @@ public abstract class BaseExpr extends Expr {
 
         return group;
 /*        final ImMap<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
-        return group.mapValues(new GetValue<BaseExpr, BaseExpr>() {
-            public BaseExpr getMapValue(BaseExpr value) {
+        return group.mapValues(new Function<BaseExpr, BaseExpr>() {
+            public BaseExpr apply(BaseExpr value) {
                 return BaseUtils.nvl(exprValues.get(value), value);
             }});*/
     }

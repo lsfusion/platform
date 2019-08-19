@@ -6,8 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -46,10 +44,7 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
     }
 
     public ImCol<ObjectInstance> getObjectInstances() {
-        return BaseUtils.immutableCast(mapping.values().filterCol(new SFunctionSet<PropertyObjectInterfaceInstance>() {
-            public boolean contains(PropertyObjectInterfaceInstance element) {
-                return element instanceof ObjectInstance;
-            }}));
+        return BaseUtils.immutableCast(mapping.values().filterCol(element -> element instanceof ObjectInstance));
     }
 
     public void fillObjects(MSet<ObjectInstance> objects) {

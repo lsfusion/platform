@@ -4,9 +4,14 @@ import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public interface ImMap<K, V> {
 
@@ -62,11 +67,24 @@ public interface ImMap<K, V> {
     <M> ImFilterRevValueMap<K, M> mapFilterRevValues();
 
     ImMap<K, V> filterFn(FunctionSet<K> filter);
-    ImMap<K, V> filterFnValues(FunctionSet<V> filter);
-    ImMap<K, V> filterFn(GetKeyValue<Boolean, K, V> filter);
+    default ImMap<K, V> filterFn(SFunctionSet<K> filter) {
+        return filterFn((FunctionSet<K>) filter);
+    }
 
-    ImMap<K, V> splitKeys(GetKeyValue<Boolean, K, V> keys, Result<ImMap<K, V>> rest);
+    ImMap<K, V> filterFnValues(FunctionSet<V> filter);
+    default ImMap<K, V> filterFnValues(SFunctionSet<V> filter) {
+        return filterFnValues((FunctionSet<V>) filter);
+    }
+
+    ImMap<K, V> filterFn(BiFunction<K, V, Boolean> filter);
+    
+    ImMap<K, V> splitKeys(BiFunction<K, V, Boolean> keys, Result<ImMap<K, V>> rest);
+    
     ImMap<K, V> splitKeys(FunctionSet<K> keys, Result<ImMap<K, V>> rest);
+    default ImMap<K, V> splitKeys(SFunctionSet<K> keys, Result<ImMap<K, V>> rest) {
+        return splitKeys((FunctionSet<K>) keys, rest); 
+    }
+    
 
     <EK extends K> ImMap<EK, V> filter(ImSet<? extends EK> keys);
     <EK extends K> ImMap<EK, V> filterIncl(ImSet<? extends EK> keys);
@@ -90,40 +108,40 @@ public interface ImMap<K, V> {
     <M> ImValueMap<K,M> mapItValues();
     <M> ImRevValueMap<K,M> mapItRevValues();
 
-    <M> ImMap<K,M> mapItValues(GetValue<M,V> getter); // с последействием
-    <M> ImMap<K,M> mapItValues(GetKeyValue<M,K,V> getter); // с последействием
+    <M> ImMap<K,M> mapItValues(Function<V, M> getter); // с последействием
+    <M> ImMap<K,M> mapItValues(BiFunction<K, V, M> getter); // с последействием
 
     // "функциональщина"
-    <M> ImMap<K,M> mapValues(GetValue<M,V> getter);
-    <M> ImMap<K,M> mapKeyValues(GetValue<M,K> getter);
-    <M> ImMap<K,M> mapValues(GetStaticValue<M> getter);
-    <M> ImMap<K,M> mapValues(GetKeyValue<M,K,V> getter);
-    <M> ImRevMap<K,M> mapRevValues(GetIndex<M> getter);
-    <M> ImRevMap<K,M> mapRevValues(GetValue<M,V> getter);
-    <M> ImRevMap<K,M> mapRevValues(GetKeyValue<M,K, V> getter);
-    <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
-    <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, K> getterKey, GetKeyValue<MV, K, V> getterValue);
-    <MK, MV> ImMap<MK,MV> mapKeyValues(GetKeyValue<MK, K, V> getterKey, GetKeyValue<MV, K, V> getterValue);
+    <M> ImMap<K,M> mapValues(Function<V, M> getter);
+    <M> ImMap<K,M> mapKeyValues(Function<K, M> getter);
+    <M> ImMap<K,M> mapValues(Supplier<M> getter);
+    <M> ImMap<K,M> mapValues(BiFunction<K, V, M> getter);
+    <M> ImRevMap<K,M> mapRevValues(IntFunction<M> getter);
+    <M> ImRevMap<K,M> mapRevValues(Function<V, M> getter);
+    <M> ImRevMap<K,M> mapRevValues(BiFunction<K, V, M> getter);
+    <MK, MV> ImMap<MK,MV> mapKeyValues(Function<K, MK> getterKey, Function<V, MV> getterValue);
+    <MK, MV> ImMap<MK,MV> mapKeyValues(Function<K, MK> getterKey, BiFunction<K, V, MV> getterValue);
+    <MK, MV> ImMap<MK,MV> mapKeyValues(BiFunction<K, V, MK> getterKey, BiFunction<K, V, MV> getterValue);
 
-    <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapKeyValuesEx(GetExValue<M,K,E1,E2> getter) throws E1, E2;
-    <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapValuesEx(GetExValue<M,V,E1,E2> getter) throws E1, E2;
+    <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapKeyValuesEx(ThrowingFunction<K, M, E1,E2> getter) throws E1, E2;
+    <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapValuesEx(ThrowingFunction<V, M, E1,E2> getter) throws E1, E2;
 
-    <M> ImSet<M> mapMergeSetValues(GetKeyValue<M, K, V> getter);
-    <M> ImSet<M> mapSetValues(GetKeyValue<M, K, V> getter);
+    <M> ImSet<M> mapMergeSetValues(BiFunction<K, V, M> getter);
+    <M> ImSet<M> mapSetValues(BiFunction<K, V, M> getter);
 
-    <M> ImMap<M,V> mapKeys(GetValue<M,K> getter);
+    <M> ImMap<M,V> mapKeys(Function<K, M> getter);
 
-    <M> ImCol<M> mapColValues(GetKeyValue<M, K, V> getter);
+    <M> ImCol<M> mapColValues(BiFunction<K, V, M> getter);
 
     ImMap<K, V> mapAddValues(ImMap<K, V> map, AddValue<K, V> addValue);
 
     String toString(String conc, String delimiter);
-    String toString(GetKeyValue<String, K, V> getter, String delimiter);
+    String toString(BiFunction<K, V, String> getter, String delimiter);
 
     ImOrderMap<K, V> sort(Comparator<K> comparator);
     ImOrderMap<K, V> sort();
 
     Map<K, V> toJavaMap();
     
-    GetValue<V, K> fnGetValue();
+    Function<K, V> fnGetValue();
 }

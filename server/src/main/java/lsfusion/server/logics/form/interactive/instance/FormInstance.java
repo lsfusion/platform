@@ -13,8 +13,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
@@ -57,7 +55,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
-import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.action.session.DataSession;
@@ -105,7 +102,6 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilter;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
@@ -131,6 +127,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
@@ -147,13 +144,13 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 
 public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
-    private final static GetKey<PropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
+    private final static Function<PropertyReaderInstance, PropertyObjectInstance<?>> GET_PROPERTY_OBJECT_FROM_READER =
             PropertyReaderInstance::getPropertyObjectInstance;
 
-    private final GetKey<PropertyObjectInstance<?>, ContainerView> GET_CONTAINER_SHOWIF =
-            new GetKey<PropertyObjectInstance<?>, ContainerView>() {
+    private final Function<ContainerView, PropertyObjectInstance<?>> GET_CONTAINER_SHOWIF =
+            new Function<ContainerView, PropertyObjectInstance<?>>() {
                 @Override
-                public PropertyObjectInstance<?> getMapValue(ContainerView key) {
+                public PropertyObjectInstance<?> apply(ContainerView key) {
                     return containerShowIfs.get(key);
                 }
             };
@@ -288,7 +285,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
-        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((GetValue<OrderInstance, OrderEntity<?>>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
+        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity<?>, OrderInstance>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
             public GroupObjectInstance group(OrderInstance key) {
                 return key.getApplyObject();
             }
@@ -744,21 +741,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (pullProps == null)
             return SetFact.EMPTY();
 
-        return new FunctionSet<Property>() {
-            public boolean contains(Property element) {
-                for (PullChangeProperty pullProp : pullProps)
-                    if (pullProp.isChangeBetween(element))
-                        return true;
-                return false;
-            }
-
-            public boolean isEmpty() {
-                return false;
-            }
-
-            public boolean isFull() {
-                return false;
-            }
+        return (SFunctionSet<Property>) element -> {
+            for (PullChangeProperty pullProp : pullProps)
+                if (pullProp.isChangeBetween(element))
+                    return true;
+            return false;
         };
     }
 
@@ -958,11 +945,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // временно
     private boolean checkFilters(final GroupObjectInstance groupTo) {
         ImSet<FilterInstance> setFilters = groupTo.getSetFilters();
-        return setFilters.filterFn(new SFunctionSet<FilterInstance>() {
-            public boolean contains(FilterInstance filter) {
-                return FilterInstance.ignoreInInterface || filter.isInInterface(groupTo);
-            }
-        }).equals(groupTo.filters);
+        return setFilters.filterFn(filter -> FilterInstance.ignoreInInterface || filter.isInInterface(groupTo)).equals(groupTo.filters);
     }
 
     public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -1097,7 +1080,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     private ImMap<ObjectInstance, Expr> overrideColumnKeys(ImRevMap<ObjectInstance, KeyExpr> mapKeys, ImMap<ObjectInstance, DataObject> columnKeys) {
         // замещение с добавлением
-        return MapFact.override(mapKeys, columnKeys.mapValues((GetValue<Expr, DataObject>) DataObject::getExpr));
+        return MapFact.override(mapKeys, columnKeys.mapValues((Function<DataObject, Expr>) DataObject::getExpr));
     }
 
     public Object calculateSum(PropertyDrawInstance propertyDraw, ImMap<ObjectInstance, DataObject> columnKeys) throws SQLException, SQLHandledException {
@@ -1617,11 +1600,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
-        return properties.filterList(new SFunctionSet<PropertyDrawInstance>() {
-            public boolean contains(PropertyDrawInstance property) {
-                Boolean isShownValue = isShown.get(property);
-                return isShownValue != null && isShownValue && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
-            }
+        return properties.filterList(property -> {
+            Boolean isShownValue = isShown.get(property);
+            return isShownValue != null && isShownValue && property.isProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
         }).toOrderExclSet().mapOrderSetValues(value -> ((PropertyDrawInstance<?>)value).entity);
     }
 
@@ -1631,18 +1612,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (groupPreferences == null)
             return properties;
 
-        return properties.filterOrder(new SFunctionSet<PropertyDrawEntity>() {
-            public boolean contains(PropertyDrawEntity property) {
-                // to check hide we need FormView, now we don't have it and it is not that important
-                ColumnUserPreferences propertyPreferences = getPropertyPreferences(instanceFactory.getInstance(property), groupPreferences);
-                if (propertyPreferences == null)
-                    return true;
-                
-                if(propertyPreferences.userHide != null && propertyPreferences.userHide)
-                    return false;
-                
-                return propertyPreferences.userOrder != null;
-            }
+        return properties.filterOrder(property -> {
+            // to check hide we need FormView, now we don't have it and it is not that important
+            ColumnUserPreferences propertyPreferences = getPropertyPreferences(instanceFactory.getInstance(property), groupPreferences);
+            if (propertyPreferences == null)
+                return true;
+            
+            if(propertyPreferences.userHide != null && propertyPreferences.userHide)
+                return false;
+            
+            return propertyPreferences.userOrder != null;
         });
     }
 
@@ -1659,7 +1638,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private Comparator<PropertyDrawEntity> getUserOrderComparator(ImOrderSet<PropertyDrawEntity> baseOrder, final GroupObjectUserPreferences groupPreferences) {
-        final ImMap<PropertyDrawEntity, Integer> userOrders = baseOrder.getSet().mapValues((GetValue<Integer, PropertyDrawEntity>) value -> getUserOrder(instanceFactory.getInstance(value), groupPreferences));
+        final ImMap<PropertyDrawEntity, Integer> userOrders = baseOrder.getSet().mapValues((PropertyDrawEntity value) -> getUserOrder(instanceFactory.getInstance(value), groupPreferences));
         return (c1, c2) -> {
             Integer order1 = userOrders.get(c1);
             Integer order2 = userOrders.get(c2);
@@ -1784,7 +1763,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             @ParamMessage ImOrderSet<T> keysSet,
             MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
             ImSet<GroupObjectInstance> keyGroupObjects,
-            GetKey<PropertyObjectInstance<?>, T> getPropertyObject
+            Function<T, PropertyObjectInstance<?>> getPropertyObject
     ) throws SQLException, SQLHandledException {
         
         QueryBuilder<ObjectInstance, T> selectProps = new QueryBuilder<>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
@@ -1795,7 +1774,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (T key : keysSet) {
             selectProps.addProperty(
                     key,
-                    getPropertyObject.getMapValue(key).getExpr(selectProps.getMapExprs(), getModifier(), this)
+                    getPropertyObject.apply(key).getExpr(selectProps.getMapExprs(), getModifier(), this)
             );
         }
 
@@ -2141,11 +2120,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public ImSet<PropertyDrawInstance> getProperties() {
-        return properties.toOrderSet().getSet().filterFn(new SFunctionSet<PropertyDrawInstance>() {
-                public boolean contains(PropertyDrawInstance property) {
-                    return property.isProperty();
-                }
-            });
+        return properties.toOrderSet().getSet().filterFn(PropertyDrawInstance::isProperty);
     }
 
     // считывает все данные с формы

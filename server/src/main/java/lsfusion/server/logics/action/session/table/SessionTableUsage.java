@@ -6,8 +6,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.InnerContext;
@@ -40,6 +38,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.function.Function;
 
 import static lsfusion.server.data.table.SessionData.castTypes;
 
@@ -197,7 +196,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(value -> mapKeys.join(value), value -> mapProps.join(value));
         // concerning castTypes some branches are safe (where field field type is guaranteed to be the same as in ObjectValue), however most branches are not
         // we need this casts not only for SessionRows, but also for SessionDataTable, because insertBatch with writeParam is used, and inside writeParam there are assertions that types are correct
-        mapWriteRows = mapWriteRows.mapKeyValues(SessionData::castTypes, (GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>) SessionData::castTypes);
+        mapWriteRows = mapWriteRows.mapKeyValues(SessionData::castTypes, (Function<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>) SessionData::castTypes);
         
         try {
             table = table.rewrite(session, mapWriteRows, this, opOwner);

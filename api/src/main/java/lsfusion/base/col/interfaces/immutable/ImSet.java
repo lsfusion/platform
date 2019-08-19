@@ -4,9 +4,13 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Comparator;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
 
@@ -31,7 +35,15 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     <M> ImFilterRevValueMap<T, M> mapFilterRevValues();
 
     ImSet<T> filterFn(FunctionSet<T> filter);
+    default ImSet<T> filterFn(SFunctionSet<T> filter) {
+        return filterFn((FunctionSet<T>) filter);    
+    }
+    
     ImSet<T> split(FunctionSet<T> filter, Result<ImSet<T>> rest);
+    default ImSet<T> split(SFunctionSet<T> filter, Result<ImSet<T>> rest) {
+        return split((FunctionSet<T>) filter, rest);
+    }
+    
     ImSet<T> split(ImSet<T> filter, Result<ImSet<T>> rest, Result<ImSet<T>> restSplit);
 
     ImSet<T> filter(ImSet<? extends T> filter);
@@ -51,23 +63,23 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     <M> ImValueMap<T, M> mapItValues();
     <M> ImRevValueMap<T, M> mapItRevValues();
 
-    <M> ImMap<T,M> mapItValues(GetValue<M,T> getter); // с последействием
-    <M> ImSet<M> mapItSetValues(GetValue<M, T> getter); // с последействием
+    <M> ImMap<T,M> mapItValues(Function<T, M> getter); // с последействием
+    <M> ImSet<M> mapItSetValues(Function<T, M> getter); // с последействием
 
-    <M> ImSet<M> mapSetValues(GetValue<M, T> getter);
+    <M> ImSet<M> mapSetValues(Function<T, M> getter);
 
-    <M> ImMap<T, M> mapValues(GetStaticValue<M> getter);
-    <M> ImMap<T, M> mapValues(GetIndex<M> getter);
-    <M> ImMap<T, M> mapValues(GetValue<M, T> getter);
-    <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, T> getterKey, GetValue<MV, T> getterValue);
-    <MK, MV> ImRevMap<MK,MV> mapRevKeyValues(GetValue<MK, T> getterKey, GetValue<MV, T> getterValue);
-    <M> ImRevMap<T, M> mapRevValues(GetIndex<M> getter);
-    <M> ImRevMap<T, M> mapRevValues(GetIndexValue<M, T> getter);
-    <M> ImRevMap<T, M> mapRevValues(GetStaticValue<M> getter);
-    <M> ImRevMap<T, M> mapRevValues(GetValue<M, T> getter);
-    <M> ImRevMap<M, T> mapRevKeys(GetStaticValue<M> getter);
-    <M> ImRevMap<M, T> mapRevKeys(GetValue<M,T> getter);
-    <M> ImRevMap<M, T> mapRevKeys(GetIndex<M> getter);
+    <M> ImMap<T, M> mapValues(Supplier<M> getter);
+    <M> ImMap<T, M> mapValues(IntFunction<M> getter);
+    <M> ImMap<T, M> mapValues(Function<T, M> getter);
+    <MK, MV> ImMap<MK,MV> mapKeyValues(Function<T, MK> getterKey, Function<T, MV> getterValue);
+    <MK, MV> ImRevMap<MK,MV> mapRevKeyValues(Function<T, MK> getterKey, Function<T, MV> getterValue);
+    <M> ImRevMap<T, M> mapRevValues(IntFunction<M> getter);
+    <M> ImRevMap<T, M> mapRevValues(IntObjectFunction<T, M> getter);
+    <M> ImRevMap<T, M> mapRevValues(Supplier<M> getter);
+    <M> ImRevMap<T, M> mapRevValues(Function<T, M> getter);
+    <M> ImRevMap<M, T> mapRevKeys(Supplier<M> getter);
+    <M> ImRevMap<M, T> mapRevKeys(Function<T, M> getter);
+    <M> ImRevMap<M, T> mapRevKeys(IntFunction<M> getter);
 
     Set<T> toJavaSet();
 }

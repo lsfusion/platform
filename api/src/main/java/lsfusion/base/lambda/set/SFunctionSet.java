@@ -1,12 +1,14 @@
 package lsfusion.base.lambda.set;
 
-public abstract class SFunctionSet<K> implements FunctionSet<K> {
-
-    public boolean isEmpty() {
+@FunctionalInterface
+public interface SFunctionSet<K> extends FunctionSet<K> {
+    @Override
+    default boolean isEmpty() {
         return false;
     }
 
-    public boolean isFull() {
+    @Override
+    default boolean isFull() {
         return false;
     }
 }

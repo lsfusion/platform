@@ -13,13 +13,13 @@ import lsfusion.base.col.implementations.simple.SingletonSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.lambda.set.FunctionSet;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 public class SetFact {
 
@@ -67,10 +67,10 @@ public class SetFact {
         return toOrderExclSet(array.length, i -> array[i]);
     }
 
-    public static <K> ImOrderSet<K> toOrderExclSet(int size, GetIndex<K> getter) {
+    public static <K> ImOrderSet<K> toOrderExclSet(int size, IntFunction<K> getter) {
         MOrderExclSet<K> mSet = SetFact.mOrderExclSet(size);
         for(int i=0;i<size;i++)
-            mSet.exclAdd(getter.getMapValue(i));
+            mSet.exclAdd(getter.apply(i));
         return mSet.immutableOrder();
     }
 

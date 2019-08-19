@@ -2,8 +2,6 @@ package lsfusion.server.logics.form.open;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -78,11 +76,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
         this.form = form;
         // такой же дебилизм и в SessionDataProperty
         mapObjects = objectInterfaces.mapOrderRevKeys(objectsToSet::get);
-        ImSet<ClassPropertyInterface> notNullInterfaces = objectInterfaces.mapOrderValues(nulls::get).filterFnValues(new SFunctionSet<Boolean>() {
-            public boolean contains(Boolean element) {
-                return !element;
-            }
-        }).keys();
+        ImSet<ClassPropertyInterface> notNullInterfaces = objectInterfaces.mapOrderValues(nulls::get).filterFnValues(element -> !element).keys();
         if(extraNotNull)
             notNullInterfaces = notNullInterfaces.addExcl(getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size()).getSet());
         this.notNullInterfaces = notNullInterfaces;
@@ -106,10 +100,6 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     @IdentityLazy
     @Override    
     protected ImSet<ClassPropertyInterface> getNoClassesInterfaces() {
-        return mapObjects.filterFnRev(new SFunctionSet<O>() {
-            public boolean contains(O element) {
-                return element.noClasses();
-            }
-        }).valuesSet();
+        return mapObjects.filterFnRev(ObjectSelector::noClasses).valuesSet();
     }
 }

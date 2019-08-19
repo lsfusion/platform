@@ -10,7 +10,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.ModalityType;
@@ -154,6 +153,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -407,7 +407,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 property = usageProperty;
             else {
                 final ImOrderSet<String> fMapping = mapping;
-                ImList<Integer> indexMapping = uMapping.mapListValues((GetValue<Integer, String>) value -> fMapping.indexOf(value) + 1);
+                ImList<Integer> indexMapping = uMapping.mapListValues((String value) -> fMapping.indexOf(value) + 1);
                 if(usageProperty instanceof LP)
                     property = addJProp((LP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
                 else

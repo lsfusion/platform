@@ -52,10 +52,7 @@ public class MapTranslator extends AbstractMapTranslator {
         return new MapTranslator(keys.reverse(), values.reverse());
     }
 
-    private final static SFunctionSet<ParamExpr> removePullExpr = new SFunctionSet<ParamExpr>() {
-        public boolean contains(ParamExpr element) {
-            return !(element instanceof PullExpr);
-        }};
+    private final static SFunctionSet<ParamExpr> removePullExpr = element -> !(element instanceof PullExpr);
     public boolean identityKeys(ImSet<ParamExpr> keys) {
         assert this.keys.keys().filterFn(removePullExpr).containsAll(keys.filterFn(removePullExpr));
         return this.keys.filterRev(keys).identity();

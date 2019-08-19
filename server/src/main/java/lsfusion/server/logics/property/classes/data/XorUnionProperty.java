@@ -4,7 +4,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -28,6 +27,8 @@ import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.XorUnionDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.function.Function;
+
 public class XorUnionProperty extends IncrementUnionProperty {
 
     public XorUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<PropertyInterfaceImplement<Interface>> operands) {
@@ -45,7 +46,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
 
     @Override
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        ImList<Expr> operandExprs = operands.mapListValues((GetValue<Expr, PropertyInterfaceImplement<Interface>>) value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
+        ImList<Expr> operandExprs = operands.mapListValues((PropertyInterfaceImplement<Interface> value) -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
 
         Where xorWhere = Where.FALSE;
         for(Expr operandExpr : operandExprs)
@@ -56,7 +57,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
     @Override
     protected Expr calculateIncrementExpr(final ImMap<Interface, ? extends Expr> joinImplement, final PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         // до непосредственно вычисления, для хинтов
-        ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues((GetValue<Pair<Expr, Where>, PropertyInterfaceImplement<Interface>>) key -> {
+        ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues((Function<PropertyInterfaceImplement<Interface>, Pair<Expr, Where>>) key -> {
             WhereBuilder changedOperandWhere = new WhereBuilder();
             return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
         });

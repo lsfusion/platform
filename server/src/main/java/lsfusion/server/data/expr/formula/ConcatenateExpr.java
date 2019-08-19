@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
@@ -135,7 +134,7 @@ public class ConcatenateExpr extends VariableClassExpr {
     }
 
     public String getSource(final CompileSource compile, final boolean needValue) {
-        ImList<String> sources = exprs.mapListValues((GetValue<String, BaseExpr>) value -> value.getSource(compile, needValue));
+        ImList<String> sources = exprs.mapListValues((BaseExpr value) -> value.getSource(compile, needValue));
         return ((ConcatenateType)getType(compile.keyType)).getConcatenateSource(sources,compile.syntax,compile.env);
     }
 

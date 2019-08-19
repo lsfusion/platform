@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
@@ -32,11 +31,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         this.changes = changes;
     }
 
-    private final static SFunctionSet<ModifyChange> emptyChanges = new SFunctionSet<ModifyChange>() {
-        public boolean contains(ModifyChange element) {
-        return element==null || (!element.isFinal && element.isEmpty());
-        }
-    };
+    private final static SFunctionSet<ModifyChange> emptyChanges = element -> element==null || (!element.isFinal && element.isEmpty());
     public PropertyChanges replace(ImMap<Property, ModifyChange> replace) {
         ImSet<Property> keys = replace.filterFnValues(emptyChanges).keys();
         return new PropertyChanges(changes.remove(keys).merge(replace.remove(keys), MapFact.<Property, ModifyChange>overridePrevRef())); // override с оставлением ссылки

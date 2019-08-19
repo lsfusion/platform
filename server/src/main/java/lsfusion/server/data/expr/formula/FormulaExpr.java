@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.caches.hash.HashContext;
@@ -275,7 +274,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     public static CustomFormulaImpl createCustomFormulaImpl(CustomFormulaSyntax formula, FormulaClass valueClass, boolean hasNotNull, ImOrderSet<String> keys) {
-        ImMap<String, Integer> mapParams = keys.mapOrderValues((GetIndex<Integer>) i -> i);
+        ImMap<String, Integer> mapParams = keys.mapOrderValues((int i) -> i);
         return new CustomFormulaImpl(formula, mapParams, valueClass, hasNotNull);
     }
 

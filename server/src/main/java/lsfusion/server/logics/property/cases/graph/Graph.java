@@ -11,13 +11,13 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.Comparator;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 // assert что граф всегда полный
 public class Graph<T> {
@@ -65,7 +65,7 @@ public class Graph<T> {
 
     private static <T> ImMap<T, ImSet<T>> filter(final ImMap<T, ImSet<T>> edges, FunctionSet<T> filter) {
         final ImSet<T> filteredEdges = edges.keys().filterFn(filter);
-        return filteredEdges.mapValues((GetValue<ImSet<T>, T>) element -> {
+        return filteredEdges.mapValues((Function<T, ImSet<T>>) element -> {
             MAddSet<T> proceeded = SetFact.mAddSet();
             MSet<T> mResult = SetFact.mSet();
             recFindEdges(element, false, edges, filteredEdges, mResult, proceeded);
@@ -73,7 +73,7 @@ public class Graph<T> {
         });
     }
 
-    public Graph<T> filterGraph(FunctionSet<T> filter)  {
+    public Graph<T> filterGraph(SFunctionSet<T> filter)  {
         return new Graph<>(filter(edgesOut, filter), filter(edgesIn, filter));
     }
 
@@ -99,7 +99,7 @@ public class Graph<T> {
                 
         final ImSet<T> graphNodes = graph.getNodes();
 
-        GetValue<ImSet<T>, ImSet<T>> substitute = value -> {
+        Function<ImSet<T>, ImSet<T>> substitute = value -> {
             ImSet<T> removed = value.remove(graphNodes);
             if (removed.size() < value.size())
                 removed = removed.addExcl(element);
@@ -199,7 +199,7 @@ public class Graph<T> {
         final ImSet<T> elementOut = edgesOut.get(element).removeIncl(element); // itself
         final ImSet<T> elementIn = edgesIn.get(element).removeIncl(element); // itself
 
-        GetValue<ImSet<T>, ImSet<T>> substitute = value -> {
+        Function<ImSet<T>, ImSet<T>> substitute = value -> {
             ImSet<T> removed = value.remove(SetFact.singleton(element));
             if(removed.size() < value.size())
                 removed = removed.addExcl(graphNodes);
@@ -209,29 +209,21 @@ public class Graph<T> {
     }
     
     public Graph<T> cleanNodes(final FunctionSet<Pair<T, T>> set) {
-        GetKeyValue<ImSet<T>, T, ImSet<T>> adjustSet = (key, value) -> value.filterFn(new SFunctionSet<T>() {
-            public boolean contains(T element) {
-                return !set.contains(new Pair<>(key, element));
-            }
-        });
+        BiFunction<T, ImSet<T>, ImSet<T>> adjustSet = (key, value) -> value.filterFn(element -> !set.contains(new Pair<>(key, element)));
         return new Graph<>(edgesOut.mapValues(adjustSet), edgesIn.mapValues(adjustSet));
     }
 
     public static <T> Graph<T> create(final ImSet<T> set, final Comparator<T> comparator) {
-        return new Graph<>(set.mapValues(new GetValue<ImSet<T>, T>() {
-            public ImSet<T> getMapValue(final T value) {
-                return set.filterFn(new SFunctionSet<T>() {
-                    public boolean contains(T element) {
-                        return value == element || comparator.compare(value, element) > 0; // itself
-                    }
+        return new Graph<>(set.mapValues(new Function<T, ImSet<T>>() {
+            public ImSet<T> apply(final T value) {
+                return set.filterFn(element -> {
+                    return value == element || comparator.compare(value, element) > 0; // itself
                 });
             }
-        }), set.mapValues(new GetValue<ImSet<T>, T>() {
-            public ImSet<T> getMapValue(final T value) {
-                return set.filterFn(new SFunctionSet<T>() {
-                    public boolean contains(T element) {
-                        return value == element || comparator.compare(value, element) < 0; // itself
-                    }
+        }), set.mapValues(new Function<T, ImSet<T>>() {
+            public ImSet<T> apply(final T value) {
+                return set.filterFn(element -> {
+                    return value == element || comparator.compare(value, element) < 0; // itself
                 });
             }
         }));
@@ -239,16 +231,14 @@ public class Graph<T> {
     }
 
     public ImSet<T> getZeroInNodes() {
-        return edgesIn.filterFnValues(new SFunctionSet<ImSet<T>>() {
-            public boolean contains(ImSet<T> element) {
-                return element.size() == 1; // itself
-            }}).keys();
+        return edgesIn.filterFnValues(element -> {
+            return element.size() == 1; // itself
+        }).keys();
     }
     public ImSet<T> getZeroOutNodes() {
-        return edgesOut.filterFnValues(new SFunctionSet<ImSet<T>>() {
-            public boolean contains(ImSet<T> element) {
-                return element.size() == 1; // itself
-            }}).keys();
+        return edgesOut.filterFnValues(element -> {
+            return element.size() == 1; // itself
+        }).keys();
     }
     public ImSet<T> getNodes() {
         return edgesOut.keys();
@@ -301,8 +291,8 @@ public class Graph<T> {
         return removeNodes(removeNodes).map(map.reverse().fnGetValue());
     }
 
-    public <M> Graph<M> map(final GetValue<M, T> map) { // rev map
-        GetValue<ImSet<M>, ImSet<T>> mapSets = value -> value.mapSetValues(map);
+    public <M> Graph<M> map(final Function<T, M> map) { // rev map
+        Function<ImSet<T>, ImSet<M>> mapSets = value -> value.mapSetValues(map);
         return new Graph<>(edgesOut.mapKeyValues(map, mapSets), edgesIn.mapKeyValues(map, mapSets));
     }
 }

@@ -2,7 +2,6 @@ package lsfusion.base.comb;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 
 public class Pairs<T,V> extends Permutations<ImRevMap<T,V>> {
 

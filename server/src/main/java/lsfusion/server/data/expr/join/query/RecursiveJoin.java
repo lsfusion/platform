@@ -9,8 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.caches.OuterContext;
@@ -37,6 +35,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
+
+import java.util.function.BiFunction;
 
 public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, RecursiveJoin, RecursiveJoin.QueryOuterContext> {
 
@@ -219,7 +219,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         // генерируем поля таблицы
         ImRevMap<KeyField, KeyExpr> recKeys = keyNames.mapRevKeys((keyExpr, name1) -> new KeyField(name1, classWhere.getKeyType(keyExpr)));
         // assert что пустое если logical рекурсия
-        ImRevMap<String, PropertyField> recProps = props.mapRevValues((GetKeyValue<PropertyField, String, Type>) PropertyField::new);
+        ImRevMap<String, PropertyField> recProps = props.mapRevValues((BiFunction<String, Type, PropertyField>) PropertyField::new);
 
         TableStatKeys tableStatKeys = TableStatKeys.createForTable(statKeys.mapBack(recKeys));
         if(adjustStat != null)
@@ -238,7 +238,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     private ImRevMap<KeyExpr, KeyExpr> getFullMapIterate() {
         final ImRevMap<KeyExpr, KeyExpr> mapIterate = getMapIterate();
-        return group.keys().mapRevValues((GetValue<KeyExpr, KeyExpr>) recKey -> BaseUtils.nvl(mapIterate.get(recKey), recKey));
+        return group.keys().mapRevValues((KeyExpr recKey) -> BaseUtils.nvl(mapIterate.get(recKey), recKey));
     }
     public Where getIsClassWhere() {
         return getClassWhere().mapClasses(group.keys().toRevMap()).getWhere(getFullMapIterate(), false, query.noInnerFollows ? IsClassType.VIRTUAL : IsClassType.CONSISTENT);

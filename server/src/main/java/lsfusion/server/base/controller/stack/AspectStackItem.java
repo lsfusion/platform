@@ -5,7 +5,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.physics.admin.profiler.AspectProfileObject;
 import lsfusion.server.physics.admin.profiler.ProfileObject;
@@ -17,6 +16,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public class AspectStackItem extends ExecutionStackItem {
 
@@ -60,7 +60,7 @@ public class AspectStackItem extends ExecutionStackItem {
             if (mpi.profileArgs[i]) {
                 Object arg = args[i];
                 if (arg instanceof ImOrderSet) {
-                    objects[index++] = ((ImOrderSet) arg).mapListValues((GetValue) AspectStackItem::getProfiledObject);
+                    objects[index++] = ((ImOrderSet) arg).mapListValues((Function) AspectStackItem::getProfiledObject);
                 } else {
                     objects[index++] = getProfiledObject(arg);
                 }

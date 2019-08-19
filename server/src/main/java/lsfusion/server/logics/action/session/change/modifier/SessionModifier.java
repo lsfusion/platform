@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.OperationOwner;
@@ -34,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 // поддерживает hint'ы, есть информация о сессии
 public abstract class SessionModifier implements Modifier {
@@ -63,10 +63,10 @@ public abstract class SessionModifier implements Modifier {
         views.remove(modifier);
     }
 
-    public <P extends Property> boolean eventChanges(ImSet<P> properties, GetValue<? extends UpdateResult, P> modifyResults) throws SQLException, SQLHandledException {
+    public <P extends Property> boolean eventChanges(ImSet<P> properties, Function<P, ? extends UpdateResult> modifyResults) throws SQLException, SQLHandledException {
         boolean dataChanged = false;
         for(P property : properties) {
-            UpdateResult result = modifyResults.getMapValue(property);
+            UpdateResult result = modifyResults.apply(property);
             if(result.dataChanged())
                 dataChanged = true;
             eventChange(property, result.dataChanged(), result.sourceChanged());
@@ -154,7 +154,7 @@ public abstract class SessionModifier implements Modifier {
             assert !changed.isEmpty();
             mChanged = null;
             
-            ImMap<Property, ModifyChange> replace = changed.keys().mapValues((GetValue<ModifyChange, Property>) this::getModifyChange);
+            ImMap<Property, ModifyChange> replace = changed.keys().mapValues((Function<Property, ModifyChange>) this::getModifyChange);
 
             if(enableCheckChanges && !forceUpdate && !calculatePropertyChanges().equals(propertyChanges.replace(replace))) // может нарушаться если в calculatePropertyChanges кто-то empty возвращает (а в replace есть filter not empty)
                 assert false;

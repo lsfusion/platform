@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.base.comb.map.GlobalObject;
@@ -16,6 +15,8 @@ import lsfusion.server.data.caches.hash.HashMapValues;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.value.Value;
+
+import java.util.function.Function;
 
 public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends AbstractTranslateContext<U, MapValuesTranslate, HashValues> implements ValuesContext<U> {
 
@@ -77,7 +78,7 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
         return hashValues(HashCodeValues.instance);
     }
 
-    private final static GetValue<GlobalObject, Value> paramClasses = Value::getValueClass;
+    private final static Function<Value, GlobalObject> paramClasses = Value::getValueClass;
     public static ImMap<Value, GlobalObject> getParamClasses(ImSet<Value> values) {
         return values.mapValues(paramClasses);
     }

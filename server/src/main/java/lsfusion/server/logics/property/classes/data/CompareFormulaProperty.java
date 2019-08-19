@@ -3,7 +3,6 @@ package lsfusion.server.logics.property.classes.data;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.ValueExpr;

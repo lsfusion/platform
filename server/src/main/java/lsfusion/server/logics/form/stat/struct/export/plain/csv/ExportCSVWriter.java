@@ -4,7 +4,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.form.stat.struct.export.plain.ExportMatrixWriter;
 import org.apache.commons.lang3.CharUtils;
@@ -12,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 
 import java.io.*;
+import java.util.function.Function;
 
 public class ExportCSVWriter extends ExportMatrixWriter {
     private CsvEscaper csvEscaper;
@@ -43,7 +43,7 @@ public class ExportCSVWriter extends ExportMatrixWriter {
     
     @Override
     public void writeLine(final ImMap<String, ?> values, final ImMap<String, Type> types) {
-        writer.println(fullIndexList.mapListValues((GetValue<Object, Integer>) i -> {
+        writer.println(fullIndexList.mapListValues((Integer i) -> {
             String field = fieldIndexMap.get(i);
             if(field == null)
                 return "";

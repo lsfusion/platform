@@ -2,7 +2,6 @@ package lsfusion.server.logics.property.set;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.Expr;

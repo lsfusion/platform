@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.form.property.Compare;
@@ -144,7 +143,7 @@ public class ImplementTable extends DBTable { // последний интерф
         ImOrderSet<KeyField> keys;
         keys = SetFact.toOrderExclSet(implementClasses.length, i -> new KeyField("key"+i,implementClasses[i].getType()));
         ImMap<KeyField, ValueClass> mapFields;
-        mapFields = keys.mapOrderValues((GetIndex<ValueClass>) i -> implementClasses[i]);
+        mapFields = keys.mapOrderValues((int i) -> implementClasses[i]);
 
         parents = NFFact.orderSet();
         classes = classes.or(new ClassWhere<>(mapFields, true));

@@ -1,6 +1,6 @@
 package lsfusion.base.lambda.set;
 
-public class RemoveFunctionSet<T> implements FunctionSet<T> {
+public class RemoveFunctionSet<T> implements SFunctionSet<T> {
 
     private final FunctionSet<T> set1;
     private final FunctionSet<T> set2;
@@ -14,13 +14,5 @@ public class RemoveFunctionSet<T> implements FunctionSet<T> {
 
     public boolean contains(T element) {
         return set1.contains(element) && !set2.contains(element);
-    }
-
-    public boolean isEmpty() {
-        return false;
-    }
-
-    public boolean isFull() {
-        return false;
     }
 }

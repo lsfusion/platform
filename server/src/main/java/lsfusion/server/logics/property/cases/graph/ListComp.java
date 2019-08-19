@@ -3,7 +3,8 @@ package lsfusion.server.logics.property.cases.graph;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+
+import java.util.function.Function;
 
 public class ListComp<T> implements NodeListComp<T> {
     public final ImList<NodeSetComp<T>> comps;
@@ -15,7 +16,7 @@ public class ListComp<T> implements NodeListComp<T> {
     }
 
     private <IV, V> ImList<IV> proceedComps(final CompProcessor<T, IV, V> processor) {
-        return comps.mapListValues((GetValue<IV, NodeSetComp<T>>) value -> value.proceedInner(processor));
+        return comps.mapListValues((NodeSetComp<T> value) -> value.proceedInner(processor));
     }
     @Override
     public <IV, V> V proceed(CompProcessor<T, IV, V> processor) {

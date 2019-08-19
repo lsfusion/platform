@@ -2,7 +2,6 @@ package lsfusion.server.logics.action.flow;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptParsingException;
@@ -20,6 +19,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class ListCaseAction extends KeepContextAction {
 
@@ -119,6 +119,6 @@ public abstract class ListCaseAction extends KeepContextAction {
     protected abstract ImList<ActionMapImplement<?, PropertyInterface>> getListActions();
 
     public ImSet<Action> getDependActions() {
-        return getListActions().mapListValues((GetValue<Action, ActionMapImplement<?, PropertyInterface>>) value -> value.action).toOrderSet().getSet();
+        return getListActions().mapListValues((Function<ActionMapImplement<?, PropertyInterface>, Action>) value -> value.action).toOrderSet().getSet();
     }
 }

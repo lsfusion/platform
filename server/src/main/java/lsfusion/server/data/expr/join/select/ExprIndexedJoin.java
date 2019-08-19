@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.hash.HashContext;
@@ -164,11 +163,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         MSet<KeyExpr> mInnerKeys = SetFact.mSet();
         for(BaseJoin<?> where : wheres) {
             if (where instanceof InnerJoin && (excludeJoin == null || !BaseUtils.hashEquals(where, excludeJoin))) {
-                ImSet<BaseExpr> whereKeys = where.getJoins().values().filterCol(new SFunctionSet<BaseExpr>() {
-                    public boolean contains(BaseExpr element) {
-                        return element instanceof KeyExpr;
-                    }
-                }).toSet();
+                ImSet<BaseExpr> whereKeys = where.getJoins().values().filterCol(element -> element instanceof KeyExpr).toSet();
                 mInnerKeys.addAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(whereKeys));
             }
         }

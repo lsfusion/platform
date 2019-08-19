@@ -1,8 +1,9 @@
 package lsfusion.server.data.query.compile;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.type.reader.Reader;
+
+import java.util.function.Function;
 
 public class CompileOrder {
     public final boolean desc;
@@ -16,11 +17,11 @@ public class CompileOrder {
     }
 
     public static <K> ImOrderMap<K, CompileOrder> setNotNull(ImOrderMap<K, CompileOrder> map) {
-        return map.mapOrderValues((GetValue<CompileOrder, CompileOrder>) value -> new CompileOrder(value.desc, value.reader, true));
+        return map.mapOrderValues((CompileOrder value) -> new CompileOrder(value.desc, value.reader, true));
     }
 
     public static <K> ImOrderMap<K, CompileOrder> reverseOrder(ImOrderMap<K, CompileOrder> map) {
-        return map.mapOrderValues((GetValue<CompileOrder, CompileOrder>) value -> new CompileOrder(!value.desc, value.reader, value.notNull));
+        return map.mapOrderValues((CompileOrder value) -> new CompileOrder(!value.desc, value.reader, value.notNull));
     }
 
 }

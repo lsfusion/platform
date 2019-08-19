@@ -10,8 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.ManualLazy;
@@ -57,6 +55,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 // абстрактный класс выражений
 
@@ -259,15 +258,11 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         ImSet<KeyExpr> keys = BaseUtils.immutableCast(getOuterKeys());
 
         Result<ImSet<KeyExpr>> keyRest = new Result<>();
-        ImSet<KeyExpr> keyValues = keys.split(new SFunctionSet<KeyExpr>() {
-            public boolean contains(KeyExpr key) {
-                return key.getType(getWhere()) instanceof DataClass;
-            }
-        }, keyRest);
+        ImSet<KeyExpr> keyValues = keys.split(key -> key.getType(getWhere()) instanceof DataClass, keyRest);
 
         new Query<>(keyRest.result.toRevMap(),
-                translateExpr(new PartialKeyExprTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
-                    public Expr getMapValue(KeyExpr key) {
+                translateExpr(new PartialKeyExprTranslator(keyValues.mapValues(new Function<KeyExpr, Expr>() {
+                    public Expr apply(KeyExpr key) {
                         return ((DataClass) key.getType(getWhere())).getDefaultExpr();
                     }
                 }), true)).getWhere()).compile(new CompileOptions<>(DataAdapter.debugSyntax));

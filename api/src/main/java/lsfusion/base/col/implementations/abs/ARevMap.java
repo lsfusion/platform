@@ -6,12 +6,12 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MFilterRevMap;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.NotFunctionSet;
-import lsfusion.base.lambda.set.SFunctionSet;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 // вся реализация в AMap (для множественного наследования)
 public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V> {
@@ -105,7 +105,7 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
 
     public <EK extends K> ImRevMap<EK, V> filterInclRev(ImSet<? extends EK> keys) {
         assert keys().containsAll(keys);
-        return ((ImSet<EK>)keys).mapRevValues(BaseUtils.<GetValue<V, EK>>immutableCast(fnGetValue()));
+        return ((ImSet<EK>)keys).mapRevValues(BaseUtils.<Function<EK, V>>immutableCast(fnGetValue()));
     }
 
     public <EV extends V> ImRevMap<K, EV> filterValuesRev(ImSet<EV> values) {
@@ -117,11 +117,7 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
     }
 
     public ImRevMap<K, V> removeRev(final K remove) {
-        return filterFnRev(new SFunctionSet<K>() {
-            public boolean contains(K element) {
-                return !BaseUtils.hashEquals(element, remove);
-            }
-        });
+        return filterFnRev(element -> !BaseUtils.hashEquals(element, remove));
     }
 
     public ImRevMap<K, V> removeRev(ImSet<? extends K> keys) {
@@ -136,7 +132,7 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
         return reverse().keys();
     }
 
-    public <M> ImRevMap<M, V> mapRevKeys(GetIndex<M> getter) {
+    public <M> ImRevMap<M, V> mapRevKeys(IntFunction<M> getter) {
         return reverse().mapRevValues(getter).reverse();
     }
 
@@ -146,18 +142,18 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
         return map.mapOrderKeyValues(reversed::get, value -> value);
     }
 
-    public <M> ImRevMap<M, V> mapRevKeys(GetValue<M, K> getter) {
+    public <M> ImRevMap<M, V> mapRevKeys(Function<K, M> getter) {
         return reverse().mapRevValues(getter).reverse();
     }
 
-    public <M> ImRevMap<M, V> mapRevKeys(GetKeyValue<M, V, K> getter) {
+    public <M> ImRevMap<M, V> mapRevKeys(BiFunction<V, K, M> getter) {
         return reverse().mapRevValues(getter).reverse();
     }
 
-    public <MK, MV> ImRevMap<MK, MV> mapRevKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue) {
+    public <MK, MV> ImRevMap<MK, MV> mapRevKeyValues(Function<K, MK> getterKey, Function<V, MV> getterValue) {
         MRevMap<MK, MV> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.revAdd(getterKey.getMapValue(getKey(i)), getterValue.getMapValue(getValue(i)));
+            mResult.revAdd(getterKey.apply(getKey(i)), getterValue.apply(getValue(i)));
         return mResult.immutableRev();
     }
 

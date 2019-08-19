@@ -1,6 +1,5 @@
 package lsfusion.server.logics.action.session.classes.change;
 
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.sql.SQLSession;
@@ -9,6 +8,7 @@ import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.classes.user.BaseClass;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class MaterializableClassChange {
     public ClassChange change;
@@ -18,8 +18,8 @@ public class MaterializableClassChange {
         this.change = change;
     }
 
-    public void materializeIfNeeded(String debugInfo, SQLSession sql, BaseClass baseClass, QueryEnvironment env, GetValue<Boolean, ClassChange> needMaterialize) throws SQLException, SQLHandledException {
-        if(table == null && needMaterialize.getMapValue(change)) {
+    public void materializeIfNeeded(String debugInfo, SQLSession sql, BaseClass baseClass, QueryEnvironment env, Function<ClassChange, Boolean> needMaterialize) throws SQLException, SQLHandledException {
+        if(table == null && needMaterialize.apply(change)) {
             table = change.materialize(debugInfo, sql, baseClass, env); // materialize'им изменение
             change = table.getChange();
         }            

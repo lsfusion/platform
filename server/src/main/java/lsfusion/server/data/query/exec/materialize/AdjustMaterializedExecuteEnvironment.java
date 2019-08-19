@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.query.exec.DynamicExecEnvOuter;
 import lsfusion.server.data.query.exec.DynamicExecEnvSnapshot;
@@ -32,6 +31,7 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.function.Function;
 
 public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironment<ImMap<SQLQuery, MaterializedQuery>, AdjustMaterializedExecuteEnvironment.Snapshot> {
 
@@ -336,7 +336,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
             final int target = (int) Math.round(((double)topNode.getChildrenDegree()) / split);
 
-            GetValue<Integer, Node> priorityCalc = o -> {
+            Function<Node, Integer> priorityCalc = o -> {
                 int pdeg = o.getParentDegree();
                 int cdeg = o.getChildrenDegree();
                 if(o == topNode) {
@@ -392,9 +392,9 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         return new Step(true, step); // включение disableNestedLoop
     }
 
-    private static void addNodes(Collection<Node> nodes, GetValue<Integer, Node> priorityCalc, PriorityQueue<Node> queue) {
+    private static void addNodes(Collection<Node> nodes, Function<Node, Integer> priorityCalc, PriorityQueue<Node> queue) {
         for(Node node : nodes) {
-            node.priority = priorityCalc.getMapValue(node);
+            node.priority = priorityCalc.apply(node);
             queue.add(node);
         }
     }

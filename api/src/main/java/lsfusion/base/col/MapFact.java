@@ -18,8 +18,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 
@@ -27,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import static lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap.DEFAULT_INITIAL_CAPACITY;
 import static lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap.DEFAULT_LOAD_FACTOR;
@@ -295,11 +294,11 @@ public class MapFact {
     // MUTABLE
 
     public static <K, V> ImOrderMap<K, ImSet<V>> immutable(MOrderExclMap<K, MSet<V>> mMap) {
-        return mMap.immutableOrder().mapOrderValues((GetValue<ImSet<V>, MSet<V>>) MSet::immutable);
+        return mMap.immutableOrder().mapOrderValues(MSet<V>::immutable);
     }
 
     public static <K, V> ImOrderMap<K, ImOrderSet<V>> immutableOrder(MOrderExclMap<K, MOrderExclSet<V>> mMap) {
-        return mMap.immutableOrder().mapOrderValues((GetValue<ImOrderSet<V>, MOrderExclSet<V>>) MOrderExclSet::immutableOrder);
+        return mMap.immutableOrder().mapOrderValues(MOrderExclSet<V>::immutableOrder);
     }
 
     public static <K, V> ImMap<K, ImOrderSet<V>> immutableMapOrder(MExclMap<K, MOrderExclSet<V>> mMap) {
@@ -757,18 +756,18 @@ public class MapFact {
         return (AddValue<K, Integer>) addLinear;
     }
     
-    private static <N, E> void recBuildGraphOrder(MOrderExclSet<N> orderSet, N node, ImMap<N, ImSet<E>> edges, GetValue<N, E> edgeTo) {
+    private static <N, E> void recBuildGraphOrder(MOrderExclSet<N> orderSet, N node, ImMap<N, ImSet<E>> edges, Function<E, N> edgeTo) {
         if(orderSet.contains(node)) // значит уже были
             return;
         
         for(E edge : edges.get(node)) {
-            recBuildGraphOrder(orderSet, edgeTo.getMapValue(edge), edges, edgeTo);
+            recBuildGraphOrder(orderSet, edgeTo.apply(edge), edges, edgeTo);
         }
         
         orderSet.exclAdd(node);
     }
     
-    public static <N, E> ImOrderSet<N> buildGraphOrder(ImMap<N, ImSet<E>> edges, GetValue<N, E> edgeTo) {
+    public static <N, E> ImOrderSet<N> buildGraphOrder(ImMap<N, ImSet<E>> edges, Function<E, N> edgeTo) {
         MOrderExclSet<N> mResult = SetFact.mOrderExclSet(edges.size());
         for(N node : edges.keyIt()) {
             recBuildGraphOrder(mResult, node, edges, edgeTo);
@@ -776,15 +775,15 @@ public class MapFact {
         return mResult.immutableOrder();
     }
 
-    private final static GetValue<ImSet<Object>, Object> toSingleton = SetFact::singleton;
+    private final static Function<Object, ImSet<Object>> toSingleton = SetFact::singleton;
 
-    public static <V> GetValue<ImSet<V>, V> toSingleton() {
+    public static <V> Function<V, ImSet<V>> toSingleton() {
         return BaseUtils.immutableCast(toSingleton);
     }
 
-    private final static GetValue<MSet<Object>, Object> mSet = value -> SetFact.mSet();
+    private final static Function<Object, MSet<Object>> mSet = value -> SetFact.mSet();
 
-    public static <K, V> GetValue<MSet<V>, K> mSet() {
+    public static <K, V> Function<K, MSet<V>> mSet() {
         return BaseUtils.immutableCast(mSet);
     }
 

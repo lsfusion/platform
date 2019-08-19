@@ -2,10 +2,11 @@ package lsfusion.server.data.expr.where.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.translate.MapTranslate;
+
+import java.util.function.Function;
 
 public class ExprCaseList extends CaseList<Expr, Expr, ExprCase> {
 
@@ -35,7 +36,7 @@ public class ExprCaseList extends CaseList<Expr, Expr, ExprCase> {
     }
 
     public ExprCaseList translateOuter(final MapTranslate translate) {
-        GetValue<ExprCase, ExprCase> transCase = exprCase -> new ExprCase(exprCase.where.translateOuter(translate), exprCase.data.translateOuter(translate));
+        Function<ExprCase, ExprCase> transCase = exprCase -> new ExprCase(exprCase.where.translateOuter(translate), exprCase.data.translateOuter(translate));
 
         if(exclusive)
             return new ExprCaseList(((ImSet<ExprCase>)list).mapSetValues(transCase));
@@ -43,7 +44,7 @@ public class ExprCaseList extends CaseList<Expr, Expr, ExprCase> {
             return new ExprCaseList(((ImList<ExprCase>)list).mapListValues(transCase));
     }
 
-    public <K> MapCaseList<K> mapValues(GetValue<MapCase<K>, ExprCase> mapValue) {
+    public <K> MapCaseList<K> mapValues(Function<ExprCase, MapCase<K>> mapValue) {
         if(exclusive)
             return new MapCaseList<>(((ImSet<ExprCase>) list).mapSetValues(mapValue));
         else

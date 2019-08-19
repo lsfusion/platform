@@ -12,10 +12,7 @@ import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.Expr;
@@ -48,6 +45,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import static lsfusion.interop.form.property.ClassViewType.DEFAULT;
 
@@ -93,8 +92,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
 
         public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
-            return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues(new GetValue<Expr, ObjectInstance>() {
-                public Expr getMapValue(ObjectInstance value) {
+            return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues(new Function<ObjectInstance, Expr>() {
+                public Expr apply(ObjectInstance value) {
                     return new StaticParamNullableExpr(value.getBaseClass().getUpSet(), value.toString());
                 }
             }));
@@ -183,8 +182,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         PropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = PropertyFact.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
-                public ValueClass getMapValue(ObjectEntity value) {
+            prop = PropertyFact.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new Function<ObjectEntity, ValueClass>() {
+                public ValueClass apply(ObjectEntity value) {
                     return value.baseClass;
                 }}), type.getValueClass(), null);
             mProps.exclAdd(type, prop);
@@ -207,7 +206,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public ImMap<ObjectEntity, PropertyObjectEntity<?>> isParent = null;
 
     public void setIsParents(final PropertyObjectEntity... properties) {
-        isParent = getOrderObjects().mapOrderValues((GetIndex<PropertyObjectEntity<?>>) i -> properties[i]);
+        isParent = getOrderObjects().mapOrderValues((IntFunction<PropertyObjectEntity<?>>) i -> properties[i]);
     }
 
     public void setInitClassView(ClassViewType type) {
@@ -325,11 +324,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     private static ImMap<ObjectEntity, ValueClass> getGridClasses(ImSet<ObjectEntity> objects) {
-        return objects.filterFn(new SFunctionSet<ObjectEntity>() {
-            public boolean contains(ObjectEntity element) {
-                return !element.noClasses();
-            }
-        }).mapValues((GetValue<ValueClass, ObjectEntity>) value -> value.baseClass);
+        return objects.filterFn(element -> !element.noClasses()).mapValues((ObjectEntity value) -> value.baseClass);
     }
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);

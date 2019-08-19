@@ -1,7 +1,6 @@
 package lsfusion.server.data.translate;
 
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.expr.BaseExpr;
@@ -13,14 +12,16 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.classes.ClassWhere;
 
+import java.util.function.Function;
+
 public abstract class AbstractMapTranslator extends TwinImmutableObject implements MapTranslate {
 
-    private GetValue<TranslateContext, TranslateContext> trans;
+    private Function<TranslateContext, TranslateContext> trans;
     @ManualLazy
-    private <V extends TranslateContext> GetValue<V, V> TRANS() {
+    private <V extends TranslateContext> Function<V, V> TRANS() {
         if(trans==null)
             trans = value -> value.translateOuter(AbstractMapTranslator.this);
-        return (GetValue<V, V>)trans;
+        return (Function<V, V>)trans;
     }
 
     public <K, V extends BaseExpr> ImMap<K, V> translateDirect(ImMap<K, V> map) {

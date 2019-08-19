@@ -11,17 +11,14 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.ImmutableObject;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFDefault;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.join.classes.IsClassField;
@@ -674,11 +671,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         final ImSet<Property> upAggrProps = mUpAggrProps.immutable();
         
         // вырезаем те для кого implements уже есть
-        return upAggrProps.filterFn(new SFunctionSet<Property>() {
-            public boolean contains(Property element) {
-                return !upAggrProps.intersect(((Property<?>)element).getImplements());
-            }
-        });
+        return upAggrProps.filterFn(element -> !upAggrProps.intersect(((Property<?>)element).getImplements()));
     }
 
 }

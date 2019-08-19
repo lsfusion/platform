@@ -9,8 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -18,7 +16,6 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -46,6 +43,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.trimToEmpty;
 
@@ -123,11 +121,11 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
 
     }
 
-    private GetValue<ObjectValue, LP> getJavaMapValueGetter(final JavaProcess javaProcessValue, final String idThread) {
+    private Function<LP, ObjectValue> getJavaMapValueGetter(final JavaProcess javaProcessValue, final String idThread) {
         return prop -> getJavaMapValue(prop, javaProcessValue, idThread);
     }
 
-    private GetValue<ObjectValue, LP> getSQLMapValueGetter(final SQLProcess sqlProcessValue, final String idThread) {
+    private Function<LP, ObjectValue> getSQLMapValueGetter(final SQLProcess sqlProcessValue, final String idThread) {
         return prop -> getSQLMapValue(prop, sqlProcessValue, idThread);
     }
 

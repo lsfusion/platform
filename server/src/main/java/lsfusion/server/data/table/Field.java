@@ -1,7 +1,6 @@
 package lsfusion.server.data.table;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.remote.serialization.BinarySerializable;
@@ -13,6 +12,7 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Function;
 
 public abstract class Field extends TwinImmutableObject implements BinarySerializable {
     protected String name;
@@ -29,35 +29,25 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
         return name;
     }
 
-    private final static Type.Getter<Field> typeGetter = key -> key.type;
     public static <F extends Field> Type.Getter<F> typeGetter() {
-        return (Type.Getter<F>) typeGetter;
+        return key -> key.type;
     }
 
-    private final static GetValue<Type, Field> fnTypeGetter = value -> value.type;
-    public static <F extends Field> GetValue<Type, F> fnTypeGetter() {
-        return (GetValue<Type, F>) fnTypeGetter;
+    public static <F extends Field> Function<F, Type> fnTypeGetter() {
+        return value -> value.type;
     }
 
-    public static <F extends Field> GetValue<String, F> nameGetter(final SQLSyntax syntax) {
-        return (GetValue<String, F>) value -> value.getName(syntax);
+    public static <F extends Field> Function<F, String> nameGetter(final SQLSyntax syntax) {
+        return (F value) -> value.getName(syntax);
     }
 
-    public static <F extends Field> GetValue<String, F> nameGetter() {
-        return (GetValue<String, F>) Field::getName;
+    public static <F extends Field> Function<F, String> nameGetter() {
+        return Field::getName;
     }
 
-    public final static SFunctionSet<Field> onlyKeys = new SFunctionSet<Field>() {
-        public boolean contains(Field element) {
-            return element instanceof KeyField;
-        }
-    };
+    public final static SFunctionSet<Field> onlyKeys = element -> element instanceof KeyField;
 
-    public final static SFunctionSet<Field> onlyProps = new SFunctionSet<Field>() {
-        public boolean contains(Field element) {
-            return element instanceof PropertyField;
-        }
-    };
+    public final static SFunctionSet<Field> onlyProps = element -> element instanceof PropertyField;
 
     protected Field(String name,Type type) {
         this.name = name;
@@ -66,7 +56,7 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
     }
 
     public static String getDeclare(ImOrderMap<String, Type> map, final SQLSyntax syntax, final TypeEnvironment typeEnv) {
-        return map.mapOrderValues((GetValue<String, Type>) value -> value.getDB(syntax, typeEnv)).toString(" ", ",");
+        return map.mapOrderValues((Type value) -> value.getDB(syntax, typeEnv)).toString(" ", ",");
     }
     
     public String getDeclare(SQLSyntax syntax, TypeEnvironment typeEnv) {

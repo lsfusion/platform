@@ -2,7 +2,6 @@ package lsfusion.server.data.expr.join.where;
 
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.stat.StatKeys;
 import lsfusion.server.data.where.Where;
@@ -14,8 +13,8 @@ public class GroupSplitWhere<K> extends GroupWhere {
     private final boolean exclusiveSimpleCount;
 
 //    public static <K extends BaseExpr> StatKeys<K> getStatKeys(ImCol<GroupJoinsWhere> groupStats, final ImSet<K> groups, final StatType statType) {
-//        return StatKeys.or(groupStats, new GetValue<StatKeys<K>, GroupJoinsWhere>() {
-//            public StatKeys<K> getMapValue(GroupJoinsWhere value) {
+//        return StatKeys.or(groupStats, new Function<StatKeys<K>, GroupJoinsWhere>() {
+//            public StatKeys<K> apply(GroupJoinsWhere value) {
 //                return value.getStatKeys(groups, statType);
 //            }}, groups);
 //    }

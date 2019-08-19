@@ -1,7 +1,6 @@
 package lsfusion.server.logics.action.session.change.modifier;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.logics.action.data.PrereadRows;
@@ -9,6 +8,8 @@ import lsfusion.server.logics.action.session.change.ModifyChange;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+
+import java.util.function.Function;
 
 public abstract class DataSessionModifier extends SessionModifier {
 
@@ -35,7 +36,7 @@ public abstract class DataSessionModifier extends SessionModifier {
 
     @Override
     public String out() {
-        return super.out() + "\nchanged : " + getChangedProps().mapValues((GetValue<PropertyChange, Property>) this::getPropertyChange);
+        return super.out() + "\nchanged : " + getChangedProps().mapValues((Function<Property, PropertyChange>) this::getPropertyChange);
     }
 
     public ImSet<Property> calculateProperties() {

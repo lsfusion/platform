@@ -9,15 +9,15 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
 import lsfusion.base.lambda.set.FunctionSet;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 // почти все его методы в ACol, для множественного наследования
 public abstract class AList<K> extends AColObject implements ImList<K> {
@@ -56,32 +56,32 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return builder.toString();
     }
 
-    public String toString(GetValue<String, K> getter, String delimiter) {
+    public String toString(Function<K, String> getter, String delimiter) {
         StringBuilder builder = new StringBuilder();
         for(int i=0,size=size();i<size;i++) {
             if(i!=0)
                 builder.append(delimiter);
-            builder.append(getter.getMapValue(get(i)));
+            builder.append(getter.apply(get(i)));
         }
         return builder.toString();
     }
 
-    public String toString(GetStaticValue<String> getter, String delimiter) {
+    public String toString(Supplier<String> getter, String delimiter) {
         StringBuilder builder = new StringBuilder();
         for(int i=0,size=size();i<size;i++) {
             if(i!=0)
                 builder.append(delimiter);
-            builder.append(getter.getMapValue());
+            builder.append(getter.get());
         }
         return builder.toString();
     }
 
-    public String toString(GetIndexValue<String, K> getter, String delimiter) {
+    public String toString(IntObjectFunction<K, String> getter, String delimiter) {
         StringBuilder builder = new StringBuilder();
         for(int i=0,size=size();i<size;i++) {
             if(i!=0)
                 builder.append(delimiter);
-            builder.append(getter.getMapValue(i, get(i)));
+            builder.append(getter.apply(i, get(i)));
         }
         return builder.toString();
     }
@@ -170,61 +170,61 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return mResult.immutableOrder();
     }
 
-    public <M> ImList<M> mapItListValues(GetValue<M, K> getter) {
+    public <M> ImList<M> mapItListValues(Function<K, M> getter) {
         MList<M> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(get(i)));
+            mResult.add(getter.apply(get(i)));
         return mResult.immutableList();
     }
 
-    public <M> ImList<M> mapListValues(GetIndex<M> getter) {
+    public <M> ImList<M> mapListValues(IntFunction<M> getter) {
         MList<M> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(i));
+            mResult.add(getter.apply(i));
         return mResult.immutableList();
     }
 
-    public <M> ImList<M> mapListValues(GetIndexValue<M, K> getter) {
+    public <M> ImList<M> mapListValues(IntObjectFunction<K, M> getter) {
         MList<M> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(i, get(i)));
+            mResult.add(getter.apply(i, get(i)));
         return mResult.immutableList();
     }
 
-    public <M> ImList<M> mapListValues(GetValue<M, K> getter) {
+    public <M> ImList<M> mapListValues(Function<K, M> getter) {
         MList<M> mResult = ListFact.mList(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(get(i)));
+            mResult.add(getter.apply(get(i)));
         return mResult.immutableList();
     }
 
-    public <M> ImMap<M, K> mapListMapValues(GetIndex<M> getterKey) {
+    public <M> ImMap<M, K> mapListMapValues(IntFunction<M> getterKey) {
         MExclMap<M, K> mResult = MapFact.mExclMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getterKey.getMapValue(i), get(i));
+            mResult.exclAdd(getterKey.apply(i), get(i));
         return mResult.immutable();
     }
 
-    public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {
+    public <MK, MV> ImMap<MK, MV> mapListKeyValues(IntFunction<MK> getterKey, Function<K, MV> getterValue) {
         MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.exclAdd(getterKey.getMapValue(i), getterValue.getMapValue(get(i)));
+            mResult.exclAdd(getterKey.apply(i), getterValue.apply(get(i)));
         return mResult.immutable();
     }
 
-    public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+    public <MK, MV> ImMap<MK, MV> mapListKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue) {
         MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
         for(int i=0,size=size();i<size;i++) {
             K key = get(i);
-            mResult.exclAdd(getterKey.getMapValue(key), getterValue.getMapValue(key));
+            mResult.exclAdd(getterKey.apply(key), getterValue.apply(key));
         }
         return mResult.immutable();
     }
 
-    public <MK, MV> ImRevMap<MK, MV> mapListRevKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {
+    public <MK, MV> ImRevMap<MK, MV> mapListRevKeyValues(IntFunction<MK> getterKey, Function<K, MV> getterValue) {
         MRevMap<MK, MV> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.revAdd(getterKey.getMapValue(i), getterValue.getMapValue(get(i)));
+            mResult.revAdd(getterKey.apply(i), getterValue.apply(get(i)));
         return mResult.immutableRev();
     }
 

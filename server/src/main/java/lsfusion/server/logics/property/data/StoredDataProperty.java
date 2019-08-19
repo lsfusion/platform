@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.data;
 
-import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -18,16 +18,6 @@ public class StoredDataProperty extends DataProperty {
     }
 
     // нет
-    public static FunctionSet<Property> set = new FunctionSet<Property>() {
-        public boolean contains(Property element) {
-            return element instanceof StoredDataProperty;
-        }
-        public boolean isEmpty() {
-            return false;
-        }
-        public boolean isFull() {
-            return false;
-        }
-    };
+    public static SFunctionSet<Property> set = element -> element instanceof StoredDataProperty;
 
 }

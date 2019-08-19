@@ -1,8 +1,15 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.interfaces.mutable.mapvalue.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public interface ImOrderMap<K,V> {
 
@@ -20,7 +27,7 @@ public interface ImOrderMap<K,V> {
     K singleKey();
 
     String toString(String conc, String delimiter);
-    String toString(GetKeyValue<String, K, V> getter, String delimiter);
+    String toString(BiFunction<K, V, String> getter, String delimiter);
 
     Iterable<K> keyIt();
     Iterable<V> valueIt();
@@ -51,33 +58,44 @@ public interface ImOrderMap<K,V> {
     ImOrderMap<K, V> replaceValues(V[] values);
 
     ImOrderMap<K, V> filterOrder(FunctionSet<K> set);
-    ImOrderSet<K> filterOrderValues(FunctionSet<V> set);
-    ImOrderMap<K, V> filterOrderValuesMap(FunctionSet<V> set);
+    default ImOrderMap<K, V> filterOrder(SFunctionSet<K> set) {
+        return filterOrder((FunctionSet<K>) set);
+    }
 
+    ImOrderSet<K> filterOrderValues(FunctionSet<V> set);
+    default ImOrderSet<K> filterOrderValues(SFunctionSet<V> set) {
+        return filterOrderValues((FunctionSet<V>) set);
+    }
+    
+    ImOrderMap<K, V> filterOrderValuesMap(FunctionSet<V> set);
+    default ImOrderMap<K, V> filterOrderValuesMap(SFunctionSet<V> set) {
+        return filterOrderValuesMap((FunctionSet<V>) set);
+    }
+    
     ImOrderMap<K, V> removeOrder(ImSet<? extends K> keys);
     ImOrderMap<K, V> removeOrderIncl(ImSet<? extends K> keys);
     ImOrderMap<K, V> removeOrderIncl(K remove);
 
     <M> ImOrderValueMap<K, M> mapItOrderValues();
 
-    <M> ImOrderMap<M, V> mapMergeItOrderKeys(GetValue<M, K> getter); // с последействием
+    <M> ImOrderMap<M, V> mapMergeItOrderKeys(Function<K, M> getter); // с последействием
 
-    <M> ImOrderMap<K,M> mapOrderValues(GetIndex<M> getter);
-    <M> ImOrderMap<K,M> mapOrderValues(GetValue<M, V> getter);
-    <M> ImOrderMap<K,M> mapOrderValues(GetKeyValue<M, K, V> getter);
-    <M> ImOrderMap<K,M> mapOrderValues(GetStaticValue<M> getter);
-    <M> ImOrderMap<M, V> mapOrderKeys(GetValue<M, K> getter);
-    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetKeyValue<MK, K, V> getterKey, GetValue<MV, V> getterValue);
-    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
+    <M> ImOrderMap<K,M> mapOrderValues(IntFunction<M> getter);
+    <M> ImOrderMap<K,M> mapOrderValues(Function<V, M> getter);
+    <M> ImOrderMap<K,M> mapOrderValues(BiFunction<K, V, M> getter);
+    <M> ImOrderMap<K,M> mapOrderValues(Supplier<M> getter);
+    <M> ImOrderMap<M, V> mapOrderKeys(Function<K, M> getter);
+    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(BiFunction<K, V, MK> getterKey, Function<V, MV> getterValue);
+    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(Function<K, MK> getterKey, Function<V, MV> getterValue);
 
-    <M> ImOrderSet<M> mapOrderSetValues(GetKeyValue<M, K, V> getter);
+    <M> ImOrderSet<M> mapOrderSetValues(BiFunction<K, V, M> getter);
 
-    <M> ImList<M> mapListValues(GetValue<M, V> getter);
+    <M> ImList<M> mapListValues(Function<V, M> getter);
 
-    <M> ImOrderMap<M, V> mapMergeOrderKeys(GetValue<M, K> getter);
+    <M> ImOrderMap<M, V> mapMergeOrderKeys(Function<K, M> getter);
 
-    <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
-    <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
+    <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2;
+    <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2;
     
     boolean starts(ImSet<K> set);
     ImOrderMap<K,V> moveStart(ImSet<K> col);

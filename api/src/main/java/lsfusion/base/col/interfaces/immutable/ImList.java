@@ -1,13 +1,14 @@
 package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.IntObjectFunction;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 // can contain nulls
 public interface ImList<K> extends Iterable<K> {
@@ -40,22 +41,25 @@ public interface ImList<K> extends Iterable<K> {
 
     // фильтрация
     ImList<K> filterList(FunctionSet<K> filter);
+    default ImList<K> filterList(SFunctionSet<K> filter) {
+        return filterList((FunctionSet<K>) filter);
+    } 
 
-    <M> ImList<M> mapItListValues(GetValue<M, K> getter); // с последействием
+    <M> ImList<M> mapItListValues(Function<K, M> getter); // с последействием
 
-    <M> ImList<M> mapListValues(GetIndex<M> getter);
-    <M> ImList<M> mapListValues(GetIndexValue<M, K> getter);
-    <M> ImList<M> mapListValues(GetValue<M, K> getter);
+    <M> ImList<M> mapListValues(IntFunction<M> getter);
+    <M> ImList<M> mapListValues(IntObjectFunction<K, M> getter);
+    <M> ImList<M> mapListValues(Function<K, M> getter);
 
-    <M> ImMap<M,K> mapListMapValues(GetIndex<M> getterKey);
-    <MK, MV> ImMap<MK,MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue);
-    <MK, MV> ImMap<MK,MV> mapListKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue);
-    <MK, MV> ImRevMap<MK,MV> mapListRevKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue);
+    <M> ImMap<M,K> mapListMapValues(IntFunction<M> getterKey);
+    <MK, MV> ImMap<MK,MV> mapListKeyValues(IntFunction<MK> getterKey, Function<K, MV> getterValue);
+    <MK, MV> ImMap<MK,MV> mapListKeyValues(Function<K, MK> getterKey, Function<K, MV> getterValue);
+    <MK, MV> ImRevMap<MK,MV> mapListRevKeyValues(IntFunction<MK> getterKey, Function<K, MV> getterValue);
 
     String toString(String separator);
-    String toString(GetValue<String, K> getter, String delimiter);
-    String toString(GetStaticValue<String> getter, String delimiter);
-    String toString(GetIndexValue<String, K> getter, String delimiter);
+    String toString(Function<K, String> getter, String delimiter);
+    String toString(Supplier<String> getter, String delimiter);
+    String toString(IntObjectFunction<K, String> getter, String delimiter);
 
     List<K> toJavaList();
 

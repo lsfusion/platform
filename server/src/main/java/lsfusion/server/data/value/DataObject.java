@@ -5,9 +5,6 @@ import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
@@ -170,11 +167,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public static <K> ImMap<K, DataObject> filterDataObjects(ImMap<K, ? extends ObjectValue> map) {
         return BaseUtils.immutableCast(
-                ((ImMap<K, ObjectValue>)map).filterFnValues(new SFunctionSet<ObjectValue>() {
-                    public boolean contains(ObjectValue element) {
-                        return element instanceof DataObject;
-                    }
-                }));
+                ((ImMap<K, ObjectValue>)map).filterFnValues(element -> element instanceof DataObject));
     }
 
     public static <K, O extends ObjectValue> ImMap<K, DataObject> splitDataObjects(ImMap<K, O> map, Result<ImSet<K>> rNulls) {

@@ -5,7 +5,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -17,6 +16,7 @@ import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.physics.dev.id.resolve.SignatureMatcher;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class ExClassSet extends TwinImmutableObject {
     private final ResolveClassSet classSet;
@@ -45,7 +45,7 @@ public class ExClassSet extends TwinImmutableObject {
     }
 
     public static <T> ImMap<T, ExClassSet> op(ImSet<T> keys, final ImMap<T, ExClassSet> op1, final ImMap<T, ExClassSet> op2, final boolean or) {
-        return keys.mapValues((GetValue<ExClassSet, T>) value -> op(op1.get(value), op2.get(value), or));
+        return keys.mapValues((T value) -> op(op1.get(value), op2.get(value), or));
     }
 
     @Override

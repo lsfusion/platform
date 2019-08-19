@@ -10,8 +10,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.form.property.Compare;
@@ -138,7 +137,7 @@ public class ClassChanges {
         final ValueExpr unknownExpr = new ValueExpr(-1L, baseClass.unknown);
 
         ImRevMap<K,KeyExpr> keys = KeyExpr.getMapKeys(classExprs.keys().addExcl(objectExprs.keys()));
-        ImMap<K, Expr> group = ((ImMap<K, Expr>)classExprs).mapValues(value -> value.nvl(unknownExpr)).addExcl(((ImMap<K, Expr>)objectExprs).mapValuesEx((GetExValue<Expr, Expr, SQLException, SQLHandledException>) value -> baseClass.getObjectClassProperty().getExpr(value, modifier).nvl(unknownExpr)));
+        ImMap<K, Expr> group = ((ImMap<K, Expr>)classExprs).mapValues(value -> value.nvl(unknownExpr)).addExcl(((ImMap<K, Expr>)objectExprs).mapValuesEx((ThrowingFunction<Expr, Expr, SQLException, SQLHandledException>) value -> baseClass.getObjectClassProperty().getExpr(value, modifier).nvl(unknownExpr)));
 
         return new Query<K, String>(keys, GroupExpr.create(group, where, keys).getWhere()).execute(sql, env).keyOrderSet().mapMergeOrderSetValues(readClasses -> readClasses.mapValues(id -> baseClass.findConcreteClassID((Long) id, -1)));
     }

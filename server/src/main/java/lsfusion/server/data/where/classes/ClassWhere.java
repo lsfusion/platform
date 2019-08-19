@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.classes.IsClassType;
@@ -17,6 +16,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+
+import java.util.function.Function;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
@@ -124,10 +125,10 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
 
     public Where getWhere(ImMap<K, ? extends Expr> mapExprs, boolean onlyObject, IsClassType type) {
-        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), onlyObject, type);
+        return getWhere((Function<K, Expr>) mapExprs.fnGetValue(), onlyObject, type);
     }
 
-    public Where getWhere(GetValue<Expr, K> mapExprs, boolean onlyObject, IsClassType type) {
+    public Where getWhere(Function<K, Expr> mapExprs, boolean onlyObject, IsClassType type) {
         Where result = Where.FALSE;
         for(And<K> andWhere : wheres)
             result = result.or(andWhere.getWhere(mapExprs, onlyObject, type));
@@ -141,7 +142,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         return new ClassWhere<>(remapWheres);
     }
 
-    public <T> ClassWhere<T> remap(GetValue<T, K> map) {
+    public <T> ClassWhere<T> remap(Function<K, T> map) {
         And<T>[] remapWheres = new And[wheres.length];
         for(int i=0;i<wheres.length;i++)
             remapWheres[i] = wheres[i].remap(map);

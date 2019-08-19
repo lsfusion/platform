@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.col.lru.LRUWVWSMap;
@@ -14,6 +13,8 @@ import lsfusion.server.data.caches.hash.HashObject;
 import lsfusion.server.data.pack.PackInterface;
 import lsfusion.server.data.translate.MapObject;
 import lsfusion.server.data.value.Value;
+
+import java.util.function.Function;
 
 // assert что T instanceof AbstractTranslateContext но заколебешься его протаскивать
 public abstract class AbstractTranslateContext<T, M extends MapObject, H extends HashObject> extends AbstractHashContext<H> implements PackInterface<T> {
@@ -137,8 +138,8 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
         throw new RuntimeException("not supported yet");
     }
 
-    private final static GetValue<Object, PackInterface<Object>> packValue = PackInterface::pack;
-    private static <T extends PackInterface<T>> GetValue<T, T> packValue() {
+    private final static Function<PackInterface<Object>, Object> packValue = PackInterface::pack;
+    private static <T extends PackInterface<T>> Function<T, T> packValue() {
         return BaseUtils.immutableCast(packValue);
     }
 

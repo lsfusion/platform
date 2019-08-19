@@ -7,8 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.file.FileData;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
@@ -96,7 +94,7 @@ public abstract class ExternalAction extends SystemAction {
     }
 
     public static ImMap<Property, Boolean> getChangeExtProps(ImList<LP> props) {
-        return props.mapListValues((GetValue<Property, LP>) value -> ((LP<?>)value).property).toOrderSet().getSet().toMap(false);
+        return props.mapListValues((LP value) -> value.property).toOrderSet().getSet().toMap(false);
     }
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {

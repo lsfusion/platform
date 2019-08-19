@@ -4,9 +4,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.ConcatenateExpr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -21,6 +18,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Iterator;
+import java.util.function.IntFunction;
 
 public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Interface> {
 
@@ -55,8 +53,8 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
         if(commonValue!=null) {
-            return new Inferred<>(getOrderInterfaces().mapOrderValues(new GetIndex<ExClassSet>() {
-                public ExClassSet getMapValue(int i) {
+            return new Inferred<>(getOrderInterfaces().mapOrderValues(new IntFunction<ExClassSet>() {
+                public ExClassSet apply(int i) {
                     return getPart(i, commonValue);
                 }
             }));
@@ -69,10 +67,8 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
-        if(inferred.size() == interfaces.size() && !inferred.containsNull() && inferred.filterFnValues(new SFunctionSet<ExClassSet>() { // жесть конечно, но потом будем уточнять этот метод
-            public boolean contains(ExClassSet element) {
-                return element.orAny;
-            }}).isEmpty()) {
+        // жесть конечно, но потом будем уточнять этот метод
+        if(inferred.size() == interfaces.size() && !inferred.containsNull() && inferred.filterFnValues(element -> element.orAny).isEmpty()) {
             ImList<ResolveClassSet> andClassSets = getOrderInterfaces().mapList(ExClassSet.fromExAnd(inferred));
             return new ExClassSet(new ResolveConcatenateClassSet(andClassSets.toArray(new ResolveClassSet[andClassSets.size()])), false);
         }

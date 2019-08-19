@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.formula.ExprSource;
 import lsfusion.server.data.expr.formula.ExprType;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
@@ -19,7 +18,6 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 

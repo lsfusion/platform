@@ -6,13 +6,14 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.util.function.IntFunction;
 
 abstract public class UnionProperty extends ComplexIncrementProperty<UnionProperty.Interface> {
 
@@ -22,7 +23,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         }
     }
 
-    public static GetIndex<Interface> genInterface = Interface::new;
+    public static IntFunction<Interface> genInterface = Interface::new;
     public static ImOrderSet<Interface> getInterfaces(int intNum) {
         return SetFact.toOrderExclSet(intNum, genInterface);
     }

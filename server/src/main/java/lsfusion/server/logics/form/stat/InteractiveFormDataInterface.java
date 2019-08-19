@@ -5,9 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
@@ -32,6 +29,8 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.sql.SQLException;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class InteractiveFormDataInterface extends AbstractFormDataInterface {
 
@@ -88,7 +87,7 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
     }
 
     @Override
-    public GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getUserVisible() {
+    public BiFunction<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>, ImOrderSet<PropertyDrawEntity>> getUserVisible() {
         return (key, value) -> form.getVisibleProperties(getInstance(key, form), value, preferences);
     }
 
@@ -102,15 +101,15 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
     @Override
     public ImOrderMap<CompareEntity, Boolean> getOrders(GroupObjectEntity groupObject, ImSet<GroupObjectEntity> valueGroups) {
         GroupObjectInstance groupInstance = getInstance(groupObject, form);
-        return groupInstance.orders.mapOrderKeys(new GetValue<CompareEntity, OrderInstance>() {
-            public CompareEntity getMapValue(final OrderInstance value) {
+        return groupInstance.orders.mapOrderKeys(new Function<OrderInstance, CompareEntity>() {
+            public CompareEntity apply(final OrderInstance value) {
                 return new CompareEntity() {
                     public Type getType() {
                         return value.getType();
                     }
                     public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) throws SQLException, SQLHandledException {
-                        return value.getExpr(mapExprs.mapKeys(new GetValue<ObjectInstance, ObjectEntity>() {
-                            public ObjectInstance getMapValue(ObjectEntity value) {
+                        return value.getExpr(mapExprs.mapKeys(new Function<ObjectEntity, ObjectInstance>() {
+                            public ObjectInstance apply(ObjectEntity value) {
                                 return getInstance(value, form);
                             }
                         }), modifier);
@@ -127,11 +126,7 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
 
     @Override
     protected ImSet<ObjectEntity> getValueObjects() {
-        return getFormEntity().getObjects().filterFn(new SFunctionSet<ObjectEntity>() {
-            public boolean contains(ObjectEntity element) {
-                return !getInstance(element.groupTo, form).curClassView.isGrid();
-            }
-        });
+        return getFormEntity().getObjects().filterFn(element -> !getInstance(element.groupTo, form).curClassView.isGrid());
     }
 
     @Override
@@ -142,12 +137,7 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
         if(groupId != null) {
             GroupObjectEntity groupObject = formEntity.getGroupObject(groupId);
             groupObjectHierarchy = formEntity.getSingleGroupObjectHierarchy(groupObject);
-            return new StaticDataGenerator.Hierarchy(groupObjectHierarchy, MapFact.singleton(groupObject, form.getPropertyEntitiesShownInGroup(getInstance(groupObject, form))), getFormEntity().getGroupsList().getSet().filterFn(new SFunctionSet<GroupObjectEntity>() {
-                @Override
-                public boolean contains(GroupObjectEntity element) {
-                    return !groupId.equals(element.getID());
-                }
-            }));
+            return new StaticDataGenerator.Hierarchy(groupObjectHierarchy, MapFact.singleton(groupObject, form.getPropertyEntitiesShownInGroup(getInstance(groupObject, form))), getFormEntity().getGroupsList().getSet().filterFn(element -> !groupId.equals(element.getID())));
         }
         return super.getHierarchy(isReport);
     }

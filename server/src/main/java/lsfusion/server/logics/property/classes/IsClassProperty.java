@@ -11,8 +11,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFStaticLazy;
 import lsfusion.server.data.expr.Expr;
@@ -52,6 +50,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterface> {
 
@@ -62,7 +61,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
     }
 
     public static ImMap<ClassPropertyInterface, ValueClass> getMapClasses(ImSet<ClassPropertyInterface> interfaces) {
-        return interfaces.mapValues((GetValue<ValueClass, ClassPropertyInterface>) value -> value.interfaceClass);
+        return interfaces.mapValues((ClassPropertyInterface value) -> value.interfaceClass);
     }
 
     // по аналогии с SessionDataProperty

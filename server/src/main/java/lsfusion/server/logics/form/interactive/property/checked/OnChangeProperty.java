@@ -4,7 +4,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -12,8 +11,6 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
-import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
@@ -24,6 +21,8 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.util.function.Function;
 
 // определяет не максимум изменения, а для конкретных входов
 public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, OnChangeProperty.Interface<T, P>> {
@@ -99,7 +98,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public static <T extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Interface<T, P>> getInterfaces(Property<T> onChange, Property<P> toChange) {
-        return onChange.getFriendlyOrderInterfaces().mapOrderSetValues((GetValue<Interface<T, P>, T>) KeyOnInterface::new).addOrderExcl(toChange.getFriendlyOrderInterfaces().mapOrderSetValues((GetValue<Interface<T, P>, P>) KeyToInterface::new)).addOrderExcl(new ValueInterface<>(toChange));
+        return onChange.getFriendlyOrderInterfaces().mapOrderSetValues((Function<T, Interface<T, P>>) KeyOnInterface::new).addOrderExcl(toChange.getFriendlyOrderInterfaces().mapOrderSetValues((Function<P, Interface<T, P>>) KeyToInterface::new)).addOrderExcl(new ValueInterface<>(toChange));
     }
 
     public OnChangeProperty(Property<T> onChange, Property<P> toChange) {
@@ -132,7 +131,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
 
     public ContextFilter getContextFilter(final ImMap<T, DataObject> mapOnValues, final ImMap<P, DataObject> mapToValues, final ObjectEntity valueObject) {
         return factory -> {
-            ImMap<Interface<T, P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues((GetValue<PropertyObjectInterfaceInstance, Interface<T, P>>) value -> value.getInterface(mapOnValues, mapToValues, valueObject.getInstance(factory)));
+            ImMap<Interface<T, P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues((Function<Interface<T, P>, PropertyObjectInterfaceInstance>) value -> value.getInterface(mapOnValues, mapToValues, valueObject.getInstance(factory)));
             return new NotNullFilterInstance<>(
                     new PropertyObjectInstance<>(OnChangeProperty.this, interfaceImplement));
         };

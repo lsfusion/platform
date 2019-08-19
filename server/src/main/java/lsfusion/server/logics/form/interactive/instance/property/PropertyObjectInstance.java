@@ -4,8 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -57,7 +56,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
     private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) throws SQLException, SQLHandledException {
 
-        ImMap<P, Expr> joinImplement = mapping.mapValuesEx((GetExValue<Expr, PropertyObjectInterfaceInstance, SQLException, SQLHandledException>) value -> value.getExpr(classSource, modifier));
+        ImMap<P, Expr> joinImplement = mapping.mapValuesEx((ThrowingFunction<PropertyObjectInterfaceInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(classSource, modifier));
         return property.getExpr(joinImplement, modifier, whereBuilder);
     }
 
@@ -88,10 +87,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
         boolean disableHint = hidden && Settings.get().isDisableHiddenHintReallyChanged();
             
-        ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet().filterFn(new SFunctionSet<ObjectInstance>() {
-            public boolean contains(ObjectInstance element) {
-                return element.objectInGrid(groupObjects);
-            }}));
+        ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet().filterFn(element -> element.objectInGrid(groupObjects)));
         WhereBuilder changedWhere = new WhereBuilder();
         if(disableHint) // обработка hint'ов может занять слишком долгое время и если спрятан, это может быть неоправдано
             AutoHintsAspect.pushDisabledRepeat();
